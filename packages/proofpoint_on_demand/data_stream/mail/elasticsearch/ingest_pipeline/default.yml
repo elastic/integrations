@@ -176,7 +176,7 @@ processors:
   - grok:
       field: proofpoint_on_demand.mail.sm.ctladdr
       patterns:
-        - '^<%{EMAILADDRESS:_temp.address}> (%{NUMBER}/%{NUMBER})$'
+        - '^<%{EMAILADDRESS:_temp.address}> \(%{NUMBER}/%{NUMBER}\)$'
       tag: grok_for_ctladdr
       ignore_failure: true
   - set:
@@ -185,11 +185,11 @@ processors:
       copy_from: _temp.address
       ignore_empty_value: true
       if: ctx.json?.sm?.from == null && ctx._temp?.address != null
-  - set:
+  - append:
       field: email.from.address
-      tag: set_email_from_address_from_temp_address
-      copy_from: _temp.address
-      ignore_empty_value: true
+      tag: append_temp_address_into_email_from_address
+      value: '{{{_temp.address}}}'
+      allow_duplicates: false
       if: ctx.json?.sm?.from == null && ctx._temp?.address != null
   - append:
       field: related.user
@@ -213,10 +213,55 @@ processors:
       target_field: proofpoint_on_demand.mail.sm.dsn
       ignore_missing: true
   - rename:
+      field: json.sm.mailer
+      tag: rename_sm_mailer
+      target_field: proofpoint_on_demand.mail.sm.mailer
+      ignore_missing: true
+  - rename:
       field: json.sm.from
       tag: rename_sm_from
       target_field: proofpoint_on_demand.mail.sm.from
       ignore_missing: true
+  - rename:
+      field: json.sm.msgid
+      tag: rename_sm_msgid
+      target_field: proofpoint_on_demand.mail.sm.msgid
+      ignore_missing: true
+  - rename:
+      field: json.sm.to
+      tag: rename_sm_to
+      target_field: proofpoint_on_demand.mail.sm.to
+      ignore_missing: true
+  - script:
+      description: Remove unwanted characters.
+      tag: script_remove_unwanted_characters
+      lang: painless
+      source: |
+        def removeUnwantedCharacters(def input) {
+          if (input.startsWith("<") && input.endsWith(">")) {
+            String trimmed = input.substring(1, input.length() - 1);
+            return trimmed;
+          } else {
+            return input;
+          }
+        }
+        if (ctx.proofpoint_on_demand?.mail?.sm?.from != null) {
+          ctx.proofpoint_on_demand.mail.sm.from = removeUnwantedCharacters(ctx.proofpoint_on_demand.mail.sm.from);
+        }
+        if (ctx.proofpoint_on_demand?.mail?.sm?.msgid != null) {
+          ctx.proofpoint_on_demand.mail.sm.msgid = removeUnwantedCharacters(ctx.proofpoint_on_demand.mail.sm.msgid);
+        }
+        List toAddresses = new ArrayList();
+        if (ctx.proofpoint_on_demand?.mail?.sm?.to instanceof List) {
+          for (address in ctx.proofpoint_on_demand.mail.sm.to) {
+            toAddresses.add(removeUnwantedCharacters(address));
+          }
+        }
+        ctx.proofpoint_on_demand.mail.sm.to = toAddresses;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: email.from.address
       tag: append_proofpoint_on_demand_mail_sm_from_into_email_from_address
@@ -229,26 +274,29 @@ processors:
       value: '{{{proofpoint_on_demand.mail.sm.from}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.mail?.sm?.from != null
-  - rename:
-      field: json.sm.mailer
-      tag: rename_sm_mailer
-      target_field: proofpoint_on_demand.mail.sm.mailer
-      ignore_missing: true
-  - set:
-      field: email.x_mailer
-      tag: set_email_x_mailer_from_mail_sm_mailer
-      copy_from: proofpoint_on_demand.mail.sm.mailer
-      ignore_empty_value: true
-  - rename:
-      field: json.sm.msgid
-      tag: rename_sm_msgid
-      target_field: proofpoint_on_demand.mail.sm.msgid
-      ignore_missing: true
   - set:
       field: email.message_id
       tag: set_email_message_id_from_mail_sm_msgid
       copy_from: proofpoint_on_demand.mail.sm.msgid
       ignore_empty_value: true
+  - foreach:
+      field: proofpoint_on_demand.mail.sm.to
+      if: ctx.proofpoint_on_demand?.mail?.sm?.to instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_sm_to_into_email_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: proofpoint_on_demand.mail.sm.to
+      if: ctx.proofpoint_on_demand?.mail?.sm?.to instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_sm_to_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - convert:
       field: json.sm.nrcpts
       tag: convert_sm_nrcpts_to_long
@@ -323,29 +371,6 @@ processors:
       tag: rename_sm_tls_verify
       target_field: proofpoint_on_demand.mail.sm.tls.verify
       ignore_missing: true
-  - foreach:
-      field: json.sm.to
-      if: ctx.json?.sm?.to instanceof List
-      processor:
-        append:
-          field: email.to.address
-          tag: append_sm_to_into_email_to_address
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.sm.to
-      if: ctx.json?.sm?.to instanceof List
-      processor:
-        append:
-          field: related.user
-          tag: append_sm_to_into_related_user
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-  - rename:
-      field: json.sm.to
-      tag: rename_sm_to
-      target_field: proofpoint_on_demand.mail.sm.to
-      ignore_missing: true
   - rename:
       field: json.sm.xdelay
       tag: rename_sm_xdelay
@@ -392,7 +417,6 @@ processors:
         - proofpoint_on_demand.mail.data
         - proofpoint_on_demand.mail.id
         - proofpoint_on_demand.mail.sm.from
-        - proofpoint_on_demand.mail.sm.mailer
         - proofpoint_on_demand.mail.sm.msgid
         - proofpoint_on_demand.mail.sm.protocol
         - proofpoint_on_demand.mail.ts

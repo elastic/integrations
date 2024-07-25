@@ -321,12 +321,16 @@ processors:
       tag: script_event_duration_s_to_ns
       lang: painless
       if: ctx.proofpoint_on_demand?.message?.filter?.duration_secs != null
-      source: >-
+      source: |
         ctx.event.duration = (int) (ctx.proofpoint_on_demand.message.filter.duration_secs * 1000000000);
         if (ctx.event?.start != null) {
           ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
           ctx.event.end = start.plus(ctx.event.duration, ChronoUnit.NANOS);
         }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.isMsgEncrypted
       tag: convert_filter_isMsgEncrypted_to_boolean
