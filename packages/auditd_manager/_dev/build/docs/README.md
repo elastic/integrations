@@ -8,7 +8,6 @@ This integration is available only for Linux.
 ## Session View powered by Auditd Manager [BETA]
 
 The `add_session_metadata` processor for Auditd Manager powers the [Session View](https://www.elastic.co/guide/en/security/current/session-view.html) utility for the Elastic Security Platform.
-This feature is in Beta at Elastic Security version 8.15.0.
 
 To enable the `add_session_metadata` processor for Auditd Manager: 
 
