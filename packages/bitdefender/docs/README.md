@@ -20,7 +20,7 @@ BitDefender products for home users are not supported.
 
 The package collects BitDefender GravityZone push notification transported events sent in `jsonrpc`, `qradar`, or `splunk` format.
 
-The `jsonrpc` format is recommended default set by the integration setting `Enable jsonRPC Format`. If this option is disabled, the ingest pipeline will attempt to detect if `qradar` or `splunk` format events have been received and process them accordingly.
+The `jsonrpc` format is recommended default but the ingest pipeline will attempt to detect if `qradar` or `splunk` format events have been received and process them accordingly.
 
 The integration can also collect the push notification configuration and statistics by polling the BitDefender GravityZone API.
 
@@ -354,9 +354,9 @@ An example event for `push_notifications` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-23T16:56:25.523Z",
+    "@timestamp": "2024-07-25T10:16:53.355Z",
     "agent": {
-        "ephemeral_id": "e9713ead-3e84-4adb-a499-a96426bfcc49",
+        "ephemeral_id": "e80bc3a4-2ee1-435a-8ff1-cf18df9f0fe8",
         "id": "0eb83218-5f40-45bd-8fb3-9423008f7b6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -386,7 +386,7 @@ An example event for `push_notifications` looks as following:
     },
     "data_stream": {
         "dataset": "bitdefender.push_notifications",
-        "namespace": "31898",
+        "namespace": "29298",
         "type": "logs"
     },
     "destination": {
@@ -409,7 +409,7 @@ An example event for `push_notifications` looks as following:
         ],
         "dataset": "bitdefender.push_notifications",
         "id": "150537",
-        "ingested": "2024-07-23T16:56:35Z",
+        "ingested": "2024-07-25T10:17:03Z",
         "kind": "alert",
         "module": "aph",
         "original": "{\"event\":{\"aph_type\":\"phishing\",\"companyId\":\"59a14b271da197c6108b4567\",\"computer_fqdn\":\"fc-exchange-01.fc.dom\",\"computer_id\":\"59b7d9bfa849af3a1465b7e4\",\"computer_ip\":\"192.168.0.1\",\"computer_name\":\"FC-EXCHANGE-01\",\"count\":1,\"last_blocked\":\"2023-09-13T08:49:43.000Z\",\"module\":\"aph\",\"product_installed\":\"BEST\",\"status\":\"aph_blocked\",\"url\":\"http://example.com/account/support/\"},\"id\":150537,\"jsonrpc\":{\"method\":\"addEvents\",\"version\":\"2.0\"}}",

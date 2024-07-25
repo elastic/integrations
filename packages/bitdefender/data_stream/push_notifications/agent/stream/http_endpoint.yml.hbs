@@ -24,7 +24,6 @@ secret.value: "{{authorization_value}}"
 ssl: {{ssl}}
 {{/if}}
 
-{{#if enable_jsonrpc_format}}
 program: |
   has(obj.jsonrpc) ?
     obj.params.events.map(e, {
@@ -36,22 +35,7 @@ program: |
       }
     })
   : 
-    dyn({
-      "error": {
-        "message": "Not jsonrpc formatted message, but setting `Enable jsonRPC Format` is selected."
-      }
-    })
-{{else}}
-program: |
-  has(obj.jsonrpc) ?
-    dyn({
-      "error": {
-        "message": "Unable to process message. Received jsonrpc formatted message, but setting `Enable jsonRPC Format` is disabled."
-      }
-    })
-  :
     obj
-{{/if}}
 
 {{#if preserve_original_event}}
 preserve_original_event: true
