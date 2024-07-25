@@ -5,15 +5,16 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 1 * * 1-5'
-  issue_comment:
-    types: ['created']
+  pull_request:
+    paths:
+      - .github/updatecli.d/*
+      - .github/workflows/bump-elastic-stack-version.yml
 
 permissions:
   contents: read
 
 jobs:
   bump-elastic-stack:
-    if: ${{ github.event_name != 'issue_comment' || (github.event.issue.pull_request && contains(github.event.comment.body, '/test bump-stack')) }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -27,12 +28,12 @@ jobs:
         uses: updatecli/updatecli-action@v2.62.0 # updatecli v0.80.0
 
       - name: Select diff action
-        if: ${{ github.event_name == 'issue_comment' }}
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           echo "UPDATECLI_ACTION=diff" >> $GITHUB_ENV
 
       - name: Select apply action
-        if: ${{ github.event_name != 'issue_comment' }}
+        if: ${{ github.event_name != 'pull_request' }}
         run: |
           echo "UPDATECLI_ACTION=apply" >> $GITHUB_ENV
 
