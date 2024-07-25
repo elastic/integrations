@@ -25,6 +25,10 @@ processors:
         to: event.original
     fail_on_error: true
     ignore_missing: false
+# The decode_cef processor encounters parsing errors with fields containing hyphen '-' in the log.
+# As a temporary solution, the replace processor is used to substitute these fields.
+# Link to the issue: https://github.com/elastic/beats/issues/40348
+# The replace processor will be phased out once the issue mentioned above is resolved.
 - replace:
     fields:
       - field: "message"

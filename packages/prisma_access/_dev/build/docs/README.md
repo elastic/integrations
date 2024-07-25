@@ -2,7 +2,7 @@
 
 ## Overview
 
-[Palo Alto Prisma Access](https://www.paloaltonetworks.com/sase/access) is a secure access service edge (SASE) platform that enables organizations to provide protected connectivity to their network and applications for branches, retail locations, and remote users. It's designed to ensure secure access to the cloud, SaaS, and internet for users, regardless of their location. Prisma Access uses a cloud-delivered infrastructure to connect users to applications, delivering both network security and a seamless user experience.
+[Palo Alto Prisma Access](https://www.paloaltonetworks.com/sase/access) is a Secure Access Service Edge (SASE) platform that enables organizations to provide protected connectivity to their network and applications for branches, retail locations, and remote users. It's designed to ensure secure access to the cloud, SaaS, and internet for users, regardless of their location. Prisma Access uses a cloud-delivered infrastructure to connect users to applications, delivering both network security and a seamless user experience.
 
 Use the Palo Alto Prisma Access integration to collect and parse data from the Syslog server. Then visualize that data in Kibana.
 
@@ -44,7 +44,7 @@ The Palo Alto Prisma Access integration collects 16 types of event types:
 
 **[Configuration](https://docs.paloaltonetworks.com/strata-logging-service/log-reference/common-logs/common-configuration-log)** - Configuration logs are used to record changes made to the writing entity.
 
-**[GlobalProtect App Troubleshooting](https://docs.paloaltonetworks.com/strata-logging-service/log-reference/endpoint-logs/endpoint-globalprotect-app-troubleshooting-log)** - GlobalProtect troubleshooting logs contain information about the GlobalProtect client and its host to help app users resolve issues.
+**[GlobalProtect App Troubleshooting](https://docs.paloaltonetworks.com/strata-logging-service/log-reference/endpoint-logs/endpoint-globalprotect-app-troubleshooting-log)** - GlobalProtect App troubleshooting logs contain information about the GlobalProtect client and its host to help app users resolve issues.
 
 **NOTE**: The Palo Alto Prisma Access integration collects logs for different events, but we have combined all of those in one data stream named `event`.
 
@@ -71,8 +71,6 @@ With this approach, you install Elastic Agent and manually configure the agent l
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-The minimum **kibana.version** required is **8.13.0**.
 
 ## Setup
 

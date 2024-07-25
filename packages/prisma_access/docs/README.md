@@ -2,7 +2,7 @@
 
 ## Overview
 
-[Palo Alto Prisma Access](https://www.paloaltonetworks.com/sase/access) is a secure access service edge (SASE) platform that enables organizations to provide protected connectivity to their network and applications for branches, retail locations, and remote users. It's designed to ensure secure access to the cloud, SaaS, and internet for users, regardless of their location. Prisma Access uses a cloud-delivered infrastructure to connect users to applications, delivering both network security and a seamless user experience.
+[Palo Alto Prisma Access](https://www.paloaltonetworks.com/sase/access) is a Secure Access Service Edge (SASE) platform that enables organizations to provide protected connectivity to their network and applications for branches, retail locations, and remote users. It's designed to ensure secure access to the cloud, SaaS, and internet for users, regardless of their location. Prisma Access uses a cloud-delivered infrastructure to connect users to applications, delivering both network security and a seamless user experience.
 
 Use the Palo Alto Prisma Access integration to collect and parse data from the Syslog server. Then visualize that data in Kibana.
 
@@ -44,7 +44,7 @@ The Palo Alto Prisma Access integration collects 16 types of event types:
 
 **[Configuration](https://docs.paloaltonetworks.com/strata-logging-service/log-reference/common-logs/common-configuration-log)** - Configuration logs are used to record changes made to the writing entity.
 
-**[GlobalProtect App Troubleshooting](https://docs.paloaltonetworks.com/strata-logging-service/log-reference/endpoint-logs/endpoint-globalprotect-app-troubleshooting-log)** - GlobalProtect troubleshooting logs contain information about the GlobalProtect client and its host to help app users resolve issues.
+**[GlobalProtect App Troubleshooting](https://docs.paloaltonetworks.com/strata-logging-service/log-reference/endpoint-logs/endpoint-globalprotect-app-troubleshooting-log)** - GlobalProtect App troubleshooting logs contain information about the GlobalProtect client and its host to help app users resolve issues.
 
 **NOTE**: The Palo Alto Prisma Access integration collects logs for different events, but we have combined all of those in one data stream named `event`.
 
@@ -71,8 +71,6 @@ With this approach, you install Elastic Agent and manually configure the agent l
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-The minimum **kibana.version** required is **8.13.0**.
 
 ## Setup
 
@@ -102,8 +100,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2019-07-25T23:30:12.000Z",
     "agent": {
-        "ephemeral_id": "690f2282-2793-40d0-8ff6-f98c8f825518",
-        "id": "d9b59d61-0816-4bba-a760-819d10d05da0",
+        "ephemeral_id": "d8a3d994-39be-41af-a108-c08695e2f0d7",
+        "id": "7b106bd2-a2ca-4877-9577-96012c934f32",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -117,16 +115,16 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "prisma_access.event",
-        "namespace": "ep",
+        "namespace": "25258",
         "type": "logs"
     },
     "destination": {
         "user": {
             "domain": [
-                "Dummy"
+                "globex.org"
             ],
             "id": [
-                "Dummy"
+                "12345"
             ],
             "name": [
                 "col-34"
@@ -137,7 +135,7 @@ An example event for `event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d9b59d61-0816-4bba-a760-819d10d05da0",
+        "id": "7b106bd2-a2ca-4877-9577-96012c934f32",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -150,10 +148,10 @@ An example event for `event` looks as following:
         "created": "2021-03-01T20:35:54.000Z",
         "dataset": "prisma_access.event",
         "id": "xxxxxxxxxxxxx",
-        "ingested": "2024-07-04T13:02:40Z",
+        "ingested": "2024-07-25T10:58:34Z",
         "kind": "event",
-        "original": "928 <14>1 2021-03-01T20:35:56.500Z stream-logfwd20-587718190-02280003-lvod-harness-mjdh logforwarder - panwlogs - CEF:0|Palo Alto Networks|LF|2.0|CONFIG|config|3|ProfileToken=xxxxx dtz=UTC rt=Mar 01 2021 20:35:54 deviceExternalId=xxxxxxdfrrxx PanOSEventTime=Jul 25 2019 23:30:12 duser=col-34 dntdom=Dummy duid=Dummy PanOSEventDetails=Dummy PanOSIsDuplicateLog=false PanOSIsPrismaNetwork=false PanOSIsPrismaUsers=false cat=xxxxx PanOSLogExported=false PanOSLogSource=firewall PanOSLogSourceTimeZoneOffset=Dummy PanOSSeverity=warn PanOSTenantID=xxxxxxxxxxxxx PanOSVirtualSystemID=0 src=81.2.69.144 cs3=Dummy cs3Label=VirtualLocation act=commit-all duser0=Panorama-admin destinationServiceName=Dummy PanOSEventResult=retrievd msg=Dummy externalId=xxxxxxxxxxxxx PanOSDGHierarchyLevel1=0 PanOSDGHierarchyLevel2=0 PanOSDGHierarchyLevel3=0 PanOSDGHierarchyLevel4=0 PanOSVirtualSystemName=<{xwo X dvchost=PA-VM PanOSEventDescription=\\r_IYytr PanOSTimeGeneratedHighResolution=Jul 25 2019 23:30:12",
-        "timezone": "Dummy",
+        "original": "Mar 1 20:35:56 81.2.69.142 928 <14>1 2021-03-01T20:35:56.500Z stream-logfwd20-587718190-02280003-lvod-harness-mjdh logforwarder - panwlogs - CEF:0|Palo Alto Networks|LF|2.0|CONFIG|config|3|ProfileToken=xxxxx dtz=UTC rt=Mar 01 2021 20:35:54 deviceExternalId=xxxxxxdfrrxx PanOSEventTime=Jul 25 2019 23:30:12 duser=col-34 dntdom=globex.org duid=12345 PanOSEventDetails=change before issuer validity expires PanOSIsDuplicateLog=false PanOSIsPrismaNetwork=false PanOSIsPrismaUsers=false cat=xxxxx PanOSLogExported=false PanOSLogSource=firewall PanOSLogSourceTimeZoneOffset=-05:00 PanOSSeverity=warn PanOSTenantID=xxxxxxxxxxxxx PanOSVirtualSystemID=0 src=81.2.69.144 cs3=vsys2 cs3Label=VirtualLocation act=commit-all duser0=Panorama-admin destinationServiceName=dns PanOSEventResult=retrievd msg=uploaded details externalId=xxxxxxxxxxxxx PanOSDGHierarchyLevel1=0 PanOSDGHierarchyLevel2=0 PanOSDGHierarchyLevel3=0 PanOSDGHierarchyLevel4=0 PanOSVirtualSystemName=<{xwo X dvchost=PA-VM PanOSEventDescription=\\r_IYytr PanOSTimeGeneratedHighResolution=Jul 25 2019 23:30:12",
+        "timezone": "-05:00",
         "type": [
             "info"
         ]
@@ -164,13 +162,13 @@ An example event for `event` looks as following:
     "log": {
         "level": "warn",
         "source": {
-            "address": "192.168.240.5:40204"
+            "address": "192.168.240.7:38782"
         }
     },
-    "message": "Dummy",
+    "message": "uploaded details",
     "observer": {
         "hostname": "PA-VM",
-        "product": "PAN-OS",
+        "product": "Prisma Access",
         "serial_number": [
             "xxxxxxdfrrxx"
         ],
@@ -193,15 +191,15 @@ An example event for `event` looks as following:
             "d_user_0": "Panorama-admin",
             "data": {
                 "description": "\r_IYytr",
-                "details": "Dummy",
+                "details": "change before issuer validity expires",
                 "result": "retrievd",
                 "time": "2019-07-25T23:30:12.000Z"
             },
             "destination": {
-                "nt_domain": "Dummy",
-                "service_name": "Dummy",
+                "nt_domain": "globex.org",
+                "service_name": "dns",
                 "user": {
-                    "id": "Dummy",
+                    "id": "12345",
                     "name": "col-34"
                 }
             },
@@ -235,11 +233,11 @@ An example event for `event` looks as following:
             "log": {
                 "exported": false,
                 "source": {
-                    "timezone_offset": "Dummy",
+                    "timezone_offset": "-05:00",
                     "value": "firewall"
                 }
             },
-            "message": "Dummy",
+            "message": "uploaded details",
             "profile": {
                 "token": "xxxxx"
             },
@@ -254,7 +252,7 @@ An example event for `event` looks as following:
                 "generated_high_resolution": "2019-07-25T23:30:12.000Z"
             },
             "virtual": {
-                "location": "Dummy",
+                "location": "vsys2",
                 "system": {
                     "id": "0",
                     "name": "<{xwo X"
@@ -270,7 +268,7 @@ An example event for `event` looks as following:
             "81.2.69.144"
         ],
         "user": [
-            "Dummy",
+            "12345",
             "col-34"
         ]
     },
@@ -407,7 +405,6 @@ An example event for `event` looks as following:
 | prisma_access.event.destination.user.id | Unique identifier assigned to the Destination User. | keyword |
 | prisma_access.event.destination.user.name | The username to which the network traffic was destined. | keyword |
 | prisma_access.event.destination.user.uuid | Unique identifier assigned to the Destination User. | keyword |
-| prisma_access.event.destination.user.value | The username to which the network traffic was destined. | keyword |
 | prisma_access.event.destination.uuid | Identifies the destination universal unique identifier for a guest virtual machine in the VMware NSX environment. | keyword |
 | prisma_access.event.device.action | Identifies the action that the firewall took for the network traffic. | keyword |
 | prisma_access.event.device.event.category | The device event category. | keyword |
@@ -612,7 +609,8 @@ An example event for `event` looks as following:
 | prisma_access.event.nat.value | Indicates if the firewall is performing network address translation (NAT) for the logged traffic. | boolean |
 | prisma_access.event.network_access | Indicates whether the endpoint has network access. | boolean |
 | prisma_access.event.non_standard_destination_port | Identifies the non-standard or unexpected port used by the application associated with this session. | long |
-| prisma_access.event.normalize_user | Normalized version of the username being authenticated (such as appending a domain name to the username). | keyword |
+| prisma_access.event.normalize_user.domain | Domain of the normalized user. | keyword |
+| prisma_access.event.normalize_user.name | Normalized version of the username being authenticated (such as appending a domain name to the username). | keyword |
 | prisma_access.event.nssai_network_slice.differentiator | Network Slice Differentiator (SD part of SNSSAI). | keyword |
 | prisma_access.event.nssai_network_slice.type | Network Slice Type (SST part of SNSSAI). | keyword |
 | prisma_access.event.operating_system | The operating system of the device from which a user is reporting an issue. | keyword |
@@ -632,6 +630,16 @@ An example event for `event` looks as following:
 | prisma_access.event.packets.total | Number of total packets (transmit and receive) seen for the session. | long |
 | prisma_access.event.padding | For internal use only. | keyword |
 | prisma_access.event.padding3 | For internal use only. | keyword |
+| prisma_access.event.pan_os.destination.user.domain | Domain to which the Destination User belongs. | keyword |
+| prisma_access.event.pan_os.source.user.domain | Domain to which the Source User belongs. | keyword |
+| prisma_access.event.pan_os_data.destination.user.domain | Domain to which the Destination User belongs. | keyword |
+| prisma_access.event.pan_os_data.destination.user.name | The Destination User. That is, the username to which the network traffic was destined. | keyword |
+| prisma_access.event.pan_os_data.source.user.domain | Domain to which the Source User belongs. | keyword |
+| prisma_access.event.pan_os_data.source.user.name | The Source User. That is, the username that initiated the network traffic. | keyword |
+| prisma_access.event.pan_os_value.destination.user.domain | Domain to which the Destination User belongs. | keyword |
+| prisma_access.event.pan_os_value.destination.user.name | The username to which the network traffic was destined. | keyword |
+| prisma_access.event.pan_os_value.source.user.domain | Domain to which the Source User belongs. | keyword |
+| prisma_access.event.pan_os_value.source.user.name | The username that initiated the network traffic. | keyword |
 | prisma_access.event.panorama_sn | Panorama Serial associated with CDL. | keyword |
 | prisma_access.event.parent.session_id | ID of the session in which this network traffic was tunneled. | keyword |
 | prisma_access.event.parent.start_time | Time that the parent session began. This string contains a timestamp value that is the number of microseconds since the Unix epoch. | date |
@@ -731,7 +739,6 @@ An example event for `event` looks as following:
 | prisma_access.event.source.user.id | Unique identifier assigned to the Source User. | keyword |
 | prisma_access.event.source.user.name | The username that initiated the network traffic. | keyword |
 | prisma_access.event.source.user.uuid | Unique identifier assigned to the Source User. | keyword |
-| prisma_access.event.source.user.value | The username that initiated the network traffic. | keyword |
 | prisma_access.event.source.uuid | Identifies the source universal unique identifier for a guest virtual machine in the VMware NSX environment. | keyword |
 | prisma_access.event.source.value | Source. | keyword |
 | prisma_access.event.split_tunnel_configuration | Indicates the status of a split tunnel configured on GlobalProtect. | boolean |

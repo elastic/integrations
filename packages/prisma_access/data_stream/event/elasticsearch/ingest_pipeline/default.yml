@@ -1,7 +1,5 @@
 ---
 description: Pipeline for processing event logs.
-# /*
-# */ rename the cef.device.* and cef.name, cef .version and all.
 processors:
   - script:
       description: Drops fields which have null values recursively.
@@ -21,28 +19,33 @@ processors:
           return false;
         }
         drop(ctx);
+# The decode_cef processor encounters errors when attempting to parse empty IP and integer type fields in the log.
+# The following script provides a temporary solution by removing the error.message fields upon encountering any related errors that match the provided regex.
+# Link to the issue: https://github.com/elastic/beats/issues/40236
+# The script will be removed after the above issue is resolved.
   - script:
       lang: painless
       tag: script_to_rename_error_message
       description: Script to Rename EM.
-      if: ctx.error?.message != null && ctx.error.message instanceof List
+      if: ctx.error?.message instanceof List
       source: >-
-        for(data in ctx.error.message){
-            if(data.contains('value is not a valid IP address')) {
-                ctx.error.message = "";
-            }else if(data.contains("strconv.Parse")){
-                ctx.error.message = "";
+        ArrayList temp = new ArrayList(ctx.error.message);
+        ArrayList output = new ArrayList();
+        for(data in temp){
+            if (!(data.contains('error in field ') || data.contains('strconv.Parse'))) {
+                output.add(data);
             }
+        ctx.error.put("message", output);
         }
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
+  - remove:
       field: error.message
-      tag: set_error_message_empty
-      value: ""
-      if: ctx.error?.message != null && ctx.error.message instanceof String && (ctx.error.message.contains('value is not a valid IP address') || ctx.error.message.contains('strconv.Parse'))
+      tag: remove_error_message_empty
+      if: ctx.error?.message != null && ctx.error.message instanceof String && (ctx.error.message.contains('error in field ') || ctx.error.message.contains('strconv.Parse'))
+      ignore_missing: true
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -54,7 +57,7 @@ processors:
   - set:
       field: observer.product
       tag: set_observer_product
-      value: PAN-OS
+      value: Prisma Access
   - set:
       field: observer.type
       tag: set_observer_type
@@ -63,17 +66,17 @@ processors:
       field: event.kind
       tag: set_event_kind_to_event
       value: event
-      if: ctx.cef?.device?.event_class_id != null && ['CONFIG','SYSTEM','GLOBALPROTECT APP TROUBLESHOOTING','AUTH','DNS SECURITY','DECRYPTION','FILE','GLOBALPROTECT','HIPMATCH','IPTAG','SCTP','TRAFFIC','TUNNEL','URL','USERID'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions != null && ['url','file'].contains(ctx.cef.extensions.Name))
+      if: ctx.cef?.device?.event_class_id != null && ['CONFIG','SYSTEM','GLOBALPROTECT APP TROUBLESHOOTING','AUTH','DNS SECURITY','DECRYPTION','FILE','GLOBALPROTECT','HIPMATCH','IPTAG','SCTP','TRAFFIC','TUNNEL','URL','USERID'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions?.Name != null && ['url','file'].contains(ctx.cef.extensions.Name))
   - set:
       field: event.kind
       tag: set_event_kind_to_alert
       value: alert
-      if: ctx.cef?.device?.event_class_id != null && ['THREAT'].contains(ctx.cef.device.event_class_id) && (ctx.cef?.extensions != null && !(['url','file'].contains(ctx.cef.extensions.Name)))
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && ctx.cef?.extensions != null && !['url','file'].contains(ctx.cef.extensions.Name)
   - append:
       field: event.category
       value: configuration
       tag: append_event_category_configuration
-      if: ctx.cef?.device?.event_class_id != null && ['CONFIG'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'CONFIG'
   - append:
       field: event.category
       value: malware
@@ -93,7 +96,7 @@ processors:
       field: event.category
       value: file
       tag: append_event_category_file
-      if: ctx.cef?.device?.event_class_id != null && ['THREAT'].contains(ctx.cef.device.event_class_id) && ctx.cef?.extensions != null && ['file'].contains(ctx.cef.extensions.Name)
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && ctx.cef?.extensions?.Name == 'file'
   - append:
       field: event.category
       value: host
@@ -103,7 +106,7 @@ processors:
       field: event.category
       value: threat
       tag: append_event_category_threat
-      if: ctx.cef?.device?.event_class_id != null && ['THREAT'].contains(ctx.cef.device.event_class_id) && (ctx.cef?.extensions != null && !(['url','file'].contains(ctx.cef.extensions.Name)))
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions != null && !['url','file'].contains(ctx.cef.extensions.Name))
   - append:
       field: event.type
       value: info
@@ -113,12 +116,12 @@ processors:
       field: event.type
       value: protocol
       tag: append_event_type_protocol
-      if: ctx.cef?.device?.event_class_id != null && ['SCTP'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'SCTP'
   - append:
       field: event.type
       value: indicator
       tag: append_event_type_indicator
-      if: ctx.cef?.device?.event_class_id != null && ['THREAT'].contains(ctx.cef.device.event_class_id) && (ctx.cef?.extensions != null && !(['url','file'].contains(ctx.cef.extensions.Name)))
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions != null && !['url','file'].contains(ctx.cef.extensions.Name))
   - rename:
       field: cef.extensions.PanOSAccessPointName
       tag: rename_extension_PanOSAccessPointName
@@ -193,11 +196,13 @@ processors:
       field: cef.extensions.PanOSApplication
       tag: rename_extension_PanOSApplication
       target_field: prisma_access.event.application.protocol
+      if: ctx.cef?.device?.event_class_id == 'SCTP'
       ignore_missing: true
   - rename:
       field: cef.extensions.applicationProtocol
       tag: rename_extension_applicationProtocol
       target_field: prisma_access.event.application.protocol
+      if: ctx.cef?.device?.event_class_id != null && ['DECRYPTION','FILE','THREAT','TRAFFIC','TUNNEL','URL'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions != null && ['url','file'].contains(ctx.cef.extensions.Name))
       ignore_missing: true
   - set:
       field: network.application
@@ -263,7 +268,7 @@ processors:
       field: cef.extensions.deviceCustomString1
       tag: rename_extension_deviceCustomString1
       target_field: prisma_access.event.auth.server_profile
-      if: ctx.cef?.device?.event_class_id != null && ['AUTH'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'AUTH'
       ignore_missing: true
   - rename:
       field: cef.extensions.deviceCustomString1Label
@@ -327,7 +332,7 @@ processors:
       field: cef.extensions.deviceCustomString4
       tag: rename_extension_deviceCustomString4
       target_field: prisma_access.event.authentication.policy
-      if: ctx.cef?.device?.event_class_id != null && ['AUTH'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'AUTH'
       ignore_missing: true
   - rename:
       field: cef.extensions.deviceCustomString4Label
@@ -354,7 +359,7 @@ processors:
       tag: set_threat_indicator_sightings_from_event_base_event_count
       copy_from: prisma_access.event.base_event_count
       ignore_empty_value: true
-      if: ctx.cef?.device?.event_class_id != null && ['THREAT','URL'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions != null && ['url'].contains(ctx.cef.extensions.Name))
+      if: ctx.cef?.device?.event_class_id != null && ['THREAT','URL'].contains(ctx.cef.device.event_class_id) || ctx.cef?.extensions?.Name == 'url'
   - convert:
       field: cef.extensions.PanOSBytes
       tag: convert_extension_PanOSBytes_to_long
@@ -494,7 +499,7 @@ processors:
       field: cef.extensions.deviceCustomString5
       tag: rename_extension_deviceCustomString5
       target_field: prisma_access.event.client.type.value
-      if: ctx.cef?.device?.event_class_id != null && ['AUTH'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'AUTH'
       ignore_missing: true
   - rename:
       field: cef.extensions.deviceCustomString5Label
@@ -684,11 +689,12 @@ processors:
       tag: rename_extension_PanOSDebugLogFile
       target_field: prisma_access.event.debug_log_file
       ignore_missing: true
-  - set:
+  - append:
       field: file.name
-      tag: set_file_name_from_event_debug_log_file
-      copy_from: prisma_access.event.debug_log_file
-      ignore_empty_value: true
+      tag: append_prisma_access_event_debug_log_file_into_file_name
+      value: "{{{prisma_access.event.debug_log_file}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.debug_log_file != null
   - rename:
       field: cef.extensions.PanOSDescription
       tag: rename_extension_PanOSDescription
@@ -890,7 +896,7 @@ processors:
       tag: append_prisma_access_event_destination_host_name_into_host_name
       value: "{{{prisma_access.event.destination.host_name}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.destination?.host_name != null && ctx.cef?.device?.event_class_id != null && ['HIPMATCH'].contains(ctx.cef.device.event_class_id)
+      if: ctx.prisma_access?.event?.destination?.host_name != null && ctx.cef?.device?.event_class_id == 'HIPMATCH'
   - append:
       field: related.hosts
       tag: append_event_destination_host_name_into_related_hosts
@@ -970,34 +976,89 @@ processors:
       tag: set_destination_nat_port_from_event_destination_translated_port
       copy_from: prisma_access.event.destination.translated.port
       ignore_empty_value: true
+  - grok:
+      field: cef.extensions.PanOSDestinationUser
+      tag: grok_PanOSDestinationUser
+      if: ctx.cef?.extensions?.PanOSDestinationUser != null && ctx.cef?.extensions?.PanOSDestinationUser.contains("\\")
+      patterns:
+        - (?<prisma_access.event.pan_os_value.destination.user.domain>[^\\]*)[\\]*(?<prisma_access.event.pan_os_value.destination.user.name>[^\\]*)
+      on_failure:
+        - rename:
+            field: cef.extensions.PanOSDestinationUser
+            tag: rename_extension_PanOSDestinationUser_if_grok_fails
+            target_field: prisma_access.event.pan_os_value.destination.user.name
+            ignore_missing: true
   - rename:
       field: cef.extensions.PanOSDestinationUser
       tag: rename_extension_PanOSDestinationUser
-      target_field: prisma_access.event.destination.user.value
-      ignore_missing: true
-  - append:
-      field: destination.user.name
-      tag: append_prisma_access_event_destination_user_into_destination_user_name
-      value: "{{{prisma_access.event.destination.user.value}}}"
-      allow_duplicates: false
-      if: ctx.prisma_access?.event?.destination?.user?.value != null
-  - append:
-      field: related.user
-      tag: append_event_destination_user_into_related_user
-      value: "{{{prisma_access.event.destination.user.value}}}"
-      allow_duplicates: false
-      if: ctx.prisma_access?.event?.destination?.user?.value != null
-  - rename:
-      field: cef.extensions.PanOSDestinationUserDomain
-      tag: rename_extension_PanOSDestinationUserDomain
-      target_field: prisma_access.event.destination.user.domain
+      if: ctx.cef?.extensions?.PanOSDestinationUser != null && !(ctx.cef?.extensions?.PanOSDestinationUser.contains("\\"))
+      target_field: prisma_access.event.pan_os_value.destination.user.name
       ignore_missing: true
   - append:
       field: destination.user.domain
-      tag: append_prisma_access_event_destination_user_domain_into_destination_user_domain
-      value: "{{{prisma_access.event.destination.user.domain}}}"
+      tag: append_prisma_access_event_pan_os_value_destination_user_domain_into_destination_user_domain
+      value: "{{{prisma_access.event.pan_os_value.destination.user.domain}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.destination?.user?.domain != null
+      if: ctx.prisma_access?.event?.pan_os_value?.destination?.user?.domain != null
+  - append:
+      field: destination.user.name
+      tag: append_prisma_access_event_pan_os_value_destination_user_into_destination_user_name
+      value: "{{{prisma_access.event.pan_os_value.destination.user.name}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os_value?.destination?.user?.name != null
+  - append:
+      field: related.user
+      tag: append_event_pan_os_value_destination_user_into_related_user
+      value: "{{{prisma_access.event.pan_os_value.destination.user.name}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os_value?.destination?.user?.name != null
+  - grok:
+      field: cef.extensions.PanOSDestinationUserName
+      tag: grok_PanOSDestinationUserName
+      if: ctx.cef?.extensions?.PanOSDestinationUserName != null && ctx.cef?.extensions?.PanOSDestinationUserName.contains("\\")
+      patterns:
+        - (?<prisma_access.event.pan_os_data.destination.user.domain>[^\\]*)[\\]*(?<prisma_access.event.pan_os_data.destination.user.name>[^\\]*)
+      on_failure:
+        - rename:
+            field: cef.extensions.PanOSDestinationUserName
+            tag: rename_extension_PanOSDestinationUserName_if_grok_fails
+            target_field: prisma_access.event.pan_os_data.destination.user.name
+            ignore_missing: true
+  - rename:
+      field: cef.extensions.PanOSDestinationUserName
+      tag: rename_extension_PanOSDestinationUserName
+      if: ctx.cef?.extensions?.PanOSDestinationUserName != null && !(ctx.cef?.extensions?.PanOSDestinationUserName.contains("\\"))
+      target_field: prisma_access.event.pan_os_data.destination.user.name
+      ignore_missing: true
+  - append:
+      field: destination.user.domain
+      tag: append_prisma_access_event_pan_os_data_destination_user_domain_into_destination_user_domain
+      value: "{{{prisma_access.event.pan_os_data.destination.user.domain}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os_data?.destination?.user?.domain != null
+  - append:
+      field: destination.user.name
+      tag: append_prisma_access_event_pan_os_data_destination_user_into_destination_user_name
+      value: "{{{prisma_access.event.pan_os_data.destination.user.name}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os_value?.destination?.user?.name != null
+  - append:
+      field: related.user
+      tag: append_event_pan_os_data_destination_user_into_related_user
+      value: "{{{prisma_access.event.pan_os_data.destination.user.name}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os_data?.destination?.user?.name != null
+  - rename:
+      field: cef.extensions.PanOSDestinationUserDomain
+      tag: rename_extension_PanOSDestinationUserDomain
+      target_field: prisma_access.event.pan_os.destination.user.domain
+      ignore_missing: true
+  - append:
+      field: destination.user.domain
+      tag: append_prisma_access_event_pan_os_destination_user_domain_into_destination_user_domain
+      value: "{{{prisma_access.event.pan_os.destination.user.domain}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os?.destination?.user?.domain != null
   - rename:
       field: cef.extensions.destinationUserId
       tag: rename_extension_destinationUserId
@@ -1015,16 +1076,30 @@ processors:
       value: "{{{prisma_access.event.destination.user.id}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.destination?.user?.id != null
+  - grok:
+      field: cef.extensions.destinationUserName
+      tag: grok_destinationUserName
+      if: ctx.cef?.extensions?.destinationUserName != null && ctx.cef?.extensions?.destinationUserName.contains("\\")
+      patterns:
+        - (?<prisma_access.event.destination.user.domain>[^\\]*)[\\]*(?<prisma_access.event.destination.user.name>[^\\]*)
+      on_failure:
+        - rename:
+            field: cef.extensions.destinationUserName
+            tag: rename_extension_destinationUserName_if_grok_fails
+            target_field: prisma_access.event.destination.user.name
+            ignore_missing: true
   - rename:
       field: cef.extensions.destinationUserName
-      tag: rename_extension_destinationUserName
+      tag: rename_extensions_destinationUserName
+      if: ctx.cef?.extensions?.destinationUserName != null && !(ctx.cef?.extensions?.destinationUserName.contains("\\"))
       target_field: prisma_access.event.destination.user.name
       ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDestinationUserName
-      tag: rename_extension_PanOSDestinationUserName
-      target_field: prisma_access.event.destination.user.name
-      ignore_missing: true
+  - append:
+      field: destination.user.domain
+      tag: append_prisma_access_event_destination_user_domain_into_destination_user_domain
+      value: "{{{prisma_access.event.destination.user.domain}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.destination?.user?.domain != null
   - append:
       field: destination.user.name
       tag: append_prisma_access_event_destination_user_name_into_destination_user_name
@@ -1148,7 +1223,7 @@ processors:
       target_field: prisma_access.event.device.ipv6_address
       type: ip
       ignore_missing: true
-      if: ctx.cef?.extensions?.deviceCustomIPv6Address1 != null && ctx.cef.extensions.deviceCustomIPv6Address1 != '' && ctx.cef?.device?.event_class_id != null && ['HIPMATCH'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.extensions?.deviceCustomIPv6Address1 != null && ctx.cef.extensions.deviceCustomIPv6Address1 != '' && ctx.cef?.device?.event_class_id == 'HIPMATCH'
       on_failure:
         - append:
             field: error.message
@@ -1410,7 +1485,7 @@ processors:
       field: cef.extensions.deviceCustomString5
       tag: rename_extension_deviceCustomString5
       target_field: prisma_access.event.dst_zone
-      if: ctx.cef?.device?.event_class_id != null && ['DNS SECURITY'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'DNS SECURITY'
       ignore_missing: true
   - convert:
       field: cef.extensions.PanOSDualStackTunnelInterface
@@ -1555,7 +1630,7 @@ processors:
       field: cef.extensions.deviceCustomString2
       tag: rename_extension_deviceCustomString2
       target_field: prisma_access.event.endpoint.os.type
-      if: ctx.cef?.device?.event_class_id != null && ['HIPMATCH'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'HIPMATCH'
       ignore_missing: true
   - rename:
       field: cef.extensions.deviceCustomString2Label
@@ -1753,13 +1828,13 @@ processors:
       tag: set_file_hash_sha256_from_event_file_hash
       copy_from: prisma_access.event.file.hash
       ignore_empty_value: true
-      if: ctx.cef?.device?.event_class_id != null && ['FILE'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions != null && ['file'].contains(ctx.cef.extensions.Name))
+      if: ctx.cef?.device?.event_class_id == 'FILE' || ctx.cef?.extensions?.Name == 'file'
   - set:
       field: threat.indicator.file.hash.sha256
       tag: set_threat_indicator_file_hash_sha256_from_event_file_hash
       copy_from: prisma_access.event.file.hash
       ignore_empty_value: true
-      if: ctx.cef?.device?.event_class_id != null && ['THREAT'].contains(ctx.cef.device.event_class_id) && (ctx.cef?.extensions != null && !(['file'].contains(ctx.cef.extensions.Name)))
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && ctx.cef?.extensions?.Name != 'file'
   - append:
       field: related.hash
       tag: append_event_file_hash_into_related_hash
@@ -1792,13 +1867,13 @@ processors:
       tag: set_file_type_from_event_file_type
       copy_from: prisma_access.event.file.type
       ignore_empty_value: true
-      if: ctx.cef?.device?.event_class_id != null && ['FILE'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions != null && ['file'].contains(ctx.cef.extensions.Name))
+      if: ctx.cef?.device?.event_class_id == 'FILE' || ctx.cef?.extensions?.Name == 'file'
   - set:
       field: threat.indicator.file.type
       tag: set_threat_indicator_file_type_from_event_file_type
       copy_from: prisma_access.event.file.type
       ignore_empty_value: true
-      if: ctx.cef?.device?.event_class_id != null && ['THREAT'].contains(ctx.cef.device.event_class_id) && (ctx.cef?.extensions != null && !(['file'].contains(ctx.cef.extensions.Name)))
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && ctx.cef?.extensions?.Name != 'file'
   - rename:
       field: cef.extensions.PanOSFileURL
       tag: rename_extension_PanOSFileURL
@@ -1809,17 +1884,12 @@ processors:
       tag: append_prisma_access_event_file_url_into_file_path
       value: "{{{prisma_access.event.file.url}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.file?.url != null && ctx.cef?.device?.event_class_id != null && (['FILE'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions != null && ['file'].contains(ctx.cef.extensions.Name)))
+      if: ctx.prisma_access?.event?.file?.url != null && ctx.cef?.device?.event_class_id == 'FILE' || ctx.cef?.extensions?.Name == 'file'
   - rename:
       field: cef.extensions.filename
       tag: rename_extension_filename
       target_field: prisma_access.event.filename
       ignore_missing: true
-  - set:
-      field: file.name
-      tag: set_file_name_from_event_filename
-      copy_from: prisma_access.event.filename
-      ignore_empty_value: true
   - rename:
       field: cef.extensions.PanOSFingerprint
       tag: rename_extension_PanOSFingerprint
@@ -2710,11 +2780,6 @@ processors:
       tag: rename_extension_PanOSLocation
       target_field: prisma_access.event.location
       ignore_missing: true
-  - set:
-      field: observer.geo.location
-      tag: set_observer_geo_location_from_event_location
-      copy_from: prisma_access.event.location
-      ignore_empty_value: true
   - convert:
       field: cef.extensions.PanOSLogExported
       tag: convert_extension_PanOSLogExported_to_boolean
@@ -2805,7 +2870,7 @@ processors:
       field: cef.extensions.deviceCustomString5
       tag: rename_extension_deviceCustomString5
       target_field: prisma_access.event.mapping.data_source.value
-      if: ctx.cef?.device?.event_class_id != null && ['USERID'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'USERID'
       ignore_missing: true
   - rename:
       field: cef.extensions.PanOSMappingDataSource
@@ -2816,7 +2881,7 @@ processors:
       field: cef.extensions.deviceCustomString4
       tag: rename_extension_deviceCustomString4
       target_field: prisma_access.event.mapping.data_source.name
-      if: ctx.cef?.device?.event_class_id != null && ['USERID'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'USERID'
       ignore_missing: true
   - rename:
       field: cef.extensions.PanOSMappingDataSourceSubType
@@ -2827,7 +2892,7 @@ processors:
       field: cef.extensions.deviceCustomString6
       tag: rename_extension_deviceCustomString6
       target_field: prisma_access.event.mapping.data_source.type
-      if: ctx.cef?.device?.event_class_id != null && ['USERID'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'USERID'
       ignore_missing: true
   - rename:
       field: cef.extensions.PanOSMappingDataSourceType
@@ -2839,7 +2904,7 @@ processors:
       tag: convert_extension_deviceCustomNumber3_to_long
       target_field: prisma_access.event.mapping.timeout
       type: long
-      if: ctx.cef?.device?.event_class_id != null && ['USERID'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'USERID'
       ignore_missing: true
       on_failure:
         - append:
@@ -2879,14 +2944,14 @@ processors:
       field: cef.extensions.deviceCustomNumber2
       tag: convert_extension_deviceCustomNumber2_to_string
       target_field: prisma_access.event.mfa.authentication_id
-      if: ctx.cef?.device?.event_class_id != null && ['AUTH'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'AUTH'
       type: string
       ignore_missing: true
   - rename:
       field: cef.extensions.deviceCustomString1
       tag: rename_extension_deviceCustomString1
       target_field: prisma_access.event.mfa.factor_type
-      if: ctx.cef?.device?.event_class_id != null && ['USERID'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'USERID'
       ignore_missing: true
   - rename:
       field: cef.extensions.PanOSMFAVendor
@@ -3041,18 +3106,30 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - grok:
+      field: cef.extensions.deviceCustomString2
+      tag: grok_deviceCustomString2
+      if: ctx.cef?.device?.event_class_id == 'AUTH' && ctx.cef?.extensions?.deviceCustomString2 != null && ctx.cef?.extensions?.deviceCustomString2.contains("\\")
+      patterns:
+        - (?<prisma_access.event.normalize_user.domain>[^\\]*)[\\]*(?<prisma_access.event.normalize_user.name>[^\\]*)
+      on_failure:
+        - rename:
+            field: cef.extensions.deviceCustomString2
+            tag: rename_extension_deviceCustomString2_if_grok_fails
+            target_field: prisma_access.event.normalize_user.name
+            ignore_missing: true
   - rename:
       field: cef.extensions.deviceCustomString2
       tag: rename_extension_deviceCustomString2
-      target_field: prisma_access.event.normalize_user
-      if: ctx.cef?.device?.event_class_id != null && ['AUTH'].contains(ctx.cef.device.event_class_id)
+      target_field: prisma_access.event.normalize_user.name
+      if: ctx.cef?.device?.event_class_id == 'AUTH' && ctx.cef?.extensions?.deviceCustomString2 != null && !(ctx.cef?.extensions?.deviceCustomString2.contains("\\"))
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_event_normalize_user_into_related_user
-      value: "{{{prisma_access.event.normalize_user}}}"
+      tag: append_event_normalize_user_name_into_related_user
+      value: "{{{prisma_access.event.normalize_user.name}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.normalize_user != null
+      if: ctx.prisma_access?.event?.normalize_user?.name != null
   - rename:
       field: cef.extensions.PanOSNSSAINetworkSliceDifferentiator
       tag: rename_extension_PanOSNSSAINetworkSliceDifferentiator
@@ -4076,13 +4153,13 @@ processors:
       tag: append_prisma_access_event_source_host_name_into_source_domain
       value: "{{{prisma_access.event.source.host_name}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.source?.host_name != null && ctx.cef?.device?.event_class_id != null && ['GLOBALPROTECT'].contains(ctx.cef.device.event_class_id)
+      if: ctx.prisma_access?.event?.source?.host_name != null && ctx.cef?.device?.event_class_id == 'GLOBALPROTECT'
   - append:
       field: host.name
       tag: append_prisma_access_event_source_host_name_into_host_name
       value: "{{{prisma_access.event.source.host_name}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.source?.host_name != null && ctx.cef?.device?.event_class_id != null && ['HIPMATCH'].contains(ctx.cef.device.event_class_id)
+      if: ctx.prisma_access?.event?.source?.host_name != null && ctx.cef?.device?.event_class_id == 'HIPMATCH'
   - append:
       field: related.hosts
       tag: append_event_source_host_name_into_related_hosts
@@ -4167,34 +4244,53 @@ processors:
       tag: set_source_nat_port_from_event_source_translated_port
       copy_from: prisma_access.event.source.translated.port
       ignore_empty_value: true
+  - grok:
+      field: cef.extensions.PanOSSourceUser
+      tag: grok_PanOSSourceUser
+      if: ctx.cef?.extensions?.PanOSSourceUser != null && ctx.cef?.extensions?.PanOSSourceUser.contains("\\")
+      patterns:
+        - (?<prisma_access.event.pan_os_value.source.user.domain>[^\\]*)[\\]*(?<prisma_access.event.pan_os_value.source.user.name>[^\\]*)
+      on_failure:
+        - rename:
+            field: cef.extensions.PanOSSourceUser
+            tag: rename_extension_PanOSSourceUser_if_grok_fails
+            target_field: prisma_access.event.pan_os_value.source.user.name
+            ignore_missing: true
   - rename:
       field: cef.extensions.PanOSSourceUser
-      tag: rename_extension_PanOSSourceUser
-      target_field: prisma_access.event.source.user.value
+      tag: rename_extensions_PanOSSourceUser
+      if: ctx.cef?.extensions?.PanOSSourceUser != null && !(ctx.cef?.extensions?.PanOSSourceUser.contains("\\"))
+      target_field: prisma_access.event.pan_os_value.source.user.name
       ignore_missing: true
   - append:
-      field: source.user.name
-      tag: append_prisma_access_event_source_user_into_source_user_name
-      value: "{{{prisma_access.event.source.user.value}}}"
+      field: source.user.domain
+      tag: append_prisma_access_event_pan_os_value_source_user_domain_into_destination_user_domain
+      value: "{{{prisma_access.event.pan_os_value.source.user.domain}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.source?.user?.value != null
+      if: ctx.prisma_access?.event?.pan_os_value?.source?.user?.domain != null
+  - append:
+      field: source.user.name
+      tag: append_prisma_access_event_pan_os_value_source_user_name_into_destination_user_name
+      value: "{{{prisma_access.event.pan_os_value.source.user.name}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os_value?.source?.user?.name != null
   - append:
       field: related.user
-      tag: append_event_source_user_into_related_user
-      value: "{{{prisma_access.event.source.user.value}}}"
+      tag: append_event_destination_user_name_into_related_user
+      value: "{{{prisma_access.event.pan_os_value.source.user.name}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.source?.user?.value != null
+      if: ctx.prisma_access?.event?.pan_os_value?.source?.user?.name != null
   - rename:
       field: cef.extensions.PanOSSourceUserDomain
       tag: rename_extension_PanOSSourceUserDomain
-      target_field: prisma_access.event.source.user.domain
+      target_field: prisma_access.event.pan_os.source.user.domain
       ignore_missing: true
   - append:
       field: source.user.domain
       tag: append_prisma_access_event_source_user_domain_into_source_user_domain
-      value: "{{{prisma_access.event.source.user.domain}}}"
+      value: "{{{prisma_access.event.pan_os.source.user.domain}}}"
       allow_duplicates: false
-      if: ctx.prisma_access?.event?.source?.user?.domain != null
+      if: ctx.prisma_access?.event?.pan_os?.source?.user?.domain != null
   - rename:
       field: cef.extensions.sourceUserId
       tag: rename_extension_sourceUserId
@@ -4212,11 +4308,42 @@ processors:
       value: "{{{prisma_access.event.source.user.id}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.source?.user?.id != null
+  - grok:
+      field: cef.extensions.PanOSSourceUserName
+      tag: grok_PanOSSourceUserName
+      if: ctx.cef?.extensions?.PanOSSourceUserName != null && ctx.cef?.extensions?.PanOSSourceUserName.contains("\\")
+      patterns:
+        - (?<prisma_access.event.pan_os_data.source.user.domain>[^\\]*)[\\]*(?<prisma_access.event.pan_os_data.source.user.name>[^\\]*)
+      on_failure:
+        - rename:
+            field: cef.extensions.PanOSSourceUserName
+            tag: rename_extension_PanOSSourceUserName_if_grok_fails
+            target_field: prisma_access.event.pan_os_data.source.user.name
+            ignore_missing: true
   - rename:
       field: cef.extensions.PanOSSourceUserName
       tag: rename_extension_PanOSSourceUserName
-      target_field: prisma_access.event.source.user.name
+      if: ctx.cef?.extensions?.PanOSSourceUserName != null && !(ctx.cef?.extensions?.PanOSSourceUserName.contains("\\"))
+      target_field: prisma_access.event.pan_os_data.source.user.name
       ignore_missing: true
+  - append:
+      field: source.user.domain
+      tag: append_prisma_access_event_pan_os_data_source_user_domain_into_source_user_domain
+      value: "{{{prisma_access.event.pan_os_data.source.user.domain}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os_data?.source?.user?.domain != null
+  - append:
+      field: source.user.name
+      tag: append_prisma_access_event_pan_os_data_source_user_name_into_source_user_name
+      value: "{{{prisma_access.event.pan_os_data.source.user.name}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os_data?.source?.user?.name != null
+  - append:
+      field: related.user
+      tag: append_event_source_user_name_into_related_user
+      value: "{{{prisma_access.event.pan_os_data.source.user.name}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.pan_os_data?.source?.user?.name != null
   - rename:
       field: cef.extensions.suser0
       tag: rename_extension_suser0
@@ -4227,11 +4354,30 @@ processors:
       tag: rename_extension_duser0
       target_field: prisma_access.event.d_user_0
       ignore_missing: true
+  - grok:
+      field: cef.extensions.sourceUserName
+      tag: grok_sourceUserName
+      if: ctx.cef?.extensions?.sourceUserName != null && ctx.cef.extensions.sourceUserName.contains("\\")
+      patterns:
+        - (?<prisma_access.event.source.user.domain>[^\\]*)[\\]*(?<prisma_access.event.source.user.name>[^\\]*)
+      on_failure:
+        - rename:
+            field: cef.extensions.sourceUserName
+            tag: rename_extension_sourceUserName_if_grok_fails
+            target_field: prisma_access.event.source.user.name
+            ignore_missing: true
   - rename:
       field: cef.extensions.sourceUserName
       tag: rename_extension_sourceUserName
+      if: ctx.cef?.extensions?.sourceUserName != null && !(ctx.cef?.extensions?.sourceUserName?.contains("\\"))
       target_field: prisma_access.event.source.user.name
       ignore_missing: true
+  - append:
+      field: source.user.domain
+      tag: append_prisma_access_event_source_user_domain_into_source_user_domain
+      value: "{{{prisma_access.event.source.user.domain}}}"
+      allow_duplicates: false
+      if: ctx.prisma_access?.event?.source?.user?.domain != null
   - append:
       field: source.user.name
       tag: append_prisma_access_event_source_user_name_into_source_user_name
@@ -4507,7 +4653,7 @@ processors:
       tag: convert_extension_deviceCustomNumber3_to_long
       target_field: prisma_access.event.total.time_elapsed
       type: long
-      if: ctx.cef?.device?.event_class_id != null && ['DNS SECURITY'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'DNS SECURITY'
       ignore_missing: true
       on_failure:
         - append:
@@ -4527,7 +4673,7 @@ processors:
       field: cef.extensions.deviceCustomString2
       tag: rename_extension_deviceCustomString2
       target_field: prisma_access.event.tunnel.value
-      if: ctx.cef?.device?.event_class_id != null && ['TUNNEL'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'TUNNEL'
       ignore_missing: true
   - rename:
       field: cef.extensions.PanOSTunnel
@@ -4855,7 +5001,7 @@ processors:
       field: cef.extensions.deviceCustomString3
       tag: rename_extension_deviceCustomString3
       target_field: prisma_access.event.v.sys_name
-      if: ctx.cef?.device?.event_class_id != null && ['GLOBALPROTECT'].contains(ctx.cef.device.event_class_id)
+      if: ctx.cef?.device?.event_class_id == 'GLOBALPROTECT'
       ignore_missing: true
   - convert:
       field: cef.extensions.PanOSXForwardedFor
@@ -4940,11 +5086,15 @@ processors:
           - prisma_access.event.destination.port
           - prisma_access.event.destination.translated.address
           - prisma_access.event.destination.translated.port
+          - prisma_access.event.pan_os_value.destination.user.domain
+          - prisma_access.event.pan_os_value.destination.user.name
+          - prisma_access.event.pan_os_data.destination.user.domain
+          - prisma_access.event.pan_os_data.destination.user.name
+          - prisma_access.event.pan_os.destination.user.domain
           - prisma_access.event.destination.user.domain
           - prisma_access.event.destination.user.id
           - prisma_access.event.destination.user.name
           - prisma_access.event.destination.user.uuid
-          - prisma_access.event.destination.user.value
           - prisma_access.event.device.action
           - prisma_access.event.device.sn
           - prisma_access.event.device.external_id
@@ -4975,7 +5125,6 @@ processors:
           - prisma_access.event.endpoint.user.uuid
           - prisma_access.event.data.time
           - prisma_access.event.external_id
-          - prisma_access.event.filename
           - prisma_access.event.file.hash
           - prisma_access.event.file.name
           - prisma_access.event.fingerprint
@@ -4983,7 +5132,6 @@ processors:
           - prisma_access.event.http.method
           - prisma_access.event.inbound_interface.value
           - prisma_access.event.is_resume_session
-          - prisma_access.event.location
           - prisma_access.event.log.source.timezone_offset
           - prisma_access.event.login_duration
           - prisma_access.event.message
@@ -5023,11 +5171,15 @@ processors:
           - prisma_access.event.source.translated.address
           - prisma_access.event.source.translated.port
           - prisma_access.event.source.nt_domain
+          - prisma_access.event.pan_os_value.source.user.domain
+          - prisma_access.event.pan_os_value.source.user.name
+          - prisma_access.event.pan_os_data.source.user.domain
+          - prisma_access.event.pan_os_data.source.user.name
+          - prisma_access.event.pan_os.source.user.domain
           - prisma_access.event.source.user.domain
           - prisma_access.event.source.user.id
           - prisma_access.event.source.user.name
           - prisma_access.event.source.user.uuid
-          - prisma_access.event.source.user.value
           - prisma_access.event.start_time
           - prisma_access.event.tenant_id
           - prisma_access.event.time.not_after

@@ -387,9 +387,6 @@
             - name: user
               type: group
               fields:
-                - name: value
-                  type: keyword
-                  description: The username to which the network traffic was destined.
                 - name: domain
                   type: keyword
                   description: Domain to which the Destination User belongs.
@@ -1125,8 +1122,14 @@
           type: long
           description: Identifies the non-standard or unexpected port used by the application associated with this session.
         - name: normalize_user
-          type: keyword
-          description: Normalized version of the username being authenticated (such as appending a domain name to the username).
+          type: group
+          fields:
+            - name: domain
+              type: keyword
+              description: Domain of the normalized user.
+            - name: name
+              type: keyword
+              description: Normalized version of the username being authenticated (such as appending a domain name to the username).
         - name: nssai_network_slice
           type: group
           fields:
@@ -1199,6 +1202,81 @@
         - name: padding3
           type: keyword
           description: For internal use only.
+        - name: pan_os
+          type: group
+          fields:
+            - name: destination
+              type: group
+              fields:
+                - name: user
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: Domain to which the Destination User belongs.
+            - name: source
+              type: group
+              fields:
+                - name: user
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: Domain to which the Source User belongs.
+        - name: pan_os_data
+          type: group
+          fields:
+            - name: destination
+              type: group
+              fields:
+                - name: user
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: Domain to which the Destination User belongs.
+                    - name: name
+                      type: keyword
+                      description: The Destination User. That is, the username to which the network traffic was destined.
+            - name: source
+              type: group
+              fields:
+                - name: user
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: Domain to which the Source User belongs.
+                    - name: name
+                      type: keyword
+                      description: The Source User. That is, the username that initiated the network traffic.
+        - name: pan_os_value
+          type: group
+          fields:
+            - name: destination
+              type: group
+              fields:
+                - name: user
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: Domain to which the Destination User belongs.
+                    - name: name
+                      type: keyword
+                      description: The username to which the network traffic was destined.
+            - name: source
+              type: group
+              fields:
+                - name: user
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: Domain to which the Source User belongs.
+                    - name: name
+                      type: keyword
+                      description: The username that initiated the network traffic.
         - name: panorama_sn
           type: keyword
           description: Panorama Serial associated with CDL.
@@ -1549,9 +1627,6 @@
             - name: user
               type: group
               fields:
-                - name: value
-                  type: keyword
-                  description: The username that initiated the network traffic.
                 - name: domain
                   type: keyword
                   description: Domain to which the Source User belongs.
