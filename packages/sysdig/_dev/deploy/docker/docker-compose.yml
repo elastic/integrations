@@ -1,0 +1,10 @@
+services:
+  sysdig-observability-stream:
+    image: docker.elastic.co/observability/stream:v0.14.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9030 -p=tcp /sample_logs/sysdig.log
+networks:
+  elastic-package-stack_default:
+    name: elastic-package-stack_default
+    external: true
