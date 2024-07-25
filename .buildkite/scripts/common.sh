@@ -504,7 +504,7 @@ prepare_stack() {
     fi
 
     echo "Boot up the Elastic stack"
-    if ! ${ELASTIC_PACKAGE_BIN} stack up -d ${args} ; then
+    if ! ${ELASTIC_PACKAGE_BIN} stack up -d ${args} -U stack.logsdb_enabled=true ; then
         return 1
     fi
     echo ""
