@@ -33,20 +33,24 @@ redact:
   fields: ~
 program: |
   (
-    !state.want_more ?
-      request("GET", state.url + "/iocs/combined/indicator/v1?sort=modified_on&offset=0&limit=" + string(state.batch_size) + '&filter=modified_on:>"' + (
-        has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-          state.cursor.last_timestamp + '"'
-        :
-          (now - duration(state.initial_interval)).format(time_layout.RFC3339) + '"'
-      ))
-    :
-      request("GET", state.url + "/iocs/combined/indicator/v1?sort=modified_on&limit=" + string(state.batch_size) + "&offset=" + string(state.offset) + '&filter=modified_on:>"' + (
-        has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-          state.cursor.first_timestamp + '"'
-        :
-          '"'
-      ))
+    request("GET", state.url.trim_right("/") + "/iocs/combined/indicator/v1?" + (
+      state.want_more ?
+        {
+          "sort": ["modified_on"],
+          "offset": [string(state.offset)],
+          "limit": [string(state.batch_size)],
+          "filter": ['modified_on:>"' + state.?cursor.first_timestamp.orValue("") + '"'],
+        }
+      :
+        {
+          "sort": ["modified_on"],
+          "offset": ["0"],
+          "limit": [string(state.batch_size)],
+          "filter": [
+            'modified_on:>"' + state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)) + '"',
+          ],
+        }
+    ).format_query())
   ).do_request().as(resp,
     resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, {
@@ -62,33 +66,16 @@ program: |
         "batch_size": state.batch_size,
         "initial_interval": state.initial_interval,
         "cursor": {
-          "last_timestamp": (
-            has(body.resources) && body.resources.size() > 0 ?
-              (
-                has(state.cursor) && has(state.cursor.last_timestamp) && body.resources.map(e, e.modified_on).max() < state.cursor.last_timestamp ?
-                  state.cursor.last_timestamp
-                :
-                  body.resources.map(e, e.modified_on).max()
-              )
-            :
-              (
-                has(state.cursor) && has(state.cursor.last_timestamp) ?
-                  state.cursor.last_timestamp
-                :
-                  null
-              )
-          ),
-          "first_timestamp": (
-            has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-              (
-                state.want_more ?
-                  state.cursor.first_timestamp
-                :
-                  state.cursor.last_timestamp
-              )
-            :
-              (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-          ),
+          ?"last_timestamp": has(body.resources) ?
+            optional.of(([?state.?cursor.last_timestamp] + body.resources.map(e, e.modified_on)).map(t, timestamp(t)).max())
+          :
+            state.?cursor.last_timestamp,
+          ?"first_timestamp": !has(state.?cursor.first_timestamp) ?
+            optional.of((now - duration(state.initial_interval)).format(time_layout.RFC3339))
+          : state.want_more ?
+            state.?cursor.first_timestamp
+          :
+            state.?cursor.last_timestamp,
         },
       })
     :
