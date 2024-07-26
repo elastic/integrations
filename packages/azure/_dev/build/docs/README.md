@@ -132,7 +132,9 @@ If you are familiar with Kafka, here's a conceptual mapping between the two:
 
 #### How many partitions?
 
-Creating an event hub with the correct number of partitions balances cost and performance.
+The number of partitions is essential to balance Event Hub cost and performance. 
+
+Here are a few examples with one or multiple agents, with recommendations on picking the correct number of partitions for your use case.
 
 ##### Single Agent
 
@@ -165,7 +167,9 @@ With a single Agent deployment, increasing the number of partitions on the event
 
 ##### Two or more Agents
 
-With more than one Agent, setting the number of partitions is critical. Using the shared storage account, the agents share the existing partitions equally to scale out performance and high availability.
+With more than one Agent, setting the number of partitions is crucial. The agents share the existing partitions to scale out performance and improve availability.
+
+The number of partitions must at least match the number of agents.
 
 ```text
 ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
@@ -194,7 +198,7 @@ With more than one Agent, setting the number of partitions is critical. Using th
 
 ##### Recommendations
 
-Create an event hub with at least two partitions. Two partitions allow low-volume deployment to support high availability with two agents. Please consider creating four partitions to handle medium-volume deployments with higher availability.
+Create an event hub with at least two partitions. Two partitions allow low-volume deployment to support high availability with two agents. Please consider creating four partitions or more to handle medium-volume deployments with availability.
 
 To learn more about Event Hub partitions, you can read an in-depth guide from Microsoft at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create.
 
