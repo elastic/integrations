@@ -1,16 +1,12 @@
 # Symantec Endpoint Security
 
-This Symantec Endpoint Security integration enables your security team to securely stream event data to Elastic Security, via AWS S3, AWS SQS or GCS. When integrated with Elastic Security, this valuable data can be leveraged within Elastic.
-Symantec Endpoint Security (SES) delivers comprehensive protection for all your traditional and mobile devices across the entire attack chain. Symantec endpoint innovations include behavioral isolation, Active Directory security, and Threat Hunter technologies to protect your endpoints against sophisticated threats and targeted attacks.
+Symantec Endpoint Security (SES), is fully cloud-managed version of the on-premises Symantec Endpoint Protection (SEP), which delivers multilayer protection to stop threats regardless of how they attack your endpoints. You manage SES through a unified cloud console that provides threat visibility across your endpoints and uses multiple technologies to manage the security of your organization.
 
-The Symantec Endpoint Security integration can be used in three different modes to collect data:
-- AWS S3 polling mode: Symantec Endpoint Security writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
-- AWS S3 SQS mode: Symantec Endpoint Security writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
-- GCS polling mode: Symantec Endpoint Security writes data to GCS bucket, and Elastic Agent polls the GCS bucket by listing its contents and reading new files.
+This SES Integration enables user to stream Events and EDR incidents data to Elastic, via Data Storage(AWS S3, AWS SQS or GCS) and API endpoint respectively.
 
 ## Data streams
 
-The Symantec Endpoint Security integration collects logs for different events that Integrated Cyber Defense Schema organizes into following categories:
+The Symantec Endpoint Security integration collects logs via Amazon S3 and SQS, and Google GCP for different events that The Integrated Cyber Defense Schema organizes into following categories:
 
 **Security [1]**
 
@@ -87,7 +83,7 @@ The Symantec Endpoint Security integration collects logs for different events th
 |----------------------------------------------------|
 | 1000 - Status                                      |
 
-**NOTE**: The Symantec Endpoint Security integration collects logs for the above mentioned events, but we have combined all of those in one data stream named `event`.
+The Symantec Endpoint Security integration can also retrieve **EDR incidents** via a REST API. See more details in the API documentation [here](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
 
 ## Requirements
 
@@ -112,8 +108,8 @@ With this approach, you install Elastic Agent and manually configure the agent l
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-The minimum **kibana.version** required is **8.12.0**.
+ 
+This module has been tested against **Symantec Integrated Cyber Defense Exchange 1.4.7** for events, and **Symantec Endpoint Security API Version v1** for EDR Incidents.   
 
 ## Setup
 
@@ -168,6 +164,16 @@ A sample JSON Credentials file looks as follows:
 3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
+
+### Steps to obtain Client ID and Client Secret to collect data from EDR Incident API:
+
+1. Login to your [Symantec EDR Cloud console](https://sep.securitycloud.symantec.com/v2/landing).
+2. Click Integration > Client Applications.
+3. Click Add for adding Client Application.
+4. Enter Client Application Name and press the Add button.
+5. Select Client Secret from the top.
+6. Copy the Client ID and Client Secret.
+
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations
@@ -191,12 +197,23 @@ A sample JSON Credentials file looks as follows:
    - Project ID
    - Buckets
    - Service Account Key/Service Account Credentials File
+
+   or if you want to collect logs via the REST API, then you have to put the following details:
+   - Client ID
+   - Client Secret
+   - URL
+   - Token URL
+
 6. Save the integration.
 
 **NOTE**:
 
 1. There are other input combination options available for the AWS S3 and AWS SQS, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
 2. There are other input combination options available for the GCS, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html).
+
+### Troubleshooting
+
+If the user stops integration and starts integration again after 30 days, then user will not be able to collect data and will get an error as Symantec EDR Cloud only collects data for the last 30 days. To avoid this issue, create a new integration instead of restarting it after 30 days.
 
 ## Logs reference
 
@@ -209,3 +226,13 @@ This is the `Event` dataset.
 {{event "event"}}
 
 {{fields "event"}}
+
+### Incident
+
+This is the `Incident` dataset.
+
+#### Example
+
+{{event "incident"}}
+
+{{fields "incident"}}
