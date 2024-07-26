@@ -34,7 +34,7 @@ For more detailed information refer to the following blogs and webinar:
     - If using an Elastic Beat such as Winlogbeat, add the ingest pipeline to it by adding a simple configuration [setting](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-beats) to `winlogbeat.yml`.
 1. **Add the required mappings to the component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend process events is `logs-endpoint.events.process@custom`. **Note:** Do not attempt to edit the `@package` template.
     ![Component Templates](../img/component-templates.png)
-    - If the `@custom` component template does not exist, you can execute the following command in the Dev Console to create it and then continue to the rollover step. Be sure to change `<VERSION>` to the current package version.
+    - If the `@custom` component template does not exist, you can execute the following command in the Dev Console to create it and then continue to the **Rollover** section in these instructions. Be sure to change `<VERSION>` to the current package version.
       ```
       PUT _component_template/{COMPONENT_TEMPLATE_NAME}@custom
       {
@@ -65,7 +65,7 @@ For more detailed information refer to the following blogs and webinar:
         }
       }
       ```
-    - If the `@custom` component template already exists, click the three dots next to it and select **Edit**. 
+    - If the `@custom` component template already exists, you will need to edit it to add mappings for data to be properly enriched. Click the three dots next to it and select **Edit**. 
     ![Component Templates](../img/component-templates-edit.png)
     - On the index settings step, add the following. Be sure to change `<VERSION>` to the current package version.
       ```
@@ -75,7 +75,7 @@ For more detailed information refer to the following blogs and webinar:
         }
       }
       ```
-    - Proceed to the mappings step. Click **Add Field** at the bottom of the page and create a `blocklist_label` field of type `Long`:
+    - Proceed to the mappings step in the UI. Click **Add Field** at the bottom of the page and create a `blocklist_label` field of type `Long`:
     ![Component Templates](../img/field1.png)
     - Then create an `Object` field for `problemchild`. 
     ![Component Templates](../img/field2.png)

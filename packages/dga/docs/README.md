@@ -30,10 +30,10 @@ For more detailed information refer to the following blogs:
       }
       ```
     - If `logs-endpoint.events.process@custom` already exists, select the three dots next to it and choose **Edit**. Click **Add a processor**. Select **Pipeline** for Processor, enter `<VERSION>-problem_child_ingest_pipeline` for name (replacing `<VERSION>` with the current package version), and check **Ignore missing pipeline** and **Ignore failures for this processor**. Select **Add Processor**.
-    - If using an Elastic Beat such as Packetbeat, add the ingest pipeline to it by adding a simple configuration [setting](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-beats) to `packetbeat.yml` and skip to the anomaly detector step.
+    - If using an Elastic Beat such as Packetbeat, add the ingest pipeline to it by adding a simple configuration [setting](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-beats) to `packetbeat.yml` and skip to the **Add preconfigured anomaly detection jobs** section in these instructions.
 1. **Add the required mappings to the index or component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend network events is `logs-endpoint.events.network@custom`. **Note:** Do not attempt to edit the `@package` template.
     ![Component Templates](../img/component-templates.png)
-    - If the `@custom` component template does not exist, you can execute the following command in the Dev Console to create it and then continue to the rollover step.
+    - If the `@custom` component template does not exist, you can execute the following command in the Dev Console to create it and then continue to the **Rollover** section in these instructions.
       ```
       PUT _component_template/{COMPONENT_TEMPLATE_NAME}@custom
       {
@@ -56,7 +56,7 @@ For more detailed information refer to the following blogs:
         }
       }
       ```
-    - If the `@custom` component template already exists, click the three dots next to it and select **Edit**. 
+    - If the `@custom` component template already exists, you will need to edit it to add mappings for data to be properly enriched. Click the three dots next to it and select **Edit**. 
     ![Component Templates](../img/component-templates-edit.png)
     - On the index settings step, add the following. Be sure to change `<VERSION>` to the current package version.
       ```
@@ -66,7 +66,7 @@ For more detailed information refer to the following blogs:
         }
       }
       ```
-    - Proceed to the mappings step. Click **Add Field** at the bottom of the page and create an an `Object` field for `ml_is_dga`. 
+    - Proceed to the mappings step in the UI. Click **Add Field** at the bottom of the page and create an an `Object` field for `ml_is_dga`. 
     ![Component Templates](../img/field1.png)
     - Finally create two properties under `ml_is_dga`.
     ![Component Templates](../img/field1a.png)
