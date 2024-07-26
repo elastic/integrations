@@ -1,0 +1,35 @@
+{
+  "attributes": {
+    "name": "PostgreSQL error logs",
+    "description": "",
+    "indicator": {
+      "type": "sli.kql.custom",
+      "params": {
+        "index": "logs-*",
+        "filter": "data_stream.dataset : \"postgresql.log\" ",
+        "good": "NOT log.level : \"ERROR\" or NOT log.level : \"FATAL\"",
+        "total": "log.level : * ",
+        "timestampField": "@timestamp",
+        "dataViewId": "logs-*"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "7d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99
+    },
+    "tags": [],
+    "groupBy": [
+      "*"
+    ],
+    "settings": {
+      "preventInitialBackfill": false
+    }
+  },
+  "id": "postgresql-3d7d7203-df38-4a8e-92c1-35d7d7fbc521",
+  "references": [],
+  "type": "slo"
+}

@@ -716,3 +716,35 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | postgresql.statement.user.id | OID of the user logged into the backend that ran the query. | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
+
+## SLOs
+
+SLOs are usually defined in terms of metrics such as availability, response time, and throughput, and they are used to ensure that the service meets the needs of its users.
+You can use the Nginx integration to measure the availability of the Nginx service. The SLOs gets created automatically during the installation of the integration. The user can view the created SLOs in the Observability -> SLOs page.
+>Note: To create and manage SLOs you need an appropriate [license](https://www.elastic.co/subscriptions).
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Good Query  | `NOT postgresql.activity.state : idle in transaction (aborted)` |
+| Total Query | `postgresql.activity.state : *`   |
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : postgresql.log` |
+| Good Query  | `NOT log.level : ERROR or NOT log.level : FATAL` |
+| Total Query | `log.level : *`   |
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Good Query  | `postgresql.database.deadlocks < 100` |
+| Total Query | `postgresql.database.deadlocks : *`   |
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Good Query  | `postgresql.database.rows.deleted < 100` |
+| Total Query | `postgresql.database.rows.deleted : *`   |
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Good Query  | `postgresql.database.conflicts :  0` |
+| Total Query | `postgresql.database.conflicts : *`   |

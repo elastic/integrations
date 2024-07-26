@@ -112,3 +112,35 @@ The `statement` dataset periodically fetches metrics from PostgreSQL servers.
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "statement"}}
+
+## SLOs
+
+SLOs are usually defined in terms of metrics such as availability, response time, and throughput, and they are used to ensure that the service meets the needs of its users.
+You can use the Nginx integration to measure the availability of the Nginx service. The SLOs gets created automatically during the installation of the integration. The user can view the created SLOs in the Observability -> SLOs page.
+>Note: To create and manage SLOs you need an appropriate [license](https://www.elastic.co/subscriptions).
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Good Query  | `NOT postgresql.activity.state : idle in transaction (aborted)` |
+| Total Query | `postgresql.activity.state : *`   |
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : postgresql.log` |
+| Good Query  | `NOT log.level : ERROR or NOT log.level : FATAL` |
+| Total Query | `log.level : *`   |
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Good Query  | `postgresql.database.deadlocks < 100` |
+| Total Query | `postgresql.database.deadlocks : *`   |
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Good Query  | `postgresql.database.rows.deleted < 100` |
+| Total Query | `postgresql.database.rows.deleted : *`   |
+
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Good Query  | `postgresql.database.conflicts :  0` |
+| Total Query | `postgresql.database.conflicts : *`   |
