@@ -1,60 +1,68 @@
 config_version: 2
-resource.url: "{{api_host}}/api/v1/computers-inventory"
-auth.oauth2.client.id: {{client_id}}
-auth.oauth2.client.secret: {{client_secret}}
-auth.oauth2.token_url: "{{api_host}}/api/oauth/token"
-auth.oauth2.endpoint_params.grant_type: "client_credentials" 
+resource:
+  url: "{{api_host}}/api/v1/computers-inventory"
+  timeout: {{http_client_timeout}}
+{{#if enable_request_tracer}}
+  tracer:
+    filename: "../../logs/jamf_pro-versions/http-request-trace-*.ndjson"
+    maxbackups: 5
+{{/if}}
+auth:
+  oauth2:
+    client:
+      id: {{client_id}}
+      secret: {{client_secret}}
+    token_url: "{{api_host}}/api/oauth/token"
+    endpoint_params:
+      grant_type: "client_credentials" 
 interval: {{interval}}
 max_executions: {{max_executions}}
-resource.timeout: {{http_client_timeout}}
 tags:
-{{#if preserve_original_event}}
-  - preserve_original_event
-{{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/jamf_pro-versions/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+
 {{#if processors}}
 processors:
 {{processors}}
 {{/if}}
-page: 0
-fields_under_root: true
+
 keep_null: true
 program: |
   request(
     "GET",
-    state.url + "?section=GENERAL&section=OPERATING_SYSTEM&section=HARDWARE&page_size=100&page=0"
+      state.url.trim_right("/")  + "?" +	{
+      "section" : ["GENERAL", "OPERATING_SYSTEM", "HARDWARE"],
+      "page-size": [string(state.page_size)],
+      "page": [string(state.?cursor.?page.orValue(int(0)))]
+    }.format_query()
   ).with({
     "Header": ({
       "Content-Type": ["application/json"]
     })
   }).do_request().as(resp,
-    bytes(resp.Body).decode_json().as(body, 
-      has(body.errors) && size(body.errors) > 0 ?
-        state.with({
+    bytes(resp.Body).decode_json().as(body,
+      resp.StatusCode != 200 ?
+        {
           "events": [{
-            "error": { "message": body.errors.map(e, e.message) },
-            "event": { "original": body.encode_json() }
+            "error": { "message": "response: " + string(resp.StatusCode) },
+            "event": { "original": resp.Body }
           }]
-        })
+        }
       :
         state.with({
-          "events": body.results,
-          "want_more": false,
-          "cursor": { "total_count": body.totalCount },
+          "events": body.results.map(e, {
+              "message": e,
+          }),
+          "want_more": (int(state.?cursor.?page.orValue(int(0))) + 1) * int(state.page_size) < int(body.totalCount),
+          "cursor": {"page": int(state.?cursor.?page.orValue(int(0))) + 1},
         })
     )
   )
 state:
-  total_count: {{total_count}}
-  page_size: {{page_size}}
-  page: {{page}}
-  preserve_original_event: {{preserve_original_event}}
+  page_size: 3
+
+

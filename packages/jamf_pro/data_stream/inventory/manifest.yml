@@ -3,14 +3,6 @@ type: logs
 streams:
   - input: cel
     vars:
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`.
-        type: bool
-        multi: false
-        default: false
       - name: period
         type: text
         required: true
@@ -18,15 +10,14 @@ streams:
         default: 24h
         show_user: true
         description: Period of fetching metrics, i.e. 1s/1m/1h.
-      - name: tags
-        type: text
-        title: Tags
-        multi: true
-        required: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
         show_user: false
-        default:
-          - ceph-osd_tree
-          - forwarded
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
       - name: processors
         type: yaml
         title: Processors

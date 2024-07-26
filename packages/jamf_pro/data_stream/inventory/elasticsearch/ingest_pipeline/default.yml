@@ -1,15 +1,13 @@
 ---
 description: Pipeline for processing sample logs
-processors:
-- json:
-    field: message
-    target_field: jamf_pro.inventory
-    if: ctx.message != null
-- rename:
-    field: json
-    target_field: jamf_pro.inventory
-    if: ctx.json != null
+# processors:
+# - fingerprint:
+#     if: ctx.udid != null
+#     fields:
+#     - udid
+#     target_field: "_id"
+#     ignore_missing: true
 on_failure:
-- set:
+- set:          
     field: error.message
     value: '{{ _ingest.on_failure_message }}'
