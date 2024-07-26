@@ -20,7 +20,7 @@ BitDefender products for home users are not supported.
 
 The package collects BitDefender GravityZone push notification transported events sent in `jsonrpc`, `qradar`, or `splunk` format.
 
-The `jsonrpc` format is recommended default but the ingest pipeline will attempt to detect if `qradar` or `splunk` format events have been received and process them accordingly.
+The `jsonrpc` format is recommended default, but the ingest pipeline will attempt to detect if `qradar` or `splunk` format events have been received and process them accordingly.
 
 The integration can also collect the push notification configuration and statistics by polling the BitDefender GravityZone API.
 
