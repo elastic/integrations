@@ -1,0 +1,111 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  want_more: false
+redact:
+  fields:
+    - api_key
+program: |
+  request("GET", state.url + "/breach/catalog?since=" + (
+    !state.?want_more.orValue(false) ?
+    (
+      has(state.?cursor.last_published_date) && state.cursor.last_published_date != null ?
+        string((timestamp(state.cursor.last_published_date) - duration("24h"))).split("T")[0]
+      :
+        "1970-01-01"
+    )
+    :
+    (
+      has(state.?cursor.first_published_date) && state.cursor.first_published_date != null ?
+        string((timestamp(state.cursor.first_published_date) - duration("24h"))).split("T")[0]
+      :
+        ""
+    ) + "&cursor=" + state.pagination_token
+  )).with({
+    "Header":{
+        "x-api-key": [state.api_key],
+        "User-Agent": ["ElasticSearch/0.1.0"],
+    }
+  }).do_request().as(resp,
+    resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, {
+        "events": (has(body.results) && body.results.size() > 0 ?
+          (
+            body.results.map(e,{
+              "message": e.encode_json()
+            })
+          )
+        :
+          (
+            [{"message": body.encode_json()}]
+          )
+        ),
+        "cursor": {
+          "last_published_date": (
+            has(body.results) && body.results.size() > 0 ?
+            (
+              has(state.?cursor.last_published_date) && body.results.map(e, e.spycloud_publish_date).max() < state.cursor.last_published_date ?
+                state.cursor.last_published_date
+              :
+                body.results.map(e, e.spycloud_publish_date).max()
+            )
+            :
+              state.?cursor.last_published_date.orValue("1970-01-02T00:00:00Z")
+          ),
+          "first_published_date": (
+            has(state.?cursor.first_published_date) && has(body.results) && body.results.size() > 0 ?
+            (
+              has(body.cursor) && body.cursor != "" && state.want_more ? state.cursor.first_published_date : state.cursor.last_published_date
+            )
+            :
+              "1970-01-02T00:00:00Z"
+          ),
+        },
+        "pagination_token": has(body.cursor) && body.cursor != "" ? body.cursor : "",
+        "want_more": has(body.cursor) && body.cursor != "",
+        "api_key": state.api_key
+      })
+    :
+      {
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": string(resp.Body)
+        }
+      },
+      "want_more": false,
+      "api_key": state.api_key
+    }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

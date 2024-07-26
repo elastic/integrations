@@ -1,0 +1,245 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
+  want_more: false
+  since_data: true
+  since_modified_data: true
+  severity: {{severity}}
+redact:
+  fields:
+    - api_key
+program: |
+  state.?since_data.orValue(false) ?
+    request("GET", state.url + "/breach/data/watchlist?since=" + (
+      !state.?want_more.orValue(false) ?
+      (
+      has(state.?cursor.last_published_date) && state.cursor.last_published_date != null ?
+        string((timestamp(state.cursor.last_published_date) - duration("24h"))).split("T")[0]
+      :
+        ((now - (duration(state.initial_interval)+duration("24h"))).format(time_layout.RFC3339)).split("T")[0]
+      )
+    :
+      (
+        has(state.?cursor.first_published_date) && state.cursor.first_published_date != null ?
+          string((timestamp(state.cursor.first_published_date) - duration("24h"))).split("T")[0]
+        :
+          ""
+      ) + "&cursor=" + state.pagination_token_since
+    ) + "&severity=" + string(state.severity)
+    ).with({
+    "Header":{
+        "x-api-key": [state.api_key],
+        "User-Agent": ["ElasticSearch/0.1.0"],
+      }
+    }).do_request().as(resp,
+      resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(first_body, {
+          "events": has(first_body.results) ?
+          (
+            first_body.results.size() > 0 ?
+            (
+              first_body.results.map(e,{
+                "message": e.encode_json()
+              })
+            )
+            :
+              [{"message":"No hits for Breach Catalog using since filter"}]
+          )
+          :
+          (
+            [{"message": first_body.encode_json()}]
+          ),
+          "cursor": {
+            "last_published_date": (
+              has(first_body.results) && first_body.results.size() > 0 ?
+              (
+                has(state.?cursor.last_published_date) && state.cursor.last_published_date != null && first_body.results.map(e, e.spycloud_publish_date).max() < state.cursor.last_published_date ?
+                  state.cursor.last_published_date
+                :
+                  first_body.results.map(e, e.spycloud_publish_date).max()
+              )
+              :
+                state.?cursor.last_published_date.orValue(((now - (duration(state.initial_interval)+duration("24h"))).format(time_layout.RFC3339)).split("T")[0])
+            ),
+            "first_published_date": (
+              has(state.?cursor.first_published_date) && state.cursor.first_published_date != null && has(first_body.results) && first_body.results.size() > 0 ?
+              (
+                has(first_body.cursor) && first_body.cursor != "" && state.want_more ?
+                  state.cursor.first_published_date
+                :
+                  has(state.?cursor.last_published_date) && state.cursor.last_published_date != null && first_body.results.map(e, e.spycloud_publish_date).max() < state.cursor.last_published_date ?
+                    state.cursor.last_published_date
+                  :
+                    first_body.results.map(e, e.spycloud_publish_date).max()
+              )
+              :
+                has(first_body.cursor) && first_body.cursor !="" ?
+                  ((now - duration(state.initial_interval)).format(time_layout.RFC3339))
+                :
+                (
+                  has(first_body.results) && first_body.results.size() > 0 ?
+                    first_body.results.map(e, e.spycloud_publish_date).max()
+                  :
+                    null
+                )
+            ),
+            "first_modified_date": state.?cursor.first_modified_date.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+            "last_modified_date": state.?cursor.last_modified_date.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+          },
+          "pagination_token_since": first_body.?cursor.orValue(""),
+          "since_data": (has(first_body.cursor) && first_body.cursor != ""),
+          "want_more": (has(first_body.cursor) && first_body.cursor != "") || (has(state.since_modified_data) && state.since_modified_data),
+          "api_key": state.api_key,
+          "since_modified_data": state.since_modified_data,
+          "pagination_token_since_modified": state.?pagination_token_since_modified.orValue(""),
+          "initial_interval": state.initial_interval,
+          "severity": state.severity,
+        })
+      :
+        {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": string(resp.Body),
+          }
+        },
+        "api_key": state.api_key,
+        "want_more": false,
+        "initial_interval": state.initial_interval,
+        "severity": state.severity,
+        "since_data": true,
+        "since_modified_data": true,
+      }
+    )
+  :
+    request("GET", state.url + "/breach/data/watchlist?since_modification_date=" + (
+      state.?want_more.orValue(false) ?
+      (
+        has(state.pagination_token_since_modified) && state.pagination_token_since_modified != "" ?
+        (
+          has(state.?cursor.first_modified_date) && state.cursor.first_modified_date != null ?
+            string((timestamp(state.cursor.first_modified_date) - duration("24h"))).split("T")[0]  + "&cursor=" + state.pagination_token_since_modified
+          :
+            ""
+        )
+      :
+        (
+          has(state.?cursor.last_modified_date) && state.cursor.last_modified_date != null ?
+            string((timestamp(state.cursor.last_modified_date) - duration("24h"))).split("T")[0]
+          :
+            ((now - (duration(state.initial_interval)+duration("24h"))).format(time_layout.RFC3339)).split("T")[0]
+        )
+      )
+      :
+      ("")
+    ) + "&severity=" + string(state.severity)
+    ).with({
+    "Header":{
+        "x-api-key": [state.api_key],
+        "User-Agent": ["ElasticSearch/0.1.0"],
+      }
+    }).do_request().as(response,
+    response.StatusCode == 200 ?
+      bytes(response.Body).decode_json().as(second_body, {
+        "events": (has(second_body.results) ?
+        (
+          second_body.size() > 0 ?
+          (
+            second_body.results.map(e,{
+              "message": e.encode_json()
+            })
+          )
+          :
+            [{"message":"No hits for Breach Catalog using since_modification_date filter"}]
+        )
+        :
+        (
+          [{"message": second_body.encode_json()}]
+        )),
+        "cursor": {
+          "last_modified_date": (
+            has(second_body.results) && second_body.results.size() > 0 ?
+            (
+              has(state.?cursor.last_modified_date) && state.cursor.last_modified_date != null && second_body.results.map(e, e.record_modification_date).max() < state.cursor.last_modified_date ?
+                state.cursor.last_modified_date
+              :
+                second_body.results.map(e, e.record_modification_date).max()
+            )
+            :
+                state.?cursor.last_modified_date.orValue(((now - (duration(state.initial_interval)+duration("24h"))).format(time_layout.RFC3339)).split("T")[0])
+          ),
+          "first_modified_date": (
+            has(state.?cursor.first_modified_date) && state.cursor.first_modified_date != null && has(second_body.results) && second_body.results.size() > 0 ?
+            (
+              has(second_body.cursor) && second_body.cursor != "" && state.want_more ?
+                state.cursor.first_modified_date
+              :
+                has(state.?cursor.last_modified_date) && state.cursor.last_modified_date != null && second_body.results.map(e, e.record_modification_date).max() < state.cursor.last_modified_date ?
+                  state.cursor.last_modified_date
+                :
+                  second_body.results.map(e, e.record_modification_date).max()
+            )
+            :
+              ((now - duration(state.initial_interval)).format(time_layout.RFC3339))
+          ),
+          "last_published_date": state.?cursor.last_published_date.orValue(null),
+          "first_published_date": state.?cursor.first_published_date.orValue(null),
+        },
+        "pagination_token_since_modified": second_body.?cursor.orValue(""),
+        "api_key": state.api_key,
+        "want_more": (has(second_body.cursor) && second_body.cursor != ""),
+        "since_data": !(has(second_body.cursor) && second_body.cursor != ""),
+        "initial_interval": state.initial_interval,
+        "severity": state.severity,
+        "since_modified_data": state.since_modified_data,
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(response.StatusCode),
+            "id": string(response.Status),
+            "message": string(response.Body),
+          }
+        },
+        "api_key": state.api_key,
+        "want_more": false,
+        "initial_interval": state.initial_interval,
+        "severity": state.severity,
+        "since_data": true,
+        "since_modified_data": true,
+      }
+    )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
