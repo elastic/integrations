@@ -13,11 +13,10 @@ processors:
   - set:
       field: observer.type
       value: firewall
-
   - set:
       field: event.timezone
       value: '{{{_conf.tz_offset}}}'
-      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
+      if: ctx._conf?.tz_offset instanceof String && !ctx._conf.tz_offset.equalsIgnoreCase('local')
 
 # Collects the first few parts of the message to be used for conditional parsing later
   - set:
@@ -223,6 +222,14 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  # Logs received from managed firewalls running PAN-OS 9.1 and earlier releases
+  # display a 1969-12-31T16:00:00:000-8:00 timestamp regardless of when the log
+  # was received. The panw.panos.high_resolution_timestamp field is removed if
+  # it starts with this date.
+  - remove:
+      field: _temp_.high_res_timestamp
+      ignore_missing: true
+      if: ctx._temp_?.high_res_timestamp instanceof String && ctx._temp_.high_res_timestamp.startsWith("1969-12-31")
   - date:
       if: ctx.event?.timezone == null && ctx._temp_?.high_res_timestamp != null
       field: _temp_.high_res_timestamp
@@ -252,6 +259,11 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      tag: highres_to_timestamp
+      field: '@timestamp'
+      copy_from: panw.panos.high_resolution_timestamp
+      ignore_empty_value: true
   - date:
       if: ctx.event?.timezone == null && ctx.event.start != null
       field: event.start
