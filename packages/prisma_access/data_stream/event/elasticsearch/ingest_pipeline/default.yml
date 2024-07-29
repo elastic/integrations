@@ -744,6 +744,10 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - lowercase:
+      field: prisma_access.event.source.address.v6
+      tag: lowercase_prisma_access_event_source_address_v6
+      ignore_missing: true
   - append:
       field: source.ip
       tag: append_prisma_access_event_source_address_v6_into_source_ip
@@ -772,6 +776,10 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - lowercase:
+      field: prisma_access.event.destination.address.v6
+      tag: lowercase_prisma_access_event_destination_address_v6
+      ignore_missing: true
   - append:
       field: destination.ip
       tag: append_prisma_access_event_destination_address_v6_into_destination_ip
@@ -1228,6 +1236,10 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - lowercase:
+      field: prisma_access.event.device.ipv6_address
+      tag: lowercase_prisma_access_event_device_ipv6_address
+      ignore_missing: true
   - append:
       field: related.ip
       tag: append_event_device_ipv6_address_into_related_ip
@@ -1786,23 +1798,6 @@ processors:
       tag: rename_extension_PanOSEventResult
       target_field: prisma_access.event.data.result
       ignore_missing: true
-  - date:
-      field: cef.extensions.PanOSEventTime
-      tag: date_extension_PanOSEventTime
-      target_field: prisma_access.event.data.time
-      formats:
-        - "MMM dd yyyy HH:mm:ss"
-        - ISO8601
-      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - set:
-      field: "@timestamp"
-      tag: set_timestamp_from_event_event_time
-      copy_from: prisma_access.event.data.time
-      ignore_empty_value: true
   - rename:
       field: cef.extensions.externalId
       tag: rename_extension_externalId
@@ -2836,6 +2831,54 @@ processors:
       tag: set_event_timezone_from_event_log_source_timezone_offset
       copy_from: prisma_access.event.log.source.timezone_offset
       ignore_empty_value: true
+  - date:
+      field: cef.extensions.PanOSEventTime
+      tag: date_timestamp
+      formats:
+        - "MMM dd yyyy HH:mm:ss"
+        - ISO8601
+      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != '' && ctx.event?.timezone == null
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - date:
+      field: cef.extensions.PanOSEventTime
+      tag: date_timestamp_event_timezone
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - "MMM dd yyyy HH:mm:ss"
+        - ISO8601
+      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != '' && ctx.event?.timezone != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - date:
+      field: cef.extensions.PanOSEventTime
+      tag: date_extension_PanOSEventTime
+      target_field: prisma_access.event.data.time
+      formats:
+        - "MMM dd yyyy HH:mm:ss"
+        - ISO8601
+      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != '' && ctx.event?.timezone == null
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - date:
+      field: cef.extensions.PanOSEventTime
+      tag: date_extension_PanOSEventTime_event_timezone
+      target_field: prisma_access.event.data.time
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - "MMM dd yyyy HH:mm:ss"
+        - ISO8601
+      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != '' && ctx.event?.timezone != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: cef.extensions.PanOSLogSubtype
       tag: rename_extension_PanOSLogSubtype
@@ -3494,6 +3537,10 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - lowercase:
+      field: prisma_access.event.private.ipv6
+      tag: lowercase_prisma_access_event_private_ipv6
+      ignore_missing: true
   - append:
       field: source.ip
       tag: append_prisma_access_event_private_ipv6_into_source_ip
@@ -3517,6 +3564,10 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - lowercase:
+      field: prisma_access.event.public.ipv6
+      tag: lowercase_prisma_access_event_public_ipv6
+      ignore_missing: true
   - append:
       field: source.ip
       tag: append_prisma_access_event_public_ipv6_into_source_ip
