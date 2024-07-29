@@ -338,9 +338,84 @@ Collect logs for events happing in GitLab like user creation or project deletion
 | gitlab.application.lock_timeout_in_ms |  | long |
 | gitlab.application.login_method |  | keyword |
 | gitlab.application.mail_subject |  | keyword |
+| gitlab.application.memwd_cur_strikes |  | long |
 | gitlab.application.memwd_handler_class |  | keyword |
-| gitlab.application.memwd_rss_bytes |  | byte |
+| gitlab.application.memwd_max_rss_bytes |  | long |
+| gitlab.application.memwd_max_strikes |  | long |
+| gitlab.application.memwd_reason |  | keyword |
+| gitlab.application.memwd_rss_bytes |  | long |
 | gitlab.application.memwd_sleep_time_s |  | long |
+| gitlab.application.merge_request_info |  | keyword |
+| gitlab.application.mergeability.check_approved_service.db_cached_count |  | long |
+| gitlab.application.mergeability.check_approved_service.db_count |  | long |
+| gitlab.application.mergeability.check_approved_service.db_main_cached_count |  | long |
+| gitlab.application.mergeability.check_approved_service.db_main_count |  | long |
+| gitlab.application.mergeability.check_approved_service.db_main_duration_s |  | long |
+| gitlab.application.mergeability.check_approved_service.db_primary_cached_count |  | long |
+| gitlab.application.mergeability.check_approved_service.db_primary_count |  | long |
+| gitlab.application.mergeability.check_approved_service.db_primary_duration_s |  | long |
+| gitlab.application.mergeability.check_approved_service.duration_s |  | long |
+| gitlab.application.mergeability.check_approved_service.successful |  | boolean |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.db_cached_count |  | long |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.db_count |  | long |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.db_main_cached_count |  | long |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.db_main_count |  | long |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.db_main_duration_s |  | long |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.db_primary_cached_count |  | long |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.db_primary_count |  | long |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.db_primary_duration_s |  | long |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.duration_s |  | long |
+| gitlab.application.mergeability.check_blocked_by_other_mrs_service.successful |  | boolean |
+| gitlab.application.mergeability.check_broken_status_service.db_cached_count |  | long |
+| gitlab.application.mergeability.check_broken_status_service.db_count |  | long |
+| gitlab.application.mergeability.check_broken_status_service.db_main_cached_count |  | long |
+| gitlab.application.mergeability.check_broken_status_service.db_main_count |  | long |
+| gitlab.application.mergeability.check_broken_status_service.db_main_duration_s |  | long |
+| gitlab.application.mergeability.check_broken_status_service.db_primary_cached_count |  | long |
+| gitlab.application.mergeability.check_broken_status_service.db_primary_count |  | long |
+| gitlab.application.mergeability.check_broken_status_service.db_primary_duration_s |  | long |
+| gitlab.application.mergeability.check_broken_status_service.duration_s |  | long |
+| gitlab.application.mergeability.check_broken_status_service.successful |  | boolean |
+| gitlab.application.mergeability.check_ci_status_service.duration_s |  | long |
+| gitlab.application.mergeability.check_ci_status_service.successful |  | boolean |
+| gitlab.application.mergeability.check_commits_status_service.duration_s |  | long |
+| gitlab.application.mergeability.check_commits_status_service.successful |  | boolean |
+| gitlab.application.mergeability.check_conflict_status_service.duration_s |  | long |
+| gitlab.application.mergeability.check_conflict_status_service.successful |  | boolean |
+| gitlab.application.mergeability.check_discussions_status_service.db_cached_count |  | long |
+| gitlab.application.mergeability.check_discussions_status_service.db_count |  | long |
+| gitlab.application.mergeability.check_discussions_status_service.db_main_cached_count |  | long |
+| gitlab.application.mergeability.check_discussions_status_service.db_main_count |  | long |
+| gitlab.application.mergeability.check_discussions_status_service.db_primary_cached_count |  | long |
+| gitlab.application.mergeability.check_discussions_status_service.db_primary_count |  | long |
+| gitlab.application.mergeability.check_discussions_status_service.duration_s |  | long |
+| gitlab.application.mergeability.check_discussions_status_service.successful |  | boolean |
+| gitlab.application.mergeability.check_draft_status_service.duration_s |  | long |
+| gitlab.application.mergeability.check_draft_status_service.successful |  | boolean |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.db_cached_count |  | long |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.db_count |  | long |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.db_main_cached_count |  | long |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.db_main_count |  | long |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.db_main_duration_s |  | long |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.db_primary_cached_count |  | long |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.db_primary_count |  | long |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.db_primary_duration_s |  | long |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.duration_s |  | long |
+| gitlab.application.mergeability.check_external_status_checks_passed_service.successful |  | boolean |
+| gitlab.application.mergeability.check_jira_status_service.db_cached_count |  | long |
+| gitlab.application.mergeability.check_jira_status_service.db_count |  | long |
+| gitlab.application.mergeability.check_jira_status_service.db_main_cached_count |  | long |
+| gitlab.application.mergeability.check_jira_status_service.db_main_count |  | long |
+| gitlab.application.mergeability.check_jira_status_service.db_primary_cached_count |  | long |
+| gitlab.application.mergeability.check_jira_status_service.db_primary_count |  | long |
+| gitlab.application.mergeability.check_jira_status_service.duration_s |  | long |
+| gitlab.application.mergeability.check_jira_status_service.successful |  | boolean |
+| gitlab.application.mergeability.check_open_status_service.duration_s |  | long |
+| gitlab.application.mergeability.check_open_status_service.successful |  | boolean |
+| gitlab.application.mergeability.check_rebase_status_service.duration_s |  | long |
+| gitlab.application.mergeability.check_rebase_status_service.successful |  | boolean |
+| gitlab.application.mergeability.merge_request_id |  | long |
+| gitlab.application.mergeability.project_id |  | long |
 | gitlab.application.message |  | keyword |
 | gitlab.application.meta.caller_id |  | keyword |
 | gitlab.application.meta.client_id |  | keyword |
@@ -392,26 +467,26 @@ An example event for `application` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-10T17:49:45.656Z",
+    "@timestamp": "2024-05-10T17:49:45.825Z",
     "agent": {
-        "ephemeral_id": "a618a754-7ca0-4492-a9b7-3e8525766fea",
-        "id": "98b5f3aa-8b45-4194-b617-3295fc2fb66e",
+        "ephemeral_id": "538689af-cff4-4f9c-bc71-e041c3d6a6a9",
+        "id": "b89a57eb-71c5-4ce7-9105-9b47daa0f063",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.14.1"
     },
     "data_stream": {
         "dataset": "gitlab.application",
-        "namespace": "ep",
+        "namespace": "42636",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "98b5f3aa-8b45-4194-b617-3295fc2fb66e",
+        "id": "b89a57eb-71c5-4ce7-9105-9b47daa0f063",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.14.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -420,8 +495,8 @@ An example event for `application` looks as following:
         ],
         "dataset": "gitlab.application",
         "id": "01HXHSYJJQNY08JV4JF2B69ZDR",
-        "ingested": "2024-06-18T18:05:53Z",
-        "original": "{\"severity\":\"INFO\",\"time\":\"2024-05-10T17:49:45.656Z\",\"correlation_id\":\"01HXHSYJJQNY08JV4JF2B69ZDR\",\"meta.caller_id\":\"ProjectCacheWorker\",\"meta.remote_ip\":\"67.43.156.18\",\"meta.feature_category\":\"source_code_management\",\"meta.user\":\"root\",\"meta.user_id\":1,\"meta.project\":\"root/test_1\",\"meta.root_namespace\":\"root\",\"meta.client_id\":\"user/1\",\"meta.root_caller_id\":\"ProjectsController#create\",\"message\":\"Acquiring lease for project statistics update\",\"model\":\"ProjectStatistics\",\"model_id\":1,\"project_id\":1,\"caller\":\"refresh!\",\"attributes\":[\"repository_size\",\"wiki_size\"]}",
+        "ingested": "2024-07-29T14:13:41Z",
+        "original": "{\"severity\":\"INFO\",\"time\":\"2024-05-10T17:49:45.825Z\",\"correlation_id\":\"01HXHSYJJQNY08JV4JF2B69ZDR\",\"meta.caller_id\":\"ProjectCacheWorker\",\"meta.remote_ip\":\"67.43.156.18\",\"meta.feature_category\":\"source_code_management\",\"meta.user\":\"root\",\"meta.user_id\":1,\"meta.project\":\"root/test_1\",\"meta.root_namespace\":\"root\",\"meta.client_id\":\"user/1\",\"meta.root_caller_id\":\"ProjectsController#create\",\"message\":\"Updating statistics for project 1\"}",
         "severity": 1,
         "type": [
             "info"
@@ -429,12 +504,7 @@ An example event for `application` looks as following:
     },
     "gitlab": {
         "application": {
-            "attributes": [
-                "repository_size",
-                "wiki_size"
-            ],
-            "caller": "refresh!",
-            "message": "Acquiring lease for project statistics update",
+            "message": "Updating statistics for project 1",
             "meta": {
                 "caller_id": "ProjectCacheWorker",
                 "client_id": "user/1",
@@ -445,10 +515,7 @@ An example event for `application` looks as following:
                 "root_namespace": "root",
                 "user": "root",
                 "user_id": 1
-            },
-            "model": "ProjectStatistics",
-            "model_id": 1,
-            "project_id": 1
+            }
         }
     },
     "input": {
@@ -457,7 +524,7 @@ An example event for `application` looks as following:
     "log": {
         "file": {
             "device_id": "30",
-            "inode": "90",
+            "inode": "65",
             "path": "/tmp/service_logs/test-gitlab-application.log"
         },
         "offset": 0
@@ -503,8 +570,8 @@ Collect logs for changes to group or project settings and memberships. Check out
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | gitlab.audit.change |  | keyword |
 | gitlab.audit.created_at |  | date |
-| gitlab.audit.entity_id | ID of the scope | long |
-| gitlab.audit.entity_type | Type of the scope (`Project`, `Group`, `User`, or `Gitlab::Audit::InstanceScope`). | keyword |
+| gitlab.audit.entity_id |  | long |
+| gitlab.audit.entity_type |  | keyword |
 | gitlab.audit.from |  | keyword |
 | gitlab.audit.meta.caller_id |  | keyword |
 | gitlab.audit.meta.client_id |  | keyword |
@@ -514,9 +581,9 @@ Collect logs for changes to group or project settings and memberships. Check out
 | gitlab.audit.meta.root_namespace |  | keyword |
 | gitlab.audit.meta.user |  | keyword |
 | gitlab.audit.meta.user_id |  | long |
-| gitlab.audit.target_details | Details of the target | keyword |
-| gitlab.audit.target_id | ID of the target. | long |
-| gitlab.audit.target_type | Type of the target | keyword |
+| gitlab.audit.target_details |  | keyword |
+| gitlab.audit.target_id |  | long |
+| gitlab.audit.target_type |  | keyword |
 | gitlab.audit.to |  | keyword |
 | gitlab.audit.with |  | keyword |
 | host.architecture | Operating system architecture. | keyword |
