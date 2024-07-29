@@ -19,7 +19,7 @@ Logs help you keep a record of events that happen on your machine. The `Log` dat
 Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration are `disk`, `hardware`, and `process` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
 Data streams:
-- `disk`: This data stream collects metrics of disk or partition for all the hosts in the specified group. Metrics like measurements for the disk, such as I/O operations, read and write latency, and space usage.
+- `disk`: This data stream collects disk or partition metrics for all the hosts in the specified group. Metrics like measurements for the disk, such as I/O operations, read and write latency, and space usage.
 - `hardware`: This data stream collects all the Atlas search hardware and status data series within the provided time range for one process in the specified project.
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
@@ -139,7 +139,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ## Disk
 
-This is the `disk` data stream. This data stream collects detailed view on disk usage and captures crucial information about I/O operations, read and write latency, and space utilization. To collect disk metrics, the requesting API Key must have the `Project Read Only` role.
+This is the `disk` data stream. This data stream collects a detailed overview of disk usage and captures important data about I/O operations, read and write latency, and space utilization. To collect disk metrics, the requesting API Key must have the `Project Read Only` role.
 
 {{event "disk"}}
 

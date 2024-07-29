@@ -16,9 +16,24 @@ processors:
   - set:
       field: event.type
       value: ["info"]
+  - fail:
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
   - rename:
       field: groupId
       target_field: group.id
+      ignore_missing: true
+  - rename:
+      field: processId
+      target_field: mongodb_atlas.process_id
+      ignore_missing: true
+  - rename:
+      field: partitionName
+      target_field: mongodb_atlas.partition_name
+      ignore_missing: true
+  - rename:
+      field: hostId
+      target_field: mongodb_atlas.host_id
       ignore_missing: true
   - rename:
       field: response.MAX_DISK_PARTITION_IOPS_READ
@@ -35,6 +50,22 @@ processors:
   - rename:
       field: response.DISK_PARTITION_LATENCY_READ
       target_field: mongodb_atlas.disk.read.latency.ms
+      ignore_missing: true
+  - rename:
+      field: response.MAX_DISK_PARTITION_IOPS_WRITE
+      target_field: mongodb_atlas.disk.write.iops.max.throughput
+      ignore_missing: true
+  - rename:
+      field: response.DISK_PARTITION_IOPS_WRITE
+      target_field: mongodb_atlas.disk.write.iops.throughput
+      ignore_missing: true
+  - rename:
+      field: response.MAX_DISK_PARTITION_LATENCY_WRITE
+      target_field: mongodb_atlas.disk.write.latency.max.ms
+      ignore_missing: true
+  - rename:
+      field: response.DISK_PARTITION_LATENCY_WRITE
+      target_field: mongodb_atlas.disk.write.latency.ms
       ignore_missing: true
   - rename:
       field: response.DISK_PARTITION_SPACE_FREE
@@ -76,34 +107,6 @@ processors:
       field: response.DISK_PARTITION_IOPS_TOTAL
       target_field: mongodb_atlas.disk.total.iops.throughput
       ignore_missing: true
-  - rename:
-      field: response.MAX_DISK_PARTITION_IOPS_WRITE
-      target_field: mongodb_atlas.disk.write.iops.max.throughput
-      ignore_missing: true
-  - rename:
-      field: response.DISK_PARTITION_IOPS_WRITE
-      target_field: mongodb_atlas.disk.write.iops.throughput
-      ignore_missing: true
-  - rename:
-      field: response.MAX_DISK_PARTITION_LATENCY_WRITE
-      target_field: mongodb_atlas.disk.write.latency.max.ms
-      ignore_missing: true
-  - rename:
-      field: response.DISK_PARTITION_LATENCY_WRITE
-      target_field: mongodb_atlas.disk.write.latency.ms
-      ignore_missing: true
-  - rename:
-      field: processId
-      target_field: mongodb_atlas.process_id
-      ignore_missing: true
-  - rename:
-      field: partitionName
-      target_field: mongodb_atlas.partition_name
-      ignore_missing: true
-  - rename:
-      field: hostId
-      target_field: mongodb_atlas.host_id
-      ignore_missing: true
   - remove:
       field:
         - response
@@ -140,4 +143,3 @@ on_failure:
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
-      

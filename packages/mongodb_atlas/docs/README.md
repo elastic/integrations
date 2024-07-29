@@ -19,7 +19,7 @@ Logs help you keep a record of events that happen on your machine. The `Log` dat
 Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration are `disk`, `hardware`, and `process` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
 Data streams:
-- `disk`: This data stream collects metrics of disk or partition for all the hosts in the specified group. Metrics like measurements for the disk, such as I/O operations, read and write latency, and space usage.
+- `disk`: This data stream collects disk or partition metrics for all the hosts in the specified group. Metrics like measurements for the disk, such as I/O operations, read and write latency, and space usage.
 - `hardware`: This data stream collects all the Atlas search hardware and status data series within the provided time range for one process in the specified project.
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
@@ -838,30 +838,30 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ## Disk
 
-This is the `disk` data stream. This data stream collects detailed view on disk usage and captures crucial information about I/O operations, read and write latency, and space utilization. To collect disk metrics, the requesting API Key must have the `Project Read Only` role.
+This is the `disk` data stream. This data stream collects a detailed overview of disk usage and captures important data about I/O operations, read and write latency, and space utilization. To collect disk metrics, the requesting API Key must have the `Project Read Only` role.
 
 An example event for `disk` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-19T07:54:49.103Z",
+    "@timestamp": "2024-07-26T09:04:53.005Z",
     "agent": {
-        "ephemeral_id": "64510fda-1f61-422e-84e7-4d6b49c9e0ae",
-        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
+        "ephemeral_id": "fbf2fa71-3382-47f6-969b-ca6aac75124c",
+        "id": "e23cb0e2-3880-4380-be0f-5253dc6986eb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "mongodb_atlas.disk",
-        "namespace": "77804",
+        "namespace": "26983",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
+        "id": "e23cb0e2-3880-4380-be0f-5253dc6986eb",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -871,7 +871,7 @@ An example event for `disk` looks as following:
             "database"
         ],
         "dataset": "mongodb_atlas.disk",
-        "ingested": "2024-07-19T07:55:01Z",
+        "ingested": "2024-07-26T09:05:04Z",
         "kind": "metric",
         "module": "mongodb_atlas",
         "type": [
@@ -887,10 +887,10 @@ An example event for `disk` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.249.7"
+            "192.168.240.8"
         ],
         "mac": [
-            "02-42-C0-A8-F9-07"
+            "02-42-C0-A8-F0-08"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -947,24 +947,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
-| mongodb_atlas.disk.read.iops.max.throughput | Max throughput of I/O read operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
-| mongodb_atlas.disk.read.iops.throughput | Throughput of I/O read operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
-| mongodb_atlas.disk.read.latency.max.ms | Max read latency of the disk partition that hosts MongoDB Atlas. | double | ms | gauge |
-| mongodb_atlas.disk.read.latency.ms | Read latency of the disk partition that hosts MongoDB Atlas. | double | ms | gauge |
-| mongodb_atlas.disk.space.free.bytes | Amount of disk space free in Bytes, on the disk partition used by MongoDB Atlas. | double | byte | gauge |
-| mongodb_atlas.disk.space.free.max.bytes | Max amount of disk space free in Bytes, on the disk partition used by MongoDB Atlas. | double | byte | gauge |
-| mongodb_atlas.disk.space.free.max.pct | Max percentage of disk free on the disk partition used by MongoDB Atlas. | double | percent | gauge |
-| mongodb_atlas.disk.space.free.pct | The percentage of disk free on the disk partition used by MongoDB Atlas. | double | percent | gauge |
-| mongodb_atlas.disk.space.used.bytes | Amount of disk space used in Bytes, on the disk partition used by MongoDB Atlas. | double | byte | gauge |
-| mongodb_atlas.disk.space.used.max.bytes | Max amount of disk space used in Bytes, on the disk partition used by MongoDB Atlas. | double | byte | gauge |
-| mongodb_atlas.disk.space.used.max.pct | Max percentage of disk used on the disk partition used by MongoDB Atlas. | double | percent | gauge |
-| mongodb_atlas.disk.space.used.pct | The percentage of disk used on the disk partition used by MongoDB Atlas. | double | percent | gauge |
-| mongodb_atlas.disk.total.iops.max.throughput | Max throughput of total I/O operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
-| mongodb_atlas.disk.total.iops.throughput | Throughput of total I/O operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
-| mongodb_atlas.disk.write.iops.max.throughput | Max throughput of I/O write operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
-| mongodb_atlas.disk.write.iops.throughput | Throughput of I/O write operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
-| mongodb_atlas.disk.write.latency.max.ms | Max write latency of the disk partition that hosts MongoDB Atlas. | double | ms | gauge |
-| mongodb_atlas.disk.write.latency.ms | Write latency of the disk partition that hosts MongoDB Atlas. | double | ms | gauge |
+| mongodb_atlas.disk.read.iops.max.throughput | Maximum throughput of I/O read operations for the disk partition used by MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.read.iops.throughput | Current throughput of I/O read operations for the disk partition used by MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.read.latency.max.ms | Maximum read latency in milliseconds for the disk partition used by MongoDB Atlas. | double | ms | gauge |
+| mongodb_atlas.disk.read.latency.ms | Current read latency in milliseconds for the disk partition used by MongoDB Atlas. | double | ms | gauge |
+| mongodb_atlas.disk.space.free.bytes | Current amount of free disk space in bytes on the disk partition used by MongoDB Atlas. | double | byte | gauge |
+| mongodb_atlas.disk.space.free.max.bytes | Maximum amount of free disk space in bytes on the disk partition used by MongoDB Atlas. | double | byte | gauge |
+| mongodb_atlas.disk.space.free.max.pct | Maximum percentage of free disk space on the disk partition used by MongoDB Atlas. | double | percent | gauge |
+| mongodb_atlas.disk.space.free.pct | Current percentage of free disk space on the disk partition used by MongoDB Atlas. | double | percent | gauge |
+| mongodb_atlas.disk.space.used.bytes | Current amount of used disk space in bytes on the disk partition used by MongoDB Atlas. | double | byte | gauge |
+| mongodb_atlas.disk.space.used.max.bytes | Maximum amount of used disk space in bytes on the disk partition used by MongoDB Atlas. | double | byte | gauge |
+| mongodb_atlas.disk.space.used.max.pct | Maximum percentage of used disk space on the disk partition used by MongoDB Atlas. | double | percent | gauge |
+| mongodb_atlas.disk.space.used.pct | Current percentage of used disk space on the disk partition used by MongoDB Atlas. | double | percent | gauge |
+| mongodb_atlas.disk.total.iops.max.throughput | Maximum throughput of total I/O operations for the disk partition used by MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.total.iops.throughput | Current throughput of total I/O operations for the disk partition used by MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.write.iops.max.throughput | Maximum throughput of I/O write operations for the disk partition used by MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.write.iops.throughput | Current throughput of I/O write operations for the disk partition used by MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.write.latency.max.ms | Maximum write latency in milliseconds for the disk partition used by MongoDB Atlas. | double | ms | gauge |
+| mongodb_atlas.disk.write.latency.ms | Current write latency in milliseconds for the disk partition used by MongoDB Atlas. | double | ms | gauge |
 | mongodb_atlas.host_id | Unique identifier of the host for the MongoDB process. | keyword |  |  |
 | mongodb_atlas.partition_name | Name of the disk partition used by MongoDB Atlas. | keyword |  |  |
 | mongodb_atlas.process_id | Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process. | keyword |  |  |
