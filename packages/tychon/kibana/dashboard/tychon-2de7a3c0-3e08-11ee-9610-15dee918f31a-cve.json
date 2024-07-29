@@ -13,9 +13,9 @@
                 "8c4d7403-b7c0-4274-9e12-cec69c62e01e": {
                     "explicitInput": {
                         "enhancements": {},
-                        "fieldName": "host.hostname",
+                        "fieldName": "tychon.host.hostname",
                         "id": "8c4d7403-b7c0-4274-9e12-cec69c62e01e",
-                        "selectedOptions": [],
+                        "searchTechnique": "prefix",
                         "singleSelect": true,
                         "title": "Hostname"
                     },
@@ -122,8 +122,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-cd8f844b-1401-4c37-9b58-7ee816064353",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "aab68dd1-debf-4f66-b4db-36d171d563c1",
                                 "type": "index-pattern"
                             }
                         ],
@@ -147,7 +152,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.id"
+                                                    "sourceField": "tychon.vulnerability.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -159,7 +164,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "aab68dd1-debf-4f66-b4db-36d171d563c1",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -197,8 +257,18 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b5de6e20-9f56-4bec-b4b3-1acb9eb2e76b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "520e1b41-9d2b-4a86-bc17-57c0f61a3bae",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "9ff27b1f-bfb8-4ae2-aeed-9f21aa8f4d54",
                                 "type": "index-pattern"
                             }
                         ],
@@ -215,6 +285,10 @@
                                                 "f0df1a7d-307a-40d6-9925-8afb18d9808c": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": ""
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Failed Vulnerabilities Pass Due",
                                                     "operationType": "unique_count",
@@ -222,7 +296,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.id"
+                                                    "sourceField": "tychon.vulnerability.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -234,11 +308,125 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "520e1b41-9d2b-4a86-bc17-57c0f61a3bae",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "9ff27b1f-bfb8-4ae2-aeed-9f21aa8f4d54",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tychon.vulnerability.due_date",
+                                                    "index": "logs-*",
+                                                    "key": "tychon.vulnerability.due_date",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "lt": "now"
+                                                    },
+                                                    "type": "range",
+                                                    "value": {
+                                                        "lt": "now"
+                                                    }
+                                                },
+                                                "query": {
+                                                    "range": {
+                                                        "tychon.vulnerability.due_date": {
+                                                            "lt": "now"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tychon.vulnerability.result",
+                                                    "index": "logs-*",
+                                                    "key": "tychon.vulnerability.result",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "fail"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "tychon.vulnerability.result": "fail"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "vulnerability.due_date \u003c now and vulnerability.result : \"fail\" "
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "f0df1a7d-307a-40d6-9925-8afb18d9808c",
@@ -315,8 +503,18 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b5de6e20-9f56-4bec-b4b3-1acb9eb2e76b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f7dc0e58-91a2-4112-8628-c0db9c7498f5",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b6183d1e-b9fb-4df6-9fa5-5fec8901eb71",
                                 "type": "index-pattern"
                             }
                         ],
@@ -340,7 +538,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.id"
+                                                    "sourceField": "tychon.vulnerability.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -352,11 +550,88 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "f7dc0e58-91a2-4112-8628-c0db9c7498f5",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tychon.vulnerability.result",
+                                        "index": "b6183d1e-b9fb-4df6-9fa5-5fec8901eb71",
+                                        "key": "tychon.vulnerability.result",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "fail"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tychon.vulnerability.result": "fail"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "vulnerability.result : \"fail\" "
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "f0df1a7d-307a-40d6-9925-8afb18d9808c",
@@ -389,8 +664,18 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b5de6e20-9f56-4bec-b4b3-1acb9eb2e76b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "eacc7608-3fff-44b7-bdec-4098eb0b9ece",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "851bd294-85f9-4dca-8982-8e8ee875a4a3",
                                 "type": "index-pattern"
                             }
                         ],
@@ -414,7 +699,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.id"
+                                                    "sourceField": "tychon.vulnerability.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -426,11 +711,120 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "eacc7608-3fff-44b7-bdec-4098eb0b9ece",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "851bd294-85f9-4dca-8982-8e8ee875a4a3",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tychon.vulnerability.result",
+                                                    "index": "logs-*",
+                                                    "key": "tychon.vulnerability.result",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "fail"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "tychon.vulnerability.result": "fail"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tychon.vulnerability.due_date_reason",
+                                                    "index": "logs-*",
+                                                    "key": "tychon.vulnerability.due_date_reason",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "iava"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "tychon.vulnerability.due_date_reason": "iava"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "vulnerability.result : \"fail\" and vulnerability.due_date_reason : \"iava\" "
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "f0df1a7d-307a-40d6-9925-8afb18d9808c",
@@ -464,8 +858,18 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b5de6e20-9f56-4bec-b4b3-1acb9eb2e76b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "57868ffd-a242-44f4-8a81-2fffa75c1ce8",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "a315155e-b6fa-418f-9917-f1c57b4462c5",
                                 "type": "index-pattern"
                             }
                         ],
@@ -489,7 +893,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.id"
+                                                    "sourceField": "tychon.vulnerability.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -501,11 +905,120 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "57868ffd-a242-44f4-8a81-2fffa75c1ce8",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "a315155e-b6fa-418f-9917-f1c57b4462c5",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tychon.vulnerability.result",
+                                                    "index": "logs-*",
+                                                    "key": "tychon.vulnerability.result",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "fail"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "tychon.vulnerability.result": "fail"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tychon.vulnerability.due_date_reason",
+                                                    "index": "logs-*",
+                                                    "key": "tychon.vulnerability.due_date_reason",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "cisa"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "tychon.vulnerability.due_date_reason": "cisa"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "vulnerability.result : \"fail\" and vulnerability.due_date_reason : \"cisa\" "
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "f0df1a7d-307a-40d6-9925-8afb18d9808c",
@@ -539,8 +1052,201 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-9f9cf1ce-1e59-4b0f-a264-04b877d4dfba",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "1239ba99-0993-4adb-a671-06d6a49f84cd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9f9cf1ce-1e59-4b0f-a264-04b877d4dfba": {
+                                            "columnOrder": [
+                                                "efb8128a-a1e5-46bb-8278-9c81fb97f741",
+                                                "c3ae2971-d1a3-447e-9679-439492ce7757"
+                                            ],
+                                            "columns": {
+                                                "c3ae2971-d1a3-447e-9679-439492ce7757": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique count of vulnerability IDs",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tychon.vulnerability.id"
+                                                },
+                                                "efb8128a-a1e5-46bb-8278-9c81fb97f741": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Severity",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c3ae2971-d1a3-447e-9679-439492ce7757",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.vulnerability.severity"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "1239ba99-0993-4adb-a671-06d6a49f84cd",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c3ae2971-d1a3-447e-9679-439492ce7757"
+                                        ],
+                                        "layerId": "9f9cf1ce-1e59-4b0f-a264-04b877d4dfba",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "xAccessor": "efb8128a-a1e5-46bb-8278-9c81fb97f741",
+                                        "yConfig": [
+                                            {
+                                                "color": "#6092c0",
+                                                "forAccessor": "c3ae2971-d1a3-447e-9679-439492ce7757"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "721cfff2-211b-4e21-a5a7-874dcd0e6edc",
+                    "w": 16,
+                    "x": 32,
+                    "y": 11
+                },
+                "panelIndex": "721cfff2-211b-4e21-a5a7-874dcd0e6edc",
+                "title": "Vulnerabilities By Severity",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-d268dc70-0f0d-443b-b702-d08241bc0733",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "30b75ea7-a659-4286-914b-ac4db61b4502",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "7128caa3-29ca-461d-8e86-29df7557a04c",
                                 "type": "index-pattern"
                             }
                         ],
@@ -581,10 +1287,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.due_date_reason"
+                                                    "sourceField": "tychon.vulnerability.due_date_reason"
                                                 },
                                                 "5e9e7b30-a800-4757-b55c-e7bc60ed32be": {
                                                     "customLabel": true,
@@ -611,7 +1318,7 @@
                                                         "size": 1
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.title"
+                                                    "sourceField": "tychon.vulnerability.title"
                                                 },
                                                 "7c5f284d-4d53-4b1d-bde1-dd7d0b6eaac9": {
                                                     "customLabel": true,
@@ -634,17 +1341,18 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.iava"
+                                                    "sourceField": "tychon.vulnerability.iava"
                                                 },
                                                 "9d6c754b-aacd-4f6a-8f86-1fb01e957616": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "vulnerability.result: *"
+                                                        "query": "tychon.vulnerability.result: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "NVD Score",
@@ -653,7 +1361,7 @@
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.score.base"
+                                                    "sourceField": "tychon.vulnerability.score.base"
                                                 },
                                                 "ac337e99-130a-4af6-a771-32b72b41ea02": {
                                                     "customLabel": true,
@@ -676,17 +1384,18 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 200
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.id"
+                                                    "sourceField": "tychon.vulnerability.id"
                                                 },
                                                 "c97d1951-13d7-4266-a021-151ea9e8b441": {
                                                     "customLabel": true,
                                                     "dataType": "date",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "vulnerability.due_date: *"
+                                                        "query": "\"tychon.vulnerability.due_date\": *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Due Date",
@@ -695,7 +1404,7 @@
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.due_date"
+                                                    "sourceField": "tychon.vulnerability.due_date"
                                                 },
                                                 "eeb56262-f4a7-451c-9a81-dfb12bc296c6": {
                                                     "customLabel": true,
@@ -718,10 +1427,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.result"
+                                                    "sourceField": "tychon.vulnerability.result"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -733,11 +1443,88 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "30b75ea7-a659-4286-914b-ac4db61b4502",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tychon.vulnerability.result",
+                                        "index": "7128caa3-29ca-461d-8e86-29df7557a04c",
+                                        "key": "tychon.vulnerability.result",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "fail"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tychon.vulnerability.result": "fail"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "vulnerability.result : \"fail\" "
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -854,8 +1641,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
-                                "name": "indexpattern-datasource-layer-9f9cf1ce-1e59-4b0f-a264-04b877d4dfba",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-52771762-574a-44e5-b312-212bca766745",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "77104871-7007-4c9b-919f-3fb4c8e20d1f",
                                 "type": "index-pattern"
                             }
                         ],
@@ -864,28 +1656,16 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "9f9cf1ce-1e59-4b0f-a264-04b877d4dfba": {
+                                        "52771762-574a-44e5-b312-212bca766745": {
                                             "columnOrder": [
-                                                "efb8128a-a1e5-46bb-8278-9c81fb97f741",
-                                                "c3ae2971-d1a3-447e-9679-439492ce7757"
+                                                "21eb78e0-4d9a-4896-b595-ed36a4c81086",
+                                                "d694059d-3e12-48e0-8534-c02795963840"
                                             ],
                                             "columns": {
-                                                "c3ae2971-d1a3-447e-9679-439492ce7757": {
+                                                "21eb78e0-4d9a-4896-b595-ed36a4c81086": {
                                                     "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Unique count of vulnerability.id",
-                                                    "operationType": "unique_count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "vulnerability.id"
-                                                },
-                                                "efb8128a-a1e5-46bb-8278-9c81fb97f741": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Severity",
+                                                    "label": "Top 20 values of tychon.vulnerability.year",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -894,18 +1674,31 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "c3ae2971-d1a3-447e-9679-439492ce7757",
+                                                            "columnId": "d694059d-3e12-48e0-8534-c02795963840",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
-                                                        "otherBucket": true,
+                                                        "otherBucket": false,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "secondaryFields": [],
+                                                        "size": 20
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.severity"
+                                                    "sourceField": "tychon.vulnerability.year"
+                                                },
+                                                "d694059d-3e12-48e0-8534-c02795963840": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique count of vulnerability IDs",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tychon.vulnerability.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -917,7 +1710,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "77104871-7007-4c9b-919f-3fb4c8e20d1f",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -926,48 +1774,43 @@
                             "visualization": {
                                 "layers": [
                                     {
-                                        "accessors": [
-                                            "c3ae2971-d1a3-447e-9679-439492ce7757"
-                                        ],
-                                        "layerId": "9f9cf1ce-1e59-4b0f-a264-04b877d4dfba",
+                                        "categoryDisplay": "default",
+                                        "layerId": "52771762-574a-44e5-b312-212bca766745",
                                         "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_horizontal",
-                                        "showGridlines": false,
-                                        "xAccessor": "efb8128a-a1e5-46bb-8278-9c81fb97f741",
-                                        "yConfig": [
-                                            {
-                                                "color": "#6092c0",
-                                                "forAccessor": "c3ae2971-d1a3-447e-9679-439492ce7757"
-                                            }
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "d694059d-3e12-48e0-8534-c02795963840"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "value",
+                                        "primaryGroups": [
+                                            "21eb78e0-4d9a-4896-b595-ed36a4c81086"
                                         ]
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
+                                "palette": {
+                                    "name": "complimentary",
+                                    "type": "palette"
                                 },
-                                "preferredSeriesType": "bar_horizontal",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
+                                "shape": "pie"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 16,
-                    "i": "721cfff2-211b-4e21-a5a7-874dcd0e6edc",
+                    "h": 18,
+                    "i": "b146db26-e963-43f4-b2cd-60eb96128506",
                     "w": 16,
                     "x": 32,
-                    "y": 11
+                    "y": 27
                 },
-                "panelIndex": "721cfff2-211b-4e21-a5a7-874dcd0e6edc",
-                "title": "Vulnerabilities By Severity",
+                "panelIndex": "b146db26-e963-43f4-b2cd-60eb96128506",
+                "title": "Vulnerabilities by Year",
                 "type": "lens"
             },
             {
@@ -975,8 +1818,18 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-d268dc70-0f0d-443b-b702-d08241bc0733",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "05298515-53e6-4bb3-be62-f0303996fe73",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "116d5781-5f99-44c2-99d9-df13d2bc4457",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1019,14 +1872,14 @@
                                                         "size": 1
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.title"
+                                                    "sourceField": "tychon.vulnerability.title"
                                                 },
                                                 "9d6c754b-aacd-4f6a-8f86-1fb01e957616": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "vulnerability.result: *"
+                                                        "query": "tychon.vulnerability.result: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "NVD Score",
@@ -1035,7 +1888,7 @@
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.score.base"
+                                                    "sourceField": "tychon.vulnerability.score.base"
                                                 },
                                                 "ac337e99-130a-4af6-a771-32b72b41ea02": {
                                                     "customLabel": true,
@@ -1058,10 +1911,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 200
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.id"
+                                                    "sourceField": "tychon.vulnerability.id"
                                                 },
                                                 "cc9726cd-0333-4030-8ef7-8ca6a134cd74": {
                                                     "customLabel": true,
@@ -1084,10 +1938,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.iava"
+                                                    "sourceField": "tychon.vulnerability.iava"
                                                 },
                                                 "eeb56262-f4a7-451c-9a81-dfb12bc296c6": {
                                                     "customLabel": true,
@@ -1110,10 +1965,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.result"
+                                                    "sourceField": "tychon.vulnerability.result"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1125,11 +1981,88 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "05298515-53e6-4bb3-be62-f0303996fe73",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tychon.vulnerability.result",
+                                        "index": "116d5781-5f99-44c2-99d9-df13d2bc4457",
+                                        "key": "tychon.vulnerability.result",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "pass"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tychon.vulnerability.result": "pass"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "vulnerability.result : \"pass\" "
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -1232,121 +2165,6 @@
                 "panelIndex": "a004f187-6f6e-4875-b63e-2b50db064884",
                 "title": "Passed CVEs",
                 "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
-                                "name": "indexpattern-datasource-layer-52771762-574a-44e5-b312-212bca766745",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "52771762-574a-44e5-b312-212bca766745": {
-                                            "columnOrder": [
-                                                "21eb78e0-4d9a-4896-b595-ed36a4c81086",
-                                                "d694059d-3e12-48e0-8534-c02795963840"
-                                            ],
-                                            "columns": {
-                                                "21eb78e0-4d9a-4896-b595-ed36a4c81086": {
-                                                    "dataType": "number",
-                                                    "isBucketed": true,
-                                                    "label": "Top 20 values of vulnerability.year",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "d694059d-3e12-48e0-8534-c02795963840",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 20
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "vulnerability.year"
-                                                },
-                                                "d694059d-3e12-48e0-8534-c02795963840": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Unique count of vulnerability.id",
-                                                    "operationType": "unique_count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "vulnerability.id"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "52771762-574a-44e5-b312-212bca766745",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metrics": [
-                                            "d694059d-3e12-48e0-8534-c02795963840"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "value",
-                                        "primaryGroups": [
-                                            "21eb78e0-4d9a-4896-b595-ed36a4c81086"
-                                        ]
-                                    }
-                                ],
-                                "palette": {
-                                    "name": "complimentary",
-                                    "type": "palette"
-                                },
-                                "shape": "pie"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 18,
-                    "i": "b146db26-e963-43f4-b2cd-60eb96128506",
-                    "w": 16,
-                    "x": 32,
-                    "y": 27
-                },
-                "panelIndex": "b146db26-e963-43f4-b2cd-60eb96128506",
-                "title": "Vulnerabilities by Year",
-                "type": "lens"
             }
         ],
         "refreshInterval": {
@@ -1360,57 +2178,132 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-07-25T16:35:41.314Z",
+    "created_at": "2024-07-28T17:01:15.901Z",
     "id": "tychon-2de7a3c0-3e08-11ee-9610-15dee918f31a-cve",
     "managed": false,
     "references": [
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+            "id": "logs-*",
             "name": "eadda9a3-732f-4ad7-81fb-7abc16fe4bd2:indexpattern-datasource-layer-cd8f844b-1401-4c37-9b58-7ee816064353",
             "type": "index-pattern"
         },
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+            "id": "logs-*",
+            "name": "eadda9a3-732f-4ad7-81fb-7abc16fe4bd2:aab68dd1-debf-4f66-b4db-36d171d563c1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "18ef0327-ab0a-46d7-ac9c-bf8d01e28eba:indexpattern-datasource-layer-b5de6e20-9f56-4bec-b4b3-1acb9eb2e76b",
             "type": "index-pattern"
         },
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+            "id": "logs-*",
+            "name": "18ef0327-ab0a-46d7-ac9c-bf8d01e28eba:520e1b41-9d2b-4a86-bc17-57c0f61a3bae",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "18ef0327-ab0a-46d7-ac9c-bf8d01e28eba:9ff27b1f-bfb8-4ae2-aeed-9f21aa8f4d54",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "0f3331b8-da1a-452c-a1b0-39a5558a1379:indexpattern-datasource-layer-b5de6e20-9f56-4bec-b4b3-1acb9eb2e76b",
             "type": "index-pattern"
         },
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+            "id": "logs-*",
+            "name": "0f3331b8-da1a-452c-a1b0-39a5558a1379:f7dc0e58-91a2-4112-8628-c0db9c7498f5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0f3331b8-da1a-452c-a1b0-39a5558a1379:b6183d1e-b9fb-4df6-9fa5-5fec8901eb71",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "91a3fb55-660d-48ec-89f2-4e5b3122b49b:indexpattern-datasource-layer-b5de6e20-9f56-4bec-b4b3-1acb9eb2e76b",
             "type": "index-pattern"
         },
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+            "id": "logs-*",
+            "name": "91a3fb55-660d-48ec-89f2-4e5b3122b49b:eacc7608-3fff-44b7-bdec-4098eb0b9ece",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "91a3fb55-660d-48ec-89f2-4e5b3122b49b:851bd294-85f9-4dca-8982-8e8ee875a4a3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "ecee7b3f-f07e-4911-bb36-405e687f3ae0:indexpattern-datasource-layer-b5de6e20-9f56-4bec-b4b3-1acb9eb2e76b",
             "type": "index-pattern"
         },
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
-            "name": "30647fae-03f0-46a0-b6a6-96f4b9692227:indexpattern-datasource-layer-d268dc70-0f0d-443b-b702-d08241bc0733",
+            "id": "logs-*",
+            "name": "ecee7b3f-f07e-4911-bb36-405e687f3ae0:57868ffd-a242-44f4-8a81-2fffa75c1ce8",
             "type": "index-pattern"
         },
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+            "id": "logs-*",
+            "name": "ecee7b3f-f07e-4911-bb36-405e687f3ae0:a315155e-b6fa-418f-9917-f1c57b4462c5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "721cfff2-211b-4e21-a5a7-874dcd0e6edc:indexpattern-datasource-layer-9f9cf1ce-1e59-4b0f-a264-04b877d4dfba",
             "type": "index-pattern"
         },
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
-            "name": "a004f187-6f6e-4875-b63e-2b50db064884:indexpattern-datasource-layer-d268dc70-0f0d-443b-b702-d08241bc0733",
+            "id": "logs-*",
+            "name": "721cfff2-211b-4e21-a5a7-874dcd0e6edc:1239ba99-0993-4adb-a671-06d6a49f84cd",
             "type": "index-pattern"
         },
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+            "id": "logs-*",
+            "name": "30647fae-03f0-46a0-b6a6-96f4b9692227:indexpattern-datasource-layer-d268dc70-0f0d-443b-b702-d08241bc0733",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "30647fae-03f0-46a0-b6a6-96f4b9692227:30b75ea7-a659-4286-914b-ac4db61b4502",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "30647fae-03f0-46a0-b6a6-96f4b9692227:7128caa3-29ca-461d-8e86-29df7557a04c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "b146db26-e963-43f4-b2cd-60eb96128506:indexpattern-datasource-layer-52771762-574a-44e5-b312-212bca766745",
             "type": "index-pattern"
         },
         {
-            "id": "bb5226cd-c099-46d2-bb71-0257232c7d82",
+            "id": "logs-*",
+            "name": "b146db26-e963-43f4-b2cd-60eb96128506:77104871-7007-4c9b-919f-3fb4c8e20d1f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a004f187-6f6e-4875-b63e-2b50db064884:indexpattern-datasource-layer-d268dc70-0f0d-443b-b702-d08241bc0733",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a004f187-6f6e-4875-b63e-2b50db064884:05298515-53e6-4bb3-be62-f0303996fe73",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a004f187-6f6e-4875-b63e-2b50db064884:116d5781-5f99-44c2-99d9-df13d2bc4457",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "controlGroup_8c4d7403-b7c0-4274-9e12-cec69c62e01e:optionsListDataView",
             "type": "index-pattern"
         }
