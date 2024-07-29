@@ -1,6 +1,28 @@
 ---
 description: Process goflow2 sflow data
 processors:
+- set:
+    field: event.kind
+    value: "event"
+- set:
+    field: event.category
+    value: "network"
+- set:
+    field: event.type
+    value: "connection"
+- set:
+    field: ecs.version
+    value: "8.11.0"
+- rename:
+    if: ctx.event?.original == null
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- remove:
+    if: 'ctx.event?.original != null' 
+    field: message
+    ignore_missing: true
+    description: 'The `message` field is no longer required if the document has an `event.original` field.'
 - script:
     source: ctx.time_flow_start_ns = (ctx.time_flow_start_ns / 1000000000);
 - script:
@@ -76,9 +98,9 @@ processors:
 - rename:
     field: bytes
     target_field: sflow.bytes
-- set:
-    field: network.bytes
-    value: "{{flow_size}}"
+- rename:
+    field: flow_size
+    target_field: network.bytes
 - geoip:
     if: ctx.source?.geo == null
     field: source.ip
@@ -124,8 +146,47 @@ processors:
 - remove:
     field:
     - time_flow_start_ns
-    - flow_size
-    - message
+    - proto
+    - etype
+    - dst_addr
+    - src_addr
+    ignore_failure: true
+    ignore_missing: true
+- lowercase:
+    field: network.transport
+    ignore_missing: true
+- lowercase:
+    field: network.type
+    ignore_missing: true
+- set:
+    field: sflow.sample_rate
+    copy_from: "network.packets"
+    ignore_empty_value: true
+- append:
+    field: destination.address
+    value:
+    - "{{{destination.ip}}}"
+    if: "ctx.destination?.ip != null"
+- append:
+    field: source.address
+    value:
+    - "{{{source.ip}}}"
+    if: "ctx.source?.ip != null"
+- append:
+    field: related.ip
+    value:
+    - "{{{source.ip}}}"
+    if: "ctx.source?.ip != null"
+- append:
+    field: related.ip
+    value:
+    - "{{{destination.ip}}}"
+    if: "ctx.destination?.ip != null"
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
 on_failure:
 - set:
     field: error.message

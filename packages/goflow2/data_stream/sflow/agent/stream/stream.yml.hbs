@@ -2,10 +2,33 @@ paths:
 {{#each paths as |path i|}}
   - {{path}}
 {{/each}}
-exclude_files: [".gz$"]
+{{#if exclude_files.length}}
+exclude_files:
+{{#each exclude_files as |exclude_file i|}}
+  - {{exclude_file}}
+{{/each}}
+{{/if}}
+{{#if tags.length}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{/if}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
 processors:
-  - add_locale: ~
-  - decode_json_fields:
-        fields: message
-        target: ""
-        add_error_key: true
+{{processors}}
+{{/if}}
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
+{{/if}}
