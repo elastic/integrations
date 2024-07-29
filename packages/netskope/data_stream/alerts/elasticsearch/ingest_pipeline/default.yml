@@ -1312,11 +1312,13 @@ processors:
         }
   - script:
       if: ctx.user?.email != null
+      description: transform user.email field into a list and parse it into user.name and related.user fields
+      tag: parse_user_email
       lang: painless
+      ignore_failure: true
       source: >-
         def parts = ctx.user.email;
         if (!(parts instanceof String)) {
-
           List l = new ArrayList();
           for (entry in parts.entrySet()) {
             l.add(entry.getValue());
@@ -1324,26 +1326,25 @@ processors:
           List setList = new ArrayList(new HashSet(l));
           ctx.user.email = setList;
         }
-  - script:
-      description: parse user.email into user.name and related.user
-      tag: parse_user_email
-      if: ctx.user?.email instanceof List
-      lang: painless
-      source: >-
-        def related_users = [];
-        def user_emails = ctx.user.email;
-        for (def email : user_emails) {
-          if (email.contains('@')) {
-            related_users.add(email.splitOnToken('@')[0])
+        if (ctx.user.email instanceof List) {
+          def related_users = [];
+          for (def email : ctx.user.email) {
+            if (email.contains('@')) {
+              related_users.add(email.splitOnToken('@')[0])
+            }
+          }
+          if (ctx.related == null) {
+            ctx.related = new HashMap();
+          }
+          ctx.related.user = related_users;
+          if (related_users.length == 1) {
+            ctx.user.name = related_users[0]
           }
         }
-        if (ctx.related == null) {
-          ctx['related'] = new HashMap();
-        }
-        ctx.related.user = related_users;
-        if (related_users.length == 1) {
-          ctx.user.name = related_users[0]
-        }
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - script:
       if: ctx.netskope?.alerts?.quarantine?.app != null
       lang: painless
