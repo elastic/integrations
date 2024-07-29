@@ -2831,17 +2831,11 @@ processors:
       tag: set_event_timezone_from_event_log_source_timezone_offset
       copy_from: prisma_access.event.log.source.timezone_offset
       ignore_empty_value: true
-  - date:
-      field: cef.extensions.PanOSEventTime
-      tag: date_timestamp
-      formats:
-        - "MMM dd yyyy HH:mm:ss"
-        - ISO8601
-      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != '' && ctx.event?.timezone == null
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_to_utc
+      value: UTC
+      if: ctx.event?.timezone == null
   - date:
       field: cef.extensions.PanOSEventTime
       tag: date_timestamp_event_timezone
@@ -2849,19 +2843,7 @@ processors:
       formats:
         - "MMM dd yyyy HH:mm:ss"
         - ISO8601
-      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != '' && ctx.event?.timezone != null
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - date:
-      field: cef.extensions.PanOSEventTime
-      tag: date_extension_PanOSEventTime
-      target_field: prisma_access.event.data.time
-      formats:
-        - "MMM dd yyyy HH:mm:ss"
-        - ISO8601
-      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != '' && ctx.event?.timezone == null
+      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != ''
       on_failure:
         - append:
             field: error.message
@@ -2874,7 +2856,7 @@ processors:
       formats:
         - "MMM dd yyyy HH:mm:ss"
         - ISO8601
-      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != '' && ctx.event?.timezone != null
+      if: ctx.cef?.extensions?.PanOSEventTime != null && ctx.cef.extensions.PanOSEventTime != ''
       on_failure:
         - append:
             field: error.message
