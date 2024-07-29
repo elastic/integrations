@@ -7,88 +7,87 @@
             "panelsJSON": "{\"7bb9a2dc-1197-4366-ba2d-f5ab5792949f\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"host.hostname\",\"title\":\"Nginx instance\",\"singleSelect\":true,\"id\":\"7bb9a2dc-1197-4366-ba2d-f5ab5792949f\",\"selectedOptions\":[],\"enhancements\":{}}}}"
         },
         "description": "Dashboard for the Logs Nginx integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
-                "highlightAll": true,
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "nginx.access",
+                                "nginx.error"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nginx.access"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nginx.error"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "columns": [
-                        "log.level",
-                        "message"
-                    ],
                     "enhancements": {},
-                    "sort": [
-                        "@timestamp",
-                        "desc"
-                    ]
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "11",
-                    "w": 48,
-                    "x": 0,
-                    "y": 20
-                },
-                "panelIndex": "11",
-                "panelRefName": "panel_11",
-                "type": "search",
-                "version": "8.5.0"
-            },
-            {
-                "embeddableConfig": {
-                    "columns": [
-                        "url.original",
-                        "http.request.method",
-                        "http.response.status_code",
-                        "http.response.body.bytes"
-                    ],
-                    "enhancements": {},
-                    "sort": [
-                        "@timestamp",
-                        "desc"
-                    ]
-                },
-                "gridData": {
-                    "h": 28,
-                    "i": "16",
-                    "w": 48,
-                    "x": 0,
-                    "y": 32
-                },
-                "panelIndex": "16",
-                "panelRefName": "panel_16",
-                "type": "search",
-                "version": "8.5.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "[Nginx logs overview](#/dashboard/nginx-55a9e6e0-a29e-11e7-928f-5dbe6f6f5519) | [Nginx access and error logs](#/dashboard/nginx-046212a0-a2a1-11e7-928f-5dbe6f6f5519)",
+                            "openLinksInNewTab": false
+                        },
+                        "type": "markdown",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
                     "h": 5,
-                    "i": "19",
+                    "i": "8e181c42-bc54-44f7-9dcf-3ca24acf1558",
                     "w": 48,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "19",
-                "panelRefName": "panel_19",
-                "type": "visualization",
-                "version": "8.5.0"
+                "panelIndex": "8e181c42-bc54-44f7-9dcf-3ca24acf1558",
+                "title": "Dashboards [Logs Nginx]",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -108,7 +107,7 @@
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "a55e7341-c9fe-4f42-a812-75284e0f4a7f": {
                                             "columnOrder": [
@@ -226,34 +225,132 @@
                 },
                 "panelIndex": "8650d488-e9b2-4923-a417-83e4b34824b6",
                 "title": "Access logs over time [Logs Nginx]",
-                "type": "lens",
-                "version": "8.5.0"
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "log.level",
+                            "message"
+                        ],
+                        "grid": {
+                            "columns": {
+                                "log.level": {
+                                    "width": 164
+                                }
+                            }
+                        },
+                        "hideChart": false,
+                        "isTextBasedQuery": false,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"highlight\":{\"fields\":{\"*\":{}},\"fragment_size\":2147483647,\"post_tags\":[\"@/kibana-highlighted-field@\"],\"pre_tags\":[\"@kibana-highlighted-field@\"],\"require_field_match\":false},\"highlightAll\":true,\"query\":{\"query\":\"(data_stream.dataset:nginx.access OR data_stream.dataset:nginx.error) AND message:*\",\"language\":\"kuery\"},\"version\":true,\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "timeRestore": false,
+                        "usesAdHocDataView": false
+                    },
+                    "columns": [
+                        "log.level",
+                        "message"
+                    ],
+                    "enhancements": {},
+                    "sort": [
+                        "@timestamp",
+                        "desc"
+                    ]
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "df22516d-f5c3-4774-9ee6-231b1d9a8084",
+                    "w": 48,
+                    "x": 0,
+                    "y": 20
+                },
+                "panelIndex": "df22516d-f5c3-4774-9ee6-231b1d9a8084",
+                "title": "Nginx error logs [Logs Nginx]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "url.original",
+                            "http.request.method",
+                            "http.response.status_code",
+                            "http.response.body.bytes"
+                        ],
+                        "grid": {},
+                        "hideChart": false,
+                        "isTextBasedQuery": false,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"highlight\":{\"fields\":{\"*\":{}},\"fragment_size\":2147483647,\"post_tags\":[\"@/kibana-highlighted-field@\"],\"pre_tags\":[\"@kibana-highlighted-field@\"],\"require_field_match\":false},\"highlightAll\":true,\"query\":{\"query\":\"(data_stream.dataset:nginx.access OR data_stream.dataset:nginx.error) AND url.original:*\",\"language\":\"kuery\"},\"version\":true,\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "timeRestore": false,
+                        "usesAdHocDataView": false
+                    },
+                    "columns": [
+                        "url.original",
+                        "http.request.method",
+                        "http.response.status_code",
+                        "http.response.body.bytes"
+                    ],
+                    "enhancements": {},
+                    "sort": [
+                        "@timestamp",
+                        "desc"
+                    ]
+                },
+                "gridData": {
+                    "h": 28,
+                    "i": "d250dfa8-0fd5-4bc5-ae16-211b40ff3174",
+                    "w": 48,
+                    "x": 0,
+                    "y": 32
+                },
+                "panelIndex": "d250dfa8-0fd5-4bc5-ae16-211b40ff3174",
+                "title": "Nginx access logs [Logs Nginx]",
+                "type": "search"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Nginx] Access and error logs",
         "version": 1
     },
-    "coreMigrationVersion": "8.5.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-22T08:56:19.076Z",
     "id": "nginx-046212a0-a2a1-11e7-928f-5dbe6f6f5519",
-    "migrationVersion": {
-        "dashboard": "8.5.0"
-    },
+    "managed": false,
     "references": [
         {
-            "id": "nginx-9eb25600-a1f0-11e7-928f-5dbe6f6f5519",
-            "name": "11:panel_11",
-            "type": "search"
-        },
-        {
-            "id": "nginx-6d9e66d0-a1f0-11e7-928f-5dbe6f6f5519",
-            "name": "16:panel_16",
-            "type": "search"
-        },
-        {
-            "id": "nginx-97109780-a2a5-11e7-928f-5dbe6f6f5519",
-            "name": "19:panel_19",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
             "id": "logs-*",
@@ -267,9 +364,20 @@
         },
         {
             "id": "logs-*",
+            "name": "df22516d-f5c3-4774-9ee6-231b1d9a8084:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d250dfa8-0fd5-4bc5-ae16-211b40ff3174:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "controlGroup_7bb9a2dc-1197-4366-ba2d-f5ab5792949f:optionsListDataView",
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

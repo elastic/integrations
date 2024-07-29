@@ -34,7 +34,6 @@ Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| container.labels | Image labels. | object |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -971,7 +970,6 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| container.labels | Image labels. | object |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

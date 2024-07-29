@@ -16,7 +16,8 @@
                         },
                         "meta": {
                             "alias": "Show only alerts with related IOCs",
-                            "disabled": true,
+                            "disabled": false,
+                            "field": "rapid7.tc.alert.related_iocs",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "rapid7.tc.alert.related_iocs",
                             "negate": false,
@@ -25,6 +26,28 @@
                         "query": {
                             "exists": {
                                 "field": "rapid7.tc.alert.related_iocs"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "Show only unique active alerts",
+                            "disabled": false,
+                            "field": "_index",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "_index",
+                            "negate": false,
+                            "params": {
+                                "query": "logs-ti_rapid7_threat_command_latest.alert"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "_index": "logs-ti_rapid7_threat_command_latest.alert"
                             }
                         }
                     }
@@ -62,7 +85,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "[Alert Overview](#/dashboard/ti_rapid7_threat_command-1abe9f50-591c-11ed-a133-234996671b18) | [Alert Details](#/dashboard/ti_rapid7_threat_command-7fdae3b0-590a-11ed-abd0-858c1d0aec26)",
+                            "markdown": "**[Alert Overview](#/dashboard/ti_rapid7_threat_command-1abe9f50-591c-11ed-a133-234996671b18)** | [IOC Overview](#/dashboard/ti_rapid7_threat_command-20735802-0864-485a-8b6f-e138aae5900d) | [Vulnerability Overview](#/dashboard/ti_rapid7_threat_command-8f985fb0-6988-11ed-8bdb-110ff35bc478)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -79,8 +102,7 @@
                 },
                 "panelIndex": "fab08e94-c328-4260-b164-ce466e2052f8",
                 "title": "Dashboards [Logs Rapid7 Threat Command]",
-                "type": "visualization",
-                "version": "8.7.1"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -93,7 +115,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "aef883ed-02e6-4b7d-a89e-35c0429c641c",
+                                "name": "e0c0b595-7d63-4a38-b3e6-138693f0bbf5",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "abd62074-90f7-4363-8db0-101b37eb8f2d",
                                 "type": "index-pattern"
                             }
                         ],
@@ -136,7 +163,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "aef883ed-02e6-4b7d-a89e-35c0429c641c",
+                                        "index": "e0c0b595-7d63-4a38-b3e6-138693f0bbf5",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -147,6 +174,28 @@
                                     "query": {
                                         "match_phrase": {
                                             "data_stream.dataset": "ti_rapid7_threat_command.alert"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "_index",
+                                        "index": "abd62074-90f7-4363-8db0-101b37eb8f2d",
+                                        "key": "_index",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "logs-ti_rapid7_threat_command_latest.alert"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "_index": "logs-ti_rapid7_threat_command_latest.alert"
                                         }
                                     }
                                 }
@@ -177,8 +226,7 @@
                     "y": 3
                 },
                 "panelIndex": "99632f77-2095-479e-9961-770ab18be038",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -275,8 +323,7 @@
                     "y": 3
                 },
                 "panelIndex": "0fb06665-efb9-4e7f-b2c8-d3996755cbae",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -373,8 +420,7 @@
                     "y": 3
                 },
                 "panelIndex": "2e08af2f-46b7-40d8-a054-327ddad1ffc7",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -471,8 +517,7 @@
                     "y": 3
                 },
                 "panelIndex": "dfeb4d5a-35af-49e3-b10d-06900494775d",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -648,8 +693,7 @@
                 },
                 "panelIndex": "55eab9c7-3cc0-4a44-8107-fbecdda86dcc",
                 "title": "Total Alerts by Type in Last Day [Logs Rapid7 Threat Command]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -821,8 +865,7 @@
                 },
                 "panelIndex": "95483975-6af1-408d-b5ae-6177771466a3",
                 "title": "Total Alerts by Type [Logs Rapid7 Threat Command]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -956,8 +999,7 @@
                 },
                 "panelIndex": "83d2a144-b99f-4612-b449-651cb3dda050",
                 "title": "Total Alerts by Takedown Status [Logs Rapid7 Threat Command]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1080,8 +1122,7 @@
                 },
                 "panelIndex": "45bc50e6-4f9e-4079-b81e-d9e22e6e20c1",
                 "title": "Top 20 Related IOCs [Logs Rapid7 Threat Command]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1217,8 +1258,7 @@
                 },
                 "panelIndex": "92382f4a-7a0e-45f8-8b02-066bcfefcfd6",
                 "title": "Total Alerts by Severity [Logs Rapid7 Threat Command]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1352,8 +1392,7 @@
                 },
                 "panelIndex": "13a40884-2c88-4250-9a39-7b9814da8ea8",
                 "title": "Total Alerts by Source Network Type [Logs Rapid7 Threat Command]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1534,8 +1573,7 @@
                 },
                 "panelIndex": "8ae0c677-ce75-44ca-97d0-befc1dd4eabf",
                 "title": "Total Alerts by Type and Subtype [Logs Rapid7 Threat Command]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1714,8 +1752,7 @@
                 },
                 "panelIndex": "9a9624eb-de84-4731-9c00-dc9280c23886",
                 "title": "Flagged Alerts [Logs Rapid7 Threat Command]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1729,11 +1766,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "d53acb98-f99b-4e33-b595-71d16bbf362c",
+                                "name": "c8dd5288-8cea-4de0-a343-f0cf39310d0c",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1788,7 +1826,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "d53acb98-f99b-4e33-b595-71d16bbf362c",
+                                        "index": "c8dd5288-8cea-4de0-a343-f0cf39310d0c",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1803,6 +1841,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1894,24 +1933,26 @@
                 },
                 "panelIndex": "801b0b7d-6d96-4f6e-990f-dc1da42beb0c",
                 "title": "Closed Alerts [Logs Rapid7 Threat Command]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Rapid7 Threat Command] Alert Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-07-10T03:41:26.990Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-06-18T13:18:13.977Z",
     "id": "ti_rapid7_threat_command-1abe9f50-591c-11ed-a133-234996671b18",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
@@ -1921,7 +1962,12 @@
         },
         {
             "id": "logs-*",
-            "name": "99632f77-2095-479e-9961-770ab18be038:aef883ed-02e6-4b7d-a89e-35c0429c641c",
+            "name": "99632f77-2095-479e-9961-770ab18be038:e0c0b595-7d63-4a38-b3e6-138693f0bbf5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "99632f77-2095-479e-9961-770ab18be038:abd62074-90f7-4363-8db0-101b37eb8f2d",
             "type": "index-pattern"
         },
         {
@@ -2041,7 +2087,7 @@
         },
         {
             "id": "logs-*",
-            "name": "801b0b7d-6d96-4f6e-990f-dc1da42beb0c:d53acb98-f99b-4e33-b595-71d16bbf362c",
+            "name": "801b0b7d-6d96-4f6e-990f-dc1da42beb0c:c8dd5288-8cea-4de0-a343-f0cf39310d0c",
             "type": "index-pattern"
         },
         {
@@ -2058,7 +2104,18 @@
             "id": "logs-*",
             "name": "controlGroup_2db02354-cb56-4be5-99b4-75746e59d74e:optionsListDataView",
             "type": "index-pattern"
+        },
+        {
+            "id": "ti_rapid7_threat_command-security-solution-default",
+            "name": "tag-ref-ti_rapid7_threat_command-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "ti_rapid7_threat_command-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

@@ -35,7 +35,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.11.0**.
 This module has been tested against the **CrowdStrike Falcon Intelligence API Version v1**.
 
 ## Setup
@@ -266,7 +265,6 @@ An example event for `intel` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
 | ti_crowdstrike.intel._marker | A special marker associated with the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.actors | Information related to actors associated with the Intel Indicator. | keyword |
@@ -425,7 +423,6 @@ An example event for `ioc` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
 | ti_crowdstrike.ioc.action | Describes the action taken when the IOC is detected. | keyword |
 | ti_crowdstrike.ioc.applied_globally | Indicates whether the IOC is applied globally. | boolean |

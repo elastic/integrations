@@ -53,26 +53,26 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-11-09T01:59:11.241Z",
+    "@timestamp": "2024-06-12T06:54:25.854Z",
     "agent": {
-        "ephemeral_id": "f115b31f-9c4f-4f14-a73b-3a54e25f204e",
-        "id": "00b6764d-580c-4a5e-bd48-b4e128e0d894",
+        "ephemeral_id": "de8fc32a-4eaf-4e32-97ae-bcdb93b8d8ee",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_opencti.indicator",
-        "namespace": "ep",
+        "namespace": "66338",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "00b6764d-580c-4a5e-bd48-b4e128e0d894",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -82,9 +82,9 @@ An example event for `indicator` looks as following:
         "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2023-11-09T01:59:14Z",
+        "ingested": "2024-06-12T06:54:37Z",
         "kind": "enrichment",
-        "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":{\"edges\":[]},\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":{\"edges\":[{\"node\":{\"value\":\"information-credibility-6\"}},{\"node\":{\"value\":\"osint\"}}]},\"objectMarking\":{\"edges\":[{\"node\":{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}}]},\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
+        "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":[],\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":[{\"value\":\"information-credibility-6\"},{\"value\":\"osint\"}],\"objectMarking\":[{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}],\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
         "type": [
             "indicator"
         ]
@@ -96,6 +96,7 @@ An example event for `indicator` looks as following:
         "indicator": {
             "creator_identity_class": "organization",
             "detection": false,
+            "invalid_or_revoked_from": "2019-02-05T08:04:53.000Z",
             "is_inferred": false,
             "lang": "en",
             "observables_count": 1,
@@ -145,8 +146,8 @@ An example event for `indicator` looks as following:
             "modified_at": "2023-01-17T05:53:42.851Z",
             "name": "ec2-23-21-172-164.compute-1.amazonaws.com",
             "provider": "CthulhuSPRL.be",
-            "reference": "http://elastic-package-service-opencti_stub-1:8080/dashboard/observations/indicators/d019b01c-b637-4eb2-af53-6d527be3193d",
-            "type": "hostname",
+            "reference": "http://svc-opencti_stub:8080/dashboard/observations/indicators/d019b01c-b637-4eb2-af53-6d527be3193d",
+            "type": "domain-name",
             "url": {
                 "domain": "ec2-23-21-172-164.compute-1.amazonaws.com",
                 "registered_domain": "ec2-23-21-172-164.compute-1.amazonaws.com",
@@ -155,7 +156,6 @@ An example event for `indicator` looks as following:
         }
     }
 }
-
 ```
 
 #### Exported fields
@@ -193,16 +193,7 @@ The documentation for ECS fields can be found at:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| event.module | Event module | constant_keyword |
 | input.type | Input type. | keyword |
 | labels.is_ioc_transform_source | Field indicating if the document is a source for the transform. This field is not added to destination indices to facilitate easier filtering of indicators for indicator match rules. | constant_keyword |
 | opencti.indicator.creator_identity_class | The type of the creator of this indicator (e.g. "organization"). | keyword |
@@ -520,81 +511,7 @@ The documentation for ECS fields can be found at:
 | opencti.observable.x509_certificate.validity_not_before | The date on which the certificate validity period begins. | date |
 | opencti.observable.x509_certificate.value | The main value for the observable. | keyword |
 | opencti.observable.x509_certificate.version | The version of the encoded certificate. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| threat.feed.dashboard_id | The saved object ID of the dashboard belonging to the threat feed for displaying dashboard links to threat feeds in Kibana. | keyword |
-| threat.feed.description | Description of the threat feed in a UI friendly format. | keyword |
-| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
-| threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
-| threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| threat.indicator.as.organization.name | Organization name. | keyword |
-| threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
-| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
-| threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
-| threat.indicator.file.accessed | Last time the file was accessed. Note that not all filesystems keep track of access time. | date |
-| threat.indicator.file.created | File creation time. Note that not all filesystems store the creation time. | date |
-| threat.indicator.file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
-| threat.indicator.file.drive_letter | Drive letter where the file is located. This field is only relevant on Windows. The value should be uppercase, and not include the colon. | keyword |
-| threat.indicator.file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
-| threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
-| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
-| threat.indicator.file.hash.sha384 | SHA384 hash. | keyword |
 | threat.indicator.file.hash.sha3_256 | SHA3-256 hash. | keyword |
 | threat.indicator.file.hash.sha3_512 | SHA3-512 hash. | keyword |
-| threat.indicator.file.hash.sha512 | SHA512 hash. | keyword |
-| threat.indicator.file.hash.ssdeep | SSDEEP hash. | keyword |
-| threat.indicator.file.hash.tlsh | TLSH hash. | keyword |
-| threat.indicator.file.mime_type | MIME type should identify the format of the file or stream of bytes using https://www.iana.org/assignments/media-types/media-types.xhtml[IANA official types], where possible. When more than one type is applicable, the most specific type should be used. | keyword |
-| threat.indicator.file.mtime | Last time the file content was modified. | date |
-| threat.indicator.file.name | Name of the file including the extension, without the directory. | keyword |
-| threat.indicator.file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| threat.indicator.file.path.text | Multi-field of `threat.indicator.file.path`. | match_only_text |
-| threat.indicator.file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
-| threat.indicator.file.type | File type (file, dir, or symlink). | keyword |
-| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
-| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
-| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
-| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
-| threat.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
-| threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
-| threat.indicator.registry.data.bytes | Original bytes written with base64 encoding. For Windows registry operations, such as SetValueEx and RegQueryValueEx, this corresponds to the data pointed by `lp_data`. This is optional but provides better recoverability and should be populated for REG_BINARY encoded values. | keyword |
-| threat.indicator.registry.data.strings | Content when writing string types. Populated as an array when writing string data to the registry. For single string registry types (REG_SZ, REG_EXPAND_SZ), this should be an array with one string. For sequences of string with REG_MULTI_SZ, this array will be variable length. For numeric data, such as REG_DWORD and REG_QWORD, this should be populated with the decimal representation (e.g `"1"`). | wildcard |
-| threat.indicator.registry.data.type | Standard registry type for encoding contents | keyword |
-| threat.indicator.registry.hive | Abbreviated name for the hive. | keyword |
-| threat.indicator.registry.key | Hive-relative path of keys. | keyword |
-| threat.indicator.registry.path | Full path, including hive, key and value | keyword |
-| threat.indicator.registry.value | Name of the value written. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.1 or OpenCTI | keyword |
-| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| threat.indicator.url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
-| threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| threat.indicator.url.full.text | Multi-field of `threat.indicator.url.full`. | match_only_text |
-| threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
-| threat.indicator.url.original.text | Multi-field of `threat.indicator.url.original`. | match_only_text |
-| threat.indicator.url.password | Password of the request. | keyword |
-| threat.indicator.url.path | Path of the request, such as "/search". | wildcard |
-| threat.indicator.url.port | Port of the request, such as 443. | long |
-| threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
-| threat.indicator.url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
-| threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| threat.indicator.url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
-| threat.indicator.url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
-| threat.indicator.url.username | Username of the request. | keyword |
-| threat.indicator.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
-| threat.indicator.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| threat.indicator.x509.not_after | Time at which the certificate is no longer considered valid. | date |
-| threat.indicator.x509.not_before | Time at which the certificate is first considered valid. | date |
-| threat.indicator.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
-| threat.indicator.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
-| threat.indicator.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
-| threat.indicator.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
-| threat.indicator.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| threat.indicator.x509.version_number | Version of x509 format. | keyword |
 

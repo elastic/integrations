@@ -7,10 +7,32 @@
             "panelsJSON": "{\"d8f15f7c-0a06-47de-b9d1-7a5fc8e38ebe\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"process.thread.name\",\"title\":\"Process Thread\",\"id\":\"d8f15f7c-0a06-47de-b9d1-7a5fc8e38ebe\",\"enhancements\":{}}},\"0db0b0e3-0b6a-4f91-8209-b6f54ece9975\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"log.origin.file.name\",\"title\":\"Log File Name\",\"id\":\"0db0b0e3-0b6a-4f91-8209-b6f54ece9975\",\"enhancements\":{}}},\"6a41cd35-66c0-4d68-9403-d593ffe78487\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"log.level\",\"title\":\"Log Level\",\"id\":\"6a41cd35-66c0-4d68-9403-d593ffe78487\",\"enhancements\":{}}}}"
         },
         "description": "System Logs of Cassandra",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "cassandra.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "cassandra.log"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -20,6 +42,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -58,8 +82,7 @@
                 },
                 "panelIndex": "18399b21-a004-4caa-9955-4adcc64985be",
                 "title": "Dashboards [Cassandra]",
-                "type": "visualization",
-                "version": "8.3.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -69,16 +92,12 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-9e4b4d41-a619-4535-8e75-b7cfcf0a6fcb",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "32a63ece-b6ce-4bc9-a426-a7d45555c74d",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "9e4b4d41-a619-4535-8e75-b7cfcf0a6fcb": {
                                             "columnOrder": [
@@ -125,46 +144,27 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "32a63ece-b6ce-4bc9-a426-a7d45555c74d",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "cassandra.log"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "cassandra.log"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "event.dataset : \"cassandra.log\" "
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "893f8cdc-dc44-4bce-87d3-39628147d643"
-                                        ],
                                         "layerId": "9e4b4d41-a619-4535-8e75-b7cfcf0a6fcb",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "b8566557-cb17-42ff-9f2d-5fb6d2b3e8ab",
+                                        "metrics": [
+                                            "b8566557-cb17-42ff-9f2d-5fb6d2b3e8ab"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "893f8cdc-dc44-4bce-87d3-39628147d643"
+                                        ]
                                     }
                                 ],
                                 "shape": "donut"
@@ -186,38 +186,69 @@
                 },
                 "panelIndex": "c70b222f-e779-42ed-bb48-ed7531aa00c0",
                 "title": "Log Severity [Logs Cassandra]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "log.level",
+                            "process.thread.name",
+                            "log.origin.file.name",
+                            "log.origin.file.line",
+                            "message"
+                        ],
+                        "grid": {},
+                        "hideChart": false,
+                        "isTextBasedQuery": false,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "timeRestore": false,
+                        "usesAdHocDataView": false
+                    },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 17,
-                    "i": "db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
+                    "i": "fe3c04b7-1e67-4df3-b00a-03cc435213dc",
                     "w": 35,
                     "x": 0,
                     "y": 5
                 },
-                "panelIndex": "db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
-                "panelRefName": "panel_db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
+                "panelIndex": "fe3c04b7-1e67-4df3-b00a-03cc435213dc",
                 "title": "Cassandra Log Search [Logs Cassandra]",
-                "type": "search",
-                "version": "8.3.0"
+                "type": "search"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Cassandra] System Logs",
         "version": 1
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-13T09:45:09.314Z",
     "id": "cassandra-49e4e6e0-cc54-11ec-8c59-ed6efced90da",
-    "migrationVersion": {
-        "dashboard": "8.3.0"
-    },
+    "managed": false,
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "c70b222f-e779-42ed-bb48-ed7531aa00c0:indexpattern-datasource-layer-9e4b4d41-a619-4535-8e75-b7cfcf0a6fcb",
@@ -225,13 +256,8 @@
         },
         {
             "id": "logs-*",
-            "name": "c70b222f-e779-42ed-bb48-ed7531aa00c0:32a63ece-b6ce-4bc9-a426-a7d45555c74d",
+            "name": "fe3c04b7-1e67-4df3-b00a-03cc435213dc:kibanaSavedObjectMeta.searchSourceJSON.index",
             "type": "index-pattern"
-        },
-        {
-            "id": "cassandra-a7a48e10-1f8a-11ec-ba68-fbf426daf104",
-            "name": "db26a54d-2a4c-492a-8533-7b0b55dfc0cc:panel_db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
-            "type": "search"
         },
         {
             "id": "logs-*",
@@ -249,5 +275,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

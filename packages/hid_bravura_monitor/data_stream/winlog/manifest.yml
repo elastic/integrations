@@ -22,6 +22,22 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: ignore_older
+        type: text
+        title: Ignore events older than
+        default: 72h
+        required: false
+        show_user: false
+        description: >-
+          If this option is specified, events that are older than the specified amount of time are ignored. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+      - name: language
+        type: text
+        title: Language ID
+        description: >-
+          The language ID the events will be rendered in. The language will be forced regardless of the system language. A complete list of language IDs can be found https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c[here]. It defaults to `0`, which indicates to use the system language. E.g.: 0x0409 for en-US
+        required: false
+        show_user: false
+        default: 0
       - name: processors
         type: yaml
         title: Processors
@@ -35,3 +51,13 @@ streams:
         title: Tags
         multi: true
         show_user: false
+      - name: custom
+        type: yaml
+        title: Custom Configurations
+        description: >-
+          YAML configuration options for winlog input. Be careful, this may break the integration.
+        required: false
+        show_user: false
+        default: |-
+          # Winlog configuration example
+          #batch_read_size: 100
