@@ -6,7 +6,7 @@
 
 Use the MongoDB Atlas integration to:
 
-- Collect MongoDB Atlas mongod audit logs, mongod database logs, organization logs, project logs, hardware, and process metrics for comprehensive monitoring and analysis.
+- Collect MongoDB Atlas mongod audit, mongod database, organization and project logs, along with disk, hardware and process metrics for comprehensive monitoring and analysis.
 - Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
 - Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
@@ -16,9 +16,10 @@ The MongoDB Atlas integration collects logs and metrics.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration are `mongod_audit`, `mongod_database`, `organization`, and `project`.
 
-Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration are `process` and `hardware` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
+Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration are `disk`, `hardware`, and `process` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
 Data streams:
+- `disk`: This data stream collects metrics of disk or partition for all the hosts in the specified group. Metrics like measurements for the disk, such as I/O operations, read and write latency, and space usage.
 - `hardware`: This data stream collects all the Atlas search hardware and status data series within the provided time range for one process in the specified project.
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
@@ -136,8 +137,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ## Metrics reference
 
+## Disk
+
+This is the `disk` data stream. This data stream collects detailed view on disk usage and captures crucial information about I/O operations, read and write latency, and space utilization. To collect disk metrics, the requesting API Key must have the `Project Read Only` role.
+
+{{event "disk"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "disk"}}
+
 ### Hardware
-This data stream collects hardware and status metrics for each process in the specified group. It includes measurements such as CPU usage, memory consumption, JVM memory usage, disk usage, etc.
+
+This is the `hardware` data stream. This data stream collects hardware and status metrics for each process in the specified group. It includes measurements such as CPU usage, memory consumption, JVM memory usage, disk usage, etc. To collect hardware metrics, the requesting API Key must have the `Project Read Only` or higher role.
 
 {{event "hardware"}}
 
@@ -148,7 +162,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "hardware"}}
 
 ### Process
-This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream. To collect process metrics, the requesting API Key must have the `Project Read Only` role.
+
+This is the `process` data stream. This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream. To collect process metrics, the requesting API Key must have the `Project Read Only` role.
 
 {{event "process"}}
 
