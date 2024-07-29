@@ -13,8 +13,9 @@
                 "374dee3b-0adb-43f7-87d4-a8b9c1c9c1c5": {
                     "explicitInput": {
                         "enhancements": {},
-                        "fieldName": "host.hostname",
+                        "fieldName": "tychon.host.hostname",
                         "id": "374dee3b-0adb-43f7-87d4-a8b9c1c9c1c5",
+                        "searchTechnique": "prefix",
                         "singleSelect": true,
                         "title": "Hostname"
                     },
@@ -87,7 +88,62 @@
                         "data": {
                             "aggs": [],
                             "searchSource": {
-                                "filter": [],
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "negate": false,
+                                            "params": [
+                                                {
+                                                    "meta": {
+                                                        "alias": null,
+                                                        "disabled": false,
+                                                        "field": "labels.is_transform_source",
+                                                        "index": "logs-*",
+                                                        "key": "labels.is_transform_source",
+                                                        "negate": true,
+                                                        "params": {
+                                                            "query": "true"
+                                                        },
+                                                        "type": "phrase"
+                                                    },
+                                                    "query": {
+                                                        "match_phrase": {
+                                                            "labels.is_transform_source": "true"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "meta": {
+                                                        "alias": null,
+                                                        "disabled": false,
+                                                        "field": "event.dataset",
+                                                        "index": "logs-*",
+                                                        "key": "event.dataset",
+                                                        "negate": false,
+                                                        "params": {
+                                                            "query": "tychon.host"
+                                                        },
+                                                        "type": "phrase"
+                                                    },
+                                                    "query": {
+                                                        "match_phrase": {
+                                                            "event.dataset": "tychon.host"
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "relation": "AND",
+                                            "type": "combined"
+                                        },
+                                        "query": {}
+                                    }
+                                ],
                                 "query": {
                                     "language": "kuery",
                                     "query": ""
@@ -100,12 +156,21 @@
                             "axis_formatter": "number",
                             "axis_position": "left",
                             "axis_scale": "normal",
+                            "bar_color_rules": [
+                                {
+                                    "id": "29121d5d-76dc-4667-90bd-e647fb750903"
+                                }
+                            ],
                             "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": ""
+                            },
                             "id": "92d62e85-e917-436d-b8d3-f69df24ed02b",
                             "index_pattern_ref_name": "metrics_a5029f8a-476b-4375-bb7a-d60889ade8a4_0_index_pattern",
                             "interval": "",
                             "isModelInvalid": false,
-                            "markdown": "**Platform:** {{ osplatform.osplatform.last.formatted }} \\\r\n**Operating System:** {{ osname.osname.last.formatted }} \\\r\n**Architecture:** {{ hostarch.hostarch.last.formatted }} \\\r\n**Kernel:** {{ hostkern.hostkern.last.formatted }} \\\r\n**Version:** {{ osver.osver.last.formatted }} \\\r\n**Build:** {{ osbuild.osbuild.last.formatted }} \\\r\n**Description:** {{ osdesc.osdesc.last.formatted }} \\\r\n**Edition:** {{ osedition.osedition.last.formatted }} \\\r\n**Organization:** {{ osorg.osorg.last.formatted }}",
+                            "markdown": "**Platform:** {{ osplatform.osplatform.last.formatted }} \\\r\n**Operating System:** {{ osname.osname.last.formatted }} \\\r\n**Architecture:** {{ hostarch.hostarch.last.formatted }} \\\r\n**Kernel:** {{ hostkern.hostkern.last.formatted }} \\\r\n**Version:** {{ osver.osver.last.formatted }} \\\r\n**Build:** {{ osbuild.osbuild.last.formatted }} \\\r\n**Edition:** {{ osedition.osedition.last.formatted }} \\\r\n**Organization:** {{ osorg.osorg.last.formatted }}",
                             "max_lines_legend": 1,
                             "series": [
                                 {
@@ -231,37 +296,6 @@
                                     "stacked": "none",
                                     "time_range_mode": "entire_time_range",
                                     "var_name": "osver"
-                                },
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "default",
-                                    "id": "b292c170-4152-11ee-982a-2bb4f2d49090",
-                                    "label": "osdesc",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "agg_with": "concat",
-                                            "field": "host.os.description",
-                                            "id": "b292c171-4152-11ee-982a-2bb4f2d49090",
-                                            "order": "desc",
-                                            "type": "top_hit"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "everything",
-                                    "stacked": "none",
-                                    "time_range_mode": "entire_time_range",
-                                    "var_name": "osdesc"
                                 },
                                 {
                                     "axis_position": "right",
@@ -418,8 +452,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-f4ed5a42-075e-4684-a82d-9b69f3ff5212",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "78630312-b80b-4e46-af23-31e9ea3547d2",
                                 "type": "index-pattern"
                             }
                         ],
@@ -457,10 +496,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.hardware.bios.version"
+                                                    "sourceField": "tychon.host.hardware.bios.version"
                                                 },
                                                 "5db71250-e4a6-4352-9841-60bda3bb3d61": {
                                                     "dataType": "number",
@@ -494,10 +534,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 2
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.hardware.bios.name"
+                                                    "sourceField": "tychon.host.hardware.bios.name"
                                                 },
                                                 "6b659b27-bfc8-452e-b8f9-3893e43a24ab": {
                                                     "customLabel": true,
@@ -520,10 +561,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.biossn"
+                                                    "sourceField": "tychon.host.biossn"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -535,7 +577,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "78630312-b80b-4e46-af23-31e9ea3547d2",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.host"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.host"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -587,8 +684,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-596cb7b8-af7b-40db-affa-e7591c0165be",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "8f110d63-20d8-41e2-9b72-88133cde9321",
                                 "type": "index-pattern"
                             }
                         ],
@@ -627,10 +729,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.domain"
+                                                    "sourceField": "tychon.host.domain"
                                                 },
                                                 "0f437a99-d536-4931-ae23-18509767b878": {
                                                     "dataType": "number",
@@ -664,10 +767,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.hardware.manufacturer"
+                                                    "sourceField": "tychon.host.hardware.manufacturer"
                                                 },
                                                 "84fbf0d5-cd51-41c0-a7c7-6072fd807f0b": {
                                                     "customLabel": true,
@@ -690,10 +794,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.hardware.owner"
+                                                    "sourceField": "tychon.host.hardware.owner"
                                                 },
                                                 "b9936688-2921-4cc7-b058-e0fc26c376ec": {
                                                     "customLabel": true,
@@ -716,10 +821,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.hardware.serial_number"
+                                                    "sourceField": "tychon.host.hardware.serial_number"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -731,7 +837,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "8f110d63-20d8-41e2-9b72-88133cde9321",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.host"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.host"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -790,8 +951,13 @@
                         "description": "",
                         "references": [
                             {
-                                "id": "a264bf8d-abc3-4789-9f4c-bf76397e06ba",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-21cf6cf3-6399-4b45-8e70-849aa6623d06",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "21f192f0-305a-4aec-b1e6-b7fd66dd1e7a",
                                 "type": "index-pattern"
                             }
                         ],
@@ -834,10 +1000,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.cpu.number_of_logical_processors"
+                                                    "sourceField": "tychon.host.cpu.number_of_logical_processors"
                                                 },
                                                 "0f5c4a52-d271-4328-95b6-6c69453180bc": {
                                                     "customLabel": true,
@@ -860,10 +1027,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.cpu.name"
+                                                    "sourceField": "tychon.host.cpu.name"
                                                 },
                                                 "18b6d48d-b1d6-4d14-8f46-f7132ab3ecff": {
                                                     "customLabel": true,
@@ -886,10 +1054,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.cpu.family"
+                                                    "sourceField": "tychon.host.cpu.family"
                                                 },
                                                 "1d0ad394-868c-4a94-984b-20325b2e1304": {
                                                     "customLabel": true,
@@ -912,10 +1081,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.cpu.virtualization_firmware_enabled"
+                                                    "sourceField": "tychon.host.cpu.virtualization_firmware_enabled"
                                                 },
                                                 "52e60488-e5d3-40c2-80a0-07344374be6d": {
                                                     "dataType": "number",
@@ -949,10 +1119,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.cpu.number_of_cores"
+                                                    "sourceField": "tychon.host.cpu.number_of_cores"
                                                 },
                                                 "b718099c-427c-4132-95e5-660deafe078c": {
                                                     "customLabel": true,
@@ -975,10 +1146,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.cpu.manufacturer"
+                                                    "sourceField": "tychon.host.cpu.manufacturer"
                                                 },
                                                 "eba3a044-1b3b-4a95-85a1-b16eda075894": {
                                                     "customLabel": true,
@@ -1001,10 +1173,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.cpu.speed"
+                                                    "sourceField": "tychon.host.cpu.speed"
                                                 },
                                                 "fa120ad2-0f99-4d28-bc0d-e387ad82614b": {
                                                     "customLabel": true,
@@ -1027,10 +1200,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.cpu.clockspeed"
+                                                    "sourceField": "tychon.host.cpu.clockspeed"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1042,7 +1216,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "21f192f0-305a-4aec-b1e6-b7fd66dd1e7a",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cpu"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cpu"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1124,7 +1353,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-72f117b5-7ab9-41e7-a1f4-423f8b423707",
                                 "type": "index-pattern"
                             }
@@ -1133,6 +1362,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "72f117b5-7ab9-41e7-a1f4-423f8b423707": {
                                             "columnOrder": [
@@ -1144,7 +1374,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "vulnerability.result : \"fail\" "
+                                                        "query": "tychon.vulnerability.result : \"fail\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Failing Vulnerabilities",
@@ -1153,10 +1383,11 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.id"
+                                                    "sourceField": "tychon.vulnerability.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1165,7 +1396,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "69a2a56b-df8d-4394-a5a3-58ebea0f1e0c",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.cve"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.cve"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1258,8 +1544,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "e886429e-9532-4f44-bb36-6465fe760866",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-56f3ea8a-a52d-462c-a5d6-2446d6826ad2",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "afe89ecd-4896-4377-9efb-f72686ce4f88",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1312,10 +1603,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.adapter.ip"
+                                                    "sourceField": "tychon.host.adapter.ip"
                                                 },
                                                 "52fb95cb-0446-4db0-93d7-d79a7fea0344": {
                                                     "customLabel": true,
@@ -1338,10 +1630,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.adapter.virtual"
+                                                    "sourceField": "tychon.host.adapter.virtual"
                                                 },
                                                 "697b46cb-1d88-49da-9761-25a974891b4a": {
                                                     "customLabel": true,
@@ -1364,10 +1657,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.adapter.wifi.ssid"
+                                                    "sourceField": "tychon.host.adapter.wifi.ssid"
                                                 },
                                                 "85ee823b-6334-4687-ab5f-43570c69996c": {
                                                     "customLabel": true,
@@ -1390,10 +1684,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 50
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.adapter.alias"
+                                                    "sourceField": "tychon.host.adapter.alias"
                                                 },
                                                 "99c6b2d5-c246-46a3-86dd-55d9e30491fd": {
                                                     "customLabel": true,
@@ -1416,10 +1711,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.adapter.gateway"
+                                                    "sourceField": "tychon.host.adapter.gateway"
                                                 },
                                                 "ab0584bf-ccba-47f9-8185-655880391447": {
                                                     "customLabel": true,
@@ -1442,10 +1738,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.adapter.dhcp.enabled"
+                                                    "sourceField": "tychon.host.adapter.dhcp.enabled"
                                                 },
                                                 "f3863ce5-8d01-4f5e-a42b-137410f47c41": {
                                                     "customLabel": true,
@@ -1468,10 +1765,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.adapter.mac"
+                                                    "sourceField": "tychon.host.adapter.mac"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1483,7 +1781,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "afe89ecd-4896-4377-9efb-f72686ce4f88",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.networkadapter"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.networkadapter"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1580,7 +1933,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-72f117b5-7ab9-41e7-a1f4-423f8b423707",
                                 "type": "index-pattern"
                             }
@@ -1589,6 +1942,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "72f117b5-7ab9-41e7-a1f4-423f8b423707": {
                                             "columnOrder": [
@@ -1600,7 +1954,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "rule.result : \"fail\" and rule.severity : \"high\" "
+                                                        "query": "tychon.rule.result : \"fail\" and tychon.rule.severity : \"high\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Failed High SCAP",
@@ -1609,10 +1963,11 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "rule.id"
+                                                    "sourceField": "tychon.rule.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1621,7 +1976,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "ad212b04-cee3-4ff3-bb1f-28a8e1140689",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.stig"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.stig"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1715,8 +2125,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "62456a9a-bd4c-4b57-b6b5-5556b6869ce5",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-7fbad8bf-b2fd-44ee-b47b-5b2260b8498d",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "81baa70e-6493-43f6-98ae-a419b2fde6ba",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1727,16 +2142,16 @@
                                     "layers": {
                                         "7fbad8bf-b2fd-44ee-b47b-5b2260b8498d": {
                                             "columnOrder": [
-                                                "d65a1a00-5ae8-443b-82bc-62dce81f7ac5",
-                                                "2e01df65-7787-4e15-86e3-a45eed285033",
-                                                "ed56a46c-f9da-4d58-b0f3-06e0ecc264ef",
-                                                "37ea1f0a-2f23-4435-9866-6d11677ca86b",
-                                                "d5c5e6ac-d61c-4bf2-94de-62b85d9e945a"
+                                                "f7366ea3-fae1-4c65-96f9-4b7cf4998cfb",
+                                                "5acae755-f166-4cec-ada8-5f23e835f308",
+                                                "79e13e9c-0d67-4901-9f54-3dee7d9323c7",
+                                                "80886cde-2da4-4bbc-80ff-4bbae46416fb",
+                                                "9ae1b5f0-7edf-4233-9025-25d00750b54f"
                                             ],
                                             "columns": {
-                                                "2e01df65-7787-4e15-86e3-a45eed285033": {
+                                                "5acae755-f166-4cec-ada8-5f23e835f308": {
                                                     "customLabel": true,
-                                                    "dataType": "string",
+                                                    "dataType": "number",
                                                     "isBucketed": true,
                                                     "label": "Percent Full",
                                                     "operationType": "terms",
@@ -1747,7 +2162,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "fallback": true,
+                                                            "fallback": false,
                                                             "type": "alphabetical"
                                                         },
                                                         "orderDirection": "asc",
@@ -1755,80 +2170,13 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "volume.percent_full"
+                                                    "sourceField": "tychon.volume.percent_full"
                                                 },
-                                                "37ea1f0a-2f23-4435-9866-6d11677ca86b": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Freespace",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "fallback": true,
-                                                            "type": "alphabetical"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 3
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "volume.freespace"
-                                                },
-                                                "d5c5e6ac-d61c-4bf2-94de-62b85d9e945a": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "volume.size: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Total Size",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "volume.size"
-                                                },
-                                                "d65a1a00-5ae8-443b-82bc-62dce81f7ac5": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Drive",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "fallback": true,
-                                                            "type": "alphabetical"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "volume.drive.letter"
-                                                },
-                                                "ed56a46c-f9da-4d58-b0f3-06e0ecc264ef": {
+                                                "79e13e9c-0d67-4901-9f54-3dee7d9323c7": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
@@ -1841,7 +2189,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "fallback": true,
+                                                            "fallback": false,
                                                             "type": "alphabetical"
                                                         },
                                                         "orderDirection": "asc",
@@ -1849,10 +2197,81 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "volume.name"
+                                                    "sourceField": "tychon.volume.name"
+                                                },
+                                                "80886cde-2da4-4bbc-80ff-4bbae46416fb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": true,
+                                                    "label": "Freespace",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": false,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.volume.freespace"
+                                                },
+                                                "9ae1b5f0-7edf-4233-9025-25d00750b54f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"tychon.volume.size\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Total Size",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tychon.volume.size"
+                                                },
+                                                "f7366ea3-fae1-4c65-96f9-4b7cf4998cfb": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Drive",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": false,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.volume.drive.letter"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1864,7 +2283,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "81baa70e-6493-43f6-98ae-a419b2fde6ba",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.volume"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.volume"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1873,25 +2347,30 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "2e01df65-7787-4e15-86e3-a45eed285033",
+                                        "alignment": "center",
+                                        "columnId": "9ae1b5f0-7edf-4233-9025-25d00750b54f",
+                                        "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "d65a1a00-5ae8-443b-82bc-62dce81f7ac5",
+                                        "columnId": "f7366ea3-fae1-4c65-96f9-4b7cf4998cfb",
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "ed56a46c-f9da-4d58-b0f3-06e0ecc264ef",
+                                        "columnId": "5acae755-f166-4cec-ada8-5f23e835f308",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "79e13e9c-0d67-4901-9f54-3dee7d9323c7",
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
                                         "alignment": "center",
-                                        "columnId": "d5c5e6ac-d61c-4bf2-94de-62b85d9e945a",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "alignment": "center",
-                                        "columnId": "37ea1f0a-2f23-4435-9866-6d11677ca86b",
+                                        "columnId": "80886cde-2da4-4bbc-80ff-4bbae46416fb",
+                                        "isMetric": false,
                                         "isTransposed": false
                                     }
                                 ],
@@ -1942,7 +2421,7 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-4ac1c77b-306c-4a94-b080-f204193d6efd",
                                 "type": "index-pattern"
                             }
@@ -1951,6 +2430,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "4ac1c77b-306c-4a94-b080-f204193d6efd": {
                                             "columnOrder": [
@@ -1993,7 +2473,7 @@
                                                     "label": "Virtualization Security Features Disabled",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "count(kql='event.deviceguard.credentialguard.enabled : false ')+\r\ncount(kql='event.deviceguard.credentialguard.running: false')+\r\ncount(kql='event.deviceguard.virtualizationbasedsecurity.status:Off')+\r\ncount(kql='event.deviceguard.basevirtualizationsupport.available : false')+\r\ncount(kql='event.deviceguard.dmaprotection.available : false ')+\r\ncount(kql='event.deviceguard.secureboot.available:false')+\r\ncount(kql='event.deviceguard.hypervisorenforcedcodeint.enabled: false')+\r\ncount(kql='event.deviceguard.hypervisorenforcedcodeint.running: false')+\r\ncount(kql='event.deviceguard.securememoverwrite.available  : false')+\r\ncount(kql='event.deviceguard.smmsecuritymigrations.available : false')+\r\ncount(kql='event.deviceguard.systemguardsecurelaunch.enabled : false')+\r\ncount(kql='event.deviceguard.systemguardsecurelaunch.running : false')+\r\ncount(kql='event.deviceguard.ueficodereadonly.available : false')+\r\ncount(kql='event.deviceguard.usermodecodeintegrity.policyenforcement: \"Off\" ')+\r\ncount(kql='event.ufi.enabled: false ')",
+                                                        "formula": "count(kql='tychon.event.deviceguard.credentialguard.enabled: false ')+\r\ncount(kql='tychon.event.deviceguard.credentialguard.running: false')+\r\ncount(kql='tychon.event.deviceguard.virtualizationbasedsecurity.status:\"Off\"')+\r\ncount(kql='tychon.event.deviceguard.basevirtualizationsupport.available: false')+\r\ncount(kql='tychon.event.deviceguard.dmaprotection.available: false ')+\r\ncount(kql='tychon.event.deviceguard.secureboot.available: false')+\r\ncount(kql='tychon.event.deviceguard.hypervisorenforcedcodeint.enabled: false')+\r\ncount(kql='tychon.event.deviceguard.hypervisorenforcedcodeint.running: false')+\r\ncount(kql='tychon.event.deviceguard.securememoverwrite.available  : false')+\r\ncount(kql='tychon.event.deviceguard.smmsecuritymigrations.available : false')+\r\ncount(kql='tychon.event.deviceguard.systemguardsecurelaunch.enabled : false')+\r\ncount(kql='tychon.event.deviceguard.systemguardsecurelaunch.running : false')+\r\ncount(kql='tychon.event.deviceguard.ueficodereadonly.available: false')+\r\ncount(kql='tychon.event.deviceguard.usermodecodeintegrity.policyenforcement: \"Off\"')+\r\ncount(kql='tychon.event.ufi.enabled: false')",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2006,7 +2486,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.credentialguard.enabled : false "
+                                                        "query": "tychon.event.deviceguard.credentialguard.enabled: false "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2022,7 +2502,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.credentialguard.running: false"
+                                                        "query": "tychon.event.deviceguard.credentialguard.running: false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2038,7 +2518,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.systemguardsecurelaunch.enabled : false"
+                                                        "query": "tychon.event.deviceguard.systemguardsecurelaunch.enabled : false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2054,7 +2534,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.systemguardsecurelaunch.running : false"
+                                                        "query": "tychon.event.deviceguard.systemguardsecurelaunch.running : false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2070,7 +2550,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.ueficodereadonly.available : false"
+                                                        "query": "tychon.event.deviceguard.ueficodereadonly.available: false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2086,7 +2566,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.usermodecodeintegrity.policyenforcement: \"Off\" "
+                                                        "query": "tychon.event.deviceguard.usermodecodeintegrity.policyenforcement: \"Off\""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2102,7 +2582,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.ufi.enabled: false "
+                                                        "query": "tychon.event.ufi.enabled: false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2217,11 +2697,11 @@
                                                                 "2bcd5106-f375-4a03-bb55-a5b2ecfcd869X14"
                                                             ],
                                                             "location": {
-                                                                "max": 1030,
+                                                                "max": 1132,
                                                                 "min": 0
                                                             },
                                                             "name": "add",
-                                                            "text": "count(kql='event.deviceguard.credentialguard.enabled : false ')+\r\ncount(kql='event.deviceguard.credentialguard.running: false')+\r\ncount(kql='event.deviceguard.virtualizationbasedsecurity.status:Off')+\r\ncount(kql='event.deviceguard.basevirtualizationsupport.available : false')+\r\ncount(kql='event.deviceguard.dmaprotection.available : false ')+\r\ncount(kql='event.deviceguard.secureboot.available:false')+\r\ncount(kql='event.deviceguard.hypervisorenforcedcodeint.enabled: false')+\r\ncount(kql='event.deviceguard.hypervisorenforcedcodeint.running: false')+\r\ncount(kql='event.deviceguard.securememoverwrite.available  : false')+\r\ncount(kql='event.deviceguard.smmsecuritymigrations.available : false')+\r\ncount(kql='event.deviceguard.systemguardsecurelaunch.enabled : false')+\r\ncount(kql='event.deviceguard.systemguardsecurelaunch.running : false')+\r\ncount(kql='event.deviceguard.ueficodereadonly.available : false')+\r\ncount(kql='event.deviceguard.usermodecodeintegrity.policyenforcement: \"Off\" ')+\r\ncount(kql='event.ufi.enabled: false ')",
+                                                            "text": "count(kql='tychon.event.deviceguard.credentialguard.enabled: false ')+\r\ncount(kql='tychon.event.deviceguard.credentialguard.running: false')+\r\ncount(kql='tychon.event.deviceguard.virtualizationbasedsecurity.status:\"Off\"')+\r\ncount(kql='tychon.event.deviceguard.basevirtualizationsupport.available: false')+\r\ncount(kql='tychon.event.deviceguard.dmaprotection.available: false ')+\r\ncount(kql='tychon.event.deviceguard.secureboot.available: false')+\r\ncount(kql='tychon.event.deviceguard.hypervisorenforcedcodeint.enabled: false')+\r\ncount(kql='tychon.event.deviceguard.hypervisorenforcedcodeint.running: false')+\r\ncount(kql='tychon.event.deviceguard.securememoverwrite.available  : false')+\r\ncount(kql='tychon.event.deviceguard.smmsecuritymigrations.available : false')+\r\ncount(kql='tychon.event.deviceguard.systemguardsecurelaunch.enabled : false')+\r\ncount(kql='tychon.event.deviceguard.systemguardsecurelaunch.running : false')+\r\ncount(kql='tychon.event.deviceguard.ueficodereadonly.available: false')+\r\ncount(kql='tychon.event.deviceguard.usermodecodeintegrity.policyenforcement: \"Off\"')+\r\ncount(kql='tychon.event.ufi.enabled: false')",
                                                             "type": "function"
                                                         }
                                                     },
@@ -2249,7 +2729,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.virtualizationbasedsecurity.status:Off"
+                                                        "query": "tychon.event.deviceguard.virtualizationbasedsecurity.status:\"Off\""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2265,7 +2745,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.basevirtualizationsupport.available : false"
+                                                        "query": "tychon.event.deviceguard.basevirtualizationsupport.available: false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2281,7 +2761,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.dmaprotection.available : false "
+                                                        "query": "tychon.event.deviceguard.dmaprotection.available: false "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2297,7 +2777,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.secureboot.available:false"
+                                                        "query": "tychon.event.deviceguard.secureboot.available: false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2313,7 +2793,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.hypervisorenforcedcodeint.enabled: false"
+                                                        "query": "tychon.event.deviceguard.hypervisorenforcedcodeint.enabled: false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2329,7 +2809,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.hypervisorenforcedcodeint.running: false"
+                                                        "query": "tychon.event.deviceguard.hypervisorenforcedcodeint.running: false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2345,7 +2825,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.securememoverwrite.available  : false"
+                                                        "query": "tychon.event.deviceguard.securememoverwrite.available  : false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2361,7 +2841,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.deviceguard.smmsecuritymigrations.available : false"
+                                                        "query": "tychon.event.deviceguard.smmsecuritymigrations.available : false"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Virtualization Security Features Disabled",
@@ -2374,6 +2854,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -2382,7 +2863,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "a9b1e680-d0ff-418a-81cf-94b29b24aa69",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.host"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.host"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -2482,8 +3018,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-bae2bbb2-5c2c-406b-8deb-d02970643aa0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "945b7074-277c-4e03-9064-32b35eb5e814",
                                 "type": "index-pattern"
                             }
                         ],
@@ -2533,10 +3074,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.security.antivirus.name"
+                                                    "sourceField": "tychon.host.security.antivirus.name"
                                                 },
                                                 "795022df-3834-4ba5-b1a4-b747e4da1e2a": {
                                                     "customLabel": true,
@@ -2559,10 +3101,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.security.antivirus.state"
+                                                    "sourceField": "tychon.host.security.antivirus.state"
                                                 },
                                                 "936ad955-bf89-4c25-908d-d8d4e1e71bb0": {
                                                     "customLabel": true,
@@ -2585,10 +3128,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.security.antivirus.exists"
+                                                    "sourceField": "tychon.host.security.antivirus.exists"
                                                 },
                                                 "c984f83e-d094-47ea-87d2-3dcd7154ae37": {
                                                     "customLabel": true,
@@ -2611,10 +3155,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.security.antivirus.status"
+                                                    "sourceField": "tychon.host.security.antivirus.status"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -2626,7 +3171,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "945b7074-277c-4e03-9064-32b35eb5e814",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.host"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.host"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -2703,8 +3303,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-ee0f709e-2211-41d5-afc0-086b3eb4d692",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b91e9881-4c1f-46a5-8b5e-675836af3c3b",
                                 "type": "index-pattern"
                             }
                         ],
@@ -2727,7 +3332,7 @@
                                                     "dataType": "date",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "tychon.definition.stig: *"
+                                                        "query": "\"tychon.tychon.definition.stig\": *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "SCAP Def Date",
@@ -2736,7 +3341,7 @@
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "tychon.definition.stig"
+                                                    "sourceField": "tychon.tychon.definition.stig"
                                                 },
                                                 "4bae6e8b-82e3-4e86-b8cc-017cd41c4cdc": {
                                                     "customLabel": true,
@@ -2759,10 +3364,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "tychon.version.agent"
+                                                    "sourceField": "tychon.tychon.version.agent"
                                                 },
                                                 "6d563e2d-f0dd-40fc-b9c4-c003f69b6fd7": {
                                                     "customLabel": true,
@@ -2785,17 +3391,18 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "tychon.version.content"
+                                                    "sourceField": "tychon.tychon.version.content"
                                                 },
                                                 "be8ac2ad-1ff9-4123-9ca6-ab95e7b1a50f": {
                                                     "customLabel": true,
                                                     "dataType": "date",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "tychon.definition.oval: *"
+                                                        "query": "\"tychon.tychon.definition.oval\": *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "OVAL Def Date",
@@ -2804,7 +3411,7 @@
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "tychon.definition.oval"
+                                                    "sourceField": "tychon.tychon.definition.oval"
                                                 },
                                                 "f80b87d6-0e6b-4489-863b-0164f889b4e6": {
                                                     "customLabel": true,
@@ -2827,10 +3434,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "tychon.id"
+                                                    "sourceField": "tychon.tychon.id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -2842,7 +3450,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "b91e9881-4c1f-46a5-8b5e-675836af3c3b",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.host"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.host"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -2906,32 +3569,52 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-07-28T17:01:11.892Z",
+    "created_at": "2024-08-02T17:16:43.111Z",
     "id": "tychon-6165bf50-3dbf-11ee-9610-15dee918f31a-host",
     "managed": false,
     "references": [
         {
-            "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+            "id": "logs-*",
+            "name": "a5029f8a-476b-4375-bb7a-d60889ade8a4:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "a5029f8a-476b-4375-bb7a-d60889ade8a4:metrics_a5029f8a-476b-4375-bb7a-d60889ade8a4_0_index_pattern",
             "type": "index-pattern"
         },
         {
-            "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+            "id": "logs-*",
             "name": "8ecc8919-ac6e-4281-a356-05f552ccf10f:indexpattern-datasource-layer-f4ed5a42-075e-4684-a82d-9b69f3ff5212",
             "type": "index-pattern"
         },
         {
-            "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+            "id": "logs-*",
+            "name": "8ecc8919-ac6e-4281-a356-05f552ccf10f:78630312-b80b-4e46-af23-31e9ea3547d2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "fd21cc47-2ac3-4a88-8598-c458a47d1e90:indexpattern-datasource-layer-596cb7b8-af7b-40db-affa-e7591c0165be",
             "type": "index-pattern"
         },
         {
-            "id": "a264bf8d-abc3-4789-9f4c-bf76397e06ba",
+            "id": "logs-*",
+            "name": "fd21cc47-2ac3-4a88-8598-c458a47d1e90:8f110d63-20d8-41e2-9b72-88133cde9321",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "7412b1ca-0c47-4905-aa6a-474686887f76:indexpattern-datasource-layer-21cf6cf3-6399-4b45-8e70-849aa6623d06",
             "type": "index-pattern"
         },
         {
-            "id": "78931842-dc88-45d7-a6ee-d79fb9f615bd",
+            "id": "logs-*",
+            "name": "7412b1ca-0c47-4905-aa6a-474686887f76:21f192f0-305a-4aec-b1e6-b7fd66dd1e7a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "88c54662-3d8e-4484-9bad-ab4d1aac4ffc:indexpattern-datasource-layer-72f117b5-7ab9-41e7-a1f4-423f8b423707",
             "type": "index-pattern"
         },
@@ -2941,8 +3624,13 @@
             "type": "dashboard"
         },
         {
-            "id": "e886429e-9532-4f44-bb36-6465fe760866",
+            "id": "logs-*",
             "name": "5ba071e0-cef6-4e8f-b34a-11b1cc806714:indexpattern-datasource-layer-56f3ea8a-a52d-462c-a5d6-2446d6826ad2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5ba071e0-cef6-4e8f-b34a-11b1cc806714:afe89ecd-4896-4377-9efb-f72686ce4f88",
             "type": "index-pattern"
         },
         {
@@ -2951,7 +3639,7 @@
             "type": "dashboard"
         },
         {
-            "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+            "id": "logs-*",
             "name": "d64e1165-e5d6-46d2-abb9-e4315e238f9e:indexpattern-datasource-layer-72f117b5-7ab9-41e7-a1f4-423f8b423707",
             "type": "index-pattern"
         },
@@ -2961,8 +3649,13 @@
             "type": "dashboard"
         },
         {
-            "id": "62456a9a-bd4c-4b57-b6b5-5556b6869ce5",
+            "id": "logs-*",
             "name": "0a48a778-6cb1-44c3-89b8-76d6169e29a8:indexpattern-datasource-layer-7fbad8bf-b2fd-44ee-b47b-5b2260b8498d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0a48a778-6cb1-44c3-89b8-76d6169e29a8:81baa70e-6493-43f6-98ae-a419b2fde6ba",
             "type": "index-pattern"
         },
         {
@@ -2971,7 +3664,7 @@
             "type": "dashboard"
         },
         {
-            "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+            "id": "logs-*",
             "name": "9b009011-6f72-4379-a69b-21e6feedfce7:indexpattern-datasource-layer-4ac1c77b-306c-4a94-b080-f204193d6efd",
             "type": "index-pattern"
         },
@@ -2981,8 +3674,13 @@
             "type": "dashboard"
         },
         {
-            "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+            "id": "logs-*",
             "name": "58ca195d-92a8-4a9d-bd11-1954002c8693:indexpattern-datasource-layer-bae2bbb2-5c2c-406b-8deb-d02970643aa0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "58ca195d-92a8-4a9d-bd11-1954002c8693:945b7074-277c-4e03-9064-32b35eb5e814",
             "type": "index-pattern"
         },
         {
@@ -2991,12 +3689,17 @@
             "type": "dashboard"
         },
         {
-            "id": "9267bb1b-cf22-4417-8cfb-6606848140a7",
+            "id": "logs-*",
             "name": "5a0cbef6-cb66-4850-8dd1-4fc4f81ddaf2:indexpattern-datasource-layer-ee0f709e-2211-41d5-afc0-086b3eb4d692",
             "type": "index-pattern"
         },
         {
-            "id": "bb5226cd-c099-46d2-bb71-0257232c7d82",
+            "id": "logs-*",
+            "name": "5a0cbef6-cb66-4850-8dd1-4fc4f81ddaf2:b91e9881-4c1f-46a5-8b5e-675836af3c3b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "controlGroup_374dee3b-0adb-43f7-87d4-a8b9c1c9c1c5:optionsListDataView",
             "type": "index-pattern"
         }
