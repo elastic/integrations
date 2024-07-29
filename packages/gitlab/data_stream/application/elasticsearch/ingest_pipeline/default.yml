@@ -78,6 +78,38 @@ processors:
       field: gitlab.application.pid
       target_field: process.pid
       ignore_missing: true
+  - script:
+      tag: "removes_values_from_key"
+      lang: painless
+      source: >
+        if (ctx.gitlab?.application != null) {
+          def fieldsToRename = new ArrayList(ctx.gitlab.application.keySet());
+          for (fieldName in fieldsToRename) {
+            if (fieldName.endsWith('values')) {
+              def newField = fieldName.substring(0, fieldName.length() - 7);
+              if (ctx.gitlab.application.containsKey(fieldName)) {
+                def value = ctx.gitlab.application[fieldName];
+                if (value.size() > 1) {
+                  ctx.gitlab.application[newField] = value;
+                } else {
+                  ctx.gitlab.application[newField] = value[0]
+                }
+                ctx.gitlab.application.remove(fieldName);
+              }
+            }
+          }
+        }
+  - dot_expander:
+      field: "*"
+      path: gitlab.application
+  - rename:
+      field: gitlab.application.mergeability_merge_request_id
+      target_field: gitlab.application.mergeability.merge_request_id
+      ignore_missing: true
+  - rename:
+      field: gitlab.application.mergeability_project_id
+      target_field: gitlab.application.mergeability.project_id
+      ignore_missing: true
   - grok:
       field: gitlab.application.message
       patterns:
@@ -139,25 +171,26 @@ processors:
   - append:
       field: event.category
       value: authentication
-      if: ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:")
+      tag: 'auth'
+      if: 'ctx.gitlab.application.message != null && (ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:"))'
   - set:
       field: event.outcome
       value: failure
-      if: ctx.gitlab.application.message.contains("Failed Login:")
+      if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains("Failed Login:")
   - set:
       field: event.outcome
       value: success
-      if: ctx.gitlab.application.message.contains("Successful Login:")
+      if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains("Successful Login:")
   - append:
       field: event.type
       value:
         - creation
-      if: ctx.gitlab.application.message.contains("created a new project") || ctx.gitlab.application.message.contains(" was created")
+      if: 'ctx.gitlab?.application?.message != null && (ctx.gitlab.application.message.contains("created a new project") || ctx.gitlab.application.message.contains(" was created"))'
   - append:
       field: event.type
       value:
         - deletion
-      if: ctx.gitlab.application.message.contains(" was deleted")
+      if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains(" was deleted")
   - append:
       tag: event_type_append
       field: event.type
@@ -167,7 +200,7 @@ processors:
       field: event.category
       value:
         - configuration
-      if: '!(ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:"))'
+      if: ' ctx.gitlab?.application?.message != null && !(ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:"))'
   - remove:
       field: event.original
       tag: remove_original_event
