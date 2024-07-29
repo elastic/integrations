@@ -169,7 +169,7 @@ With a single Agent deployment, increasing the number of partitions on the event
 
 With more than one Agent, setting the number of partitions is crucial. The agents share the existing partitions to scale out performance and improve availability.
 
-The number of partitions must at least match the number of agents.
+The number of partitions must be at least the number of agents.
 
 ```text
 ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
