@@ -76,6 +76,12 @@ processors:
       field: json.httpMessage.query
       target_field: url.query
       ignore_missing: true
+      on_failure:
+        # Assume a failure is due to the query already being decoded.
+        - rename:
+            field: json.httpMessage.query
+            target_field: url.query
+            ignore_failure: true
   - rename:
       field: json.httpMessage.port
       target_field: url.port
@@ -279,20 +285,25 @@ processors:
         ArrayList rule_actions = new ArrayList();
         ArrayList rule_tags = new ArrayList();
         for (def i = 0; i < ctx.json.attackData.rules.length; i++) {
-            HashMap map = new HashMap();
-            for (def j = 0; j < items.length; j++) {
-                String key = items[j];
-                if (i < ctx.json.attackData[key].length ) {
-                    String value = ctx.json.attackData[key][i].replace(" ", "").decodeBase64();
-                    map.put(key, value);
-                    if (key == "ruleTags") {
-                        rule_tags.add(value.toLowerCase());
-                    } else if (key == "ruleActions") {
-                        rule_actions.add(value.toLowerCase());
-                    }
+          HashMap map = new HashMap();
+          for (def j = 0; j < items.length; j++) {
+            String key = items[j];
+            if (i < ctx.json.attackData[key].length ) {
+              try {
+                String value = ctx.json.attackData[key][i].replace(" ", "").decodeBase64();
+                map.put(key, value);
+                if (key == "ruleTags") {
+                  rule_tags.add(value.toLowerCase());
+                } else if (key == "ruleActions") {
+                  rule_actions.add(value.toLowerCase());
                 }
+              }
+              catch (Exception e) {
+                // Do nothing.
+              }
             }
-            rules_array.add(map);
+          }
+          rules_array.add(map);
         }
         ctx.akamai.siem.rules = rules_array;
         ctx._rule_actions = rule_actions;
@@ -393,6 +404,7 @@ processors:
       field: json.userRiskData.score
       target_field: akamai.siem.user_risk.score
       type: long
+      if: ctx.json.userRiskData.score != ""
       ignore_missing: true
   - convert:
       field: json.userRiskData.allow
@@ -415,14 +427,40 @@ processors:
       field_split: '\|'
       value_split: ':'
       ignore_missing: true
-  - kv:
-      if: ctx.json?.userRiskData?.general != ""
-      tag: kv_userRiskData_general
-      field: json.userRiskData.general
-      target_field: akamai.siem.user_risk.general
-      field_split: '\|'
-      value_split: ':'
-      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_userRiskData_general
+      if: ctx.json?.userRiskData?.general instanceof String && ctx.json.userRiskData.general != ""
+      source: |
+        String text = ctx.json.userRiskData.general.trim();
+        if (text != "") {
+          def m = new HashMap();
+          for (String f: /\|/.split(text)) {
+            if (f == "") {
+              continue;
+            }
+            int idx = f.indexOf(':');
+            if (idx == -1) {
+              m.put(f, "-"); // Include a non-empty string to prevent the field being removed.
+              continue;
+            }
+            String k = f.substring(0, idx);
+            String v = f.substring(idx+1);
+            m.put(k, v);
+          }
+          if (m.size() > 0) {
+            if (ctx.akamai == null) {
+              ctx.akamai = new HashMap();
+            }
+            if (ctx.akamai.siem == null) {
+              ctx.akamai.siem = new HashMap();
+            }
+            if (ctx.akamai.siem.user_risk == null) {
+              ctx.akamai.siem.user_risk = new HashMap();
+            }
+            ctx.akamai.siem.user_risk.general = m;
+          }
+        }
   ##
   - append:
       field: related.ip
