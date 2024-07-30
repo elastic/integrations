@@ -24,8 +24,13 @@
                         "description": "",
                         "references": [
                             {
-                                "id": "37975de4-2a22-435d-8043-62ad6b367582",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-6757104c-e65d-499e-b352-73a7ded3b428",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "69da7f96-be75-4bf0-b8e7-f653cb781159",
                                 "type": "index-pattern"
                             }
                         ],
@@ -44,7 +49,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "certificate.is_file.keyword : \"true\" or certificate.is_file: true or tychon.certificate.is_file: true"
+                                                        "query": "tychon.certificate.is_file: true"
                                                     },
                                                     "isBucketed": false,
                                                     "label": " ",
@@ -53,7 +58,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "host.id"
+                                                    "sourceField": "tychon.host.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -69,7 +74,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "69da7f96-be75-4bf0-b8e7-f653cb781159",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.systemcerts"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.systemcerts"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -107,8 +167,13 @@
                         "description": "",
                         "references": [
                             {
-                                "id": "37975de4-2a22-435d-8043-62ad6b367582",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-1764b0e5-901a-4af8-81f6-8414e4d1f8e8",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5575b25b-9c2d-4ead-a9e6-7e797bf6ad78",
                                 "type": "index-pattern"
                             }
                         ],
@@ -116,7 +181,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "37975de4-2a22-435d-8043-62ad6b367582",
                                     "layers": {
                                         "1764b0e5-901a-4af8-81f6-8414e4d1f8e8": {
                                             "columnOrder": [
@@ -146,10 +210,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "x509.subject.common_name"
+                                                    "sourceField": "tychon.x509.subject.common_name"
                                                 },
                                                 "c6240d33-6747-4a1c-8a81-920b46a8a6d6": {
                                                     "customLabel": true,
@@ -176,7 +241,7 @@
                                                         "size": 100
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "file.name"
+                                                    "sourceField": "tychon.file.name"
                                                 },
                                                 "e7f4c36e-9d47-44d5-9669-18fd656b04ea": {
                                                     "customLabel": true,
@@ -192,7 +257,6 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "37975de4-2a22-435d-8043-62ad6b367582",
                                             "sampling": 1
                                         }
                                     }
@@ -204,7 +268,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "5575b25b-9c2d-4ead-a9e6-7e797bf6ad78",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.systemcerts"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.systemcerts"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -259,8 +378,13 @@
                         "description": "",
                         "references": [
                             {
-                                "id": "37975de4-2a22-435d-8043-62ad6b367582",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-1764b0e5-901a-4af8-81f6-8414e4d1f8e8",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "55257891-e65d-4691-8935-c2ee8271be08",
                                 "type": "index-pattern"
                             }
                         ],
@@ -298,10 +422,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 100
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.hostname"
+                                                    "sourceField": "tychon.host.hostname"
                                                 },
                                                 "8a3f27d6-3f32-4e63-abc3-6f0a2cbe399a": {
                                                     "customLabel": true,
@@ -324,10 +449,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 1
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.mac"
+                                                    "sourceField": "tychon.host.mac"
                                                 },
                                                 "be71517e-079e-42f4-8d6c-353c2cf2f629": {
                                                     "customLabel": true,
@@ -336,6 +462,7 @@
                                                     "label": "IP",
                                                     "operationType": "terms",
                                                     "params": {
+                                                        "accuracyMode": false,
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
@@ -350,17 +477,18 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 1
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.ip"
+                                                    "sourceField": "tychon.host.ip"
                                                 },
                                                 "e7f4c36e-9d47-44d5-9669-18fd656b04ea": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "certificate.is_file.keyword : \"true\" or certificate.is_file: true"
+                                                        "query": "tychon.certificate.is_file: true"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Count",
@@ -384,7 +512,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "55257891-e65d-4691-8935-c2ee8271be08",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.systemcerts"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.systemcerts"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -395,6 +578,7 @@
                                     {
                                         "columnId": "be71517e-079e-42f4-8d6c-353c2cf2f629",
                                         "isTransposed": false,
+                                        "oneClickFilter": false,
                                         "width": 199
                                     },
                                     {
@@ -479,7 +663,84 @@
                         "data": {
                             "aggs": [],
                             "searchSource": {
-                                "filter": [],
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "negate": false,
+                                            "params": [
+                                                {
+                                                    "meta": {
+                                                        "alias": null,
+                                                        "disabled": false,
+                                                        "field": "labels.is_transform_source",
+                                                        "index": "logs-*",
+                                                        "key": "labels.is_transform_source",
+                                                        "negate": true,
+                                                        "params": {
+                                                            "query": "true"
+                                                        },
+                                                        "type": "phrase"
+                                                    },
+                                                    "query": {
+                                                        "match_phrase": {
+                                                            "labels.is_transform_source": "true"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "meta": {
+                                                        "alias": null,
+                                                        "disabled": false,
+                                                        "field": "event.dataset",
+                                                        "index": "logs-*",
+                                                        "key": "event.dataset",
+                                                        "negate": false,
+                                                        "params": {
+                                                            "query": "tychon.systemcerts"
+                                                        },
+                                                        "type": "phrase"
+                                                    },
+                                                    "query": {
+                                                        "match_phrase": {
+                                                            "event.dataset": "tychon.systemcerts"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "$state": {
+                                                        "store": "appState"
+                                                    },
+                                                    "meta": {
+                                                        "alias": null,
+                                                        "disabled": false,
+                                                        "field": "labels.source",
+                                                        "index": "logs-*",
+                                                        "key": "labels.source",
+                                                        "negate": false,
+                                                        "params": {
+                                                            "query": "host"
+                                                        },
+                                                        "type": "phrase"
+                                                    },
+                                                    "query": {
+                                                        "match_phrase": {
+                                                            "labels.source": "host"
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "relation": "AND",
+                                            "type": "combined"
+                                        },
+                                        "query": {}
+                                    }
+                                ],
                                 "query": {
                                     "language": "kuery",
                                     "query": ""
@@ -498,10 +759,15 @@
                                     "id": "701914a0-87e0-11ee-bb8b-f36517a095d1"
                                 }
                             ],
+                            "bar_color_rules": [
+                                {
+                                    "id": "1a74acc7-1cb4-49d4-806c-fa49e9141039"
+                                }
+                            ],
                             "drop_last_bucket": 0,
                             "filter": {
                                 "language": "kuery",
-                                "query": "log.file.path : *hostcerts_info.json "
+                                "query": ""
                             },
                             "id": "38d92719-2b32-4e6f-86b0-9b60ebc77a07",
                             "index_pattern_ref_name": "metrics_ddee0c16-8613-455b-b3fd-4e11e98b9b33_0_index_pattern",
@@ -524,7 +790,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.subject.common_name",
+                                            "field": "tychon.x509.subject.common_name",
                                             "id": "99c32205-72dd-433f-8e6b-51e11cc7e731",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -555,7 +821,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.subject.distinguished_name",
+                                            "field": "tychon.x509.subject.distinguished_name",
                                             "id": "edeefa71-87e0-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -586,7 +852,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.subject.organization",
+                                            "field": "tychon.x509.subject.organization",
                                             "id": "1a7bdae1-87e1-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -679,7 +945,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.issuer.country",
+                                            "field": "tychon.x509.issuer.country",
                                             "id": "1485cb71-87e4-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -710,7 +976,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.issuer.state_or_province",
+                                            "field": "tychon.x509.issuer.state_or_province",
                                             "id": "2ec527b1-87e4-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -741,7 +1007,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.serial_number",
+                                            "field": "tychon.x509.serial_number",
                                             "id": "5c67e4f1-87e4-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -803,7 +1069,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.version_number",
+                                            "field": "tychon.x509.version_number",
                                             "id": "6d849f61-87e6-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -865,7 +1131,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.issuer.distinguished_name",
+                                            "field": "tychon.x509.issuer.distinguished_name",
                                             "id": "45940df1-87e7-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -896,7 +1162,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.issuer.common_name",
+                                            "field": "tychon.x509.issuer.common_name",
                                             "id": "7b5be841-87e7-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -927,7 +1193,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.issuer.organization",
+                                            "field": "tychon.x509.issuer.organization",
                                             "id": "eb8a0431-87e7-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -958,7 +1224,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.issuer.country",
+                                            "field": "tychon.x509.issuer.country",
                                             "id": "f8668ed1-87e7-11ee-bb8b-f36517a095d1",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -989,7 +1255,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.not_after",
+                                            "field": "tychon.x509.not_after",
                                             "id": "a4f19001-885b-11ee-be1f-9180cead0a46",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -1020,7 +1286,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.not_before",
+                                            "field": "tychon.x509.not_before",
                                             "id": "53508a21-885c-11ee-be1f-9180cead0a46",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -1268,7 +1534,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.public_key_algorithm",
+                                            "field": "tychon.x509.public_key_algorithm",
                                             "id": "27f21ac1-8860-11ee-be1f-9180cead0a46",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -1330,7 +1596,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "x509.public_key_size",
+                                            "field": "tychon.x509.public_key_size",
                                             "id": "7edd89f1-8860-11ee-be1f-9180cead0a46",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -1361,7 +1627,7 @@
                                     "metrics": [
                                         {
                                             "agg_with": "concat",
-                                            "field": "file.path",
+                                            "field": "tychon.file.path",
                                             "id": "27e78ab1-aa52-11ee-b9ee-61210df881d7",
                                             "order": "desc",
                                             "type": "top_hit"
@@ -1411,8 +1677,13 @@
                         "description": "",
                         "references": [
                             {
-                                "id": "37975de4-2a22-435d-8043-62ad6b367582",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b6ffca10-e9de-4e28-93c8-1b012b1d064c",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "23f950ef-bbb8-4de3-8cd3-deb7b037af5c",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1458,7 +1729,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "certificate.is_file.keyword : \"true\" or certificate.is_file: true or tychon.certificate.is_file : true"
+                                                        "query": "tychon.certificate.is_file : true"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Count",
@@ -1483,7 +1754,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "23f950ef-bbb8-4de3-8cd3-deb7b037af5c",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.systemcerts"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.systemcerts"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1562,8 +1888,13 @@
                         "description": "",
                         "references": [
                             {
-                                "id": "37975de4-2a22-435d-8043-62ad6b367582",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-72d515d3-ddce-420e-b05b-36daa8e920a6",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "61445137-f047-444b-a569-26f3317aee8d",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1599,28 +1930,28 @@
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "x509.is_root : true  or tychon.x509.is_root : true "
+                                                                    "query": "tychon.x509.is_root : true "
                                                                 },
                                                                 "label": "Root Certificate"
                                                             },
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "x509.is_self_signed : true or tychon.x509.is_self_signed : true "
+                                                                    "query": "tychon.x509.is_self_signed : true "
                                                                 },
                                                                 "label": "Self Signed"
                                                             },
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "certificate.is_expired : true or tychon.certificate.is_expired : true "
+                                                                    "query": "tychon.certificate.is_expired : true "
                                                                 },
                                                                 "label": "Expired"
                                                             },
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "certificate.is_expiring_soon : true or tychon.certificate.is_expiring_soon : true "
+                                                                    "query": "tychon.certificate.is_expiring_soon : true "
                                                                 },
                                                                 "label": "Set to Expire"
                                                             }
@@ -1641,7 +1972,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "61445137-f047-444b-a569-26f3317aee8d",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.systemcerts"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.systemcerts"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1681,41 +2067,71 @@
         "timeRestore": true,
         "timeTo": "now",
         "title": "[TYCHON] File System Certificates",
-        "version": 1
+        "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-07-25T15:34:12.480Z",
+    "created_at": "2024-08-02T17:16:49.208Z",
     "id": "tychon-da7f6300-8865-11ee-9c38-4f37dc7b49bb-cipher",
-    "managed": true,
+    "managed": false,
     "references": [
         {
-            "id": "37975de4-2a22-435d-8043-62ad6b367582",
+            "id": "logs-*",
             "name": "a80fc645-0d71-4569-9208-745b93cefcac:indexpattern-datasource-layer-6757104c-e65d-499e-b352-73a7ded3b428",
             "type": "index-pattern"
         },
         {
-            "id": "37975de4-2a22-435d-8043-62ad6b367582",
+            "id": "logs-*",
+            "name": "a80fc645-0d71-4569-9208-745b93cefcac:69da7f96-be75-4bf0-b8e7-f653cb781159",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "c87ea4ea-834d-477d-a4b3-3dab31908370:indexpattern-datasource-layer-1764b0e5-901a-4af8-81f6-8414e4d1f8e8",
             "type": "index-pattern"
         },
         {
-            "id": "37975de4-2a22-435d-8043-62ad6b367582",
+            "id": "logs-*",
+            "name": "c87ea4ea-834d-477d-a4b3-3dab31908370:5575b25b-9c2d-4ead-a9e6-7e797bf6ad78",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "9d11f908-21e6-4eae-9d11-760c221b30bf:indexpattern-datasource-layer-1764b0e5-901a-4af8-81f6-8414e4d1f8e8",
             "type": "index-pattern"
         },
         {
-            "id": "37975de4-2a22-435d-8043-62ad6b367582",
+            "id": "logs-*",
+            "name": "9d11f908-21e6-4eae-9d11-760c221b30bf:55257891-e65d-4691-8935-c2ee8271be08",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ddee0c16-8613-455b-b3fd-4e11e98b9b33:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "ddee0c16-8613-455b-b3fd-4e11e98b9b33:metrics_ddee0c16-8613-455b-b3fd-4e11e98b9b33_0_index_pattern",
             "type": "index-pattern"
         },
         {
-            "id": "37975de4-2a22-435d-8043-62ad6b367582",
+            "id": "logs-*",
             "name": "44c6a7af-bfb3-47c1-8685-092e947e1602:indexpattern-datasource-layer-b6ffca10-e9de-4e28-93c8-1b012b1d064c",
             "type": "index-pattern"
         },
         {
-            "id": "37975de4-2a22-435d-8043-62ad6b367582",
+            "id": "logs-*",
+            "name": "44c6a7af-bfb3-47c1-8685-092e947e1602:23f950ef-bbb8-4de3-8cd3-deb7b037af5c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "81806bef-290f-4b4b-a695-09dd46e474dc:indexpattern-datasource-layer-72d515d3-ddce-420e-b05b-36daa8e920a6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "81806bef-290f-4b4b-a695-09dd46e474dc:61445137-f047-444b-a569-26f3317aee8d",
             "type": "index-pattern"
         }
     ],
