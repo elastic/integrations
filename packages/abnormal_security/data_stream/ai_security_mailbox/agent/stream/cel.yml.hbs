@@ -1,0 +1,136 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  access_token: {{access_token}}
+  next_page: 1
+redact:
+  fields:
+    - access_token
+program: |
+  (
+    has(state.worklist) && size(state.worklist) > 0 ?
+      state
+    :
+      (
+        state.?want_more.orValue(false) ?
+          state
+        :
+          state.with({
+            "start_time": state.?cursor.last_timestamp.orValue(string((now - duration(state.initial_interval)).format(time_layout.RFC3339))),
+            "end_time": now.format(time_layout.RFC3339),
+          })
+      ).as(state, state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/v1/abusecampaigns?" + {
+            "pageSize": [string(state.page_size)],
+            "pageNumber": [string(state.next_page)],
+            "filter":["lastReportedTime gte " + state.start_time + " lte " + state.end_time]
+          }.format_query()
+        ).with({
+          "Header":{
+            "Authorization": ["Bearer " + string(state.access_token)],
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body, {
+              "worklist": body.campaigns.map(e, e.campaignId),
+              "next": 0,
+            })
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET:"+(
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      ))
+  ).as(state, state.with(
+    !has(state.worklist) ? state : // Exit early due to GET failure.
+      int(state.next) < size(state.worklist) ?
+        request("GET",
+          state.url.trim_right("/") + "/v1/abusecampaigns/" + state.worklist[state.next]
+        ).with({
+          "Header":{
+            "Authorization": ["Bearer " + string(state.access_token)],
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body,{
+            "events": [{
+              "message": body.encode_json(),
+            }],
+            "cursor": {
+              "last_timestamp": state.end_time
+            },
+            "worklist": (int(state.next) + 1) < size(state.worklist) ? state.worklist : [],
+            "next": (int(state.next) + 1) < size(state.worklist) ? (int(state.next) + 1 ) : 0,
+            "next_page": (int(state.next) + 1) < size(state.worklist) ? state.next_page : int(state.next_page) + 1,
+            "want_more": true,
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET:"+(
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      :
+        {
+          "events": [],
+          "want_more": false,
+          "next_page": 1
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
