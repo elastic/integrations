@@ -289,7 +289,7 @@
           norms: false
           default_field: false
     - name: amperage
-      description: battery.amperage - The battery's current amperage in mA
+      description: battery.amperage - The current amperage in/out of the battery in mA (positive means charging, negative means discharging)
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1521,6 +1521,15 @@
           type: text
           norms: false
           default_field: false
+    - name: chemistry
+      description: battery.chemistry - The battery chemistry type (eg. LiP). Some possible values are documented in https://learn.microsoft.com/en-us/windows/win32/power/battery-information-str.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: child_pid
       description: es_process_events.child_pid - Process ID of a child process in case of a fork event
       type: keyword
@@ -2426,7 +2435,7 @@
       type: keyword
       ignore_above: 1024
     - name: current_capacity
-      description: battery.current_capacity - The battery's current charged capacity in mAh
+      description: battery.current_capacity - The battery's current capacity (level of charge) in mAh
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2675,7 +2684,6 @@
     - name: description
       description: |-
         appcompat_shims.description - Description of the SDB.
-        atom_packages.description - Package supplied description
         browser_plugins.description - Plugin description text
         chassis_info.description - An extended description of the chassis if available.
         chrome_extensions.description - Extension-optional description
@@ -2693,6 +2701,7 @@
         osquery_flags.description - Flag description
         patches.description - Fuller description of the patch.
         safari_extensions.description - Optional extension description text
+        secureboot.description - (Apple Silicon) Human-readable description: 'Full Security', 'Reduced Security', or 'Permissive Security'
         services.description - Service Description
         shared_resources.description - A textual description of the object
         smbios_tables.description - Table entry description
@@ -4131,7 +4140,15 @@
           type: long
           default_field: false
     - name: flags
-      description: "device_partitions.flags - \ndns_cache.flags - DNS record flags\ninterface_details.flags - Flags (netdevice) for the device\nkernel_keys.flags - A set of flags describing the state of the key.\nmounts.flags - Mounted device flags\npipes.flags - The flags indicating whether this pipe connection is a server or client end, and if the pipe for sending messages or bytes\nprocess_etw_events.flags - Process Flags\nroutes.flags - Flags to describe route"
+      description: |-
+        device_partitions.flags - Value that describes the partition (TSK_VS_PART_FLAG_ENUM)
+        dns_cache.flags - DNS record flags
+        interface_details.flags - Flags (netdevice) for the device
+        kernel_keys.flags - A set of flags describing the state of the key.
+        mounts.flags - Mounted device flags
+        pipes.flags - The flags indicating whether this pipe connection is a server or client end, and if the pipe for sending messages or bytes
+        process_etw_events.flags - Process Flags
+        routes.flags - Flags to describe route
       type: keyword
       ignore_above: 1024
     - name: folder_id
@@ -4635,9 +4652,7 @@
           norms: false
           default_field: false
     - name: homepage
-      description: |-
-        atom_packages.homepage - Package supplied homepage
-        npm_packages.homepage - Package supplied homepage
+      description: npm_packages.homepage - Package supplied homepage
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4956,6 +4971,14 @@
         - name: number
           type: long
           default_field: false
+    - name: include_remote
+      description: "users.include_remote - 1 to include remote (LDAP/AD) accounts (default 0). Warning: without any uid/username filtering it may list whole LDAP directories"
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: inetd_compatibility
       description: launchd.inetd_compatibility - Run this daemon or agent as it was launched from inetd
       type: keyword
@@ -5118,6 +5141,14 @@
       ignore_above: 1024
     - name: install_timestamp
       description: chrome_extensions.install_timestamp - Extension install time, converted to unix time
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: installed_at
+      description: vscode_extensions.installed_at - Installed Timestamp
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5561,6 +5592,14 @@
           type: text
           norms: false
           default_field: false
+    - name: kernel_extensions
+      description: secureboot.kernel_extensions - (Apple Silicon) Allow user management of kernel extensions from identified developers (1 if allowed)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: kernel_memory
       description: docker_info.kernel_memory - 1 if kernel memory limit support is enabled. 0 otherwise
       type: keyword
@@ -5632,6 +5671,31 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: key_group_name
+      description: user_ssh_keys.key_group_name - The group of the private key. Supported for a subset of key_types implemented by OpenSSL
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: key_length
+      description: user_ssh_keys.key_length - The cryptographic length of the cryptosystem to which the private key belongs, in bits. Definition of cryptographic length is specific to cryptosystem. -1 if unavailable
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: key_security_bits
+      description: user_ssh_keys.key_security_bits - The number of security bits of the private key, bits of security as defined in NIST SP800-57. -1 if unavailable
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: key_strength
       description: certificates.key_strength - Key size used for RSA/DSA, or curve name
@@ -5724,7 +5788,19 @@
           type: long
           default_field: false
     - name: label
-      description: "apparmor_events.label - AppArmor label\naugeas.label - The label of the configuration item\nauthorization_mechanisms.label - Label of the authorization right\nauthorizations.label - Item name, usually in reverse domain format\nblock_devices.label - Block device label string\ndevice_partitions.label - \nkeychain_acls.label - An optional label tag that may be included with the keychain entry\nkeychain_items.label - Generic item name\nlaunchd.label - Daemon or agent service name\nlaunchd_overrides.label - Daemon or agent service name\nquicklook_cache.label - Parsed version 'gen' field\nsandboxes.label - UTI-format bundle or label ID"
+      description: |-
+        apparmor_events.label - AppArmor label
+        augeas.label - The label of the configuration item
+        authorization_mechanisms.label - Label of the authorization right
+        authorizations.label - Item name, usually in reverse domain format
+        block_devices.label - Block device label string
+        device_partitions.label - The partition name as stored in the partition table
+        keychain_acls.label - An optional label tag that may be included with the keychain entry
+        keychain_items.label - Generic item name
+        launchd.label - Daemon or agent service name
+        launchd_overrides.label - Daemon or agent service name
+        quicklook_cache.label - Parsed version 'gen' field
+        sandboxes.label - UTI-format bundle or label ID
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5914,7 +5990,6 @@
       ignore_above: 1024
     - name: license
       description: |-
-        atom_packages.license - License for package
         chocolatey_packages.license - License under which package is launched
         npm_packages.license - License under which package is launched
         python_packages.license - License under which package is launched
@@ -5941,6 +6016,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: load_percentage
+      description: cpu_info.load_percentage - The current percentage of utilization of the CPU.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: load_state
       description: systemd_units.load_state - Reflects whether the unit definition was properly loaded
@@ -6525,6 +6608,14 @@
         - name: number
           type: long
           default_field: false
+    - name: mdm_operations
+      description: secureboot.mdm_operations - (Apple Silicon) Allow remote (MDM) management of kernel extensions and automatic software updates (1 if allowed)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: mechanism
       description: authorization_mechanisms.mechanism - Name of the mechanism that will be called
       type: keyword
@@ -6759,6 +6850,15 @@
           type: text
           norms: false
           default_field: false
+    - name: metalink
+      description: yum_sources.metalink - Metalink URL
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: method
       description: curl.method - The HTTP method for the request
       type: keyword
@@ -6926,7 +7026,7 @@
           type: long
           default_field: false
     - name: minutes_to_full_charge
-      description: battery.minutes_to_full_charge - The number of minutes until the battery is fully charged. This value is -1 if this time is still being calculated
+      description: battery.minutes_to_full_charge - The number of minutes until the battery is fully charged. This value is -1 if this time is still being calculated. On Windows this is calculated from the charge rate and capacity and may not agree with the number reported in "Power & Battery"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7132,7 +7232,7 @@
           type: long
           default_field: false
     - name: name
-      description: "acpi_tables.name - ACPI table name\nad_config.name - The macOS-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\natom_packages.name - Package display name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\nconnected_displays.name - The name of the display.\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\netc_protocols.name - Protocol name\netc_services.name - Service name\nfan_speed_sensors.name - Fan name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_search.name - The name of the item\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
+      description: "acpi_tables.name - ACPI table name\nad_config.name - The macOS-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\nconnected_displays.name - The name of the display.\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\netc_protocols.name - Protocol name\netc_services.name - Service name\nfan_speed_sensors.name - Fan name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nvscode_extensions.name - Extension Name\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_search.name - The name of the item\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7451,7 +7551,9 @@
           norms: false
           default_field: false
     - name: offset
-      description: "device_partitions.offset - \nprocess_memory_map.offset - Offset into mapped path"
+      description: |-
+        device_partitions.offset - Byte offset from the start of the volume
+        process_memory_map.offset - Offset into mapped path
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -8057,7 +8159,6 @@
         apparmor_profiles.path - Unique, aa-status compatible, policy identifier.
         appcompat_shims.path - This is the path to the SDB database.
         apps.path - Absolute and full Name.app path
-        atom_packages.path - Package's package.json path
         augeas.path - The path to the configuration file
         authenticode.path - Must provide a path or directory
         autoexec.path - Path to the executable
@@ -8134,6 +8235,7 @@
         user_events.path - Supplied path from event
         user_ssh_keys.path - Path to key file
         userassist.path - Application file path.
+        vscode_extensions.path - Extension path
         windows_crashes.path - Path of the executable file for the crashed process
         windows_search.path - The full path of the item.
         yara.path - The path scanned
@@ -8293,7 +8395,7 @@
     - name: permissions
       description: |-
         chrome_extensions.permissions - The permissions required by the extension
-        kernel_keys.permissions - The key permissions, expressed as four hexadecimalbytes containing, from left to right, thepossessor, user, group, and other permissions.
+        kernel_keys.permissions - The key permissions, expressed as four hexadecimal bytes containing, from left to right, the possessor, user, group, and other permissions.
         process_memory_map.permissions - r=read, w=write, x=execute, p=private (cow)
         shared_memory.permissions - Memory segment permissions
         suid_bin.permissions - Binary permissions
@@ -8734,6 +8836,14 @@
         - name: number
           type: long
           default_field: false
+    - name: prerelease
+      description: vscode_extensions.prerelease - Pre release version
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: principal
       description: ntfs_acl_permissions.principal - User or group to which the ACE applies.
       type: keyword
@@ -9065,6 +9175,16 @@
         azure_instance_metadata.publisher - Publisher of the VM image
         osquery_events.publisher - Name of the associated publisher
         programs.publisher - Name of the product supplier.
+        vscode_extensions.publisher - Publisher Name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: publisher_id
+      description: vscode_extensions.publisher_id - Publisher ID
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9629,6 +9749,7 @@
       description: |-
         deb_packages.revision - Package revision
         hardware_events.revision - Device revision (optional)
+        os_version.revision - Update Build Revision, refers to the specific revision number of a Windows update
         platform_info.revision - BIOS major and minor revision
       type: keyword
       ignore_above: 1024
@@ -9923,7 +10044,7 @@
           type: long
           default_field: false
     - name: secure_mode
-      description: "secureboot.secure_mode - Secure mode for Intel-based macOS: 0 disabled, 1 full security, 2 medium security"
+      description: "secureboot.secure_mode - (Intel) Secure mode: 0 disabled, 1 full security, 2 medium security"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10048,7 +10169,7 @@
     - name: serial_number
       description: |-
         authenticode.serial_number - The certificate serial number
-        battery.serial_number - The battery's unique serial number
+        battery.serial_number - The battery's serial number
         connected_displays.serial_number - The serial number of the display. (may not be unique)
         curl_certificate.serial_number - Certificate serial number
         kernel_keys.serial_number - The serial key of the key.
@@ -10249,6 +10370,7 @@
           default_field: false
     - name: sha256
       description: |-
+        apparmor_profiles.sha256 - A unique hash that identifies this policy.
         carves.sha256 - A SHA256 sum of the carved archive
         device_hash.sha256 - SHA256 hash of provided inode data
         file_events.sha256 - The SHA256 of the file after change
@@ -10320,6 +10442,60 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: shortcut_comment
+      description: file.shortcut_comment - Comment on the shortcut
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: shortcut_run
+      description: file.shortcut_run - Window mode the target of the shortcut should be run in
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: shortcut_start_in
+      description: file.shortcut_start_in - Full path to the working directory to use when executing the shortcut target
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: shortcut_target_location
+      description: file.shortcut_target_location - Folder name where the shortcut target resides
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: shortcut_target_path
+      description: file.shortcut_target_path - Full path to the file the shortcut points to
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: shortcut_target_type
+      description: file.shortcut_target_type - Display name for the target type
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: sid
       description: |-
@@ -10556,6 +10732,7 @@
         startup_items.source - Directory or plist containing startup item
         sudoers.source - Source file containing the given rule
         windows_events.source - Source or channel of the event
+        yum_sources.source - Source file
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11340,7 +11517,7 @@
           norms: false
           default_field: false
     - name: team_id
-      description: es_process_events.team_id - Team identifier of thd process
+      description: es_process_events.team_id - Team identifier of the process
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11468,7 +11645,7 @@
       description: |-
         authorizations.timeout - Label top-level key
         curl_certificate.timeout - Set this value to the timeout in seconds to complete the TLS handshake (default 4s, use 0 for no timeout)
-        kernel_keys.timeout - The amount of time until the key will expire,expressed in human-readable form. The string perm heremeans that the key is permanent (no timeout).  Thestring expd means that the key has already expired.
+        kernel_keys.timeout - The amount of time until the key will expire, expressed in human-readable form. The string perm here means that the key is permanent (no timeout).  The string expd means that the key has already expired.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11544,7 +11721,7 @@
     - name: total_size
       description: |-
         docker_container_processes.total_size - Total virtual memory size
-        processes.total_size - Total virtual memory size
+        processes.total_size - Total virtual memory size (Linux, Windows) or 'footprint' (macOS)
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11623,7 +11800,58 @@
           type: long
           default_field: false
     - name: type
-      description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkernel_keys.type - The key type.\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: core, extension, or module\nosquery_flags.type - Flag type\nprocess_etw_events.type - Event Type (ProcessStart, ProcessStop)\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_search.type - The item type\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
+      description: |-
+        apparmor_events.type - Event type
+        appcompat_shims.type - Type of the SDB database.
+        block_devices.type - Block device type string
+        bpf_socket_events.type - The socket type
+        crashes.type - Type of crash log
+        device_file.type - File status
+        device_firmware.type - Type of device
+        device_partitions.type - Filesystem type if recognized, otherwise, 'meta', 'normal', or 'unallocated'
+        disk_encryption.type - Description of cipher type and mode if available
+        disk_info.type - The interface type of the disk.
+        dns_cache.type - DNS record type
+        dns_resolvers.type - Address type: sortlist, nameserver, search
+        docker_container_mounts.type - Type of mount (bind, volume)
+        docker_container_ports.type - Protocol (tcp, udp)
+        docker_volumes.type - Volume type
+        file.type - File status
+        firefox_addons.type - Extension, addon, webapp
+        hardware_events.type - Type of hardware and hardware event
+        homebrew_packages.type - Package type ('formula' or 'cask')
+        interface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown
+        interface_details.type - Interface type (includes virtual)
+        kernel_keys.type - The key type.
+        keychain_items.type - Keychain item type (class)
+        last.type - Entry type, according to ut_type types (utmp.h)
+        logged_in_users.type - Login type
+        logical_drives.type - Deprecated (always 'Unknown').
+        lxd_certificates.type - Type of the certificate
+        lxd_networks.type - Type of network
+        mounts.type - Mounted device type
+        ntfs_acl_permissions.type - Type of access mode for the access control entry.
+        nvram.type - Data type (CFData, CFString, etc)
+        osquery_events.type - Either publisher or subscriber
+        osquery_extensions.type - SDK extension type: core, extension, or module
+        osquery_flags.type - Flag type
+        process_etw_events.type - Event Type (ProcessStart, ProcessStop)
+        process_open_pipes.type - Pipe Type: named vs unnamed/anonymous
+        registry.type - Type of the registry value, or 'subkey' if item is a subkey
+        routes.type - Type of route
+        selinux_events.type - Event type
+        shared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.
+        smbios_tables.type - Table entry type
+        smc_keys.type - SMC-reported type literal type
+        startup_items.type - Startup Item or Login Item
+        system_controls.type - Data type
+        ulimit_info.type - System resource to be limited
+        user_events.type - The file description for the process socket
+        users.type - Whether the account is roaming (domain), local, or a system profile
+        windows_crashes.type - Type of crash log
+        windows_search.type - The item type
+        windows_security_products.type - Type of security product
+        xprotect_meta.type - Either plugin or extension
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11646,7 +11874,6 @@
       description: |-
         account_policy_data.uid - User ID
         asl.uid - UID that sent the log message (set by the server).
-        atom_packages.uid - The local user that owns the plugin
         authorized_keys.uid - The local owner of authorized_keys file
         bpf_process_events.uid - User ID
         bpf_socket_events.uid - User ID
@@ -11677,6 +11904,7 @@
         user_groups.uid - User ID
         user_ssh_keys.uid - The local user that owns the key file
         users.uid - User ID
+        vscode_extensions.uid - The local user that owns the plugin
       type: keyword
       ignore_above: 1024
     - name: uid_signed
@@ -11882,7 +12110,7 @@
           norms: false
           default_field: false
     - name: usage
-      description: kernel_keys.usage - the number of threads and open file references thatrefer to this key.
+      description: kernel_keys.usage - the number of threads and open file references that refer to this key.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12055,6 +12283,7 @@
         osquery_info.uuid - Unique ID provided by the system
         system_info.uuid - Unique ID provided by the system
         users.uuid - User's UUID (Apple) or SID (Windows)
+        vscode_extensions.uuid - Extension UUID
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12185,7 +12414,6 @@
       description: |-
         alf.version - Application Layer Firewall version
         apt_sources.version - Repository source version
-        atom_packages.version - Package supplied version
         authorizations.version - Label top-level key
         azure_instance_metadata.version - Version of the VM image
         bitlocker_info.version - The FVE metadata version of the drive.
@@ -12227,6 +12455,7 @@
         safari_extensions.version - Extension long version
         system_extensions.version - System extension version
         usb_devices.version - USB Device version number
+        vscode_extensions.version - Extension version
         windows_crashes.version - File version info of the crashed process
       type: keyword
       ignore_above: 1024
