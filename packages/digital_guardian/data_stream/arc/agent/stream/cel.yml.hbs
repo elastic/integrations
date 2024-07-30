@@ -17,36 +17,54 @@ resource.url: {{url}}
 auth.oauth2:
   client.id: {{client_id}}
   client.secret: {{client_secret}}
-  token_url: {{token_url}}
+  token_url: {{auth_server_url}}/as/token.oauth2
   scopes: {{scope}}
 redact:
   fields: ~
 program: |
-    state.with({
-      "events": state.md5List.map(md5, request(
-          "POST",
-          state.url + "/1.0/export_profiles/{{export_profile}}/export_and_ack".format_query()
-        ).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body,
-              [{
-                "message": body.encode_json()
-              }]
-          :
-            dyn({
+  state.with(
+    request("POST",
+      state.url + "/rest/1.0/export_profiles/{{export_profile}}/export_and_ack"
+    ).with({
+      "Header":{
+          "Accept": ["application/json"],
+      },
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, 
+        (has(body.fields) && has(body.data) ? 
+          body.fields.map(e, e.name).as(field_names, {
+            "events": body.data.map(d, zip(field_names, d).as(e, {
+              "message": e.encode_json(),
+            }))
+          })
+        : 
+          {
+            "events": dyn({
               "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET:"+(
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                ),
-              },
+                "message": 'Response has no fields or data'
+              }
             })
-          )
-      ).flatten()
-    })
+          }
+        )
+      )
+    :
+      {
+        "events": dyn({
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        })
+      }
+    )
+  )
+
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
