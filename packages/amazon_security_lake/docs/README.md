@@ -1346,6 +1346,7 @@ This is the `Event` dataset.
 | ocsf.finding.title | The title of the reported finding. | keyword |
 | ocsf.finding.types | One or more types of the reported finding. | keyword |
 | ocsf.finding.uid | The unique identifier of the reported finding. | keyword |
+| ocsf.finding_info | Describes the supporting information about a generated finding. | flattened |
 | ocsf.group.desc | The group description. | keyword |
 | ocsf.group.name | The group name. | keyword |
 | ocsf.group.privileges | The group privileges. | keyword |

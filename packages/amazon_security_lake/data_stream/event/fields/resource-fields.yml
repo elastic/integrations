@@ -1,0 +1,132 @@
+- name: ocsf
+  type: group
+  fields:    
+    - name: resource
+      type: group
+      fields:
+        - name: cloud_partition
+          type: keyword
+          description: 'The canonical cloud partition name to which the region is assigned (e.g. AWS Partitions: aws, aws-cn, aws-us-gov).'
+        - name: criticality
+          type: keyword
+          description: The criticality of the resource as defined by the event source.
+        - name: data
+          type: flattened
+          description: Additional data describing the resource.
+        - name: namespace
+          type: keyword
+          description: The resource namespace.
+        - name: group
+          type: group
+          fields:
+            - name: desc
+              type: keyword
+              description: The group description.
+            - name: name
+              type: keyword
+              description: The group name.
+            - name: privileges
+              type: keyword
+              description: The group privileges.
+            - name: type
+              type: keyword
+              description: The type of the group or account.
+            - name: uid
+              type: keyword
+              description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+        - name: labels
+          type: keyword
+          description: The list of labels/tags associated to a resource.
+        - name: name
+          type: keyword
+          description: The name of the resource.
+        - name: owner
+          type: group
+          fields:
+            - name: account
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the account (e.g. GCP Account Name).
+                - name: type
+                  type: keyword
+                  description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                - name: type_id
+                  type: keyword
+                  description: The normalized account type identifier.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the account (e.g. AWS Account ID).
+            - name: credential_uid
+              type: keyword
+              description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+            - name: domain
+              type: keyword
+              description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+            - name: email_addr
+              type: keyword
+              description: The user's email address.
+            - name: full_name
+              type: keyword
+              description: The full name of the person, as per the LDAP Common Name attribute (cn).
+            - name: groups
+              type: group
+              fields:
+                - name: desc
+                  type: keyword
+                  description: The group description.
+                - name: name
+                  type: keyword
+                  description: The group name.
+                - name: privileges
+                  type: keyword
+                  description: The group privileges.
+                - name: type
+                  type: keyword
+                  description: The type of the group or account.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+            - name: name
+              type: keyword
+              description: The username. For example, janedoe1.
+            - name: org
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the organization. For example, Widget, Inc.
+                - name: ou_name
+                  type: keyword
+                  description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                - name: ou_uid
+                  type: keyword
+                  description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+            - name: type
+              type: keyword
+              description: The type of the user. For example, System, AWS IAM User, etc.
+            - name: type_id
+              type: keyword
+              description: The account type identifier.
+            - name: uid
+              type: keyword
+              description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+            - name: uid_alt
+              type: keyword
+              description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+        - name: region
+          type: keyword
+          description: The cloud region of the resource.
+        - name: type
+          type: keyword
+          description: The resource type as defined by the event source.
+        - name: uid
+          type: keyword
+          description: The unique identifier of the resource.
+        - name: version
+          type: keyword
+          description: The version of the resource. For example 1.2.3.
