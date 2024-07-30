@@ -40,10 +40,23 @@ processors:
   - remove:
       field: "_temp_"
       ignore_failure: true
+
 # Type conversions
   - convert:
       tag: convert_client_to_server_port
       field: "proxysg.client_to_server.uri_port"
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_server_to_client_bytes
+      field: "proxysg.server_to_client.bytes"
+      target_field: "server.bytes"
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_client_to_server_bytes"
+      field: "proxysg.client_to_server.bytes"
+      target_field: "client.bytes"
       type: long
       ignore_missing: true
 
@@ -71,6 +84,18 @@ processors:
   - set:
       field: "url.query"
       copy_from: "proxysg.client_to_server.uri_query"
+      ignore_failure: true
+  - set:
+      field: "client.user.id"
+      copy_from: "proxysg.client_to_server.username"
+      ignore_failure: true
+  - set:
+      field: "http.request.referrer"
+      copy_from: "proxysg.client_to_server.referer"
+      ignore_failure: true
+  - set:
+      field: "user_agent.original"
+      copy_from: "proxysg.client_to_server.user_agent"
       ignore_failure: true
 
 on_failure:
