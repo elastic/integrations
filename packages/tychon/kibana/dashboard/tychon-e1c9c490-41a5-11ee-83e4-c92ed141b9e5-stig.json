@@ -13,8 +13,9 @@
                 "accc2a18-0c16-4d33-b8df-09233a36a580": {
                     "explicitInput": {
                         "enhancements": {},
-                        "fieldName": "host.hostname",
+                        "fieldName": "tychon.host.hostname",
                         "id": "accc2a18-0c16-4d33-b8df-09233a36a580",
+                        "searchTechnique": "prefix",
                         "singleSelect": true,
                         "title": "Hostname"
                     },
@@ -121,8 +122,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-3a5ee27d-64e5-4145-91f5-5805379b4f2f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "a9b5419e-700f-4faa-af36-3462b8b6238c",
                                 "type": "index-pattern"
                             }
                         ],
@@ -163,17 +169,18 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 15
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "benchmark.name"
+                                                    "sourceField": "tychon.benchmark.name"
                                                 },
                                                 "38dd2eaa-ba46-473b-9ecf-d55a40ef9ed3": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "rule.result : \"fail\" "
+                                                        "query": "tychon.rule.result : \"fail\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Total Failures",
@@ -182,7 +189,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "rule.id"
+                                                    "sourceField": "tychon.rule.id"
                                                 },
                                                 "43067dd3-665f-4543-b21e-3b5f4cc96c97": {
                                                     "customLabel": true,
@@ -191,7 +198,7 @@
                                                     "label": "Total Score",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "count(kql='rule.result : \"fail\" ') * 10",
+                                                        "formula": "count(kql='tychon.rule.result : \"fail\" ') * 10",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -204,10 +211,10 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "rule.result : \"fail\" "
+                                                        "query": "tychon.rule.result : \"fail\" "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of count(kql='rule.result : \"fail\" ') * 10",
+                                                    "label": "Part of Total Score",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -219,7 +226,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of count(kql='rule.result : \"fail\" ') * 10",
+                                                    "label": "Part of Total Score",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -228,11 +235,11 @@
                                                                 10
                                                             ],
                                                             "location": {
-                                                                "max": 39,
+                                                                "max": 46,
                                                                 "min": 0
                                                             },
                                                             "name": "multiply",
-                                                            "text": "count(kql='rule.result : \"fail\" ') * 10",
+                                                            "text": "count(kql='tychon.rule.result : \"fail\" ') * 10",
                                                             "type": "function"
                                                         }
                                                     },
@@ -274,10 +281,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "benchmark.version"
+                                                    "sourceField": "tychon.benchmark.version"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -289,7 +297,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "a9b5419e-700f-4faa-af36-3462b8b6238c",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.stig"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.stig"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -417,8 +480,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-6fff9691-3ddd-4388-8285-de60ad5d992f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "078c2ab1-ec64-433b-8fe4-601d7363f40d",
                                 "type": "index-pattern"
                             }
                         ],
@@ -438,7 +506,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "rule.result: \"fail\""
+                                                        "query": "tychon.rule.result: \"fail\""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Total Failures",
@@ -453,7 +521,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "rule.result: \"fail\" or rule.result: \"pass\""
+                                                        "query": "tychon.rule.result: \"fail\" or tychon.rule.result: \"pass\""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Count of records",
@@ -474,7 +542,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "078c2ab1-ec64-433b-8fe4-601d7363f40d",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.stig"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.stig"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -542,8 +665,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-6fff9691-3ddd-4388-8285-de60ad5d992f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "d94789b5-2519-4148-a6e3-497dcd0e19f1",
                                 "type": "index-pattern"
                             }
                         ],
@@ -563,7 +691,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "rule.result: \"pass\""
+                                                        "query": "tychon.rule.result: \"pass\""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Total Passes",
@@ -578,7 +706,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "rule.result: \"fail\" or rule.result: \"pass\""
+                                                        "query": "tychon.rule.result: \"fail\" or tychon.rule.result: \"pass\""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Count of records",
@@ -599,7 +727,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "d94789b5-2519-4148-a6e3-497dcd0e19f1",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.stig"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.stig"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -681,8 +864,217 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-93bb9ce5-6dc1-41ec-bff3-f8c606cab5c9",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "e07b94ec-05c9-458f-850c-c1734d856969",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "93bb9ce5-6dc1-41ec-bff3-f8c606cab5c9": {
+                                            "columnOrder": [
+                                                "ecc959a5-6cb4-43ed-bd8e-c8a11c51d3d2",
+                                                "31cd5bd5-bf05-4039-a241-c75a16ad9165",
+                                                "87f792ec-41cb-4052-ae3c-8e39032305c0"
+                                            ],
+                                            "columns": {
+                                                "31cd5bd5-bf05-4039-a241-c75a16ad9165": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "tychon.rule.result : \"fail\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Total Fails",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "87f792ec-41cb-4052-ae3c-8e39032305c0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "tychon.rule.result : \"pass\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Total Pass",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "ecc959a5-6cb4-43ed-bd8e-c8a11c51d3d2": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Severity",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.rule.severity :\"high\" "
+                                                                },
+                                                                "label": "CAT I"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.rule.severity : \"medium\" "
+                                                                },
+                                                                "label": "CAT II"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.rule.severity : \"low\" "
+                                                                },
+                                                                "label": "CAT III"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "e07b94ec-05c9-458f-850c-c1734d856969",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.stig"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.stig"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "ecc959a5-6cb4-43ed-bd8e-c8a11c51d3d2",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "31cd5bd5-bf05-4039-a241-c75a16ad9165",
+                                        "isTransposed": false,
+                                        "summaryLabel": "Total",
+                                        "summaryRow": "sum"
+                                    },
+                                    {
+                                        "columnId": "87f792ec-41cb-4052-ae3c-8e39032305c0",
+                                        "isTransposed": false,
+                                        "summaryLabel": "Total",
+                                        "summaryRow": "sum"
+                                    }
+                                ],
+                                "layerId": "93bb9ce5-6dc1-41ec-bff3-f8c606cab5c9",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Checks by Results and Severity",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "dfae1ea3-286c-4856-883c-2d657b7e511f",
+                    "w": 9,
+                    "x": 0,
+                    "y": 24
+                },
+                "panelIndex": "dfae1ea3-286c-4856-883c-2d657b7e511f",
+                "title": "Checks by Results and Severity",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-684ae460-2769-47f6-b1e3-442ea5978011",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b2207040-4f20-4329-bc50-957082a401be",
                                 "type": "index-pattern"
                             }
                         ],
@@ -724,10 +1116,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "rule.result"
+                                                    "sourceField": "tychon.rule.result"
                                                 },
                                                 "9190595b-2b89-47ab-bb49-62819cd2e3a5": {
                                                     "customLabel": true,
@@ -750,10 +1143,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "rule.severity"
+                                                    "sourceField": "tychon.rule.severity"
                                                 },
                                                 "a19d4424-845d-4c07-bd6f-c90128a0ff8f": {
                                                     "customLabel": true,
@@ -776,10 +1170,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 100
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "rule.title"
+                                                    "sourceField": "tychon.rule.title"
                                                 },
                                                 "eaef3af5-13f3-4936-baf5-5f1dd42bb36c": {
                                                     "customLabel": true,
@@ -802,10 +1197,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "rule.id"
+                                                    "sourceField": "tychon.rule.id"
                                                 },
                                                 "ed8182ed-6249-449f-844f-138d115fc1d6": {
                                                     "customLabel": true,
@@ -828,10 +1224,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "rule.stig_id"
+                                                    "sourceField": "tychon.rule.stig_id"
                                                 },
                                                 "f06f16d7-6954-48fd-9c3d-cbf7a7c8ccc6": {
                                                     "dataType": "number",
@@ -881,10 +1278,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "rule.finding_id"
+                                                    "sourceField": "tychon.rule.finding_id"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -896,7 +1294,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "b2207040-4f20-4329-bc50-957082a401be",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.stig"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.stig"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -955,165 +1408,13 @@
                 },
                 "gridData": {
                     "h": 30,
-                    "i": "e9ebb74e-da8e-40f8-b8a5-b47558d28d04",
+                    "i": "9dee87ad-0aef-439b-be53-98704b2271d4",
                     "w": 39,
                     "x": 9,
                     "y": 19
                 },
-                "panelIndex": "e9ebb74e-da8e-40f8-b8a5-b47558d28d04",
+                "panelIndex": "9dee87ad-0aef-439b-be53-98704b2271d4",
                 "title": "Rule Results",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
-                                "name": "indexpattern-datasource-layer-93bb9ce5-6dc1-41ec-bff3-f8c606cab5c9",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "fleet-managed-default",
-                                "name": "tag-ref-fleet-managed-default",
-                                "type": "tag"
-                            },
-                            {
-                                "id": "fleet-pkg-tychon-default",
-                                "name": "tag-ref-fleet-pkg-tychon-default",
-                                "type": "tag"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "93bb9ce5-6dc1-41ec-bff3-f8c606cab5c9": {
-                                            "columnOrder": [
-                                                "ecc959a5-6cb4-43ed-bd8e-c8a11c51d3d2",
-                                                "31cd5bd5-bf05-4039-a241-c75a16ad9165",
-                                                "87f792ec-41cb-4052-ae3c-8e39032305c0"
-                                            ],
-                                            "columns": {
-                                                "31cd5bd5-bf05-4039-a241-c75a16ad9165": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "rule.result : \"fail\" "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Total Fails",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "87f792ec-41cb-4052-ae3c-8e39032305c0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "rule.result : \"pass\" "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Total Pass",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "ecc959a5-6cb4-43ed-bd8e-c8a11c51d3d2": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Severity",
-                                                    "operationType": "filters",
-                                                    "params": {
-                                                        "filters": [
-                                                            {
-                                                                "input": {
-                                                                    "language": "kuery",
-                                                                    "query": "rule.severity :\"high\" "
-                                                                },
-                                                                "label": "CAT I"
-                                                            },
-                                                            {
-                                                                "input": {
-                                                                    "language": "kuery",
-                                                                    "query": "rule.severity : \"medium\" "
-                                                                },
-                                                                "label": "CAT II"
-                                                            },
-                                                            {
-                                                                "input": {
-                                                                    "language": "kuery",
-                                                                    "query": "rule.severity : \"low\" "
-                                                                },
-                                                                "label": "CAT III"
-                                                            }
-                                                        ]
-                                                    },
-                                                    "scale": "ordinal"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "ecc959a5-6cb4-43ed-bd8e-c8a11c51d3d2",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "31cd5bd5-bf05-4039-a241-c75a16ad9165",
-                                        "isTransposed": false,
-                                        "summaryLabel": "Total",
-                                        "summaryRow": "sum"
-                                    },
-                                    {
-                                        "columnId": "87f792ec-41cb-4052-ae3c-8e39032305c0",
-                                        "isTransposed": false,
-                                        "summaryLabel": "Total",
-                                        "summaryRow": "sum"
-                                    }
-                                ],
-                                "layerId": "93bb9ce5-6dc1-41ec-bff3-f8c606cab5c9",
-                                "layerType": "data"
-                            }
-                        },
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "dfae1ea3-286c-4856-883c-2d657b7e511f",
-                    "w": 9,
-                    "x": 0,
-                    "y": 24
-                },
-                "panelIndex": "dfae1ea3-286c-4856-883c-2d657b7e511f",
-                "title": "Checks by Results and Severity",
                 "type": "lens"
             }
         ],
@@ -1128,37 +1429,62 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-07-25T16:35:33.192Z",
+    "created_at": "2024-07-28T17:01:07.829Z",
     "id": "tychon-e1c9c490-41a5-11ee-83e4-c92ed141b9e5-stig",
     "managed": false,
     "references": [
         {
-            "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+            "id": "logs-*",
             "name": "6eda45c7-cb35-4f4a-8d66-4206ded45c8c:indexpattern-datasource-layer-3a5ee27d-64e5-4145-91f5-5805379b4f2f",
             "type": "index-pattern"
         },
         {
-            "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+            "id": "logs-*",
+            "name": "6eda45c7-cb35-4f4a-8d66-4206ded45c8c:a9b5419e-700f-4faa-af36-3462b8b6238c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "363067aa-6ee2-41c7-b95d-0e61e6c28537:indexpattern-datasource-layer-6fff9691-3ddd-4388-8285-de60ad5d992f",
             "type": "index-pattern"
         },
         {
-            "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+            "id": "logs-*",
+            "name": "363067aa-6ee2-41c7-b95d-0e61e6c28537:078c2ab1-ec64-433b-8fe4-601d7363f40d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "2a770935-c253-4473-9b7c-47353bb53b47:indexpattern-datasource-layer-6fff9691-3ddd-4388-8285-de60ad5d992f",
             "type": "index-pattern"
         },
         {
-            "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
-            "name": "e9ebb74e-da8e-40f8-b8a5-b47558d28d04:indexpattern-datasource-layer-684ae460-2769-47f6-b1e3-442ea5978011",
+            "id": "logs-*",
+            "name": "2a770935-c253-4473-9b7c-47353bb53b47:d94789b5-2519-4148-a6e3-497dcd0e19f1",
             "type": "index-pattern"
         },
         {
-            "id": "ed7c1bb4-5aac-45d4-9aff-06f4d4ad4a9a",
+            "id": "logs-*",
             "name": "dfae1ea3-286c-4856-883c-2d657b7e511f:indexpattern-datasource-layer-93bb9ce5-6dc1-41ec-bff3-f8c606cab5c9",
             "type": "index-pattern"
         },
         {
-            "id": "bb5226cd-c099-46d2-bb71-0257232c7d82",
+            "id": "logs-*",
+            "name": "dfae1ea3-286c-4856-883c-2d657b7e511f:e07b94ec-05c9-458f-850c-c1734d856969",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9dee87ad-0aef-439b-be53-98704b2271d4:indexpattern-datasource-layer-684ae460-2769-47f6-b1e3-442ea5978011",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9dee87ad-0aef-439b-be53-98704b2271d4:b2207040-4f20-4329-bc50-957082a401be",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "controlGroup_accc2a18-0c16-4d33-b8df-09233a36a580:optionsListDataView",
             "type": "index-pattern"
         }
