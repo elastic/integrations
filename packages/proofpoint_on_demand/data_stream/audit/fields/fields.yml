@@ -1,0 +1,101 @@
+- name: proofpoint_on_demand
+  type: group
+  fields:
+    - name: audit
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: Resource action.
+        - name: guid
+          type: keyword
+          description: Globally unique identifier for this message object.
+        - name: level
+          type: keyword
+          description: Event log level.
+        - name: metadata
+          type: group
+          fields:
+            - name: customer_id
+              type: keyword
+              description: The customer ID.
+            - name: origin
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: agent
+                      type: keyword
+                      description: The source host the audit event occurred.
+                    - name: agent_ip
+                      type: ip
+                    - name: cid
+                      type: keyword
+                      description: The cluster ID license for the PPS deployment.
+                    - name: version
+                      type: keyword
+                      description: The release PPS version.
+                - name: schema_version
+                  type: keyword
+                  description: Schema version of this message payload.
+                - name: type
+                  type: keyword
+                  description: The type of origin, i.e. PPS, Cloudmark, etc.
+            - name: trace
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Trace ID information for trafficstats needs.
+                - name: ts
+                  type: date
+                  description: Trace timestamp information for trafficstats needs.
+        - name: resource_name
+          type: keyword
+          description: Resource name.
+        - name: resource_type
+          type: keyword
+          description: Resource type.
+        - name: service
+          type: group
+          fields:
+            - name: cid
+              type: keyword
+              description: The cluster id from the IDM service token.
+            - name: customer_id
+              type: keyword
+              description: The customer id of the service.
+            - name: id
+              type: keyword
+              description: The IDM service id.
+            - name: ip_address
+              type: ip
+              description: The IP address of the service.
+        - name: tags
+          type: nested
+          fields:
+            - name: name
+              type: keyword
+              description: Tag name for the particular instance of event.
+            - name: value
+              type: keyword
+              description: The value associated with the tag name.
+        - name: ts
+          type: date
+          description: Timestamp of when the event to be audited occurred.
+        - name: user
+          type: group
+          fields:
+            - name: email
+              type: keyword
+              description: User email address.
+            - name: id
+              type: keyword
+              description: User ID.
+            - name: ip_address
+              type: ip
+              description: IP Address from where the user logged in.
+            - name: roles_assigned
+              type: keyword
+              description: User Authorization information.
