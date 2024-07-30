@@ -1,5 +1,11 @@
 #!/bin/bash
+
+source .buildkite/scripts/common.sh
+
 set -euo pipefail
+
+add_bin_path
+with_mage
 
 run_sonar_scanner() {
     local message=""
@@ -15,7 +21,7 @@ run_sonar_scanner() {
     fi
 
     echo "Merge all coverage reports"
-    .buildkite/scripts/merge_xml.sh
+    mage mergeCoverage
 
     echo "--- Execute sonar scanner CLI"
     /scan-source-code.sh

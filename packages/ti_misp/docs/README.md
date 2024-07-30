@@ -103,6 +103,9 @@ The filters themselves are based on the [MISP API documentation](https://www.cir
 | misp.orgc.uuid | The Organization Community UUID in which the event object was reported from. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 An example event for `threat` looks as following:
@@ -260,7 +263,9 @@ To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_misp
 | misp.attribute.distribution | How the attribute has been distributed, represented by integer numbers. | long |
 | misp.attribute.event_id | The local event ID of the attribute. | keyword |
 | misp.attribute.event_uuid | The local event UUID of the attribute. | keyword |
+| misp.attribute.first_seen | The first time the attribute was seen. | keyword |
 | misp.attribute.id | The ID of the attribute. | keyword |
+| misp.attribute.last_seen | The last time the attribute was seen. | keyword |
 | misp.attribute.object_id | The ID of the Object in which the attribute is attached. | keyword |
 | misp.attribute.object_relation | The type of relation the attribute has with the attribute object itself. | keyword |
 | misp.attribute.sharing_group_id | The group ID of the sharing group related to the specific attribute. | keyword |
@@ -305,5 +310,8 @@ To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_misp
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.email.subject |  | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 

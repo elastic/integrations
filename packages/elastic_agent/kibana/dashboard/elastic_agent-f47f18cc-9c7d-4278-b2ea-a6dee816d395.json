@@ -3,13 +3,55 @@
         "controlGroupInput": {
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
-            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"2678bf39-3def-453e-9f30-2904bc88efe9\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"agent.name\",\"title\":\"Agent Hostname\",\"id\":\"2678bf39-3def-453e-9f30-2904bc88efe9\",\"enhancements\":{},\"selectedOptions\":[]}}}"
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "2678bf39-3def-453e-9f30-2904bc88efe9": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "agent.name",
+                        "id": "2678bf39-3def-453e-9f30-2904bc88efe9",
+                        "selectedOptions": [],
+                        "title": "Agent Hostname"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
         },
         "description": "Elastic Agent metrics dashboard",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "elastic_agent.*"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "elastic_agent.*"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -64,125 +106,252 @@
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "data_stream.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "elastic_agent.elastic_agent"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-99f20cec-1684-4175-b773-02c3638f2a32",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "99f20cec-1684-4175-b773-02c3638f2a32": {
+                                            "columnOrder": [
+                                                "7bec9e2e-5d9c-4ca9-a665-5017478e1ede",
+                                                "d86c0f7c-06a1-43fa-8110-e3aaec11b5ce",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X0",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X1",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X3"
+                                            ],
+                                            "columns": {
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": " ",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "differences(max(system.process.cpu.total.time.ms))/interval()",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cpu.total.time.ms"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "interval",
+                                                    "references": [],
+                                                    "scale": "ratio"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X1",
+                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2"
+                                                            ],
+                                                            "location": {
+                                                                "max": 61,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "differences(max(system.process.cpu.total.time.ms))/interval()",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X1",
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "7bec9e2e-5d9c-4ca9-a665-5017478e1ede": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of component.id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "component.id"
+                                                },
+                                                "d86c0f7c-06a1-43fa-8110-e3aaec11b5ce": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "s"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
                                             },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "data_stream.dataset": "elastic_agent.elastic_agent"
-                                            }
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
                                         }
                                     }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "drop_last_bucket": 0,
-                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
-                            "index_pattern": "metrics-*",
-                            "interval": "\u003e=1m",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
+                            },
+                            "filters": [
                                 {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "filter": {
-                                        "language": "kuery",
-                                        "query": ""
+                                    "$state": {
+                                        "store": "appState"
                                     },
-                                    "formatter": "percent",
-                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
-                                    "label": "CPU usage",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "system.process.cpu.total.value",
-                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
-                                            "type": "max"
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "a56d2368-a048-4c48-a261-e878eb2690c8",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "elastic_agent.elastic_agent"
                                         },
-                                        {
-                                            "field": "61ca57f2-469d-11e7-af02-69e470af7417",
-                                            "id": "42fea6f0-3da7-11eb-a63c-0f13e40aab83",
-                                            "type": "derivative",
-                                            "unit": ""
-                                        },
-                                        {
-                                            "id": "48fd6190-3da7-11eb-a63c-0f13e40aab83",
-                                            "script": "if (params.cpu_total \u003e 0) {\n  return params.cpu_total / params._interval  \n}\n\n",
-                                            "type": "calculation",
-                                            "variables": [
-                                                {
-                                                    "field": "42fea6f0-3da7-11eb-a63c-0f13e40aab83",
-                                                    "id": "4b81c280-3da7-11eb-a63c-0f13e40aab83",
-                                                    "name": "cpu_total"
-                                                }
-                                            ]
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "elastic_agent.elastic_agent"
                                         }
-                                    ],
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_index_pattern": "",
-                                    "split_color_mode": "kibana",
-                                    "split_mode": "terms",
-                                    "stacked": "stacked",
-                                    "terms_field": "elastic_agent.process",
-                                    "time_range_mode": "entire_time_range",
-                                    "type": "timeseries"
+                                    }
                                 }
                             ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": false
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "36f3abb0-7261-43e6-bc2f-7ad492094054"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "99f20cec-1684-4175-b773-02c3638f2a32",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "7bec9e2e-5d9c-4ca9-a665-5017478e1ede",
+                                        "xAccessor": "d86c0f7c-06a1-43fa-8110-e3aaec11b5ce"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
                         },
                         "title": "",
-                        "type": "metrics",
-                        "uiState": {}
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "",
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "6b8f954e-e930-4830-b13d-7df1466ad92f",
+                    "h": 13,
+                    "i": "a9091abd-f59f-44ff-92f2-6415fd64282c",
                     "w": 40,
                     "x": 8,
                     "y": 0
                 },
-                "panelIndex": "6b8f954e-e930-4830-b13d-7df1466ad92f",
+                "panelIndex": "a9091abd-f59f-44ff-92f2-6415fd64282c",
                 "title": "[Elastic Agent] CPU Usage",
-                "type": "visualization"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -348,7 +517,7 @@
                     "i": "59d829a2-c460-450d-b3f1-e24463ca8fbc",
                     "w": 40,
                     "x": 8,
-                    "y": 9
+                    "y": 13
                 },
                 "panelIndex": "59d829a2-c460-450d-b3f1-e24463ca8fbc",
                 "title": "[Elastic Agent] Memory Usage",
@@ -489,7 +658,7 @@
                     "i": "3f8fc111-60c1-4886-bb6d-3b83cdcf88c5",
                     "w": 40,
                     "x": 8,
-                    "y": 18
+                    "y": 22
                 },
                 "panelIndex": "3f8fc111-60c1-4886-bb6d-3b83cdcf88c5",
                 "title": "[Elastic Agent] Open Handles",
@@ -679,7 +848,7 @@
                     "i": "6f1753a7-612d-4e25-a33f-8aa3542d3c39",
                     "w": 24,
                     "x": 0,
-                    "y": 27
+                    "y": 31
                 },
                 "panelIndex": "6f1753a7-612d-4e25-a33f-8aa3542d3c39",
                 "title": "[Elastic Agent] Total events rate /s",
@@ -877,7 +1046,7 @@
                     "i": "daff36f6-d0b5-45e8-b0d9-910bace3c15b",
                     "w": 24,
                     "x": 24,
-                    "y": 27
+                    "y": 31
                 },
                 "panelIndex": "daff36f6-d0b5-45e8-b0d9-910bace3c15b",
                 "title": "[Elastic Agent] Output write throughput",
@@ -1068,7 +1237,7 @@
                     "i": "0165de2d-694a-40f5-95e1-855ce4ebd03e",
                     "w": 24,
                     "x": 0,
-                    "y": 36
+                    "y": 40
                 },
                 "panelIndex": "0165de2d-694a-40f5-95e1-855ce4ebd03e",
                 "title": "[Elastic Agent] Output write errors",
@@ -1258,7 +1427,7 @@
                     "i": "b1dcfde7-66f1-41fb-bc7d-d3deef840d4f",
                     "w": 24,
                     "x": 24,
-                    "y": 36
+                    "y": 40
                 },
                 "panelIndex": "b1dcfde7-66f1-41fb-bc7d-d3deef840d4f",
                 "title": "[Elastic Agent] Events acknowledged rate /s",
@@ -1450,7 +1619,7 @@
                     "i": "1a30ba18-2c22-4935-b245-6ec8f1a37ced",
                     "w": 24,
                     "x": 0,
-                    "y": 45
+                    "y": 49
                 },
                 "panelIndex": "1a30ba18-2c22-4935-b245-6ec8f1a37ced",
                 "title": "[Elastic Agent] Output write batches",
@@ -1631,7 +1800,7 @@
                     "i": "d004044a-99f4-44fa-964a-361accd1810d",
                     "w": 24,
                     "x": 24,
-                    "y": 45
+                    "y": 49
                 },
                 "panelIndex": "d004044a-99f4-44fa-964a-361accd1810d",
                 "title": "[Elastic Agent] Output batch size",
@@ -1824,7 +1993,7 @@
                     "i": "ded80e0c-7b32-4022-bee5-1c224e1ec73b",
                     "w": 24,
                     "x": 0,
-                    "y": 54
+                    "y": 58
                 },
                 "panelIndex": "ded80e0c-7b32-4022-bee5-1c224e1ec73b",
                 "title": "[Elastic Agent] Events dropped rate /s",
@@ -2014,7 +2183,7 @@
                     "i": "08f30154-3b1f-475b-acd2-6a6f6415b9eb",
                     "w": 24,
                     "x": 24,
-                    "y": 54
+                    "y": 58
                 },
                 "panelIndex": "08f30154-3b1f-475b-acd2-6a6f6415b9eb",
                 "title": "[Elastic Agent] Events duplicate rate /s",
@@ -2204,7 +2373,7 @@
                     "i": "ce5bea64-4178-4290-997b-a59455991f3d",
                     "w": 24,
                     "x": 0,
-                    "y": 63
+                    "y": 67
                 },
                 "panelIndex": "ce5bea64-4178-4290-997b-a59455991f3d",
                 "title": "[Elastic Agent] Events failed rate /s",
@@ -2394,348 +2563,10 @@
                     "i": "d3b72917-b8be-4c96-b10f-cbca8ebf0a68",
                     "w": 24,
                     "x": 24,
-                    "y": 63
+                    "y": 67
                 },
                 "panelIndex": "d3b72917-b8be-4c96-b10f-cbca8ebf0a68",
                 "title": "[Elastic Agent] Events TooMany rate /s",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "data_stream.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "elastic_agent.elastic_agent"
-                                            },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "data_stream.dataset": "elastic_agent.elastic_agent"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "drop_last_bucket": 0,
-                            "filter": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "id": "f0383b91-4a09-4b03-a013-f5938add6bfa",
-                            "index_pattern_ref_name": "metrics_42ec7297-eb0f-492b-bb18-d1301fa1ead7_0_index_pattern",
-                            "interval": "\u003e=1m",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "filter": {
-                                        "language": "kuery",
-                                        "query": ""
-                                    },
-                                    "formatter": "number",
-                                    "id": "a35c4256-5cee-4b6a-ae21-bdd0f0f6d4a2",
-                                    "label": "Cgroup CPU usage",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "system.process.cgroup.cpuacct.total.ns",
-                                            "id": "458710e3-e78d-4ebf-b9c7-3b1ca8bfc55a",
-                                            "type": "max"
-                                        },
-                                        {
-                                            "field": "system.process.cgroup.cpu.cfs.quota.us",
-                                            "id": "5a08b810-fc31-11eb-9d3e-9d72967e3395",
-                                            "type": "min"
-                                        },
-                                        {
-                                            "field": "458710e3-e78d-4ebf-b9c7-3b1ca8bfc55a",
-                                            "id": "391dc9f0-fc32-11eb-9d3e-9d72967e3395",
-                                            "type": "derivative",
-                                            "unit": "1s"
-                                        },
-                                        {
-                                            "field": "90f31960-fc31-11eb-9d3e-9d72967e3395",
-                                            "id": "4661f000-fc32-11eb-9d3e-9d72967e3395",
-                                            "type": "derivative",
-                                            "unit": "1s"
-                                        },
-                                        {
-                                            "field": "system.process.cgroup.cpu.stats.periods",
-                                            "id": "90f31960-fc31-11eb-9d3e-9d72967e3395",
-                                            "type": "max"
-                                        },
-                                        {
-                                            "id": "5c737680-fc31-11eb-9d3e-9d72967e3395",
-                                            "script": "\n      if (params.deltaUsageDerivNormalizedValue \u003e 0 \u0026\u0026 params.periodsDerivNormalizedValue \u003e0  \u0026\u0026 params.quota \u003e 0) {\n        // if throttling is configured\n        double  factor = params.deltaUsageDerivNormalizedValue / (params.periodsDerivNormalizedValue * params.quota * 1000); \n\n        return factor * 100; \n      }\n\n      return null;",
-                                            "type": "calculation",
-                                            "variables": [
-                                                {
-                                                    "field": "391dc9f0-fc32-11eb-9d3e-9d72967e3395",
-                                                    "id": "60300950-fc31-11eb-9d3e-9d72967e3395",
-                                                    "name": "deltaUsageDerivNormalizedValue"
-                                                },
-                                                {
-                                                    "field": "4661f000-fc32-11eb-9d3e-9d72967e3395",
-                                                    "id": "d6060d50-fc31-11eb-9d3e-9d72967e3395",
-                                                    "name": "periodsDerivNormalizedValue"
-                                                },
-                                                {
-                                                    "field": "5a08b810-fc31-11eb-9d3e-9d72967e3395",
-                                                    "id": "e3368450-fc31-11eb-9d3e-9d72967e3395",
-                                                    "name": "quota"
-                                                }
-                                            ]
-                                        }
-                                    ],
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "stacked",
-                                    "terms_field": "elastic_agent.process",
-                                    "time_range_mode": "entire_time_range",
-                                    "type": "timeseries",
-                                    "value_template": "{{value}}%"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
-                        "title": "",
-                        "type": "metrics",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "42ec7297-eb0f-492b-bb18-d1301fa1ead7",
-                    "w": 24,
-                    "x": 0,
-                    "y": 72
-                },
-                "panelIndex": "42ec7297-eb0f-492b-bb18-d1301fa1ead7",
-                "title": "[Elastic Agent] CGroup CPU Usage",
-                "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-38cd2447-deab-49b7-9d84-400f2ba12511",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "38cd2447-deab-49b7-9d84-400f2ba12511": {
-                                            "columnOrder": [
-                                                "0a3d2e1f-e2f5-4001-b02b-927904b0ab94",
-                                                "6093c949-5f5d-4c72-baba-5a84ce2f1a9b",
-                                                "c37367a6-4c26-4f3f-86eb-10db67933171"
-                                            ],
-                                            "columns": {
-                                                "0a3d2e1f-e2f5-4001-b02b-927904b0ab94": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of component.id",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "c37367a6-4c26-4f3f-86eb-10db67933171",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "component.id"
-                                                },
-                                                "6093c949-5f5d-4c72-baba-5a84ce2f1a9b": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "m"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "c37367a6-4c26-4f3f-86eb-10db67933171": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": ""
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": " ",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "monitoring.metrics.libbeat.pipeline.events.active"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "linkToLayers": [],
-                                            "sampling": 1
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "97ad75be-db47-4cb4-bb1e-0c0320d04edd",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "elastic_agent.*"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "elastic_agent.*"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "c37367a6-4c26-4f3f-86eb-10db67933171"
-                                        ],
-                                        "layerId": "38cd2447-deab-49b7-9d84-400f2ba12511",
-                                        "layerType": "data",
-                                        "seriesType": "area_stacked",
-                                        "splitAccessor": "0a3d2e1f-e2f5-4001-b02b-927904b0ab94",
-                                        "xAccessor": "6093c949-5f5d-4c72-baba-5a84ce2f1a9b"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "large",
-                                    "position": "right",
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true,
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightExtent": {
-                                    "mode": "full"
-                                }
-                            }
-                        },
-                        "title": "[Elastic Agent] Queue depth",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1",
-                    "w": 24,
-                    "x": 24,
-                    "y": 81
-                },
-                "panelIndex": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1",
-                "title": "[Elastic Agent] Queue depth",
                 "type": "lens"
             },
             {
@@ -2964,7 +2795,7 @@
                     "i": "bf48fd17-63ec-4d90-8b6a-328bb74b466a",
                     "w": 24,
                     "x": 0,
-                    "y": 81
+                    "y": 76
                 },
                 "panelIndex": "bf48fd17-63ec-4d90-8b6a-328bb74b466a",
                 "title": "[Elastic Agent] Queue Usage",
@@ -2989,7 +2820,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "c7cc9cd8-585a-4078-a86f-8b0213c874fd": {
                                             "columnOrder": [
@@ -3010,7 +2840,6 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "linkToLayers": [],
                                             "sampling": 1
                                         },
@@ -3018,7 +2847,8 @@
                                             "columnOrder": [
                                                 "3495fd36-d74d-4daf-9dae-1e84e63bc31e",
                                                 "a084070f-a15a-473c-abf4-d2e52e84c6ae",
-                                                "90bc620d-c329-4607-90d4-5245a7cc7e69"
+                                                "90bc620d-c329-4607-90d4-5245a7cc7e69",
+                                                "90bc620d-c329-4607-90d4-5245a7cc7e69X0"
                                             ],
                                             "columns": {
                                                 "3495fd36-d74d-4daf-9dae-1e84e63bc31e": {
@@ -3033,10 +2863,10 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "90bc620d-c329-4607-90d4-5245a7cc7e69",
-                                                            "type": "column"
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
                                                         "otherBucket": false,
                                                         "parentFormat": {
                                                             "id": "terms"
@@ -3051,15 +2881,30 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": " ",
-                                                    "operationType": "max",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 2
                                                             }
-                                                        }
+                                                        },
+                                                        "formula": "max(system.process.cgroup.memory.mem.usage.bytes)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "90bc620d-c329-4607-90d4-5245a7cc7e69X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "90bc620d-c329-4607-90d4-5245a7cc7e69X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "system.process.cgroup.memory.mem.usage.bytes"
@@ -3079,7 +2924,6 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -3163,25 +3007,213 @@
                     "i": "e651fb9f-763d-4c9d-80d7-7c56adb98883",
                     "w": 24,
                     "x": 24,
-                    "y": 72
+                    "y": 76
                 },
                 "panelIndex": "e651fb9f-763d-4c9d-80d7-7c56adb98883",
                 "title": "[Elastic Agent] Cgroup Memory Usage",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-38cd2447-deab-49b7-9d84-400f2ba12511",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "38cd2447-deab-49b7-9d84-400f2ba12511": {
+                                            "columnOrder": [
+                                                "0a3d2e1f-e2f5-4001-b02b-927904b0ab94",
+                                                "6093c949-5f5d-4c72-baba-5a84ce2f1a9b",
+                                                "c37367a6-4c26-4f3f-86eb-10db67933171"
+                                            ],
+                                            "columns": {
+                                                "0a3d2e1f-e2f5-4001-b02b-927904b0ab94": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of component.id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c37367a6-4c26-4f3f-86eb-10db67933171",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "component.id"
+                                                },
+                                                "6093c949-5f5d-4c72-baba-5a84ce2f1a9b": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "m"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "c37367a6-4c26-4f3f-86eb-10db67933171": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": ""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": " ",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "monitoring.metrics.libbeat.pipeline.events.active"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "linkToLayers": [],
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "97ad75be-db47-4cb4-bb1e-0c0320d04edd",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "elastic_agent.*"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "elastic_agent.*"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c37367a6-4c26-4f3f-86eb-10db67933171"
+                                        ],
+                                        "layerId": "38cd2447-deab-49b7-9d84-400f2ba12511",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "splitAccessor": "0a3d2e1f-e2f5-4001-b02b-927904b0ab94",
+                                        "xAccessor": "6093c949-5f5d-4c72-baba-5a84ce2f1a9b"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "[Elastic Agent] Queue depth",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1",
+                    "w": 24,
+                    "x": 0,
+                    "y": 85
+                },
+                "panelIndex": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1",
+                "title": "[Elastic Agent] Queue depth",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Elastic Agent] Agent metrics",
-        "version": 1
+        "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-06-18T13:40:33.056Z",
+    "created_at": "2024-07-01T19:40:41.314Z",
     "id": "elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395",
-    "managed": false,
+    "managed": true,
     "references": [
         {
             "id": "metrics-*",
-            "name": "6b8f954e-e930-4830-b13d-7df1466ad92f:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "a9091abd-f59f-44ff-92f2-6415fd64282c:indexpattern-datasource-layer-99f20cec-1684-4175-b773-02c3638f2a32",
             "type": "index-pattern"
         },
         {
@@ -3245,21 +3277,6 @@
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
-            "name": "42ec7297-eb0f-492b-bb18-d1301fa1ead7:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "42ec7297-eb0f-492b-bb18-d1301fa1ead7:metrics_42ec7297-eb0f-492b-bb18-d1301fa1ead7_0_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1:indexpattern-datasource-layer-38cd2447-deab-49b7-9d84-400f2ba12511",
-            "type": "index-pattern"
-        },
-        {
             "id": "logs-*",
             "name": "bf48fd17-63ec-4d90-8b6a-328bb74b466a:indexpattern-datasource-layer-38cd2447-deab-49b7-9d84-400f2ba12511",
             "type": "index-pattern"
@@ -3272,6 +3289,11 @@
         {
             "id": "metrics-*",
             "name": "e651fb9f-763d-4c9d-80d7-7c56adb98883:indexpattern-datasource-layer-fa212775-2294-4cb0-a671-eb76e6856d14",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1:indexpattern-datasource-layer-38cd2447-deab-49b7-9d84-400f2ba12511",
             "type": "index-pattern"
         },
         {

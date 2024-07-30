@@ -1,0 +1,43 @@
+---
+name: Bump latest elastic-stack test version
+pipelineid: 'bump-latest-elastic-stack-version'
+
+actions:
+  default:
+    title: '[updatecli] Update latest snapshot to {{ source "latestSnapshot" }}'
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      labels:
+        - automation
+        - dependency
+
+scms:
+  default:
+    kind: github
+    spec:
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      commitusingapi: true
+      branch: main
+
+sources:
+  latestSnapshot:
+    name: Get latest snapshot
+    kind: json
+    spec:
+      file: https://storage.googleapis.com/artifacts-api/snapshots/main.json
+      key: .version
+
+targets:
+  update-snapshot:
+    name: '[updatecli] Update latest snapshot to {{ source "latestSnapshot" }}'
+    kind: file
+    sourceid: latestSnapshot
+    scmid: default
+    spec:
+      file: '.buildkite/pipeline.schedule-daily.yml'
+      matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
+      replacepattern: '$1 {{ source "latestSnapshot" }}'

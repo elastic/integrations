@@ -156,6 +156,7 @@ An example event for `log` looks as following:
 | cisco.asa.group_policy | The group policy name. | keyword |
 | cisco.asa.icmp_code | ICMP code. | short |
 | cisco.asa.icmp_type | ICMP type. | short |
+| cisco.asa.interface_name | The interface name. | keyword |
 | cisco.asa.mapped_destination_host |  | keyword |
 | cisco.asa.mapped_destination_ip | The translated destination IP address. | ip |
 | cisco.asa.mapped_destination_port | The translated destination port. | long |
@@ -170,6 +171,7 @@ An example event for `log` looks as following:
 | cisco.asa.pool_name | The pool name. | keyword |
 | cisco.asa.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
+| cisco.asa.redundant_interface_name | The redundant interface name. | keyword |
 | cisco.asa.rejection_reason | Reason for an AAA authentication rejection. | keyword |
 | cisco.asa.rule_name | Name of the Access Control List rule that matched this event. | keyword |
 | cisco.asa.security | Cisco FTD security event fields. | flattened |

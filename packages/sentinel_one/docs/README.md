@@ -791,6 +791,13 @@ An example event for `alert` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| sentinel_one.alert.agent.computer_name | Computer distinguished name. | keyword |
+| sentinel_one.alert.agent.id | Agent ID. | keyword |
+| sentinel_one.alert.agent.infected | Agent infected. | boolean |
+| sentinel_one.alert.agent.is_active | Is active. | boolean |
+| sentinel_one.alert.agent.is_decommissioned | Is decommissioned. | boolean |
+| sentinel_one.alert.agent.machine_type | Machine type. | keyword |
+| sentinel_one.alert.agent.os.type | OS type. | keyword |
 | sentinel_one.alert.agent.site_id | Site id. | keyword |
 | sentinel_one.alert.analyst_verdict | Analyst verdict. | keyword |
 | sentinel_one.alert.container.info.labels | Container info labels. | keyword |

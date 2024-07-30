@@ -1,0 +1,924 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "393197e5-bb6a-41f0-9220-f23f1aa56e38": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "azure.resource.group",
+                        "grow": true,
+                        "id": "393197e5-bb6a-41f0-9220-f23f1aa56e38",
+                        "searchTechnique": "prefix",
+                        "title": "Resource Groups",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "aa034dfd-4ee3-4875-a5ca-ee3d9820c7b5": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "azure.subscription_id",
+                        "grow": true,
+                        "id": "aa034dfd-4ee3-4875-a5ca-ee3d9820c7b5",
+                        "searchTechnique": "prefix",
+                        "title": "Subscriptions",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "b4695ac0-11fc-48ca-81a8-1b1a21e653b3": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "azure.resource.name",
+                        "grow": true,
+                        "id": "b4695ac0-11fc-48ca-81a8-1b1a21e653b3",
+                        "searchTechnique": "prefix",
+                        "title": "Resources",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
+        },
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": "data_stream.dataset :\"azure.open_ai\" "
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-085b48b4-3ecf-4997-8d78-66ce948bbe08",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "085b48b4-3ecf-4997-8d78-66ce948bbe08": {
+                                            "columnOrder": [
+                                                "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633",
+                                                "6f986bc5-7ca6-4cbe-b1f1-3b546310471d",
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82"
+                                            ],
+                                            "columns": {
+                                                "6f986bc5-7ca6-4cbe-b1f1-3b546310471d": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Response time",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "asMilliseconds"
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.open_ai.time_to_response.avg"
+                                                },
+                                                "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of azure.dimensions.model_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "85c87a46-80e5-4ade-9a09-cd5d3d18dc82",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.model_name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.open_ai.time_to_response.avg :*"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "85c87a46-80e5-4ade-9a09-cd5d3d18dc82"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "085b48b4-3ecf-4997-8d78-66ce948bbe08",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633",
+                                        "xAccessor": "6f986bc5-7ca6-4cbe-b1f1-3b546310471d"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "a5c32942-e4eb-4c81-b327-638c4cf63345",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "a5c32942-e4eb-4c81-b327-638c4cf63345",
+                "title": "Time to first response over time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-085b48b4-3ecf-4997-8d78-66ce948bbe08",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "085b48b4-3ecf-4997-8d78-66ce948bbe08": {
+                                            "columnOrder": [
+                                                "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633",
+                                                "6f986bc5-7ca6-4cbe-b1f1-3b546310471d",
+                                                "ad24b01d-6e69-4fa5-a5f5-250ff990abdf"
+                                            ],
+                                            "columns": {
+                                                "6f986bc5-7ca6-4cbe-b1f1-3b546310471d": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ad24b01d-6e69-4fa5-a5f5-250ff990abdf": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Active tokens",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.open_ai.active_tokens.total"
+                                                },
+                                                "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of azure.dimensions.model_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ad24b01d-6e69-4fa5-a5f5-250ff990abdf",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.model_name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.open_ai.active_tokens.total : *"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "ad24b01d-6e69-4fa5-a5f5-250ff990abdf"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "085b48b4-3ecf-4997-8d78-66ce948bbe08",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633",
+                                        "xAccessor": "6f986bc5-7ca6-4cbe-b1f1-3b546310471d"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "c5f5cfe3-28d5-44c9-ac1c-6d129cf094fa",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "c5f5cfe3-28d5-44c9-ac1c-6d129cf094fa",
+                "title": "Active tokens over time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-085b48b4-3ecf-4997-8d78-66ce948bbe08",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "085b48b4-3ecf-4997-8d78-66ce948bbe08": {
+                                            "columnOrder": [
+                                                "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633",
+                                                "6f986bc5-7ca6-4cbe-b1f1-3b546310471d",
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82",
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X0",
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X1"
+                                            ],
+                                            "columns": {
+                                                "6f986bc5-7ca6-4cbe-b1f1-3b546310471d": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Provisioned utilization",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "max(azure.open_ai.provisioned_managed_utilization_v2.avg)/100",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Provisioned utilization",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.open_ai.provisioned_managed_utilization_v2.avg"
+                                                },
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Provisioned utilization",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X0",
+                                                                100
+                                                            ],
+                                                            "location": {
+                                                                "max": 61,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "max(azure.open_ai.provisioned_managed_utilization_v2.avg)/100",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of azure.dimensions.model_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.model_name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.open_ai.provisioned_managed_utilization_v2.avg : *"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "85c87a46-80e5-4ade-9a09-cd5d3d18dc82"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "085b48b4-3ecf-4997-8d78-66ce948bbe08",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633",
+                                        "xAccessor": "6f986bc5-7ca6-4cbe-b1f1-3b546310471d"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "aace0dd7-c7ac-473d-b416-e4b2ac1c73b1",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "aace0dd7-c7ac-473d-b416-e4b2ac1c73b1",
+                "title": "Provisioned utilization over time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-085b48b4-3ecf-4997-8d78-66ce948bbe08",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "085b48b4-3ecf-4997-8d78-66ce948bbe08": {
+                                            "columnOrder": [
+                                                "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633",
+                                                "6f986bc5-7ca6-4cbe-b1f1-3b546310471d",
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82",
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X0",
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X1"
+                                            ],
+                                            "columns": {
+                                                "6f986bc5-7ca6-4cbe-b1f1-3b546310471d": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Context token cache match rate",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "average(azure.open_ai.context_tokens_cache_match_rate.avg)/100",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Context token cache match rate",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "azure.open_ai.context_tokens_cache_match_rate.avg"
+                                                },
+                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Context token cache match rate",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X0",
+                                                                100
+                                                            ],
+                                                            "location": {
+                                                                "max": 62,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "average(azure.open_ai.context_tokens_cache_match_rate.avg)/100",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "85c87a46-80e5-4ade-9a09-cd5d3d18dc82X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of azure.dimensions.model_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.dimensions.model_name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "azure.open_ai.time_to_response.avg :*"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "85c87a46-80e5-4ade-9a09-cd5d3d18dc82"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "085b48b4-3ecf-4997-8d78-66ce948bbe08",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ee6edb3f-8dbc-44fd-8f74-d46f0b05b633",
+                                        "xAccessor": "6f986bc5-7ca6-4cbe-b1f1-3b546310471d"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "3e078be8-6e1a-425f-a65f-5f2b6b05dc2c",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "3e078be8-6e1a-425f-a65f-5f2b6b05dc2c",
+                "title": "Token cache match rate over time",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Azure OpenAI] PTU Deployments",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-07-11T10:04:32.505Z",
+    "id": "azure_openai-83bbaa98-7f44-4785-8774-15e0de9f74fa",
+    "managed": false,
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "a5c32942-e4eb-4c81-b327-638c4cf63345:indexpattern-datasource-layer-085b48b4-3ecf-4997-8d78-66ce948bbe08",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c5f5cfe3-28d5-44c9-ac1c-6d129cf094fa:indexpattern-datasource-layer-085b48b4-3ecf-4997-8d78-66ce948bbe08",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "aace0dd7-c7ac-473d-b416-e4b2ac1c73b1:indexpattern-datasource-layer-085b48b4-3ecf-4997-8d78-66ce948bbe08",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "3e078be8-6e1a-425f-a65f-5f2b6b05dc2c:indexpattern-datasource-layer-085b48b4-3ecf-4997-8d78-66ce948bbe08",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_393197e5-bb6a-41f0-9220-f23f1aa56e38:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_aa034dfd-4ee3-4875-a5ca-ee3d9820c7b5:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_b4695ac0-11fc-48ca-81a8-1b1a21e653b3:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
+}

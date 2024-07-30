@@ -32,15 +32,19 @@ redact:
   fields: ~
 program: |
   (
-    !state.want_more ?
-      request("GET", state.url + "/intel/combined/indicators/v1?offset=0&sort=_marker.asc&limit=" + string(state.batch_size) + '&filter=_marker:>"' + (
-        has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-          string(int(state.cursor.last_timestamp))
-        :
-          string(int(now - duration(state.initial_interval)))
-      ) + '"')
-    :
-      request("GET", state.url + string(state.next_url[0]))
+    request("GET", state.url.trim_right("/") + (
+      state.want_more ?
+        string(state.next_url[0])
+      :
+        "/intel/combined/indicators/v1?" + {
+          "sort": ["_marker.asc"],
+          "offset": ["0"],
+          "limit": [string(state.batch_size)],
+          "filter": [
+            '_marker:>"' + string(state.?cursor.last_timestamp.orValue(int(now - duration(state.initial_interval)))) + '"'
+          ],
+        }.format_query()
+    ))
   ).do_request().as(resp,
     resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, {
@@ -53,22 +57,10 @@ program: |
         "initial_interval": state.initial_interval,
         "next_url": "Next-Page" in resp.Header ? resp.Header["Next-Page"] : "",
         "cursor": {
-          "last_timestamp": (
-            has(body.resources) && body.resources.size() > 0 ?
-              (
-                has(state.cursor) && has(state.cursor.last_timestamp) && body.resources.map(e, e.last_updated).max() < state.cursor.last_timestamp ?
-                  state.cursor.last_timestamp
-                :
-                  body.resources.map(e, e.last_updated).max()
-              )
-            :
-              (
-                has(state.cursor) && has(state.cursor.last_timestamp) ?
-                  state.cursor.last_timestamp
-                :
-                  null
-              )
-          ),
+          ?"last_timestamp": has(body.resources) ?
+            optional.of(([?state.?cursor.last_timestamp] + body.resources.map(e, e.last_updated)).max())
+          :
+            state.?cursor.last_timestamp,
         },
       })
     :
@@ -77,7 +69,12 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": string(resp.Body)
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
           },
         },
         "want_more": false,

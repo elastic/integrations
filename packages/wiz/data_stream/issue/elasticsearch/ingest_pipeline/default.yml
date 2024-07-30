@@ -5,6 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: '8.11.0'
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
   - rename:
       field: message
       tag: rename_message
@@ -358,6 +362,11 @@ processors:
       tag: rename_status
       target_field: wiz.issue.status.value
       ignore_missing: true
+  - rename:
+      field: json.type
+      tag: rename_issuetype
+      target_field: wiz.issue.type
+      ignore_missing: true
   - remove:
       field: json
       tag: remove_json
@@ -402,7 +411,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:

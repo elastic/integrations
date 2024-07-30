@@ -1,0 +1,40 @@
+- name: start_timestamp
+  type: date
+  description: Date/time when the monitoring cycle started.
+- name: aws
+  type: group
+  fields:
+    - name: cloudwatch
+      type: group
+      fields:
+        - name: namespace
+          type: keyword
+          description: The namespace specified when query cloudwatch api.
+          dimension: true
+    - name: exporter
+      type: group
+      fields:
+        - name: arn
+          type: keyword
+          description: The metric stream ARN.
+          dimension: true
+    - name: dimensions.*
+      type: keyword
+      description: |
+        Metric dimensions.
+      dimension: true
+    - name: firehose
+      type: group
+      fields:
+        - name: parameters.*
+          type: flattened
+          description: |
+            Key-value pairs users set up when creating the Kinesis Data Firehose. These parameters are included in each HTTP call.
+- name: aws.*.metrics.*.*
+  type: object
+  object_type: double
+  object_type_mapping_type: "*"
+  metric_type: gauge
+  subobjects: false
+  description: |
+    Metrics that returned from Cloudwatch API query.

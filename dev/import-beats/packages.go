@@ -16,7 +16,7 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/elastic/package-registry/packages"
 )
@@ -96,7 +96,8 @@ type packageRepository struct {
 }
 
 func newPackageRepository(iconRepository *iconRepository, kibanaMigrator *kibanaMigrator,
-	ecsFields fieldDefinitionArray, selectedPackageNames []string) *packageRepository {
+	ecsFields fieldDefinitionArray, selectedPackageNames []string,
+) *packageRepository {
 	return &packageRepository{
 		iconRepository:       iconRepository,
 		kibanaMigrator:       kibanaMigrator,
@@ -199,7 +200,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		}
 
 		// dataStreams
-		var moduleTitle = "TODO"
+		moduleTitle := "TODO"
 		if manifest.Title != nil {
 			moduleTitle = *manifest.Title
 		}

@@ -18,9 +18,9 @@ This integration supports BitDefender GravityZone, which is the business oriente
 
 BitDefender products for home users are not supported.
 
-The package collects BitDefender GravityZone push notification transported events sent in "qradar" format or "splunk" format.
+The package collects BitDefender GravityZone push notification transported events sent in `jsonrpc`, `qradar`, or `splunk` format.
 
-The "qradar" format appears to be plain Newline Delimited JSON and is the format this integration expects by default, however the ingest pipeline will attempt to detect if "splunk" format events have been received.
+The `jsonrpc` format is recommended default, but the ingest pipeline will attempt to detect if `qradar` or `splunk` format events have been received and process them accordingly.
 
 The integration can also collect the push notification configuration and statistics by polling the BitDefender GravityZone API.
 
@@ -68,11 +68,9 @@ Click the clipboard icon to copy the API key to your PC's clipboard.
 
 The BitDefender documentation for how to do this is [here](https://www.bitdefender.com/business/support/en/77209-135319-setpusheventsettings.html)
 
-You should use the "qradar" format option.
+You should use the `jsonrpc` format option.
 
-**NOTE**: The `jsonrpc` format that BitDefender's documentation presents as the default and best option, should **NOT** be used, due to limitations in the filebeat "http_endpoint" input and available processors at this point. The [`http_endpoint` input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html) can only collect events if the incoming body is either an object or an array of objects at the root. But as `jsonrpc` format sends the array of events bundled inside `params.events` JSON key, the input is currently unable to collect them.
-
-An example using cURL, as the official documentation is unclear at times what to do and how to do it.
+An example using cURL:
 
 ```
 curl --location --request POST 'https://cloud.gravityzone.bitdefender.com/api/v1.0/jsonrpc/push' \
@@ -85,7 +83,7 @@ curl --location --request POST 'https://cloud.gravityzone.bitdefender.com/api/v1
   "method": "setPushEventSettings",
   "params": {
     "status": 1,
-    "serviceType": "qradar",
+    "serviceType": "jsonrpc",
     "serviceSettings": {
       "authorization": "secret value",
       "requireValidSslCertificate": true,

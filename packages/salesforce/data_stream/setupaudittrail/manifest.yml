@@ -1,16 +1,32 @@
 type: logs
 title: Salesforce setupaudittrail logs
 streams:
-  - input: httpjson
+  - input: salesforce
     vars:
-      - name: period
+      - name: api_version
         type: text
-        title: Period
-        description: Period of fetching logs, i.e. 1s/1m/1h.
+        title: API Version
+        description: API Version of Salesforce.
         multi: false
         required: true
         show_user: false
+        default: 56.0
+      - name: period
+        type: text
+        title: Period
+        description: Period of fetching logs. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
         default: 1h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: Initial Interval to fetch historical data from. Supported units for this parameter are h/m/s.
+        multi: false
+        required: false
+        show_user: true
+        default: 168h
       - name: tags
         type: text
         title: Tags
@@ -19,7 +35,6 @@ streams:
         show_user: false
         default:
           - salesforce-setupaudittrail
-          - forwarded
       - name: preserve_original_event
         required: true
         show_user: true
@@ -28,14 +43,6 @@ streams:
         type: bool
         multi: false
         default: false
-      - name: request_timeout
-        type: text
-        title: Request timeout
-        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are `s` (seconds) and `m` (minutes). Default is 30s if left empty.
-        show_user: false
-        multi: false
-        required: false
-        default: 5m
       - name: processors
         type: yaml
         title: Processors
@@ -43,6 +50,6 @@ streams:
         required: false
         show_user: false
         description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-    template_path: httpjson.yml.hbs
+    template_path: salesforce.yml.hbs
     title: Salesforce SetupAuditTrail logs
     description: Collect Salesforce SetupAuditTrail logs.

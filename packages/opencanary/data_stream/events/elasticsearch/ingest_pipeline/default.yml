@@ -655,7 +655,7 @@ processors:
   - redact:
       description: Redact any passwords in the log data
       tag: redact_event_original
-      if: 'ctx.tags?.contains("redact_passwords") && ctx.event?.original =~ /\"PASSWORD\": \"/'
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /\"PASSWORD\": \"/'
       field: event.original
       patterns:
         - '"PASSWORD": "%{DATA:REDACTED}"'
@@ -736,14 +736,14 @@ processors:
   - remove:
       description: Remove malformed source.* fields for LOG_BASE_MSG events
       tag: remove_source_port
-      field: source
+      field: source.port
       if: ctx.source?.port == -1
       ignore_missing: true
       ignore_failure: true
   - remove:
       description: Remove malformed destination.* fields for LOG_BASE_MSG events
       tag: remove_destination_port
-      field: destination
+      field: destination.port
       if: ctx.destination?.port == -1
       ignore_missing: true
       ignore_failure: true

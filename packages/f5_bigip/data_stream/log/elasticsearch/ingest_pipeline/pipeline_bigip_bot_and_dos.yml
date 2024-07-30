@@ -1,0 +1,954 @@
+---
+description: Pipeline for processing Dos and Bot logs.
+processors:
+  - kv:
+      field: event.original
+      tag: kv_event_original_for_bot
+      field_split: ','
+      value_split: =
+      target_field: kv
+      strip_brackets: true
+      if: ctx.event.original.contains('device_product="Application Security Module"')
+      ignore_failure: true
+  - kv:
+      field: event.original
+      tag: kv_event_original_for_dos
+      field_split: ';'
+      value_split: =
+      target_field: kv
+      if: ctx.event.original.contains('device_product=ASM')
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Drops NA and 'NA' values recursively.
+      tag: script_to_remove_NA_values
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == 'N/A' || object == 'NA') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: network
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - rename:
+      field: kv.action
+      tag: rename_action
+      target_field: f5_bigip.log.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_log_action
+      copy_from: f5_bigip.log.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: ' '
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: kv.actual_mitigation_action_reason
+      tag: rename_actual_mitigation_action_reason
+      target_field: f5_bigip.log.actual_mitigation_action.reason
+      ignore_missing: true
+  - rename:
+      field: kv.actual_mitigation_action
+      tag: rename_actual_mitigation_action
+      target_field: f5_bigip.log.actual_mitigation_action.value
+      ignore_missing: true
+  - rename:
+      field: kv.additional_bot_signatures
+      tag: rename_additional_bot_signatures
+      target_field: f5_bigip.log.additional_bot_signatures
+      ignore_missing: true
+  - rename:
+      field: kv.anomalies
+      tag: rename_anomalies
+      target_field: f5_bigip.log.anomalies
+      ignore_missing: true
+  - rename:
+      field: kv.anomaly_categories
+      tag: rename_anomaly_categories
+      target_field: f5_bigip.log.anomaly_categories
+      ignore_missing: true
+  - rename:
+      field: kv.application_display_name
+      tag: rename_application_display_name
+      target_field: f5_bigip.log.application.display_name
+      ignore_missing: true
+  - rename:
+      field: kv.application_version
+      tag: rename_application_version
+      target_field: f5_bigip.log.application.version
+      ignore_missing: true
+  - convert:
+      field: kv.bigip_mgmt_ip
+      tag: convert_bigip_mgmt_ip_to_ip
+      target_field: f5_bigip.log.bigip_management.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.kv?.bigip_mgmt_ip != 'null' && ctx.kv.bigip_mgmt_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_f5_bigip_log_bigip_management_ip_into_host_ip
+      value: '{{{f5_bigip.log.bigip_management.ip}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.bigip_management?.ip != null && ctx.f5_bigip.log.bigip_management.ip != 'null'
+  - append:
+      field: related.ip
+      tag: append_f5_bigip_log_bigip_management_ip_into_related_ip
+      value: '{{{f5_bigip.log.bigip_management.ip}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.bigip_management?.ip != null && ctx.f5_bigip.log.bigip_management.ip != 'null'
+  - convert:
+      field: kv.bigip_mgmt_ip2
+      tag: convert_bigip_mgmt_ip2_to_ip
+      target_field: f5_bigip.log.bigip_management.ip2
+      type: ip
+      ignore_missing: true
+      if: ctx.kv?.bigip_mgmt_ip2 != 'null' && ctx.kv.bigip_mgmt_ip2 != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_f5_bigip_log_bigip_management_ip2_into_host_ip
+      value: '{{{f5_bigip.log.bigip_management.ip2}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.bigip_management?.ip2 != null && ctx.f5_bigip.log.bigip_management.ip2 != 'null'
+  - append:
+      field: related.ip
+      tag: append_f5_bigip_log_bigip_management_ip2_into_related_ip
+      value: '{{{f5_bigip.log.bigip_management.ip2}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.bigip_management?.ip2 != null && ctx.f5_bigip.log.bigip_management.ip2 != 'null'
+  - convert:
+      field: kv.bigip_mgmt_ip_2
+      tag: convert_bigip_mgmt_ip_2_to_ip
+      target_field: f5_bigip.log.bigip_management.ip_2
+      type: ip
+      ignore_missing: true
+      if: ctx.kv?.bigip_mgmt_ip_2 != 'null' && ctx.kv.bigip_mgmt_ip_2 != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      tag: append_f5_bigip_log_bigip_management_ip_2_into_host_ip
+      value: '{{{f5_bigip.log.bigip_management.ip_2}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.bigip_management?.ip_2 != null && ctx.f5_bigip.log.bigip_management.ip_2 != 'null'
+  - append:
+      field: related.ip
+      tag: append_f5_bigip_log_bigip_management_ip_2_into_related_ip
+      value: '{{{f5_bigip.log.bigip_management.ip_2}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.bigip_management?.ip_2 != null && ctx.f5_bigip.log.bigip_management.ip_2 != 'null'
+  - rename:
+      field: kv.bot_name
+      tag: rename_bot_name
+      target_field: f5_bigip.log.bot_name
+      ignore_missing: true
+  - rename:
+      field: kv.bot_signature_category
+      tag: rename_bot_signature_category
+      target_field: f5_bigip.log.bot_signature.category
+      ignore_missing: true
+  - rename:
+      field: kv.bot_signature
+      tag: rename_bot_signature
+      target_field: f5_bigip.log.bot_signature.value
+      ignore_missing: true
+  - rename:
+      field: kv.browser_actual_verification_action_reason
+      tag: rename_browser_actual_verification_action_reason
+      target_field: f5_bigip.log.browser_actual_verification_action.reason
+      ignore_missing: true
+  - rename:
+      field: kv.browser_actual_verification_action
+      tag: rename_browser_actual_verification_action
+      target_field: f5_bigip.log.browser_actual_verification_action.value
+      ignore_missing: true
+  - rename:
+      field: kv.browser_configured_verification_action
+      tag: rename_browser_configured_verification_action
+      target_field: f5_bigip.log.browser_configured_verification_action
+      ignore_missing: true
+  - rename:
+      field: kv.browser_verification_status
+      tag: rename_browser_verification_status
+      target_field: f5_bigip.log.browser_verification_status
+      ignore_missing: true
+  - rename:
+      field: kv.captcha_status
+      tag: rename_captcha_status
+      target_field: f5_bigip.log.captcha_status
+      ignore_missing: true
+  - rename:
+      field: kv.class
+      tag: rename_class
+      target_field: f5_bigip.log.class
+      ignore_missing: true
+  - rename:
+      field: kv.classification_reason
+      tag: rename_classification_reason
+      target_field: f5_bigip.log.classification_reason
+      ignore_missing: true
+  - rename:
+      field: kv.client_ip_geo_location
+      tag: rename_client_ip_geo_location
+      target_field: f5_bigip.log.client.ip_geo_location
+      ignore_missing: true
+  - convert:
+      field: kv.client_ip
+      tag: convert_client_ip_to_ip
+      target_field: f5_bigip.log.client.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.kv?.client_ip != 'null' && ctx.kv.client_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: source.ip
+      tag: append_client_ip_into_source_ip
+      value: '{{{f5_bigip.log.client.ip}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.client?.ip != null && ctx.f5_bigip.log.client.ip != 'null'
+  - set:
+      field: client.ip
+      tag: set_client_ip
+      copy_from: source.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_source_ip_into_related_ip
+      value: '{{{f5_bigip.log.client.ip}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.client?.ip != null && ctx.f5_bigip.log.client.ip != 'null'
+  - convert:
+      field: kv.client_port
+      tag: convert_client_port_to_long
+      target_field: f5_bigip.log.client.port
+      type: long
+      ignore_missing: true
+      if: ctx.kv?.client_port != 'null' && ctx.kv.client_port != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_log_client_port
+      copy_from: f5_bigip.log.client.port
+      ignore_empty_value: true
+  - set:
+      field: client.port
+      tag: set_client_port
+      copy_from: source.port
+      ignore_empty_value: true
+  - rename:
+      field: kv.client_request_uri
+      tag: rename_client_request_uri
+      target_field: f5_bigip.log.client.request_uri
+      ignore_missing: true
+  - set:
+      field: url.path
+      tag: set_url_full_from_log_client_request_uri
+      copy_from: f5_bigip.log.client.request_uri
+      ignore_empty_value: true
+  - rename:
+      field: kv.client_type
+      tag: rename_client_type
+      target_field: f5_bigip.log.client.type
+      ignore_missing: true
+  - date:
+      field: kv.configuration_date_time
+      tag: date_configuration_date_time
+      target_field: f5_bigip.log.configuration_date_time
+      formats:
+        - MMM dd yyyy HH:mm:ss
+        - ISO8601
+      if: ctx.kv?.configuration_date_time != null && ctx.kv.configuration_date_time != 'null' && ctx.kv.configuration_date_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_log_configuration_date_time
+      copy_from: f5_bigip.log.configuration_date_time
+      ignore_empty_value: true
+  - rename:
+      field: kv.configured_mitigation_action_reason
+      tag: rename_configured_mitigation_action_reason
+      target_field: f5_bigip.log.configured_mitigation_action.reason
+      ignore_missing: true
+  - rename:
+      field: kv.configured_mitigation_action
+      tag: rename_configured_mitigation_action
+      target_field: f5_bigip.log.configured_mitigation_action.value
+      ignore_missing: true
+  - rename:
+      field: kv.context_name
+      tag: rename_context_name
+      target_field: f5_bigip.log.context.name
+      ignore_missing: true
+  - rename:
+      field: kv.context_type
+      tag: rename_context_type
+      target_field: f5_bigip.log.context.type
+      ignore_missing: true
+  - date:
+      field: kv.date_time
+      tag: date_date_time
+      target_field: f5_bigip.log.date_time
+      formats:
+        - MMM dd yyyy HH:mm:ss
+        - ISO8601
+      if: ctx.kv?.date_time != null && ctx.kv.date_time != 'null' && ctx.kv.date_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_log_date_time
+      copy_from: f5_bigip.log.date_time
+      ignore_empty_value: true
+  - convert:
+      field: kv.dest_ip
+      tag: convert_dest_ip_to_ip
+      target_field: f5_bigip.log.destination.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.kv?.dest_ip != 'null' && ctx.kv.dest_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_log_destination_ip
+      copy_from: f5_bigip.log.destination.ip
+      ignore_empty_value: true
+  - set:
+      field: server.ip
+      tag: set_server_ip
+      copy_from: destination.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_destination_ip_into_related_ip
+      value: '{{{f5_bigip.log.destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.destination?.ip != null && ctx.f5_bigip.log.destination.ip != 'null'
+  - convert:
+      field: kv.dest_port
+      tag: convert_dest_port_to_long
+      target_field: f5_bigip.log.destination.port
+      type: long
+      ignore_missing: true
+      if: ctx.kv?.dest_port != 'null' && ctx.kv.dest_port != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_log_destination_port
+      copy_from: f5_bigip.log.destination.port
+      ignore_empty_value: true
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: destination.port
+      ignore_empty_value: true
+  - rename:
+      field: kv.device_blade
+      tag: rename_device_blade
+      target_field: f5_bigip.log.device.blade
+      ignore_missing: true
+  - rename:
+      field: kv.device_id
+      tag: rename_device_id
+      target_field: f5_bigip.log.device.id
+      ignore_missing: true
+  - set:
+      field: device.id
+      tag: set_device_id_from_log_device_id
+      copy_from: f5_bigip.log.device.id
+      ignore_empty_value: true
+  - rename:
+      field: kv.device_product
+      tag: rename_device_product
+      target_field: f5_bigip.log.device.product
+      ignore_missing: true
+  - set:
+      field: observer.product
+      tag: set_observer_product_from_log_device_product
+      copy_from: f5_bigip.log.device.product
+      ignore_empty_value: true
+  - rename:
+      field: kv.device_vendor
+      tag: rename_device_vendor
+      target_field: f5_bigip.log.device.vendor
+      ignore_missing: true
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor_from_log_device_vendor
+      copy_from: f5_bigip.log.device.vendor
+      ignore_empty_value: true
+  - rename:
+      field: kv.device_version
+      tag: rename_device_version
+      target_field: f5_bigip.log.device.version
+      ignore_missing: true
+  - set:
+      field: observer.version
+      tag: set_observer_version_from_log_device_version
+      copy_from: f5_bigip.log.device.version
+      ignore_empty_value: true
+  - rename:
+      field: kv.device_id_action
+      tag: rename_device_id_action
+      target_field: f5_bigip.log.device_id.action
+      ignore_missing: true
+  - rename:
+      field: kv.device_id_status
+      tag: rename_device_id_status
+      target_field: f5_bigip.log.device_id.status
+      ignore_missing: true
+  - rename:
+      field: kv.dos_attack_detection_mode
+      tag: rename_dos_attack_detection_mode
+      target_field: f5_bigip.log.dos.attack.detection_mode
+      ignore_missing: true
+  - rename:
+      field: kv.dos_attack_event
+      tag: rename_dos_attack_event
+      target_field: f5_bigip.log.dos.attack.event
+      ignore_missing: true
+  - rename:
+      field: kv.dos_attack_id
+      tag: rename_dos_attack_id
+      target_field: f5_bigip.log.dos.attack.id
+      ignore_missing: true
+  - rename:
+      field: kv.dos_attack_latency
+      tag: rename_dos_attack_latency
+      target_field: f5_bigip.log.dos.attack.latency
+      ignore_missing: true
+  - rename:
+      field: kv.dos_attack_name
+      tag: rename_dos_attack_name
+      target_field: f5_bigip.log.dos.attack.name
+      ignore_missing: true
+  - rename:
+      field: kv.dos_attack_tps
+      tag: rename_dos_attack_tps
+      target_field: f5_bigip.log.dos.attack.tps
+      ignore_missing: true
+  - rename:
+      field: kv.dos_baseline_latency
+      tag: rename_dos_baseline_latency
+      target_field: f5_bigip.log.dos.baseline.latency
+      ignore_missing: true
+  - rename:
+      field: kv.dos_baseline_tps
+      tag: rename_dos_baseline_tps
+      target_field: f5_bigip.log.dos.baseline.tps
+      ignore_missing: true
+  - rename:
+      field: kv.dos_baseline_traffic_percent
+      tag: rename_dos_baseline_traffic_percent
+      target_field: f5_bigip.log.dos.baseline.traffic_percent
+      ignore_missing: true
+  - rename:
+      field: kv.dos_current_traffic_percent
+      tag: rename_dos_current_traffic_percent
+      target_field: f5_bigip.log.dos.current_traffic_percent
+      ignore_missing: true
+  - convert:
+      field: kv.dos_dropped_requests_count
+      tag: convert_dos_dropped_requests_count_to_long
+      target_field: f5_bigip.log.dos.dropped_requests_count
+      type: long
+      ignore_missing: true
+      if: ctx.kv?.dos_dropped_requests_count != 'null' && ctx.kv.dos_dropped_requests_count != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: kv.dos_incoming_requests_count
+      tag: convert_dos_incoming_requests_count_to_long
+      target_field: f5_bigip.log.dos.incoming_requests_count
+      type: long
+      ignore_missing: true
+      if: ctx.kv?.dos_incoming_requests_count != 'null' && ctx.kv.dos_incoming_requests_count != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: kv.dos_detection_condition
+      tag: rename_dos_detection_condition
+      target_field: f5_bigip.log.dos_detection.condition
+      ignore_missing: true
+  - rename:
+      field: kv.dos_detection_threshold
+      tag: convert_dos_detection_threshold_to_long
+      target_field: f5_bigip.log.dos_detection.threshold
+      ignore_missing: true
+  - rename:
+      field: kv.dos_mitigate_to_threshold
+      tag: rename_dos_mitigate_to_threshold
+      target_field: f5_bigip.log.dos_mitigate_to_threshold
+      ignore_missing: true
+  - rename:
+      field: kv.dos_mitigation_action
+      tag: rename_dos_mitigation_action
+      target_field: f5_bigip.log.dos_mitigation.action
+      ignore_missing: true
+  - rename:
+      field: kv.dos_mitigation_reason
+      tag: rename_dos_mitigation_reason
+      target_field: f5_bigip.log.dos_mitigation.reason
+      ignore_missing: true
+  - rename:
+      field: kv.enforced_by
+      tag: rename_enforced_by
+      target_field: f5_bigip.log.enforced_by
+      ignore_missing: true
+  - rename:
+      field: kv.errdefs_msg_name
+      tag: rename_errdefs_msg_name
+      target_field: f5_bigip.log.errdefs.msg_name
+      ignore_missing: true
+  - rename:
+      field: kv.errdefs_msgno
+      tag: rename_errdefs_msgno
+      target_field: f5_bigip.log.errdefs.msgno
+      ignore_missing: true
+  - set:
+      field: error.id
+      tag: set_error_id_from_log_errdefs_msg_no
+      copy_from: f5_bigip.log.errdefs.msgno
+      ignore_empty_value: true
+  - rename:
+      field: kv.event_id
+      tag: rename_event_id
+      target_field: f5_bigip.log.event.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_log_event_id
+      copy_from: f5_bigip.log.event.id
+      ignore_empty_value: true
+  - rename:
+      field: kv.hostname
+      tag: rename_hostname
+      target_field: f5_bigip.log.hostname
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_log_hostname
+      copy_from: f5_bigip.log.hostname
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_f5_bigip_host_hostname_into_related_hosts
+      value: '{{{f5_bigip.log.hostname}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.hostname != null && ctx.f5_bigip.log.hostname != 'null'
+  - rename:
+      field: kv.http_method
+      tag: rename_http_method
+      target_field: f5_bigip.log.http.method
+      ignore_missing: true
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_log_http_method
+      copy_from: f5_bigip.log.http.method
+      ignore_empty_value: true
+  - rename:
+      field: kv.http_protocol_indication
+      tag: rename_http_protocol_indication
+      target_field: f5_bigip.log.http.protocol_indication
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_log_http_protocol_indication
+      copy_from: f5_bigip.log.http.protocol_indication
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - script:
+      description: Script to extract http_request
+      tag: script_to_extract_http_request
+      lang: painless
+      source: |
+          String message = ctx.event.original;
+          int startIndex = message.indexOf('http_request="') + 'http_request="'.length();
+          int endIndex = message.indexOf('"', startIndex);
+          if (startIndex >= 0 && endIndex >= 0) {
+            ctx.kv.http_request = message.substring(startIndex, endIndex);
+          }
+  - rename:
+      field: kv.http_request
+      tag: rename_http_request
+      target_field: f5_bigip.log.http.request
+      ignore_missing: true
+  - dissect:
+      field: f5_bigip.log.http.request
+      pattern: '%{f5_bigip.log.http.method} %{f5_bigip.log.http.path} %{f5_bigip.log.http.version}\r\nHost: %{f5_bigip.log.http.host}\r\nConnection: %{f5_bigip.log.http.connection}\r\nPragma: %{f5_bigip.log.http.pragma}\r\nCache-Control: %{f5_bigip.log.http.cache_control}\r\nUser-Agent: %{f5_bigip.log.http.user_agent}\r\n%{f5_bigip.log.http.other_headers}\r\n'
+      ignore_failure: true
+  - user_agent:
+      field: f5_bigip.log.http.user_agent
+      ignore_missing: true
+  - dissect:
+      field: f5_bigip.log.http.version
+      description: Pattern to extract network protocol and http version.
+      pattern: "HTTP/%{http.version}"
+      ignore_failure: true
+  - convert:
+      field: f5_bigip.log.http.host
+      tag: convert_f5_bigip_log_http_host_to_ip
+      target_field: f5_bigip.log.http.request_host
+      type: ip
+      ignore_missing: true
+      if: ctx.f5_bigip?.log?.http?.host != 'null' && ctx.f5_bigip.log?.http?.host != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_f5_bigip_log_http_request_host_into_related_ip
+      value: '{{{f5_bigip.log.http.request_host}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.http?.request_host != null && ctx.f5_bigip.log.http.request_host != 'null'
+  - rename:
+      field: kv.human_behaviour
+      tag: rename_human_behaviour
+      target_field: f5_bigip.log.human_behaviour
+      ignore_missing: true
+  - rename:
+      field: kv.imei
+      tag: rename_imei
+      target_field: f5_bigip.log.imei
+      ignore_missing: true
+  - rename:
+      field: kv.jailbroken_or_rooted_device
+      tag: rename_jailbroken_or_rooted_device
+      target_field: f5_bigip.log.jailbroken_or_rooted_device
+      ignore_missing: true
+  - rename:
+      field: kv.micro_service_hostname
+      tag: rename_micro_service_hostname
+      target_field: f5_bigip.log.micro_service.hostname
+      ignore_missing: true
+  - rename:
+      field: kv.micro_service_matched_wildcard_url
+      tag: rename_micro_service_matched_wildcard_url
+      target_field: f5_bigip.log.micro_service.matched_wildcard_url
+      ignore_missing: true
+  - rename:
+      field: kv.micro_service_name
+      tag: rename_micro_service_name
+      target_field: f5_bigip.log.micro_service.name
+      ignore_missing: true
+  - set:
+      field: service.name
+      tag: set_service_name_from_log_micro_service_name
+      copy_from: f5_bigip.log.micro_service.name
+      ignore_empty_value: true
+  - rename:
+      field: kv.micro_service_type
+      tag: rename_micro_service_type
+      target_field: f5_bigip.log.micro_service.type
+      ignore_missing: true
+  - set:
+      field: service.type
+      tag: set_service_type_from_log_micro_service_type
+      copy_from: f5_bigip.log.micro_service.type
+      ignore_empty_value: true
+  - rename:
+      field: kv.mobile_in_emulation_mode
+      tag: rename_mobile_in_emulation_mode
+      target_field: f5_bigip.log.mobile_in_emulation_mode
+      ignore_missing: true
+  - rename:
+      field: kv.mobile_is_app
+      tag: rename_mobile_is_app
+      target_field: f5_bigip.log.mobile_is_app
+      ignore_missing: true
+  - rename:
+      field: kv.new_request_status
+      tag: rename_new_request_status
+      target_field: f5_bigip.log.new_request_status
+      ignore_missing: true
+  - rename:
+      field: kv.os_name
+      tag: rename_os_name
+      target_field: f5_bigip.log.osname
+      ignore_missing: true
+  - set:
+      field: host.os.name
+      tag: set_f5_bigip_log_osname
+      copy_from: f5_bigip.log.osname
+      ignore_empty_value: true
+  - rename:
+      field: kv.partition_name
+      tag: rename_partition_name
+      target_field: f5_bigip.log.partition_name
+      ignore_missing: true
+  - rename:
+      field: kv.previous_action
+      tag: rename_previous_action
+      target_field: f5_bigip.log.previous.action
+      ignore_missing: true
+  - rename:
+      field: kv.previous_initiated_action_status
+      tag: rename_previous_initiated_action_status
+      target_field: f5_bigip.log.previous.initiated_action.status
+      ignore_missing: true
+  - rename:
+      field: kv.previous_initiated_action
+      tag: rename_previous_initiated_action
+      target_field: f5_bigip.log.previous.initiated_action.value
+      ignore_missing: true
+  - date:
+      field: kv.previous_request_date_time
+      tag: date_previous_request_date_time
+      target_field: f5_bigip.log.previous.request_date_time
+      formats:
+        - MMM dd yyyy HH:mm:ss
+        - ISO8601
+      if: ctx.kv?.previous_request_date_time != null && ctx.kv.previous_request_date_time != 'null' && ctx.kv.previous_request_date_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: kv.previous_support_id
+      tag: rename_previous_support_id
+      target_field: f5_bigip.log.previous.support_id
+      ignore_missing: true
+  - rename:
+      field: kv.profile_name
+      tag: rename_profile_name
+      target_field: f5_bigip.log.profile_name
+      ignore_missing: true
+  - rename:
+      field: kv.reason
+      tag: rename_reason
+      target_field: f5_bigip.log.reason
+      ignore_missing: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_log_reason
+      copy_from: f5_bigip.log.reason
+      ignore_empty_value: true
+  - rename:
+      field: kv.reported_entity_type
+      tag: rename_reported_entity_type
+      target_field: f5_bigip.log.reported_entity_type
+      ignore_missing: true
+  - date:
+      field: kv.request_date_time
+      tag: date_request_date_time
+      target_field: f5_bigip.log.request.date_time
+      formats:
+        - MMM dd yyyy HH:mm:ss
+        - ISO8601
+      if: ctx.kv?.request_date_time != null && ctx.kv?.request_date_time != 'null' && ctx.kv.request_date_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_f5_bigip_log_request_date_time
+      copy_from: f5_bigip.log.request.date_time
+      ignore_empty_value: true
+  - rename:
+      field: kv.request_status
+      tag: rename_request_status
+      target_field: f5_bigip.log.request.status
+      ignore_missing: true
+  - rename:
+      field: kv.route_domain
+      tag: rename_route_domain
+      target_field: f5_bigip.log.route_domain
+      ignore_missing: true
+  - rename:
+      field: kv.session_id
+      tag: rename_session_id
+      target_field: f5_bigip.log.session.id
+      ignore_missing: true
+  - convert:
+      field: kv.severity
+      tag: convert_severity_to_long
+      target_field: f5_bigip.log.severity.code
+      type: long
+      ignore_missing: true
+      if: ctx.kv?.severity != 'null' && ctx.kv.severity != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      tag: set_event_severity_from_log_severity
+      copy_from: f5_bigip.log.severity.code
+      ignore_empty_value: true
+  - convert:
+      field: kv.source_ip
+      tag: convert_source_ip_to_ip
+      target_field: f5_bigip.log.source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.kv?.source_ip != 'null' && ctx.kv.source_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: source.ip
+      tag: append_f5_bigip_log_source_ip_into_source_ip
+      value: '{{{f5_bigip.log.source.ip}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.source?.ip != null && ctx.f5_bigip.log.source.ip != 'null'
+  - append:
+      field: related.ip
+      tag: append_f5_bigip_log_source_ip_into_related_ip
+      value: '{{{f5_bigip.log.source.ip}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.source?.ip != null && ctx.f5_bigip.log.source.ip != 'null'
+  - rename:
+      field: kv.support_id
+      tag: rename_support_id
+      target_field: f5_bigip.log.support.id
+      ignore_missing: true
+  - date:
+      field: kv.timestamp
+      tag: date_timestamp
+      target_field: f5_bigip.log.timestamp
+      formats:
+        - MMM dd yyyy HH:mm:ss
+        - ISO8601
+      if: ctx.kv?.timestamp != null && ctx.kv.timestamp != 'null' && ctx.kv.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_log_timestamp
+      copy_from: f5_bigip.log.timestamp
+      ignore_empty_value: true
+  - rename:
+      field: kv.virtual_server_name
+      tag: rename_virtual_server_name
+      target_field: f5_bigip.log.virtual_server_name
+      ignore_missing: true
+  - remove:
+      field:
+        - f5_bigip.log.action
+        - f5_bigip.log.bigip_management.ip
+        - f5_bigip.log.bigip_management.ip_2
+        - f5_bigip.log.bigip_management.ip2
+        - f5_bigip.log.client.ip
+        - f5_bigip.log.client.port
+        - f5_bigip.log.client.request_uri
+        - f5_bigip.log.configuration_date_time
+        - f5_bigip.log.date_time
+        - f5_bigip.log.destination.ip
+        - f5_bigip.log.destination.port
+        - f5_bigip.log.device.id
+        - f5_bigip.log.device.product
+        - f5_bigip.log.device.vendor
+        - f5_bigip.log.device.version
+        - f5_bigip.log.errdefs.msgno
+        - f5_bigip.log.event.id
+        - f5_bigip.log.hostname
+        - f5_bigip.log.http.method
+        - f5_bigip.log.http.protocol_indication
+        - f5_bigip.log.micro_service.name
+        - f5_bigip.log.micro_service.type
+        - f5_bigip.log.osname
+        - f5_bigip.log.reason
+        - f5_bigip.log.request.date_time
+        - f5_bigip.log.severity
+        - f5_bigip.log.source.ip
+        - f5_bigip.log.timestamp
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field:
+        - kv.bigip_mgmt_ip
+        - kv.bigip_mgmt_ip_2
+        - kv.bigip_mgmt_ip2
+        - kv.client_ip
+        - kv.client_port
+        - kv.configuration_date_time
+        - kv.date_time
+        - kv.date_time
+        - kv.dest_ip
+        - kv.dest_port
+        - kv.dos_dropped_requests_count
+        - kv.dos_incoming_requests_count
+        - kv.previous_request_date_time
+        - kv.request_date_time
+        - kv.severity
+        - kv.source_ip
+        - kv.timestamp
+      tag: remove_mapped_fields
+      ignore_missing: true
+  - rename:
+      field: kv
+      tag: rename_kv
+      target_field: f5_bigip.log.extra_fields
+      ignore_missing: true

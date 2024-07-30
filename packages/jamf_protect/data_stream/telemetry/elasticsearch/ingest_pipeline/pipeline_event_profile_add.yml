@@ -34,11 +34,19 @@ processors:
         target_field: jamf_protect.telemetry.profile_display_name
         type: string
         ignore_missing: true
-    - convert:
-        field: jamf_protect.telemetry.event.profile_add.profile.install_source
-        target_field: jamf_protect.telemetry.profile_install_source
-        type: string
-        ignore_missing: true
+    - script:
+        lang: painless
+        params:
+            itemTypeMap:
+                '0': mdm
+                '1': manual
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.profile_add?.profile?.install_source != null) {
+                String itemType = ctx.jamf_protect.telemetry.event.profile_add.profile.install_source.toString();
+                def itemTypeString = params.itemTypeMap.containsKey(itemType) ? params.itemTypeMap[itemType] : 'Unknown';
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.telemetry.profile_install_source = itemTypeString;
+            }
     - convert:
         field: jamf_protect.telemetry.event.profile_add.profile.organization
         target_field: jamf_protect.telemetry.profile_organization

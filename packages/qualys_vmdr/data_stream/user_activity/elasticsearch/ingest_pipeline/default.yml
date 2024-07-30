@@ -5,9 +5,9 @@ processors:
       field: ecs.version
       value: 8.11.0
   - fail:
-      if: ctx.error != null
-      tag: fail_on_cel_error
-      message: CEL program returned an error. Skipping ingest pipeline execution.
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
   - rename:
       field: message
       target_field: event.original

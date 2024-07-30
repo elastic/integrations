@@ -1,0 +1,579 @@
+- name: proofpoint_on_demand
+  type: group
+  fields:
+    - name: message
+      type: group
+      fields:
+        - name: action_dkimv
+          type: group
+          fields:
+            - name: action
+              type: keyword
+            - name: module
+              type: keyword
+            - name: rule
+              type: keyword
+        - name: action_dmarc
+          type: group
+          fields:
+            - name: action
+              type: keyword
+            - name: module
+              type: keyword
+            - name: rule
+              type: keyword
+        - name: action_spf
+          type: group
+          fields:
+            - name: action
+              type: keyword
+            - name: module
+              type: keyword
+            - name: rule
+              type: keyword
+        - name: connection
+          type: group
+          fields:
+            - name: country
+              type: keyword
+              description: The country code of the sender IP.
+            - name: helo
+              type: keyword
+              description: The FQDN or IP reported via the HELO or EHLO command.
+            - name: host
+              type: keyword
+              description: The host name of the reverse lookup of the sender IP.
+            - name: ip
+              type: ip
+              description: The sender IP in IPv4 or IPv6 format.
+            - name: protocol
+              type: keyword
+              description: The connection protocol info.
+            - name: resolve_status
+              type: keyword
+              description: Can the sender IP be resolved with a reverse lookup.
+            - name: sid
+              type: keyword
+              description: The ID of the connection/session object; this is otherwise known as the "sid" in filter.log.
+            - name: tls
+              type: group
+              fields:
+                - name: inbound
+                  type: group
+                  fields:
+                    - name: cipher
+                      type: keyword
+                      description: Inbound TLS cipher algorithm detected.
+                    - name: cipher_bits
+                      type: long
+                      description: 'Inbound TLS cipher algorithm strength (in #bits).'
+                    - name: policy
+                      type: keyword
+                      description: Inbound TLS policy.
+                    - name: version
+                      type: keyword
+                      description: Inbound TLS protocol version.
+        - name: envelope
+          type: group
+          fields:
+            - name: from
+              type: keyword
+              description: The envelope sender.
+            - name: from_hashed
+              type: keyword
+            - name: rcpts
+              type: keyword
+              description: The envelope recipients.
+            - name: rcpts_hashed
+              type: keyword
+        - name: filter
+          type: group
+          fields:
+            - name: actions
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                - name: is_final
+                  type: boolean
+                - name: module
+                  type: keyword
+                - name: rule
+                  type: keyword
+            - name: current_folder
+              type: keyword
+              description: The folder to which the message is currently assigned.
+            - name: disposition
+              type: keyword
+              description: The message disposition string as determined by filterd (the filtering engine daemon).
+            - name: duration_secs
+              type: double
+              description: Time spent processing the message.
+            - name: is_msg_encrypted
+              type: boolean
+              description: Is the message encrypted.
+            - name: is_msg_reinjected
+              type: boolean
+              description: Was the message reinjected.
+            - name: mid
+              type: keyword
+              description: The message id.
+            - name: modules
+              type: group
+              fields:
+                - name: av
+                  type: group
+                  fields:
+                    - name: virus_names
+                      type: keyword
+                      description: The virus names reported by the AV module.
+                - name: dkimv
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The DKIM d= value in the signature line.
+                    - name: result
+                      type: keyword
+                      description: The DKIM result.
+                    - name: selector
+                      type: keyword
+                      description: The DKIM s= value in the signature line.
+                - name: dmarc
+                  type: group
+                  fields:
+                    - name: alignment
+                      type: group
+                      fields:
+                        - name: from_domain
+                          type: keyword
+                          description: The DMARC TLD from the MAIL FROM data.
+                        - name: results
+                          type: group
+                          fields:
+                            - name: identity
+                              type: keyword
+                              description: The DMARC domain identity as reported in the signature.
+                            - name: identity_org
+                              type: keyword
+                              description: The DMARC identifying organization as a Top Level Domain.
+                            - name: method
+                              type: keyword
+                              description: The DMARC method involved for an alignment result object.
+                            - name: result
+                              type: keyword
+                              description: The DMARC result involved for the alignment result object.
+                    - name: auth_results
+                      type: group
+                      fields:
+                        - name: email_identities
+                          type: group
+                          fields:
+                            - name: header
+                              type: group
+                              fields:
+                                - name: from
+                                  type: keyword
+                                  description: The header.from email identity for a DMARC authorization result object.
+                            - name: smtp
+                              type: group
+                              fields:
+                                - name: helo
+                                  type: keyword
+                                  description: The smtp.helo email identity for a DMARC authorization result object.
+                                - name: mailfrom
+                                  type: keyword
+                                  description: The smtp.mailfrom email identity for a DMARC authorization result object.
+                                - name: mailfrom_hashed
+                                  type: keyword
+                        - name: method
+                          type: keyword
+                          description: The authorization result method.
+                        - name: propspec
+                          type: group
+                          fields:
+                            - name: header
+                              type: group
+                              fields:
+                                - name: d
+                                  type: keyword
+                                - name: s
+                                  type: keyword
+                                  description: The header.s value for the property specification for the authorization result per DMARC spec.
+                        - name: reason
+                          type: keyword
+                          description: The reason string for the authorization result.
+                        - name: result
+                          type: keyword
+                          description: The result value for the authorization result.
+                    - name: filterd_result
+                      type: keyword
+                      description: The rollup DMARC result (generated by filterd for the rules, i.e. $dmarcresult).
+                    - name: records
+                      type: nested
+                      description: The actual raw DMARC TXT record.
+                    - name: srvid
+                      type: keyword
+                      description: DMARC Auth Service ID as defined in filter.cfg.
+                - name: pdr
+                  type: group
+                  fields:
+                    - name: v1
+                      type: group
+                      fields:
+                        - name: rscore
+                          type: long
+                          description: The PDR (Proofpoint Dynamic Reputation) v1 rscore value.
+                        - name: spamscore
+                          type: long
+                          description: The PDR v1 spamscore value.
+                        - name: virusscore
+                          type: long
+                          description: The PDR v1 virusscore value.
+                    - name: v2
+                      type: group
+                      fields:
+                        - name: response
+                          type: keyword
+                          description: The PDR v2 response status.
+                        - name: rscore
+                          type: long
+                          description: The PDR v2 rscore value.
+                - name: sandbox
+                  type: group
+                  fields:
+                    - name: error_status
+                      type: keyword
+                      description: The Attachment Defense error status string.
+                - name: spam
+                  type: group
+                  description: The spam engine analysis on the message.
+                  fields:
+                    - name: triggered_classifier
+                      type: keyword
+                      description: The one spam classifier as defined by policy rules that determined the spam disposition.
+                - name: spf
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                    - name: result
+                      type: keyword
+                      description: The SPF (Sender Policy Framework) result.
+                - name: urldefense
+                  type: group
+                  fields:
+                    - name: counts
+                      type: group
+                      fields:
+                        - name: max_limit
+                          type: long
+                          description: The configured defined maximum number of unique URLs the URL Defense Module can process.
+                        - name: no_rewrite
+                          type: group
+                          fields:
+                            - name: is_content_type_text
+                              type: long
+                              description: The total number of URLs that the URL Defense did not rewrite due to "is content type text".
+                            - name: is_email
+                              type: long
+                              description: The total number of URLs the URL Defense Module did not rewrite due to "is email".
+                            - name: is_excluded_domain
+                              type: long
+                              description: The total number of URLs the URL Defense Module did not rewrite due to "is excluded domain".
+                            - name: is_large_msgpart_size
+                              type: long
+                              description: The total number of URLs the URL Defense Module did not rewrite due to "is large message part size".
+                            - name: is_maxlength_exceeded
+                              type: long
+                              description: The total number of URLs the URL Defense Module did not rewrite due to "is max length exceeded".
+                            - name: is_schemeless
+                              type: long
+                              description: The total number of URLs the URL Defense Module did not rewrite due to "is schemeless".
+                            - name: is_unsupported_scheme
+                              type: long
+                              description: The total number of URLs the URL Defense Module did not rewrite due to "is unsupported scheme".
+                        - name: rewritten
+                          type: long
+                          description: The total number of URLs the URL Defense Module rewrote.
+                        - name: total
+                          type: long
+                          description: The total number of URLs the URL Defense processed.
+                        - name: unique
+                          type: long
+                          description: The total unique number of URLs the URL Defense Module processed.
+                    - name: rewritten_urls
+                      type: keyword
+                      description: The URLs rewritten by URL Defense.
+                    - name: version
+                      type: group
+                      fields:
+                        - name: engine
+                          type: keyword
+                          description: Engine version for the URL Defense Module.
+                - name: zerohour
+                  type: group
+                  fields:
+                    - name: score
+                      type: keyword
+                      description: The ZeroHour threat score.
+            - name: msg_size_bytes
+              type: long
+              description: The size of the email in bytes.
+            - name: orig_guid
+              type: keyword
+              description: The parent GUID for the message from which the current message was split.
+            - name: pe
+              type: group
+              fields:
+                - name: rcpts
+                  type: keyword
+                  description: Recipients encrypted via Proofpoint Encryption.
+                - name: rcpts_object
+                  type: nested
+                  description: Recipients encrypted via Proofpoint Encryption.
+            - name: qid
+              type: keyword
+              description: The sendmail queue ID.
+            - name: quarantine
+              type: group
+              fields:
+                - name: folder
+                  type: keyword
+                  description: Quarantine folder containing a copy of the message.
+                - name: rule
+                  type: keyword
+                  description: Rule that causes the message to be quarantined.
+            - name: route_direction
+              type: keyword
+            - name: routes
+              type: keyword
+              description: The policy routes triggered by the message.
+            - name: smime
+              type: group
+              fields:
+                - name: rcpts
+                  type: keyword
+                  description: Recipients encrypted via S/MIME.
+                - name: signed_rcpts
+                  type: keyword
+                  description: Recipients signed and encrypted via S/MIME.
+            - name: start_time
+              type: date
+              description: Timestamp for when message processing begins.
+            - name: suborgs
+              type: group
+              fields:
+                - name: rcpts
+                  type: keyword
+                - name: sender
+                  type: keyword
+            - name: throttle_ip
+              type: ip
+              description: The IP address being rate-controlled.
+            - name: verified
+              type: group
+              fields:
+                - name: rcpts
+                  type: keyword
+                  description: Verified recipients.
+                - name: rcpts_hashed
+                  type: keyword
+        - name: final_action
+          type: keyword
+        - name: final_module
+          type: keyword
+        - name: final_rule
+          type: keyword
+        - name: guid
+          type: keyword
+          description: Globally unique identifier for the message object.
+        - name: metadata
+          type: group
+          fields:
+            - name: origin
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: agent
+                      type: keyword
+                    - name: cid
+                      type: keyword
+                    - name: version
+                      type: keyword
+        - name: msg
+          type: group
+          fields:
+            - name: header
+              type: group
+              fields:
+                - name: cc
+                  type: keyword
+                  description: Carbon copy of email addresses.
+                - name: from
+                  type: keyword
+                  description: The header sender.
+                - name: from_hashed
+                  type: keyword
+                - name: message_id
+                  type: keyword
+                  description: The header message-id.
+                - name: reply_to
+                  type: keyword
+                  description: The header Reply to address.
+                - name: return_path
+                  type: keyword
+                  description: The header return path address.
+                - name: subject
+                  type: keyword
+                  description: The header subject.
+                - name: to
+                  type: keyword
+                  description: The header recipients.
+                - name: to_hashed
+                  type: keyword
+            - name: lang
+              type: keyword
+              description: The detected language of the message.
+            - name: normalized_header
+              type: group
+              fields:
+                - name: cc
+                  type: keyword
+                - name: from
+                  type: keyword
+                - name: from_hashed
+                  type: keyword
+                - name: message_id
+                  type: keyword
+                - name: reply_to
+                  type: keyword
+                - name: return_path
+                  type: keyword
+                - name: subject
+                  type: keyword
+                - name: to
+                  type: keyword
+                - name: to_hashed
+                  type: keyword
+            - name: parsed_addresses
+              type: group
+              fields:
+                - name: cc
+                  type: keyword
+                - name: from
+                  type: keyword
+                - name: from_hashed
+                  type: keyword
+                - name: to
+                  type: keyword
+                - name: to_hashed
+                  type: keyword
+            - name: size_bytes
+              type: long
+              description: The original, raw message size in bytes.
+        - name: msg_parts
+          type: group
+          fields:
+            - name: database64
+              type: keyword
+            - name: detected_charset
+              type: keyword
+              description: The detected charset of the message part.
+            - name: detected_ext
+              type: keyword
+              description: The detected extension of the message part.
+            - name: detected_mime
+              type: keyword
+              description: The detected MIME type of the message part.
+            - name: detected_name
+              type: keyword
+              description: The detected file name of the message part.
+            - name: detected_size_bytes
+              type: long
+              description: The detected file size of the message part in bytes.
+            - name: disposition
+              type: keyword
+              description: The content disposition value.
+            - name: is_archive
+              type: boolean
+              description: Is the message part an archive type.
+            - name: is_corrupted
+              type: boolean
+              description: Is the message part corrupted.
+            - name: is_deleted
+              type: boolean
+              description: Is the message part deleted.
+            - name: is_protected
+              type: boolean
+              description: Is the message part password protected.
+            - name: is_timed_out
+              type: boolean
+              description: Did the message part analysis or text extraction time out.
+            - name: is_virtual
+              type: boolean
+              description: Is the message part virtual (a file member in an archive type of attachment).
+            - name: labeled_charset
+              type: keyword
+              description: The charset of the message part as given.
+            - name: labeled_ext
+              type: keyword
+              description: The extension of the attachment as given.
+            - name: labeled_mime
+              type: keyword
+              description: The detected MIME type of the message part as given.
+            - name: labeled_name
+              type: keyword
+              description: The name of the message part as given.
+            - name: md5
+              type: keyword
+              description: The ID of the message part in MD5.
+            - name: metadata
+              type: object
+              object_type: keyword
+              description: The metadata of the message part as reported by cvtd (interface to the document extraction engine).
+            - name: sandbox_status
+              type: keyword
+              description: The sandbox module status for the message part.
+            - name: sha256
+              type: keyword
+              description: The ID of the message part in SHA256.
+            - name: size_decoded_bytes
+              type: long
+              description: The size of the decoded message part in bytes.
+            - name: structure_id
+              type: keyword
+              description: The Structural ID of the message part with respect to container type attachments.
+            - name: text_extracted
+              type: keyword
+            - name: urls
+              type: group
+              fields:
+                - name: is_rewritten
+                  type: boolean
+                  description: Whether the URL was rewritten by URL Defense.
+                - name: not_rewritten_reason
+                  type: keyword
+                  description: The reason why the corresponding URL was not rewritten by URL Defense. The value is an empty string if it was rewritten.
+                - name: src
+                  type: keyword
+                  description: The PPS sources that detected the URL.
+                - name: url
+                  type: keyword
+                  description: The URL found in the corresponding message part.
+        - name: pps
+          type: group
+          fields:
+            - name: agent
+              type: keyword
+              description: The source/MFA host from which the email was received.
+            - name: cid
+              type: keyword
+              description: The cluster ID license for the PPS deployment.
+            - name: version
+              type: keyword
+              description: The release PPS version.
+        - name: ts
+          type: date

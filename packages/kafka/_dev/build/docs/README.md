@@ -16,6 +16,10 @@ The `broker` metricset requires Jolokia to fetch JMX metrics. Refer to the Metri
 
 The `log` dataset collects and parses logs from Kafka servers.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "log"}}
 
 ## Metrics
@@ -26,16 +30,28 @@ The `broker` dataset collects JMX metrics from Kafka brokers using Jolokia.
 
 {{event "broker"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "broker"}}
 
 ### consumergroup
 
 {{event "consumergroup"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "consumergroup"}}
 
 ### partition
 
 {{event "partition"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "partition"}}

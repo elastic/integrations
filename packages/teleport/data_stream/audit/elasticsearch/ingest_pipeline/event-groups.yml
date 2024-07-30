@@ -1,0 +1,1643 @@
+---
+description: >
+  Pipeline to group Teleport audit fields into metadata groups. See https://github.com/gravitational/teleport/blob/master/api/proto/teleport/legacy/types/events/events.proto
+
+processors:
+  # SessionMetadata is a common session event metadata
+  # See teleport.audit.session group for field definitions.
+  - rename:
+      field: teleport.audit.sid
+      target_field: teleport.audit.session.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.with_mfa
+      target_field: teleport.audit.mfa_device.uuid
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.private_key_policy
+      target_field: teleport.audit.session.private_key_policy
+      ignore_missing: true
+  # UserMetadata is a common user event metadata
+  # See teleport.audit.user group for field definitions.
+  - remove:
+      description: 'Fix an issue where "user": {"user": message} is present'
+      field: teleport.audit.user.user
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.user
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.login
+      target_field: process.user.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.impersonator
+      target_field: teleport.audit.user.impersonator
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.aws_role_arn
+      target_field: teleport.audit.user.aws_role_arn
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.access_requests
+      target_field: teleport.audit.user.access_requests
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.azure_identity
+      target_field: teleport.audit.user.azure_identity
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.gcp_service_account
+      target_field: teleport.audit.user.gcp_service_account
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.trusted_device
+      target_field: teleport.audit.user.trusted_device
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.required_private_key_policy
+      target_field: teleport.audit.user.required_private_key_policy
+      ignore_missing: true
+  - set:
+      field: teleport.audit.user.kind
+      value: unspecified
+      if: ctx.teleport?.audit?.user_kind == 0
+  - set:
+      field: teleport.audit.user.kind
+      value: human
+      if: ctx.teleport?.audit?.user_kind == 1
+  - set:
+      field: teleport.audit.user.kind
+      value: bot
+      if: ctx.teleport?.audit?.user_kind == 2
+  - remove:
+      field: teleport.audit.user_kind
+      ignore_missing: true
+      if: ctx.teleport?.audit?.user?.kind != null
+  # Server is a server metadata
+  # See teleport.audit.server group for field definitions.
+  - rename:
+      field: teleport.audit.namespace
+      target_field: group.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.server_id
+      target_field: host.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.server_hostname
+      target_field: host.hostname
+      ignore_missing: true
+  - grok:
+      field: teleport.audit.server_addr
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
+  - remove:
+      field: teleport.audit.server_addr
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.server_labels
+      target_field: teleport.audit.server.labels
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.forwarded_by
+      target_field: teleport.audit.server.forwarded_by
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.server_sub_kind
+      target_field: teleport.audit.server.sub_kind
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.server_version
+      target_field: teleport.audit.server.version
+      ignore_missing: true
+  # Extract data from addr.local field.
+  - dot_expander:
+      path: teleport.audit
+      field: addr.local
+  # Connection contains connection info.
+  # All of these fields are mapped to ECS fields.
+  - grok:
+      field: teleport.audit.addr.local
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:destination.address}|\[%{IP:destination.ip}\])(:%{POSINT:destination.port:long})?$'
+      if: ctx.server?.address != null
+  - grok:
+      field: teleport.audit.addr.local
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
+      if: ctx.server?.address == null
+  - remove:
+      field: teleport.audit.addr.local
+      ignore_missing: true
+  # Extract data from addr.remote field.
+  - dot_expander:
+      path: teleport.audit
+      field: addr.remote
+  - grok:
+      field: teleport.audit.addr.remote
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:client.address}|\[%{IP:client.ip}\])(:%{POSINT:client.port:long})?$'
+  - remove:
+      field: teleport.audit.addr.remote
+      ignore_missing: true
+  # The last field and cleanup.
+  - rename:
+      field: teleport.audit.proto
+      target_field: network.protocol
+      ignore_missing: true
+  - remove:
+      field: teleport.connection
+      ignore_missing: true
+  # ClientMetadata identifies the originating client for an event.
+  # All of these fields are mapped to ECS fields.
+  - rename:
+      field: teleport.audit.user_agent
+      target_field: user_agent
+      ignore_missing: true
+  - user_agent:
+      field: user_agent
+      ignore_missing: true
+  # KubernetesClusterMetadata contains common metadata for kubernetes-related events.
+  # See teleport.audit.kubernetes group for field definitions.
+  - set:
+      field: orchestrator.type
+      value: kubernetes
+      if: ctx.teleport.audit.kubernetes_cluster != null
+  - rename:
+      field: teleport.audit.kubernetes_cluster
+      target_field: orchestrator.cluster.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_users
+      target_field: teleport.audit.kubernetes.users
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_groups
+      target_field: teleport.audit.kubernetes.groups
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_labels
+      target_field: teleport.audit.kubernetes.labels
+      ignore_missing: true
+  # KubernetesPodMetadata contains common metadata for kubernetes pod-related events.
+  # See teleport.audit.kubernetes.pod group for field definitions.
+  - rename:
+      field: teleport.audit.kubernetes_pod_name
+      target_field: orchestrator.resource.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_pod_namespace
+      target_field: orchestrator.namespace
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_container_name
+      target_field: teleport.audit.kubernetes.pod.container_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_container_image
+      target_field: teleport.audit.kubernetes.pod.container_image
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_node_name
+      target_field: teleport.audit.kubernetes.pod.node_name
+      ignore_missing: true
+  # SAMLIdPServiceProviderMetadata contains common metadata for SAML IdP service provider events.
+  # See teleport.audit.saml-idp-service-provider group for field definitions.
+  - rename:
+      field: teleport.audit.service_provider_entity_id
+      target_field: teleport.audit.saml_idp_service_provider.entity_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.service_provider_shortcut
+      target_field: teleport.audit.saml_idp_service_provider.shortcut
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.attribute_mapping
+      target_field: teleport.audit.saml_idp_service_provider.attribute_mapping
+      ignore_missing: true
+  - rename:
+      description: 'Fix an issue where "session_id" is present in this event.'
+      field: teleport.audit.session_id
+      target_field: teleport.audit.session.id
+      ignore_missing: true
+      if: ctx.event.action.startsWith('saml.')
+  # Okta related events metadata.
+  # See teleport.audit.okta group for field definitions.
+  - rename:
+      field: teleport.audit.added
+      target_field: teleport.audit.okta.resources.added
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.updated
+      target_field: teleport.audit.okta.resources.updated
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.deleted
+      target_field: teleport.audit.okta.resources.deleted
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.source
+      target_field: teleport.audit.okta.assignment.source
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.starting_status
+      target_field: teleport.audit.okta.assignment.starting_status
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.ending_status
+      target_field: teleport.audit.okta.assignment.ending_status
+      ignore_missing: true
+  # Access list member metadata
+  - rename:
+      field: teleport.audit.access_list_name
+      target_field: teleport.audit.access_list.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.members
+      target_field: teleport.audit.access_list.members
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.roles
+      target_field: teleport.audit.access_list.membership_requirements_changed.roles
+      ignore_missing: true
+      if: ctx.teleport.audit.event?.action == 'access_list.review'
+  - rename:
+      field: teleport.audit.traits
+      target_field: teleport.audit.access_list.membership_requirements_changed.traits
+      ignore_missing: true
+      if: ctx.teleport.audit.event?.action == 'access_list.review'
+  - rename:
+      field: teleport.audit.message
+      target_field: teleport.audit.access_list.review_message
+      ignore_missing: true
+      if: ctx.teleport.audit.event?.action == 'access_list.review'
+  - rename:
+      field: teleport.audit.review_id
+      target_field: teleport.audit.access_list.review_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.review_frequency_changed
+      target_field: teleport.audit.access_list.review_frequency_changed
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.review_day_of_month_changed
+      target_field: teleport.audit.access_list.review_day_of_month_changed
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.removed_members
+      target_field: teleport.audit.access_list.removed_members
+      ignore_missing: true
+  # LockMetadata contains common metadata for lock resource events.
+  - rename:
+      field: teleport.audit.target
+      tag: lock_target_field
+      target_field: teleport.audit.lock.target
+      ignore_missing: true
+      if: "ctx.event.action.startsWith('lock.')"
+  # Session related events metadata.
+  # See teleport.audit.session group for field definitions.
+  - rename:
+      field: teleport.audit.size
+      target_field: teleport.audit.session.terminal_size
+      ignore_missing: true
+  - grok:
+      field: teleport.audit.session.terminal_size
+      patterns:
+        - "%{NUMBER:process.tty.columns:int}:%{NUMBER:process.tty.rows:int}"
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.initial_command
+      target_field: process.command_line
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.session_recording
+      target_field: teleport.audit.session.session_recording
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.enhanced_recording
+      target_field: teleport.audit.session.enhanced_recording
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.interactive
+      target_field: teleport.audit.session.interactive
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.participants
+      target_field: teleport.audit.session.participants
+      ignore_missing: true
+  - date:
+      field: teleport.audit.session_start
+      target_field: event.start
+      formats:
+        - ISO8601
+      if: ctx.teleport?.audit?.session_start != null
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.session_start
+      ignore_missing: true
+      if: ctx.event?.start != null
+  - date:
+      field: teleport.audit.session_stop
+      target_field: event.end
+      formats:
+        - ISO8601
+      if: ctx.teleport?.audit?.session_stop != null
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.session_stop
+      ignore_missing: true
+      if: ctx.event?.end != null
+  # Desktop events metadata
+  # See teleport.audit.desktop group for field definitions.
+  - rename:
+      field: teleport.audit.length
+      target_field: client.bytes
+      if: ctx.event.action == 'desktop.clipboard.send'
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.length
+      target_field: server.bytes
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.directory_name
+      target_field: file.directory
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.directory_id
+      target_field: teleport.audit.desktop.directory_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.file_path
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.ms
+      target_field: teleport.audit.desktop.delay_ms
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.offset
+      target_field: teleport.audit.desktop.offset
+      ignore_missing: true
+  # FileTransferRequestEvent happens when a FileTransferRequest is created, updated, approved, or denied.
+  # See teleport.audit.file-transfer-request group for field definitions.
+  - rename:
+      field: teleport.audit.requestID
+      target_field: teleport.audit.file_transfer_request.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.approvers
+      target_field: teleport.audit.file_transfer_request.approvers
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.requester
+      target_field: teleport.audit.file_transfer_request.requester
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.location
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.download
+      target_field: teleport.audit.file_transfer_request.is_download
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.filename
+      target_field: file.name
+      ignore_missing: true
+  # Process metadata
+  # See teleport.audit.process group for field definitions.
+  - rename:
+      field: teleport.audit.pid
+      target_field: process.pid
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.cgroup_id
+      target_field: process.cgroup.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.program
+      target_field: process.name
+      ignore_missing: true
+  - append:
+      field: event.outcome
+      value:
+        - success
+      allow_duplicates: false
+      if: ctx.teleport?.audit?.success == true
+  - remove:
+      field: teleport.audit.success
+      if: ctx.teleport?.audit?.success == true
+  - append:
+      field: event.outcome
+      value:
+        - failure
+      allow_duplicates: false
+      if: ctx.teleport?.audit?.success == false
+  - remove:
+      field: teleport.audit.success
+      if: ctx.teleport?.audit?.success == false
+  - rename:
+      field: teleport.audit.message
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.ppid
+      target_field: process.parent.pid
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.path
+      target_field: process.executable
+      if: ctx.event.action.startsWith('session.')
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.argv
+      target_field: process.args
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.return_code
+      target_field: process.exit_code
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.flags
+      target_field: process.flags
+      ignore_missing: true
+  # Network metadata
+  # See teleport.audit.network group for field definitions.
+  - rename:
+      field: teleport.audit.src_addr
+      target_field: source.address
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.dst_addr
+      target_field: destination.address
+      ignore_missing: true
+  - convert:
+      field: teleport.audit.dst_port
+      type: long
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.dst_port
+      target_field: destination.port
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.version
+      target_field: teleport.audit.network.tcp_version
+      ignore_missing: true
+  - set:
+      field: network.type
+      value: ipv4
+      if: ctx.teleport?.audit?.network?.tcp_version == 4
+  - set:
+      field: network.type
+      value: ipv6
+      if: ctx.teleport?.audit?.network?.tcp_version == 6
+  - remove:
+      field: teleport.audit.network.tcp_version
+      if:  ctx.teleport?.audit?.network?.tcp_version == 4 ||  ctx.teleport?.audit?.network?.tcp_version == 6
+  - convert:
+      field: teleport.audit.network.tcp_version
+      type: string
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.network.tcp_version
+      target_field: network.type
+      ignore_missing: true
+  - set:
+      field: teleport.audit.network.operation
+      value: connect
+      if: ctx?.teleport?.audit?.operation == 0
+  - set:
+      field: teleport.audit.network.operation
+      value: send
+      if: ctx?.teleport?.audit?.operation == 1
+  - remove:
+      field: teleport.audit.operation
+      ignore_missing: true
+  - set:
+      field: teleport.audit.network.action
+      value: observed
+      if: ctx?.audit?.working_directory == null && ctx?.teleport?.audit?.action == 0
+  - set:
+      field: teleport.audit.network.action
+      value: denied
+      if: ctx?.audit?.working_directory == null && ctx?.teleport?.audit?.action == 1
+  - remove:
+      field: teleport.audit.action
+      if: ctx?.teleport?.audit?.network?.action != null
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.tx
+      target_field: source.bytes
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.rx
+      target_field: destination.bytes
+      ignore_missing: true
+  # Resource metadata
+  # See teleport.audit.resource group for field definitions.
+  - rename:
+      field: teleport.audit.expires
+      target_field: teleport.audit.resource.expires
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.updated_by
+      target_field: teleport.audit.resource.updated_by
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.resource.updated_by
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.ttl
+      target_field: teleport.audit.resource.ttl
+      ignore_missing: true
+  # User login and MFA challenge metadata
+  # See teleport.audit.login group for field definitions.
+  - rename:
+      field: teleport.audit.method
+      target_field: teleport.audit.login.method
+      if: ctx.event.action == 'user.login'
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.attributes
+      target_field: teleport.audit.login.identity_attributes
+      if: ctx.event.action == 'user.login'
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.mfa_device.mfa_device_name
+      target_field: teleport.audit.mfa_device.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.mfa_device.mfa_device_type
+      target_field: teleport.audit.mfa_device.type
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.mfa_device.mfa_device_uuid
+      target_field: teleport.audit.mfa_device.uuid
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.applied_login_rules
+      target_field: teleport.audit.login.applied_rules
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.challenge_scope
+      target_field: teleport.audit.login.challenge_scope
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.challenge_allow_reuse
+      target_field: teleport.audit.login.challenge_allow_reuse
+      ignore_missing: true
+  # UserCreate is emitted when the user is created or upserted.
+  # See teleport.audit.user group for field definitions.
+  - rename:
+      field: teleport.audit.connector
+      target_field: teleport.audit.user.connector
+      ignore_missing: true
+  # Access request creation and update metadata
+  # See teleport.audit.access_request group for field definitions.
+  - rename:
+      field: teleport.audit.roles
+      target_field: teleport.audit.access_request.roles
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.id
+      target_field: teleport.audit.access_request.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.state
+      target_field: teleport.audit.access_request.state
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.delegator
+      target_field: teleport.audit.access_request.delegator
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.annotations
+      target_field: teleport.audit.access_request.annotations
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.reviewer
+      target_field: teleport.audit.access_request.reviewer
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.proposed_state
+      target_field: teleport.audit.access_request.proposed_state
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.resource_ids
+      target_field: teleport.audit.access_request.resource_ids
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.max_duration
+      target_field: teleport.audit.access_request.max_duration
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.promoted_access_list_name
+      target_field: teleport.audit.access_request.promoted_access_list_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.assume_start_time
+      target_field: teleport.audit.access_request.assume_start_time
+      ignore_missing: true
+  # CommandMetadata specifies common command fields
+  # All of these fields are mapped to ECS fields.
+  - rename:
+      field: teleport.audit.command
+      target_field: process.command_line
+      ignore_missing: true
+  - convert:
+      field: teleport.audit.exitCode
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.exitCode
+      target_field: process.exit_code
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.exitError
+      target_field: process.io.text
+      ignore_missing: true
+
+  # SCP is emitted when data transfer has occurred between server and client
+  # See teleport.audit.scp group for field definitions.
+  - rename:
+      field: teleport.audit.path
+      target_field: file.path
+      if: ctx.event.action == 'scp'
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.action
+      target_field: teleport.audit.scp.action
+      if: ctx.event.action == 'scp'
+      ignore_missing: true
+
+  # SFTP file operations metadata
+  # See teleport.audit.sftp group for field definitions.
+  - rename:
+      field: teleport.audit.working_directory
+      target_field: process.working_directory
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.path
+      target_field: file.path
+      if: ctx.event.action == 'sftp'
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.target_path
+      target_field: teleport.audit.sftp.target_path
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.attributes
+      target_field: teleport.audit.sftp.attributes
+      if: ctx.event.action == 'sftp'
+      ignore_missing: true
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['INVALID']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 0'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['OPEN']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 1'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['CLOSE']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 2'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['READ']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 3'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['WRITE']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 4'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['LSTAT']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 5'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['FSTAT']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 6'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['SETSTAT']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 7'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['FSETSTAT']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 8'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['OPENDIR']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 9'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['READDIR']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 10'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['REMOVE']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 11'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['MKDIR']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 12'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['RMDIR']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 13'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['REALPATH']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 14'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['STAT']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 15'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['RENAME']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 16'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['READLINK']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 17'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['SYMLINK']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 18'
+  - set:
+      field: teleport.audit.sftp.action
+      value: ['LINK']
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 19'
+  - remove:
+      field: teleport.audit.action
+      if: 'ctx.event.action == "sftp" && ctx.event.action == "sftp" && ctx.teleport?.audit?.sftp?.action != null'
+  - convert:
+      field: teleport.audit.action
+      type: string
+      ignore_missing: true
+      if: 'ctx.event.action == "sftp"'
+  - rename:
+      field: teleport.audit.action
+      target_field: teleport.audit.sftp.action
+      ignore_missing: true
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.sftp?.action == null'
+  # ClientDisconnect is emitted when client is disconnected
+  # by the server due to inactivity or any other reason
+  - rename:
+      field: teleport.audit.reason
+      target_field: event.reason
+      ignore_missing: true
+  # Kubernetes API request event metadata
+  # See teleport.audit.kubernetes.resource group for field definitions.
+  - rename:
+      field: teleport.audit.request_path
+      target_field: url.path
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.verb
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.resource_api_group
+      target_field: orchestrator.api_version
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.resource_namespace
+      target_field: orchestrator.namespace
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.resource_kind
+      target_field: orchestrator.resource.type
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.resource_name
+      target_field: orchestrator.resource.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.response_code
+      target_field: http.response.status_code
+      ignore_missing: true
+  # Common application information
+  # See teleport.audit.app group for field definitions.
+  - rename:
+      field: teleport.audit.app_uri
+      target_field: teleport.audit.app.uri
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.app_public_addr
+      target_field: teleport.audit.app.public_address
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.public_addr
+      target_field: teleport.audit.app.public_address
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.app_labels
+      target_field: teleport.audit.app.labels
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.app_name
+      target_field: teleport.audit.app.name
+      ignore_missing: true
+  # App session related metadata
+  # See teleport.audit.app group for field definitions.
+  - rename:
+      field: teleport.audit.session_chunk_id
+      target_field: teleport.audit.app.session.chunk_id
+      ignore_missing: true
+  # AWS related metadata
+  - set:
+      field: cloud.provider
+      value: aws
+      if: ctx.teleport?.audit?.aws_region != null
+  - rename:
+      field: teleport.audit.aws_region
+      target_field: cloud.region
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.aws_service
+      target_field: cloud.service.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.aws_host
+      target_field: cloud.instance.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.aws_assumed_role
+      target_field: teleport.audit.app.aws.assumed_role
+      ignore_missing: true
+  # DatabaseMetadata contains common database information
+  # See teleport.audit.database group for field definitions.
+  - rename:
+      field: teleport.audit.db_service
+      target_field: service.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_protocol
+      target_field: teleport.audit.database.protocol
+      ignore_missing: true
+  - rename:
+      description: 'Fix an issue where "uri" is present in this event.'
+      field: teleport.audit.uri
+      target_field: teleport.audit.db_uri
+      ignore_missing: true
+      if: ctx.event.action.startsWith('db.')
+  - rename:
+      field: teleport.audit.db_uri
+      target_field: teleport.audit.database.uri
+      ignore_missing: true
+  - grok:
+      field: teleport.audit.database.uri
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:url.domain})(:%{POSINT:url.port:long})?$'
+      if:  ctx.teleport.audit.database?.uri != null && ctx.url == null
+  - rename:
+      field: teleport.audit.database.uri
+      target_field: url.original
+      ignore_missing: true
+      if: ctx.teleport?.audit?.database?.uri != null && ctx.url != null
+  - uri_parts:
+      field: teleport.audit.database.uri
+      target_field: url
+      ignore_missing: true
+      ignore_failure: true
+      keep_original: true
+      remove_if_successful: true
+      if: ctx.url == null
+  - remove:
+      tag: database_uri_remove_on_failure
+      field: teleport.audit.database.uri
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_name
+      target_field: teleport.audit.database.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_user
+      target_field: teleport.audit.database.user
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_labels
+      target_field: teleport.audit.database.labels
+      ignore_missing: true
+  - set:
+      field: cloud.provider
+      value: aws
+      if: ctx.teleport?.audit?.db_aws_region != null
+  - rename:
+      field: teleport.audit.db_aws_region
+      target_field: cloud.region
+      ignore_missing: true
+  - set:
+      field: cloud.provider
+      value: aws
+      if: ctx.teleport?.audit?.redshift_cluster_id != null
+  - rename:
+      field: teleport.audit.db_aws_redshift_cluster_id
+      target_field: teleport.audit.database.aws.redshift_cluster_id
+      ignore_missing: true
+  - set:
+      field: cloud.provider
+      value: gcp
+      if: ctx.teleport?.audit?.db_gcp_project_id != null
+  - rename:
+      field: teleport.audit.db_gcp_project_id
+      target_field: cloud.project.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_gcp_instance_id
+      target_field: cloud.instance.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_roles
+      target_field: teleport.audit.database.roles
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_type
+      target_field: service.type
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_origin
+      target_field: teleport.audit.database.origin
+      ignore_missing: true
+  # DatabaseSessionQuery is emitted when a user executes a database query.
+  - rename:
+      field: teleport.audit.db_query
+      target_field: teleport.audit.database.query
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_query_parameters
+      target_field: teleport.audit.database.query_parameters
+      ignore_missing: true
+  # DatabasePermissionUpdate is emitted when a user database permissions are updated.
+  - rename:
+      field: teleport.audit.permission_summary
+      target_field: teleport.audit.database.permission_summary
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.affected_object_counts
+      target_field: teleport.audit.database.affected_object_counts
+      ignore_missing: true
+  # DatabaseUserCreate is emitted when a database user is provisioned.
+  - rename:
+      field: teleport.audit.username
+      target_field: teleport.audit.database.user_change.username
+      ignore_missing: true
+  # DatabaseUserDeactivate is emitted when a database user is disabled or deleted.
+  - rename:
+      field: teleport.audit.delete
+      target_field: teleport.audit.database.user_change.is_deleted
+      ignore_missing: true
+  # Postgres related metadata
+  # See teleport.audit.database group for field definitions.
+  - rename:
+      field: teleport.audit.statement_name
+      target_field: teleport.audit.database.postgres.statement_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.query
+      target_field: teleport.audit.database.query
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.portal_name
+      target_field: teleport.audit.database.postgres.portal_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.parameters
+      target_field: teleport.audit.database.query_parameters
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.function_oid
+      target_field: teleport.audit.database.postgres.function_oid
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.function_args
+      target_field: teleport.audit.database.postgres.function_args
+      ignore_missing: true
+  # WindowsDesktopSessionStart is emitted when a user connects to a desktop.
+  # See teleport.audit.desktop group for field definitions.
+  - rename:
+      field: teleport.audit.windows_desktop_service
+      target_field: teleport.audit.desktop.windows_desktop_service
+      ignore_missing: true
+  - grok:
+      field: teleport.audit.desktop_addr
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
+  - remove:
+      field: teleport.audit.desktop_addr
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.windows_domain
+      target_field: server.user.domain
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.windows_user
+      target_field: server.user.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.desktop_labels
+      target_field: teleport.audit.desktop.labels
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.desktop_name
+      target_field: teleport.audit.desktop.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.allow_user_creation
+      target_field: teleport.audit.desktop.allow_user_creation
+      ignore_missing: true
+  # MFADeviceMetadata is a common MFA device metadata.
+  # See teleport.audit.mfa-device group for field definitions.
+  - rename:
+      field: teleport.audit.mfa_device_uuid
+      target_field: teleport.audit.mfa_device.uuid
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.mfa_device_name
+      target_field: teleport.audit.mfa_device.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.mfa_device_type
+      target_field: teleport.audit.mfa_device.type
+      ignore_missing: true
+  # WindowsDesktopSessionEnd is emitted when a user ends a Windows desktop session.
+  - rename:
+      field: teleport.audit.recorded
+      target_field: teleport.audit.desktop.is_recorded
+      ignore_missing: true
+  # Certificate issuance metadata
+  # See teleport.audit.certificate group for field definitions.
+  - rename:
+      field: teleport.audit.cert_type
+      target_field: teleport.audit.certificate.type
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.identity
+      target_field: teleport.audit.certificate.identity
+      ignore_missing: true
+  # Join event metadata
+  # See teleport.audit.join group for field definitions.
+  - rename:
+      field: teleport.audit.bot_name
+      target_field: teleport.audit.join.bot_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.method
+      target_field: teleport.audit.join.method
+      ignore_missing: true
+      if: 'ctx.event.action?.endsWith(".join")'
+  - rename:
+      field: teleport.audit.token_name
+      target_field: teleport.audit.join.token_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.attributes
+      target_field: teleport.audit.join.attributes
+      if: ctx.event.action.endsWith('.join')
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.user_name
+      target_field: teleport.audit.join.user_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.host_id
+      target_field: host.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.node_name
+      target_field: host.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.role
+      target_field: teleport.audit.join.role
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.token_expires
+      target_field: teleport.audit.join.token_expires
+      ignore_missing: true
+  # Unknown is a fallback event used when we don't recognize an event from the backend.
+  # See teleport.audit.unknown group for field definitions.
+  - rename:
+      field: teleport.audit.metadata
+      target_field: teleport.audit.unknown.metadata
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.unknown_event
+      target_field: teleport.audit.unknown.event_type
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.unknown_code
+      target_field: teleport.audit.unknown.code
+      ignore_missing: true
+  - json:
+      field: teleport.audit.data
+      target_field: teleport.audit.unknown.data
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.data
+      ignore_missing: true
+  # DeviceMetadata groups device information for events.
+  # See teleport.audit.device group for field definitions.
+  - rename:
+      field: teleport.audit.device_id
+      target_field: teleport.audit.device.device_id
+      ignore_missing: true
+  - set:
+      field: teleport.audit.device.os_type
+      value: 'UNSPECIFIED'
+      if: 'ctx.teleport?.audit?.device?.os_type == 0'
+  - set:
+      field: teleport.audit.device.os_type
+      value: 'LINUX'
+      if: 'ctx.teleport?.audit?.device?.os_type == 1'
+  - set:
+      field: teleport.audit.device.os_type
+      value: 'MACOS'
+      if: 'ctx.teleport?.audit?.device?.os_type == 2'
+  - set:
+      field: teleport.audit.device.os_type
+      value: 'WINDOWS'
+      if: 'ctx.teleport?.audit?.device?.os_type == 3'
+  - remove:
+      field: teleport.audit.os_type
+      ignore_missing: true
+      if: 'ctx.teleport?.audit?.device?.os_type != null'
+  - convert:
+      field: teleport.audit.os_type
+      type: string
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.os_type
+      target_field: teleport.audit.device.os_type
+      ignore_missing: true
+      if: ctx.teleport?.audit?.device?.os_type == null
+  - rename:
+      field: teleport.audit.asset_tag
+      target_field: teleport.audit.device.asset_tag
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.credential_id
+      target_field: teleport.audit.device.credential_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.device_origin
+      target_field: teleport.audit.device.origin
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.web_authentication
+      target_field: teleport.audit.device.web_authentication
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.web_session_id
+      target_field: teleport.audit.device.web_session_id
+      ignore_missing: true
+  # SessionUpload is a session upload
+  - uri_parts:
+      field: teleport.audit.url
+      target_field: url
+      ignore_missing: true
+      ignore_failure: true
+      keep_original: true
+      remove_if_successful: true
+      if: ctx.url == null
+  - rename:
+      field: teleport.audit.url
+      target_field: url.original
+      ignore_missing: true
+  # Identity is the identity associated with the certificate, as interpreted by Teleport.
+  # See teleport.audit.certificate group for field definitions.
+  - rename:
+      field: teleport.audit.certificate.identity.mfa_device_uuid
+      target_field: teleport.audit.mfa_device.uuid
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.certificate.identity.client_ip
+      target_field: client.ip
+      ignore_missing: true
+      ignore_failure: true
+  # AccessRequestResourceSearch is emitted when a user searches for resources as part of a search-based access request
+  # See teleport.audit.access_request.resource_search group for field definitions.
+  - rename:
+      field: teleport.audit.search_as_roles
+      target_field: teleport.audit.access_request.resource_search.search_as_roles
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.resource_type
+      target_field: teleport.audit.access_request.resource_search.resource_type
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.labels
+      target_field: teleport.audit.access_request.resource_search.labels
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.predicate_expression
+      target_field: teleport.audit.access_request.resource_search.predicate_expression
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.search_keywords
+      target_field: teleport.audit.access_request.resource_search.search_keywords
+      ignore_missing: true
+  # MySQL related events
+  # See teleport.audit.database.mysql group for field definitions.
+  - rename:
+      field: teleport.audit.statement_id
+      target_field: teleport.audit.database.mysql.statement_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.schema_name
+      target_field: teleport.audit.database.mysql.schema_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.process_id
+      target_field: teleport.audit.database.mysql.process_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.subcommand
+      target_field: teleport.audit.database.mysql.subcommand
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.parameter_id
+      target_field: teleport.audit.database.mysql.parameter_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.data_size
+      target_field: teleport.audit.database.mysql.data_size
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.rows_count
+      target_field: teleport.audit.database.mysql.rows_count
+      ignore_missing: true
+  # SQLServerRPCRequest is emitted when a user executes a MSSQL Server RPC command.
+  - rename:
+      field: teleport.audit.proc_name
+      target_field: teleport.audit.database.proc_name
+      ignore_missing: true
+  # DatabaseSessionMalformedPacket is emitted when a database sends a malformed packet.
+  - rename:
+      field: teleport.audit.payload
+      target_field: teleport.audit.database.payload
+      ignore_missing: true
+  # Elasticsearch related events
+  - rename:
+      field: teleport.audit.headers
+      target_field: http.request.headers
+      ignore_missing: true
+  - set:
+      field: teleport.audit.database.elasticsearch.category
+      value: 'GENERAL'
+      if: 'ctx.teleport?.audit?.category == 0 && ctx.event.action.contains(".session.elasticsearch")'
+  - set:
+      field: teleport.audit.database.elasticsearch.category
+      value: 'SECURITY'
+      if: 'ctx.teleport?.audit?.category == 1 && ctx.event.action.contains(".session.elasticsearch")'
+  - set:
+      field: teleport.audit.database.elasticsearch.category
+      value: 'SEARCH'
+      if: 'ctx.teleport?.audit?.category == 2 && ctx.event.action.contains(".session.elasticsearch")'
+  - set:
+      field: teleport.audit.database.elasticsearch.category
+      value: 'SQL'
+      if: 'ctx.teleport?.audit?.category == 3 && ctx.event.action.contains(".session.elasticsearch")'
+  - remove:
+      field: teleport.audit.category
+      ignore_missing: true
+      if: 'ctx.teleport?.audit?.database?.elasticsearch?.category != null && ctx.event.action.contains(".session.elasticsearch")'
+  - convert:
+      field: teleport.audit.category
+      type: string
+      ignore_missing: true
+      if: 'ctx.event.action.contains(".session.elasticsearch")'
+  - rename:
+      field: teleport.audit.category
+      target_field: teleport.audit.database.elasticsearch.category
+      if: 'ctx.event.action.contains(".session.elasticsearch")'
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.target
+      target_field: teleport.audit.database.elasticsearch.target
+      ignore_missing: true
+      if: 'ctx.event.action.contains(".session.elasticsearch")'
+  # OpenSearch related events
+  - set:
+      field: teleport.audit.database.opensearch.category
+      value: 'GENERAL'
+      if: 'ctx.teleport?.audit?.category == 0 && ctx.event.action.contains(".session.opensearch")'
+  - set:
+      field: teleport.audit.database.opensearch.category
+      value: 'SECURITY'
+      if: 'ctx.teleport?.audit?.category == 1 && ctx.event.action.contains(".session.opensearch")'
+  - set:
+      field: teleport.audit.database.opensearch.category
+      value: 'SEARCH'
+      if: 'ctx.teleport?.audit?.category == 2 && ctx.event.action.contains(".session.opensearch")'
+  - set:
+      field: teleport.audit.database.opensearch.category
+      value: 'SQL'
+      if: 'ctx.teleport?.audit?.category == 3 && ctx.event.action.contains(".session.opensearch")'
+  - remove:
+      field: teleport.audit.category
+      ignore_missing: true
+      if: 'ctx.teleport?.audit?.database?.opensearch?.category != null && ctx.event.action.contains(".session.opensearch")'
+  - convert:
+      field: teleport.audit.category
+      type: string
+      ignore_missing: true
+      if: 'ctx.event.action.contains(".session.opensearch")'
+  - rename:
+      field: teleport.audit.category
+      target_field: teleport.audit.database.opensearch.category
+      if: 'ctx.event.action.contains(".session.opensearch")'
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.target
+      target_field: teleport.audit.database.opensearch.target
+      ignore_missing: true
+      if: 'ctx.event.action.contains(".session.opensearch")'
+  # DynamoDB related events
+  - rename:
+      field: teleport.audit.target
+      target_field: teleport.audit.database.dynamodb.target
+      ignore_missing: true
+      if: 'ctx.event.action.contains(".session.dynamodb.")'
+  # UpgradeWindowStartMetadata contains common upgrade window information.
+  # See upgradewindow.yml for field definitions.
+  - rename:
+      field: teleport.audit.upgrade_window_start
+      target_field: teleport.audit.upgradewindow.start
+      ignore_missing: true
+  # KubeClusterMetadata contains common kubernetes cluster information.
+  # This was called 'kubernetes_labels' in a different message.
+  - rename:
+      field: teleport.audit.kube_labels
+      target_field: teleport.audit.kubernetes.labels
+      ignore_missing: true
+  # SSMRun is emitted after an AWS SSM document completes execution.
+  - set:
+      field: cloud.provider
+      value: aws
+      if: ctx.teleport?.audit?.command_id != null
+  - rename:
+      field: teleport.audit.command_id
+      target_field: teleport.audit.database.aws.ssm_run.command_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.instance_id
+      target_field: cloud.instance.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.exit_code
+      target_field: process.exit_code
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: 'success'
+      if: 'ctx.teleport.audit.status == "Success"'
+  - set:
+      field: event.outcome
+      value: 'failure'
+      if: 'ctx.teleport.audit.status == "Failure"'
+  - remove:
+      field: teleport.audit.status
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.account_id
+      target_field: cloud.account.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.region
+      target_field: cloud.region
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.stdout
+      target_field: teleport.audit.database.aws.ssm_run.stdout
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.stderr
+      target_field: teleport.audit.database.aws.ssm_run.stderr
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.invocation_url
+      target_field: teleport.audit.database.aws.ssm_run.invocation_url
+      ignore_missing: true
+  # CassandraExecute is emitted when a Cassandra client executes a CQL statement.
+  - rename:
+      field: teleport.audit.keyspace
+      target_field: teleport.audit.database.cassandra.keyspace
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.query_id
+      target_field: teleport.audit.database.cassandra.query_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.consistency
+      target_field: teleport.audit.database.cassandra.consistency
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.batch_type
+      target_field: teleport.audit.database.cassandra.batch_type
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.children
+      target_field: teleport.audit.database.cassandra.children
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.event_types
+      target_field: teleport.audit.database.cassandra.event_types
+      ignore_missing: true
+  # AuditQueryRun is emitted when a user runs an audit query.
+  - rename:
+      field: teleport.audit.name
+      target_field: teleport.audit.audit_query.name
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.audit.query.run'
+  - rename:
+      field: teleport.audit.query
+      target_field: teleport.audit.audit_query.query
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.audit.query.run'
+  - rename:
+      field: teleport.audit.days
+      target_field: teleport.audit.audit_query.days
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.audit.query.run'
+  - rename:
+      field: teleport.audit.total_execution_time_in_millis
+      target_field: teleport.audit.audit_query.total_execution_time_in_millis
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.audit.query.run'
+  - rename:
+      field: teleport.audit.data_scanned_in_bytes
+      target_field: teleport.audit.audit_query.data_scanned_in_bytes
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.audit.query.run'
+  # SecurityReportRun is emitted when a user runs an audit query.
+  - rename:
+      field: teleport.audit.name
+      target_field: teleport.audit.sec_report.name
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.report.run'
+  - rename:
+      field: teleport.audit.version
+      target_field: teleport.audit.sec_report.version
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.report.run'
+  - rename:
+      field: teleport.audit.total_execution_time_in_millis
+      target_field: teleport.audit.sec_report.total_execution_time_in_millis
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.report.run'
+  - rename:
+      field: teleport.audit.total_data_scanned_in_bytes
+      target_field: teleport.audit.sec_report.total_data_scanned_in_bytes
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.report.run'
+  - rename:
+      field: teleport.audit.data_scanned_in_bytes
+      target_field: teleport.audit.sec_report.total_data_scanned_in_bytes
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.event.action == 'secreports.report.run'
+  - rename:
+      field: teleport.audit.sec_report.audit_queries
+      target_field: teleport.audit.audit_query
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.report.run'
+  # External Audit Storage configuration details.
+  - rename:
+      field: teleport.audit.integration_name
+      target_field: teleport.audit.external_audit_storage.integration_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.session_recordings_uri
+      target_field: teleport.audit.external_audit_storage.session_recordings_uri
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.athena_workgroup
+      target_field: teleport.audit.external_audit_storage.athena_workgroup
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.glue_database
+      target_field: teleport.audit.external_audit_storage.glue_database
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.glue_table
+      target_field: teleport.audit.external_audit_storage.glue_table
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.audit_events_long_term_uri
+      target_field: teleport.audit.external_audit_storage.audit_events_long_term_uri
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.athena_results_uri
+      target_field: teleport.audit.external_audit_storage.athena_results_uri
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.policy_name
+      target_field: teleport.audit.external_audit_storage.policy_name
+      ignore_missing: true
+  # Okta user sync event details.
+  - rename:
+      field: teleport.audit.org_url
+      target_field: teleport.audit.okta.org_url
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.app_id
+      target_field: teleport.audit.okta.app_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.num_users_created
+      target_field: teleport.audit.okta.users.created
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.num_users_deleted
+      target_field: teleport.audit.okta.users.deleted
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.num_users_modified
+      target_field: teleport.audit.okta.users.modified
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.num_users_total
+      target_field: teleport.audit.okta.users.total
+      ignore_missing: true
+  # SPIFFE SVID issued event details.
+  - rename:
+      field: teleport.audit.spiffe_id
+      target_field: teleport.audit.svid.spiffe_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.dns_sans
+      target_field: teleport.audit.svid.dns_sans
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.ip_sans
+      target_field: teleport.audit.svid.ip_sans
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.svid_type
+      target_field: teleport.audit.svid.type
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.serial_number
+      target_field: teleport.audit.svid.serial_number
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.hint
+      target_field: teleport.audit.svid.hint
+      ignore_missing: true
+  # Access path change event details.
+  - rename:
+      field: teleport.audit.change_id
+      target_field: teleport.audit.access_path_change.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.affected_resource_name
+      target_field: teleport.audit.access_path_change.resource.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.affected_resource_source
+      target_field: teleport.audit.access_path_change.resource.source
+      ignore_missing: true
+  # Spanner RPC event details.
+  # See database_spanner_rpc.yml for field definitions.
+  - rename:
+      field: teleport.audit.procedure
+      target_field: teleport.audit.database.spanner.rpc.procedure
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.args
+      target_field: teleport.audit.database.spanner.rpc.args
+      ignore_missing: true
+      # >> Add new fields here
+# What to do if the processing fails.
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

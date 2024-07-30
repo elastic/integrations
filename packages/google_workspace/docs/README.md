@@ -1111,6 +1111,7 @@ An example event for `drive` looks as following:
 | event.module | Event module | constant_keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.drive.actor_is_collaborator_account | Whether the actor is a collaborator account. | boolean |
 | google_workspace.drive.added_role | Added membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.billable | Whether this activity is billable. | boolean |
 | google_workspace.drive.destination_folder_id |  | keyword |
@@ -1119,11 +1120,13 @@ An example event for `drive` looks as following:
 | google_workspace.drive.file.owner.email |  | keyword |
 | google_workspace.drive.file.owner.is_shared_drive | Boolean flag denoting whether owner is a shared drive. | boolean |
 | google_workspace.drive.file.type | Document Drive type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
+| google_workspace.drive.is_encrypted | Whether the file is client-side encrypted. | boolean |
 | google_workspace.drive.membership_change_type | Type of change in Team Drive membership of a user/group. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.new_value | When a setting or property of the file changes, the new value for it will appear here. | keyword |
 | google_workspace.drive.old_value | When a setting or property of the file changes, the old value for it will appear here. | keyword |
 | google_workspace.drive.old_visibility | When visibility changes, this holds the old value. | keyword |
 | google_workspace.drive.originating_app_id | The Google Cloud Project ID of the application that performed the action. | keyword |
+| google_workspace.drive.owner_is_team_drive | Whether the owner is a Team Drive. | boolean |
 | google_workspace.drive.primary_event | Whether this is a primary event. A single user action in Drive may generate several events. | boolean |
 | google_workspace.drive.removed_role | Removed membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.shared_drive_id | The unique identifier of the Team Drive. Only populated for for events relating to a Team Drive or item contained inside a Team Drive. | keyword |
@@ -1133,6 +1136,7 @@ An example event for `drive` looks as following:
 | google_workspace.drive.source_folder_title |  | keyword |
 | google_workspace.drive.target | Target user or group. | keyword |
 | google_workspace.drive.target_domain | The domain for which the acccess scope was changed. This can also be the alias all to indicate the access scope was changed for all domains that have visibility for this document. | keyword |
+| google_workspace.drive.target_user | The email address of the user or group whose access permissions were changed, or the name of the domain for which access permissions were changed. | keyword |
 | google_workspace.drive.visibility | Visibility of target file. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.visibility_change | When visibility changes, this holds the new overall visibility of the file. | keyword |
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |

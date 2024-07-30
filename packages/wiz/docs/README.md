@@ -473,6 +473,7 @@ An example event for `issue` looks as following:
 | wiz.issue.source_rule.security_sub_categories.title |  | keyword |
 | wiz.issue.status.changed_at |  | date |
 | wiz.issue.status.value |  | keyword |
+| wiz.issue.type |  | keyword |
 | wiz.issue.updated_at |  | date |
 
 

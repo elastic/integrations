@@ -1,0 +1,61 @@
+title: AWS Bedrock Runtime Metrics
+type: metrics
+elasticsearch:
+  index_mode: time_series
+streams:
+  - input: aws/metrics
+    title: AWS Bedrock metrics
+    description: Collect AWS Bedrock metrics
+    vars:
+      - name: period
+        type: text
+        title: Collection Period
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: data_granularity
+        type: text
+        title: Data Granularity
+        multi: false
+        required: false
+        show_user: false
+      - name: regions
+        type: text
+        title: Regions
+        multi: true
+        required: false
+        show_user: true
+      - name: latency
+        type: text
+        title: Latency
+        multi: false
+        required: false
+        show_user: false
+        description: The 'latency' parameter adjusts the Metricbeat collection start and end times. AWS CloudWatch might experience delay in processing metrics for some services causing data points to be missed during the integration collection period. To mitigate this potential issue, specify a latency parameter such as `15m`.
+      - name: tags_filter
+        type: yaml
+        title: Tags Filter
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # - key: "created-by"
+            # value: "foo"
+      - name: include_linked_accounts
+        type: bool
+        title: Include Linked Accounts
+        multi: false
+        required: false
+        show_user: false
+        default: true
+        description: When include_linked_accounts is set to true, CloudWatch metrics will be collected from both linked accounts and the monitoring account. Default is true.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+

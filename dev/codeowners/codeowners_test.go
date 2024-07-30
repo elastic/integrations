@@ -74,6 +74,44 @@ func TestCheckManifest(t *testing.T) {
 	}
 }
 
+func TestValidatePackages(t *testing.T) {
+	cases := []struct {
+		codeownersPath string
+		packageDir     string
+		valid          bool
+	}{
+		{
+			codeownersPath: "testdata/CODEOWNERS-streams-missing-owners",
+			packageDir:     "testdata/test_packages",
+			valid:          false,
+		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-streams-multiple-owners",
+			packageDir:     "testdata/test_packages",
+			valid:          false,
+		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-streams-valid",
+			packageDir:     "testdata/test_packages",
+			valid:          true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.codeownersPath, func(t *testing.T) {
+			owners, err := readGithubOwners(c.codeownersPath)
+			require.NoError(t, err)
+
+			err = validatePackages(owners, c.packageDir)
+			if c.valid {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+}
+
 func TestReadGithubOwners(t *testing.T) {
 	cases := []struct {
 		codeownersPath string
@@ -113,6 +151,70 @@ func TestReadGithubOwners(t *testing.T) {
 			} else {
 				assert.Error(t, err)
 			}
+		})
+	}
+}
+
+func TestReturnPackageOwners(t *testing.T) {
+	cases := []struct {
+		title          string
+		codeownersPath string
+		packageName    string
+		datastream     string
+		expected       []string
+		expectedError  bool
+	}{
+		{
+			title:          "just package",
+			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
+			packageName:    "aws",
+			datastream:     "",
+			expected:       []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services", "@elastic/security-service-integrations"},
+			expectedError:  false,
+		},
+		{
+			title:          "package and datastream",
+			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
+			packageName:    "aws",
+			datastream:     "cloudtrail",
+			expected:       []string{"@elastic/obs-infraobs-integrations"},
+			expectedError:  false,
+		},
+		{
+			title:          "package and other datastream",
+			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
+			packageName:    "aws",
+			datastream:     "cloudwatch_logs",
+			expected:       []string{"@elastic/obs-ds-hosted-services"},
+			expectedError:  false,
+		},
+		{
+			title:          "package not found",
+			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
+			packageName:    "other",
+			datastream:     "",
+			expected:       []string{},
+			expectedError:  true,
+		},
+		{
+			title:          "package found but not data stream defined",
+			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
+			packageName:    "aws",
+			datastream:     "other",
+			expected:       []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services", "@elastic/security-service-integrations"},
+			expectedError:  false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			owners, err := PackageOwnersCustomCodeowners(c.packageName, c.datastream, c.codeownersPath)
+			if c.expectedError {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, c.expected, owners)
 		})
 	}
 }

@@ -199,14 +199,38 @@ processors:
   - set:
       field: threat.feed.name
       value: "MISP"
-  - rename:
+  - script:
+      description: Convert microseconds to millseconds.
+      lang: painless
+      source: |
+        if (ctx.misp?.attribute?.first_seen != null && ctx.misp.attribute.first_seen.length() > 3) {
+            ctx.misp.attribute.first_seen = ctx.misp.attribute.first_seen.substring(0, ctx.misp.attribute.first_seen.length() - 3)
+        }
+        if (ctx.misp?.attribute?.last_seen != null && ctx.misp.attribute.last_seen.length() > 3) {
+            ctx.misp.attribute.last_seen = ctx.misp.attribute.last_seen.substring(0, ctx.misp.attribute.last_seen.length() - 3)
+        }
+  - date:
       field: misp.attribute.first_seen
       target_field: threat.indicator.first_seen
-      ignore_missing: true
-  - rename:
+      tag: date_attribute_first_seen
+      if: ctx.misp?.attribute?.first_seen != null
+      formats:
+        - UNIX_MS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
       field: misp.attribute.last_seen
       target_field: threat.indicator.last_seen
-      ignore_missing: true
+      tag: date_attribute_last_seen
+      if: ctx.misp?.attribute?.last_seen != null
+      formats:
+        - UNIX_MS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: misp.event.analysis
       type: long

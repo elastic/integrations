@@ -90,6 +90,10 @@ This integration has been tested with Oracle Database 19c, and should work for 1
 
 The `database_audit` dataset collects Oracle Audit logs.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "database_audit"}}
 
 {{event "database_audit"}}
@@ -104,6 +108,10 @@ To collect the Tablespace metrics, Oracle integration relies on a specific set o
 - `SYS.DBA_TEMP_FILES`
 - `DBA_FREE_SPACE`
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "tablespace"}}
 
 {{event "tablespace"}}
@@ -115,6 +123,10 @@ The system metrics value captured for the most current time interval for the lon
 To collect the Sysmetrics metrics, Oracle integration relies on a specific set of views. Make sure that the user configured within the Oracle DSN configuration has `READ` access permissions to the following view:
 
 - `V$SYSMETRIC`
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "sysmetric"}}
 
@@ -129,6 +141,10 @@ To collect the Memory metrics, Oracle integration relies on a specific set of vi
 - `V$SGASTAT`
 - `V$PGASTAT`
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "memory"}}
 
 {{event "memory"}}
@@ -140,6 +156,10 @@ The System Global Area (SGA) is a group of shared memory structures that contain
 To collect the System Statistics metrics, Oracle integration relies on a specific set of views. Make sure that the user configured within the Oracle DSN configuration has `READ` access permissions to the following view:
 
 - `V$SYSSTAT`
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "system_statistics"}}
 
@@ -158,6 +178,10 @@ To collect the Performance metrics, Oracle integration relies on a specific set 
 - `DBA_JOBS`
 - `GV$SESSION`
 - `V$SYSTEM_WAIT_CLASS`
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "performance"}}
 

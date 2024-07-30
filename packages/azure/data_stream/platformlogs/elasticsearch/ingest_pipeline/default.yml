@@ -3,7 +3,7 @@ description: Pipeline for parsing azure platform logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.11.0'
   - rename:
       field: azure
       target_field: azure-eventhub
@@ -186,6 +186,16 @@ processors:
       target_field: event.outcome
       type: string
       if: "ctx?.event?.outcome == null && ctx?.azure?.platformlogs?.Status != null && ctx?.azure?.platformlogs?.Status instanceof String && ['success', 'failure', 'unknown', 'Succeeded', 'Failed'].contains(ctx.azure?.platformlogs?.Status)"
+  - set:
+      field: event.outcome
+      value: "success"
+      override: true
+      if: ctx?.event?.outcome != null && ctx?.event?.outcome == "Succeeded"
+  - set:
+      field: event.outcome
+      value: "failure"
+      override: true
+      if: ctx?.event?.outcome != null && ctx?.event?.outcome == "Failed"
   - rename:
       field: azure.platformlogs.operationName
       target_field: azure.platformlogs.operation_name

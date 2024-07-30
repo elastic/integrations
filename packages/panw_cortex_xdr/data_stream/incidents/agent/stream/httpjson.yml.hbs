@@ -43,7 +43,7 @@ request.transforms:
     value: {{token_id}}
 - set:
     target: body.request_data.sort.field
-    value: creation_time
+    value: modification_time
 - set:
     target: body.request_data.sort.keyword
     value: asc
@@ -51,13 +51,13 @@ request.transforms:
     target: body.request_data.filters
     value: |-
       {
-        "field": "creation_time",
+        "field": "modification_time",
         "operator": "gte",
         "value": [[ .cursor.next_ts ]]
       }
     default: |-
       {
-        "field": "creation_time",
+        "field": "modification_time",
         "operator": "gte",
         "value": [[ mul (add (now (parseDuration "-{{initial_interval}}")).Unix) 1000 ]]
       }
@@ -81,7 +81,7 @@ response.pagination:
       fail_on_template_error: true
 cursor:
   next_ts:
-    value: "[[.last_event.creation_time]]"
+    value: "[[.last_event.modification_time]]"
 
 tags:
 {{#if preserve_original_event}}

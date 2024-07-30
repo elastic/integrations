@@ -12,4 +12,8 @@ You can specify a single region to fetch metrics like `us-central1`. Be aware th
 
 ## Exported fields
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "storage"}}

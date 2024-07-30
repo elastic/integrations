@@ -17,6 +17,25 @@ An example event for `connection` looks as following:
 ```json
 {
     "@timestamp": "2020-07-06T16:12:07.612Z",
+    "agent": {
+        "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
+        "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651",
+        "name": "zookeeper-01",
+        "type": "metricbeat",
+        "version": "8.0.0"
+    },
+    "client": {
+        "ip": "172.28.0.1",
+        "port": 44338
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "dataset": "zookeeper.connection",
+        "duration": 3093417,
+        "module": "zookeeper"
+    },
     "host": {
         "name": "zookeeper-01"
     },
@@ -30,33 +49,18 @@ An example event for `connection` looks as following:
     },
     "zookeeper": {
         "connection": {
-            "received": 1,
-            "sent": 0,
             "interest_ops": 0,
-            "queued": 0
+            "queued": 0,
+            "received": 1,
+            "sent": 0
         }
-    },
-    "client": {
-        "ip": "172.28.0.1",
-        "port": 44338
-    },
-    "event": {
-        "dataset": "zookeeper.connection",
-        "module": "zookeeper",
-        "duration": 3093417
-    },
-    "agent": {
-        "name": "zookeeper-01",
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
-        "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651"
-    },
-    "ecs": {
-        "version": "8.5.1"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -66,44 +70,23 @@ An example event for `connection` looks as following:
 | agent.id |  | keyword |  |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |  |
 | client.port | Port of the client. | long |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 | zookeeper.connection.interest_ops | Interest ops | long |  |
 | zookeeper.connection.queued | Queued connections | long | gauge |
 | zookeeper.connection.received | Received connections | long | counter |
@@ -119,34 +102,6 @@ An example event for `mntr` looks as following:
 ```json
 {
     "@timestamp": "2020-07-06T16:12:08.494Z",
-    "zookeeper": {
-        "mntr": {
-            "open_file_descriptor_count": 49,
-            "watch_count": 0,
-            "server_state": "standalone",
-            "max_file_descriptor_count": 1048576,
-            "znode_count": 5,
-            "outstanding_requests": 0,
-            "ephemerals_count": 0,
-            "packets": {
-                "received": 152,
-                "sent": 151
-            },
-            "num_alive_connections": 1,
-            "approximate_data_size": 44,
-            "latency": {
-                "max": 0,
-                "avg": 0,
-                "min": 0
-            }
-        }
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "host": {
-        "name": "zookeeper-01"
-    },
     "agent": {
         "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
         "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651",
@@ -154,22 +109,54 @@ An example event for `mntr` looks as following:
         "type": "metricbeat",
         "version": "8.0.0"
     },
-    "service": {
-        "version": "3.5.5-390fe37ea45dee01bf87dc1c042b5e3dcce88653, built on 05/03/2019 12:07 GMT",
-        "address": "localhost:2181",
-        "type": "zookeeper"
+    "ecs": {
+        "version": "8.11.0"
     },
     "event": {
-        "duration": 15795652,
         "dataset": "zookeeper.mntr",
+        "duration": 15795652,
         "module": "zookeeper"
+    },
+    "host": {
+        "name": "zookeeper-01"
     },
     "metricset": {
         "name": "mntr",
         "period": 10000
+    },
+    "service": {
+        "address": "localhost:2181",
+        "type": "zookeeper",
+        "version": "3.5.5-390fe37ea45dee01bf87dc1c042b5e3dcce88653, built on 05/03/2019 12:07 GMT"
+    },
+    "zookeeper": {
+        "mntr": {
+            "approximate_data_size": 44,
+            "ephemerals_count": 0,
+            "latency": {
+                "avg": 0,
+                "max": 0,
+                "min": 0
+            },
+            "max_file_descriptor_count": 1048576,
+            "num_alive_connections": 1,
+            "open_file_descriptor_count": 49,
+            "outstanding_requests": 0,
+            "packets": {
+                "received": 152,
+                "sent": 151
+            },
+            "server_state": "standalone",
+            "watch_count": 0,
+            "znode_count": 5
+        }
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -177,45 +164,23 @@ An example event for `mntr` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |  |
 | zookeeper.mntr.approximate_data_size | Approximate size of ZooKeeper data. | long | gauge |
 | zookeeper.mntr.ephemerals_count | Number of ephemeral znodes. | long | gauge |
 | zookeeper.mntr.followers | Number of followers seen by the current host. | long | gauge |
@@ -245,54 +210,58 @@ An example event for `server` looks as following:
 ```json
 {
     "@timestamp": "2020-07-06T16:12:12.409Z",
+    "agent": {
+        "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
+        "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651",
+        "name": "zookeeper-01",
+        "type": "metricbeat",
+        "version": "8.0.0"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
     "event": {
-        "module": "zookeeper",
+        "dataset": "zookeeper.server",
         "duration": 3001938,
-        "dataset": "zookeeper.server"
+        "module": "zookeeper"
+    },
+    "host": {
+        "name": "zookeeper-01"
     },
     "metricset": {
         "name": "server",
         "period": 10000
     },
-    "ecs": {
-        "version": "8.5.1"
-    },
-    "host": {
-        "name": "zookeeper-01"
-    },
-    "agent": {
-        "name": "zookeeper-01",
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
-        "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651"
+    "service": {
+        "address": "localhost:2181",
+        "type": "zookeeper",
+        "version": "3.5.5-390fe37ea45dee01bf87dc1c042b5e3dcce88653"
     },
     "zookeeper": {
         "server": {
-            "zxid": "0x0",
+            "connections": 1,
             "count": 0,
-            "version_date": "2019-05-03T12:07:00Z",
-            "received": 156,
-            "mode": "standalone",
+            "epoch": 0,
             "latency": {
                 "avg": 0,
                 "max": 0,
                 "min": 0
             },
-            "sent": 155,
-            "epoch": 0,
+            "mode": "standalone",
             "node_count": 5,
-            "connections": 1,
-            "outstanding": 0
+            "outstanding": 0,
+            "received": 156,
+            "sent": 155,
+            "version_date": "2019-05-03T12:07:00Z",
+            "zxid": "0x0"
         }
-    },
-    "service": {
-        "address": "localhost:2181",
-        "type": "zookeeper",
-        "version": "3.5.5-390fe37ea45dee01bf87dc1c042b5e3dcce88653"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -300,45 +269,23 @@ An example event for `server` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |  |
 | zookeeper.server.connections | Number of clients currently connected to the server | long | gauge |
 | zookeeper.server.count | Total transactions of the leader in epoch | long | counter |
 | zookeeper.server.epoch | Epoch value of the Zookeeper transaction ID. An epoch signifies the period in which a server is a leader | long |  |
