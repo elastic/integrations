@@ -4,6 +4,12 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
+  - set:
+      field: observer.vendor
+      value: Broadcom
+  - set:
+      field: observer.product
+      value: ProxySG
   - drop:
       tag: "drop_commented"
       description: "Drop commented lines"
@@ -24,19 +30,13 @@ processors:
       tag: main_pipeline
       name: '{{ IngestPipeline "main" }}'
       if: ctx._temp_._conf == 'main'
-  - pipeline:
-      tag: onprem_pipeline
-      name: '{{ IngestPipeline "onprem" }}'
-      if: ctx._temp_._conf == 'onprem'
-  - pipeline:
-      tag: cloud_pipeline
-      name: '{{ IngestPipeline "cloud" }}'
-      if: ctx._temp_._conf == 'cloud'
 
   - set:
       tag: set_timestamp
       field: "@timestamp"
       value: "{{{_temp_.date}}}T{{{_temp_.time}}}Z"
+      if: ctx._temp_?.date != null && ctx._temp_?.time != null
+
   - remove:
       field: "_temp_"
       ignore_failure: true
