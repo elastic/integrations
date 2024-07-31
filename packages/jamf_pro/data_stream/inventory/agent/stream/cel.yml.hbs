@@ -25,11 +25,6 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 
-{{#if processors}}
-processors:
-{{processors}}
-{{/if}}
-
 keep_null: true
 program: |
   request(
@@ -65,30 +60,9 @@ program: |
 state:
   page_size: {{page_size}}
   sections: [
-  {{#if GENERAL }} "GENERAL", {{/if}}
-  {{#if DISK_ENCRYPTION }} "DISK_ENCRYPTION", {{/if}}
-  {{#if PURCHASING }} "PURCHASING", {{/if}}
-  {{#if APPLICATIONS }} "APPLICATIONS", {{/if}}
-  {{#if STORAGE }} "STORAGE", {{/if}}
-  {{#if USER_AND_LOCATION }} "USER_AND_LOCATION", {{/if}}
-  {{#if CONFIGURATION_PROFILES }} "CONFIGURATION_PROFILES", {{/if}}
-  {{#if PRINTERS }} "PRINTERS", {{/if}}
-  {{#if SERVICES }} "SERVICES", {{/if}}
-  {{#if HARDWARE }} "HARDWARE", {{/if}}
-  {{#if LOCAL_USER_ACCOUNTS }} "LOCAL_USER_ACCOUNTS", {{/if}}
-  {{#if CERTIFICATES }} "CERTIFICATES", {{/if}}
-  {{#if ATTACHMENTS }} "ATTACHMENTS", {{/if}}
-  {{#if PLUGINS }} "PLUGINS", {{/if}}
-  {{#if PACKAGE_RECEIPTS }} "PACKAGE_RECEIPTS", {{/if}}
-  {{#if FONTS }} "FONTS", {{/if}}
-  {{#if SECURITY }} "SECURITY", {{/if}}
-  {{#if OPERATING_SYSTEM }} "OPERATING_SYSTEM", {{/if}}
-  {{#if LICENSED_SOFTWARE }} "LICENSED_SOFTWARE", {{/if}}
-  {{#if IBEACONS }} "IBEACONS", {{/if}}
-  {{#if SOFTWARE_UPDATES }} "SOFTWARE_UPDATES", {{/if}}
-  {{#if EXTENSION_ATTRIBUTES }} "EXTENSION_ATTRIBUTES", {{/if}}
-  {{#if CONTENT_CACHING }} "CONTENT_CACHING", {{/if}}
-  {{#if GROUP_MEMBERSHIP }} "GROUP_MEMBERSHIP", {{/if}}
+  {{#each (array "GENERAL" "DISK_ENCRYPTION" "PURCHASING" "APPLICATIONS" "STORAGE" "USER_AND_LOCATION" "CONFIGURATION_PROFILES" "PRINTERS" "SERVICES" "HARDWARE" "LOCAL_USER_ACCOUNTS" "CERTIFICATES" "ATTACHMENTS" "PLUGINS" "PACKAGE_RECEIPTS" "FONTS" "SECURITY" "OPERATING_SYSTEM" "LICENSED_SOFTWARE" "IBEACONS" "SOFTWARE_UPDATES" "EXTENSION_ATTRIBUTES" "CONTENT_CACHING" "GROUP_MEMBERSHIP") as |field|}}
+  {{#if (lookup field)}} "{{field}}", {{/if}}
+  {{/each}}
   ]
 
 

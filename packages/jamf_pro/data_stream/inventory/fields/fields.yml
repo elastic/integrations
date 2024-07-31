@@ -1,66 +1,160 @@
 - name: id
   type: keyword
-  description: ID
 - name: udid
   type: keyword
-  description: UDID
 - name: general
   type: group
-  description: General information
   fields:
     - name: name
       type: keyword
-      description: General name
     - name: lastIpAddress
       type: ip
-      description: Last IP address
     - name: lastReportedIp
       type: ip
-      description: Last reported IP
     - name: jamfBinaryVersion
       type: keyword
-      description: Jamf binary version
     - name: platform
       type: keyword
-      description: Platform
+    - name: remoteManagement
+      type: group
+      fields:
+        - name: managed
+          type: boolean
+        - name: managementUsername
+          type: keyword
+    - name: supervised
+      type: boolean
+    - name: mdmCapable
+      type: group
+      fields:
+        - name: capable
+          type: boolean
+        - name: capableUsers
+          type: text
     - name: reportDate
       type: date
-      description: Report date
     - name: lastContactTime
       type: date
-      description: Last contact time
     - name: lastEnrolledDate
       type: date
-      description: Last enrolled date
+    - name: initialEntryDate
+      type: date
+    - name: site
+      type: group
+      fields:
+        - name: id
+          type: keyword
+        - name: name
+          type: keyword
+    - name: itunesStoreAccountActive
+      type: boolean
+    - name: enrolledViaAutomatedDeviceEnrollment
+      type: boolean
+    - name: userApprovedMdm
+      type: boolean
+    - name: declarativeDeviceManagementEnabled
+      type: boolean
     - name: managementId
       type: keyword
-      description: Management ID
+- name: diskEncryption
+  type: group
+  fields:
+    - name: individualRecoveryKeyValidityStatus
+      type: keyword
+    - name: institutionalRecoveryKeyPresent
+      type: boolean
+    - name: fileVault2EnabledUserNames
+      type: keyword
+- name: localUserAccounts
+  type: nested
+  fields:
+    - name: uid
+      type: keyword
+    - name: username
+      type: keyword
+    - name: fullName
+      type: keyword
+    - name: admin
+      type: boolean
+
+- name: purchasing
+  type: group
+  fields:
+    - name: purchased
+      type: boolean
+    - name: leased
+      type: boolean
+- name: storage
+  type: group
+  fields:
+    - name: bootDriveAvailableSpaceMegabytes
+      type: long
+    - name: disks
+      type: nested
+      fields:
+        - name: id
+          type: keyword
+        - name: device
+          type: keyword
+        - name: model
+          type: keyword
+- name: applications
+  type: nested
+  fields:
+    - name: name
+      type: keyword
+    - name: path
+      type: keyword
+    - name: version
+      type: keyword
+- name: userAndLocation
+  type: group
+  fields:
+    - name: username
+      type: keyword
+    - name: realname
+      type: keyword
+    - name: email
+      type: keyword
+    - name: position
+      type: keyword
+    - name: phone
+      type: keyword
 - name: hardware
   type: group
-  description: Hardware information
   fields:
     - name: make
       type: keyword
-      description: Hardware make
     - name: model
       type: keyword
-      description: Hardware model
     - name: serialNumber
       type: keyword
-      description: Hardware serial number
-    - name: macAddress
+    - name: processorType
       type: keyword
-      description: MAC address
+    - name: totalRamMegabytes
+      type: long
+- name: security
+  type: group
+  fields:
+    - name: sipStatus
+      type: keyword
+    - name: gatekeeperStatus
+      type: keyword
 - name: operatingSystem
   type: group
-  description: Operating system information
   fields:
     - name: name
       type: keyword
-      description: Operating system name
     - name: version
       type: keyword
-      description: Operating system version
     - name: build
       type: keyword
-      description: Operating system build
+- name: softwareUpdates
+  type: nested
+  fields:
+    - name: name
+      type: keyword
+    - name: packageName
+      type: keyword
+    - name: version
+      type: keyword
