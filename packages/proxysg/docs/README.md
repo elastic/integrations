@@ -50,43 +50,65 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2024-03-22T16:16:01Z",
     "agent": {
-        "ephemeral_id": "7b90259c-84c0-43c8-94fd-a5a80b30fc4e",
-        "id": "c821ab07-d348-44fb-873f-3d2641c56f90",
+        "ephemeral_id": "499ed581-571a-430b-9ef9-5721f68ca7c7",
+        "id": "912d13a0-558b-4372-b8cb-7256333c3f5a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.1"
     },
     "client": {
-        "ip": "10.82.255.36"
+        "bytes": 969,
+        "ip": "10.82.255.36",
+        "user": {
+            "id": "aeinstein"
+        }
     },
     "data_stream": {
         "dataset": "proxysg.log",
-        "namespace": "35015",
+        "namespace": "22366",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c821ab07-d348-44fb-873f-3d2641c56f90",
+        "id": "912d13a0-558b-4372-b8cb-7256333c3f5a",
         "snapshot": false,
         "version": "8.14.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "proxysg.log",
-        "ingested": "2024-07-12T21:35:35Z"
+        "ingested": "2024-07-30T22:05:31Z",
+        "original": "2024-03-22 16:16:01 48 10.82.255.36 302 TCP_NC_MISS 1242 969 GET https pixel.tapad.com 443 /idsync/ex/push ?partner_id=2499&partner_device_id=aeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553&partner_url=https%3A%2F%2Fa.vidoomy.com%2Fapi%2Frtbserver%2Fpbscookie%3Fuid%3Daeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553%26vid%3D280fa751e99651c4193ef92f6dab0f92%26dspid%3DCEN aeinstein - - pixel.tapad.com - https://vid.vidoomy.com/ OBSERVED \"FastwebRes_CallCntr;Web Ads/Analytics\" - 142.182.19.21 34.111.113.62 \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36\" sha256WithRSAEncryption",
+        "timezone": "+00:00"
+    },
+    "http": {
+        "request": {
+            "referrer": "-"
+        }
     },
     "input": {
-        "type": "filestream"
+        "type": "tcp"
     },
     "log": {
-        "file": {
-            "device_id": "64768",
-            "inode": "328232925",
-            "path": "/tmp/service_logs/proxysg.log"
+        "source": {
+            "address": "172.19.0.5:47150"
         },
-        "offset": 487
+        "syslog": {
+            "appname": "serverd",
+            "facility": {
+                "code": 1,
+                "name": "user-level"
+            },
+            "hostname": "srvr",
+            "priority": 13,
+            "severity": {
+                "code": 5,
+                "name": "Notice"
+            },
+            "version": "1"
+        }
     },
     "observer": {
         "product": "ProxySG",
@@ -115,7 +137,7 @@ An example event for `log` looks as following:
         },
         "server": {
             "action": "TCP_NC_MISS",
-            "ip": "89.2.20.21",
+            "ip": "142.182.19.21",
             "supplier_name": "-"
         },
         "server_to_client": {
@@ -127,10 +149,11 @@ An example event for `log` looks as following:
         "x_virus_id": "-"
     },
     "server": {
-        "ip": "89.2.20.21"
+        "bytes": 1242,
+        "ip": "142.182.19.21"
     },
     "tags": [
-        "proxysg-access-log",
+        "preserve_original_event",
         "forwarded"
     ],
     "url": {
@@ -138,6 +161,9 @@ An example event for `log` looks as following:
         "port": 443,
         "query": "?partner_id=2499&partner_device_id=aeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553&partner_url=https%3A%2F%2Fa.vidoomy.com%2Fapi%2Frtbserver%2Fpbscookie%3Fuid%3Daeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553%26vid%3D280fa751e99651c4193ef92f6dab0f92%26dspid%3DCEN",
         "scheme": "https"
+    },
+    "user_agent": {
+        "original": "https://vid.vidoomy.com/"
     }
 }
 ```
@@ -147,12 +173,15 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.bytes | Bytes sent from the client to the server. | long |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.user.id | Unique identifier of the user. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| http.request.referrer | Referrer for this HTTP request. | keyword |
 | input.type | Type of input. | keyword |
 | log.file.device_id | Log file device ID. | keyword |
 | log.file.inode | Log file inode. | keyword |
@@ -250,11 +279,14 @@ An example event for `log` looks as following:
 | proxysg.x_sc_connection_issuer_keyring |  | keyword |
 | proxysg.x_sc_connection_issuer_keyring_alias |  | keyword |
 | proxysg.x_virus_id |  | keyword |
+| server.bytes | Bytes sent from the server to the client. | long |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
 
