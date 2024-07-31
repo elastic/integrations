@@ -198,11 +198,11 @@ The number of partitions must be at least the number of agents.
 
 ##### Recommendations
 
-Create an event hub with at least two partitions. Two partitions allow low-volume deployment to support high availability with two agents. Please consider creating four partitions or more to handle medium-volume deployments with availability.
+Create an event hub with at least two partitions. Two partitions allow low-volume deployment to support high availability with two agents. Consider creating four partitions or more to handle medium-volume deployments with availability.
 
-To learn more about Event Hub partitions, you can read an in-depth guide from Microsoft at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create.
+To learn more about Event Hub partitions, read an in-depth guide from Microsoft at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create.
 
-To learn more about Event Hub partition from the performance perspective, you can read the scalability-focused document at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability#partitions.
+To learn more about Event Hub partition from the performance perspective, check the scalability-focused document at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability#partitions.
 
 #### How many event hubs?
 
