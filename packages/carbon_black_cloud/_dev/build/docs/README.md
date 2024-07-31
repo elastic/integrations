@@ -31,7 +31,7 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
 ### In order to ingest data from the AWS S3 bucket you must:
 1. Configure the [Data Forwarder](https://docs.vmware.com/en/VMware-Carbon-Black-Cloud/services/carbon-black-cloud-user-guide/GUID-F68F63DD-2271-4088-82C9-71D675CD0535.html) to ingest data into an AWS S3 bucket.
 2. Create an [AWS Access Keys and Secret Access Keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-3. The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
+3. The default values of the "Bucket List Prefix" are listed below. However, users can set the parameter "Bucket List Prefix" according to their requirements.
 
   | Data Stream Name  | Bucket List Prefix     |
   | ----------------- | ---------------------- |
@@ -42,17 +42,20 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
-2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
-  - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
-3. Set up event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
-  - The user has to perform Step 3 for all the data streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `alert_logs/` for the alert data stream.)
-  - For all the event notifications that have been created, select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
+2. Follow the steps below for each data stream that has been enabled:
+     1. Create an SQS queue
+         - To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+         - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+     2. Setup event notification from the S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the following settings:
+        - Event type: `All object create events` (`s3:ObjectCreated:*`)
+         - Destination: SQS Queue
+         - Prefix (filter): enter the prefix for this data stream, e.g. `alert_logs/`
+         - Select the SQS queue that has been created for this data stream
 
 **Note**:
-  - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
+  - A separate SQS queue and S3 bucket notification is required for each enabled data stream.
+  - Permissions for the above AWS S3 bucket and SQS queues should be configured as per the [Filebeat S3 input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2)
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
-  - When configuring SQS queues, separate queues should be used for each data stream instead of the global SQS queue from version 1.21 onwards to avoid data 
-    loss. File selectors should not be used to filter out data stream logs using the global queue as it was in versions prior.
 
 ### In order to ingest data from the APIs you must generate API keys and API Secret Keys:
 1. In Carbon Black Cloud, On the left navigation pane, click **Settings > API Access**.
