@@ -2,7 +2,7 @@
 
 ## Ingest SpyCloud Cybercrime Analytics into Elastic Agent
 
-[SpyCloud’s Enterprise Protection](https://spycloud.com/) integration leverages recaptured darknet data to safeguard employee’s digital identities by producing actionable insights to proactively prevent account takeover and follow-on targeted attacks before they happen.
+[SpyCloud’s Enterprise Protection](https://spycloud.com/) integration leverages recaptured darknet data to safeguard employees' digital identities by producing actionable insights to proactively prevent account takeover and follow-on targeted attacks before they happen.
 
 The Elastic Agent uses the SpyCloud Enterprise Protection REST API to collect data.
 
@@ -43,8 +43,6 @@ With this approach, you install Elastic Agent and manually configure the agent l
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-The minimum **kibana.version** required is **8.11.0**.
 
 ## Setup
 
