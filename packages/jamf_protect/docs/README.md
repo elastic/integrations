@@ -79,6 +79,24 @@ For more information on configuring Jamf Protect, see
 - [Enabling Data Forwarding to AWS S3](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Data_Forwarding_to_a_Third_Party_Storage_Solution.html#ariaid-title2)
 - [Configure Threat Event Stream](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Configuring_the_Threat_Events_Stream_to_Send_Events_to_AWS_S3.html)
 
+### To collect data from AWS SQS, follow the below steps:
+1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
+2. Follow the steps below for each data stream that has been enabled:
+     1. Create an SQS queue
+         - To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+         - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+     2. Setup event notification from the S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the following settings:
+        - Event type: `All object create events` (`s3:ObjectCreated:*`)
+         - Destination: SQS Queue
+         - Prefix (filter): enter the prefix for this data stream, e.g. `protect-/alerts/`
+         - Select the SQS queue that has been created for this data stream
+
+ **Note**:
+  - A separate SQS queue and S3 bucket notification is required for each enabled data stream.
+  - Permissions for the above AWS S3 bucket and SQS queues should be configured as per the [Filebeat S3 input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2)
+  - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
+  - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
+
 
 **Copyright (c) 2024, Jamf Software, LLC.  All rights reserved.**
 
