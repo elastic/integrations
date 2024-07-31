@@ -5,6 +5,31 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
+
+  # Set up tag logic for choosing which cloud metadata to include.
+  - append:
+      field: tags
+      value: ["elastic_cloud_data", "provider_cloud_data"]
+      if: ctx.tags?.contains('both') == true
+  - script:
+      lang: painless
+      if: ctx.tags?.contains('both') == true
+      source: ctx.tags.remove(ctx.tags.indexOf('both'));
+  - script:
+      lang: painless
+      if: ctx.cloud == null && ctx.tags?.contains('elastic_cloud_data') == true
+      source: ctx.tags.remove(ctx.tags.indexOf('elastic_cloud_data'));
+  - set:
+      field: _conf.want_provider_cloud
+      value: true
+      if: ctx.tags?.contains('provider_cloud_data') == true
+  - remove:
+      description: Remove elastic agent-provided cloud metadata fields if not requested.
+      field: cloud
+      if: ctx.tags != null && !ctx.tags.contains('elastic_cloud_data')
+      ignore_missing: true
+      ignore_failure: true
+
   - fail:
       tag: cel_failure
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -128,6 +153,7 @@ processors:
       field: cloud.instance.id
       tag: set_cloud_instance_id
       copy_from: qualys_vmdr.asset_host_detection.cloud_resource_id
+      if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - rename:
       field: json.CLOUD_SERVICE
@@ -138,6 +164,7 @@ processors:
       field: cloud.service.name
       tag: set_cloud_service_name
       copy_from: qualys_vmdr.asset_host_detection.cloud_service
+      if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - rename:
       field: json.CLOUD_PROVIDER
@@ -148,6 +175,7 @@ processors:
       field: cloud.provider
       tag: set_cloud_provider
       copy_from: qualys_vmdr.asset_host_detection.cloud_provider
+      if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - rename:
       field: json.QG_HOSTID
@@ -790,9 +818,11 @@ processors:
       lang: painless
       tag: cloud_provider_attributes
       if: >-
-        ctx.qualys_vmdr?.asset_host_detection?.metadata?.ec2?.attribute instanceof List ||
-        ctx.qualys_vmdr?.asset_host_detection?.metadata?.google?.attribute instanceof List ||
-        ctx.qualys_vmdr?.asset_host_detection?.metadata?.azure?.attribute instanceof List
+        ctx._conf?.want_provider_cloud == true && (
+          ctx.qualys_vmdr?.asset_host_detection?.metadata?.ec2?.attribute instanceof List ||
+          ctx.qualys_vmdr?.asset_host_detection?.metadata?.google?.attribute instanceof List ||
+          ctx.qualys_vmdr?.asset_host_detection?.metadata?.azure?.attribute instanceof List
+        )
       source: |-
         def accIDs = new ArrayList();
         def projIDs = new ArrayList();
@@ -916,6 +946,7 @@ processors:
   - set:
       field: cloud.instance.name
       copy_from: qualys_vmdr.asset_host_detection.dns_data.hostname
+      if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
 
   - script:
@@ -1519,6 +1550,7 @@ processors:
       field:
         - json
         - message
+        - _conf
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_FOUND_DATETIME
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_REOPENED_DATETIME
         - qualys_vmdr.asset_host_detection.vulnerability.IS_DISABLED
