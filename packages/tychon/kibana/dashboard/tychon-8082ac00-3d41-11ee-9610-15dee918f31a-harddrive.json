@@ -23,8 +23,13 @@
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-221c8cb0-1779-45ef-8d12-3923317e3366",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "2963b2fb-b8d0-4e9d-aeac-90b6cb96f4a0",
                                 "type": "index-pattern"
                             }
                         ],
@@ -63,10 +68,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "disk.manufacturer"
+                                                    "sourceField": "tychon.disk.manufacturer"
                                                 },
                                                 "317c7190-beca-4bee-80ad-791840ec4b41": {
                                                     "customLabel": true,
@@ -89,10 +95,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "disk.partition_style"
+                                                    "sourceField": "tychon.disk.partition_style"
                                                 },
                                                 "72a526ec-1d67-4606-a5ff-fecbe1b12ee6": {
                                                     "customLabel": true,
@@ -115,10 +122,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10000
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "disk.name"
+                                                    "sourceField": "tychon.disk.name"
                                                 },
                                                 "82052aa7-a5b0-4b79-9d2e-7f8ccc5808cf": {
                                                     "dataType": "number",
@@ -152,10 +160,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "disk.model"
+                                                    "sourceField": "tychon.disk.model"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -167,7 +176,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "2963b2fb-b8d0-4e9d-aeac-90b6cb96f4a0",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -205,8 +269,7 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 27,
@@ -217,16 +280,20 @@
                 },
                 "panelIndex": "b5ddabd8-3016-4232-b28b-06d714106a89",
                 "title": "Physical Disks",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-002038df-af67-4b41-9b1c-06b855c4713e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "160f21e7-c304-404a-88bb-95ad514ed25f",
                                 "type": "index-pattern"
                             }
                         ],
@@ -251,12 +318,12 @@
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "disk.size"
+                                                    "sourceField": "tychon.disk.size"
                                                 },
                                                 "9dffdf45-9da5-41d1-8c37-437e1d70306e": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of host.hardware.manufacturer",
+                                                    "label": "Top 10 values of tychon.host.hardware.manufacturer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -273,10 +340,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.hardware.manufacturer"
+                                                    "sourceField": "tychon.host.hardware.manufacturer"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -288,7 +356,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "160f21e7-c304-404a-88bb-95ad514ed25f",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -307,8 +430,7 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 17,
@@ -319,15 +441,14 @@
                 },
                 "panelIndex": "6859fbab-c985-4bfe-9100-8c5e5326021d",
                 "title": "Avg Disk Size by Manufacturer",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-488a6893-9138-46f9-adbe-e8ce2c47e8bd",
                                 "type": "index-pattern"
                             }
@@ -336,6 +457,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "488a6893-9138-46f9-adbe-e8ce2c47e8bd": {
                                             "columnOrder": [
@@ -359,7 +481,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "disk.size"
+                                                    "sourceField": "tychon.disk.size"
                                                 },
                                                 "d990970c-7e22-4928-805b-18a6962b6799": {
                                                     "customLabel": true,
@@ -372,7 +494,7 @@
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
-                                                        "missingBucket": false,
+                                                        "missingBucket": true,
                                                         "orderBy": {
                                                             "columnId": "6d005070-a8da-48b0-b946-da89fbabd90e",
                                                             "type": "column"
@@ -382,13 +504,15 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.os.platform"
+                                                    "sourceField": "tychon.host.os.platform"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 },
@@ -396,7 +520,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "fce618a0-6c1a-45f4-ad16-4fadef9241a7",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -416,8 +595,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 17,
@@ -427,16 +605,20 @@
                     "y": 0
                 },
                 "panelIndex": "cb0c8de2-4fd0-4911-9e61-adab9c11c090",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-6d559375-a858-4fbb-a7cf-2f8fe9e1c7f3",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "07f81739-b197-4452-8639-c2282e421ba7",
                                 "type": "index-pattern"
                             }
                         ],
@@ -466,7 +648,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "disk.system"
+                                                    "sourceField": "tychon.disk.system"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -478,7 +660,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "07f81739-b197-4452-8639-c2282e421ba7",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -541,8 +778,7 @@
                         "type": "lens",
                         "visualizationType": "lnsGauge"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 23,
@@ -552,16 +788,20 @@
                     "y": 17
                 },
                 "panelIndex": "db1eb37d-8675-44d1-891a-9a8a7c2e8ade",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-064d2f28-8ccf-4c45-a28e-5a5816cd7617",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "05d1a3aa-6999-40dc-9f44-309315998dbf",
                                 "type": "index-pattern"
                             }
                         ],
@@ -585,7 +825,7 @@
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "disk.boot_from"
+                                                    "sourceField": "tychon.disk.boot_from"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -596,7 +836,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "05d1a3aa-6999-40dc-9f44-309315998dbf",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -659,8 +954,7 @@
                         "type": "lens",
                         "visualizationType": "lnsGauge"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 23,
@@ -670,16 +964,20 @@
                     "y": 17
                 },
                 "panelIndex": "f85bb00e-3b05-48b5-a447-fb210ba95ff9",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-e8b77360-a165-4a1b-8178-1269a1ddcce0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5ea5f921-8de8-4220-8298-2c93a4dbb226",
                                 "type": "index-pattern"
                             }
                         ],
@@ -709,7 +1007,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "disk.clustered"
+                                                    "sourceField": "tychon.disk.clustered"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -720,7 +1018,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "5ea5f921-8de8-4220-8298-2c93a4dbb226",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -783,8 +1136,7 @@
                         "type": "lens",
                         "visualizationType": "lnsGauge"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 23,
@@ -794,16 +1146,20 @@
                     "y": 17
                 },
                 "panelIndex": "d401251f-ad81-4c51-9844-f7b09319b927",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-9c59f356-6617-4fb4-8d1d-0a31def292f8",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "541a1fc9-3025-476b-9098-6aee9badd690",
                                 "type": "index-pattern"
                             }
                         ],
@@ -827,7 +1183,7 @@
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "disk.highly_available"
+                                                    "sourceField": "tychon.disk.highly_available"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -838,7 +1194,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "541a1fc9-3025-476b-9098-6aee9badd690",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -901,8 +1312,7 @@
                         "type": "lens",
                         "visualizationType": "lnsGauge"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 23,
@@ -912,16 +1322,20 @@
                     "y": 17
                 },
                 "panelIndex": "3d2627b6-09a8-41ff-8e43-9deb9125cf9b",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-f62528d5-75c0-4261-a0e4-b78884ac618b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "e15f831e-0dbb-41c7-ae1b-ffeaa40a9d04",
                                 "type": "index-pattern"
                             }
                         ],
@@ -950,7 +1364,7 @@
                                                 "64a6a506-ad81-42bf-9fef-6df18bacd6c7": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of disk.health_status",
+                                                    "label": "Top 5 values of tychon.disk.health_status",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -967,10 +1381,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "disk.health_status"
+                                                    "sourceField": "tychon.disk.health_status"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -982,7 +1397,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "e15f831e-0dbb-41c7-ae1b-ffeaa40a9d04",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1018,8 +1488,7 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 13,
@@ -1030,16 +1499,20 @@
                 },
                 "panelIndex": "af88c038-d0f3-4189-acbc-4c61caca3bdb",
                 "title": "Overall drive health",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b6a3c283-b27e-4ea5-a36d-ff799f06dc70",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "69dfa4f4-707d-4362-bae7-61c47a8d208f",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1057,7 +1530,7 @@
                                                 "94813be9-4122-4d2d-a449-f24cc8a62167": {
                                                     "dataType": "boolean",
                                                     "isBucketed": true,
-                                                    "label": "Top 2 values of disk.offline",
+                                                    "label": "Top 2 values of tychon.disk.offline",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1074,10 +1547,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 2
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "disk.offline"
+                                                    "sourceField": "tychon.disk.offline"
                                                 },
                                                 "a3a8c58a-64ec-4424-a1dd-355a86f6f615": {
                                                     "dataType": "number",
@@ -1100,7 +1574,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "69dfa4f4-707d-4362-bae7-61c47a8d208f",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1136,8 +1665,7 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 13,
@@ -1148,16 +1676,20 @@
                 },
                 "panelIndex": "452aa111-8e0c-4403-9c94-3602ec607617",
                 "title": "Disk Offline",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
                             {
-                                "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-521e98b0-32d0-48f4-b3a8-1d5673af21ca",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ba1f3bd1-d7dc-4b0e-bdca-ee34af1f2ec8",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1175,7 +1707,7 @@
                                                 "0dea645b-ae9c-4d11-8a3f-6823e94f2e6d": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 2 values of disk.operational_status",
+                                                    "label": "Top 2 values of tychon.disk.operational_status",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1192,10 +1724,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 2
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "disk.operational_status"
+                                                    "sourceField": "tychon.disk.operational_status"
                                                 },
                                                 "c0892a53-0ed3-47c0-8dbc-03288c3acefa": {
                                                     "customLabel": true,
@@ -1207,7 +1740,7 @@
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "disk.serial_number"
+                                                    "sourceField": "tychon.disk.serial_number"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -1218,7 +1751,62 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "ba1f3bd1-d7dc-4b0e-bdca-ee34af1f2ec8",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.harddrive"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.harddrive"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1237,8 +1825,7 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 13,
@@ -1248,8 +1835,7 @@
                     "y": 27
                 },
                 "panelIndex": "56fbe10e-dff8-4436-8a42-588b38208cfc",
-                "type": "lens",
-                "version": "8.9.0"
+                "type": "lens"
             }
         ],
         "refreshInterval": {
@@ -1260,61 +1846,106 @@
         "timeRestore": true,
         "timeTo": "now",
         "title": "[TYCHON] Host Drives",
-        "version": 1
+        "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-07-25T15:34:12.480Z",
+    "created_at": "2024-07-28T17:01:20.974Z",
     "id": "tychon-8082ac00-3d41-11ee-9610-15dee918f31a-harddrive",
-    "managed": true,
+    "managed": false,
     "references": [
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
             "name": "b5ddabd8-3016-4232-b28b-06d714106a89:indexpattern-datasource-layer-221c8cb0-1779-45ef-8d12-3923317e3366",
             "type": "index-pattern"
         },
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
+            "name": "b5ddabd8-3016-4232-b28b-06d714106a89:2963b2fb-b8d0-4e9d-aeac-90b6cb96f4a0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "6859fbab-c985-4bfe-9100-8c5e5326021d:indexpattern-datasource-layer-002038df-af67-4b41-9b1c-06b855c4713e",
             "type": "index-pattern"
         },
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
+            "name": "6859fbab-c985-4bfe-9100-8c5e5326021d:160f21e7-c304-404a-88bb-95ad514ed25f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "cb0c8de2-4fd0-4911-9e61-adab9c11c090:indexpattern-datasource-layer-488a6893-9138-46f9-adbe-e8ce2c47e8bd",
             "type": "index-pattern"
         },
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
             "name": "db1eb37d-8675-44d1-891a-9a8a7c2e8ade:indexpattern-datasource-layer-6d559375-a858-4fbb-a7cf-2f8fe9e1c7f3",
             "type": "index-pattern"
         },
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
+            "name": "db1eb37d-8675-44d1-891a-9a8a7c2e8ade:07f81739-b197-4452-8639-c2282e421ba7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "f85bb00e-3b05-48b5-a447-fb210ba95ff9:indexpattern-datasource-layer-064d2f28-8ccf-4c45-a28e-5a5816cd7617",
             "type": "index-pattern"
         },
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
+            "name": "f85bb00e-3b05-48b5-a447-fb210ba95ff9:05d1a3aa-6999-40dc-9f44-309315998dbf",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "d401251f-ad81-4c51-9844-f7b09319b927:indexpattern-datasource-layer-e8b77360-a165-4a1b-8178-1269a1ddcce0",
             "type": "index-pattern"
         },
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
+            "name": "d401251f-ad81-4c51-9844-f7b09319b927:5ea5f921-8de8-4220-8298-2c93a4dbb226",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "3d2627b6-09a8-41ff-8e43-9deb9125cf9b:indexpattern-datasource-layer-9c59f356-6617-4fb4-8d1d-0a31def292f8",
             "type": "index-pattern"
         },
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
+            "name": "3d2627b6-09a8-41ff-8e43-9deb9125cf9b:541a1fc9-3025-476b-9098-6aee9badd690",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "af88c038-d0f3-4189-acbc-4c61caca3bdb:indexpattern-datasource-layer-f62528d5-75c0-4261-a0e4-b78884ac618b",
             "type": "index-pattern"
         },
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
+            "name": "af88c038-d0f3-4189-acbc-4c61caca3bdb:e15f831e-0dbb-41c7-ae1b-ffeaa40a9d04",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "452aa111-8e0c-4403-9c94-3602ec607617:indexpattern-datasource-layer-b6a3c283-b27e-4ea5-a36d-ff799f06dc70",
             "type": "index-pattern"
         },
         {
-            "id": "2dc584bc-c446-4150-b561-1415a45ebe87",
+            "id": "logs-*",
+            "name": "452aa111-8e0c-4403-9c94-3602ec607617:69dfa4f4-707d-4362-bae7-61c47a8d208f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "56fbe10e-dff8-4436-8a42-588b38208cfc:indexpattern-datasource-layer-521e98b0-32d0-48f4-b3a8-1d5673af21ca",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "56fbe10e-dff8-4436-8a42-588b38208cfc:ba1f3bd1-d7dc-4b0e-bdca-ee34af1f2ec8",
             "type": "index-pattern"
         }
     ],
