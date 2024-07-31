@@ -25,13 +25,13 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 Before using the Azure integration you will need:
 
-* One or more **Diagnostic setting** to export logs from Azure services to Event Hubs.
-* One or more **Event Hub** to store in-flight logs exported by Azure services and make them available to Elastic Agent.
+* One or more **diagnostic setting** to export logs from Azure services to Event Hubs.
+* One or more **event hub** to store in-flight logs exported by Azure services and make them available to Elastic Agent.
 * One **Storage Account Container** to store information about logs consumed by the Elastic Agent.
 
-### Diagnostic settings
+### Diagnostic Settings
 
-Azure Diagnostic settings allow you to export metrics and logs from a **source** service, or resource, to one **destination** for analysis and long-term storage.
+Azure diagnostic settings allow you to export metrics and logs from a **source** service, or resource, to one **destination** for analysis and long-term storage.
 
 ```text
    ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
@@ -46,7 +46,7 @@ Examples of source services:
 * Microsoft Entra ID
 * Spring Apps
 
-The Diagnostic settings support several destination types. The Elastic Agent requires a Diagnostic setting configured with Event Hub as the destination.
+The diagnostic settings support several destination types. The Elastic Agent requires a diagnostic settings configured with an event hub as the destination.
 
 ### Event Hub
 
@@ -57,7 +57,7 @@ Elastic Agent with the Azure Logs integration will consume logs from the Event H
 ```text
   ┌────────────────┐      ┌────────────┐
   │     adlogs     │      │  Elastic   │
-  │ <<event hub>>  │─────▶│   Agent    │
+  │ <<Event Hub>>  │─────▶│   Agent    │
   └────────────────┘      └────────────┘
 ```
 
@@ -72,7 +72,7 @@ The Azure Logs integration requires a Storage account container to work. The int
 ```text
   ┌────────────────┐                     ┌────────────┐
   │     adlogs     │        logs         │  Elastic   │
-  │ <<event hub>>  │────────────────────▶│   Agent    │
+  │ <<Event Hub>>  │────────────────────▶│   Agent    │
   └────────────────┘                     └────────────┘
                                                 │      
                        consumer group info      │      
@@ -99,25 +99,25 @@ Elastic strongly recommends installing the individual integrations ("Microsoft E
 
 Before adding the integration, you must complete the following tasks.
 
-### Create an event hub
+### Create an Event Hub
 
 The event hub receives the logs exported from the Azure service and makes them available to the Elastic Agent to pick up.
 
 Here's the high-level overview of the required steps:
 
 * Create a resource group, or select an existing one.
-* Create an event hubs namespace.
+* Create an Event Hubs namespace.
 * Create an event hub.
 
 For a detailed step-by-step guide, check the quickstart [Create an event hub using Azure portal](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create).
 
 Take note of the event hub **Name**, which you will use later when specifying an **eventhub** in the integration settings.
 
-#### Event hub namespace vs event hub
+#### Event Hubs Namespace vs Event Hub
 
-You should use the event hub name (not the event hub namespace name) as a value for the  **eventhub** option in the integration settings.
+You should use the event hub name (not the Event Hubs namespace name) as a value for the  **eventhub** option in the integration settings.
 
-If you are new to Event Hub, think of the event hub namespace as the cluster and the event hub as the topic. You will typically have one cluster and multiple topics.
+If you are new to Event Hubs, think of the Event Hubs namespace as the cluster and the event hub as the topic. You will typically have one cluster and multiple topics.
 
 If you are familiar with Kafka, here's a conceptual mapping between the two:
 
@@ -132,7 +132,7 @@ If you are familiar with Kafka, here's a conceptual mapping between the two:
 
 #### How many partitions?
 
-The number of partitions is essential to balance Event Hub cost and performance. 
+The number of partitions is essential to balance the event hub cost and performance. 
 
 Here are a few examples with one or multiple agents, with recommendations on picking the correct number of partitions for your use case.
 
@@ -200,11 +200,11 @@ The number of partitions must be at least the number of agents.
 
 Create an event hub with at least two partitions. Two partitions allow low-volume deployment to support high availability with two agents. Consider creating four partitions or more to handle medium-volume deployments with availability.
 
-To learn more about Event Hub partitions, read an in-depth guide from Microsoft at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create.
+To learn more about event hub partitions, read an in-depth guide from Microsoft at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create.
 
-To learn more about Event Hub partition from the performance perspective, check the scalability-focused document at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability#partitions.
+To learn more about event hub partition from the performance perspective, check the scalability-focused document at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability#partitions.
 
-#### How many event hubs?
+#### How many Event Hubs?
 
 Elastic strongly recommends creating one event hub for each Azure service you collect data from.
 
@@ -215,13 +215,13 @@ Here's an high-level diagram of the solution:
 ```text
   ┌───────────────┐   ┌──────────────┐   ┌───────────────┐
   │  MS Entra ID  │   │  Diagnostic  │   │     adlogs    │
-  │  <<service>>  │──▶│   settings   │──▶│ <<event hub>> │──┐
+  │  <<service>>  │──▶│   Settings   │──▶│ <<Event Hub>> │──┐
   └───────────────┘   └──────────────┘   └───────────────┘  │   ┌───────────┐
                                                             │   │  Elastic  │
                                                             ├──▶│   Agent   │
   ┌───────────────┐   ┌──────────────┐   ┌───────────────┐  │   └───────────┘
   │ Azure Monitor │   │  Diagnostic  │   │  activitylogs │  │
-  │  <<service>>  ├──▶│   settings   │──▶│ <<event hub>> │──┘
+  │  <<service>>  ├──▶│   Settings   │──▶│ <<Event Hub>> │──┘
   └───────────────┘   └──────────────┘   └───────────────┘
 ```
 
@@ -232,17 +232,17 @@ For high-volume deployments, we recommend one event hub for each data stream:
 ```text
                    ┌──────────────┐   ┌─────────────────────┐
                    │  Diagnostic  │   │   signin (adlogs)   │
-                ┌─▶│   settings   │──▶│    <<event hub>>    │──┐
+                ┌─▶│   Settings   │──▶│    <<Event Hub>>    │──┐
                 │  └──────────────┘   └─────────────────────┘  │
                 │                                              │
 ┌─────────────┐ │  ┌──────────────┐   ┌─────────────────────┐  │  ┌───────────┐
 │ MS Entra ID │ │  │  Diagnostic  │   │   audit (adlogs)    │  │  │  Elastic  │
-│ <<service>> │─┼─▶│   settings   │──▶│    <<event hub>>    │──┼─▶│   Agent   │
+│ <<service>> │─┼─▶│   Settings   │──▶│    <<Event Hub>>    │──┼─▶│   Agent   │
 └─────────────┘ │  └──────────────┘   └─────────────────────┘  │  └───────────┘
                 │                                              │
                 │  ┌──────────────┐   ┌─────────────────────┐  │
                 │  │  Diagnostic  │   │provisioning (adlogs)│  │
-                └─▶│   settings   │──▶│    <<event hub>>    │──┘
+                └─▶│   Settings   │──▶│    <<Event Hub>>    │──┘
                    └──────────────┘   └─────────────────────┘
 ```
 
@@ -260,7 +260,7 @@ In most cases, you can use the default consumer group named `$Default`. If `$Def
 
 The Elastic Agent requries a connection string to access the event hub and fetch the exported logs. The connection string contains details about the event hub used and the credentials required to access it.
 
-To get the connection string for your event hub namespace:
+To get the connection string for your Event Hubs namespace:
 
 1. Visit the **Event Hubs namespace** you created in a previous step.
 1. Select **Settings** > **Shared access policies**.
@@ -276,15 +276,15 @@ When the SAS Policy is ready, select it to display the information panel.
 
 Take note of the **Connection string–primary key**, which you will use later when specifying a **connection_string** in the integration settings.
 
-### Create a Diagnostic settings
+### Create a Diagnostic Settings
 
-The Diagnostic settings export the logs from Azure services to a destination and in order to use Azure Logs integration, it must be an Event Hub.
+The diagnostic settings export the logs from Azure services to a destination and in order to use Azure Logs integration, it must be an event hubb.
 
 To create a diagnostic settings to export logs:
 
-1. Locate the Diagnostic settings for the service (for example, Microsoft Entra ID).
-1. Select Diagnostic settings in the **Monitoring** section of the service. Note that different services may place the diagnostic settings in different positions.
-1. Select **Add diagnostic setting**.
+1. Locate the diagnostic settings for the service (for example, Microsoft Entra ID).
+1. Select diagnostic settings in the **Monitoring** section of the service. Note that different services may place the diagnostic settings in different positions.
+1. Select **Add diagnostic settings**.
 
 In the diagnostic settings page you have to select the source **log categories** you want to export and then select their **destination**.
 
@@ -294,12 +294,12 @@ Each Azure services exports a well-defined list of log categories. Check the ind
 
 #### Select the destination
 
-Select the **subscription** and the **event hub namespace** you previously created. Select the event hub dedicated to this integration.
+Select the **subscription** and the **Event Hubs namespace** you previously created. Select the event hub dedicated to this integration.
 
 ```text
   ┌───────────────┐   ┌──────────────┐   ┌───────────────┐      ┌───────────┐
   │  MS Entra ID  │   │  Diagnostic  │   │     adlogs    │      │  Elastic  │
-  │  <<service>>  ├──▶│   settings   │──▶│ <<event hub>> │─────▶│   Agent   │
+  │  <<service>>  ├──▶│   Settings   │──▶│ <<Event Hub>> │─────▶│   Agent   │
   └───────────────┘   └──────────────┘   └───────────────┘      └───────────┘
 ```
 
@@ -326,7 +326,7 @@ This is the final diagram of the a setup for collecting Activity logs from the A
 ```text
  ┌───────────────┐   ┌──────────────┐   ┌────────────────┐         ┌───────────┐
  │  MS Entra ID  │   │  Diagnostic  │   │     adlogs     │  logs   │  Elastic  │
- │  <<service>>  ├──▶│   settings   │──▶│ <<event hub>>  │────────▶│   Agent   │
+ │  <<service>>  ├──▶│   Settings   │──▶│ <<Event Hub>>  │────────▶│   Agent   │
  └───────────────┘   └──────────────┘   └────────────────┘         └───────────┘
                                                                           │     
                      ┌──────────────┐          consumer group info        │     
@@ -343,7 +343,7 @@ The Agent will use the integration name and the event hub name to identify the b
 
 ### Running the integration behind a firewall
 
-When you run the Elastic Agent behind a firewall, to ensure proper communication with the necessary components, you need to allow traffic on port `5671` and `5672` for the Event Hub, and port `443` for the Storage Account container.
+When you run the Elastic Agent behind a firewall, to ensure proper communication with the necessary components, you need to allow traffic on port `5671` and `5672` for the event hub, and port `443` for the Storage Account container.
 
 ```text
 ┌────────────────────────────────┐  ┌───────────────────┐  ┌───────────────────┐
@@ -373,7 +373,7 @@ When you run the Elastic Agent behind a firewall, to ensure proper communication
 
 #### Event Hub
 
-Port `5671` and `5672` are commonly used for secure communication with the Event Hub. These ports are used to receive events. By allowing traffic on these ports, the Elastic Agent can establish a secure connection with the Event Hub. 
+Port `5671` and `5672` are commonly used for secure communication with the event hub. These ports are used to receive events. By allowing traffic on these ports, the Elastic Agent can establish a secure connection with the event hub. 
 
 For more information, check the following documents:
 
@@ -400,7 +400,7 @@ Use the following settings to configure the Azure Logs integration when you add 
 
 `eventhub` :
 _string_
-A fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+A fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for event hub names to maximize compatibility. You can use existing event hubs having underscores (_) in the event hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the event hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store event hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -413,7 +413,7 @@ _string_
 
 The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) for more information.
 
-A Blob Storage account is required to store/retrieve/update the offset or state of the Event Hub messages. This allows the integration to start back up at the spot that it stopped processing messages.
+A Blob Storage account is required to store/retrieve/update the offset or state of the event hub messages. This allows the integration to start back up at the spot that it stopped processing messages.
 
 `storage_account` :
 _string_
