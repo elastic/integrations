@@ -202,7 +202,7 @@ Create an event hub with at least two partitions. Two partitions allow low-volum
 
 To learn more about Event Hub partitions, read an in-depth guide from Microsoft at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create.
 
-To learn more about Event Hub partition from the performance perspective, read the scalability-focused document at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability#partitions.
+To learn more about Event Hub partition from the performance perspective, check the scalability-focused document at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability#partitions.
 
 #### How many event hubs?
 
