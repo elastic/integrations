@@ -323,56 +323,75 @@ An example event for `tablespace` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-16T06:22:19.048Z",
+    "@timestamp": "2022-11-09T04:35:44.955Z",
     "agent": {
-        "ephemeral_id": "08f5dbe3-f515-4c7f-ab2c-711c048f294a",
-        "id": "08b0c5bb-472a-42be-9e47-d06e205296b9",
+        "ephemeral_id": "06655b4a-84cd-4c99-857e-4410a887f89f",
+        "id": "3316e565-c560-428d-8d26-638ac33c2dce",
         "name": "docker-custom-agent",
         "type": "metricbeat",
-        "version": "8.13.0"
+        "version": "8.4.3"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
+        }
     },
     "data_stream": {
         "dataset": "oracle.tablespace",
-        "namespace": "69805",
+        "namespace": "ep",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "08b0c5bb-472a-42be-9e47-d06e205296b9",
+        "id": "3316e565-c560-428d-8d26-638ac33c2dce",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.4.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "oracle.tablespace",
-        "duration": 1980031830,
-        "ingested": "2024-07-16T06:22:31Z",
+        "duration": 263268207,
+        "ingested": "2022-11-09T04:35:46Z",
         "module": "sql"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-custom-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "id": "702b305d5bf3433b8efe81033888bd28",
         "ip": [
-            "192.168.253.5",
-            "192.168.254.3"
+            "172.29.0.3",
+            "192.168.240.4"
         ],
         "mac": [
-            "02-42-C0-A8-FD-05",
-            "02-42-C0-A8-FE-03"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-custom-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "4.18.0-348.7.1.el8_5.x86_64",
+            "kernel": "5.4.0-1078-gcp",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -381,20 +400,37 @@ An example event for `tablespace` looks as following:
     },
     "oracle": {
         "tablespace": {
-            "extended_space": {
+            "data_file": {
+                "id": 3,
+                "name": "/u02/app/oracle/oradata/ORCL/sysaux01.dbf",
+                "online_status": "ONLINE",
+                "size": {
+                    "bytes": 723517440,
+                    "free": {
+                        "bytes": 722468864
+                    },
+                    "max": {
+                        "bytes": 34359721984
+                    }
+                },
+                "status": "AVAILABLE"
+            },
+            "name": "SYSAUX",
+            "space": {
                 "free": {
-                    "bytes": 32566738944
+                    "bytes": 23920640
                 },
                 "total": {
-                    "bytes": 32567787520
+                    "bytes": 1712324608
+                },
+                "used": {
+                    "bytes": 723517440
                 }
-            },
-            "name": "USERS",
-            "query_id": "0hxB8g4C+JnF8EuTG/7JQRJZ1oE="
+            }
         }
     },
     "service": {
-        "address": "oracle:1521/ORCLCDB.localdomain",
+        "address": "oracle:1521",
         "type": "sql"
     }
 }
