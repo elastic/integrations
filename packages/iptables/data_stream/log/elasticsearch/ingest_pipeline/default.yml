@@ -140,17 +140,11 @@ processors:
       field: observer.hostname
       copy_from: hostname
       if: ctx?.observer?.name == null && ctx?.hostname != null
-  - convert:
-      description: Set network.iana_number with numeric protocol values.
-      if: ctx?.network?.iana_number == null && ctx?.network?.transport != null
-      type: integer
+  - rename:
+      description: Rename network.transport to network.iana_number if it is a number.
+      if: ctx.network?.iana_number == null && ctx.network?.transport != null && ctx.network.transport.chars().allMatch(Character::isDigit)
       field: network.transport
       target_field: network.iana_number
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      if: ctx.network?.iana_number != null
-      field: network.transport
       ignore_missing: true
   - lowercase:
       field: network.transport
@@ -264,14 +258,6 @@ processors:
       ignore_failure: true
       icmp_type: iptables.icmp.type
       icmp_code: iptables.icmp.code
-  - convert:
-      description: Convert network.iana_number to string to comply with ecs.
-      if: ctx?.network?.iana_number != null && ctx.network.iana_number instanceof Integer
-      type: string
-      field: network.iana_number
-      target_field: network.iana_number
-      ignore_failure: true
-      ignore_missing: true
   - script:
       description: Convert bit fields to numbers.
       lang: painless
