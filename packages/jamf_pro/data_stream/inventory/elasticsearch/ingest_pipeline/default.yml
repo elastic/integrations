@@ -8,210 +8,48 @@ processors:
     target_field: "_id"
     ignore_missing: true
 
+- script:
+    description: Convert Additional Info keys to snake case.
+    tag: additional-info-keys-to-snake-case
+    lang: painless
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+    source: |
+      Map keysToSnakeCase(Map m) {
+        def regex = /_?([a-z])([A-Z]+)/;
+        def snakeCaseMap = [:];
+
+        for (entry in m.entrySet()) {
+          def k = entry.getKey();
+          def v = entry.getValue();
+
+          if (v instanceof Map) {
+            v = keysToSnakeCase(v);
+          } else if (v instanceof List) {
+            for (int i = 0; i < v.size(); i++) {
+              def item = v.get(i);
+              if (item instanceof Map) {
+                v.set(i, keysToSnakeCase(item));
+              }
+            }
+          }
+
+          k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+          snakeCaseMap.put(k, v);
+        }
+        return snakeCaseMap;
+      }
+            
+      if(ctx.message != null) {
+        ctx.message = keysToSnakeCase(ctx.message);
+      }
+
 - rename:
     field: message
     target_field: jamf_pro.inventory
 
-- rename:
-    field: jamf_pro.inventory.general.lastIpAddress
-    target_field: jamf_pro.inventory.general.last_ip_address
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.lastReportedIp
-    target_field: jamf_pro.inventory.general.last_reported_ip
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.jamfBinaryVersion
-    target_field: jamf_pro.inventory.general.jamf_binary_version
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.remoteManagement.managed
-    target_field: jamf_pro.inventory.general.remote_management.managed
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.remoteManagement.managementUsername
-    target_field: jamf_pro.inventory.general.remote_management.management_username
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.mdmCapable.capable
-    target_field: jamf_pro.inventory.general.mdm_capable.capable
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.mdmCapable.capableUsers
-    target_field: jamf_pro.inventory.general.mdm_capable.capable_users
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.reportDate
-    target_field: jamf_pro.inventory.general.report_date
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.lastContactTime
-    target_field: jamf_pro.inventory.general.last_contact_time
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.lastEnrolledDate
-    target_field: jamf_pro.inventory.general.last_enrolled_date
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.initialEntryDate
-    target_field: jamf_pro.inventory.general.initial_entry_date
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.itunesStoreAccountActive
-    target_field: jamf_pro.inventory.general.itunes_store_account_active
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.enrolledViaAutomatedDeviceEnrollment
-    target_field: jamf_pro.inventory.general.enrolled_via_automated_device_enrollment
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.userApprovedMdm
-    target_field: jamf_pro.inventory.general.user_approved_mdm
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.declarativeDeviceManagementEnabled
-    target_field: jamf_pro.inventory.general.declarative_device_management_enabled
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.general.managementId
-    target_field: jamf_pro.inventory.general.management_id
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.diskEncryption.individualRecoveryKeyValidityStatus
-    target_field: jamf_pro.inventory.disk_encryption.individual_recovery_key_validity_status
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.diskEncryption.institutionalRecoveryKeyPresent
-    target_field: jamf_pro.inventory.disk_encryption.institutional_recovery_key_present
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.diskEncryption.fileVault2EnabledUserNames
-    target_field: jamf_pro.inventory.disk_encryption.file_vault2_enabled_user_names
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.localUserAccounts
-    target_field: jamf_pro.inventory.local_user_accounts
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.storage.bootDriveAvailableSpaceMegabytes
-    target_field: jamf_pro.inventory.storage.boot_drive_available_space_megabytes
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.userAndLocation
-    target_field: jamf_pro.inventory.user_and_location
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.modelIdentifier
-    target_field: jamf_pro.inventory.hardware.model_identifier
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.serialNumber
-    target_field: jamf_pro.inventory.hardware.serial_number
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.processorSpeedMhz
-    target_field: jamf_pro.inventory.hardware.processor_speed_mhz
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.processorCount
-    target_field: jamf_pro.inventory.hardware.processor_count
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.coreCount
-    target_field: jamf_pro.inventory.hardware.core_count
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.processorType
-    target_field: jamf_pro.inventory.hardware.processor_type
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.processorArchitecture
-    target_field: jamf_pro.inventory.hardware.processor_architecture
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.busSpeedMhz
-    target_field: jamf_pro.inventory.hardware.bus_speed_mhz
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.cacheSizeKilobytes
-    target_field: jamf_pro.inventory.hardware.cache_size_kilobytes
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.networkAdapterType
-    target_field: jamf_pro.inventory.hardware.network_adapter_type
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.macAddress
-    target_field: jamf_pro.inventory.hardware.mac_address
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.altNetworkAdapterType
-    target_field: jamf_pro.inventory.hardware.alt_network_adapter_type
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.altMacAddress
-    target_field: jamf_pro.inventory.hardware.alt_mac_address
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.totalRamMegabytes
-    target_field: jamf_pro.inventory.hardware.total_ram_megabytes
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.openRamSlots
-    target_field: jamf_pro.inventory.hardware.open_ram_slots
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.batteryCapacityPercent
-    target_field: jamf_pro.inventory.hardware.battery_capacity_percent
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.smcVersion
-    target_field: jamf_pro.inventory.hardware.smc_version
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.nicSpeed
-    target_field: jamf_pro.inventory.hardware.nic_speed
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.opticalDrive
-    target_field: jamf_pro.inventory.hardware.optical_drive
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.bootRom
-    target_field: jamf_pro.inventory.hardware.boot_rom
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.bleCapable
-    target_field: jamf_pro.inventory.hardware.ble_capable
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.supportsIosAppInstalls
-    target_field: jamf_pro.inventory.hardware.supports_ios_app_installs
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.appleSilicon
-    target_field: jamf_pro.inventory.hardware.apple_silicon
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.hardware.extensionAttributes
-    target_field: jamf_pro.inventory.hardware.extension_attributes
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.security.sipStatus
-    target_field: jamf_pro.inventory.security.sip_status
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.security.gatekeeperStatus
-    target_field: jamf_pro.inventory.security.gatekeeper_status
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.operatingSystem
-    target_field: jamf_pro.inventory.operating_system
-    ignore_missing: true
-- rename:
-    field: jamf_pro.inventory.softwareUpdates
-    target_field: jamf_pro.inventory.software_updates
-    ignore_missing: true
 
 on_failure:
 - set:          
