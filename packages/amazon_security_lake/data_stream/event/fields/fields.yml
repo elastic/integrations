@@ -10,6 +10,12 @@
     - name: activity_name
       type: keyword
       description: The event activity name, as defined by the activity_id.
+    - name: action_id
+      type: integer
+      description: The action taken by a control or other policy-based system leading to an outcome or disposition. Dispositions conform to an action of 1 'Allowed' or 2 'Denied' in most cases.
+    - name: action
+      type: keyword
+      description: The normalized caption of action_id.
     - name: actual_permissions
       type: long
       description: The permissions that were granted to the in a platform-native format.
@@ -210,6 +216,48 @@
     - name: auth_protocol_id
       type: keyword
       description: The normalized identifier of the authentication protocol used to create the user session.
+    - name: authorizations
+      type: group
+      fields:
+        - name: decision
+          type: keyword
+          description: Authorization Result/outcome, e.g. allowed, denied.
+        - name: policy
+          type: group
+          fields:
+            - name: desc
+              type: keyword
+              description: The description of the policy.
+            - name: group
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                - name: desc
+                  type: keyword
+                  description: The group description.
+                - name: name
+                  type: keyword
+                  description: The group name.
+                - name: privileges
+                  type: keyword
+                  description: The group privileges.
+                - name: type
+                  type: keyword
+                  description: The type of the group or account.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+            - name: name
+              type: keyword
+              description: 'The policy name. For example: IAM Policy.'
+            - name: uid
+              type: keyword
+              description: A unique identifier of the policy instance.
+            - name: version
+              type: keyword
+              description: The policy version number.
     - name: banner
       type: keyword
       description: The initial SMTP connection response that a messaging server receives after it connects to a email server.
@@ -504,6 +552,9 @@
         - name: autoscale_uid
           type: keyword
           description: The unique identifier of the cloud autoscale configuration.
+        - name: container
+          type: flattened
+          description: The information describing an instance of a container.
         - name: created_time
           type: date
           description: The time when the device was known to have been created.
@@ -714,6 +765,9 @@
         - name: name
           type: keyword
           description: The alternate device name, ordinarily as assigned by an administrator. The Name could be any other string that helps to identify the device, such as a phone number; for example 310-555-1234.
+        - name: namespace_pid
+          type: integer
+          description: If running under a process namespace (such as in a container), the process identifier within that process namespace.
         - name: network_interfaces
           type: group
           fields:
@@ -1303,87 +1357,6 @@
             - name: xattributes
               type: flattened
               description: An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute.
-    - name: dst_endpoint
-      type: group
-      fields:
-        - name: domain
-          type: keyword
-          description: The name of the domain.
-        - name: hostname
-          type: keyword
-          description: The fully qualified name of the endpoint.
-        - name: instance_uid
-          type: keyword
-          description: The unique identifier of a VM instance.
-        - name: interface_name
-          type: keyword
-          description: The name of the network interface (e.g. eth2).
-        - name: interface_uid
-          type: keyword
-          description: The unique identifier of the network interface.
-        - name: intermediate_ips
-          type: ip
-          description: The intermediate IP Addresses. For example, the IP addresses in the HTTP X-Forwarded-For header.
-        - name: ip
-          type: ip
-          description: The IP address of the endpoint, in either IPv4 or IPv6 format.
-        - name: location
-          type: group
-          fields:
-            - name: city
-              type: keyword
-              description: The name of the city.
-            - name: continent
-              type: keyword
-              description: The name of the continent.
-            - name: coordinates
-              type: geo_point
-              description: A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON.
-            - name: country
-              type: keyword
-              description: The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized.
-            - name: desc
-              type: keyword
-              description: The description of the geographical location.
-            - name: is_on_premises
-              type: boolean
-              description: The indication of whether the location is on premises.
-            - name: isp
-              type: keyword
-              description: The name of the Internet Service Provider (ISP).
-            - name: postal_code
-              type: keyword
-              description: The postal code of the location.
-            - name: provider
-              type: keyword
-              description: The provider of the geographical location data.
-            - name: region
-              type: keyword
-              description: The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US.
-        - name: mac
-          type: keyword
-          description: The Media Access Control (MAC) address of the endpoint.
-        - name: name
-          type: keyword
-          description: The short name of the endpoint.
-        - name: port
-          type: long
-          description: The port used for communication within the network connection.
-        - name: subnet_uid
-          type: keyword
-          description: The unique identifier of a virtual subnet.
-        - name: svc_name
-          type: keyword
-          description: The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service.
-        - name: uid
-          type: keyword
-          description: The unique identifier of the endpoint.
-        - name: vlan_uid
-          type: keyword
-          description: The Virtual LAN identifier.
-        - name: vpc_uid
-          type: keyword
-          description: The unique identifier of the Virtual Private Cloud (VPC).
     - name: duration
       type: long
       description: The event duration or aggregate time, the amount of time the event covers from start_time to end_time in milliseconds.
@@ -2605,6 +2578,9 @@
     - name: finding_info
       type: flattened
       description: Describes the supporting information about a generated finding.
+    - name: firewall_rule
+      type: flattened
+      description: The firewall rule that triggered the event.
     - name: group
       type: group
       fields:
@@ -2779,6 +2755,9 @@
     - name: lease_dur
       type: long
       description: This represents the length of the DHCP lease in seconds. This is present in DHCP Ack events. (activity_id = 1)
+    - name: load_balancer
+      type: flattened
+      description: The Load Balancer object contains information related to the device that is distributing incoming traffic to specified destinations.
     - name: logon_type
       type: keyword
       description: The logon type, normalized to the caption of the logon_type_id value. In the case of 'Other', it is defined by the event source.
@@ -3530,93 +3509,30 @@
     - name: port
       type: long
       description: The dynamic port established for impending data transfers.
+    - name: precision
+      type: integer
+      description: The NTP precision quantifies a clock's accuracy and stability in log2 seconds, as defined in RFC-5905.
     - name: privileges
       type: keyword
       description: The list of sensitive privileges, assigned to the new user session.
     - name: protocol_ver
       type: keyword
       description: The Protocol version.
-    - name: proxy
-      type: group
-      fields:
-        - name: domain
-          type: keyword
-          description: The name of the domain.
-        - name: hostname
-          type: keyword
-          description: The fully qualified name of the endpoint.
-        - name: instance_uid
-          type: keyword
-          description: The unique identifier of a VM instance.
-        - name: interface_name
-          type: keyword
-          description: The name of the network interface (e.g. eth2).
-        - name: interface_uid
-          type: keyword
-          description: The unique identifier of the network interface.
-        - name: intermediate_ips
-          type: ip
-          description: The intermediate IP Addresses. For example, the IP addresses in the HTTP X-Forwarded-For header.
-        - name: ip
-          type: ip
-          description: The IP address of the endpoint, in either IPv4 or IPv6 format.
-        - name: location
-          type: group
-          fields:
-            - name: city
-              type: keyword
-              description: The name of the city.
-            - name: continent
-              type: keyword
-              description: The name of the continent.
-            - name: coordinates
-              type: geo_point
-              description: A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON.
-            - name: country
-              type: keyword
-              description: The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized.
-            - name: desc
-              type: keyword
-              description: The description of the geographical location.
-            - name: is_on_premises
-              type: boolean
-              description: The indication of whether the location is on premises.
-            - name: isp
-              type: keyword
-              description: The name of the Internet Service Provider (ISP).
-            - name: postal_code
-              type: keyword
-              description: The postal code of the location.
-            - name: provider
-              type: keyword
-              description: The provider of the geographical location data.
-            - name: region
-              type: keyword
-              description: The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US.
-        - name: mac
-          type: keyword
-          description: The Media Access Control (MAC) address of the endpoint.
-        - name: name
-          type: keyword
-          description: The short name of the endpoint.
-        - name: port
-          type: long
-          description: The port used for communication within the network connection.
-        - name: subnet_uid
-          type: keyword
-          description: The unique identifier of a virtual subnet.
-        - name: svc_name
-          type: keyword
-          description: The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service.
-        - name: uid
-          type: keyword
-          description: The unique identifier of the endpoint.
-        - name: vlan_uid
-          type: keyword
-          description: The Virtual LAN identifier.
-        - name: vpc_uid
-          type: keyword
-          description: The unique identifier of the Virtual Private Cloud (VPC).
+    - name: proxy_connection_info
+      type: flattened
+      description: The connection information from the proxy server to the remote server.
+    - name: proxy_http_request
+      type: flattened
+      description: The HTTP Request from the proxy server to the remote server.
+    - name: proxy_http_response
+      type: flattened
+      description: The HTTP Response from the remote server to the proxy server.
+    - name: proxy_tls
+      type: flattened
+      description: The TLS protocol negotiated between the proxy server and the remote server.
+    - name: proxy_traffic
+      type: flattened
+      description: The network traffic refers to the amount of data moving across a network, from proxy to remote server at a given point of time.
     - name: query
       type: group
       fields:
@@ -3960,87 +3876,6 @@
     - name: smtp_hello
       type: keyword
       description: The value of the SMTP HELO or EHLO command sent by the initiator (client).
-    - name: src_endpoint
-      type: group
-      fields:
-        - name: domain
-          type: keyword
-          description: The name of the domain.
-        - name: hostname
-          type: keyword
-          description: The fully qualified name of the endpoint.
-        - name: instance_uid
-          type: keyword
-          description: The unique identifier of a VM instance.
-        - name: interface_name
-          type: keyword
-          description: The name of the network interface (e.g. eth2).
-        - name: interface_uid
-          type: keyword
-          description: The unique identifier of the network interface.
-        - name: intermediate_ips
-          type: ip
-          description: The intermediate IP Addresses. For example, the IP addresses in the HTTP X-Forwarded-For header.
-        - name: ip
-          type: ip
-          description: The IP address of the endpoint, in either IPv4 or IPv6 format.
-        - name: location
-          type: group
-          fields:
-            - name: city
-              type: keyword
-              description: The name of the city.
-            - name: continent
-              type: keyword
-              description: The name of the continent.
-            - name: coordinates
-              type: geo_point
-              description: A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON.
-            - name: country
-              type: keyword
-              description: The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized.
-            - name: desc
-              type: keyword
-              description: The description of the geographical location.
-            - name: is_on_premises
-              type: boolean
-              description: The indication of whether the location is on premises.
-            - name: isp
-              type: keyword
-              description: The name of the Internet Service Provider (ISP).
-            - name: postal_code
-              type: keyword
-              description: The postal code of the location.
-            - name: provider
-              type: keyword
-              description: The provider of the geographical location data.
-            - name: region
-              type: keyword
-              description: The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US.
-        - name: mac
-          type: keyword
-          description: The Media Access Control (MAC) address of the endpoint.
-        - name: name
-          type: keyword
-          description: The short name of the endpoint.
-        - name: port
-          type: long
-          description: The port used for communication within the network connection.
-        - name: subnet_uid
-          type: keyword
-          description: The unique identifier of a virtual subnet.
-        - name: svc_name
-          type: keyword
-          description: The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service.
-        - name: uid
-          type: keyword
-          description: The unique identifier of the endpoint.
-        - name: vlan_uid
-          type: keyword
-          description: The Virtual LAN identifier.
-        - name: vpc_uid
-          type: keyword
-          description: The unique identifier of the Virtual Private Cloud (VPC).
     - name: start_time
       type: date
       description: The start time of a time period, or the time of the least recent event included in the aggregate event.
@@ -4065,6 +3900,12 @@
     - name: status_id
       type: keyword
       description: The normalized identifier of the event status.
+    - name: stratum_id
+      type: integer
+      description: The normalized identifier of the stratum level, as defined in RFC-5905.
+    - name: stratum
+      type: keyword
+      description: The stratum level of the NTP server's time source, normalized to the caption of the stratum_id value.
     - name: time
       type: date
       description: The normalized event occurrence time.
@@ -4338,6 +4179,9 @@
         - name: uid_alt
           type: keyword
           description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+    - name: version
+      type: keyword
+      description: The version number of the NTP protocol.
     - name: web_resources
       type: group
       fields:

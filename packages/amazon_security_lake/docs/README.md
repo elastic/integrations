@@ -84,6 +84,8 @@ This is the `Event` dataset.
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | ocsf.access_mask | The access mask in a platform-native format. | long |
+| ocsf.action | The normalized caption of action_id. | keyword |
+| ocsf.action_id | The action taken by a control or other policy-based system leading to an outcome or disposition. Dispositions conform to an action of 1 'Allowed' or 2 'Denied' in most cases. | integer |
 | ocsf.activity_id | The normalized identifier of the activity that triggered the event. | keyword |
 | ocsf.activity_name | The event activity name, as defined by the activity_id. | keyword |
 | ocsf.actor.authorizations.decision | Authorization Result/outcome, e.g. allowed, denied. | keyword |
@@ -654,6 +656,17 @@ This is the `Event` dataset.
 | ocsf.attempt | The attempt number for attempting to deliver the email. | long |
 | ocsf.auth_protocol | The authentication protocol as defined by the caption of 'auth_protocol_id'. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.auth_protocol_id | The normalized identifier of the authentication protocol used to create the user session. | keyword |
+| ocsf.authorizations.decision | Authorization Result/outcome, e.g. allowed, denied. | keyword |
+| ocsf.authorizations.policy.desc | The description of the policy. | keyword |
+| ocsf.authorizations.policy.group.desc | The group description. | keyword |
+| ocsf.authorizations.policy.group.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
+| ocsf.authorizations.policy.group.name | The group name. | keyword |
+| ocsf.authorizations.policy.group.privileges | The group privileges. | keyword |
+| ocsf.authorizations.policy.group.type | The type of the group or account. | keyword |
+| ocsf.authorizations.policy.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.authorizations.policy.name | The policy name. For example: IAM Policy. | keyword |
+| ocsf.authorizations.policy.uid | A unique identifier of the policy instance. | keyword |
+| ocsf.authorizations.policy.version | The policy version number. | keyword |
 | ocsf.banner | The initial SMTP connection response that a messaging server receives after it connects to a email server. | keyword |
 | ocsf.base_address | The memory address that was access or requested. | keyword |
 | ocsf.capabilities | A list of RDP capabilities. | keyword |
@@ -736,6 +749,7 @@ This is the `Event` dataset.
 | ocsf.dce_rpc.rpc_interface.uuid | The unique identifier of the particular remote procedure or service. | keyword |
 | ocsf.dce_rpc.rpc_interface.version | The version of the DCE/RPC protocol being used in the session. | keyword |
 | ocsf.device.autoscale_uid | The unique identifier of the cloud autoscale configuration. | keyword |
+| ocsf.device.container | The information describing an instance of a container. | flattened |
 | ocsf.device.created_time | The time when the device was known to have been created. | date |
 | ocsf.device.created_time_dt | TThe time when the device was known to have been created. | date |
 | ocsf.device.desc | The description of the device, ordinarily as reported by the operating system. | keyword |
@@ -800,6 +814,7 @@ This is the `Event` dataset.
 | ocsf.device.modified_time | The time when the device was last known to have been modified. | date |
 | ocsf.device.modified_time_dt | The time when the device was last known to have been modified. | date |
 | ocsf.device.name | The alternate device name, ordinarily as assigned by an administrator. The Name could be any other string that helps to identify the device, such as a phone number; for example 310-555-1234. | keyword |
+| ocsf.device.namespace_pid | If running under a process namespace (such as in a container), the process identifier within that process namespace. | integer |
 | ocsf.device.network_interfaces.hostname | The hostname associated with the network interface. | keyword |
 | ocsf.device.network_interfaces.ip | The IP address associated with the network interface. | ip |
 | ocsf.device.network_interfaces.mac | The MAC address of the network interface. | keyword |
@@ -971,8 +986,10 @@ This is the `Event` dataset.
 | ocsf.driver.file.uid | The unique identifier of the file as defined by the storage system, such the file system file ID. | keyword |
 | ocsf.driver.file.version | The file version. For example: 8.0.7601.17514. | keyword |
 | ocsf.driver.file.xattributes | An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute. | flattened |
+| ocsf.dst_endpoint.container | The information describing an instance of a container. | flattened |
 | ocsf.dst_endpoint.domain | The name of the domain. | keyword |
 | ocsf.dst_endpoint.hostname | The fully qualified name of the endpoint. | keyword |
+| ocsf.dst_endpoint.hw_info | The endpoint hardware information. | flattened |
 | ocsf.dst_endpoint.instance_uid | The unique identifier of a VM instance. | keyword |
 | ocsf.dst_endpoint.interface_name | The name of the network interface (e.g. eth2). | keyword |
 | ocsf.dst_endpoint.interface_uid | The unique identifier of the network interface. | keyword |
@@ -990,12 +1007,18 @@ This is the `Event` dataset.
 | ocsf.dst_endpoint.location.region | The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US. | keyword |
 | ocsf.dst_endpoint.mac | The Media Access Control (MAC) address of the endpoint. | keyword |
 | ocsf.dst_endpoint.name | The short name of the endpoint. | keyword |
+| ocsf.dst_endpoint.namespace_pid | If running under a process namespace (such as in a container), the process identifier within that process namespace. | integer |
+| ocsf.dst_endpoint.os | The endpoint operating system. | flattened |
 | ocsf.dst_endpoint.port | The port used for communication within the network connection. | long |
+| ocsf.dst_endpoint.proxy_endpoint | The network proxy information pertaining to a specific endpoint. This can be used to describe information pertaining to network address translation (NAT). | flattened |
 | ocsf.dst_endpoint.subnet_uid | The unique identifier of a virtual subnet. | keyword |
 | ocsf.dst_endpoint.svc_name | The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service. | keyword |
+| ocsf.dst_endpoint.type | The network endpoint type. For example, unknown, server, desktop, laptop, tablet, mobile, virtual, browser, or other. | keyword |
+| ocsf.dst_endpoint.type_id | The network endpoint type ID. | integer |
 | ocsf.dst_endpoint.uid | The unique identifier of the endpoint. | keyword |
 | ocsf.dst_endpoint.vlan_uid | The Virtual LAN identifier. | keyword |
 | ocsf.dst_endpoint.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.dst_endpoint.zone | The network zone or LAN segment. | keyword |
 | ocsf.duration | The event duration or aggregate time, the amount of time the event covers from start_time to end_time in milliseconds. | long |
 | ocsf.email.cc | The email header Cc values, as defined by RFC 5322. | keyword |
 | ocsf.email.delivered_to | The Delivered-To email header field. | keyword |
@@ -1347,6 +1370,7 @@ This is the `Event` dataset.
 | ocsf.finding.types | One or more types of the reported finding. | keyword |
 | ocsf.finding.uid | The unique identifier of the reported finding. | keyword |
 | ocsf.finding_info | Describes the supporting information about a generated finding. | flattened |
+| ocsf.firewall_rule | The firewall rule that triggered the event. | flattened |
 | ocsf.group.desc | The group description. | keyword |
 | ocsf.group.name | The group name. | keyword |
 | ocsf.group.privileges | The group privileges. | keyword |
@@ -1398,6 +1422,7 @@ This is the `Event` dataset.
 | ocsf.kill_chain.phase | The cyber kill chain phase. | keyword |
 | ocsf.kill_chain.phase_id | The cyber kill chain phase identifier. | keyword |
 | ocsf.lease_dur | This represents the length of the DHCP lease in seconds. This is present in DHCP Ack events. (activity_id = 1) | long |
+| ocsf.load_balancer | The Load Balancer object contains information related to the device that is distributing incoming traffic to specified destinations. | flattened |
 | ocsf.logon_type | The logon type, normalized to the caption of the logon_type_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.logon_type_id | The normalized logon type identifier | keyword |
 | ocsf.malware.classification_ids | The list of normalized identifiers of the malware classifications. | keyword |
@@ -1614,6 +1639,7 @@ This is the `Event` dataset.
 | ocsf.observables.value | The value associated with the observable attribute. | keyword |
 | ocsf.open_type | Indicates how the file was opened (e.g. normal, delete on close). | keyword |
 | ocsf.port | The dynamic port established for impending data transfers. | long |
+| ocsf.precision | The NTP precision quantifies a clock's accuracy and stability in log2 seconds, as defined in RFC-5905. | integer |
 | ocsf.privileges | The list of sensitive privileges, assigned to the new user session. | keyword |
 | ocsf.protocol_ver | The Protocol version. | keyword |
 | ocsf.proxy.domain | The name of the domain. | keyword |
@@ -1641,6 +1667,44 @@ This is the `Event` dataset.
 | ocsf.proxy.uid | The unique identifier of the endpoint. | keyword |
 | ocsf.proxy.vlan_uid | The Virtual LAN identifier. | keyword |
 | ocsf.proxy.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.proxy_connection_info | The connection information from the proxy server to the remote server. | flattened |
+| ocsf.proxy_endpoint.container | The information describing an instance of a container. | flattened |
+| ocsf.proxy_endpoint.domain | The name of the domain. | keyword |
+| ocsf.proxy_endpoint.hostname | The fully qualified name of the endpoint. | keyword |
+| ocsf.proxy_endpoint.hw_info | The endpoint hardware information. | flattened |
+| ocsf.proxy_endpoint.instance_uid | The unique identifier of a VM instance. | keyword |
+| ocsf.proxy_endpoint.interface_name | The name of the network interface (e.g. eth2). | keyword |
+| ocsf.proxy_endpoint.interface_uid | The unique identifier of the network interface. | keyword |
+| ocsf.proxy_endpoint.intermediate_ips | The intermediate IP Addresses. For example, the IP addresses in the HTTP X-Forwarded-For header. | ip |
+| ocsf.proxy_endpoint.ip | The IP address of the endpoint, in either IPv4 or IPv6 format. | ip |
+| ocsf.proxy_endpoint.location.city | The name of the city. | keyword |
+| ocsf.proxy_endpoint.location.continent | The name of the continent. | keyword |
+| ocsf.proxy_endpoint.location.coordinates | A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON. | geo_point |
+| ocsf.proxy_endpoint.location.country | The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized. | keyword |
+| ocsf.proxy_endpoint.location.desc | The description of the geographical location. | keyword |
+| ocsf.proxy_endpoint.location.is_on_premises | The indication of whether the location is on premises. | boolean |
+| ocsf.proxy_endpoint.location.isp | The name of the Internet Service Provider (ISP). | keyword |
+| ocsf.proxy_endpoint.location.postal_code | The postal code of the location. | keyword |
+| ocsf.proxy_endpoint.location.provider | The provider of the geographical location data. | keyword |
+| ocsf.proxy_endpoint.location.region | The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US. | keyword |
+| ocsf.proxy_endpoint.mac | The Media Access Control (MAC) address of the endpoint. | keyword |
+| ocsf.proxy_endpoint.name | The short name of the endpoint. | keyword |
+| ocsf.proxy_endpoint.namespace_pid | If running under a process namespace (such as in a container), the process identifier within that process namespace. | integer |
+| ocsf.proxy_endpoint.os | The endpoint operating system. | flattened |
+| ocsf.proxy_endpoint.port | The port used for communication within the network connection. | long |
+| ocsf.proxy_endpoint.proxy_endpoint | The network proxy information pertaining to a specific endpoint. This can be used to describe information pertaining to network address translation (NAT). | flattened |
+| ocsf.proxy_endpoint.subnet_uid | The unique identifier of a virtual subnet. | keyword |
+| ocsf.proxy_endpoint.svc_name | The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service. | keyword |
+| ocsf.proxy_endpoint.type | The network endpoint type. For example, unknown, server, desktop, laptop, tablet, mobile, virtual, browser, or other. | keyword |
+| ocsf.proxy_endpoint.type_id | The network endpoint type ID. | integer |
+| ocsf.proxy_endpoint.uid | The unique identifier of the endpoint. | keyword |
+| ocsf.proxy_endpoint.vlan_uid | The Virtual LAN identifier. | keyword |
+| ocsf.proxy_endpoint.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.proxy_endpoint.zone | The network zone or LAN segment. | keyword |
+| ocsf.proxy_http_request | The HTTP Request from the proxy server to the remote server. | flattened |
+| ocsf.proxy_http_response | The HTTP Response from the remote server to the proxy server. | flattened |
+| ocsf.proxy_tls | The TLS protocol negotiated between the proxy server and the remote server. | flattened |
+| ocsf.proxy_traffic | The network traffic refers to the amount of data moving across a network, from proxy to remote server at a given point of time. | flattened |
 | ocsf.query.class | The class of resource records being queried. See RFC1035. For example: IN. | keyword |
 | ocsf.query.hostname | The hostname or domain being queried. For example: www.example.com | keyword |
 | ocsf.query.opcode | The DNS opcode specifies the type of the query message. | keyword |
@@ -1680,6 +1744,7 @@ This is the `Event` dataset.
 | ocsf.resource.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.resource.labels | The list of labels/tags associated to a resource. | keyword |
 | ocsf.resource.name | The name of the resource. | keyword |
+| ocsf.resource.namespace | The resource namespace. | keyword |
 | ocsf.resource.owner.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.resource.owner.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.resource.owner.account.type_id | The normalized account type identifier. | keyword |
@@ -1777,8 +1842,10 @@ This is the `Event` dataset.
 | ocsf.share_type_id | The normalized identifier of the SMB share type. | keyword |
 | ocsf.size | The memory size that was access or requested. | long |
 | ocsf.smtp_hello | The value of the SMTP HELO or EHLO command sent by the initiator (client). | keyword |
+| ocsf.src_endpoint.container | The information describing an instance of a container. | flattened |
 | ocsf.src_endpoint.domain | The name of the domain. | keyword |
 | ocsf.src_endpoint.hostname | The fully qualified name of the endpoint. | keyword |
+| ocsf.src_endpoint.hw_info | The endpoint hardware information. | flattened |
 | ocsf.src_endpoint.instance_uid | The unique identifier of a VM instance. | keyword |
 | ocsf.src_endpoint.interface_name | The name of the network interface (e.g. eth2). | keyword |
 | ocsf.src_endpoint.interface_uid | The unique identifier of the network interface. | keyword |
@@ -1796,12 +1863,18 @@ This is the `Event` dataset.
 | ocsf.src_endpoint.location.region | The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US. | keyword |
 | ocsf.src_endpoint.mac | The Media Access Control (MAC) address of the endpoint. | keyword |
 | ocsf.src_endpoint.name | The short name of the endpoint. | keyword |
+| ocsf.src_endpoint.namespace_pid | If running under a process namespace (such as in a container), the process identifier within that process namespace. | integer |
+| ocsf.src_endpoint.os | The endpoint operating system. | flattened |
 | ocsf.src_endpoint.port | The port used for communication within the network connection. | long |
+| ocsf.src_endpoint.proxy_endpoint | The network proxy information pertaining to a specific endpoint. This can be used to describe information pertaining to network address translation (NAT). | flattened |
 | ocsf.src_endpoint.subnet_uid | The unique identifier of a virtual subnet. | keyword |
 | ocsf.src_endpoint.svc_name | The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service. | keyword |
+| ocsf.src_endpoint.type | The network endpoint type. For example, unknown, server, desktop, laptop, tablet, mobile, virtual, browser, or other. | keyword |
+| ocsf.src_endpoint.type_id | The network endpoint type ID. | integer |
 | ocsf.src_endpoint.uid | The unique identifier of the endpoint. | keyword |
 | ocsf.src_endpoint.vlan_uid | The Virtual LAN identifier. | keyword |
 | ocsf.src_endpoint.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.src_endpoint.zone | The network zone or LAN segment. | keyword |
 | ocsf.start_time | The start time of a time period, or the time of the least recent event included in the aggregate event. | date |
 | ocsf.start_time_dt | The start time of a time period, or the time of the least recent event included in the aggregate event. | date |
 | ocsf.state | The normalized state of a security finding. | keyword |
@@ -1810,6 +1883,8 @@ This is the `Event` dataset.
 | ocsf.status_code | The event status code, as reported by the event source. For example, in a Windows Failed Authentication event, this would be the value of 'Failure Code', e.g. 0x18. | keyword |
 | ocsf.status_detail | The status details contains additional information about the event outcome. | keyword |
 | ocsf.status_id | The normalized identifier of the event status. | keyword |
+| ocsf.stratum | The stratum level of the NTP server's time source, normalized to the caption of the stratum_id value. | keyword |
+| ocsf.stratum_id | The normalized identifier of the stratum level, as defined in RFC-5905. | integer |
 | ocsf.time | The normalized event occurrence time. | date |
 | ocsf.time_dt | The normalized event occurrence time. | date |
 | ocsf.timezone_offset | The number of minutes that the reported event time is ahead or behind UTC, in the range -1,080 to +1,080. | long |
@@ -1954,6 +2029,7 @@ This is the `Event` dataset.
 | ocsf.user_result.type_id | The account type identifier. | keyword |
 | ocsf.user_result.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.user_result.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
+| ocsf.version | The version number of the NTP protocol. | keyword |
 | ocsf.vulnerabilities.cve.created_time | The Record Creation Date identifies when the CVE ID was issued to a CVE Numbering Authority (CNA) or the CVE Record was published on the CVE List. Note that the Record Creation Date does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE. | date |
 | ocsf.vulnerabilities.cve.created_time_dt | The Record Creation Date identifies when the CVE ID was issued to a CVE Numbering Authority (CNA) or the CVE Record was published on the CVE List. Note that the Record Creation Date does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE. | date |
 | ocsf.vulnerabilities.cve.cvss.base_score | The CVSS base score. For example: 9.1. | double |
@@ -1978,8 +2054,11 @@ This is the `Event` dataset.
 | ocsf.vulnerabilities.cve.product.url_string | The URL pointing towards the product. | keyword |
 | ocsf.vulnerabilities.cve.product.vendor_name | The name of the vendor of the product. | keyword |
 | ocsf.vulnerabilities.cve.product.version | The version of the product, as defined by the event source. For example: 2013.1.3-beta. | keyword |
+| ocsf.vulnerabilities.cve.references | Supporting reference URLs. | keyword |
+| ocsf.vulnerabilities.cve.title | The title of the cve. | keyword |
 | ocsf.vulnerabilities.cve.type | The vulnerability type as selected from a large dropdown menu during CVE refinement. | keyword |
 | ocsf.vulnerabilities.cve.uid | The Common Vulnerabilities and Exposures unique number assigned to a specific computer vulnerability. A CVE Identifier begins with 4 digits representing the year followed by a sequence of digits that acts as a unique identifier. For example: CVE-2021-12345. | keyword |
+| ocsf.vulnerabilities.cwe | The Common Weakness Enumeration (CWE) unique identifier. For example: CWE-787. | flattened |
 | ocsf.vulnerabilities.desc | The description of the vulnerability. | keyword |
 | ocsf.vulnerabilities.fix_available | Indicates if a fix is available for the reported vulnerability. | boolean |
 | ocsf.vulnerabilities.kb_articles | The KB article/s related to the entity. | keyword |

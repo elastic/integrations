@@ -1723,6 +1723,9 @@
         - name: autoscale_uid
           type: keyword
           description: The unique identifier of the cloud autoscale configuration.
+        - name: container
+          type: flattened
+          description: The information describing an instance of a container.
         - name: created_time
           type: date
           description: The time when the device was known to have been created.
@@ -1933,6 +1936,9 @@
         - name: name
           type: keyword
           description: The alternate device name, ordinarily as assigned by an administrator. The Name could be any other string that helps to identify the device, such as a phone number; for example 310-555-1234.
+        - name: namespace_pid
+          type: integer
+          description: If running under a process namespace (such as in a container), the process identifier within that process namespace.
         - name: network_interfaces
           type: group
           fields:
@@ -2041,87 +2047,6 @@
         - name: uid_alt
           type: keyword
           description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
-        - name: vlan_uid
-          type: keyword
-          description: The Virtual LAN identifier.
-        - name: vpc_uid
-          type: keyword
-          description: The unique identifier of the Virtual Private Cloud (VPC).
-    - name: dst_endpoint
-      type: group
-      fields:
-        - name: domain
-          type: keyword
-          description: The name of the domain.
-        - name: hostname
-          type: keyword
-          description: The fully qualified name of the endpoint.
-        - name: instance_uid
-          type: keyword
-          description: The unique identifier of a VM instance.
-        - name: interface_name
-          type: keyword
-          description: The name of the network interface (e.g. eth2).
-        - name: interface_uid
-          type: keyword
-          description: The unique identifier of the network interface.
-        - name: intermediate_ips
-          type: ip
-          description: The intermediate IP Addresses. For example, the IP addresses in the HTTP X-Forwarded-For header.
-        - name: ip
-          type: ip
-          description: The IP address of the endpoint, in either IPv4 or IPv6 format.
-        - name: location
-          type: group
-          fields:
-            - name: city
-              type: keyword
-              description: The name of the city.
-            - name: continent
-              type: keyword
-              description: The name of the continent.
-            - name: coordinates
-              type: geo_point
-              description: A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON.
-            - name: country
-              type: keyword
-              description: The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized.
-            - name: desc
-              type: keyword
-              description: The description of the geographical location.
-            - name: is_on_premises
-              type: boolean
-              description: The indication of whether the location is on premises.
-            - name: isp
-              type: keyword
-              description: The name of the Internet Service Provider (ISP).
-            - name: postal_code
-              type: keyword
-              description: The postal code of the location.
-            - name: provider
-              type: keyword
-              description: The provider of the geographical location data.
-            - name: region
-              type: keyword
-              description: The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US.
-        - name: mac
-          type: keyword
-          description: The Media Access Control (MAC) address of the endpoint.
-        - name: name
-          type: keyword
-          description: The short name of the endpoint.
-        - name: port
-          type: long
-          description: The port used for communication within the network connection.
-        - name: subnet_uid
-          type: keyword
-          description: The unique identifier of a virtual subnet.
-        - name: svc_name
-          type: keyword
-          description: The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service.
-        - name: uid
-          type: keyword
-          description: The unique identifier of the endpoint.
         - name: vlan_uid
           type: keyword
           description: The Virtual LAN identifier.
@@ -3884,87 +3809,6 @@
     - name: severity_id
       type: long
       description: The normalized identifier of the event severity. The normalized severity is a measurement the effort and expense required to manage and resolve an event or incident. Smaller numerical values represent lower impact events, and larger numerical values represent higher impact events.
-    - name: src_endpoint
-      type: group
-      fields:
-        - name: domain
-          type: keyword
-          description: The name of the domain.
-        - name: hostname
-          type: keyword
-          description: The fully qualified name of the endpoint.
-        - name: instance_uid
-          type: keyword
-          description: The unique identifier of a VM instance.
-        - name: interface_name
-          type: keyword
-          description: The name of the network interface (e.g. eth2).
-        - name: interface_uid
-          type: keyword
-          description: The unique identifier of the network interface.
-        - name: intermediate_ips
-          type: ip
-          description: The intermediate IP Addresses. For example, the IP addresses in the HTTP X-Forwarded-For header.
-        - name: ip
-          type: ip
-          description: The IP address of the endpoint, in either IPv4 or IPv6 format.
-        - name: location
-          type: group
-          fields:
-            - name: city
-              type: keyword
-              description: The name of the city.
-            - name: continent
-              type: keyword
-              description: The name of the continent.
-            - name: coordinates
-              type: geo_point
-              description: A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON.
-            - name: country
-              type: keyword
-              description: The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized.
-            - name: desc
-              type: keyword
-              description: The description of the geographical location.
-            - name: is_on_premises
-              type: boolean
-              description: The indication of whether the location is on premises.
-            - name: isp
-              type: keyword
-              description: The name of the Internet Service Provider (ISP).
-            - name: postal_code
-              type: keyword
-              description: The postal code of the location.
-            - name: provider
-              type: keyword
-              description: The provider of the geographical location data.
-            - name: region
-              type: keyword
-              description: The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US.
-        - name: mac
-          type: keyword
-          description: The Media Access Control (MAC) address of the endpoint.
-        - name: name
-          type: keyword
-          description: The short name of the endpoint.
-        - name: port
-          type: long
-          description: The port used for communication within the network connection.
-        - name: subnet_uid
-          type: keyword
-          description: The unique identifier of a virtual subnet.
-        - name: svc_name
-          type: keyword
-          description: The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service.
-        - name: uid
-          type: keyword
-          description: The unique identifier of the endpoint.
-        - name: vlan_uid
-          type: keyword
-          description: The Virtual LAN identifier.
-        - name: vpc_uid
-          type: keyword
-          description: The unique identifier of the Virtual Private Cloud (VPC).
     - name: start_time
       type: date
       description: The start time of a time period, or the time of the least recent event included in the aggregate event.
