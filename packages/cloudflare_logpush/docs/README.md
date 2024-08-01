@@ -67,7 +67,7 @@ This module has been tested against **Cloudflare version v4**.
 
 ### To collect data from AWS S3 Bucket, follow the below steps:
 - Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to send Cloudflare's data to an AWS S3 bucket.
-- The default values of the "Bucket List Prefix" are listed below. However, the user can set the parameter "Bucket List Prefix" according to their requirements.
+- The default values of the "Bucket List Prefix" are listed below. However, users can set the parameter "Bucket List Prefix" according to their requirements.
 
   | Data Stream Name           | Bucket List Prefix     |
   | -------------------------- | ---------------------- |
