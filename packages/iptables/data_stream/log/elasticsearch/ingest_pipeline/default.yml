@@ -249,6 +249,7 @@ processors:
           }
         }
   - community_id:
+      if: ctx?.network?.transport == null || ['icmp', 'igmp', 'tcp', 'udp', 'gre', 'ipv6-icmp', 'icmpv6', 'eigrp', 'ospf', 'pim', 'sctp'].contains(ctx.network.transport)
       ignore_missing: true
       icmp_type: iptables.icmp.type
       icmp_code: iptables.icmp.code
@@ -378,4 +379,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
