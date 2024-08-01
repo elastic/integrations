@@ -351,7 +351,7 @@ processors:
   - rename:
       tag: rename_devname
       field: _fields_.devname
-      target_field: observer.hostname
+      target_field: observer.name
       ignore_missing: true
   - rename:
       tag: rename_direction
@@ -562,6 +562,16 @@ processors:
       copy_from: _fields_.clientip
       field: client.ip
       if: ctx._fields_.clientip != null
+
+  - set:
+      tag: set_url_original
+      field: url.original
+      copy_from: _fields_.url
+      ignore_empty_value: true
+  - uri_parts:
+      tag: process_url
+      field: url.original
+      ignore_missing: true
 
 # ------------------------------------------------------------------------------
 # Cleanup.
