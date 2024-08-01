@@ -140,6 +140,18 @@ processors:
       field: observer.hostname
       copy_from: hostname
       if: ctx?.observer?.name == null && ctx?.hostname != null
+  - convert:
+      description: Set network.iana_number with numeric protocol values.
+      if: ctx?.network?.iana_number == null && ctx?.network?.transport != null
+      type: integer
+      field: network.transport
+      target_field: network.iana_number
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      if: ctx.network?.iana_number != null
+      field: network.transport
+      ignore_missing: true
   - lowercase:
       field: network.transport
       ignore_missing: true
@@ -188,7 +200,6 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
   - script:
       description: Enrich event with ECS fields.
       lang: painless
@@ -248,52 +259,19 @@ processors:
             }
           }
         }
-  - script:
-      description: Convert bit fields to numbers.
-      lang: painless
-      if: >-
-        ctx?.network?.iana_number == null && ctx?.network?.transport != null
-      source: >-
-        def transport = ctx?.network?.transport;
-        if (transport == '1') {
-          ctx.network.iana_number = '1';
-        } else if (transport == '2') {
-          ctx.network.iana_number = '2';
-        } else if (transport == '6') {
-          ctx.network.iana_number = '6';
-        } else if (transport == '17') {
-          ctx.network.iana_number = '17';
-        } else if (transport == '47') {
-          ctx.network.iana_number = '47';
-        } else if (transport == '58') {
-          ctx.network.iana_number = '58';
-        } else if (transport == '88') {
-          ctx.network.iana_number = '88';
-        } else if (transport == '89') {
-          ctx.network.iana_number = '89';
-        } else if (transport == '103') {
-          ctx.network.iana_number = '103';
-        } else if (transport == '132') {
-          ctx.network.iana_number = '132';
-        }
   - community_id:
-      if: >-
-        ctx?.network?.transport == null || 
-        ctx?.network?.iana_number != null ||
-        ctx?.network?.transport == 'icmp' || 
-        ctx?.network?.transport == 'igmp' || 
-        ctx?.network?.transport == 'tcp' || 
-        ctx?.network?.transport == 'udp' || 
-        ctx?.network?.transport == 'gre' || 
-        ctx?.network?.transport == 'ipv6-icmp' || 
-        ctx?.network?.transport == 'icmpv6' || 
-        ctx?.network?.transport == 'eigrp' || 
-        ctx?.network?.transport == 'ospf' || 
-        ctx?.network?.transport == 'pim' || 
-        ctx?.network?.transport == 'sctp'
       ignore_missing: true
+      ignore_failure: true
       icmp_type: iptables.icmp.type
       icmp_code: iptables.icmp.code
+  - convert:
+      description: Convert network.iana_number to string to comply with ecs.
+      if: ctx?.network?.iana_number != null && ctx.network.iana_number instanceof Integer
+      type: string
+      field: network.iana_number
+      target_field: network.iana_number
+      ignore_failure: true
+      ignore_missing: true
   - script:
       description: Convert bit fields to numbers.
       lang: painless
