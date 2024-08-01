@@ -1,0 +1,42 @@
+---
+description: "Pipeline for SQS metrics"
+
+processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
+  - script:
+      lang: painless
+      description: This script builds the `url.full` field out of the available `url.*` parts.
+      source: |
+        if(ctx.cloud?.account?.id != null && ctx.cloud?.account?.name == null) {
+            ctx.cloud.account.name = ctx.cloud.account.id;
+        }
+  - rename:
+      field: aws.ec2.metrics.CPUUtilization.avg
+      target_field: host.cpu.usage
+      ignore_missing: true
+  - rename:
+      field: aws.ec2.metrics.NetworkIn.sum
+      target_field: host.network.ingress.bytes
+      ignore_missing: true
+  - rename:
+      field: aws.ec2.metrics.NetworkOut.sum
+      target_field: host.network.egress.bytes
+      ignore_missing: true
+  - rename:
+      field: aws.ec2.metrics.NetworkPacketsIn.sum
+      target_field: host.network.ingress.packets
+      ignore_missing: true
+  - rename:
+      field: aws.ec2.metrics.NetworkPacketsOut.sum
+      target_field: host.network.egress.packets
+      ignore_missing: true
+  - rename:
+      field: aws.ec2.metrics.DiskReadBytes.sum
+      target_field: host.disk.read.bytes
+      ignore_missing: true
+  - rename:
+      field: aws.ec2.metrics.DiskWriteBytes.sum
+      target_field: host.disk.write.bytes
+      ignore_missing: true

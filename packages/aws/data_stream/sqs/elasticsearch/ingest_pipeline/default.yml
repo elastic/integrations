@@ -2,6 +2,9 @@
 description: "Pipeline for SQS metrics"
 
 processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
   - rename:
       field: aws.sqs.metrics.ApproximateAgeOfOldestMessage.max
       target_field: aws.sqs.oldest_message_age.sec
@@ -41,4 +44,5 @@ processors:
   - remove:
       field:
         - aws.sqs.metrics
+      if: ctx.agent?.type != "firehose"
       ignore_missing: true

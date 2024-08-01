@@ -2,6 +2,9 @@
 description: "Pipeline for S3 request metrics"
 
 processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
   - rename:
       field: aws.s3.metrics.AllRequests.sum
       target_field: aws.s3_request.requests.total
@@ -81,4 +84,5 @@ processors:
   - remove:
       field:
         - aws.s3.metrics
+      if: ctx.agent?.type != "firehose"
       ignore_missing: true
