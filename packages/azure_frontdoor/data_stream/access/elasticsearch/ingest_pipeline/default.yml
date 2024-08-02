@@ -120,6 +120,135 @@ processors:
       field: azure.frontdoor.access.properties.requestUri
       target_field: url.original
       ignore_missing: true
+  - uri_parts:
+      field: url.original
+      ignore_missing: true
+  # handle identity field
+  - rename:
+      field: azure.frontdoor.access.identity
+      if: ctx.azure?.frontdoor?.access?.identity instanceof String
+      target_field: azure.frontdoor.access.identity_name
+      ignore_missing: true
+  - json:
+      field: azure.frontdoor.access.identity
+      tag: json_identity
+      if: ctx.azure?.frontdoor?.access?.identity instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Convert azure.frontdoor.access.identity keys to snake case.
+      tag: azure-identity-keys-to-snake-case
+      lang: painless
+      if: ctx.azure?.frontdoor?.access?.identity != null
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def out = new HashMap();
+          for (entry in m.entrySet()) {
+            def k = entry.getKey().replace('.', '_');
+            def v = entry.getValue();
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            out.put(k, v);
+          }
+          return out;
+        }
+        ctx.azure.frontdoor.access.identity = keysToSnakeCase(ctx.azure.frontdoor.access.identity);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Extract user fields into claims_initiated_by_user object from claims object
+      tag: script_claims_user
+      if: ctx.azure?.frontdoor?.access?.identity?.claims instanceof Map
+      lang: painless
+      params:
+        surname: "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/surname"
+        name: "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/name"
+        givenname: "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/givenname"
+        objectidentifier: "http://schemas_microsoft_com/identity/claims/objectidentifier"
+        tenantid: "http://schemas_microsoft_com/identity/claims/tenantid"
+      source: |-
+        def claims = ctx.azure.frontdoor.access.identity.claims;
+        def claims_initiated_by_user = new HashMap();
+        if (claims.name != null) {
+            claims_initiated_by_user.fullname = claims.name;
+        }
+        for (entry in params.entrySet()) {
+            if (claims[entry.getValue()] != null) {
+                claims_initiated_by_user[entry.getKey()] = claims[entry.getValue()];
+            }
+        }
+        if (claims_initiated_by_user.size() > 0) {
+            claims_initiated_by_user.schema = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims";
+            ctx.azure.frontdoor.access.identity.claims_initiated_by_user = claims_initiated_by_user;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - grok:
+      field: azure.frontdoor.access.identity.claims_initiated_by_user.name
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+      ignore_missing: true
+      ignore_failure: true
+  # set user.email to the original name if the above grok succeeded.
+  - set:
+      field: user.email
+      value: '{{azure.frontdoor.access.identity.claims_initiated_by_user.name}}'
+      ignore_empty_value: true
+      if: 'ctx.user?.name != null'
+  # set user.name to the original name if the above grok failed (name format is not an email).
+  - set:
+      field: user.name
+      value: '{{azure.frontdoor.access.identity.claims_initiated_by_user.name}}'
+      ignore_empty_value: true
+      if: 'ctx.user?.name == null'
+  - rename:
+      field: azure.frontdoor.access.identity.claims_initiated_by_user.fullname
+      target_field: user.full_name
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.access.identity.claims_initiated_by_user.objectidentifier
+      target_field: user.id
+      ignore_missing: true
+  - append:
+      field: user.roles
+      value: '{{azure.frontdoor.access.identity.authorization.evidence.role}}'
+      allow_duplicates: false
+      if: ctx.azure?.frontdoor?.access?.identity?.authorization?.evidence?.role != null
+  - append:
+      field: related.user
+      value: '{{user.name}}'
+      allow_duplicates: false
+      if: 'ctx.user?.name != null'
+  - append:
+      field: related.user
+      value: '{{user.full_name}}'
+      allow_duplicates: false
+      if: 'ctx.user?.name != null'
+  - append:
+      field: related.user
+      value: '{{user.id}}'
+      allow_duplicates: false
+      if: 'ctx.user?.name != null'
+  - rename:
+      field: azure.frontdoor.access.identity.claims_initiated_by_user.tenantid
+      target_field: cloud.account.id
+      ignore_missing: true
   - convert:
       field: client.port
       type: long

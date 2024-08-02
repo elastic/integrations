@@ -62,6 +62,21 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.access.backend_hostname | The host name in the request from client. If you enable custom domains and have wildcard domain (\*.contoso.com), hostname is a.contoso.com. if you use Azure Front Door domain (contoso.azurefd.net), hostname is contoso.azurefd.net. | keyword |
 | azure.frontdoor.access.cache_status | Provides the status code of how the request gets handled by the CDN service when it comes to caching. | keyword |
 | azure.frontdoor.access.error_info | This field provides detailed info of the error token for each response. | keyword |
+| azure.frontdoor.access.identity.authorization.action | Action | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.principal_id | Principal ID | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.principal_type | Principal type | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.role | Role | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.role_assignment_id | Role assignment ID | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
+| azure.frontdoor.access.identity.authorization.scope | Scope | keyword |
+| azure.frontdoor.access.identity.claims.\* | Claims | object |
+| azure.frontdoor.access.identity.claims_initiated_by_user.fullname | Fullname | keyword |
+| azure.frontdoor.access.identity.claims_initiated_by_user.givenname | Givenname | keyword |
+| azure.frontdoor.access.identity.claims_initiated_by_user.name | Name | keyword |
+| azure.frontdoor.access.identity.claims_initiated_by_user.schema | Schema | keyword |
+| azure.frontdoor.access.identity.claims_initiated_by_user.surname | Surname | keyword |
+| azure.frontdoor.access.identity_name | identity name | keyword |
 | azure.frontdoor.access.is_received_from_client | Boolean value. | boolean |
 | azure.frontdoor.access.pop | The edge pop, which responded to the user request. | keyword |
 | azure.frontdoor.access.routing_rule_name | The name of the route that the request matched. | keyword |
