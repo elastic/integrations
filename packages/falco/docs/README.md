@@ -65,7 +65,6 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | falco.output_fields.container.full_id | Preserved Falco field | text |  |
 | falco.output_fields.container.healthcheck | The container's health check. Will be N/A if no health check configured. | text |  |
 | falco.output_fields.container.id | The truncated container ID (first 12 characters) extracted from the Linux cgroups by Falco within the kernel | keyword |  |
-| falco.output_fields.container.image | Preserved Falco field | text |  |
 | falco.output_fields.container.image.digest | Preserved Falco field | text |  |
 | falco.output_fields.container.image.full_id | Full container image ID, enriched as part of the container engine enrichment. | keyword |  |
 | falco.output_fields.container.image.id | Container image ID. | keyword |  |
@@ -125,7 +124,6 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | falco.output_fields.evt.type | Preserved Falco field | text |  |
 | falco.output_fields.evt.wait_latency | Time spent waiting for events to return, in cases where the thread is forced to wait. | long | nanos |
 | falco.output_fields.fd.I4proto | The IP protocol of a socket. Can be 'tcp', 'udp', 'icmp' or 'raw'. | keyword |  |
-| falco.output_fields.fd.cip | Preserved Falco field | ip |  |
 | falco.output_fields.fd.cip.name | Preserved Falco field | text |  |
 | falco.output_fields.fd.connected | Denotes if the socket is connected for TCP/UDP FDs. | boolean |  |
 | falco.output_fields.fd.containerdirectory | Concatenation of the container ID and the directory name. | keyword |  |
@@ -139,18 +137,15 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | falco.output_fields.fd.filename | Preserved Falco field | text |  |
 | falco.output_fields.fd.ino | Preserved Falco field | text |  |
 | falco.output_fields.fd.is_server | Denotes if process owning the FD is the server endpoint in the connection. | boolean |  |
-| falco.output_fields.fd.lip | Preserved Falco field | ip |  |
 | falco.output_fields.fd.lip.name | Preserved Falco field | text |  |
 | falco.output_fields.fd.lport | Preserved Falco field | long |  |
 | falco.output_fields.fd.lproto | For TCP/UDP FDs, the local protocol. | keyword |  |
 | falco.output_fields.fd.name | FD full name. If the fd is a file, this field contains the full path. If the FD is a socket, this field contain the connection tuple. | text |  |
 | falco.output_fields.fd.name_changed | Denotes if the name of an FD changes due to an event. | boolean |  |
 | falco.output_fields.fd.num | Unique number identifying the file descriptor. | long |  |
-| falco.output_fields.fd.rip | Preserved Falco field | ip |  |
 | falco.output_fields.fd.rip.name | Preserved Falco field | text |  |
 | falco.output_fields.fd.rport | Preserved Falco field | long |  |
 | falco.output_fields.fd.rproto | For TCP/UDP FDs, the remote protocol. | keyword |  |
-| falco.output_fields.fd.sip | Preserved Falco field | ip |  |
 | falco.output_fields.fd.sip.name | Preserved Falco field | text |  |
 | falco.output_fields.fd.sockfamily | The socket family for socket events. Can be 'ip' or 'unix'. | keyword |  |
 | falco.output_fields.fd.sport | Preserved Falco field | long |  |
@@ -211,7 +206,6 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | falco.output_fields.proc.pcmdline | Preserved Falco field | text |  |
 | falco.output_fields.proc.pexe | First command line argument of the parent process. | text |  |
 | falco.output_fields.proc.pexepath | Preserved Falco field | text |  |
-| falco.output_fields.proc.pid | Preserved Falco field | integer |  |
 | falco.output_fields.proc.pid.ts | Preserved Falco field | text |  |
 | falco.output_fields.proc.pidns_init_start_ts | Start of PID namespace as epoch timestamp. | date_nanos |  |
 | falco.output_fields.proc.pname | Preserved Falco field | text |  |
@@ -280,47 +274,42 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | log.source.address | Log source when collecting via TCP input | keyword |  |
 | process.group.id | Preserved Falco field | text |  |
 | process.group.name | Preserved Falco field | text |  |
-| process.group_leader.vpid.exepath | Preserved Falco field | text |  |
-| process.group_leader.vpid.name | Preserved Falco field | text |  |
-| process.pid.ts | Preserved Falco field | text |  |
-| process.session_leader.pid.exepath | Preserved Falco field | text |  |
 
 
 An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-31T15:31:17.766Z",
+    "@timestamp": "2024-05-07T18:54:19.341Z",
     "agent": {
-        "ephemeral_id": "14760e12-f0a6-46db-be6e-0e5f5260af09",
-        "id": "6e3de626-460f-4990-9745-74dfc567cee7",
+        "ephemeral_id": "6f7b78c5-c56e-492c-9b3f-618b829a7928",
+        "id": "7e6ea545-7797-4135-a76d-24c7da5a7465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.1"
     },
     "container": {
-        "id": "8807b1bfced3",
-        "name": "elastic-package-service-48104-falco-event-generator-1"
+        "id": "9656db3bb358",
+        "name": "elastic-package-service-falco-event-generator-1"
     },
     "data_stream": {
         "dataset": "falco.alerts",
-        "namespace": "56408",
+        "namespace": "93347",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "6e3de626-460f-4990-9745-74dfc567cee7",
+        "id": "7e6ea545-7797-4135-a76d-24c7da5a7465",
         "snapshot": false,
         "version": "8.14.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "falco.alerts",
-        "ingested": "2024-07-31T15:31:31Z",
+        "ingested": "2024-08-01T18:45:02Z",
         "kind": "alert",
-        "original": "{\"uuid\":\"620fd3c5-ae22-40da-8bf2-140dbda5fdb8\",\"output\":\"2024-07-31T15:31:17.766968761+0000: Warning Sensitive file opened for reading by non-trusted program (file=/etc/shadow gparent=containerd-shim ggparent=init gggparent=\\u003cNA\\u003e evt_type=openat user=root user_uid=0 user_loginuid=-1 process=event-generator proc_exepath=/bin/event-generator parent=containerd-shim command=event-generator run --loop terminal=0 container_id=8807b1bfced3 container_name=elastic-package-service-48104-falco-event-generator-1)\",\"priority\":\"Warning\",\"rule\":\"Read sensitive file untrusted\",\"time\":\"2024-07-31T15:31:17.766968761Z\",\"output_fields\":{\"container.id\":\"8807b1bfced3\",\"container.name\":\"elastic-package-service-48104-falco-event-generator-1\",\"evt.time.iso8601\":1722439877766968761,\"evt.type\":\"openat\",\"fd.name\":\"/etc/shadow\",\"proc.aname[2]\":\"containerd-shim\",\"proc.aname[3]\":\"init\",\"proc.aname[4]\":null,\"proc.cmdline\":\"event-generator run --loop\",\"proc.exepath\":\"/bin/event-generator\",\"proc.name\":\"event-generator\",\"proc.pname\":\"containerd-shim\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1555\",\"container\",\"filesystem\",\"host\",\"maturity_stable\",\"mitre_credential_access\"],\"hostname\":\"e4ef7cb8b699\"}",
         "provider": "syscall",
         "timezone": "+00:00"
     },
@@ -332,37 +321,24 @@ An example event for `alerts` looks as following:
         "access"
     ],
     "falco": {
-        "hostname": "e4ef7cb8b699",
-        "output": "2024-07-31T15:31:17.766968761+0000: Warning Sensitive file opened for reading by non-trusted program (file=/etc/shadow gparent=containerd-shim ggparent=init gggparent=<NA> evt_type=openat user=root user_uid=0 user_loginuid=-1 process=event-generator proc_exepath=/bin/event-generator parent=containerd-shim command=event-generator run --loop terminal=0 container_id=8807b1bfced3 container_name=elastic-package-service-48104-falco-event-generator-1)",
+        "hostname": "97ade2b595f0",
+        "output": "2024-05-07T18:54:19.341081180+0000: Warning Sensitive file opened for reading by non-trusted program (file=/etc/shadow gparent=runc ggparent=init gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=event-generator proc_exepath=/bin/event-generator parent=containerd-shim command=event-generator run --loop terminal=0 container_id=9656db3bb358 container_name=elastic-package-service-falco-event-generator-1)",
         "output_fields": {
-            "container": {
-                "id": "8807b1bfced3",
-                "name": "elastic-package-service-48104-falco-event-generator-1"
-            },
+            "container": {},
             "evt": {
-                "time": {
-                    "iso8601": 1722439877766
-                },
                 "type": "openat"
             },
             "fd": {
                 "name": "/etc/shadow"
             },
             "proc": {
-                "cmdline": "event-generator run --loop",
-                "exepath": "/bin/event-generator",
-                "name": "event-generator",
-                "pname": "containerd-shim",
                 "tty": 0
             },
             "user": {
-                "loginuid": -1,
-                "name": "root",
-                "uid": "0"
+                "loginuid": -1
             }
         },
         "priority": "Warning",
-        "rule": "Read sensitive file untrusted",
         "source": "syscall",
         "tags": [
             "T1555",
@@ -372,8 +348,7 @@ An example event for `alerts` looks as following:
             "maturity_stable",
             "mitre_credential_access"
         ],
-        "time": "2024-07-31T15:31:17.766968761Z",
-        "uuid": "620fd3c5-ae22-40da-8bf2-140dbda5fdb8"
+        "time": "2024-05-07T18:54:19.341081180Z"
     },
     "falco.container.mounts": null,
     "host": {
@@ -399,29 +374,16 @@ An example event for `alerts` looks as following:
         }
     },
     "input": {
-        "type": "tcp"
+        "type": "log"
     },
     "log": {
-        "source": {
-            "address": "192.168.160.5:33896"
+        "file": {
+            "path": "/tmp/service_logs/sample.log"
         },
-        "syslog": {
-            "appname": "Falco",
-            "facility": {
-                "code": 0,
-                "name": "kernel"
-            },
-            "hostname": "2720411dda16",
-            "priority": 4,
-            "procid": "1",
-            "severity": {
-                "code": 4,
-                "name": "Warning"
-            }
-        }
+        "offset": 0
     },
     "observer": {
-        "hostname": "e4ef7cb8b699",
+        "hostname": "97ade2b595f0",
         "product": "falco",
         "type": "sensor",
         "vendor": "sysdig"
@@ -440,16 +402,12 @@ An example event for `alerts` looks as following:
     },
     "related": {
         "hosts": [
-            "e4ef7cb8b699"
+            "97ade2b595f0"
         ]
     },
     "rule": {
         "name": "Read sensitive file untrusted"
     },
-    "tags": [
-        "preserve_original_event",
-        "preserve_falco_fields"
-    ],
     "threat.technique.id": [
         "T1555"
     ]

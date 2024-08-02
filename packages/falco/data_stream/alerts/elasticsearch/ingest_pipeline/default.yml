@@ -34,6 +34,9 @@ processors:
 - dot_expander:
     field: 'proc.vpgid'
     path: falco.output_fields
+- dot_expander:
+    field: 'evt.time'
+    path: falco.output_fields
 - rename:
     field: falco.output_fields.container.image
     target_field: falco.output_fields.container.image.name
@@ -69,6 +72,10 @@ processors:
 - rename:
     field: falco.output_fields.proc.vpgid
     target_field: falco.output_fields.process.group_leader.vpid
+    ignore_missing: true
+- rename:
+    field: falco.output_fields.evt.time
+    target_field: falco.output_fields.event.time
     ignore_missing: true
 - dot_expander:
     field: '*'
@@ -269,8 +276,8 @@ processors:
     lang: painless
     tag: 'Script for generating @timestamp'
     source: |
-        if (ctx.falco?.output_fields?.evt?.time != null) {
-            def timeField = ctx.falco.output_fields.evt.time;
+        if (ctx.falco?.output_fields?.event?.time != null) {
+            def timeField = ctx.falco.output_fields.event.time;
             def inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
             if (timeField instanceof Map) {
