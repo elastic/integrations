@@ -851,6 +851,7 @@ This is the `Event` dataset.
 | ocsf.device.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.device.vlan_uid | The Virtual LAN identifier. | keyword |
 | ocsf.device.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.device.zone | The network zone or LAN segment. | keyword |
 | ocsf.dialect | The negotiated protocol dialect. | keyword |
 | ocsf.direction | The direction of the email, as defined by the direction_id value. | keyword |
 | ocsf.direction_id | The direction of the email relative to the scanning host or organization. | keyword |
@@ -1413,6 +1414,18 @@ This is the `Event` dataset.
 | ocsf.is_new_logon | Indicates logon is from a device not seen before or a first time account logon. | boolean |
 | ocsf.is_remote | The attempted authentication is over a remote connection. | boolean |
 | ocsf.is_renewal | The indication of whether this is a lease/session renewal event. | boolean |
+| ocsf.kb_article_list.bulletin | The kb article bulletin identifier. | keyword |
+| ocsf.kb_article_list.classification | The vendors classification of the kb article. | keyword |
+| ocsf.kb_article_list.created_time | The date the kb article was released by the vendor. | long |
+| ocsf.kb_article_list.created_time_dt | The date the kb article was released by the vendor. | date |
+| ocsf.kb_article_list.is_superseded | The patch is superseded | boolean |
+| ocsf.kb_article_list.os | The operating system the kb article applies. | flattened |
+| ocsf.kb_article_list.product | The product details the kb article applies. | flattened |
+| ocsf.kb_article_list.severity | The severity of the kb article. | keyword |
+| ocsf.kb_article_list.size | The size in bytes for the kb article. | long |
+| ocsf.kb_article_list.src_url | The kb article link from the source vendor. | keyword |
+| ocsf.kb_article_list.title | The title of the kb article. | keyword |
+| ocsf.kb_article_list.uid | The unique identifier for the kb article. | keyword |
 | ocsf.kernel.is_system | The indication of whether the object is part of the operating system. | boolean |
 | ocsf.kernel.name | The name of the kernel resource. | keyword |
 | ocsf.kernel.path | The full path of the kernel resource. | keyword |
@@ -1470,6 +1483,7 @@ This is the `Event` dataset.
 | ocsf.metadata.log_version | The event log schema version that specifies the format of the original event. For example syslog version or Cisco Log Schema Version. | keyword |
 | ocsf.metadata.logged_time | The time when the logging system collected and logged the event. This attribute is distinct from the event time in that event time typically contain the time extracted from the original event. Most of the time, these two times will be different. | date |
 | ocsf.metadata.logged_time_dt | The time when the logging system collected and logged the event. This attribute is distinct from the event time in that event time typically contain the time extracted from the original event. Most of the time, these two times will be different. | date |
+| ocsf.metadata.loggers | An array of Logger objects that describe the devices and logging products between the event source and its eventual destination. | flattened |
 | ocsf.metadata.modified_time | The time when the event was last modified or enriched. | date |
 | ocsf.metadata.modified_time_dt | The time when the event was last modified or enriched. | date |
 | ocsf.metadata.original_time | The original event time as reported by the event source. For example, the time in the original format from system event log such as Syslog on Unix/Linux and the System event file on Windows. Omit if event is generated instead of collected via logs. | keyword |
