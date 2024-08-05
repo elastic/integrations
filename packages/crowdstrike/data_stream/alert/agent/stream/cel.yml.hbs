@@ -28,7 +28,7 @@ redact:
 program: |
   state.with(
     (
-      !state.want_more ?
+      state.want_more ?
         request(
           "GET",
           state.url.trim_right("/") + "/alerts/queries/alerts/v2?" + {
@@ -89,7 +89,7 @@ program: |
           "cursor": {
             ?"last_timestamp": (
               has(inner_body.resources) && inner_body.resources.size() > 0 ?
-                optional.of(inner_body.resources.map(e, e.timestamp).max())
+                optional.of(string(inner_body.resources.map(e, timestamp(e.timestamp)).max()))
               :
                 state.?cursor.last_timestamp
             ),
