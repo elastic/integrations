@@ -112,6 +112,21 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.tracking_reference | The unique reference string that identifies a request served by AFD, also sent as X-Azure-Ref header to the client. Required for searching details in the access logs for a specific request. | keyword |
 | azure.frontdoor.waf.details.data | Detail data. | keyword |
 | azure.frontdoor.waf.details.msg | Detail msg. | keyword |
+| azure.frontdoor.waf.identity.authorization.action | Action | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.principal_id | Principal ID | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.principal_type | Principal type | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.role | Role | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.role_assignment_id | Role assignment ID | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
+| azure.frontdoor.waf.identity.authorization.scope | Scope | keyword |
+| azure.frontdoor.waf.identity.claims.\* | Claims | object |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.fullname | Fullname | keyword |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.givenname | Givenname | keyword |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.name | Name | keyword |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.schema | Schema | keyword |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.surname | Surname | keyword |
+| azure.frontdoor.waf.identity_name | identity name | keyword |
 | azure.frontdoor.waf.policy | WAF policy name. | keyword |
 | azure.frontdoor.waf.policy_mode | WAF policy mode. | keyword |
 | azure.frontdoor.waf.time | The date and time when the AFD edge delivered requested contents to client (in UTC). | keyword |
