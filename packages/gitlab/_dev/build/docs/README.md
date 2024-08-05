@@ -34,7 +34,7 @@ Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API
 
 ### application
 
-Collect logs for events happing in GitLab like user creation or project deletion. Check out the [GitLab API log docs](https://docs.gitlab.com/ee/administration/logs/#application_jsonlog) for more information.
+Collect logs for events happening in GitLab like user creation or project deletion. Check out the [GitLab Application log docs](https://docs.gitlab.com/ee/administration/logs/#application_jsonlog) for more information.
 
 {{fields "application"}}
 
@@ -42,7 +42,7 @@ Collect logs for events happing in GitLab like user creation or project deletion
 
 ### audit
 
-Collect logs for changes to group or project settings and memberships. Check out the [GitLab API log docs](https://docs.gitlab.com/ee/administration/logs/#audit_jsonlog) for more information.
+Collect logs for changes to group or project settings and memberships. Check out the [GitLab Audit log docs](https://docs.gitlab.com/ee/administration/logs/#audit_jsonlog) for more information.
 
 {{fields "audit"}}
 
@@ -50,7 +50,7 @@ Collect logs for changes to group or project settings and memberships. Check out
 
 ### auth
 
-Collect logs for absuive protect paths requests or requests over the Rate Limit. Check out the [GitLab API log docs](https://docs.gitlab.com/ee/administration/logs/#auth_jsonlog) for more information.
+Collect logs for abusive protect paths requests or requests over the Rate Limit. Check out the [GitLab Auth log docs](https://docs.gitlab.com/ee/administration/logs/#auth_jsonlog) for more information.
 
 {{fields "auth"}}
 
