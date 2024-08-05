@@ -75,16 +75,7 @@ processors:
       ignore_missing: true
   - dot_expander:
       path: gitlab.audit
-      field: meta.caller_id
-  - dot_expander:
-      path: gitlab.audit
-      field: meta.client_id
-  - dot_expander:
-      path: gitlab.audit
-      field: meta.feature_category
-  - dot_expander:
-      path: gitlab.audit
-      field: meta.remote_ip
+      field: "*"
   - convert:
       field: gitlab.audit.meta.remote_ip
       type: ip
@@ -96,21 +87,47 @@ processors:
           - append:
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
-  - dot_expander:
-      path: gitlab.audit
-      field: meta.user
-  - dot_expander:
-      path: gitlab.audit
-      field: meta.user_id
-  - dot_expander:
-      path: gitlab.audit
-      field: meta.root_caller_id
-  - dot_expander:
-      path: gitlab.audit
-      field: meta.root_namespace
-  - dot_expander:
-      path: gitlab.audit
-      field: meta.project
+  - rename:
+      field: gitlab.audit.meta.remote_ip
+      target_field: client.ip
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      tag: geoip_client_address
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      tag: geoip_client_asn
+      target_field: client.as
+      properties:
+      - asn
+      - organization_name
+  - rename:
+      field: client.as.asn
+      tag: rename_client_as_asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      tag: rename_client_as_organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - set:
+      field: client.address
+      copy_from: client.ip
+      if: ctx.client?.ip != null
+  - set:
+      field: source
+      copy_from: client
+      if: ctx.client?.ip != null
+  - append:
+      field: related.ip
+      value: '{{client.ip}}'
+      if: ctx.client?.ip != null
+      allow_duplicates: false
   - convert:
       field: gitlab.audit.author_id
       type: string
@@ -146,33 +163,26 @@ processors:
   - append:
       field: related.user
       value: '{{gitlab.audit.target_id}}'
-      if: ctx.gitlab?.audit?.target_id != null && ctx.gitlab?.audit?.target_type == "User"
+      if: ctx.gitlab?.audit?.target_id != null && ctx.gitlab.audit.target_type == "User"
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{gitlab.audit.target_details}}'
-      if: ctx.gitlab?.audit?.target_details != null && ctx.gitlab?.audit?.target_type == "User"
+      if: ctx.gitlab?.audit?.target_details != null && ctx.gitlab.audit.target_type == "User"
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{gitlab.audit.entity_id}}'
-      if: ctx.gitlab?.auadit?.entity_id != null && ctx.gitlab?.audit?.entity_type == "User"
+      if: ctx.gitlab?.auadit?.entity_id != null && ctx.gitlab.audit.entity_type == "User"
       allow_duplicates: false
   - append:
       field: event.category
-      value:
-        - web
+      value: web
       allow_duplicates: false
   - append:
       field: event.type
-      value:
-        - info
+      value: info
       allow_duplicates: false
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
   - script:
       tag: script_to_drop_null_values
       lang: painless
