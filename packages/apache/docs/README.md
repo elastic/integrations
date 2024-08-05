@@ -14,6 +14,119 @@ all versions >= 2.2.31 and >= 2.4.16 (independent from operating system).
 
 Access logs collects the Apache access logs.
 
+An example event for `access` looks as following:
+
+```json
+{
+    "@timestamp": "2024-06-21T13:03:30.000Z",
+    "agent": {
+        "ephemeral_id": "a8296a9f-087a-48ae-af44-8f064213f161",
+        "id": "9326664e-5848-4401-a0fb-4494a1538c2e",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "apache": {
+        "access": {
+            "remote_addresses": [
+                "127.0.0.1"
+            ]
+        }
+    },
+    "data_stream": {
+        "dataset": "apache.access",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "9326664e-5848-4401-a0fb-4494a1538c2e",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "created": "2024-06-21T13:03:44.637Z",
+        "dataset": "apache.access",
+        "ingested": "2024-06-21T13:03:56Z",
+        "kind": "event",
+        "outcome": "success"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": [
+            "192.168.240.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-F0-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "http": {
+        "request": {
+            "method": "GET"
+        },
+        "response": {
+            "body": {
+                "bytes": 45
+            },
+            "status_code": 200
+        },
+        "version": "1.1"
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/access.log"
+        },
+        "offset": 0
+    },
+    "related": {
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "source": {
+        "address": "127.0.0.1",
+        "ip": "127.0.0.1"
+    },
+    "tags": [
+        "apache-access"
+    ],
+    "url": {
+        "original": "/",
+        "path": "/"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "curl",
+        "original": "curl/7.64.0",
+        "version": "7.64.0"
+    }
+}
+```
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
@@ -23,11 +136,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type | Unit |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| apache.access.http.request_headers | Http request headers. | keyword |  |
 | apache.access.identity | The client's identity, as specified in RFC 1413, determined by the identd on the client's machine. | keyword |  |
 | apache.access.remote_addresses | An array of remote addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. | keyword |  |
 | apache.access.response_time | Time to serve the request in microseconds. | long | micros |
 | apache.access.ssl.cipher | SSL cipher name. - name: nginx.access | keyword |  |
 | apache.access.ssl.protocol | SSL protocol version. | keyword |  |
+| apache.access.tls_handshake.error | TLS handshake error. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
@@ -43,30 +158,135 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 Supported format for the access logs are:
 
-- [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)
-  - Defined in apache `LogFormat` by : 
+- [Common Log Format](https://httpd.apache.org/docs/2.4/logs.html#:~:text=format%20strings.-,Common%20Log%20Format,-A%20typical%20configuration)
+
+  - The common `LogFormat` can be used as follows:
+ 
     >```%h %l %u %t \"%r\" %>s %b```
+
   - Example:
+
     > `127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326`
+
 - Combined Log Format
-  - Defined in apache `LogFormat` by:
-    >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
+  - The combined `LogFormat` can be used as follows:
+
+    >I. ```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
+    >II. ```%A:%p %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
+    >III. ```%h:%p %l %u %t \"%{req}i %U %H\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
   - Example:
-    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)"```
+
+    >I. ```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)"```
+
+    >II. ```127.0.0.1:80 127.0.0.1 - - [20/Jun/2024:16:23:43 +0530] "\x16\x03\x01" 400 226 "-" "-"```
+
+    >III. ```127.0.0.1:80 - - [20/Jun/2024:16:31:41 +0530] "<SCRIPT>NXSSTEST</SCRIPT> / HTTP/1.1" 403 4897 "-" "-"```
+
 - Combined Log Format + X-Forwarded-For header
-  - Defined in apache `LogFormat` by:
+
+  - The combined `LogFormat` with x-forwarded-for header can be used as follows:
+
     >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
+
   - Example:
+
     >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
-- Combined Log Format + X-Forwarded-For header + Response time
-  - Defined in apache `LogFormat` by:
-    >```%h %l %u %t \"%r\" %>s %b %D \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
-  - Example:
-    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 3413 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
 
 ### Error Logs
 
 Error logs collects the Apache error logs.
+
+An example event for `error` looks as following:
+
+```json
+{
+    "@timestamp": "2024-07-03T11:17:00.781Z",
+    "agent": {
+        "ephemeral_id": "7abcc15c-0d38-4f16-843e-622a20dcfe13",
+        "id": "7417c67c-5b97-401f-b722-6becf94a2f17",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "apache": {
+        "error": {
+            "module": "mpm_event"
+        }
+    },
+    "data_stream": {
+        "dataset": "apache.error",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "7417c67c-5b97-401f-b722-6becf94a2f17",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "apache.error",
+        "ingested": "2024-07-03T11:17:27Z",
+        "kind": "event",
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": [
+            "192.168.246.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-F6-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/error.log"
+        },
+        "level": "notice",
+        "offset": 0
+    },
+    "message": "AH00489: Apache/2.4.46 (Unix) configured -- resuming normal operations",
+    "process": {
+        "pid": 1,
+        "thread": {
+            "id": 139928782480512
+        }
+    },
+    "tags": [
+        "apache-error"
+    ]
+}
+```
 
 **ECS Field Reference**
 
