@@ -210,9 +210,9 @@ goflow2 -format json -listen "sflow://:6343" -mapping /etc/goflow2/mapping.yaml 
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| input.type | input type | constant_keyword |
-| log.offset | logfile offset | long |
-| sflow.bytes | Original Bytes of the sample package. | long |
-| sflow.sample_rate | sflow sample rate. | long |
-| sflow.sequence_num | sflow sequence number. | long |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| sflow.bytes | Original size in  bytes of the sample packet. | long |
+| sflow.sample_rate | sample rate. | long |
+| sflow.sequence_num | flow sequence number. | long |
 
