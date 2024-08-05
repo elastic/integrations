@@ -785,6 +785,139 @@ processors:
             - _ingest._value.LAST_SUCCESS_DATE
           tag: remove_qualys_vmdr_asset_host_detection_cloud_provider_tags_cloud_tag_fields
           ignore_missing: true
+
+  - script:
+      lang: painless
+      tag: cloud_provider_attributes
+      if: >-
+        ctx.qualys_vmdr?.asset_host_detection?.metadata?.ec2?.attribute instanceof List ||
+        ctx.qualys_vmdr?.asset_host_detection?.metadata?.google?.attribute instanceof List ||
+        ctx.qualys_vmdr?.asset_host_detection?.metadata?.azure?.attribute instanceof List
+      source: |-
+        def accIDs = new ArrayList();
+        def projIDs = new ArrayList();
+        def names = new ArrayList();
+        def regions = new ArrayList();
+        def types = new ArrayList();
+        def zones = new ArrayList();
+        // Collate attributes.
+        if (ctx.qualys_vmdr?.asset_host_detection?.metadata?.ec2?.attribute instanceof List) {
+          for (def attr: ctx.qualys_vmdr.asset_host_detection.metadata.ec2.attribute) {
+            if (attr.value == null && attr.value == "") {
+              continue;
+            }
+            if (attr.name == "latest/dynamic/instance-identity/document/accountId") {
+              accIDs.add(attr.value);
+              continue;
+            }
+            if (attr.name == "latest/dynamic/instance-identity/document/instanceType") {
+              types.add(attr.value);
+              continue;
+            }
+            if (attr.name == "latest/dynamic/instance-identity/document/region") {
+              regions.add(attr.value);
+              continue;
+            }
+            if (attr.name == "latest/dynamic/instance-identity/document/availabilityZone") {
+              zones.add(attr.value);
+            }
+          }
+        }
+        if (ctx.qualys_vmdr?.asset_host_detection?.metadata?.google?.attribute instanceof List) {
+          for (def attr: ctx.qualys_vmdr.asset_host_detection.metadata.google.attribute) {
+            if (attr.value == null && attr.value == "") {
+              continue;
+            }
+            if (attr.name == "projectId") {
+              names.add(attr.value);
+              continue;
+            }
+            if (attr.name == "projectIdNo") {
+              projIDs.add(attr.value);
+              continue;
+            }
+            if (attr.name == "machineType") {
+              types.add(attr.value);
+              continue;
+            }
+            if (attr.name == "location") {
+              regions.add(attr.value);
+              continue;
+            }
+            if (attr.name == "zone") {
+              zones.add(attr.value);
+            }
+          }
+        }
+        if (ctx.qualys_vmdr?.asset_host_detection?.metadata?.azure?.attribute instanceof List) {
+          for (def attr: ctx.qualys_vmdr.asset_host_detection.metadata.azure.attribute) {
+            if (attr.value == null && attr.value == "") {
+              continue;
+            }
+            if (attr.name == "subscriptionId") {
+              projIDs.add(attr.value);
+              continue;
+            }
+            if (attr.name == "location") {
+              regions.add(attr.value);
+            }
+          }
+        }
+        // Apply collation.
+        if (accIDs.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          if (ctx.cloud.account == null) {
+            ctx.cloud.account = new HashMap();
+          }
+          ctx.cloud.account.id = accIDs;
+        }
+        if (projIDs.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          if (ctx.cloud.project == null) {
+            ctx.cloud.project = new HashMap();
+          }
+          ctx.cloud.project.id = projIDs;
+        }
+        if (names.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          if (ctx.cloud.project == null) {
+            ctx.cloud.project = new HashMap();
+          }
+          ctx.cloud.project.name = names;
+        }
+        if (regions.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          ctx.cloud.region = regions;
+        }
+        if (types.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          if (ctx.cloud.machine == null) {
+            ctx.cloud.machine = new HashMap();
+          }
+          ctx.cloud.machine.type = types;
+        }
+        if (zones.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          ctx.cloud.availability_zone = zones;
+        }
+
+  - set:
+      field: cloud.instance.name
+      copy_from: qualys_vmdr.asset_host_detection.dns_data.hostname
+      ignore_empty_value: true
+
   - script:
       lang: painless
       tag: script_to_set_IS_DISABLED
