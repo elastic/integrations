@@ -23,18 +23,19 @@ program: |
   request(
     "GET",
     state.url + "/breach/catalog?" + {
-      ?"since": (state.?want_more.orValue(false) ? state.?cursor.first_published_date : state.?cursor.last_published_date).as(date,
-        date.hasValue() ?
-          optional.of([string(timestamp(date.value()) - duration("24h")).split("T")[0]])
+      ?"since": (state.?want_more.orValue(false) ? optional.none()
+      :
+        has(state.?cursor.last_published_date) ?
+          optional.of([(timestamp(state.cursor.last_published_date) - duration("24h")).format("2006-01-02")])
         :
-          optional.of([string(timestamp(0)).split("T")[0]])
+          optional.none()
       ),
       ?"cursor": state.?want_more.orValue(false) ? optional.of([state.pagination_token]) : optional.none(),
     }.format_query()
   ).with({
       "Header": {
         "x-api-key": [state.api_key],
-        "User-Agent": ["ElasticSearch/0.1.0"],
+        "User-Agent": [useragent],
       },
   }).do_request().as(resp, resp.StatusCode == 200 ?
     bytes(resp.Body).decode_json().as(body,
@@ -48,17 +49,8 @@ program: |
             optional.of(([?state.?cursor.last_published_date] + body.results.map(e, e.spycloud_publish_date)).max())
           :
             state.?cursor.last_published_date,
-          ?"first_published_date": (has(state.?cursor.first_published_date) && has(body.results) && body.results.size() > 0) ?
-            (
-              (has(body.cursor) && body.cursor != "" && state.want_more) ?
-                optional.of(state.cursor.first_published_date)
-              :
-                optional.of(state.cursor.last_published_date)
-            )
-          :
-            optional.of(string(timestamp(0) + duration("24h"))),
         },
-        "pagination_token": body.?cursor.orValue(""),
+        ?"pagination_token": body.?cursor,
         "want_more": body.?cursor.orValue("") != "",
         "api_key": state.api_key,
       }

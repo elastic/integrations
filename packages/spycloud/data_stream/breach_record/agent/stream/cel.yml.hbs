@@ -28,18 +28,21 @@ program: |
     request(
       "GET",
       state.url + "/breach/data/watchlist?severity=" + string(state.severity) + "&" + {
-        ?"since": (state.?want_more.orValue(false) ? state.?cursor.first_published_date : state.?cursor.last_published_date).as(date,
-        date.hasValue() ?
-          optional.of([string(timestamp(date.value()) - duration("24h")).split("T")[0]])
+        ?"since": (state.?want_more.orValue(false) ? optional.none()
         :
-          optional.of([((now - (duration(state.initial_interval)+duration("24h"))).format(time_layout.RFC3339)).split("T")[0]])
-        ),
+          (state.?cursor.last_published_date).as(date,
+            optional.of([(date.hasValue() ?
+              timestamp(state.cursor.last_published_date) - duration("24h")
+            :
+              now - (duration(state.initial_interval) + duration("24h"))
+          ).format("2006-01-02")])
+        )),
         ?"cursor": state.?want_more.orValue(false) ? optional.of([state.pagination_token_since]) : optional.none(),
       }.format_query()
     ).with({
     "Header":{
         "x-api-key": [state.api_key],
-        "User-Agent": ["ElasticSearch/0.1.0"],
+        "User-Agent": [useragent],
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(first_body,
@@ -60,31 +63,14 @@ program: |
                 optional.of(([?state.?cursor.last_published_date] + first_body.results.map(e, e.spycloud_publish_date)).max())
               :
                 state.?cursor.last_published_date,
-            ?"first_published_date": (has(state.?cursor.first_published_date) && has(first_body.results) && first_body.results.size() > 0) ?
-                (has(first_body.cursor) && first_body.cursor != "" && state.want_more ?
-                  optional.of(state.cursor.first_published_date)
-                :
-                  optional.of(([?state.?cursor.last_published_date] + first_body.results.map(e, e.spycloud_publish_date)).max())
-                )
-              :
-                has(first_body.cursor) && first_body.cursor !="" ?
-                  optional.of((now - duration(state.initial_interval)).format(time_layout.RFC3339))
-                :
-                (
-                  has(first_body.results) && first_body.results.size() > 0 ?
-                    optional.of(first_body.results.map(e, e.spycloud_publish_date).max())
-                  :
-                    optional.of((now - duration(state.initial_interval)).format(time_layout.RFC3339))
-                ),
-            "first_modified_date": state.?cursor.first_modified_date.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
             "last_modified_date": state.?cursor.last_modified_date.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
           },
-          "pagination_token_since": first_body.?cursor.orValue(""),
+          ?"pagination_token_since": first_body.?cursor,
           "since_data": first_body.?cursor.orValue("") != "",
-          "want_more": first_body.?cursor.orValue("") != "" || (has(state.since_modified_data) && state.since_modified_data),
+          "want_more": first_body.?cursor.orValue("") != "" || state.?since_modified_data.orValue(false),
           "api_key": state.api_key,
           "since_modified_data": state.since_modified_data,
-          "pagination_token_since_modified": state.?pagination_token_since_modified.orValue(""),
+          ?"pagination_token_since_modified": state.?pagination_token_since_modified,
           "initial_interval": state.initial_interval,
           "severity": state.severity,
         })
@@ -109,19 +95,22 @@ program: |
     request(
       "GET",
       state.url + "/breach/data/watchlist?severity=" + string(state.severity) + "&" + {
-        ?"since_modification_date": (!state.?want_more.orValue(false) ? optional.of([""]) :
-          state.?pagination_token_since_modified.orValue("") != "" ? state.?cursor.first_modified_date : state.?cursor.last_modified_date).as(date,
-            date.hasValue() ?
-              optional.of([string(timestamp(date.value()) - duration("24h")).split("T")[0]])
-            :
-              optional.of([((now - (duration(state.initial_interval)+duration("24h"))).format(time_layout.RFC3339)).split("T")[0]])
-          ),
+        ?"since_modification_date": (!state.?want_more.orValue(false) ? optional.none() :
+          state.?pagination_token_since_modified.orValue("") != "" ? optional.none() :
+            (state.?cursor.last_modified_date).as(date,
+              optional.of([(date.hasValue() ?
+                timestamp(state.cursor.last_modified_date) - duration("24h")
+              :
+                now - (duration(state.initial_interval) + duration("24h"))
+            ).format("2006-01-02")])
+          )
+        ),
         ?"cursor": state.?want_more.orValue(false) && state.?pagination_token_since_modified.orValue("") != "" ? optional.of([state.pagination_token_since_modified]) : optional.none(),
       }.format_query()
     ).with({
     "Header":{
         "x-api-key": [state.api_key],
-        "User-Agent": ["ElasticSearch/0.1.0"],
+        "User-Agent": [useragent],
       }
     }).do_request().as(response,
     response.StatusCode == 200 ?
@@ -142,18 +131,9 @@ program: |
               optional.of(([?state.?cursor.last_modified_date] + second_body.results.map(e, e.record_modification_date)).max())
               :
                 state.?cursor.last_modified_date,
-          ?"first_modified_date": (has(state.?cursor.first_modified_date) && has(second_body.results) && second_body.results.size() > 0) ?
-            (has(second_body.cursor) && second_body.cursor != "" && state.want_more ?
-                  optional.of(state.cursor.first_modified_date)
-                :
-                  optional.of(([?state.?cursor.last_modified_date] + second_body.results.map(e, e.record_modification_date)).max())
-            )
-            :
-              optional.of((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
           "last_published_date": state.?cursor.last_published_date.orValue(null),
-          "first_published_date": state.?cursor.first_published_date.orValue(null),
         },
-        "pagination_token_since_modified": second_body.?cursor.orValue(""),
+        ?"pagination_token_since_modified": second_body.?cursor,
         "api_key": state.api_key,
         "want_more": second_body.?cursor.orValue("") != "",
         "since_data": !(second_body.?cursor.orValue("") != ""),

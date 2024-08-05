@@ -6,6 +6,7 @@ processors:
       tag: set_ecs_version
       value: 8.11.0
   - fail:
+      tag: fail_processor
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process
   - set:
@@ -18,6 +19,11 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       tag: json_event_original
