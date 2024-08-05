@@ -33,9 +33,9 @@ program: |
           "GET",
           state.url.trim_right("/") + "/devices/queries/devices/v1?" + {
             "sort": ["modified_timestamp.asc"],
-            "offset": ["0"],
+            "offset": [string(state.offset)],
             "limit": [string(state.batch_size)],
-            "filter": ['modified_timestamp:>"'+state.?cursor.last_timestamp.orValue(string(now - duration(state.initial_interval)))+'"'],
+            ?"filter": has(state.?cursor.first_timestamp) ? optional.of(['modified_timestamp:>"'+state.cursor.first_timestamp+'"']) : optional.none(),
           }.format_query()
         )
       :
@@ -43,9 +43,9 @@ program: |
           "GET",
           state.url.trim_right("/") + "/devices/queries/devices/v1?" + {
             "sort": ["modified_timestamp.asc"],
-            "offset": [string(state.offset)],
+            "offset": ["0"],
             "limit": [string(state.batch_size)],
-            ?"filter": has(state.?cursor.first_timestamp) ? optional.of(['modified_timestamp:>"'+state.cursor.first_timestamp+'"']) : optional.none(),
+            "filter": ['modified_timestamp:>"'+state.?cursor.last_timestamp.orValue(string(now - duration(state.initial_interval)))+'"'],
           }.format_query()
         )
     ).do_request().as(get_resp, get_resp.StatusCode == 200 ?
