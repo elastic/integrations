@@ -17,7 +17,7 @@ DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default ${DRY_RUN:-"true"})"
 BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default ${BASE_COMMIT:-""})"
 PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default ${PACKAGE_NAME:-""})"
 PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default ${PACKAGE_VERSION:-""})"
-REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get PREMOVE_OTHER_PACKAGES --default ${REMOVE_OTHER_PACKAGES:-"false"})"
+REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default ${REMOVE_OTHER_PACKAGES:-"false"})"
 
 if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   buildkite-agent annotate "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
