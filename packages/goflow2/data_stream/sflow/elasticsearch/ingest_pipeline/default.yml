@@ -3,30 +3,45 @@ description: Process goflow2 sflow data
 processors:
 - set:
     field: event.kind
-    value: "event"
-- set:
+    value: event
+    tag: '1'
+- append:
     field: event.category
-    value: "network"
-- set:
+    value:
+    - network
+    tag: '2'
+- append:
     field: event.type
-    value: "connection"
+    value:
+    - connection
+    tag: '3'
 - set:
     field: ecs.version
-    value: "8.11.0"
+    value: 8.11.0
+    tag: '4'
+- json:
+    field: message
+    add_to_root: true
+    tag: '0'
 - rename:
     if: ctx.event?.original == null
     field: message
     target_field: event.original
     ignore_missing: true
+    tag: '5'
 - remove:
-    if: 'ctx.event?.original != null' 
+    if: ctx.event?.original != null
     field: message
     ignore_missing: true
-    description: 'The `message` field is no longer required if the document has an `event.original` field.'
+    description: The `message` field is no longer required if the document has an
+      `event.original` field.
+    tag: '6'
 - script:
     source: ctx.time_flow_start_ns = (ctx.time_flow_start_ns / 1000000000);
+    tag: '7'
 - script:
     source: ctx.flow_size = ctx.bytes * ctx.sampling_rate;
+    tag: '8'
 - date:
     field: time_flow_start_ns
     target_field: "@timestamp"
@@ -34,83 +49,125 @@ processors:
     - UNIX
     timezone: UTC
     ignore_failure: false
+    tag: '9'
 - rename:
     field: type
     target_field: event.action
     if: ctx.type != ''
-- rename:
-    field: sampler_address
-    target_field: observer.ip
+    tag: '10'
+- append:
+    field: observer.ip
+    value:
+    - "{{{sampler_address}}}"
+    tag: '11'
 - rename:
     field: sequence_num
     target_field: sflow.sequence_num
+    tag: '12'
 - rename:
     field: in_if
     target_field: observer.ingress.interface.id
     if: ctx.in_if != ''
+    tag: '13'
+- convert:
+    field: observer.ingress.interface.id
+    type: string
+    ignore_missing: true
+    tag: '46'
 - rename:
     field: out_if
-    target_field: observer.engress.interface.id
+    target_field: observer.egress.interface.id
     if: ctx.out_if != ''
+    tag: '14'
+- convert:
+    field: observer.egress.interface.id
+    type: string
+    ignore_missing: true
+    tag: '45'
 - convert:
     field: src_addr
     type: ip
     if: ctx.src_addr != ''
+    tag: '15'
 - rename:
     field: src_addr
     target_field: source.ip
     if: ctx.src_addr != ''
+    tag: '16'
 - convert:
     field: dst_addr
     type: ip
     if: ctx.dst_addr != ''
+    tag: '17'
 - rename:
     field: dst_addr
     target_field: destination.ip
     if: ctx.dst_addr != ''
+    tag: '18'
 - rename:
     field: etype
     target_field: network.type
     if: ctx.etype != ''
+    tag: '19'
 - rename:
     field: proto
     target_field: network.transport
     if: ctx.proto != ''
+    tag: '20'
 - rename:
     field: src_port
     target_field: source.port
     if: ctx.src_port != ''
+    tag: '21'
 - rename:
     field: dst_port
     target_field: destination.port
     if: ctx.dst_port != ''
+    tag: '22'
 - rename:
     field: src_vlan
     target_field: observer.ingress.vlan.id
     if: ctx.src_vlan != ''
+    tag: '23'
+- convert:
+    field: observer.ingress.vlan.id
+    type: string
+    ignore_missing: true
+    tag: '48'
 - rename:
     field: dst_vlan
     target_field: observer.egress.vlan.id
     if: ctx.dst_vlan != ''
+    tag: '24'
+- convert:
+    field: observer.egress.vlan.id
+    type: string
+    ignore_missing: true
+    tag: '47'
 - rename:
     field: sampling_rate
     target_field: network.packets
+    tag: '25'
 - rename:
     field: bytes
     target_field: sflow.bytes
+    tag: '26'
 - rename:
     field: flow_size
     target_field: network.bytes
+    tag: '27'
 - geoip:
     if: ctx.source?.geo == null
     field: source.ip
     target_field: source.geo
     ignore_missing: true
+    tag: '28'
 - geoip:
     if: ctx.destination?.geo == null
     field: destination.ip
     target_field: destination.geo
     ignore_missing: true
+    tag: '29'
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
@@ -119,6 +176,7 @@ processors:
     - asn
     - organization_name
     ignore_missing: true
+    tag: '30'
 - geoip:
     database_file: GeoLite2-ASN.mmdb
     field: destination.ip
@@ -127,22 +185,27 @@ processors:
     - asn
     - organization_name
     ignore_missing: true
+    tag: '31'
 - rename:
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
+    tag: '32'
 - rename:
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
+    tag: '33'
 - rename:
     field: destination.as.asn
     target_field: destination.as.number
     ignore_missing: true
+    tag: '34'
 - rename:
     field: destination.as.organization_name
     target_field: destination.as.organization.name
     ignore_missing: true
+    tag: '35'
 - remove:
     field:
     - time_flow_start_ns
@@ -150,46 +213,57 @@ processors:
     - etype
     - dst_addr
     - src_addr
-    ignore_failure: true
+    - sampler_address
     ignore_missing: true
+    ignore_failure: true
+    tag: '36'
 - lowercase:
     field: network.transport
     ignore_missing: true
+    tag: '37'
 - lowercase:
     field: network.type
     ignore_missing: true
+    tag: '38'
 - set:
     field: sflow.sample_rate
-    copy_from: "network.packets"
+    copy_from: network.packets
     ignore_empty_value: true
+    tag: '39'
 - append:
     field: destination.address
     value:
     - "{{{destination.ip}}}"
-    if: "ctx.destination?.ip != null"
+    if: ctx.destination?.ip != null
+    tag: '40'
 - append:
     field: source.address
     value:
     - "{{{source.ip}}}"
-    if: "ctx.source?.ip != null"
+    if: ctx.source?.ip != null
+    tag: '41'
 - append:
     field: related.ip
     value:
     - "{{{source.ip}}}"
-    if: "ctx.source?.ip != null"
+    if: ctx.source?.ip != null
+    tag: '42'
 - append:
     field: related.ip
     value:
     - "{{{destination.ip}}}"
-    if: "ctx.destination?.ip != null"
+    if: ctx.destination?.ip != null
+    tag: '43'
 - remove:
     field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
     ignore_failure: true
     ignore_missing: true
+    tag: '44'
 on_failure:
 - set:
     field: error.message
     value: Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag
       }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message
       }} - Source {{_source}}
+    tag: '99'
