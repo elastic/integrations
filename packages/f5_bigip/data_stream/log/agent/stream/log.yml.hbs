@@ -16,28 +16,7 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-processors:
-- decode_json_fields:
-    fields: message
-    target: json
-    add_error_key: true
-- drop_event:
-    when:
-      not:
-        or:
-          - equals:
-              json.telemetryEventCategory: LTM
-          - equals:
-              json.telemetryEventCategory: ASM
-          - equals:
-              json.telemetryEventCategory: AFM
-          - equals:
-              json.telemetryEventCategory: AVR
-          - equals:
-              json.telemetryEventCategory: APM
-- drop_fields:
-    fields: ['json']
-    ignore_missing: true
 {{#if processors}}
+processors:
 {{processors}}
 {{/if}}

@@ -13,11 +13,10 @@ processors:
   - set:
       field: observer.type
       value: firewall
-
   - set:
       field: event.timezone
       value: '{{{_conf.tz_offset}}}'
-      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
+      if: ctx._conf?.tz_offset instanceof String && !ctx._conf.tz_offset.equalsIgnoreCase('local')
 
 # Collects the first few parts of the message to be used for conditional parsing later
   - set:
@@ -107,12 +106,13 @@ processors:
 
   - grok:
       field: _temp_.srcuser
+      tag: process_srcuser
       ignore_missing: true
       patterns:
         - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
         - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
         - '^%{USERNAME:source.user.name}@%{PATRUNKATEDHOSTNAME:source.user.domain}$'
-        - '^%{USERNAME:source.user.name}$'
+        - '^%{GREEDYDATA:source.user.name}$'
       pattern_definitions:
         USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
         PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
@@ -120,12 +120,13 @@ processors:
 
   - grok:
       field: _temp_.dstuser
+      tag: process_dstuser
       ignore_missing: true
       patterns:
         - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
         - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
         - '^%{USERNAME:destination.user.name}@%{PATRUNKATEDHOSTNAME:destination.user.domain}$'
-        - '^%{USERNAME:destination.user.name}$'
+        - '^%{GREEDYDATA:destination.user.name}$'
       pattern_definitions:
         USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
         PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
@@ -221,6 +222,14 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  # Logs received from managed firewalls running PAN-OS 9.1 and earlier releases
+  # display a 1969-12-31T16:00:00:000-8:00 timestamp regardless of when the log
+  # was received. The panw.panos.high_resolution_timestamp field is removed if
+  # it starts with this date.
+  - remove:
+      field: _temp_.high_res_timestamp
+      ignore_missing: true
+      if: ctx._temp_?.high_res_timestamp instanceof String && (ctx._temp_.high_res_timestamp.startsWith("1969") || ctx._temp_.high_res_timestamp.startsWith("1970"))
   - date:
       if: ctx.event?.timezone == null && ctx._temp_?.high_res_timestamp != null
       field: _temp_.high_res_timestamp
@@ -250,6 +259,11 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      tag: highres_to_timestamp
+      field: '@timestamp'
+      copy_from: panw.panos.high_resolution_timestamp
+      ignore_empty_value: true
   - date:
       if: ctx.event?.timezone == null && ctx.event.start != null
       field: event.start
