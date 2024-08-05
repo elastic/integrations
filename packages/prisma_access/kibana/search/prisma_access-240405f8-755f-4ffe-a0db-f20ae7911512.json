@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "columns": [
+            "event.id",
+            "destination.mac",
+            "source.mac",
+            "destination.ip",
+            "source.ip",
+            "prisma_access.event.from_zone",
+            "network.forwarded_ip",
+            "prisma_access.event.http.referer.fqdn",
+            "prisma_access.event.http.referer.protocol",
+            "prisma_access.event.http.referer.port",
+            "prisma_access.event.http.referer.url_path"
+        ],
+        "description": "",
+        "grid": {},
+        "hideChart": false,
+        "isTextBasedQuery": false,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "negate": false,
+                            "params": [
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "logs-*",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "prisma_access.event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "prisma_access.event"
+                                        }
+                                    }
+                                },
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "prisma_access.event.name",
+                                        "index": "logs-*",
+                                        "key": "prisma_access.event.name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "url"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "prisma_access.event.name": "url"
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "AND",
+                            "type": "combined"
+                        },
+                        "query": {}
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "timeRestore": false,
+        "title": "URL Event Essential Details [Logs Prisma Access]",
+        "usesAdHocDataView": false
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-07-02T07:11:08.419Z",
+    "id": "prisma_access-240405f8-755f-4ffe-a0db-f20ae7911512",
+    "managed": true,
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "search",
+    "typeMigrationVersion": "10.2.0"
+}
