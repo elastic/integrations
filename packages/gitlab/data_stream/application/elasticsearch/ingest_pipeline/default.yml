@@ -87,21 +87,41 @@ processors:
           for (fieldName in fieldsToRename) {
             if (fieldName.endsWith('values')) {
               def newField = fieldName.substring(0, fieldName.length() - 7);
-              if (ctx.gitlab.application.containsKey(fieldName)) {
-                def value = ctx.gitlab.application[fieldName];
-                if (value.size() > 1) {
-                  ctx.gitlab.application[newField] = value;
-                } else {
-                  ctx.gitlab.application[newField] = value[0]
-                }
-                ctx.gitlab.application.remove(fieldName);
+              def value = ctx.gitlab.application[fieldName];
+              if (value.size() > 1) {
+                ctx.gitlab.application[newField] = value;
+              } else {
+                ctx.gitlab.application[newField] = value[0]
               }
+              ctx.gitlab.application.remove(fieldName);
             }
           }
         }
   - dot_expander:
       field: "*"
       path: gitlab.application
+  - rename:
+      field: gitlab.application.meta.user
+      target_field: user.name
+      ignore_missing: true
+  - convert:
+      field: gitlab.application.meta.user_id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: gitlab.application.meta.user_id
+      target_field: user.id
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{user.id}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{user.name}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
   - rename:
       field: gitlab.application.mergeability_merge_request_id
       target_field: gitlab.application.mergeability.merge_request_id
@@ -130,18 +150,6 @@ processors:
       field: gitlab.application.user_admin
       type: boolean
       ignore_missing: true
-  - dot_expander:
-      path: gitlab.application
-      field: meta.caller_id
-  - dot_expander:
-      path: gitlab.application
-      field: meta.client_id
-  - dot_expander:
-      path: gitlab.application
-      field: meta.feature_category
-  - dot_expander:
-      path: gitlab.application
-      field: meta.remote_ip
   - convert:
       field: gitlab.application.meta.remote_ip
       type: ip
@@ -153,26 +161,52 @@ processors:
           - append:
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
-  - dot_expander:
-      path: gitlab.application
-      field: meta.user
-  - dot_expander:
-      path: gitlab.application
-      field: meta.user_id
-  - dot_expander:
-      path: gitlab.application
-      field: meta.root_caller_id
-  - dot_expander:
-      path: gitlab.application
-      field: meta.root_namespace
-  - dot_expander:
-      path: gitlab.application
-      field: meta.project
+  - rename:
+      field: gitlab.application.meta.remote_ip
+      target_field: client.ip
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      tag: geoip_client_address
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      tag: geoip_client_asn
+      target_field: client.as
+      properties:
+      - asn
+      - organization_name
+  - rename:
+      field: client.as.asn
+      tag: rename_client_as_asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      tag: rename_client_as_organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - set:
+      field: client.address
+      copy_from: client.ip
+      if: ctx.client?.ip != null
+  - set:
+      field: source
+      copy_from: client
+      if: ctx.client?.ip != null
+  - append:
+      field: related.ip
+      value: '{{client.ip}}'
+      if: ctx.client?.ip != null
+      allow_duplicates: false
   - append:
       field: event.category
       value: authentication
       tag: 'auth'
-      if: 'ctx.gitlab.application.message != null && (ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:"))'
+      if: 'ctx.gitlab?.application?.message != null && (ctx.gitlab.application.message.contains("Failed Login:") || ctx.gitlab.application.message.contains("Successful Login:"))'
   - set:
       field: event.outcome
       value: failure
@@ -183,23 +217,19 @@ processors:
       if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains("Successful Login:")
   - append:
       field: event.type
-      value:
-        - creation
+      value: creation
       if: 'ctx.gitlab?.application?.message != null && (ctx.gitlab.application.message.contains("created a new project") || ctx.gitlab.application.message.contains(" was created"))'
   - append:
       field: event.type
-      value:
-        - deletion
+      value: deletion
       if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains(" was deleted")
   - append:
       tag: event_type_append
       field: event.type
-      value:
-        - info
+      value: info
   - append:
       field: event.category
-      value:
-        - configuration
+      value: configuration
       if: ' ctx.gitlab?.application?.message != null && !(ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:"))'
   - remove:
       field: event.original
@@ -224,6 +254,11 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
