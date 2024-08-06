@@ -1201,6 +1201,9 @@
                 - name: group
                   type: group
                   fields:
+                    - name: domain
+                      type: keyword
+                      description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
                     - name: desc
                       type: keyword
                       description: The group description.
@@ -1361,6 +1364,9 @@
                     - name: uid_alt
                       type: keyword
                       description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                    - name: ldap_person
+                      type: flattened
+                      description: The LDAP attributes of the user.
                 - name: xattributes
                   type: flattened
                   description: An unordered collection of zero or more name/value pairs that represent a process extended attribute.
@@ -1591,21 +1597,11 @@
             - name: name
               type: keyword
               description: The username. For example, janedoe1.
-            - name: org
-              type: group
-              fields:
-                - name: name
-                  type: keyword
-                  description: The name of the organization. For example, Widget, Inc.
-                - name: ou_name
-                  type: keyword
-                  description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
-                - name: ou_uid
-                  type: keyword
-                  description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
-                - name: uid
-                  type: keyword
-                  description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+            - name: org.*
+              type: object
+              object_type: keyword
+              object_type_mapping_type: "*"
+              description: Organization and org unit related to the user.
             - name: type
               type: keyword
               description: The type of the user. For example, System, AWS IAM User, etc.
@@ -1619,165 +1615,5 @@
               type: keyword
               description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
             - name: ldap_person
-              type: group
-              description: The LDAP person object.
-              fields:
-                - name: cost_center
-                  type: keyword
-                  description: The cost center associated with the user.
-                - name: created_time
-                  type: date
-                  format: epoch_second
-                  description: The timestamp when the user was created.
-                - name: deleted_time
-                  type: date
-                  format: epoch_second
-                  description: The timestamp when the user was deleted.
-                - name: email_addrs
-                  type: keyword
-                  description: A list of additional email addresses for the user.
-                - name: employee_uid
-                  type: keyword
-                  description: The employee identifier assigned to the user by the organization.
-                - name: given_name
-                  type: keyword
-                  description: The given or first name of the user.
-                - name: hire_time
-                  type: date
-                  format: epoch_second
-                  description: The timestamp when the user was or will be hired by the organization.
-                - name: job_title
-                  type: keyword
-                  description: The user's job title.
-                - name: labels
-                  type: keyword
-                  description: The labels associated with the user. For example in AD this could be the userType, employeeType.
-                - name: last_login_time
-                  type: date
-                  format: epoch_second
-                  description: The last time when the user logged in.
-                - name: ldap_cn
-                  type: keyword
-                  description: The LDAP and X.500 commonName attribute, typically the full name of the person. For example, John Doe.
-                - name: ldap_dn
-                  type: keyword
-                  description: The X.500 Distinguished Name (DN) is a structured string that uniquely identifies an entry, such as a user, in an X.500 directory service For example, cn=John Doe,ou=People,dc=example,dc=com.
-                - name: leave_time
-                  type: date
-                  format: epoch_second
-                  description: The timestamp when the user left or will be leaving the organization.
-                - name: modified_time
-                  type: date
-                  format: epoch_second
-                  description: The timestamp when the user entry was last modified.
-                - name: office_location
-                  type: keyword
-                  description: The primary office location associated with the user. This could be any string and isn't a specific address.
-                - name: surname
-                  type: keyword
-                  description: The last or family name for the user.
-                - name: location
-                  type: group
-                  fields:
-                    - name: city
-                      type: keyword
-                      description: The name of the city.
-                    - name: continent
-                      type: keyword
-                      description: The name of the continent.
-                    - name: coordinates
-                      type: geo_point
-                      description: A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON.
-                    - name: country
-                      type: keyword
-                      description: The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized.
-                    - name: desc
-                      type: keyword
-                      description: The description of the geographical location.
-                    - name: is_on_premises
-                      type: boolean
-                      description: The indication of whether the location is on premises.
-                    - name: isp
-                      type: keyword
-                      description: The name of the Internet Service Provider (ISP).
-                    - name: postal_code
-                      type: keyword
-                      description: The postal code of the location.
-                    - name: provider
-                      type: keyword
-                      description: The provider of the geographical location data.
-                    - name: region
-                      type: keyword
-                      description: The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US.
-                - name: manager
-                  type: group
-                  description: Manager
-                  fields:
-                    - name: account
-                      type: group
-                      fields:
-                        - name: name
-                          type: keyword
-                          description: The name of the account (e.g. GCP Account Name).
-                        - name: type
-                          type: keyword
-                          description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
-                        - name: type_id
-                          type: integer
-                          description: The normalized account type identifier.
-                        - name: uid
-                          type: keyword
-                          description: The unique identifier of the account (e.g. AWS Account ID).
-                    - name: credential_uid
-                      type: keyword
-                      description: The unique identifier of the user's credential. For example, AWS Access Key ID.
-                    - name: domain
-                      type: keyword
-                      description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
-                    - name: email_addr
-                      type: keyword
-                      description: The user's email address.
-                    - name: full_name
-                      type: keyword
-                      description: The full name of the person, as per the LDAP Common Name attribute (cn).
-                    - name: groups
-                      type: group
-                      fields:
-                        - name: domain
-                          type: keyword
-                          description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
-                        - name: desc
-                          type: keyword
-                          description: The group description.
-                        - name: name
-                          type: keyword
-                          description: The group name.
-                        - name: privileges
-                          type: keyword
-                          description: The group privileges.
-                        - name: type
-                          type: keyword
-                          description: The type of the group or account.
-                        - name: uid
-                          type: keyword
-                          description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
-                    - name: name
-                      type: keyword
-                      description: The username. For example, janedoe1.
-                    - name: org.*
-                      type: object
-                      object_type: keyword
-                      object_type_mapping_type: "*"
-                      description: Organization and org unit related to the user.
-                    - name: type
-                      type: keyword
-                      description: The type of the user. For example, System, AWS IAM User, etc.
-                    - name: type_id
-                      type: integer
-                      description: The account type identifier.
-                    - name: uid
-                      type: keyword
-                      description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
-                    - name: uid_alt
-                      type: keyword
-                      description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+              type: flattened
+              description: The LDAP attributes of the user.

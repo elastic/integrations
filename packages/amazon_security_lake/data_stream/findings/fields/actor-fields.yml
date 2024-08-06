@@ -19,6 +19,9 @@
                 - name: group
                   type: group
                   fields:
+                    - name: domain
+                      type: keyword
+                      description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
                     - name: desc
                       type: keyword
                       description: The group description.
@@ -507,6 +510,9 @@
                     - name: uid
                       type: keyword
                       description: The unique identifier of the feature.
+                    - name: url_string
+                      type: keyword
+                      description: The URL pointing towards the product.
                     - name: vendor_name
                       type: keyword
                       description: The name of the vendor of the product.
@@ -1090,6 +1096,9 @@
                         - name: uid
                           type: keyword
                           description: The unique identifier of the feature.
+                        - name: url_string
+                          type: keyword
+                          description: The URL pointing towards the product.
                         - name: vendor_name
                           type: keyword
                           description: The name of the vendor of the product.
@@ -1192,6 +1201,9 @@
                 - name: group
                   type: group
                   fields:
+                    - name: domain
+                      type: keyword
+                      description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
                     - name: desc
                       type: keyword
                       description: The group description.
@@ -1352,6 +1364,9 @@
                     - name: uid_alt
                       type: keyword
                       description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                    - name: ldap_person
+                      type: flattened
+                      description: The LDAP attributes of the user.
                 - name: xattributes
                   type: flattened
                   description: An unordered collection of zero or more name/value pairs that represent a process extended attribute.
@@ -1582,21 +1597,11 @@
             - name: name
               type: keyword
               description: The username. For example, janedoe1.
-            - name: org
-              type: group
-              fields:
-                - name: name
-                  type: keyword
-                  description: The name of the organization. For example, Widget, Inc.
-                - name: ou_name
-                  type: keyword
-                  description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
-                - name: ou_uid
-                  type: keyword
-                  description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
-                - name: uid
-                  type: keyword
-                  description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+            - name: org.*
+              type: object
+              object_type: keyword
+              object_type_mapping_type: "*"
+              description: Organization and org unit related to the user.
             - name: type
               type: keyword
               description: The type of the user. For example, System, AWS IAM User, etc.
@@ -1619,10 +1624,16 @@
                   type: date
                   format: epoch_second
                   description: The timestamp when the user was created.
+                - name: created_time_dt
+                  type: date
+                  description: The date when the user was created.
                 - name: deleted_time
                   type: date
                   format: epoch_second
                   description: The timestamp when the user was deleted.
+                - name: deleted_time_dt
+                  type: date
+                  description: The date when the user was deleted.
                 - name: email_addrs
                   type: keyword
                   description: A list of additional email addresses for the user.
@@ -1636,6 +1647,9 @@
                   type: date
                   format: epoch_second
                   description: The timestamp when the user was or will be hired by the organization.
+                - name: hire_time_dt
+                  type: date
+                  description: The date when the user was or will be hired by the organization.
                 - name: job_title
                   type: keyword
                   description: The user's job title.
@@ -1646,6 +1660,9 @@
                   type: date
                   format: epoch_second
                   description: The last time when the user logged in.
+                - name: last_login_time_dt
+                  type: date
+                  description: The last date when the user logged in.
                 - name: ldap_cn
                   type: keyword
                   description: The LDAP and X.500 commonName attribute, typically the full name of the person. For example, John Doe.
@@ -1656,10 +1673,16 @@
                   type: date
                   format: epoch_second
                   description: The timestamp when the user left or will be leaving the organization.
+                - name: leave_time_dt
+                  type: date
+                  description: The date when the user left or will be leaving the organization.
                 - name: modified_time
                   type: date
                   format: epoch_second
                   description: The timestamp when the user entry was last modified.
+                - name: modified_time_dt
+                  type: date
+                  description: The date when the user entry was last modified.
                 - name: office_location
                   type: keyword
                   description: The primary office location associated with the user. This could be any string and isn't a specific address.
@@ -1733,6 +1756,9 @@
                     - name: groups
                       type: group
                       fields:
+                        - name: domain
+                          type: keyword
+                          description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
                         - name: desc
                           type: keyword
                           description: The group description.

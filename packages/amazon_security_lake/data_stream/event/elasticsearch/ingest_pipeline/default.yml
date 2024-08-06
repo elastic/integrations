@@ -28,7 +28,7 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','6001','6002','6003','6004'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','6001','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid)
       value: event
   - set:
       field: event.kind
@@ -124,7 +124,7 @@ processors:
       tag: append_info_into_event_type
       value: info
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1007','2001', '2002','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','6002','6003','6004'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1007','2001', '2002','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.type
       tag: append_user_into_event_type
@@ -693,7 +693,7 @@ processors:
             ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_actor" }}'
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','6001','6002','6003','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','6001','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
       tag: pipeline_object_actor
       ignore_missing_pipeline: true
   - pipeline:
@@ -713,7 +713,7 @@ processors:
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_http_request" }}'
-      if: ctx.ocsf?.class_uid != null && ['3001','3002','4002','6003','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.http_request != null
+      if: ctx.ocsf?.class_uid != null && ['3001','3002','4002','6003','6004','6005'].contains(ctx.ocsf.class_uid) && ctx.ocsf.http_request != null
       tag: pipeline_object_http_request
       ignore_missing_pipeline: true
   - pipeline:
@@ -723,7 +723,7 @@ processors:
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_network_endpoint" }}'
-      if: ctx.ocsf?.class_uid != null && ['3001','3002','3003','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4013','6001','6003','6004'].contains(ctx.ocsf.class_uid) && (ctx.ocsf.dst_endpoint != null || ctx.ocsf.src_endpoint != null)
+      if: ctx.ocsf?.class_uid != null && ['3001','3002','3003','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4013','6001','6003','6004','6005'].contains(ctx.ocsf.class_uid) && (ctx.ocsf.dst_endpoint != null || ctx.ocsf.src_endpoint != null)
       tag: pipeline_object_network_endpoint
       ignore_missing_pipeline: true
   - pipeline:
