@@ -641,7 +641,9 @@ This is the `Event` dataset.
 | ocsf.cis_benchmark_result.desc | The CIS benchmark description. | keyword |
 | ocsf.cis_benchmark_result.name | The CIS benchmark name. | keyword |
 | ocsf.cis_benchmark_result.remediation.desc | The description of the remediation strategy. | keyword |
+| ocsf.cis_benchmark_result.remediation.kb_article_list | A list of KB articles or patches related to an endpoint. | flattened |
 | ocsf.cis_benchmark_result.remediation.kb_articles | The KB article/s related to the entity. | keyword |
+| ocsf.cis_benchmark_result.remediation.references | A list of supporting URL/s, references that help describe the remediation strategy. | keyword |
 | ocsf.cis_benchmark_result.rule.category | The rule category. | keyword |
 | ocsf.cis_benchmark_result.rule.desc | The description of the rule that generated the event. | keyword |
 | ocsf.cis_benchmark_result.rule.name | The name of the rule that generated the event. | keyword |
@@ -1016,6 +1018,7 @@ This is the `Event` dataset.
 | ocsf.entity_result.uid | The identifier of the managed entity. | keyword |
 | ocsf.entity_result.version | The version of the managed entity. | keyword |
 | ocsf.evidence | The data the finding exposes to the analyst. | flattened |
+| ocsf.evidences | Describes various evidence artifacts associated to the activity/activities that triggered a security detection. | flattened |
 | ocsf.exit_code | The exit code reported by a process when it terminates. The convention is that zero indicates success and any non-zero exit code indicates that some error occurred. | keyword |
 | ocsf.expiration_time | The share expiration time. | date |
 | ocsf.expiration_time_dt | The share expiration time. | date |
@@ -1320,7 +1323,9 @@ This is the `Event` dataset.
 | ocsf.finding.related_events.type_uid | The unique identifier of the related event type. For example: 100701. | keyword |
 | ocsf.finding.related_events.uid | The unique identifier of the related event. | keyword |
 | ocsf.finding.remediation.desc | The description of the remediation strategy. | keyword |
+| ocsf.finding.remediation.kb_article_list | A list of KB articles or patches related to an endpoint. | flattened |
 | ocsf.finding.remediation.kb_articles | The KB article/s related to the entity. | keyword |
+| ocsf.finding.remediation.references | A list of supporting URL/s, references that help describe the remediation strategy. | keyword |
 | ocsf.finding.src_url | The URL pointing to the source of the finding. | keyword |
 | ocsf.finding.supporting_data | Additional data supporting a finding as provided by security tool. | flattened |
 | ocsf.finding.title | The title of the reported finding. | keyword |
@@ -1755,6 +1760,7 @@ This is the `Event` dataset.
 | ocsf.resources.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.resources.labels | The list of labels/tags associated to a resource. | keyword |
 | ocsf.resources.name | The name of the resource. | keyword |
+| ocsf.resources.namespace | The namespace is useful when similar entities exist that you need to keep separate. | keyword |
 | ocsf.resources.owner.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.resources.owner.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.resources.owner.account.type_id | The normalized account type identifier. | keyword |
@@ -1768,6 +1774,7 @@ This is the `Event` dataset.
 | ocsf.resources.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.resources.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.resources.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.resources.owner.ldap_person | The LDAP person object. | flattened |
 | ocsf.resources.owner.name | The username. For example, janedoe1. | keyword |
 | ocsf.resources.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.resources.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
