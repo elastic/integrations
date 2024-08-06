@@ -106,34 +106,41 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.roleAssignmentScope
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.role_assignment_scope
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.roleDefinitionId
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.role_definition_id
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.roleAssignmentId
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.role_assignment_id
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.principalId
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.principal_id
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.principalType
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.principal_type
+      ignore_missing: true
   - script:
-      description: Convert azure.frontdoor.waf.identity keys to snake case.
-      tag: azure-identity-keys-to-snake-case
+      tag: script_claims_cleanup
       lang: painless
-      if: ctx.azure?.frontdoor?.waf?.identity != null
+      if: ctx.azure?.frontdoor?.waf?.identity?.claims != null
       source: |
-        Map keysToSnakeCase(Map m) {
-          def regex = /_?([a-z])([A-Z]+)/;
+        Map convertDotsToUnderscore(Map m) {
           def out = new HashMap();
           for (entry in m.entrySet()) {
             def k = entry.getKey().replace('.', '_');
             def v = entry.getValue();
-            if (v instanceof Map) {
-              v = keysToSnakeCase(v);
-            } else if (v instanceof List) {
-              for (int i = 0; i < v.size(); i++) {
-                def item = v.get(i);
-                if (item instanceof Map) {
-                  v.set(i, keysToSnakeCase(item));
-                }
-              }
-            }
-            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
             out.put(k, v);
           }
           return out;
         }
-        ctx.azure.frontdoor.waf.identity = keysToSnakeCase(ctx.azure.frontdoor.waf.identity);
+        ctx.azure.frontdoor.waf.identity.claims = convertDotsToUnderscore(ctx.azure.frontdoor.waf.identity.claims);
       on_failure:
         - append:
             field: error.message
