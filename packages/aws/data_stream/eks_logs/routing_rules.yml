@@ -1,0 +1,9 @@
+# Route eks logs to the kubernetes integration
+# based on service-name.
+- source_dataset: aws.eks_logs
+  rules:
+    - target_dataset: kubernetes.audit_logs
+      if: "ctx?.event?.dataset == 'kubernetes.audit_logs'"
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
