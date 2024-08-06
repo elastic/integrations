@@ -42,14 +42,10 @@ processors:
       field: event.kind
       tag: set_event_kind_to_event
       value: event
-  - set:
-      field: event.category
-      tag: set_event_category_to_email
-      value: [email]
-  - set:
+  - append:
       field: event.type
-      tag: set_event_type_to_info
-      value: [info]
+      tag: append_event_type
+      value: info
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -57,17 +53,19 @@ processors:
   - set:
       field: observer.product
       tag: set_observer_product
-      value: Abnormal Security
+      value: Inbound Email Security
   - rename:
       field: json.affectedEmployee
       tag: rename_affectedEmployee
       target_field: abnormal_security.case.affected_employee
       ignore_missing: true
-  - set:
-      field: user.target.name
-      tag: set_user_target_name_from_case_affected_employee
-      copy_from: abnormal_security.case.affected_employee
-      ignore_empty_value: true
+  - grok:
+      field: abnormal_security.case.affected_employee
+      tag: grok_abnormal_security_case_affected_employee
+      patterns:
+        - '^%{EMAILADDRESS:user.email}$'
+        - '^%{DATA:user.name}$'
+      ignore_failure: true
   - append:
       field: related.user
       tag: append_affected_employee_to_users
@@ -78,6 +76,15 @@ processors:
       field: json.analysis
       tag: rename_analysis
       target_field: abnormal_security.case.analysis
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_to_analysis
+      copy_from: abnormal_security.case.analysis
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
       ignore_missing: true
   - date:
       field: json.customerVisibleTime
@@ -142,6 +149,25 @@ processors:
       tag: rename_severity_level
       target_field: abnormal_security.case.severity_level
       ignore_missing: true
+  - script:
+      description: Set event severity based on severity level
+      if: ctx.abnormal_security?.case?.severity_level != null
+      tag: set_event_severity_from_case_severity_level
+      lang: painless
+      params:
+        NONE: 0
+        LOW: 1
+        MEDIUM: 2
+        HIGH: 3
+      source: |-
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.severity = params.get(ctx.abnormal_security.case.severity_level);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.case_status
       tag: rename_case_status
@@ -154,10 +180,10 @@ processors:
       ignore_missing: true
   - remove:
       field:
-        - abnormal_security.case.affected_employee
         - abnormal_security.case.description
         - abnormal_security.case.first_observed
         - abnormal_security.case.id
+        - abnormal_security.case.analysis
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')

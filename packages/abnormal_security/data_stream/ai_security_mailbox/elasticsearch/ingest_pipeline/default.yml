@@ -43,21 +43,13 @@ processors:
       tag: set_event_kind_to_event
       value: event
   - set:
-      field: event.category
-      tag: set_event_category_to_email
-      value: [email]
-  - set:
-      field: event.type
-      tag: set_event_type_to_info
-      value: [info]
-  - set:
       field: observer.vendor
       tag: set_observer_vendor
       value: Abnormal
   - set:
       field: observer.product
       tag: set_observer_product
-      value: Abnormal Security
+      value: Inbound Email Security
   - rename:
       field: json.attackType
       tag: rename_attackType
@@ -86,32 +78,17 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.fromAddress
-      tag: rename_fromAddress
-      target_field: abnormal_security.ai_security_mailbox.from.address
-      ignore_missing: true
-  - append:
-      field: email.from.address
-      tag: append_abnormal_security_ai_security_mailbox_from_address_into_email_from_address
-      value: '{{{abnormal_security.ai_security_mailbox.from.address}}}'
-      allow_duplicates: false
-      if: ctx.abnormal_security?.ai_security_mailbox?.from?.address != null
-  - append:
-      field: related.user
-      tag: append_abnormal_security_ai_security_mailbox_from_address_into_related_user
-      value: '{{{abnormal_security.ai_security_mailbox.from.address}}}'
-      allow_duplicates: false
-      if: ctx.abnormal_security?.ai_security_mailbox?.from?.address != null
-  - rename:
       field: json.fromName
       tag: rename_fromName
       target_field: abnormal_security.ai_security_mailbox.from.name
       ignore_missing: true
-  - set:
-      field: source.user.name
-      tag: set_source_user_name_from_ai_security_mailbox_from_name
-      copy_from: abnormal_security.ai_security_mailbox.from.name
-      ignore_empty_value: true
+  - grok:
+      field: abnormal_security.ai_security_mailbox.from.name
+      tag: grok_abnormal_security_ai_security_mailbox_from_name
+      patterns:
+        - '^%{EMAILADDRESS:user.email}$'
+        - '^%{DATA:user.name}$'
+      ignore_failure: true
   - append:
       field: related.user
       tag: append_abnormal_security_ai_security_mailbox_from_name_into_related_user
@@ -123,6 +100,43 @@ processors:
       tag: rename_judgementStatus
       target_field: abnormal_security.ai_security_mailbox.judgement_status
       ignore_missing: true
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+      if: ctx.abnormal_security?.ai_security_mailbox?.judgement_status != null && ['spam','malicious'].contains(ctx.abnormal_security.ai_security_mailbox.judgement_status.toLowerCase())
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+      if: ctx.abnormal_security?.ai_security_mailbox?.judgement_status != null && ['spam','malicious'].contains(ctx.abnormal_security.ai_security_mailbox.judgement_status.toLowerCase())
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_email-addr
+      value: email-addr
+      if: ctx.abnormal_security?.ai_security_mailbox?.judgement_status != null && ['spam','malicious'].contains(ctx.abnormal_security.ai_security_mailbox.judgement_status.toLowerCase())
+  - rename:
+      field: json.fromAddress
+      tag: rename_fromAddress
+      target_field: abnormal_security.ai_security_mailbox.from.address
+      ignore_missing: true
+  - append:
+      field: email.from.address
+      tag: append_abnormal_security_ai_security_mailbox_from_address_into_email_from_address
+      value: '{{{abnormal_security.ai_security_mailbox.from.address}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.ai_security_mailbox?.from?.address != null
+  - set:
+      field: threat.indicator.email.address
+      tag: set_event_kind_to_event
+      copy_from: abnormal_security.ai_security_mailbox.from.address
+      if: ctx.abnormal_security?.ai_security_mailbox?.judgement_status != null && ['spam','malicious'].contains(ctx.abnormal_security.ai_security_mailbox.judgement_status.toLowerCase())
+  - append:
+      field: related.user
+      tag: append_abnormal_security_ai_security_mailbox_from_address_into_related_user
+      value: '{{{abnormal_security.ai_security_mailbox.from.address}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.ai_security_mailbox?.from?.address != null
   - date:
       field: json.lastReported
       tag: date_lastReported
@@ -155,6 +169,16 @@ processors:
       tag: rename_overallStatus
       target_field: abnormal_security.ai_security_mailbox.overall_status
       ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_ai_security_mailbox_overall_status
+      copy_from: abnormal_security.ai_security_mailbox.overall_status
+      if: ctx.abnormal_security?.ai_security_mailbox?.overall_status?.toLowerCase() != 'no action needed'
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
   - rename:
       field: json.recipientAddress
       tag: rename_recipientAddress
@@ -177,11 +201,13 @@ processors:
       tag: rename_recipientName
       target_field: abnormal_security.ai_security_mailbox.recipient.name
       ignore_missing: true
-  - set:
-      field: destination.user.name
-      tag: set_destination_user_name_from_ai_security_mailbox_recipient_name
-      copy_from: abnormal_security.ai_security_mailbox.recipient.name
-      ignore_empty_value: true
+  - grok:
+      field: abnormal_security.ai_security_mailbox.recipient.name
+      tag: grok_abnormal_security_ai_security_mailbox_recipient_name
+      patterns:
+        - '^%{EMAILADDRESS:destination.user.email}$'
+        - '^%{DATA:destination.user.name}$'
+      ignore_failure: true
   - append:
       field: related.user
       tag: append_abnormal_security_ai_security_mailbox_recipient_name_into_related_user
@@ -208,6 +234,7 @@ processors:
         - abnormal_security.ai_security_mailbox.recipient.address
         - abnormal_security.ai_security_mailbox.recipient.name
         - abnormal_security.ai_security_mailbox.subject
+        - abnormal_security.ai_security_mailbox.overall_status
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')

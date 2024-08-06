@@ -46,7 +46,7 @@ program: |
     }).do_request().as(resp, resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, {
         "events": (
-            body[?"auditLogs"].hasValue()
+            has(body.auditLogs)
           ?
             body.auditLogs.map(e, {
               "message": e.encode_json(),
@@ -57,8 +57,8 @@ program: |
         "cursor": {
           "last_timestamp": state.end_time,
         },
-        "want_more": body[?"auditLogs"].hasValue() && size(body.auditLogs) > 0,
-        "next_page": body[?"auditLogs"].hasValue() && size(body.auditLogs) > 0 ? int(state.next_page) + 1 : 1,
+        "want_more": has(body.auditLogs) && size(body.auditLogs) > 0,
+        "next_page": has(body.auditLogs) && size(body.auditLogs) > 0 ? int(state.next_page) + 1 : 1,
       })
     :
       {

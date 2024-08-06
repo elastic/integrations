@@ -8,13 +8,13 @@ The Abnormal Security integration collects data for AI Security Mailbox (formerl
 
 The Abnormal Security integration collects four types of logs:
 
-**[AI Security Mailbox](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox))** - Get details of an AI Security Mailbox.
+**[AI Security Mailbox](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox))** - Get details of AI Security Mailbox.
 
-**[Audit](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Audit%20Logs)** - Get details of an Audit logs for Portal.
+**[Audit](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Audit%20Logs)** - Get details of Audit logs for Portal.
 
-**[Case](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Cases)** - Get details of an Abnormal Cases.
+**[Case](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Cases)** - Get details of Abnormal Cases.
 
-**[Threat](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Threats)** - Get details of an Abnormal Threat Log.
+**[Threat](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Threats)** - Get details of Abnormal Threat Logs.
 
 ## Requirements
 
@@ -49,7 +49,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 * Retrieve your authentication token. This token will be used further in the Elastic integration setup to authenticate and access different Abnormal Security Logs.
 
 #### Step 3: IP allowlisting
-* It ensures that API access is only possible from IP addresses (of Elastic Agent).
+* Abnormal Security requires you to restrict API access based on source IP. So in order for the integration to work, user needs to update the IP allowlisting to include the external source IP of the endpoint running the integration via Elastic Agent.
 
 ### Enabling the integration in Elastic:
 
@@ -60,7 +60,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 5. Add all the required integration configuration parameters, including Access Token, Interval, Initial Interval and Page Size to enable data collection.
 6. Click on "Save and continue" to save the integration.
 
-**Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal Security Base URL get change as per location so find your own base URL.
+**Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal Security Base URL changes based on location so find your own base URL.
 
 ## Logs reference
 

@@ -32,7 +32,7 @@ program: |
           state
         :
           state.with({
-            "start_time": state.?cursor.last_timestamp.orValue(string((now - duration(state.initial_interval)).format(time_layout.RFC3339))),
+            "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
             "end_time": now.format(time_layout.RFC3339),
           })
       ).as(state, state.with(
@@ -72,7 +72,7 @@ program: |
       ))
   ).as(state, state.with(
     !has(state.worklist) ? state : // Exit early due to GET failure.
-      int(state.next) < size(state.worklist) ?
+      state.next < size(state.worklist) ?
         request("GET",
           state.url.trim_right("/") + "/v1/abusecampaigns/" + state.worklist[state.next]
         ).with({
@@ -87,9 +87,9 @@ program: |
             "cursor": {
               "last_timestamp": state.end_time
             },
-            "worklist": (int(state.next) + 1) < size(state.worklist) ? state.worklist : [],
-            "next": (int(state.next) + 1) < size(state.worklist) ? (int(state.next) + 1 ) : 0,
-            "next_page": (int(state.next) + 1) < size(state.worklist) ? state.next_page : int(state.next_page) + 1,
+            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
+            "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
+            "next_page": int(state.next) + 1 < size(state.worklist) ? state.next_page : int(state.next_page) + 1,
             "want_more": true,
           })
         :

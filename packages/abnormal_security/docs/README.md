@@ -8,13 +8,13 @@ The Abnormal Security integration collects data for AI Security Mailbox (formerl
 
 The Abnormal Security integration collects four types of logs:
 
-**[AI Security Mailbox](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox))** - Get details of an AI Security Mailbox.
+**[AI Security Mailbox](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox))** - Get details of AI Security Mailbox.
 
-**[Audit](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Audit%20Logs)** - Get details of an Audit logs for Portal.
+**[Audit](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Audit%20Logs)** - Get details of Audit logs for Portal.
 
-**[Case](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Cases)** - Get details of an Abnormal Cases.
+**[Case](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Cases)** - Get details of Abnormal Cases.
 
-**[Threat](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Threats)** - Get details of an Abnormal Threat Log.
+**[Threat](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Threats)** - Get details of Abnormal Threat Logs.
 
 ## Requirements
 
@@ -49,7 +49,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 * Retrieve your authentication token. This token will be used further in the Elastic integration setup to authenticate and access different Abnormal Security Logs.
 
 #### Step 3: IP allowlisting
-* It ensures that API access is only possible from IP addresses (of Elastic Agent).
+* Abnormal Security requires you to restrict API access based on source IP. So in order for the integration to work, user needs to update the IP allowlisting to include the external source IP of the endpoint running the integration via Elastic Agent.
 
 ### Enabling the integration in Elastic:
 
@@ -60,7 +60,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 5. Add all the required integration configuration parameters, including Access Token, Interval, Initial Interval and Page Size to enable data collection.
 6. Click on "Save and continue" to save the integration.
 
-**Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal Security Base URL get change as per location so find your own base URL.
+**Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal Security Base URL changes based on location so find your own base URL.
 
 ## Logs reference
 
@@ -74,100 +74,88 @@ An example event for `ai_security_mailbox` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-11-11T21:11:40.000Z",
+    "@timestamp": "2024-07-26T10:30:06.000Z",
     "abnormal_security": {
         "ai_security_mailbox": {
             "attack": {
-                "type": "Malicious: Phishing"
+                "type": "Attack Type: Graymail"
             },
             "campaign_id": "fff51768-c446-34e1-97a8-9802c29c3ebd",
-            "first_reported": "2020-11-11T21:11:40.000Z",
+            "first_reported": "2024-07-26T10:30:06.000Z",
             "from": {
-                "address": "support@secure-reply.org",
-                "name": "Support"
+                "address": "bob@example.com",
+                "name": "bob@example.com"
             },
-            "judgement_status": "Malicious",
-            "last_reported": "2020-11-11T21:11:40.000Z",
-            "message_id": "-1234567891011121314",
-            "overall_status": "Could not find original message",
+            "judgement_status": "Safe",
+            "last_reported": "2024-07-26T10:30:06.000Z",
+            "message_id": "7063250485337877109",
+            "overall_status": "No Action Needed",
             "recipient": {
-                "address": "example@example.com",
-                "name": "Tom"
+                "address": "john@example.com",
+                "name": "john"
             },
-            "subject": "Fwd: This is spam"
+            "subject": "Days of Understanding 2024"
         }
     },
     "agent": {
-        "ephemeral_id": "d920f395-656b-4fc0-9a6a-ae2d65bd6334",
-        "id": "8c034622-b60b-4a13-b690-590c44774a4c",
+        "ephemeral_id": "becef71f-2db4-4fa6-92f2-773b45c2f1bc",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.ai_security_mailbox",
-        "namespace": "55664",
+        "namespace": "72265",
         "type": "logs"
     },
     "destination": {
         "user": {
-            "name": "Tom"
+            "name": "john"
         }
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8c034622-b60b-4a13-b690-590c44774a4c",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "snapshot": false,
         "version": "8.13.0"
     },
     "email": {
         "from": {
             "address": [
-                "support@secure-reply.org"
+                "bob@example.com"
             ]
         },
-        "subject": "Fwd: This is spam",
+        "subject": "Days of Understanding 2024",
         "to": {
             "address": [
-                "example@example.com"
+                "john@example.com"
             ]
         }
     },
     "event": {
         "agent_id_status": "verified",
-        "category": [
-            "email"
-        ],
         "dataset": "abnormal_security.ai_security_mailbox",
-        "id": "-1234567891011121314",
-        "ingested": "2024-07-26T12:39:08Z",
+        "id": "7063250485337877109",
+        "ingested": "2024-08-06T09:40:30Z",
         "kind": "event",
-        "original": "{\"attackType\":\"Malicious: Phishing\",\"campaignId\":\"fff51768-c446-34e1-97a8-9802c29c3ebd\",\"firstReported\":\"2020-11-11T13:11:40-08:00\",\"fromAddress\":\"support@secure-reply.org\",\"fromName\":\"Support\",\"judgementStatus\":\"Malicious\",\"lastReported\":\"2020-11-11T13:11:40-08:00\",\"messageId\":\"-1234567891011121314\",\"overallStatus\":\"Could not find original message\",\"recipientAddress\":\"example@example.com\",\"recipientName\":\"Tom\",\"subject\":\"Fwd: This is spam\"}",
-        "type": [
-            "info"
-        ]
+        "original": "{\"attackType\":\"Attack Type: Graymail\",\"campaignId\":\"fff51768-c446-34e1-97a8-9802c29c3ebd\",\"firstReported\":\"2024-07-26T10:30:06Z\",\"fromAddress\":\"bob@example.com\",\"fromName\":\"bob@example.com\",\"judgementStatus\":\"Safe\",\"lastReported\":\"2024-07-26T10:30:06Z\",\"messageId\":\"7063250485337877109\",\"overallStatus\":\"No Action Needed\",\"recipientAddress\":\"john@example.com\",\"recipientName\":\"john\",\"subject\":\"Days of Understanding 2024\"}"
     },
     "input": {
         "type": "cel"
     },
     "observer": {
-        "product": "Abnormal Security",
+        "product": "Inbound Email Security",
         "vendor": "Abnormal"
     },
     "related": {
         "user": [
-            "support@secure-reply.org",
-            "Support",
-            "example@example.com",
-            "Tom"
+            "bob@example.com",
+            "john@example.com",
+            "john"
         ]
-    },
-    "source": {
-        "user": {
-            "name": "Support"
-        }
     },
     "tags": [
         "preserve_original_event",
@@ -178,9 +166,12 @@ An example event for `ai_security_mailbox` looks as following:
     "threat": {
         "technique": {
             "name": [
-                "Malicious: Phishing"
+                "Attack Type: Graymail"
             ]
         }
+    },
+    "user": {
+        "email": "bob@example.com"
     }
 }
 ```
@@ -191,7 +182,7 @@ An example event for `ai_security_mailbox` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | abnormal_security.ai_security_mailbox.attack.type | The type of threat the message represents. | keyword |
-| abnormal_security.ai_security_mailbox.campaign_id | An id which maps to an abuse campaign. | keyword |
+| abnormal_security.ai_security_mailbox.campaign_id | An ID which maps to an abuse campaign. | keyword |
 | abnormal_security.ai_security_mailbox.first_reported | Date abuse campaign was first reported. | date |
 | abnormal_security.ai_security_mailbox.from.address | The email address of the sender. | keyword |
 | abnormal_security.ai_security_mailbox.from.name | The display name of the sender. | keyword |
@@ -221,92 +212,87 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-18T18:41:37.467Z",
+    "@timestamp": "2024-07-17T15:39:32.141Z",
     "abnormal_security": {
         "audit": {
-            "action": "view_message_content",
+            "action": "update_remediation_status",
             "action_details": {
-                "message_id": "-8674108407491446899",
-                "provided_reason": "Reason",
-                "request_url": "/v2.1/messages/email_content/"
+                "request_url": "/v1.0/search_v2/666/purge_messages/"
             },
-            "category": "threat_log",
-            "source_ip": "2a02:cf40::",
-            "status": "FAILURE",
-            "tenant_name": "mock_tenant",
-            "timestamp": "2024-07-18T18:41:37.467Z",
+            "category": "search-and-respond-notifications",
+            "source_ip": "81.2.69.142",
+            "status": "SUCCESS",
+            "timestamp": "2024-07-17T15:39:32.141Z",
             "user": {
-                "email": "johan@example.com"
+                "email": "bob@example.com"
             }
         }
     },
     "agent": {
-        "ephemeral_id": "f481f3bb-3041-4cf8-8b7b-3affe45a93ad",
-        "id": "8c034622-b60b-4a13-b690-590c44774a4c",
+        "ephemeral_id": "40cced4d-2587-4880-a6ad-3fe697d9ca7f",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
-    "cloud": {
-        "account": {
-            "name": "mock_tenant"
-        }
-    },
     "data_stream": {
         "dataset": "abnormal_security.audit",
-        "namespace": "48779",
+        "namespace": "19380",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8c034622-b60b-4a13-b690-590c44774a4c",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
-        "action": "view_message_content",
+        "action": "update_remediation_status",
         "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
         "dataset": "abnormal_security.audit",
-        "ingested": "2024-07-26T12:39:58Z",
+        "ingested": "2024-08-06T09:41:39Z",
         "kind": "event",
-        "original": "{\"action\":\"view_message_content\",\"actionDetails\":{\"messageId\":\"-8674108407491446899\",\"providedReason\":\"Reason\",\"requestUrl\":\"/v2.1/messages/email_content/\"},\"category\":\"threat_log\",\"sourceIp\":\"2a02:cf40::\",\"status\":\"FAILURE\",\"tenantName\":\"mock_tenant\",\"timestamp\":\"2024-07-18 18:41:37.467000+00:00\",\"user\":{\"email\":\"johan@example.com\"}}",
-        "outcome": "failure",
-        "reason": "Reason",
+        "original": "{\"action\":\"update_remediation_status\",\"actionDetails\":{\"providedReason\":\"null\",\"requestUrl\":\"/v1.0/search_v2/666/purge_messages/\"},\"category\":\"search-and-respond-notifications\",\"sourceIp\":\"81.2.69.142\",\"status\":\"SUCCESS\",\"tenantName\":\"\",\"timestamp\":\"2024-07-17 15:39:32.141000+00:00\",\"user\":{\"email\":\"bob@example.com\"}}",
+        "outcome": "success",
         "type": [
-            "info"
+            "info",
+            "change"
         ]
     },
     "input": {
         "type": "cel"
     },
     "observer": {
-        "product": "Abnormal Security",
+        "product": "Inbound Email Security",
         "vendor": "Abnormal"
     },
     "related": {
         "ip": [
-            "2a02:cf40::"
+            "81.2.69.142"
         ],
         "user": [
-            "johan@example.com"
+            "bob@example.com"
         ]
     },
     "source": {
         "geo": {
+            "city_name": "London",
             "continent_name": "Europe",
-            "country_iso_code": "NO",
-            "country_name": "Norway",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
             "location": {
-                "lat": 62,
-                "lon": 10
-            }
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
         },
-        "ip": "2a02:cf40::",
-        "user": {
-            "email": "johan@example.com"
-        }
+        "ip": "81.2.69.142"
     },
     "tags": [
         "preserve_original_event",
@@ -315,9 +301,12 @@ An example event for `audit` looks as following:
         "abnormal_security-audit"
     ],
     "url": {
-        "extension": "1/messages/email_content/",
-        "original": "/v2.1/messages/email_content/",
-        "path": "/v2.1/messages/email_content/"
+        "extension": "0/search_v2/666/purge_messages/",
+        "original": "/v1.0/search_v2/666/purge_messages/",
+        "path": "/v1.0/search_v2/666/purge_messages/"
+    },
+    "user": {
+        "email": "bob@example.com"
     }
 }
 ```
@@ -356,57 +345,50 @@ An example event for `case` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-26T12:40:36.695Z",
+    "@timestamp": "2024-08-06T09:42:32.438Z",
     "abnormal_security": {
         "case": {
-            "affected_employee": "Dav Hallet",
-            "analysis": "Profile Updated",
-            "customer_visible_time": "2024-02-24T19:57:37.000Z",
-            "description": "Multiple failed login attempts",
-            "first_observed": "2024-06-19T14:55:05.000Z",
+            "affected_employee": "john@example.com",
+            "analysis": "SIGN_IN",
+            "customer_visible_time": "2024-01-05T12:33:25.000Z",
+            "first_observed": "2024-01-05T12:33:25.000Z",
             "id": "1234",
-            "remediation_status": "Under Review",
-            "severity": "Unrecognized devices logging in",
-            "severity_level": "Low",
-            "status": "Assessment Needed",
-            "threat_ids": [
-                "184712ab-6d8b-47b3-89d3-a314efef79e2",
-                "184712ab-6d8b-47b3-89d3-a314efef79ee",
-                "184712ab-6d8b-47b3-89d3-a314efef79ef"
-            ]
+            "remediation_status": "Not remediated",
+            "severity": "Account Takeover",
+            "severity_level": "LOW",
+            "status": "Acknowledged (Attack resolved)"
         }
     },
     "agent": {
-        "ephemeral_id": "5baa7174-a91b-4190-b4eb-2f290ca03001",
-        "id": "8c034622-b60b-4a13-b690-590c44774a4c",
+        "ephemeral_id": "d459a481-d0b8-4f26-afd1-ceed8531465a",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.case",
-        "namespace": "71872",
+        "namespace": "48573",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8c034622-b60b-4a13-b690-590c44774a4c",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
+        "action": "sign_in",
         "agent_id_status": "verified",
-        "category": [
-            "email"
-        ],
         "dataset": "abnormal_security.case",
         "id": "1234",
-        "ingested": "2024-07-26T12:40:48Z",
+        "ingested": "2024-08-06T09:42:44Z",
         "kind": "event",
-        "original": "{\"affectedEmployee\":\"Dav Hallet\",\"analysis\":\"Profile Updated\",\"caseId\":\"1234\",\"case_status\":\"Assessment Needed\",\"customerVisibleTime\":\"2024-02-24T19:57:37Z\",\"description\":\"Multiple failed login attempts\",\"firstObserved\":\"2024-06-19T14:55:05Z\",\"remediation_status\":\"Under Review\",\"severity\":\"Unrecognized devices logging in\",\"severity_level\":\"Low\",\"threatIds\":[\"184712ab-6d8b-47b3-89d3-a314efef79e2\",\"184712ab-6d8b-47b3-89d3-a314efef79ee\",\"184712ab-6d8b-47b3-89d3-a314efef79ef\"]}",
-        "start": "2024-06-19T14:55:05.000Z",
+        "original": "{\"affectedEmployee\":\"john@example.com\",\"analysis\":\"SIGN_IN\",\"caseId\":1234,\"case_status\":\"Acknowledged (Attack resolved)\",\"customerVisibleTime\":\"2024-01-05T12:33:25+00:00\",\"firstObserved\":\"2024-01-05T12:33:25+00:00\",\"remediation_status\":\"Not remediated\",\"severity\":\"Account Takeover\",\"severity_level\":\"LOW\",\"threatIds\":[]}",
+        "severity": 1,
+        "start": "2024-01-05T12:33:25.000Z",
         "type": [
             "info"
         ]
@@ -414,14 +396,13 @@ An example event for `case` looks as following:
     "input": {
         "type": "cel"
     },
-    "message": "Multiple failed login attempts",
     "observer": {
-        "product": "Abnormal Security",
+        "product": "Inbound Email Security",
         "vendor": "Abnormal"
     },
     "related": {
         "user": [
-            "Dav Hallet"
+            "john@example.com"
         ]
     },
     "tags": [
@@ -431,9 +412,7 @@ An example event for `case` looks as following:
         "abnormal_security-case"
     ],
     "user": {
-        "target": {
-            "name": "Dav Hallet"
-        }
+        "email": "john@example.com"
     }
 }
 ```
@@ -473,110 +452,84 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-09T17:42:59.000Z",
+    "@timestamp": "2024-07-17T23:25:38.000Z",
     "abnormal_security": {
         "threat": {
-            "abx_message_id": "4551618356913732000",
-            "abx_portal_url": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/4551618356913732076",
+            "abx_message_id": "2260288475997441000",
+            "abx_portal_url": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
             "attachment_count": 0,
-            "attachment_names": [
-                "attachment.pdf"
-            ],
             "attack": {
-                "strategy": "Name Impersonation",
-                "type": "Extortion",
-                "vector": "Text"
+                "strategy": "Unknown Sender",
+                "type": "Spam",
+                "vector": "Link"
             },
-            "attacked_party": "VIP",
+            "attacked_party": "Employee (Other)",
             "auto_remediated": true,
-            "cc_emails": [
-                "cc@example.com"
-            ],
-            "from_address": "support@secure-reply.org",
-            "from_name": "Support",
-            "id": "184712ab-6d8b-47b3-89d3-a314efef79e2",
+            "from_address": "john@example.com",
+            "from_name": "john",
+            "id": "bf255f2d-a2ad-3f50-5075-fdcc24308bbd",
             "impersonated_party": "None / Others",
-            "internet_message_id": "<5edfca1c.1c69fb81.4b055.8fd5@mx.google.com>",
-            "is_read": true,
+            "internet_message_id": "<AZz8NUMEST-qmuz77_koic@example>",
+            "is_read": false,
             "post_remediated": false,
-            "received_time": "2020-06-09T17:42:59.000Z",
-            "recipient_address": "example@example.com",
-            "remediation_status": "Auto Remediated",
-            "remediation_timestamp": "2020-06-09T17:42:59.000Z",
-            "reply_to_emails": [
-                "reply-to@example.com"
-            ],
-            "return_path": "support@secure-reply.org",
-            "sender_domain": "secure-reply.org",
-            "sender_ip_address": "100.101.102.103",
-            "sent_time": "2020-06-09T17:42:59.000Z",
-            "subject": "Phishing Email",
+            "received_time": "2024-07-17T23:25:38.000Z",
+            "recipient_address": "bob@example.com",
+            "remediation_status": "Auto-Remediated",
+            "remediation_timestamp": "2024-07-17T23:25:45.735Z",
+            "return_path": "bounce-bob_H181S7GUCF@example.com",
+            "sender_domain": "example.com",
+            "sender_ip_address": "81.2.69.142",
+            "sent_time": "2024-07-17T23:25:29.000Z",
+            "subject": "YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB",
             "summary_insights": [
-                "Bitcoin Topics",
-                "Personal Information Theft",
-                "Unusual Sender"
+                "Abnormal Email Body HTML",
+                "Invisible characters found in Email",
+                "Suspicious Link",
+                "Unusual Sender",
+                "Unusual Sender Domain"
             ],
             "to_addresses": [
-                "example@example.com",
-                "another@example.com"
+                "bob@example.com"
             ],
-            "url_count": 0,
+            "url_count": 1,
             "urls": [
-                "https://www.google.com/"
+                "https://www.example.com/"
             ]
         }
     },
     "agent": {
-        "ephemeral_id": "4ca1450d-7023-4f15-adf9-d6aec73ee951",
-        "id": "8c034622-b60b-4a13-b690-590c44774a4c",
+        "ephemeral_id": "7a47e772-7565-4c03-be8a-43a442be5c92",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.threat",
-        "namespace": "84342",
+        "namespace": "63490",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8c034622-b60b-4a13-b690-590c44774a4c",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "snapshot": false,
         "version": "8.13.0"
     },
     "email": {
-        "attachments": [
-            {
-                "file": {
-                    "name": "attachment.pdf"
-                }
-            }
-        ],
-        "cc": {
-            "address": [
-                "cc@example.com"
-            ]
-        },
-        "delivery_timestamp": "2020-06-09T17:42:59.000Z",
+        "delivery_timestamp": "2024-07-17T23:25:38.000Z",
         "from": {
             "address": [
-                "support@secure-reply.org"
+                "john@example.com"
             ]
         },
-        "message_id": "<5edfca1c.1c69fb81.4b055.8fd5@mx.google.com>",
-        "origination_timestamp": "2020-06-09T17:42:59.000Z",
-        "reply_to": {
-            "address": [
-                "reply-to@example.com"
-            ]
-        },
-        "subject": "Phishing Email",
+        "message_id": "<AZz8NUMEST-qmuz77_koic@example>",
+        "origination_timestamp": "2024-07-17T23:25:29.000Z",
+        "subject": "YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB",
         "to": {
             "address": [
-                "example@example.com",
-                "another@example.com"
+                "bob@example.com"
             ]
         }
     },
@@ -587,11 +540,11 @@ An example event for `threat` looks as following:
             "email"
         ],
         "dataset": "abnormal_security.threat",
-        "id": "4551618356913732000",
-        "ingested": "2024-07-26T12:41:38Z",
-        "kind": "alert",
-        "original": "{\"abxMessageId\":4551618356913732000,\"abxPortalUrl\":\"https://portal.abnormalsecurity.com/home/threat-center/remediation-history/4551618356913732076\",\"attachmentCount\":0,\"attachmentNames\":[\"attachment.pdf\"],\"attackStrategy\":\"Name Impersonation\",\"attackType\":\"Extortion\",\"attackVector\":\"Text\",\"attackedParty\":\"VIP\",\"autoRemediated\":true,\"ccEmails\":[\"cc@example.com\"],\"fromAddress\":\"support@secure-reply.org\",\"fromName\":\"Support\",\"impersonatedParty\":\"None / Others\",\"internetMessageId\":\"\\u003c5edfca1c.1c69fb81.4b055.8fd5@mx.google.com\\u003e\",\"isRead\":true,\"postRemediated\":false,\"receivedTime\":\"2020-06-09T17:42:59Z\",\"recipientAddress\":\"example@example.com\",\"remediationStatus\":\"Auto Remediated\",\"remediationTimestamp\":\"2020-06-09T17:42:59Z\",\"replyToEmails\":[\"reply-to@example.com\"],\"returnPath\":\"support@secure-reply.org\",\"senderDomain\":\"secure-reply.org\",\"senderIpAddress\":\"100.101.102.103\",\"sentTime\":\"2020-06-09T17:42:59Z\",\"subject\":\"Phishing Email\",\"summaryInsights\":[\"Bitcoin Topics\",\"Personal Information Theft\",\"Unusual Sender\"],\"threatId\":\"184712ab-6d8b-47b3-89d3-a314efef79e2\",\"toAddresses\":\"example@example.com, another@example.com\",\"urlCount\":0,\"urls\":[\"https://www.google.com/\"]}",
-        "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/4551618356913732076",
+        "id": "2260288475997441000",
+        "ingested": "2024-08-06T09:43:49Z",
+        "kind": "enrichment",
+        "original": "{\"abxMessageId\":2260288475997441000,\"abxPortalUrl\":\"https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654\",\"attachmentCount\":0,\"attachmentNames\":[],\"attackStrategy\":\"Unknown Sender\",\"attackType\":\"Spam\",\"attackVector\":\"Link\",\"attackedParty\":\"Employee (Other)\",\"autoRemediated\":true,\"ccEmails\":[],\"fromAddress\":\"john@example.com\",\"fromName\":\"john\",\"impersonatedParty\":\"None / Others\",\"internetMessageId\":\"\\u003cAZz8NUMEST-qmuz77_koic@example\\u003e\",\"isRead\":false,\"postRemediated\":false,\"receivedTime\":\"2024-07-17T23:25:38Z\",\"recipientAddress\":\"bob@example.com\",\"remediationStatus\":\"Auto-Remediated\",\"remediationTimestamp\":\"2024-07-17T23:25:45.73564Z\",\"replyToEmails\":[],\"returnPath\":\"bounce-bob_H181S7GUCF@example.com\",\"senderDomain\":\"example.com\",\"senderIpAddress\":\"81.2.69.142\",\"sentTime\":\"2024-07-17T23:25:29Z\",\"subject\":\"YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB\",\"summaryInsights\":[\"Abnormal Email Body HTML\",\"Invisible characters found in Email\",\"Suspicious Link\",\"Unusual Sender\",\"Unusual Sender Domain\"],\"threatId\":\"bf255f2d-a2ad-3f50-5075-fdcc24308bbd\",\"toAddresses\":[\"bob@example.com\"],\"urlCount\":1,\"urls\":[\"https://www.example.com/\"]}",
+        "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
         "type": [
             "indicator",
             "info"
@@ -601,31 +554,38 @@ An example event for `threat` looks as following:
         "type": "cel"
     },
     "observer": {
-        "product": "Abnormal Security",
+        "product": "Inbound Email Security",
         "vendor": "Abnormal"
     },
     "related": {
         "hosts": [
-            "secure-reply.org"
+            "example.com"
         ],
         "ip": [
-            "100.101.102.103"
+            "81.2.69.142"
         ],
         "user": [
-            "cc@example.com",
-            "support@secure-reply.org",
-            "Support",
-            "example@example.com",
-            "reply-to@example.com",
-            "another@example.com"
+            "john@example.com",
+            "john",
+            "bob@example.com",
+            "bounce-bob_H181S7GUCF@example.com"
         ]
     },
     "source": {
-        "domain": "secure-reply.org",
-        "ip": "100.101.102.103",
-        "user": {
-            "name": "Support"
-        }
+        "domain": "example.com",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142"
     },
     "tags": [
         "preserve_original_event",
@@ -636,22 +596,24 @@ An example event for `threat` looks as following:
     "threat": {
         "indicator": {
             "email": {
-                "address": "support@secure-reply.org"
+                "address": "john@example.com"
             },
-            "ip": "100.101.102.103",
-            "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/4551618356913732076",
+            "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
             "type": "email-addr"
+        },
+        "tactic": {
+            "name": [
+                "Spam"
+            ]
         },
         "technique": {
             "name": [
-                "Extortion"
+                "Unknown Sender"
             ]
         }
     },
-    "url": {
-        "original": [
-            "https://www.google.com/"
-        ]
+    "user": {
+        "name": "john"
     }
 }
 ```
@@ -673,7 +635,7 @@ An example event for `threat` looks as following:
 | abnormal_security.threat.cc_emails | List of email addresses CC'ed. | keyword |
 | abnormal_security.threat.from_address | The email address of the sender. | keyword |
 | abnormal_security.threat.from_name | The display name of the sender. | keyword |
-| abnormal_security.threat.id | An id which maps to a threat campaign. A threat campaign might be received by multiple users. | keyword |
+| abnormal_security.threat.id | An ID which maps to a threat campaign. A threat campaign might be received by multiple users. | keyword |
 | abnormal_security.threat.impersonated_party | Impersonated party, if any. | keyword |
 | abnormal_security.threat.internet_message_id | The internet message ID, per RFC 822. | keyword |
 | abnormal_security.threat.is_read | Whether an email has been read. | boolean |

@@ -44,16 +44,24 @@ processors:
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_alert
-      value: alert
-  - set:
+      tag: set_event_kind_to_enrichment
+      value: enrichment
+  - append:
       field: event.category
-      tag: set_event_category_to_threat_email
-      value: ["threat", "email"]
-  - set:
+      tag: append_event_category
+      value: threat
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: email
+  - append:
       field: event.type
-      tag: set_event_type_to_indicator_info
-      value: ["indicator", "info"]
+      tag: append_event_type
+      value: indicator
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -61,7 +69,7 @@ processors:
   - set:
       field: observer.product
       tag: set_observer_product
-      value: Abnormal Security
+      value: Inbound Email Security
   - convert:
       field: json.abxMessageId
       tag: convert_abxMessageId_to_string
@@ -108,29 +116,43 @@ processors:
       tag: script_to_set_email_attachments_field
       lang: painless
       if: ctx.abnormal_security?.threat?.attachment_names instanceof List
-      source:
+      source: |-
         def attachmentList = new ArrayList();
         for (name in ctx.abnormal_security.threat.attachment_names) {
           def attachment = new HashMap();
           attachment.put('file', new HashMap());
           attachment.file.put('name', name);
+          String[] tokenList = name.splitOnToken('.');
+          if(tokenList.length > 1){
+            attachment.file.put('extension', tokenList[tokenList.length - 1]);
+          }
           attachmentList.add(attachment);
         }
         ctx.put('email',new HashMap());
         ctx.email.attachments = attachmentList;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.attackStrategy
       tag: rename_attackStrategy
       target_field: abnormal_security.threat.attack.strategy
       ignore_missing: true
+  - append:
+      field: threat.technique.name
+      tag: append_abnormal_security_threat_attack_strategy_into_threat_technique_name
+      value: '{{{abnormal_security.threat.attack.strategy}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.attack?.strategy != null
   - rename:
       field: json.attackType
       tag: rename_attackType
       target_field: abnormal_security.threat.attack.type
       ignore_missing: true
   - append:
-      field: threat.technique.name
-      tag: append_abnormal_security_threat_attack_type_into_threat_technique_name
+      field: threat.tactic.name
+      tag: append_abnormal_security_threat_attack_type_into_threat_tactic_name
       value: '{{{abnormal_security.threat.attack.type}}}'
       allow_duplicates: false
       if: ctx.abnormal_security?.threat?.attack?.type != null
@@ -204,11 +226,13 @@ processors:
       tag: rename_fromName
       target_field: abnormal_security.threat.from_name
       ignore_missing: true
-  - set:
-      field: source.user.name
-      tag: set_source_user_name_from_threat_from_name
-      copy_from: abnormal_security.threat.from_name
-      ignore_empty_value: true
+  - grok:
+      field: abnormal_security.threat.from_name
+      tag: grok_abnormal_security_threat_from_name
+      patterns:
+        - '^%{EMAILADDRESS:user.email}$'
+        - '^%{DATA:user.name}$'
+      ignore_failure: true
   - append:
       field: related.user
       tag: append_from_name_into_related_user
@@ -365,11 +389,6 @@ processors:
       tag: set_source_ip_from_threat_sender_ip_address
       copy_from: abnormal_security.threat.sender_ip_address
       ignore_empty_value: true
-  - set:
-      field: threat.indicator.ip
-      tag: set_threat_indicator_ip_from_threat_sender_ip_address
-      copy_from: abnormal_security.threat.sender_ip_address
-      ignore_empty_value: true
   - geoip:
       field: source.ip
       tag: geoip_source_ip
@@ -418,10 +437,17 @@ processors:
       tag: split_toAddresses
       target_field: abnormal_security.threat.to_addresses
       ignore_missing: true
+      if: ctx.json?.toAddresses instanceof String
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.toAddresses
+      tag: rename_toAddresses
+      target_field: abnormal_security.threat.to_addresses
+      if: ctx.json?.toAddresses instanceof List
+      ignore_missing: true
   - trim:
       field: abnormal_security.threat.to_addresses
       tag: trim_threat_to_addresses
@@ -459,11 +485,6 @@ processors:
       tag: rename_urls
       target_field: abnormal_security.threat.urls
       ignore_missing: true
-  - set:
-      field: url.original
-      tag: set_url_original_from_threat_urls
-      copy_from: abnormal_security.threat.urls
-      ignore_empty_value: true
   - remove:
       field:
         - abnormal_security.threat.abx_message_id
@@ -474,14 +495,14 @@ processors:
         - abnormal_security.threat.internet_message_id
         - abnormal_security.threat.received_time
         - abnormal_security.threat.sender_domain
-        - abnormal_security.threat.sender_ip_address
         - abnormal_security.threat.sent_time
         - abnormal_security.threat.subject
         - abnormal_security.threat.attachment_names
         - abnormal_security.threat.cc_emails
         - abnormal_security.threat.reply_to_emails
         - abnormal_security.threat.to_addresses
-        - abnormal_security.threat.urls
+        - abnormal_security.threat.sender_ip_address
+        - abnormal_security.threat.attack.strategy
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
