@@ -9,7 +9,30 @@
         "description": "This dashboard provides expanded alerts overview for Azure cloud.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "azure.activitylogs"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "azure.activitylogs"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -58,8 +81,7 @@
                 },
                 "panelIndex": "9d1a26e6-2ff0-4d3e-bab3-7bb3c50cd060",
                 "title": "Navigation Alerts",
-                "type": "visualization",
-                "version": "8.6.2"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -143,7 +165,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"azure.activitylogs\" and (azure.activitylogs.category : \"Alert\" or azure.activitylogs.event_category: \"Alert\")"
+                                "query": "azure.activitylogs.category : \"Alert\" or azure.activitylogs.event_category: \"Alert\""
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -201,8 +223,7 @@
                 },
                 "panelIndex": "e5e45365-c81a-4f7f-b58b-8d2d781329a5",
                 "title": "Alerts Overview",
-                "type": "lens",
-                "version": "8.6.2"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -303,7 +324,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"azure.activitylogs\" and (azure.activitylogs.event_category : \"Alert\" or azure.activitylogs.category : \"Alert\" )"
+                                "query": "azure.activitylogs.event_category : \"Alert\" or azure.activitylogs.category : \"Alert\""
                             },
                             "visualization": {
                                 "gridConfig": {
@@ -379,8 +400,7 @@
                 },
                 "panelIndex": "36fb5c08-80d9-4a1c-8fde-9c063381fdd8",
                 "title": "Alerts Heatmap",
-                "type": "lens",
-                "version": "8.6.2"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -460,7 +480,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"azure.activitylogs\" and (azure.activitylogs.event_category : \"Alert\" or azure.activitylogs.category : \"Alert\")"
+                                "query": " azure.activitylogs.event_category : \"Alert\" or azure.activitylogs.category : \"Alert\""
                             },
                             "visualization": {
                                 "breakdownByAccessor": "6674f0d1-fc76-4845-80fa-3797c6fcdcbc",
@@ -485,21 +505,23 @@
                 },
                 "panelIndex": "162fb43e-fff3-4f50-aa9b-a713418bd651",
                 "title": "Alerts Count",
-                "type": "lens",
-                "version": "8.6.2"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Azure] Alerts Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.6.2",
-    "created_at": "2023-06-08T07:33:56.370Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-19T09:37:54.808Z",
     "id": "azure-0f559cc0-f0d5-11e9-90ec-112a988266d5",
-    "migrationVersion": {
-        "dashboard": "8.6.0"
-    },
+    "managed": false,
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "e5e45365-c81a-4f7f-b58b-8d2d781329a5:indexpattern-datasource-layer-c0e8cd55-a662-40d4-87f4-a889776f3a75",
@@ -521,5 +543,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
