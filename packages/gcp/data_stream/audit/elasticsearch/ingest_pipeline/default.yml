@@ -113,19 +113,23 @@ processors:
 ##
 # email address of authenticated user (redacted) or service account
 # principalEmail -> client.user.email
-  - set:
-      field: client.user.email
-      copy_from: json.protoPayload.authenticationInfo.principalEmail
+  - rename:
+      field: json.protoPayload.authenticationInfo.principalEmail
+      target_field: client.user.email
       ignore_failure: true
 # identity of requesting first or third party
 # principalSubject -> client.user.id
-  - set:
-      field: client.user.id
-      copy_from: json.protoPayload.authenticationInfo.principalSubject
+  - rename:
+      field: json.protoPayload.authenticationInfo.principalSubject
+      target_field: client.user.id
       ignore_failure: true
-  - set:
-      field: gcp.audit.authentication_info.authority_selector
-      copy_from: json.protoPayload.authenticationInfo.authoritySelector
+  - rename:
+      field: json.protoPayload.authenticationInfo.authoritySelector
+      target_field: gcp.audit.authentication_info.authority_selector
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.serviceAccountKeyName
+      target_field: gcp.audit.authentication_info.service_account_key_name
       ignore_failure: true
 
   - rename:
