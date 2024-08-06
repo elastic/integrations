@@ -1,13 +1,16 @@
 {
     "attributes": {
-        "name": "PostgreSQL transaction error",
-        "description": "",
+        "name": "PostgreSQL transaction error rate",
+        "description": "This SLO monitors the rate of PostgreSQL transaction errors caused if activity state in database is idle in transaction (aborted).",
         "indicator": {
             "type": "sli.kql.custom",
             "params": {
                 "index": "metrics-*",
-                "filter": "",
-                "good": "NOT postgresql.activity.state : \"idle in transaction (aborted)\"",
+                "filter": {
+                    "filters": [],
+                    "kqlQuery": "data_stream.dataset : \"postgresql.activity\" and NOT error.message : *"
+                },
+                "good": "NOT postgresql.activity.state : \"idle in transaction (aborted)\"",        
                 "total": "postgresql.activity.state : * ",
                 "timestampField": "@timestamp",
                 "dataViewId": "metrics-*"
