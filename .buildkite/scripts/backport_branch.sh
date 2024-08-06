@@ -109,6 +109,7 @@ update_git_config() {
     git config --global user.name "${GITHUB_USERNAME_SECRET}"
     git config --global user.email "${GITHUB_EMAIL_SECRET}"
 
+    git config remote.origin.url "https://${GITHUB_USERNAME_SECRET}:${GITHUB_TOKEN}@github.com/elastic/integrations.git"
     #git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/elastic/integrations.git"
     popd > /dev/null
 }
