@@ -1,0 +1,177 @@
+---
+description: Pipeline for processing Digital Guardian Analytics & Reporting Cloud (ARC) logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: digital_guardian.arc
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Drops null/empty/na values recursively.
+      tag: script_to_remove_na_values
+      lang: painless
+      source: |-
+        boolean dropEmptyFields(Object object) {
+          if (object == null || ['', '{}', 'NA', 'None', 'null', '-'].contains(object)) {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+# ECS Event Fields
+  - set: 
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - set: 
+      field: event.id
+      tag: set_event_id
+      copy_from: digital_guardian.arc.dg_guid
+      ignore_empty_value: true
+  - script:
+      tag: script_set_event_action
+      description: Set event.action from dg_utype and inc_state
+      if: ctx.digital_guardian?.arc?.dg_utype != null && ctx.digital_guardian.arc.inc_state != null
+      lang: painless
+      source: |-
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.action = (ctx.digital_guardian.arc.dg_utype + "-" + ctx.digital_guardian.arc.inc_state).toLowerCase();
+  - script:
+      tag: script_set_event_severity
+      description: Set event.severity from inc_sev
+      if: ctx.digital_guardian?.arc?.inc_sev != null
+      lang: painless
+      params:
+        Unknown: 9
+        Informational: 6
+        Low: 5
+        Minor: 5
+        Medium: 4
+        High: 2
+        Critical: 1
+      source: |-
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        def sev = ctx.digital_guardian.arc.inc_sev;
+        ctx.event.severity = params.getOrDefault(sev, params['Unknown']);
+
+# Date fields
+  - date:
+      field: digital_guardian.arc.inc_mtime
+      tag: date_inc_mtime
+      target_field: digital_guardian.arc.inc_mtime
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+      if: ctx.digital_guardian?.arc?.inc_mtime != null
+  - set: 
+      field: '@timestamp'
+      tag: set_timestamp
+      copy_from: digital_guardian.arc.inc_mtime
+      ignore_empty_value: true
+
+# ECS Rule Fields
+  - set: 
+      field: rule.name
+      tag: set_rule_name
+      copy_from: digital_guardian.arc.dg_name
+      ignore_empty_value: true
+
+# ECS User Fields
+  - set: 
+      field: user.name
+      tag: set_user_name
+      copy_from: digital_guardian.arc.inc_creator
+      ignore_empty_value: true
+
+# ECS Related Fields
+  - append:
+      field: related.user
+      value: '{{{digital_guardian.arc.inc_creator}}}'
+      allow_duplicates: false
+      if: ctx.digital_guardian?.arc?.inc_creator != null
+  - append:
+      field: related.user
+      value: '{{{digital_guardian.arc.inc_assign}}}'
+      allow_duplicates: false
+      if: ctx.digital_guardian?.arc?.inc_assign != null
+
+# Cleanup
+  - remove:
+      field:
+        - digital_guardian.arc.dg_name
+        - digital_guardian.arc.dg_guid
+        - digital_guardian.arc.inc_mtime
+        - digital_guardian.arc.inc_sev
+        - digital_guardian.arc.inc_creator
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
