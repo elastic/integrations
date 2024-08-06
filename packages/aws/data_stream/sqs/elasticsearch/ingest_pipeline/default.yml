@@ -5,6 +5,14 @@ processors:
   - dot_expander:
       field: "*"
       ignore_failure: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      description: This script fills cloud.account.name with cloud.account.id when the name is not available.
+      source: |
+        if(ctx.cloud?.account?.id != null && ctx.cloud?.account?.name == null) {
+            ctx.cloud.account.name = ctx.cloud.account.id;
+        }
   - rename:
       field: aws.sqs.metrics.ApproximateAgeOfOldestMessage.max
       target_field: aws.sqs.oldest_message_age.sec
