@@ -4,7 +4,263 @@ processors:
 - set:
     field: event.kind
     value: 'alert'
-
+- json:
+    field: message
+    target_field: sysdig
+- dot_expander:
+    field: '*'
+    path: sysdig.content
+- set:
+    field: event.original
+    copy_from: message
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_original_event')
+- set:
+    field: event.id
+    copy_from: sysdig.id
+    ignore_empty_value: true
+- set:
+    field: event.provider
+    copy_from: sysdig.source
+    ignore_empty_value: true
+- set:
+    field: event.severity
+    copy_from: sysdig.severity
+    ignore_empty_value: true
+- set:
+    field: log.syslog.severity.code
+    copy_from: sysdig.severity
+    ignore_empty_value: true
+- script:
+    lang: painless
+    tag: 'painless_set_severity_name'
+    if: ctx?.sysdig?.severity != null
+    source: |
+        def priority = ctx.sysdig.severity;
+        if (priority == 0) {
+            ctx['log.syslog.severity.name'] = "emergency";
+        } else if (priority == 1) {
+            ctx['log.syslog.severity.name'] = "alert";
+        } else if (priority == 2) {
+            ctx['log.syslog.severity.name'] = "critical";
+        } else if (priority == 3) {
+            ctx['log.syslog.severity.name'] = 4;
+        } else if (priority == 4) {
+            ctx['log.syslog.severity.name'] = "warning";
+        } else if (priority == 5) {
+            ctx['log.syslog.severity.name'] = "notice";
+        } else if (priority == 6) {
+            ctx['log.syslog.severity.name'] = "informational";
+        } else if (priority == 7) {
+            ctx['log.syslog.severity.name'] = "debug";
+        }
+- set:
+    field: rule.author
+    copy_from: sysdig.content.policyOrigin
+    ignore_empty_value: true
+- set:
+    field: rule.name
+    copy_from: sysdig.content.ruleName
+    ignore_empty_value: true
+- set:
+    field: rule.version
+    copy_from: sysdig.content.policyVersion
+    ignore_empty_value: true
+- set:
+    field: rule.category
+    copy_from: sysdig.content.ruleType
+    ignore_empty_value: true
+- set:
+    field: rule.ruleset
+    copy_from: sysdig.name
+    ignore_empty_value: true
+- set:
+    field: SysdigEvent.description
+    copy_from: sysdig.description
+    ignore_empty_value: true
+- set:
+    field: SysdigEvent.category
+    copy_from: sysdig.category
+    ignore_empty_value: true
+- set:
+    field: SysdigEvent.type
+    copy_from: sysdig.type
+    ignore_empty_value: true
+- set:
+    field: tags
+    copy_from: sysdig.content.ruleTags
+    ignore_empty_value: true
+- set:
+    field: agent.id
+    copy_from: sysdig.agentId
+    ignore_empty_value: true
+- set:
+    field: host.id
+    copy_from: sysdig.machineId
+    ignore_empty_value: true
+- set:
+    field: host.mac
+    copy_from: sysdig.hostMac
+    ignore_empty_value: true
+- set:
+    field: host.name
+    copy_from: sysdig.labels.host.hostName
+    ignore_empty_value: true
+- set:
+    field: container.id
+    copy_from: sysdig.containerId
+    ignore_empty_value: true
+- set:
+    field: container.image.tag
+    copy_from: sysdig.content.fields.container.image.tag
+    ignore_empty_value: true
+- set:
+    field: container.image.name
+    copy_from: sysdig.content.fields.container.name
+    ignore_empty_value: true
+- set:
+    field: rule.ruleset
+    copy_from: sysdig.name
+    ignore_empty_value: true
+- set:
+    field: message
+    copy_from: sysdig.content.output
+    ignore_empty_value: true
+- set:
+    field: process.executable
+    copy_from: sysdig.content.fields.proc.exepath
+    ignore_empty_value: true
+- set:
+    field: process.working_directory
+    copy_from: sysdig.content.fields.proc.cwd
+    ignore_empty_value: true
+- set:
+    field: process.pid
+    copy_from: sysdig.content.fields.proc.pid
+    ignore_empty_value: true
+- set:
+    field: process.name
+    copy_from: sysdig.content.fields.proc.name
+    ignore_empty_value: true
+- set:
+    field: process.command_line
+    copy_from: sysdig.content.fields.proc.cmdline
+    ignore_empty_value: true
+- set:
+    field: process.parent.pid
+    copy_from: sysdig.content.fields.proc.ppid
+    ignore_empty_value: true
+- set:
+    field: process.parent.name
+    copy_from: sysdig.content.fields.proc.pname
+    ignore_empty_value: true
+- set:
+    field: process.parent.command_line
+    copy_from: sysdig.content.fields.proc.pcmdline
+    ignore_empty_value: true
+- set:
+    field: user.id
+    copy_from: sysdig.content.fields.user.uid
+    ignore_empty_value: true
+- set:
+    field: user.name
+    copy_from: sysdig.content.fields.user.name
+    ignore_empty_value: true
+- script:
+    lang: painless
+    tag: 'painless_set_threat_technique_id'
+    if: ctx?.sysdig?.content?.ruleTags != null
+    source: |
+        def mitreRegex = /T\d{4}/;
+        for (int i = 0; i < ctx.sysdig.content.ruleTags.length; i++) {
+            def tag = ctx.sysdig.content.ruleTags[i];
+            def matcher = mitreRegex.matcher(tag);
+            if (matcher.find()) {
+                ctx['threat.technique.id'] = [matcher.group()];
+                break;
+            }
+        }
+- set:
+    field: cloud.account.id
+    copy_from: sysdig.labels.cloudProvider.account.id
+    ignore_empty_value: true
+- set:
+    field: cloud.availability_zone
+    copy_from: sysdig.labels.gcp.availabilityZone
+    ignore_empty_value: true
+    if: ctx?.sysdig?.labels?.cloudProvider?.name != null && ctx?.sysdig?.labels?.cloudProvider?.name == "gcp"
+- script:
+    lang: painless
+    tag: 'painless_set_cloud_instance_id'
+    if: ctx?.sysdig?.labels?.gcp?.instanceId != null || ctx?.sysdig?.labels?.azure?.instanceId != null
+    source: |
+        if (ctx?.sysdig?.labels?.gcp?.instanceId != null) {
+            ctx['cloud.instance.id'] = ctx.sysdig.labels.gcp.instanceId
+        } else if (ctx?.sysdig?.labels?.azure?.instanceId != null) {
+            ctx['cloud.instance.id'] = ctx.sysdig.labels.azure.instanceId
+        } else {
+            ctx['cloud.instance.id'] = null;
+        }
+- script:
+    lang: painless
+    tag: 'painless_set_cloud_instance_name'
+    if: ctx?.sysdig?.labels?.gcp?.instanceName != null || ctx?.sysdig?.labels?.azure?.instanceName != null
+    source: |
+        if (ctx?.sysdig?.labels?.gcp?.instanceName != null) {
+            ctx['cloud.instance.name'] = ctx.sysdig.labels.gcp.instanceName
+        } else if (ctx?.sysdig?.labels?.azure?.instanceName != null) {
+            ctx['cloud.instance.name'] = ctx.sysdig.labels.azure.instanceName
+        } else {
+            ctx['cloud.instance.name'] = null;
+        }
+- script:
+    lang: painless
+    tag: 'painless_set_cloud_machine_type'
+    if: ctx?.sysdig?.labels?.gcp?.machineType != null || ctx?.sysdig?.labels?.azure?.instanceSize != null
+    source: |
+        if (ctx?.sysdig?.labels?.gcp?.machineType != null) {
+            ctx['cloud.machine.type'] = ctx.sysdig.labels.gcp.machineType
+        } else if (ctx?.sysdig?.labels?.azure?.instanceSize != null) {
+            ctx['cloud.machine.type'] = ctx.sysdig.labels.azure.instanceSize
+        } else {
+            ctx['cloud.machine.type'] = null;
+        }
+- set:
+    field: cloud.project.id
+    copy_from: sysdig.labels.gcp.projectId
+    ignore_empty_value: true
+- set:
+    field: cloud.project.name
+    copy_from: sysdig.labels.gcp.projectName
+    ignore_empty_value: true
+- set:
+    field: cloud.provider
+    copy_from: sysdig.labels.cloudProvider.name
+    ignore_empty_value: true
+- set:
+    field: cloud.region
+    copy_from: sysdig.labels.cloudProvider.region
+    ignore_empty_value: true
+- set:
+    field: orchestrator.cluster.name
+    copy_from: sysdig.labels.kubernetes.cluster.name
+    ignore_empty_value: true
+- set:
+    field: orchestrator.namespace
+    copy_from: sysdig.labels.kubernetes.namespace.name
+    ignore_empty_value: true
+- set:
+    field: orchestrator.resource.name
+    copy_from: sysdig.labels.kubernetes.pod.name
+    ignore_empty_value: true
+- set:
+    field: orchestrator.resource.parent.type
+    copy_from: sysdig.labels.kubernetes.workload.type
+    ignore_empty_value: true
+- set:
+    field: orchestrator.type
+    value: kubernetes
+    if: ctx?.sysdig?.labels?.kubernetes?.cluster?.name != null || ctx?.sysdig?.labels?.kubernetes?.namespace?.name != null || ctx?.sysdig?.labels?.kubernetes?.pod?.name != null || ctx?.sysdig?.labels?.kubernetes?.workload?.type != null
 on_failure:
 - append:
     field: error.message
