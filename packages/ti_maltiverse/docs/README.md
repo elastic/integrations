@@ -89,6 +89,9 @@ Both, the data_stream and the _latest index have applied expiration through ILM 
 | maltiverse.tag | Tags of the threat | keyword |
 | maltiverse.type | Type of the threat | keyword |
 | maltiverse.urlchecksum |  | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 An example event for `indicator` looks as following:
@@ -97,34 +100,34 @@ An example event for `indicator` looks as following:
 {
     "@timestamp": "2022-11-05T05:37:57.000Z",
     "agent": {
-        "ephemeral_id": "b5733e23-446c-4102-952c-66874de0414e",
-        "id": "0b6be6e3-4e8a-4084-942d-124b48dc67d5",
+        "ephemeral_id": "c371b9d1-ae14-4272-9d73-3ef7bf7e46f9",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_maltiverse.indicator",
-        "namespace": "ep",
+        "namespace": "34244",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0b6be6e3-4e8a-4084-942d-124b48dc67d5",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-09-21T20:46:55.738Z",
+        "created": "2024-08-02T05:34:15.473Z",
         "dataset": "ti_maltiverse.indicator",
         "id": "NsHdp9tZZtzo6Kzlv6Z1TmPP47U=",
-        "ingested": "2023-09-21T20:46:58Z",
+        "ingested": "2024-08-02T05:34:27Z",
         "kind": "enrichment",
         "original": "{\"blacklist\":{\"count\":1,\"description\":\"QakBot\",\"first_seen\":\"2022-11-03 06:23:53\",\"labels\":[\"malicious-activity\"],\"last_seen\":\"2022-11-05 05:37:57\",\"source\":\"ThreatFox Abuse.ch\"},\"classification\":\"malicious\",\"creation_time\":\"2022-11-03 06:23:53\",\"domain\":\"autooutletllc.com\",\"hostname\":\"autooutletllc.com\",\"is_alive\":false,\"is_cnc\":true,\"is_distributing_malware\":false,\"is_iot_threat\":false,\"is_phishing\":false,\"last_online_time\":\"2022-11-05 05:37:57\",\"modification_time\":\"2022-11-05 05:37:57\",\"tag\":[\"bb05\",\"iso\",\"qakbot\",\"qbot\",\"quakbot\",\"tr\",\"w19\",\"zip\",\"oakboat\",\"pinkslipbot\"],\"tld\":\"com\",\"type\":\"url\",\"url\":\"https://autooutletllc.com/spares.php\",\"urlchecksum\":\"4aa7a29969dc1dffa5cad5af6cb343b9a9b40ea9646fed619d4c8d6472629128\"}",
         "severity": 9,
@@ -194,5 +197,4 @@ An example event for `indicator` looks as following:
         }
     }
 }
-
 ```

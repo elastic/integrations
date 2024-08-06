@@ -179,38 +179,77 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-20T18:06:10.126Z",
+    "@timestamp": "2023-01-01T00:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "cf201e4c-c043-4a07-baa4-2227c8fbb4c3",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "ti_eclecticiq.threat",
+        "namespace": "14085",
+        "type": "logs"
+    },
     "eclecticiq": {
         "threat": {
-            "observable_id": "AyGp2BbK9uP5CeLPYv/uuQlDxC8="
+            "observable_id": "OwWGOybxVeL+USaXvDQSNonD5eU="
         }
     },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-06-08T12:00:30.187Z",
+        "created": "2023-06-08T12:00:30.028Z",
         "dataset": "ti_eclecticiq.threat",
-        "id": "XugasX/Bvu/150lNyQjzIGR0zZ8=",
+        "id": "ZgAq/IXlrjc2J5AdLsDMWhENshI=",
+        "ingested": "2024-08-02T04:24:34Z",
         "kind": "enrichment",
-        "original": "{\"calculated.relevancy\": \"0.68\", \"calculated.source_reliability\": \"A\", \"calculated.tlp\": \"GREEN\", \"diff\": \"add\", \"entity.id\": \"5e814485-012d-423d-b769-026bfed0f451\", \"entity.title\": \"Example\", \"entity.type\": \"malware\", \"meta.classification\": \"\", \"meta.confidence\": \"\", \"meta.entity_url\": \"https://test.com/entity/5e814485-012d-423d-b769-026bfed0f451\", \"meta.estimated_observed_time\": \"2019-07-09T17:42:44.777000+00:00\", \"meta.estimated_threat_end_time\": \"\", \"meta.estimated_threat_start_time\": \"2022-05-11T14:00:00.188000+00:00\", \"meta.ingest_time\": \"2023-06-08T12:00:30.187097+00:00\", \"meta.relevancy\": \"0.68\", \"meta.source_reliability\": \"A\", \"meta.tags\": \"tag1;tag2\", \"meta.taxonomy\": \"\", \"meta.terms_of_use\": \"\", \"meta.tlp\": \"GREEN\", \"source.ids\": \"47ec245c-9e7b-467e-a016-77a22ff12dd5\", \"source.names\": \"Test Source\", \"timestamp\": \"2023-06-20 18:06:10.126780+00:00\", \"type\": \"domain\", \"value\": \"example.com\", \"value_url\": \"https://test.com/main/extracts/domain/test\"}",
-        "provider": "Test Source",
-        "start": "2022-05-11T14:00:00.188Z",
+        "provider": "Test",
+        "start": "2021-12-19T00:27:19.108Z",
         "type": [
             "indicator"
         ],
         "url": "https://www.test.com/"
     },
-    "tags": [
-        "tag1",
-        "tag2"
-    ],
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "8269eab9370b4429947d2a16c3058fcb",
+        "ip": [
+            "172.29.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1D-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "6.4.16-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "threat": {
         "indicator": {
-            "first_seen": "2019-07-09T17:42:44.777Z",
+            "first_seen": "2021-12-19T00:27:19.108Z",
             "marking": {
                 "tlp": "GREEN"
             },
@@ -241,4 +280,7 @@ An example event for `threat` looks as following:
 | input.type | Input type | keyword |
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 

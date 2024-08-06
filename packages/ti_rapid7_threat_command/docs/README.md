@@ -216,22 +216,22 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2022-06-16T10:39:07.851Z",
     "agent": {
-        "ephemeral_id": "bc74bf1e-3b49-4a4f-b121-ce54d80ad098",
-        "id": "34592ccf-10ae-4d24-a28c-97be832bde99",
+        "ephemeral_id": "f8dfeb31-2b56-4f8e-bb91-d4b94b8086da",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.ioc",
-        "namespace": "ep",
+        "namespace": "98425",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "34592ccf-10ae-4d24-a28c-97be832bde99",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -240,9 +240,9 @@ An example event for `ioc` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2024-06-26T07:01:52.941Z",
+        "created": "2024-08-02T06:09:57.917Z",
         "dataset": "ti_rapid7_threat_command.ioc",
-        "ingested": "2024-06-26T07:02:02Z",
+        "ingested": "2024-08-02T06:10:07Z",
         "kind": "enrichment",
         "module": "ti_rapid7_threat_command",
         "original": "{\"firstSeen\":\"2022-05-04T20:11:04.000Z\",\"lastSeen\":\"2022-06-15T20:11:04.000Z\",\"lastUpdateDate\":\"2022-06-16T10:39:07.851Z\",\"relatedCampaigns\":[],\"relatedMalware\":[\"remcos\"],\"relatedThreatActors\":[],\"reportedFeeds\":[{\"confidenceLevel\":2,\"id\":\"5b68306df84f7c8696047fdd\",\"name\":\"Test Feed\"}],\"score\":13.26086956521739,\"severity\":\"Low\",\"status\":\"Active\",\"tags\":[\"Test\"],\"type\":\"IpAddresses\",\"value\":\"89.160.20.112\",\"whitelisted\":false}",
@@ -367,6 +367,9 @@ An example event for `ioc` looks as following:
 | rapid7.tc.ioc.type | IOC type. | keyword |
 | rapid7.tc.ioc.value | IOC value. | keyword |
 | rapid7.tc.ioc.whitelisted | An indicator which states if the IOC was checked and found as whitelisted or not. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 ### Alert
