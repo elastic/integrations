@@ -1,0 +1,263 @@
+---
+description: Pipeline for processing application logs
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      tag: rename_message
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      tag: remove_message
+      if: ctx.event?.original != null
+  - drop: 
+      if: ctx.event.original.startsWith('#')
+      description: Drop if logline contains header(s), which startswith `#`.
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: gitlab.application
+  - date:
+      field: gitlab.application.time
+      formats:
+        - "ISO8601"
+      target_field: "@timestamp"
+      timezone: "UTC"
+      tag: date_event_created_time_epoch
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.gitlab?.application?.time != null
+  - remove:
+      field: gitlab.application.time
+      ignore_missing: true
+  - set:
+      field: event.severity
+      value: 0
+      if: ctx.gitlab?.application?.severity == 'DEBUG'
+      tag: set_severity_0
+  - set:
+      field: event.severity
+      value: 1
+      if: ctx.gitlab?.application?.severity == 'INFO'
+      tag: set_severity_1
+  - set:
+      field: event.severity
+      value: 2
+      if: ctx.gitlab?.application?.severity == 'WARN'
+      tag: set_severity_2
+  - set:
+      field: event.severity
+      value: 3
+      if: ctx.gitlab?.application?.severity == 'ERROR'
+      tag: set_severity_3
+  - set:
+      field: event.severity
+      value: 4
+      if: ctx.gitlab?.application?.severity == 'FATAL'
+      tag: set_severity_4
+  - set:
+      field: event.severity
+      value: 5
+      if: ctx.gitlab?.application?.severity == 'UNKNOWN'
+      tag: set_severity_5
+  - remove:
+      field: gitlab.application.severity
+      ignore_missing: true
+  - rename:
+      field: gitlab.application.correlation_id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: gitlab.application.pid
+      target_field: process.pid
+      ignore_missing: true
+  - script:
+      tag: "removes_values_from_key"
+      lang: painless
+      source: >
+        if (ctx.gitlab?.application != null) {
+          def fieldsToRename = new ArrayList(ctx.gitlab.application.keySet());
+          for (fieldName in fieldsToRename) {
+            if (fieldName.endsWith('values')) {
+              def newField = fieldName.substring(0, fieldName.length() - 7);
+              def value = ctx.gitlab.application[fieldName];
+              if (value.size() > 1) {
+                ctx.gitlab.application[newField] = value;
+              } else {
+                ctx.gitlab.application[newField] = value[0]
+              }
+              ctx.gitlab.application.remove(fieldName);
+            }
+          }
+        }
+  - dot_expander:
+      field: "*"
+      path: gitlab.application
+  - rename:
+      field: gitlab.application.meta.user
+      target_field: user.name
+      ignore_missing: true
+  - convert:
+      field: gitlab.application.meta.user_id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: gitlab.application.meta.user_id
+      target_field: user.id
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{user.id}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{user.name}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  - rename:
+      field: gitlab.application.mergeability_merge_request_id
+      target_field: gitlab.application.mergeability.merge_request_id
+      ignore_missing: true
+  - rename:
+      field: gitlab.application.mergeability_project_id
+      target_field: gitlab.application.mergeability.project_id
+      ignore_missing: true
+  - grok:
+      field: gitlab.application.message
+      patterns:
+        - 'Failed%{SPACE}Login:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}'
+        - '%{USERNAME:user.name}%{SPACE}created%{SPACE}a%{SPACE}new%{SPACE}project%{SPACE}"%{GREEDYDATA:gitlab.application.project_name}"'
+        - 'Project%{SPACE}"%{GREEDYDATA:gitlab.application.project_name}"%{SPACE}was%{SPACE}deleted'
+        - 'User%{SPACE}Logout:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}'
+        - 'Successful%{SPACE}Login:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}%{SPACE}method=%{WORD:gitlab.application.login_method}%{SPACE}admin=%{WORD:gitlab.application.user_admin}'
+        - 'User%{SPACE}"%{USERNAME:user.name}"%{SPACE}\(%{EMAILADDRESS:user.email}\)%{SPACE}was%{SPACE}created'
+        - 'User%{SPACE}"%{USERNAME:user.name}"%{SPACE}\(%{EMAILADDRESS:user.email}\)%{SPACE}was%{SPACE}removed'
+        - 'Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}created'
+        - 'Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}removed'
+      tag: grok_message
+      if: ctx.gitlab.application.message != null
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: gitlab.application.user_admin
+      type: boolean
+      ignore_missing: true
+  - convert:
+      field: gitlab.application.meta.remote_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+          - remove:
+              field: gitlab.application.meta.remote_ip
+              ignore_missing: true
+          - append:
+              field: error.message
+              value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: gitlab.application.meta.remote_ip
+      target_field: client.ip
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      tag: geoip_client_address
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      tag: geoip_client_asn
+      target_field: client.as
+      properties:
+      - asn
+      - organization_name
+  - rename:
+      field: client.as.asn
+      tag: rename_client_as_asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      tag: rename_client_as_organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - set:
+      field: client.address
+      copy_from: client.ip
+      if: ctx.client?.ip != null
+  - set:
+      field: source
+      copy_from: client
+      if: ctx.client?.ip != null
+  - append:
+      field: related.ip
+      value: '{{client.ip}}'
+      if: ctx.client?.ip != null
+      allow_duplicates: false
+  - append:
+      field: event.category
+      value: authentication
+      tag: 'auth'
+      if: 'ctx.gitlab?.application?.message != null && (ctx.gitlab.application.message.contains("Failed Login:") || ctx.gitlab.application.message.contains("Successful Login:"))'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains("Failed Login:")
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains("Successful Login:")
+  - append:
+      field: event.type
+      value: creation
+      if: 'ctx.gitlab?.application?.message != null && (ctx.gitlab.application.message.contains("created a new project") || ctx.gitlab.application.message.contains(" was created"))'
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains(" was deleted")
+  - append:
+      tag: event_type_append
+      field: event.type
+      value: info
+  - append:
+      field: event.category
+      value: configuration
+      if: ' ctx.gitlab?.application?.message != null && !(ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:"))'
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
