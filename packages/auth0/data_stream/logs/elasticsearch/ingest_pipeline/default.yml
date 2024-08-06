@@ -22,6 +22,11 @@ processors:
     field: source.ip
     copy_from: auth0.logs.data.ip
     if: ctx?.auth0?.logs?.data?.ip != null
+- rename:
+    field: auth0.logs.data.isMobile
+    target_field: auth0.logs.data.is_mobile
+    ignore_missing: true
+    ignore_failure: true
 # IP Geolocation Lookup
 - geoip:
     field: source.ip
@@ -1062,6 +1067,8 @@ processors:
 - remove:
     field: 
       - json
+      - auth0.logs.data.$event_schema.version
+      - auth0.logs.data._id
       - auth0.logs.data.ip
       - auth0.logs.data.user_name
       - auth0.logs.data.user_id
