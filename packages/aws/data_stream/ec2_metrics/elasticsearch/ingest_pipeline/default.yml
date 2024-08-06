@@ -7,11 +7,13 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      ignore_failure: true
       description: This script fills cloud.account.name with cloud.account.id when the name is not available.
       source: |
         if(ctx.cloud?.account?.id != null && ctx.cloud?.account?.name == null) {
             ctx.cloud.account.name = ctx.cloud.account.id;
+        }
+        if(ctx.aws?.ec2?.metrics?.CPUUtilization?.avg != null && ctx.host?.cpu?.usage == null) {
+            ctx.aws.ec2.metrics.CPUUtilization.avg = ctx.aws.ec2.metrics.CPUUtilization.avg / 100;
         }
   - rename:
       field: aws.ec2.metrics.CPUUtilization.avg
@@ -48,3 +50,7 @@ processors:
       target_field: host.disk.write.bytes
       ignore_missing: true
       ignore_failure: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
