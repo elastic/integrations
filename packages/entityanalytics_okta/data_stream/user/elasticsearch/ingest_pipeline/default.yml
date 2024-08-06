@@ -548,6 +548,19 @@ processors:
       tag: append_user_profile_manager_name_into_related_user
       allow_duplicates: false
       if: ctx.entityanalytics_okta?.user?.profile?.manager?.name != null
+  - set:
+      field: okta.credentials.recovery_question.is_set
+      value: true
+      if: ctx.okta?.credentials?.recovery_question != null
+  - set:
+      field: okta.credentials.recovery_question.is_set
+      value: false
+      if: ctx.okta?.credentials?.recovery_question == null
+  - rename:
+      field: okta.credentials.recovery_question
+      target_field: entityanalytics_okta.user.credentials.recovery_question
+      tag: rename_user_credentials_recovery_question
+      ignore_missing: true
   - rename:
       field: okta.credentials.provider.type
       target_field: entityanalytics_okta.user.credentials.provider.type
