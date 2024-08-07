@@ -64,7 +64,7 @@ dependencies:
 With `import_mappings: true`, the package doesn’t need to define ECS fields.
 
 ```yaml
-# packages/azure_blob_storage/data_stream/generic/iamnotneeded.yml
+# packages/azure_blob_storage/data_stream/generic/fields/iamnotneeded.yml
 
 ¯\_(ツ)_/¯
 ```
