@@ -184,6 +184,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.activitylogs.operation_name | Operation name | keyword |
 | azure.activitylogs.operation_version | Operation version | keyword |
 | azure.activitylogs.properties | Event properties | flattened |
+| azure.activitylogs.response_body | Response Body | flattened |
 | azure.activitylogs.result_signature | Result signature | keyword |
 | azure.activitylogs.result_type | Result type | keyword |
 | azure.activitylogs.tenant_id | Tenant ID | keyword |
