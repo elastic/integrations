@@ -1,0 +1,92 @@
+
+dest:
+  index: ml_network_ded-2.2.0
+  aliases:
+    - alias: ml_network_ded.latest
+      move_on_creation: true
+    - alias: ml_network_ded.all
+      move_on_creation: false
+description: This transform runs every 30 minutes and collects network logs to detect data exfiltration in your environment for the past month up to the runtime.
+frequency: 30m
+pivot:
+  aggregations:
+    "@timestamp":
+      max:
+        field: "@timestamp"
+    source.bytes:
+      avg:
+        field: source.bytes
+  group_by:
+    'host.name':
+      terms:
+        field: host.name
+    'user.name':
+      terms:
+        field: user.name
+    'network.direction':
+      terms:
+        field: network.direction
+    'event.category':
+      terms:
+        field: event.category
+    'source.ip':
+      terms:
+        field: source.ip
+    'destination.ip':
+      terms:
+        field: destination.ip
+    'destination.port':
+      terms:
+        field: destination.port
+    'destination.geo.continent_name':
+      terms:
+        field: destination.geo.continent_name
+    'destination.geo.country_name':
+      terms:
+        field: destination.geo.country_name
+    'destination.geo.country_iso_code':
+      terms:
+        field: destination.geo.country_iso_code
+    'destination.geo.region_name':
+      terms:
+        field: destination.geo.region_name
+    'destination.geo.city_name':
+      terms:
+        field: destination.geo.city_name
+    'process.name':
+      terms:
+        field: process.name
+source:
+  index: logs-*
+  query:
+    bool:
+      filter:
+        - range:
+            '@timestamp':
+              gte: now-36M
+        - term:
+            'event.category':
+              value: network
+        - exists:
+            field: source.bytes
+        - exists:
+            field: destination.port
+        - terms:
+            'source.ip': ["192.168.0.0/16","10.0.0.0/8","172.16.0.0/12"]
+      must_not:
+        - term:
+            'source.bytes':
+              value: 0
+        - terms:
+            'network.direction': [ "internal","inbound" ]
+        - terms:
+            'process.name': [ "elastic-agent.exe","elastic-agent","metricbeat.exe","metricbeat","filebeat.exe","filebeat","packetbeat.exe","packetbeat" ]
+        - terms:
+            'destination.ip': [ "0.0.0.0/8","10.0.0.0/8", "100.64.0.0/10","127.0.0.0/8","169.254.0.0/16","172.16.0.0/12","192.0.0.0/24","192.0.2.0/24","192.88.99.0/24","192.168.0.0/16","198.18.0.0/15","198.51.100.0/24","203.0.113.0/24","224.0.0.0/4","233.252.0.0/24","240.0.0.0/4","255.255.255.255/32" ]
+sync:
+  time:
+    delay: 120s
+    field: "@timestamp"
+_meta:
+  fleet_transform_version: 2.2.0
+  run_as_kibana_system: false
