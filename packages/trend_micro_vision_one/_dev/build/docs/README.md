@@ -32,7 +32,16 @@ This module has been tested against `Trend Micro Vision One API version 3.0`.
 2. On the Trend Vision One console, go to **Administration -> API Keys**.
 3. Generate a new authentication token. Click **Add API key**. Specify the settings of the new API key.
     - **Name**: A meaningful name that can help you identify the API key.
-    - **Role**: The user role assigned to the key. API keys can use either predefined or custom user roles. The role must have appropriate API access permission to fetch relevant data. Refer to [Account Role Permissions](https://automation.trendmicro.com/xdr/Guides/Authentication) for details on required account role permissions.
+    - **Role**: The user role assigned to the key. API keys can use either predefined or custom user roles. Custom roles can be created by navigating to **Administration -> User Roles -> Add Role**. The role must have appropriate API access permission to fetch relevant data. The following table outlines the access permissions to apps and features needed to fetch relevant data from Trend Vision API.
+
+        |  Datastream  | App         | 	Permissions                                            |
+        |--------------|-------------|---------------------------------------------------------|
+        | Alert        | Workbench   | 	`View, filter, and search`.                            |
+        | Audit        | Audit Logs  | 	`View, filter, and search`, `Export and Download`.     |
+        | Detection    | Search      | 	`View, filter, and search`.                            |
+        
+        Refer to [Account Role Permissions](https://automation.trendmicro.com/xdr/Guides/Authentication) for more details.
+    
     - **Expiration time**: The time the API key remains valid. By default, authentication tokens expire one year after creation. However, a master administrator can delete and re-generate tokens at any time.
     - **Status**: Whether the API key is enabled.
     - **Details**: Extra information about the API key.
