@@ -2,12 +2,12 @@ services:
   falco-tcp:
     image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
-      - ./sample_logs:/sample_logs:ro
+      - ./sample_syslog:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9030 -p=tcp /sample_logs/*.log
   falco-logfile:
     image: alpine
     volumes:
-      - ./sample_logs:/sample_logs:ro
+      - ./sample_logfile:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
