@@ -578,14 +578,42 @@ This is the `Event` dataset.
 | ocsf.answers.rdata | The data describing the DNS resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | ocsf.answers.ttl | The time interval that the resource record may be cached. Zero value means that the resource record can only be used for the transaction in progress, and should not be cached. | long |
 | ocsf.answers.type | The type of data contained in this resource record. See RFC1035. For example: CNAME. | keyword |
+| ocsf.api.group.desc | The group description. | text |
+| ocsf.api.group.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
+| ocsf.api.group.name | The group name. | keyword |
+| ocsf.api.group.privileges | The group privileges. | keyword |
+| ocsf.api.group.type | The type of the group or account. | keyword |
+| ocsf.api.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.api.operation | Verb/Operation associated with the request. | keyword |
-| ocsf.api.request.flags | The list of communication flags, normalized to the captions of the flag_ids values. In the case of 'Other', they are defined by the event source. | keyword |
+| ocsf.api.request.containers.hash | Commit hash of image created for docker or the SHA256 hash of the container. | flattened |
+| ocsf.api.request.containers.image | The container image used as a template to run the container. | flattened |
+| ocsf.api.request.containers.name | The container name. | keyword |
+| ocsf.api.request.containers.network_driver | The network driver used by the container. For example, bridge, overlay, host, none, etc. | keyword |
+| ocsf.api.request.containers.orchestrator | The orchestrator managing the container, such as ECS, EKS, K8s, or OpenShift. | keyword |
+| ocsf.api.request.containers.pod_uuid | The unique identifier of the pod (or equivalent) that the container is executing on. | keyword |
+| ocsf.api.request.containers.runtime | The backend running the container, such as containerd or cri-o. | keyword |
+| ocsf.api.request.containers.size | The size of the container image. | integer |
+| ocsf.api.request.containers.tag | The tag used by the container. It can indicate version, format, OS. | keyword |
+| ocsf.api.request.containers.uid | The full container unique identifier for this instantiation of the container. | keyword |
+| ocsf.api.request.data | The additional data that is associated with the api request. | flattened |
+| ocsf.api.request.flags | The list of communication flags, normalized to the captions of the flag_ids values. | keyword |
 | ocsf.api.request.uid | The unique request identifier. | keyword |
-| ocsf.api.response.code | The numeric response sent to a request. | long |
+| ocsf.api.response.code | The numeric response sent to a request. | integer |
+| ocsf.api.response.containers.hash | Commit hash of image created for docker or the SHA256 hash of the container. | flattened |
+| ocsf.api.response.containers.image | The container image used as a template to run the container. | flattened |
+| ocsf.api.response.containers.name | The container name. | keyword |
+| ocsf.api.response.containers.network_driver | The network driver used by the container. For example, bridge, overlay, host, none, etc. | keyword |
+| ocsf.api.response.containers.orchestrator | The orchestrator managing the container, such as ECS, EKS, K8s, or OpenShift. | keyword |
+| ocsf.api.response.containers.pod_uuid | The unique identifier of the pod (or equivalent) that the container is executing on. | keyword |
+| ocsf.api.response.containers.runtime | The backend running the container, such as containerd or cri-o. | keyword |
+| ocsf.api.response.containers.size | The size of the container image. | integer |
+| ocsf.api.response.containers.tag | The tag used by the container. It can indicate version, format, OS. | keyword |
+| ocsf.api.response.containers.uid | The full container unique identifier for this instantiation of the container. | keyword |
+| ocsf.api.response.data | The additional data that is associated with the api response. | flattened |
 | ocsf.api.response.error | Error Code. | keyword |
-| ocsf.api.response.error_message | Error Message. | keyword |
-| ocsf.api.response.flags | The list of communication flags, normalized to the captions of the flag_ids values. In the case of 'Other', they are defined by the event source. | keyword |
-| ocsf.api.response.message | The description of the event, as defined by the event source. | keyword |
+| ocsf.api.response.error_message | Error Message. | text |
+| ocsf.api.response.flags | The list of communication flags, normalized to the captions of the flag_ids values. | keyword |
+| ocsf.api.response.message | The description of the event/finding, as defined by the source. | text |
 | ocsf.api.service.labels | The list of labels associated with the service. | keyword |
 | ocsf.api.service.name | The name of the service. | keyword |
 | ocsf.api.service.uid | The unique identifier of the service. | keyword |
@@ -602,6 +630,8 @@ This is the `Event` dataset.
 | ocsf.app.vendor_name | The name of the vendor of the product. | keyword |
 | ocsf.app.version | The version of the product, as defined by the event source. | keyword |
 | ocsf.app_name | The name of the application that is associated with the event or object. | keyword |
+| ocsf.assignee | The details of the user assigned to an Incident. | flattened |
+| ocsf.assignee_group | The details of the group assigned to an Incident. | flattened |
 | ocsf.attacks.tactics.name | The tactic name that is associated with the attack technique, as defined by ATT&CK MatrixTM. | keyword |
 | ocsf.attacks.tactics.uid | The tactic ID that is associated with the attack technique, as defined by ATT&CK MatrixTM. | keyword |
 | ocsf.attacks.technique.name | The name of the attack technique, as defined by ATT&CK MatrixTM. For example: Drive-by Compromise. | keyword |
@@ -710,6 +740,7 @@ This is the `Event` dataset.
 | ocsf.dce_rpc.rpc_interface.ack_result | An integer that denotes the acknowledgment result of the DCE/RPC call. | long |
 | ocsf.dce_rpc.rpc_interface.uuid | The unique identifier of the particular remote procedure or service. | keyword |
 | ocsf.dce_rpc.rpc_interface.version | The version of the DCE/RPC protocol being used in the session. | keyword |
+| ocsf.desc | The short description of the incident. | keyword |
 | ocsf.device.autoscale_uid | The unique identifier of the cloud autoscale configuration. | keyword |
 | ocsf.device.container | The information describing an instance of a container. | flattened |
 | ocsf.device.created_time | The time when the device was known to have been created. | date |
@@ -1622,6 +1653,8 @@ This is the `Event` dataset.
 | ocsf.open_type | Indicates how the file was opened (e.g. normal, delete on close). | keyword |
 | ocsf.port | The dynamic port established for impending data transfers. | long |
 | ocsf.precision | The NTP precision quantifies a clock's accuracy and stability in log2 seconds, as defined in RFC-5905. | integer |
+| ocsf.priority | The priority, normalized to the caption of the priority_id value. | keyword |
+| ocsf.priority_id | The priority, normalized to the ID of the priority_id value. | integer |
 | ocsf.privileges | The list of sensitive privileges, assigned to the new user session. | keyword |
 | ocsf.protocol_ver | The Protocol version. | keyword |
 | ocsf.proxy.domain | The name of the domain. | keyword |
@@ -1829,6 +1862,7 @@ This is the `Event` dataset.
 | ocsf.src_endpoint.vlan_uid | The Virtual LAN identifier. | keyword |
 | ocsf.src_endpoint.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
 | ocsf.src_endpoint.zone | The network zone or LAN segment. | keyword |
+| ocsf.src_url | A Url link used to access the original incident. | keyword |
 | ocsf.start_time | The start time of a time period, or the time of the least recent event included in the aggregate event. | date |
 | ocsf.start_time_dt | The start time of a time period, or the time of the least recent event included in the aggregate event. | date |
 | ocsf.state | The normalized state of a security finding. | keyword |
@@ -1991,6 +2025,8 @@ This is the `Event` dataset.
 | ocsf.user_result.type_id | The account type identifier. | keyword |
 | ocsf.user_result.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.user_result.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
+| ocsf.verdict | The verdict assigned to an Incident finding. | keyword |
+| ocsf.verdict_id | The normalized verdict of an Incident. | integer |
 | ocsf.version | The version number of the NTP protocol. | keyword |
 | ocsf.vulnerabilities.cve.created_time | The Record Creation Date identifies when the CVE ID was issued to a CVE Numbering Authority (CNA) or the CVE Record was published on the CVE List. Note that the Record Creation Date does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE. | date |
 | ocsf.vulnerabilities.cve.created_time_dt | The Record Creation Date identifies when the CVE ID was issued to a CVE Numbering Authority (CNA) or the CVE Record was published on the CVE List. Note that the Record Creation Date does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE. | date |

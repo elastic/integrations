@@ -26,6 +26,12 @@ processors:
       tag: rename_resource_to_resources
       ignore_missing: true
       if : ctx.ocsf?.resources == null
+  - rename:
+      field: ocsf.finding_info_list
+      target_field: ocsf.finding_info
+      tag: rename_finding_info_list_to_finding_info
+      ignore_missing: true
+      if : ctx.ocsf?.finding_info == null
   - convert:
       field: ocsf.class_uid
       tag: convert_class_uid_to_string
@@ -39,7 +45,7 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind
-      if: ctx.ocsf?.class_uid != null && ['2001', '2002','2003','2004'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['2001','2002','2003','2004','2005'].contains(ctx.ocsf.class_uid)
       value: alert
   - append:
       field: event.category
@@ -52,7 +58,7 @@ processors:
       tag: append_vulnerability_into_event_category
       value: vulnerability
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['2001', '2002','2003','2004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.vulnerabilities != null
+      if: ctx.ocsf?.class_uid != null && ['2001','2002','2003','2004','2005'].contains(ctx.ocsf.class_uid) && ctx.ocsf.vulnerabilities != null
   - append:
       field: event.category
       tag: append_iam_into_event_category
@@ -130,7 +136,7 @@ processors:
       tag: append_info_into_event_type
       value: info
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1007','2001', '2002','2003','2004','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1007','2001', '2002','2003','2004','2005','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.type
       tag: append_user_into_event_type
@@ -154,7 +160,7 @@ processors:
       tag: append_creation_into_event_type
       value: creation
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['1001','3001','4006','5002'].contains(ctx.ocsf.class_uid) && ['Create','File Create','Log'].contains(ctx.ocsf.activity_name)
+      if: ctx.ocsf?.class_uid != null && ['1001','2005','3001','4006','5002'].contains(ctx.ocsf.class_uid) && ['Create','File Create','Log'].contains(ctx.ocsf.activity_name)
   - append:
       field: event.type
       tag: append_access_into_event_type
@@ -178,7 +184,7 @@ processors:
       tag: append_end_into_event_type
       value: end
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['1007','3002','4001','4007','4013','6002'].contains(ctx.ocsf.class_uid) && ['Terminate','Logoff','Close','Stop','Symmetric Passive Response','Server Response','Private Use Case','Other'].contains(ctx.ocsf.activity_name)
+      if: ctx.ocsf?.class_uid != null && ['1007','2005','3002','4001','4007','4013','6002'].contains(ctx.ocsf.class_uid) && ['Terminate','Logoff','Close','Stop','Symmetric Passive Response','Server Response','Private Use Case','Other'].contains(ctx.ocsf.activity_name)
   - append:
       field: event.type
       tag: append_denied_into_event_type
@@ -196,7 +202,7 @@ processors:
       tag: append_change_into_event_type
       value: change
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['1001','4006','4010'].contains(ctx.ocsf.class_uid) && ['Update','File Supersede','File Overwrite','Update','Rename'].contains(ctx.ocsf.activity_name)
+      if: ctx.ocsf?.class_uid != null && ['1001','2005','4006','4010'].contains(ctx.ocsf.class_uid) && ['Update','File Supersede','File Overwrite','Update','Rename'].contains(ctx.ocsf.activity_name)
   - append:
       field: event.type
       tag: append_connection_into_event_type
@@ -754,7 +760,7 @@ processors:
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_user" }}'
-      if: ctx.ocsf?.class_uid != null && ['3001','3002','3003','3005','3006','5003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.user != null
+      if: ctx.ocsf?.class_uid != null && ['2005','3001','3002','3003','3005','3006','5003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.user != null
       tag: pipeline_object_user
       ignore_missing_pipeline: true
   - pipeline:

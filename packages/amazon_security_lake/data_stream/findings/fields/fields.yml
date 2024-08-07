@@ -57,57 +57,28 @@
         - name: version
           type: keyword
           description: 'The analytic version. For example: 1.1.'
-    - name: api
+    - name: assignee_group
       type: group
+      description: The details of the group assigned to an Incident.
       fields:
-        - name: operation
+        - name: desc
+          type: text
+          description: The group description.
+        - name: domain
           type: keyword
-          description: Verb/Operation associated with the request.
-        - name: request
-          type: group
-          fields:
-            - name: flags
-              type: keyword
-              description: The list of communication flags, normalized to the captions of the flag_ids values. In the case of 'Other', they are defined by the event source.
-            - name: uid
-              type: keyword
-              description: The unique request identifier.
-        - name: response
-          type: group
-          fields:
-            - name: code
-              type: long
-              description: The numeric response sent to a request.
-            - name: error
-              type: keyword
-              description: Error Code.
-            - name: error_message
-              type: keyword
-              description: Error Message.
-            - name: flags
-              type: keyword
-              description: The list of communication flags, normalized to the captions of the flag_ids values. In the case of 'Other', they are defined by the event source.
-            - name: message
-              type: keyword
-              description: The description of the event, as defined by the event source.
-        - name: service
-          type: group
-          fields:
-            - name: labels
-              type: keyword
-              description: The list of labels associated with the service.
-            - name: name
-              type: keyword
-              description: The name of the service.
-            - name: uid
-              type: keyword
-              description: The unique identifier of the service.
-            - name: version
-              type: keyword
-              description: The version of the service.
-        - name: version
+          description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+        - name: name
           type: keyword
-          description: The version of the API service.
+          description: The group name.
+        - name: privileges
+          type: keyword
+          description: The group privileges.
+        - name: type
+          type: keyword
+          description: The type of the group or account.
+        - name: uid
+          type: keyword
+          description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
     - name: attacks
       type: group
       fields:
@@ -238,6 +209,9 @@
     - name: data_sources
       type: keyword
       description: The data sources for the finding.
+    - name: desc
+      type: keyword
+      description: The short description of the incident.
     - name: duration
       type: long
       description: The event duration or aggregate time, the amount of time the event covers from start_time to end_time in milliseconds.
@@ -517,6 +491,12 @@
         - name: value
           type: keyword
           description: The value associated with the observable attribute.
+    - name: priority
+      type: keyword
+      description: The priority, normalized to the caption of the priority_id value.
+    - name: priority_id
+      type: integer
+      description: The priority, normalized to the ID of the priority_id value.
     - name: remediation
       type: group
       fields:
@@ -552,6 +532,9 @@
     - name: severity_id
       type: long
       description: The normalized identifier of the event severity. The normalized severity is a measurement the effort and expense required to manage and resolve an event or incident. Smaller numerical values represent lower impact events, and larger numerical values represent higher impact events.
+    - name: src_url
+      type: keyword
+      description: A Url link used to access the original incident.
     - name: start_time
       type: date
       description: The start time of a time period, or the time of the least recent event included in the aggregate event.
@@ -594,3 +577,9 @@
     - name: unmapped
       type: flattened
       description: The attributes that are not mapped to the event schema. The names and values of those attributes are specific to the event source.
+    - name: verdict
+      type: keyword
+      description: The verdict assigned to an Incident finding.
+    - name: verdict_id
+      type: integer
+      description: The normalized verdict of an Incident.

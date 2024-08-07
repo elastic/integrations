@@ -1,0 +1,154 @@
+- name: ocsf
+  type: group
+  fields:
+    - name: api
+      type: group
+      description: Describes details about a typical API (Application Programming Interface) call.
+      fields:
+        - name: operation
+          type: keyword
+          description: Verb/Operation associated with the request.
+        - name: group
+          type: group
+          description: The information pertaining to the API group.
+          fields:
+            - name: desc
+              type: text
+              description: The group description.
+            - name: domain
+              type: keyword
+              description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+            - name: name
+              type: keyword
+              description: The group name.
+            - name: privileges
+              type: keyword
+              description: The group privileges.
+            - name: type
+              type: keyword
+              description: The type of the group or account.
+            - name: uid
+              type: keyword
+              description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+        - name: request
+          type: group
+          description: Details pertaining to the API request.
+          fields:
+            - name: uid
+              type: keyword
+              description: The unique request identifier.
+            - name: containers
+              type: group
+              description: When working with containerized applications, the set of containers which write to the standard the output of a particular logging driver.
+              fields:
+                - name: hash
+                  type: flattened
+                  description: Commit hash of image created for docker or the SHA256 hash of the container.
+                - name: image
+                  type: flattened
+                  description: The container image used as a template to run the container.
+                - name: name
+                  type: keyword
+                  description: The container name.
+                - name: network_driver
+                  type: keyword
+                  description: The network driver used by the container. For example, bridge, overlay, host, none, etc.
+                - name: orchestrator
+                  type: keyword
+                  description: The orchestrator managing the container, such as ECS, EKS, K8s, or OpenShift.
+                - name: pod_uuid
+                  type: keyword
+                  description: The unique identifier of the pod (or equivalent) that the container is executing on.
+                - name: runtime
+                  type: keyword
+                  description: The backend running the container, such as containerd or cri-o.
+                - name: size
+                  type: integer
+                  description: The size of the container image.
+                - name: tag
+                  type: keyword
+                  description: The tag used by the container. It can indicate version, format, OS.
+                - name: uid
+                  type: keyword
+                  description: The full container unique identifier for this instantiation of the container.
+            - name: data
+              type: flattened
+              description: The additional data that is associated with the api request.
+            - name: flags
+              type: keyword
+              description: The list of communication flags, normalized to the captions of the flag_ids values.
+        - name: response
+          type: group
+          description: Details pertaining to the API response.
+          fields:
+            - name: code
+              type: integer
+              description: The numeric response sent to a request.
+            - name: containers
+              type: group
+              description: When working with containerized applications, the set of containers which write to the standard the output of a particular logging driver.
+              fields:
+                - name: hash
+                  type: flattened
+                  description: Commit hash of image created for docker or the SHA256 hash of the container.
+                - name: image
+                  type: flattened
+                  description: The container image used as a template to run the container.
+                - name: name
+                  type: keyword
+                  description: The container name.
+                - name: network_driver
+                  type: keyword
+                  description: The network driver used by the container. For example, bridge, overlay, host, none, etc.
+                - name: orchestrator
+                  type: keyword
+                  description: The orchestrator managing the container, such as ECS, EKS, K8s, or OpenShift.
+                - name: pod_uuid
+                  type: keyword
+                  description: The unique identifier of the pod (or equivalent) that the container is executing on.
+                - name: runtime
+                  type: keyword
+                  description: The backend running the container, such as containerd or cri-o.
+                - name: size
+                  type: integer
+                  description: The size of the container image.
+                - name: tag
+                  type: keyword
+                  description: The tag used by the container. It can indicate version, format, OS.
+                - name: uid
+                  type: keyword
+                  description: The full container unique identifier for this instantiation of the container.
+            - name: data
+              type: flattened
+              description: The additional data that is associated with the api response.
+            - name: error
+              type: keyword
+              description: Error Code.
+            - name: error_message
+              type: text
+              description: Error Message.
+            - name: flags
+              type: keyword
+              description: The list of communication flags, normalized to the captions of the flag_ids values.
+            - name: message
+              type: text
+              description: The description of the event/finding, as defined by the source.
+        - name: service
+          type: group
+          description: The information pertaining to the API service.
+          fields:
+            - name: labels
+              type: keyword
+              description: The list of labels associated with the service.
+            - name: name
+              type: keyword
+              description: The name of the service.
+            - name: uid
+              type: keyword
+              description: The unique identifier of the service.
+            - name: version
+              type: keyword
+              description: The version of the service.
+        - name: version
+          type: keyword
+          description: The version of the API service.
