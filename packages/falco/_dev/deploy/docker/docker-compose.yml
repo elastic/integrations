@@ -1,36 +1,13 @@
 services:
-  falco:
-    image: falcosecurity/falco-no-driver:0.37.1
-    privileged: true
-    entrypoint: falco
-    command: -o engine.kind=modern_ebpf -o json_output=true -o json_include_output_property=true -o file_output.enabled=true -o file_output.filename=/var/log/falco/falco.log -o http_output.enabled=true -o http_output.url="http://falco-sidekick:2801"
+  falco-tcp:
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
-      - ${SERVICE_LOGS_DIR}:/var/log/falco
-      # - falcologs:/var/log/falco
-      - /var/run/docker.sock:/host/var/run/docker.sock
-      - /proc:/host/proc:ro
-      # - /boot:/host/boot:ro
-      # - /lib/modules:/host/lib/modules:ro
-      # - /usr:/host/usr:ro
-      - /etc:/host/etc:ro
-    networks:
-      - elastic-package-stack_default
-  falco-sidekick:
-    image: falcosecurity/falcosidekick:latest
-    ports:
-      - "2801:2801"
-    environment:
-      - SYSLOG_HOST=elastic-agent
-      - SYSLOG_PORT=9030
-      - SYSLOG_PROTOCOL=tcp
-      # - DEBUG=true
-    networks:
-      - elastic-package-stack_default
-  falco-event-generator:
-    image: falcosecurity/event-generator:0.10.0
-    entrypoint: event-generator
-    command: run --loop
-networks:
-  elastic-package-stack_default:
-    name: elastic-package-stack_default
-    external: true
+      - ./sample_syslog:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9030 -p=tcp /sample_logs/*.log
+  falco-logfile:
+    image: alpine
+    volumes:
+      - ./sample_logfile:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
