@@ -1,0 +1,44 @@
+---
+name: Update versions of integrations services.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * 1-5'
+  pull_request:
+    paths:
+      - .github/updatecli-packages.d/*
+      - .github/workflows/bump-integration-services.yml
+
+permissions:
+  contents: read
+
+jobs:
+  bump-mysql-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Updatecli in the runner
+        uses: updatecli/updatecli-action@v2.62.0
+
+      - name: Select diff action
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo "UPDATECLI_ACTION=diff" >> $GITHUB_ENV
+
+      - name: Select apply action
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          echo "UPDATECLI_ACTION=apply" >> $GITHUB_ENV
+
+      - name: Update mysql services.
+        # --experimental needed for commitusingapi option.
+        run: updatecli --experimental ${{ env.UPDATECLI_ACTION }} --config .github/workflows/updatecli-packages.d/mysql.yml --values .github/workflows/updatecli.d/scm.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

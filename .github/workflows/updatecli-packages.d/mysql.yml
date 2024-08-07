@@ -1,0 +1,42 @@
+---
+name: Bump latest mysql service test version
+pipelineid: 'bump-latest-mysql-variant-version'
+
+actions:
+  default:
+    title: '[updatecli] Update latest mysql version to {{ source "latest" }}'
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      labels:
+        - automation
+        - dependency
+
+scms:
+  default:
+    kind: github
+    spec:
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      commitusingapi: true
+      branch: main
+
+sources:
+  latest:
+    kind: dockerimage
+    spec:
+      image: mysql
+      architecture: "linux/amd64"
+      kind: latest
+      tagfilter: '^8.\d*.\d*$'
+
+targets:
+  mysqlTag:
+    name: "mysql variant"
+    kind: file
+    spec:
+      file: "packages/mysql/_dev/deploy/variants.yml"
+      matchpattern: '(IMAGE: mysql:)8.*'
+      replacepattern: '${1}{{ source "latest" }}'
