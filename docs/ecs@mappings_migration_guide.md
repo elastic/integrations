@@ -2,7 +2,7 @@
 
 ## History
 
-In the initial stages, our approach involved individually specifying ECS fields within each package.
+In the initial stages, our approach involved individually specifying [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-reference.html) fields within each package.
 
 ```yaml
 - name: provider
@@ -195,4 +195,124 @@ The ecs@mappings can deal with ECS mappings in all standard cases.
 
 However, integration developers can continue using the field definition of specific fields to override the definition in Elasticsearch if needed.
 
+## Q&A
+
+Here are a few topic and questions people asked when we started rolling out the `ecs@mappings` component template in integrations.
+
+### TSDB fields in metrics data streams
+
+ECS field definitions in Elasticsearch do not include TSDB settings like dimensions. Developers can add a field definition with the additional dimension setting when needed. 
+
+However, this will no longer be needed when integrations are OpenTelemetry-based. That’s because all attributes and resource attributes will be dimensions by default.
+
+### How can I learn which ECS version a given stack version supports?
+
+#### Question
+
+For example, if I am running 8.13.0, which ECS version does the 8.13.0 `ecs@mappings` component template support?
+
+#### Answer
+
+The `ecs@mappings` component template in each stack version supports the ECS version available at the time of the stack release.
+
+An automated test verifies daily that `ecs@mappings` don’t miss any ECS field. 
+
+As Eyal explained:
+
+> “It fetches the current state of all fields from the ECS repo, creates test documents that contain an example for each field, and verifies that an index that relies on the dynamic templates will contain all the right mappings when indexing the test documents.”
+
+### Are new versions of ecs@mappings retro-compatible?
+
+#### Question
+
+For example, suppose I am on 8.13.0, and the integration validates ECS fields using the latest ECS v8.11.0. 
+
+What are the chances that future stack versions (8.14, 8.15, etc) may ship with an ecs@mappings component template that changes the integration's behavior? What can I do to prevent this from happening or detect it in advance?
+
+#### Answer
+
+Since we based the `ecs@mappings` component template on pattern matching, we expect little to no changes over time.
+
+New fields in ECS should receive a mapping, and automated tests are in place to ensure that the `ecs@mappings` component template adequately supports all ECS fields.
+
+Integration developers should target new versions of ECS in the “dependencies.ecs.reference” in their integration to let elastic-package check for compliance. 
+
+The transition to Semantic Conventions (OTel) is more likely to introduce breaking changes than ECS updates.
+
+## Scenarios
+
+Here are scenario that may be affected by the introduction of `ecs@mappings` in integrations.
+
+### A user clones an integration index template to customize the ILM policy
+
+#### Description
+
+Suppose a user installs the 1Password integration on stack 8.12.
+
+Fleet creates the `logs-1password.audit_events` index template, with the `logs-1password.audit_events-*` index pattern, and the following component templates:
+
+```text
+logs@settings
+logs-1password.audit_events@package
+logs-1password.audit_events@custom
+.fleet_globals-1
+.fleet_agent_id_verification-1
+```
+
+The user has three environments (dev, test, prod) and wants to use a distinct ILM policy in each environment. They decide to use a different namespace for each environment (a common practice in enterprise environments).
+
+The user finds https://www.elastic.co/guide/en/fleet/current/data-streams-ilm-tutorial.html#data-streams-ilm-one, and at step 3 they read the following steps:
+
+1. Navigate to **Stack Management > Index Management > Index Templates**.
+2. Find the index template you want to clone. The index template will have the <type> and <dataset> in its name, but not the <namespace>. In this case, it’s metrics-system.network.
+3. Select **Actions > Clone**.
+4. Set the name of the new index template to `metrics-system.network-production`.
+
+They clone the original index template three times and set up individual ILM policies.
+
+They end up with four index templates:
+
+- logs-1password.audit_events (original)
+- logs-1password.audit_events-dev (includes logs-1password.audit_events-dev@custom)
+- logs-1password.audit_events-test (includes logs-1password.audit_events-uat@custom)
+- logs-1password.audit_events-production (includes logs-1password.audit_events-production@custom)
+
+Then, the user upgrades the stack from 8.12 to 8.13.
+
+After the upgrade, here’s each index template's list of component templates.
+
+The original index template gets the ecs@mappings component.
+
+```text
+# logs-1password.audit_events (original)
+
+logs@settings
+logs-1password.audit_events@package
+logs-1password.audit_events@custom
+ecs@mappings
+.fleet_globals-1
+.fleet_agent_id_verification-1
+```
+
+The cloned index template is unchanged:
+
+```text
+# logs-1password.audit_events-dev
+
+logs@settings
+logs-1password.audit_events@package
+logs-1password.audit_events@custom
+.fleet_globals-1
+.fleet_agent_id_verification-1
+```
+
+#### Description
+
+We couldn’t identify an actual solution to address this scenario. 
+
+To mitigate potential issues from this scenario, we are currently extending the information available to end users:
+
+- The “Notable changes” section in the Fleet 8.13 release notes.
+- Created the KB article [Potential ecs@mappings issue for index template clones on 8.13+](https://support.elastic.dev/knowledge/view/df0eaa25) 
+- Updated the [Tutorial: Customize data retention policies document](https://www.elastic.co/guide/en/fleet/current/data-streams-ilm-tutorial.html) with a note and instructions to update index templates cloned before Elasticsearch 8.13
 
