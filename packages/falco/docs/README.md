@@ -80,6 +80,7 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | falco.output_fields.container.start_ts | Container start as epoch timestamp. | date_nanos |  |
 | falco.output_fields.container.type | Preserved Falco field | text |  |
 | falco.output_fields.destination.ip | Falco copy of the ECS field of the same name | ip |  |
+| falco.output_fields.event.time | Required field for integration | date |  |
 | falco.output_fields.evt.abspath | Calculated absolute path. | text |  |
 | falco.output_fields.evt.abspath_dst | Destination of the absolute path. | text |  |
 | falco.output_fields.evt.abspath_src | Source of the absolute path. | text |  |
@@ -282,8 +283,8 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2024-05-07T18:54:19.341Z",
     "agent": {
-        "ephemeral_id": "6f7b78c5-c56e-492c-9b3f-618b829a7928",
-        "id": "7e6ea545-7797-4135-a76d-24c7da5a7465",
+        "ephemeral_id": "ca3c8d24-ccff-44f3-a450-e7b4a189cc86",
+        "id": "7afb47b2-fdc6-4079-a02d-a2423eac5606",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.1"
@@ -294,21 +295,21 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "falco.alerts",
-        "namespace": "93347",
+        "namespace": "91164",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7e6ea545-7797-4135-a76d-24c7da5a7465",
+        "id": "7afb47b2-fdc6-4079-a02d-a2423eac5606",
         "snapshot": false,
         "version": "8.14.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "falco.alerts",
-        "ingested": "2024-08-01T18:45:02Z",
+        "ingested": "2024-08-01T20:57:05Z",
         "kind": "alert",
         "provider": "syscall",
         "timezone": "+00:00"
@@ -326,6 +327,9 @@ An example event for `alerts` looks as following:
         "output_fields": {
             "container": {},
             "evt": {
+                "time": {
+                    "iso8601": 1715108059341
+                },
                 "type": "openat"
             },
             "fd": {
