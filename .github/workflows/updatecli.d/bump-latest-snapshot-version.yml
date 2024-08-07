@@ -30,6 +30,16 @@ sources:
     spec:
       file: https://storage.googleapis.com/artifacts-api/snapshots/main.json
       key: .version
+  latestSnapshotMajorMinor:
+    name: Get latest snapshort major and minor
+    kind: json
+    spec:
+      file: https://storage.googleapis.com/artifacts-api/snapshots/main.json
+      key: .version
+    transformers:
+      - findsubmatch:
+          pattern: '(^\d+\.\d+)\.\d+$'
+          captureindex: 1
 
 targets:
   update-snapshot:
@@ -41,3 +51,13 @@ targets:
       file: '.buildkite/pipeline.schedule-daily.yml'
       matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
       replacepattern: '$1 {{ source "latestSnapshot" }}'
+
+  update-snapshot-label:
+    name: '[updatecli] Update latest snapshot label to {{ source "latestSnapshotMinor" }}'
+    kind: file
+    sourceid: latestSnapshot
+    scmid: default
+    spec:
+      file: '.buildkite/pipeline.schedule-daily.yml'
+      matchpattern: '(Stack Version v8\.)[^\s]+)+ '
+      replacepattern: 'Stack Vresion v{{ source "latestSnapshotMajorMinor" }}'
