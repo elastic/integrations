@@ -9,7 +9,7 @@ processors:
       lang: painless
       description: This script fills cloud.account.name with cloud.account.id when the name is not available.
       source: |
-        if(ctx.aws?.rds?.metrics?.CPUUtilization?.avg != null && ctx.aws?.rds?.cpu?.credit_usage == null) {
+        if(ctx.agent?.type == "firehose" && ctx.aws?.rds?.metrics?.CPUUtilization?.avg != null && ctx.aws?.rds?.cpu?.total?.pct == null) {
             ctx.aws.rds.metrics.CPUUtilization.avg = ctx.aws.rds.metrics.CPUUtilization.avg / 100;
         }
   - rename:
