@@ -40,7 +40,7 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 When querying the destination index (`ml_network_ded-<VERSION>`) for network logs, we advise using the alias for the destination index (`ml_network_ded.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
 
 To customize the filters in the Data Exfiltration transform, follow the below steps. You can use these instructions to add or remove filters for fields such as `process.name`, `source.ip`, `destination.ip`, and others.
-1. Go to **Stack Management > Data > Transforms > logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>**.
+1. Go to **Stack Management > Data > Transforms > `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`**.
 1. Click on the **Actions** bar at the far right of the transform and select the **Clone** option.
 ![Data Exfiltration Detection Rules](../img/ded_transform_1.png)
 1. In the new **Clone transform** window, go to the **Search filter** and update any field values you want to add or remove. Click on the **Apply changes** button on the right side to save these changes. **Note:** The image below shows an example of filtering a new `process.name` as `explorer.exe`. You can follow a similar example and update the field value list based on your environment to help reduce noise and potential false positives.
