@@ -1,0 +1,171 @@
+rules:
+  - path: /oauth/token
+    methods: ['POST']
+    request_body: '{"audience":"http://svc-auth0-http-server:8090/api/v2/","client_id":"wwwwwwww","client_secret":"xxxxxxxx","grant_type":"client_credentials"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"yyyyyyyy","scope":"read:logs read:logs_users","expires_in":86400,"token_type":"Bearer"}
+  - path: /api/v2/logs
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer yyyyyyyy"
+    query_params:
+      from: "{from:900[0-9]{20}0{33}}"
+      take: 1
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          Link:
+            - <http://svc-auth0-http-server:8090/api/v2/logs?from=90020240308035905601176000000000000001223372052035100532&take=1>; rel="next"
+        body: |-
+          {{ minify_json `
+          [
+              {
+                  "date": "2024-03-08T03:59:05.520Z",
+                  "type": "sapi",
+                  "description": "Create client grant",
+                  "client_id": "xZjM1MjUxOGVhYzYxNTAxZmE3NmI1MGIgIC",
+                  "client_name": "",
+                  "ip": "81.2.69.144",
+                  "user_agent": "Firefox 125.0.0 / Arch 0.0.0",
+                  "details": {
+                      "request": {
+                          "method": "post",
+                          "path": "/api/v2/client-grants",
+                          "query": {},
+                          "userAgent": "Mozilla/5.0 (X11; Arch; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0",
+                          "body": {
+                              "client_id": "MWNhMmRiOGY5MGIxNjE0ZTVmMjc0NDhl",
+                              "audience": "https://dev-fulaoenaspapatoulp.us.auth0.com/api/v2/",
+                              "scope": [
+                                  "read:logs",
+                                  "read:logs_users"
+                              ]
+                          },
+                          "channel": "https://manage.auth0.com/",
+                          "ip": "81.2.69.144",
+                          "auth": {
+                              "user": {
+                                  "user_id": "github|32487232",
+                                  "name": "User McUserface",
+                                  "email": "user.mcuserface@company.com"
+                              },
+                              "strategy": "jwt",
+                              "credentials": {
+                                  "jti": "e01983470586edb819c8c5d9967a63d3"
+                              }
+                          }
+                      },
+                      "response": {
+                          "statusCode": 201,
+                          "body": {
+                              "client_id": "MWNhMmRiOGY5MGIxNjE0ZTVmMjc0NDhl",
+                              "audience": "https://dev-fulaoenaspapatoulp.us.auth0.com/api/v2/",
+                              "scope": [
+                                  "read:logs",
+                                  "read:logs_users"
+                              ]
+                          }
+                      }
+                  },
+                  "user_id": "github|32487232",
+                  "$event_schema": {
+                      "version": "1.0.0"
+                  },
+                  "log_id": "90020240308035905601176000000000000001223372052035100532",
+                  "tenant_name": "dev-fulaoenaspapatoulp",
+                  "_id": "90020240308035905601176000000000000001223372052035100532",
+                  "isMobile": false
+              }
+          ]
+          ` }}
+  - path: /api/v2/logs
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer yyyyyyyy"
+    query_params:
+      from: "90020240308035905601176000000000000001223372052035100532"
+      take: 1
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          Link:
+            - <http://svc-auth0-http-server:8090/api/v2/logs?from=90020240308035906742643000000000000001223372052035101088&take=1>; rel="next"
+        body: |-
+          {{ minify_json `
+          [
+              {
+                  "date": "2024-03-08T03:59:06.700Z",
+                  "type": "mgmt_api_read",
+                  "description": "Get client by ID",
+                  "client_id": "xZjM1MjUxOGVhYzYxNTAxZmE3NmI1MGIgIC",
+                  "client_name": "",
+                  "ip": "81.2.69.144",
+                  "user_agent": "Firefox 125.0.0 / Arch 0.0.0",
+                  "details": {
+                      "accessedSecrets": [
+                          "client_secret"
+                      ],
+                      "request": {
+                          "method": "get",
+                          "path": "/api/v2/clients/MWNhMmRiOGY5MGIxNjE0ZTVmMjc0NDhl",
+                          "query": {},
+                          "userAgent": "Mozilla/5.0 (X11; Arch; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0",
+                          "channel": "https://manage.auth0.com/",
+                          "ip": "81.2.69.144",
+                          "auth": {
+                              "user": {
+                                  "user_id": "github|32487232",
+                                  "name": "User McUserface",
+                                  "email": "user.mcuserface@company.com"
+                              },
+                              "strategy": "jwt",
+                              "credentials": {
+                                  "jti": "e01983470586edb819c8c5d9967a63d3"
+                              }
+                          }
+                      },
+                      "response": {
+                          "statusCode": 200,
+                          "body": {
+                              "client_id": "MWNhMmRiOGY5MGIxNjE0ZTVmMjc0NDhl"
+                          }
+                      }
+                  },
+                  "user_id": "github|32487232",
+                  "$event_schema": {
+                      "version": "1.0.0"
+                  },
+                  "log_id": "90020240308035906742643000000000000001223372052035101088",
+                  "tenant_name": "dev-fulaoenaspapatoulp",
+                  "_id": "90020240308035906742643000000000000001223372052035101088",
+                  "isMobile": false
+              }
+          ]
+          ` }}
+  - path: /api/v2/logs
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer yyyyyyyy"
+    query_params:
+      from: "90020240308035906742643000000000000001223372052035101088"
+      take: 1
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          Link:
+            - <http://svc-auth0-http-server:8090/api/v2/logs?from=90020240308035906742643000000000000001223372052035101088&take=1>; rel="next"
+        body: '[]'
