@@ -61,15 +61,15 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2024-01-16T15:19:05.000Z",
     "agent": {
-        "ephemeral_id": "91f67eb6-e3ff-4ae4-b7d9-a62b2cfedae1",
-        "id": "f2254d76-4a15-40e3-9dd4-d6af0d1d25d4",
+        "ephemeral_id": "5a9738b6-025a-4df4-861e-1cc1eea5c622",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "watchguard_firebox.log",
-        "namespace": "18012",
+        "namespace": "76887",
         "type": "logs"
     },
     "destination": {
@@ -97,7 +97,7 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f2254d76-4a15-40e3-9dd4-d6af0d1d25d4",
+        "id": "7aaba523-565c-4597-bc42-59135436336b",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -117,7 +117,7 @@ An example event for `log` looks as following:
             "email"
         ],
         "dataset": "watchguard_firebox.log",
-        "ingested": "2024-08-06T10:36:37Z",
+        "ingested": "2024-08-07T05:26:04Z",
         "kind": "event",
         "original": "<139>Jan 16 15:19:05 WatchGuard-Firebox FVE6035FD3AE3 (2024-01-19T08:48:15) firewall: msg_id=\"1BFF-000F\" Allow 1-Trusted 0-External tcp 10.0.1.2 175.16.199.1 39398 25 msg=\"SMTP request\" proxy_act=\"SMTP-Outgoing.1\" rcvd_bytes=\"272\" sent_bytes=\"282\" sender=\"tester@testnet.com\" recipients=\"wg@localhost\" server_ssl=\"ECDHE-RSA-AES256-GCMSHA384\" client_ssl=\"AES128-SHA256\" tls_profile=\"TLS-Client.Standard\" (SMTP-proxy-00)",
         "outcome": "success",
@@ -131,7 +131,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.254.4:35604"
+            "address": "192.168.240.4:51247"
         },
         "syslog": {
             "appname": "firewall",
