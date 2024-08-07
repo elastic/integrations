@@ -29,7 +29,7 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - drop:
-      if: ctx?.event?.original?.startsWith('#')
+      if: ctx.event?.original?.startsWith('#')
       description: "Drop if logline contains header(s), which startswith `#`"
   - csv:
       description: Parse cloudfront csv row
@@ -79,7 +79,7 @@ processors:
       lang: painless
       source: >-
         ctx._tmp.timestamp = ctx._tmp.date + 'T' + ctx._tmp.time;
-      if: ctx?._tmp?.date != null && ctx?._tmp?.time != null
+      if: ctx._tmp?.date != null && ctx._tmp?.time != null
 
   - date:
       field: _tmp.timestamp
@@ -88,7 +88,7 @@ processors:
       formats:
         - ISO8601
         - yyyy-MM-dd HH:mm:ss
-      if: ctx?._tmp?.timestamp != null
+      if: ctx._tmp?.timestamp != null
   # x-edge-location
   - rename:
       field: _tmp.x_edge_location
@@ -113,8 +113,8 @@ processors:
       ignore_failure: true
   - append:
       field: related.ip
-      value: "{{ source.ip }}"
-      if: ctx?.source?.ip != null
+      value: "{{{ source.ip }}}"
+      if: ctx.source?.ip != null
   # cs-method
   - rename:
       field: _tmp.cs_method
@@ -127,9 +127,9 @@ processors:
       ignore_missing: true
   - append:
       field: related.hosts
-      value: "{{aws.cloudfront.domain}}"
+      value: "{{{ aws.cloudfront.domain }}}"
       allow_duplicates: false
-      if: ctx?.aws?.cloudfront?.domain != null
+      if: ctx.aws?.cloudfront?.domain != null
   # cs-uri-stem
   - rename:
       field: _tmp.cs_uri_stem
@@ -146,7 +146,7 @@ processors:
       field: _tmp.cs_referer
       target_field: http.request.referrer
       ignore_missing: true
-      if: ctx?._tmp?.cs_referer != null && ctx._tmp.cs_referer != '-'
+      if: ctx._tmp?.cs_referer != null && ctx._tmp.cs_referer != '-'
   # cs(User-Agent)
   - urldecode:
       field: _tmp.cs_user_agent
@@ -159,12 +159,12 @@ processors:
   - rename:
       field: _tmp.cs_uri_query
       target_field: url.query
-      if: ctx?._tmp?.cs_uri_query != null && ctx._tmp.cs_uri_query != '-'
+      if: ctx._tmp?.cs_uri_query != null && ctx._tmp.cs_uri_query != '-'
   # cs(Cookie)
   - rename:
       field: _tmp.cs_cookie
       target_field: aws.cloudfront.cookies
-      if: ctx?._tmp?.cs_cookies != null && ctx._tmp.cs_cookies != '-'
+      if: ctx._tmp?.cs_cookies != null && ctx._tmp.cs_cookies != '-'
   # x-edge-result-type
   - rename:
       field: _tmp.x_edge_result_type
@@ -186,9 +186,9 @@ processors:
       ignore_empty_value: true
   - append:
       field: related.hosts
-      value: "{{destination.domain}}"
+      value: "{{{ destination.domain }}}"
       allow_duplicates: false
-      if: ctx?.destination?.domain != null
+      if: ctx.destination?.domain != null
   # cs-protocol
   - rename:
       field: _tmp.cs_protocol
@@ -209,37 +209,54 @@ processors:
       source: >-
         ctx.event.duration = (Long)(Float.parseFloat(ctx._tmp.time_taken) * params.S_TO_NS);
   # x-forwarded-for
-  - gsub:
-      description: In rare cases, the field contains hex encoded whitspaces (\20). We replace them by whitespaces again to not break parsing.
-      field: _tmp.x_forwarded_for
-      target_field: _tmp.forwarded_ip
-      pattern: "\\\\x20"
-      replacement: " "
-      ignore_missing: true
-      if: ctx?._tmp?.x_forwarded_for != null && ctx._tmp.x_forwarded_for != '-'
-  - split:
-      field: _tmp.forwarded_ip
-      separator: ',\s*'
-      ignore_missing: true
-  - convert:
-      description: Creates a target field containing valid ip's if ALL values are valid ip's.
-      field: _tmp.forwarded_ip
-      target_field: network.forwarded_ip
-      type: ip
-      ignore_missing: true
-      tag: convert_forwarded_ip
-      on_failure:
-        - append:
-            description: Add convert failure to error message and continue.
-            field: error.message
-            value: 'Processor with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}'
-            if: ctx?.tags == null || !ctx?.tags.contains('elastic_package_remove_error_message')
+  - script:
+      lang: painless
+      description: Parse x-forwarded-for ip-addresses. Add invalid values to an error string without failing.
+      if: ctx._tmp?.x_forwarded_for != null && ctx._tmp.x_forwarded_for != '-'
+      source: |
+        ArrayList ips = new ArrayList();
+        ArrayList bad_ips = new ArrayList();
+        def raw_ips = ctx._tmp?.x_forwarded_for.splitOnToken(',');
+
+        // Patterns used for ip validation, inspired by logstash. Used as a workaround due to lack of a simpler method.
+        Pattern ipv4 = /^(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])$/;
+        Pattern ipv6 = /^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)??$/;
+
+        // Sanitize all ip strings
+        for (String raw_item : raw_ips ) {
+          String item = raw_item.trim();
+
+          if (ipv4.matcher(item).matches() || ipv6.matcher(item).matches()) {
+            ips.add(item);
+          }
+          // Edge case observed in the wild. E.g. 'localhost:8081'
+          else if (item.startsWith('localhost')) {
+            ips.add('127.0.0.1')
+          }
+          else {
+            bad_ips.add(item);
+          }
+        }
+
+        // Workaround due to lack of support of dotted fields
+        if (ctx.get('network') == null) {
+          ctx['network'] = new HashMap();
+        }
+        ctx['network']['forwarded_ip'] = ips;
+
+        if (bad_ips.length > 0 ) {
+          ctx['_tmp']['error_message'] = "Invalid ip addresses: " + bad_ips.join(',');
+        }
+  - append:
+      field: error.message
+      value: "{{{ _tmp.error_message }}}"
+      if: ctx._tmp?.error_message != null
   - foreach:
       field: network.forwarded_ip
       processor:
         append:
           field: related.ip
-          value: "{{_ingest._value}}"
+          value: "{{{ _ingest._value }}}"
       ignore_missing: true
   # ssl-protocol
   - grok:
@@ -257,7 +274,7 @@ processors:
       field: _tmp.ssl_cipher
       target_field: tls.cipher
       ignore_missing: true
-      if: ctx?._tmp?.ssl_cipher != null && ctx?._tmp?.ssl_cipher != '-'
+      if: ctx._tmp?.ssl_cipher != null && ctx._tmp?.ssl_cipher != '-'
   # x-edge-response-result-type
   - rename:
       field: _tmp.x_edge_response_result_type
@@ -278,29 +295,29 @@ processors:
   - rename:
       field: _tmp.fle_status
       target_field: aws.cloudfront.fle_status
-      if: ctx?._tmp?.fle_status != null && ctx._tmp.fle_status != '-'
+      if: ctx._tmp?.fle_status != null && ctx._tmp.fle_status != '-'
   # fle-encrypted-fields
   - rename:
       field: _tmp.fle_encrypted_fields
       target_field: aws.cloudfront.fle_encrypted_fields
-      if: ctx?._tmp?.encrypted_fields != null && ctx._tmp.encrypted_fields != '-'
+      if: ctx._tmp?.encrypted_fields != null && ctx._tmp.encrypted_fields != '-'
   # c-port
   - convert:
       field: _tmp.c_port
       target_field: source.port
       type: long
-      if: ctx?._tmp?.c_port != null && ctx._tmp.c_port != '-'
+      if: ctx._tmp?.c_port != null && ctx._tmp.c_port != '-'
   # time-to-first-byte
   - convert:
       field: _tmp.time_to_first_byte
       target_field: aws.cloudfront.time_to_first_byte
       type: float
-      if: ctx?._tmp?.time_to_first_byte != null && ctx._tmp.time_to_first_byte != '-'
+      if: ctx._tmp?.time_to_first_byte != null && ctx._tmp.time_to_first_byte != '-'
   # x-edge-detailed-result-type
   - rename:
       field: _tmp.x_edge_detailed_result_type
       target_field: aws.cloudfront.edge_detailed_result_type
-      if: ctx?._tmp?.edge_detailed_result_type != null && ctx._tmp.edge_detailed_result_type != '-'
+      if: ctx._tmp?.x_edge_detailed_result_type != null && ctx._tmp.x_edge_detailed_result_type != '-'
   # sc-content-type
   - rename:
       field: _tmp.sc_content_type
@@ -312,19 +329,21 @@ processors:
       target_field: http.response.body.bytes
       type: long
       ignore_missing: true
-      if: ctx?._tmp?.sc_content_len != null && ctx._tmp.sc_content_len != '-'
+      if: ctx._tmp?.sc_content_len != null && ctx._tmp.sc_content_len != '-'
   # sc-range-start
-  - rename:
+  - convert:
       field: _tmp.sc_range_start
       target_field: aws.cloudfront.range_start
+      type: long
       ignore_missing: true
-      if: ctx?._tmp?.sc_range_start != null && ctx._tmp.sc_range_start != '-'
+      if: ctx._tmp?.sc_range_start != null && ctx._tmp.sc_range_start != '-'
   # sc-range-end
-  - rename:
+  - convert:
       field: _tmp.sc_range_end
       target_field: aws.cloudfront.range_end
+      type: long
       ignore_missing: true
-      if: ctx?._tmp?.sc_range_end != null && ctx._tmp.sc_range_end != '-'
+      if: ctx._tmp?.sc_range_end != null && ctx._tmp.sc_range_end != '-'
 
 
 ### Additional fields ##############################################################################
@@ -402,28 +421,25 @@ processors:
   - set:
       field: event.outcome
       value: failure
-      if: ctx?.http?.response?.status_code >= 400
+      if: ctx.http?.response?.status_code >= 400
   - set:
       field: event.outcome
       value: success
-      if: ctx?.http?.response?.status_code < 400 && ctx.http?.response?.status_code > 000
+      if: ctx.http?.response?.status_code < 400 && ctx.http?.response?.status_code > 000
   - set:
       field: event.outcome
       value: failure
-      if: ctx?.http?.response?.status_code == 000
+      if: ctx.http?.response?.status_code == 000
   # cleanup
   - remove:
       field: _tmp
       ignore_missing: true
   - remove:
       field: event.original
-      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 
-  # ppbgdi processors
-  - pipeline:
-      name: '{{ IngestPipeline "ppbgdi" }}'
 
 on_failure:
   - set:
@@ -431,4 +447,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'
