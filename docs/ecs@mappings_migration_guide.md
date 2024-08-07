@@ -48,7 +48,7 @@ Even if each field references the external definition, integration developers mu
 
 ### Importing ECS mappings
 
-In early 2023, we [added](https://github.com/elastic/elastic-package/pull/1073) the option of importing the ECS mappings during the package build to avoid explicitly listing all the fields.
+With elastic-package [v0.71.0](https://github.com/elastic/elastic-package/releases/tag/v0.71.0) and package-spec 2.3.0, we [added](https://github.com/elastic/elastic-package/pull/1073) the option of importing the ECS mappings during the package build to avoid explicitly listing all the fields.
 
 When we set `import_mappings: true` in the `_dev/build/build.yml` file, elastic-package fetches the static [ecs_mappings.yml](https://github.com/elastic/elastic-package/blob/a44250eda089f89cc820c0ba5492bef71857aeb1/internal/builder/_static/ecs_mappings.yaml) file and embeds its content in the `logs-azure.eventhub@package` component template.
 
