@@ -2,14 +2,27 @@
 import argparse
 import requests
 import sys
-import yaml
 import unittest
+import yaml
 
-VERSION_URL = "https://artifacts-api.elastic.co/v1/versions?x-elastic-no-kpi=true"
+from requests.adapters import HTTPAdapter, Retry
+
+ARTIFACTS_URL = "https://artifacts-api.elastic.co"
+VERSION_URL = ARTIFACTS_URL + "/v1/versions?x-elastic-no-kpi=true"
 
 
 def fetch_version():
-    return requests.get(VERSION_URL).json()
+    # Retry forever on connection or 500 errors, assume the artifacts API
+    # will come back. If it doesn't come back we cannot continue executing
+    # jobs in any case.
+    retries = Retry(
+        total=None,
+        backoff_factor=0.5,
+        status_forcelist=[500, 502, 503, 504],
+    )
+    session = requests.Session()
+    session.mount(ARTIFACTS_URL, HTTPAdapter(max_retries=retries))
+    return session.get(VERSION_URL).json()
 
 
 def find_oldest_supported_version(kibana_version_condition: str) -> str:

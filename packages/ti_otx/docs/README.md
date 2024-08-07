@@ -38,6 +38,9 @@ Retrieves all the related indicators over time, related to your pulse subscripti
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.file.hash.pehash | The file's pehash, if available. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 An example event for `threat` looks as following:
@@ -166,6 +169,9 @@ The following subscriptions are included by this API:
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.file.hash.pehash | The file's pehash, if available. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 An example event for `pulses_subscribed` looks as following:
@@ -174,24 +180,24 @@ An example event for `pulses_subscribed` looks as following:
 {
     "@timestamp": "2023-08-08T05:05:15.000Z",
     "agent": {
-        "ephemeral_id": "98babf94-9cf4-45af-aef8-2d57d61d9876",
-        "id": "f29e7d89-991e-4f0a-838f-9c2eb93d876e",
+        "ephemeral_id": "c12b4f72-265e-41f0-96e0-103c81de7908",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_otx.pulses_subscribed",
-        "namespace": "ep",
+        "namespace": "32586",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f29e7d89-991e-4f0a-838f-9c2eb93d876e",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -199,7 +205,7 @@ An example event for `pulses_subscribed` looks as following:
             "threat"
         ],
         "dataset": "ti_otx.pulses_subscribed",
-        "ingested": "2024-03-08T02:54:50Z",
+        "ingested": "2024-08-02T06:03:28Z",
         "kind": "enrichment",
         "original": "{\"content\":\"\",\"count\":2,\"created\":\"2023-08-08T05:05:15\",\"description\":\"\",\"expiration\":null,\"id\":3454375108,\"indicator\":\"pinup-casino-tr.site\",\"is_active\":1,\"prefetch_pulse_ids\":false,\"pulse_raw\":\"{\\\"adversary\\\":\\\"\\\",\\\"attack_ids\\\":[\\\"T1531\\\",\\\"T1059\\\",\\\"T1566\\\"],\\\"author_name\\\":\\\"SampleUser\\\",\\\"created\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"description\\\":\\\"\\\",\\\"extract_source\\\":[],\\\"id\\\":\\\"64e38336d783f91d6948a7b1\\\",\\\"industries\\\":[],\\\"malware_families\\\":[\\\"WHIRLPOOL\\\"],\\\"modified\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"more_indicators\\\":false,\\\"name\\\":\\\"Sample Pulse\\\",\\\"public\\\":1,\\\"references\\\":[\\\"https://www.cisa.gov/news-events/analysis-reports/ar23-230a\\\"],\\\"revision\\\":1,\\\"tags\\\":[\\\"cisa\\\",\\\"backdoor\\\",\\\"whirlpool\\\",\\\"malware\\\"],\\\"targeted_countries\\\":[],\\\"tlp\\\":\\\"white\\\"}\",\"role\":null,\"t\":0,\"t2\":0.0050694942474365234,\"t3\":2.7960586547851562,\"title\":\"\",\"type\":\"domain\"}",
         "type": [

@@ -1,0 +1,35 @@
+title: Collect replica status metrics from mysql
+type: metrics
+release: beta
+streams:
+  - input: sql/metrics
+    title: MySQL replica status metrics
+    description: Collect replica status metrics from MySQL.
+    template_path: stream.yml.hbs
+    vars:
+      - name: period
+        type: text
+        title: Period
+        default: 10m
+        multi: false
+        description: Period of fetching metrics. Supported units for this parameter are h/m/s.
+        required: true
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - mysql-replica_status
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+elasticsearch:
+  index_mode: "time_series"
