@@ -1,7 +1,7 @@
 - name: ocsf
   type: group
   fields:
-    - name: resource
+    - name: resources
       type: group
       fields:
         - name: cloud_partition
@@ -13,9 +13,6 @@
         - name: data
           type: flattened
           description: Additional data describing the resource.
-        - name: namespace
-          type: keyword
-          description: The resource namespace.
         - name: group
           type: group
           fields:
@@ -40,6 +37,9 @@
         - name: name
           type: keyword
           description: The name of the resource.
+        - name: namespace
+          type: keyword
+          description: The namespace is useful when similar entities exist that you need to keep separate.
         - name: owner
           type: group
           fields:
@@ -53,7 +53,7 @@
                   type: keyword
                   description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
                 - name: type_id
-                  type: keyword
+                  type: integer
                   description: The normalized account type identifier.
                 - name: uid
                   type: keyword
@@ -85,9 +85,15 @@
                 - name: type
                   type: keyword
                   description: The type of the group or account.
+                - name: type_id
+                  type: integer
+                  description: The resource group type identifier.
                 - name: uid
                   type: keyword
                   description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+            - name: ldap_person
+              type: flattened
+              description: The LDAP person object.
             - name: name
               type: keyword
               description: The username. For example, janedoe1.
@@ -110,7 +116,7 @@
               type: keyword
               description: The type of the user. For example, System, AWS IAM User, etc.
             - name: type_id
-              type: keyword
+              type: integer
               description: The account type identifier.
             - name: uid
               type: keyword
@@ -124,6 +130,9 @@
         - name: type
           type: keyword
           description: The resource type as defined by the event source.
+        - name: type_id
+          type: integer
+          description: The resource type identifier.
         - name: uid
           type: keyword
           description: The unique identifier of the resource.

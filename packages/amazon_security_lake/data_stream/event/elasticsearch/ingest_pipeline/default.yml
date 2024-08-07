@@ -20,6 +20,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: ocsf.resource
+      target_field: ocsf.resources
+      tag: rename_resource_to_resources
+      ignore_missing: true
+      if : ctx.ocsf?.resources == null
   - convert:
       field: ocsf.class_uid
       tag: convert_class_uid_to_string
@@ -693,7 +699,7 @@ processors:
             ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_actor" }}'
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','6001','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','2003','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','6001','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
       tag: pipeline_object_actor
       ignore_missing_pipeline: true
   - pipeline:
@@ -708,7 +714,7 @@ processors:
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_device" }}'
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4011','4012','4013','5001','5002','5004','6001','6002','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.device != null
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','2003','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4011','4012','4013','5001','5002','5004','6001','6002','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.device != null
       tag: pipeline_object_device
       ignore_missing_pipeline: true
   - pipeline:

@@ -675,9 +675,13 @@ This is the `Event` dataset.
 | ocsf.command | The command name. | keyword |
 | ocsf.command_responses | The list of responses to the FTP command. | keyword |
 | ocsf.comment | The user provided comment about why the entity was changed. | keyword |
-| ocsf.compliance.requirements | A list of applicable compliance requirements for which this finding is related to. | keyword |
-| ocsf.compliance.status | The event status, normalized to the caption of the status_id value. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.compliance.status_detail | The status details contains additional information about the event outcome. | keyword |
+| ocsf.compliance.control | A Control is prescriptive, prioritized, and simplified set of best practices that one can use to strengthen their cybersecurity posture. e.g. AWS SecurityHub Controls, CIS Controls. | keyword |
+| ocsf.compliance.requirements | A list of requirements associated to a specific control in an industry or regulatory framework. e.g. NIST.800-53.r5 AU-10. | keyword |
+| ocsf.compliance.standards | Security standards are a set of criteria organizations can follow to protect sensitive and confidential information. e.g. NIST SP 800-53, CIS AWS Foundations Benchmark v1.4.0, ISO/IEC 27001. | keyword |
+| ocsf.compliance.status | The resultant status of the compliance check normalized to the caption of the status_id value. In the case of 'Other', it is defined by the event source. | keyword |
+| ocsf.compliance.status_code | The resultant status code of the compliance check. | keyword |
+| ocsf.compliance.status_detail | The contextual description of the status, status_code values. | text |
+| ocsf.compliance.status_id | The normalized status identifier of the compliance check. | integer |
 | ocsf.component | The name or relative pathname of a sub-component of the data object, if applicable. | keyword |
 | ocsf.confidence | The confidence, normalized to the caption of the confidence_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.confidence_id | The normalized confidence refers to the accuracy of the rule that created the finding. A rule with a low confidence means that the finding scope is wide and may create finding reports that may not be malicious in nature. | keyword |
@@ -1705,6 +1709,10 @@ This is the `Event` dataset.
 | ocsf.relay.type | The type of network interface. | keyword |
 | ocsf.relay.type_id | The network interface type identifier. | keyword |
 | ocsf.relay.uid | The unique identifier for the network interface. | keyword |
+| ocsf.remediation.desc | The description of the remediation strategy. | keyword |
+| ocsf.remediation.kb_article_list | A list of KB articles or patches related to an endpoint. | flattened |
+| ocsf.remediation.kb_articles | The KB article/s related to the entity. | keyword |
+| ocsf.remediation.references | A list of supporting URL/s, references that help describe the remediation strategy. | keyword |
 | ocsf.remote_display.color_depth | The numeric color depth. | long |
 | ocsf.remote_display.physical_height | The numeric physical height of display. | long |
 | ocsf.remote_display.physical_orientation | The numeric physical orientation of display. | long |
@@ -1713,43 +1721,6 @@ This is the `Event` dataset.
 | ocsf.request.flags | The list of communication flags, normalized to the captions of the flag_ids values. In the case of 'Other', they are defined by the event source. | date |
 | ocsf.request.uid | The unique request identifier. | keyword |
 | ocsf.requested_permissions | The permissions mask that were requested by the process. | long |
-| ocsf.resource.cloud_partition | The canonical cloud partition name to which the region is assigned (e.g. AWS Partitions: aws, aws-cn, aws-us-gov). | keyword |
-| ocsf.resource.criticality | The criticality of the resource as defined by the event source. | keyword |
-| ocsf.resource.data | Additional data describing the resource. | flattened |
-| ocsf.resource.group.desc | The group description. | keyword |
-| ocsf.resource.group.name | The group name. | keyword |
-| ocsf.resource.group.privileges | The group privileges. | keyword |
-| ocsf.resource.group.type | The type of the group or account. | keyword |
-| ocsf.resource.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
-| ocsf.resource.labels | The list of labels/tags associated to a resource. | keyword |
-| ocsf.resource.name | The name of the resource. | keyword |
-| ocsf.resource.namespace | The resource namespace. | keyword |
-| ocsf.resource.owner.account.name | The name of the account (e.g. GCP Account Name). | keyword |
-| ocsf.resource.owner.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.resource.owner.account.type_id | The normalized account type identifier. | keyword |
-| ocsf.resource.owner.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
-| ocsf.resource.owner.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
-| ocsf.resource.owner.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
-| ocsf.resource.owner.email_addr | The user's email address. | keyword |
-| ocsf.resource.owner.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
-| ocsf.resource.owner.groups.desc | The group description. | keyword |
-| ocsf.resource.owner.groups.name | The group name. | keyword |
-| ocsf.resource.owner.groups.privileges | The group privileges. | keyword |
-| ocsf.resource.owner.groups.type | The type of the group or account. | keyword |
-| ocsf.resource.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
-| ocsf.resource.owner.name | The username. For example, janedoe1. | keyword |
-| ocsf.resource.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.resource.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.resource.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.resource.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
-| ocsf.resource.owner.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.resource.owner.type_id | The account type identifier. | keyword |
-| ocsf.resource.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
-| ocsf.resource.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
-| ocsf.resource.region | The cloud region of the resource. | keyword |
-| ocsf.resource.type | The resource type as defined by the event source. | keyword |
-| ocsf.resource.uid | The unique identifier of the resource. | keyword |
-| ocsf.resource.version | The version of the resource. For example 1.2.3. | keyword |
 | ocsf.resources.cloud_partition | The canonical cloud partition name to which the region is assigned (e.g. AWS Partitions: aws, aws-cn, aws-us-gov). | keyword |
 | ocsf.resources.criticality | The criticality of the resource as defined by the event source. | keyword |
 | ocsf.resources.data | Additional data describing the resource. | flattened |
@@ -1763,7 +1734,7 @@ This is the `Event` dataset.
 | ocsf.resources.namespace | The namespace is useful when similar entities exist that you need to keep separate. | keyword |
 | ocsf.resources.owner.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.resources.owner.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.resources.owner.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.resources.owner.account.type_id | The normalized account type identifier. | integer |
 | ocsf.resources.owner.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.resources.owner.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.resources.owner.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -1773,6 +1744,7 @@ This is the `Event` dataset.
 | ocsf.resources.owner.groups.name | The group name. | keyword |
 | ocsf.resources.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.resources.owner.groups.type | The type of the group or account. | keyword |
+| ocsf.resources.owner.groups.type_id | The resource group type identifier. | integer |
 | ocsf.resources.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.resources.owner.ldap_person | The LDAP person object. | flattened |
 | ocsf.resources.owner.name | The username. For example, janedoe1. | keyword |
@@ -1781,11 +1753,12 @@ This is the `Event` dataset.
 | ocsf.resources.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.resources.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.resources.owner.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.resources.owner.type_id | The account type identifier. | keyword |
+| ocsf.resources.owner.type_id | The account type identifier. | integer |
 | ocsf.resources.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.resources.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.resources.region | The cloud region of the resource. | keyword |
 | ocsf.resources.type | The resource type as defined by the event source. | keyword |
+| ocsf.resources.type_id | The resource type identifier. | integer |
 | ocsf.resources.uid | The unique identifier of the resource. | keyword |
 | ocsf.resources.version | The version of the resource. For example 1.2.3. | keyword |
 | ocsf.response.code | The numeric response sent to a request. | long |

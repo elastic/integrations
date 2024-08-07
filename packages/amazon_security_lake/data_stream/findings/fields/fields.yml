@@ -200,16 +200,29 @@
           description: The availability zone in the cloud region, as defined by the cloud provider.
     - name: compliance
       type: group
+      description: The compliance object provides context to compliance findings.
       fields:
-        - name: status_detail
+        - name: control
           type: keyword
-          description: The status details contains additional information about the event outcome.
+          description: A Control is prescriptive, prioritized, and simplified set of best practices that one can use to strengthen their cybersecurity posture. e.g. AWS SecurityHub Controls, CIS Controls.
         - name: requirements
           type: keyword
-          description: A list of applicable compliance requirements for which this finding is related to.
+          description: A list of requirements associated to a specific control in an industry or regulatory framework. e.g. NIST.800-53.r5 AU-10.
+        - name: standards
+          type: keyword
+          description: Security standards are a set of criteria organizations can follow to protect sensitive and confidential information. e.g. NIST SP 800-53, CIS AWS Foundations Benchmark v1.4.0, ISO/IEC 27001.
         - name: status
           type: keyword
-          description: The event status, normalized to the caption of the status_id value. In the case of 'Other', it is defined by the event source.
+          description: The resultant status of the compliance check normalized to the caption of the status_id value. In the case of 'Other', it is defined by the event source.
+        - name: status_code
+          type: keyword
+          description: The resultant status code of the compliance check.
+        - name: status_detail
+          type: text
+          description: The contextual description of the status, status_code values.
+        - name: status_id
+          type: integer
+          description: The normalized status identifier of the compliance check.
     - name: confidence
       type: keyword
       description: The confidence, normalized to the caption of the confidence_id value. In the case of 'Other', it is defined by the event source.
@@ -504,143 +517,26 @@
         - name: value
           type: keyword
           description: The value associated with the observable attribute.
+    - name: remediation
+      type: group
+      fields:
+        - name: desc
+          type: keyword
+          description: The description of the remediation strategy.
+        - name: kb_articles
+          type: keyword
+          description: The KB article/s related to the entity.
+        - name: kb_article_list
+          type: flattened
+          description: A list of KB articles or patches related to an endpoint.
+        - name: references
+          type: keyword
+          description: A list of supporting URL/s, references that help describe the remediation strategy.
     - name: raw_data
       type: flattened
       description: The event data as received from the event source.
     - name: raw_data_keyword
       type: keyword
-    - name: resources
-      type: group
-      fields:
-        - name: cloud_partition
-          type: keyword
-          description: 'The canonical cloud partition name to which the region is assigned (e.g. AWS Partitions: aws, aws-cn, aws-us-gov).'
-        - name: criticality
-          type: keyword
-          description: The criticality of the resource as defined by the event source.
-        - name: data
-          type: flattened
-          description: Additional data describing the resource.
-        - name: group
-          type: group
-          fields:
-            - name: desc
-              type: keyword
-              description: The group description.
-            - name: name
-              type: keyword
-              description: The group name.
-            - name: privileges
-              type: keyword
-              description: The group privileges.
-            - name: type
-              type: keyword
-              description: The type of the group or account.
-            - name: uid
-              type: keyword
-              description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
-        - name: labels
-          type: keyword
-          description: The list of labels/tags associated to a resource.
-        - name: name
-          type: keyword
-          description: The name of the resource.
-        - name: owner
-          type: group
-          fields:
-            - name: account
-              type: group
-              fields:
-                - name: name
-                  type: keyword
-                  description: The name of the account (e.g. GCP Account Name).
-                - name: type
-                  type: keyword
-                  description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
-                - name: type_id
-                  type: keyword
-                  description: The normalized account type identifier.
-                - name: uid
-                  type: keyword
-                  description: The unique identifier of the account (e.g. AWS Account ID).
-            - name: credential_uid
-              type: keyword
-              description: The unique identifier of the user's credential. For example, AWS Access Key ID.
-            - name: domain
-              type: keyword
-              description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
-            - name: email_addr
-              type: keyword
-              description: The user's email address.
-            - name: full_name
-              type: keyword
-              description: The full name of the person, as per the LDAP Common Name attribute (cn).
-            - name: groups
-              type: group
-              fields:
-                - name: desc
-                  type: keyword
-                  description: The group description.
-                - name: name
-                  type: keyword
-                  description: The group name.
-                - name: privileges
-                  type: keyword
-                  description: The group privileges.
-                - name: type
-                  type: keyword
-                  description: The type of the group or account.
-                - name: uid
-                  type: keyword
-                  description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
-            - name: ldap_person
-              type: flattened
-              description: The LDAP person object.
-            - name: name
-              type: keyword
-              description: The username. For example, janedoe1.
-            - name: org
-              type: group
-              fields:
-                - name: name
-                  type: keyword
-                  description: The name of the organization. For example, Widget, Inc.
-                - name: ou_name
-                  type: keyword
-                  description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
-                - name: ou_uid
-                  type: keyword
-                  description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
-                - name: uid
-                  type: keyword
-                  description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
-            - name: type
-              type: keyword
-              description: The type of the user. For example, System, AWS IAM User, etc.
-            - name: type_id
-              type: keyword
-              description: The account type identifier.
-            - name: uid
-              type: keyword
-              description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
-            - name: uid_alt
-              type: keyword
-              description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
-        - name: region
-          type: keyword
-          description: The cloud region of the resource.
-        - name: namespace
-          type: keyword
-          description: The namespace is useful when similar entities exist that you need to keep separate.
-        - name: type
-          type: keyword
-          description: The resource type as defined by the event source.
-        - name: uid
-          type: keyword
-          description: The unique identifier of the resource.
-        - name: version
-          type: keyword
-          description: The version of the resource. For example 1.2.3.
     - name: risk_level
       type: keyword
       description: The risk level, normalized to the caption of the risk_level_id value. In the case of 'Other', it is defined by the event source.
@@ -698,4 +594,3 @@
     - name: unmapped
       type: flattened
       description: The attributes that are not mapped to the event schema. The names and values of those attributes are specific to the event source.
-
