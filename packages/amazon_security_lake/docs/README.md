@@ -1653,6 +1653,8 @@ This is the `Event` dataset.
 | ocsf.open_type | Indicates how the file was opened (e.g. normal, delete on close). | keyword |
 | ocsf.port | The dynamic port established for impending data transfers. | long |
 | ocsf.precision | The NTP precision quantifies a clock's accuracy and stability in log2 seconds, as defined in RFC-5905. | integer |
+| ocsf.prev_security_states.state | The security state, normalized to the caption of the state_id value. | keyword |
+| ocsf.prev_security_states.state_id | The security state of the managed entity. | integer |
 | ocsf.priority | The priority, normalized to the caption of the priority_id value. | keyword |
 | ocsf.priority_id | The priority, normalized to the ID of the priority_id value. | integer |
 | ocsf.privileges | The list of sensitive privileges, assigned to the new user session. | keyword |
@@ -1804,6 +1806,10 @@ This is the `Event` dataset.
 | ocsf.risk_level | The risk level, normalized to the caption of the risk_level_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.risk_level_id | The normalized risk level id. | keyword |
 | ocsf.risk_score | The risk score as reported by the event source. | long |
+| ocsf.security_level | The current security level of the entity. | keyword |
+| ocsf.security_level_id | The current security level of the entity. | integer |
+| ocsf.security_states.state | The security state, normalized to the caption of the state_id value. | keyword |
+| ocsf.security_states.state_id | The security state of the managed entity. | integer |
 | ocsf.server_hassh.algorithm | The concatenation of key exchange, encryption, authentication and compression algorithms (separated by ';'). NOTE: This is not the underlying algorithm for the hash implementation. | keyword |
 | ocsf.server_hassh.fingerprint.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.server_hassh.fingerprint.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
