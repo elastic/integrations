@@ -98,15 +98,15 @@ An example event for `ai_security_mailbox` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "becef71f-2db4-4fa6-92f2-773b45c2f1bc",
-        "id": "7aaba523-565c-4597-bc42-59135436336b",
+        "ephemeral_id": "cafadbdd-dc09-45ac-aec4-49d7250ebd32",
+        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "abnormal_security.ai_security_mailbox",
-        "namespace": "72265",
+        "namespace": "38204",
         "type": "logs"
     },
     "destination": {
@@ -118,7 +118,7 @@ An example event for `ai_security_mailbox` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7aaba523-565c-4597-bc42-59135436336b",
+        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -139,7 +139,7 @@ An example event for `ai_security_mailbox` looks as following:
         "agent_id_status": "verified",
         "dataset": "abnormal_security.ai_security_mailbox",
         "id": "7063250485337877109",
-        "ingested": "2024-08-06T09:40:30Z",
+        "ingested": "2024-08-08T05:41:05Z",
         "kind": "event",
         "original": "{\"attackType\":\"Attack Type: Graymail\",\"campaignId\":\"fff51768-c446-34e1-97a8-9802c29c3ebd\",\"firstReported\":\"2024-07-26T10:30:06Z\",\"fromAddress\":\"bob@example.com\",\"fromName\":\"bob@example.com\",\"judgementStatus\":\"Safe\",\"lastReported\":\"2024-07-26T10:30:06Z\",\"messageId\":\"7063250485337877109\",\"overallStatus\":\"No Action Needed\",\"recipientAddress\":\"john@example.com\",\"recipientName\":\"john\",\"subject\":\"Days of Understanding 2024\"}"
     },
@@ -164,7 +164,7 @@ An example event for `ai_security_mailbox` looks as following:
         "abnormal_security-ai_security_mailbox"
     ],
     "threat": {
-        "technique": {
+        "tactic": {
             "name": [
                 "Attack Type: Graymail"
             ]
@@ -498,7 +498,7 @@ An example event for `threat` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "7a47e772-7565-4c03-be8a-43a442be5c92",
+        "ephemeral_id": "3cfaa9dc-bca8-4e29-a807-77b68709b731",
         "id": "7aaba523-565c-4597-bc42-59135436336b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -506,7 +506,7 @@ An example event for `threat` looks as following:
     },
     "data_stream": {
         "dataset": "abnormal_security.threat",
-        "namespace": "63490",
+        "namespace": "37330",
         "type": "logs"
     },
     "ecs": {
@@ -541,7 +541,7 @@ An example event for `threat` looks as following:
         ],
         "dataset": "abnormal_security.threat",
         "id": "2260288475997441000",
-        "ingested": "2024-08-06T09:43:49Z",
+        "ingested": "2024-08-08T06:53:48Z",
         "kind": "enrichment",
         "original": "{\"abxMessageId\":2260288475997441000,\"abxPortalUrl\":\"https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654\",\"attachmentCount\":0,\"attachmentNames\":[],\"attackStrategy\":\"Unknown Sender\",\"attackType\":\"Spam\",\"attackVector\":\"Link\",\"attackedParty\":\"Employee (Other)\",\"autoRemediated\":true,\"ccEmails\":[],\"fromAddress\":\"john@example.com\",\"fromName\":\"john\",\"impersonatedParty\":\"None / Others\",\"internetMessageId\":\"\\u003cAZz8NUMEST-qmuz77_koic@example\\u003e\",\"isRead\":false,\"postRemediated\":false,\"receivedTime\":\"2024-07-17T23:25:38Z\",\"recipientAddress\":\"bob@example.com\",\"remediationStatus\":\"Auto-Remediated\",\"remediationTimestamp\":\"2024-07-17T23:25:45.73564Z\",\"replyToEmails\":[],\"returnPath\":\"bounce-bob_H181S7GUCF@example.com\",\"senderDomain\":\"example.com\",\"senderIpAddress\":\"81.2.69.142\",\"sentTime\":\"2024-07-17T23:25:29Z\",\"subject\":\"YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB\",\"summaryInsights\":[\"Abnormal Email Body HTML\",\"Invisible characters found in Email\",\"Suspicious Link\",\"Unusual Sender\",\"Unusual Sender Domain\"],\"threatId\":\"bf255f2d-a2ad-3f50-5075-fdcc24308bbd\",\"toAddresses\":[\"bob@example.com\"],\"urlCount\":1,\"urls\":[\"https://www.example.com/\"]}",
         "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
@@ -598,6 +598,7 @@ An example event for `threat` looks as following:
             "email": {
                 "address": "john@example.com"
             },
+            "name": "john@example.com",
             "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
             "type": "email-addr"
         },

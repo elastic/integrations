@@ -56,8 +56,8 @@ processors:
       target_field: abnormal_security.ai_security_mailbox.attack.type
       ignore_missing: true
   - append:
-      field: threat.technique.name
-      tag: append_abnormal_security_ai_security_mailbox_attack_type_into_threat_technique_name
+      field: threat.tactic.name
+      tag: append_abnormal_security_ai_security_mailbox_attack_type_into_threat_tactic_name
       value: '{{{abnormal_security.ai_security_mailbox.attack.type}}}'
       allow_duplicates: false
       if: ctx.abnormal_security?.ai_security_mailbox?.attack?.type != null
@@ -100,6 +100,11 @@ processors:
       tag: rename_judgementStatus
       target_field: abnormal_security.ai_security_mailbox.judgement_status
       ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_enrichment
+      value: enrichment
+      if: ctx.abnormal_security?.ai_security_mailbox?.judgement_status != null && ['spam','malicious'].contains(ctx.abnormal_security.ai_security_mailbox.judgement_status.toLowerCase())
   - append:
       field: event.category
       tag: append_event_category
@@ -128,7 +133,12 @@ processors:
       if: ctx.abnormal_security?.ai_security_mailbox?.from?.address != null
   - set:
       field: threat.indicator.email.address
-      tag: set_event_kind_to_event
+      tag: set_threat_indicator_email_address_to_from_address
+      copy_from: abnormal_security.ai_security_mailbox.from.address
+      if: ctx.abnormal_security?.ai_security_mailbox?.judgement_status != null && ['spam','malicious'].contains(ctx.abnormal_security.ai_security_mailbox.judgement_status.toLowerCase())
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_to_from_address
       copy_from: abnormal_security.ai_security_mailbox.from.address
       if: ctx.abnormal_security?.ai_security_mailbox?.judgement_status != null && ['spam','malicious'].contains(ctx.abnormal_security.ai_security_mailbox.judgement_status.toLowerCase())
   - append:
