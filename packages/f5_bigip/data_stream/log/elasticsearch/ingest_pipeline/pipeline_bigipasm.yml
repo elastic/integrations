@@ -521,6 +521,10 @@ processors:
       tag: rename_websocket_message_type
       target_field: f5_bigip.log.websocket.message_type
       ignore_missing: true
+  - split:
+      field: json.x_forwarded_for_header_value
+      separator: ',\s*'
+      ignore_missing: true
   - convert:
       field: json.x_forwarded_for_header_value
       tag: convert_x_forwarded_for_header_value_to_ip
@@ -532,12 +536,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      tag: append_related_ip
-      value: '{{{f5_bigip.log.x_forwarded_for_header_value}}}'
-      allow_duplicates: false
-      ignore_failure: true
+  - foreach:
+      field: f5_bigip.log.x_forwarded_for_header_value
+      if: ctx.f5_bigip?.log?.x_forwarded_for_header_value instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
   - rename:
       field: json.geo_info
       tag: rename_geo_info
