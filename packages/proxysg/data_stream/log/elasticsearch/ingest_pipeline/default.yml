@@ -1,0 +1,108 @@
+---
+description: Pipeline for processing onprem ProxySG logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: observer.vendor
+      value: Broadcom
+  - set:
+      field: observer.product
+      value: ProxySG
+  - drop:
+      tag: "drop_commented"
+      description: "Drop commented lines"
+      if: "ctx.message.startsWith('#')"
+      ignore_failure: true
+  - set:
+      tag: set_original
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null
+  - rename:
+      tag: rename_message
+      field: message
+      target_field: _temp_.message
+
+# Config specific pipelines
+  - pipeline:
+      tag: main_pipeline
+      name: '{{ IngestPipeline "main" }}'
+      if: ctx._temp_._conf == 'main'
+
+  - set:
+      tag: set_timestamp
+      field: "@timestamp"
+      value: "{{{_temp_.date}}}T{{{_temp_.time}}}Z"
+      if: ctx._temp_?.date != null && ctx._temp_?.time != null
+
+  - remove:
+      field: "_temp_"
+      ignore_failure: true
+
+# Type conversions
+  - convert:
+      tag: convert_client_to_server_port
+      field: "proxysg.client_to_server.uri_port"
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_server_to_client_bytes
+      field: "proxysg.server_to_client.bytes"
+      target_field: "server.bytes"
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_client_to_server_bytes"
+      field: "proxysg.client_to_server.bytes"
+      target_field: "client.bytes"
+      type: long
+      ignore_missing: true
+
+# ECS mappings
+  - set:
+      field: "client.ip"
+      copy_from: "proxysg.client.ip"
+      ignore_failure: true
+  - set:
+      field: "server.ip"
+      copy_from: "proxysg.server.ip"
+      ignore_failure: true
+  - set:
+      field: "url.scheme"
+      copy_from: "proxysg.client_to_server.uri_scheme"
+      ignore_failure: true
+  - set:
+      field: "url.port"
+      copy_from: "proxysg.client_to_server.uri_port"
+      ignore_failure: true
+  - set:
+      field: "url.path"
+      copy_from: "proxysg.client_to_server.uri_path"
+      ignore_failure: true
+  - set:
+      field: "url.query"
+      copy_from: "proxysg.client_to_server.uri_query"
+      ignore_failure: true
+  - set:
+      field: "client.user.id"
+      copy_from: "proxysg.client_to_server.username"
+      ignore_failure: true
+  - set:
+      field: "http.request.referrer"
+      copy_from: "proxysg.client_to_server.referer"
+      ignore_failure: true
+  - set:
+      field: "user_agent.original"
+      copy_from: "proxysg.client_to_server.user_agent"
+      ignore_failure: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+          Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
