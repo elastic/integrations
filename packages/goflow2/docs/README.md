@@ -14,146 +14,109 @@ An example event for `sflow` looks as following:
 
 ```json
 {
-    "agent": {
-        "name": "slvimssflowmetertest01",
-        "id": "7641289c-925d-4314-b8ff-586470e05333",
-        "type": "filebeat",
-        "ephemeral_id": "6d1b8c3f-5f2a-4296-903c-7a595f114eca",
-        "version": "8.14.2"
-    },
-    "log": {
-        "file": {
-            "path": "/var/log/sflow/goflow2/goflow2.log"
-        },
-        "offset": 849482434
-    },
-    "elastic_agent": {
-        "id": "7641289c-925d-4314-b8ff-586470e05333",
-        "version": "8.14.2",
-        "snapshot": false
-    },
+    "@timestamp": "2024-07-31T00:00:59.314Z",
     "destination": {
-        "geo": {
-            "continent_name": "Europe",
-            "region_iso_code": "DE-BY",
-            "city_name": "Munich",
-            "country_iso_code": "DE",
-            "country_name": "Germany",
-            "location": {
-                "lon": 11.5658,
-                "lat": 48.1336
-            },
-            "region_name": "Bavaria"
-        },
-        "as": {
-            "number": 8767,
-            "organization": {
-                "name": "M-net Telekommunikations GmbH"
-            }
-        },
         "address": [
-            "88.217.238.90"
+            "216.160.83.58"
         ],
-        "port": 0,
-        "ip": "88.217.238.90"
-    },
-    "source": {
-        "geo": {
-            "continent_name": "Europe",
-            "region_iso_code": "DE-NW",
-            "city_name": "Cologne",
-            "country_iso_code": "DE",
-            "country_name": "Germany",
-            "location": {
-                "lon": 6.9909,
-                "lat": 50.8806
-            },
-            "region_name": "North Rhine-Westphalia"
-        },
         "as": {
-            "number": 3320,
-            "organization": {
-                "name": "Deutsche Telekom AG"
-            }
+            "number": 209
         },
-        "address": [
-            "195.243.188.74"
-        ],
-        "port": 0,
-        "ip": "195.243.188.74"
-    },
-    "network": {
-        "bytes": 1482000,
-        "transport": "esp",
-        "type": "ipv4",
-        "packets": 1000
-    },
-    "observer": {
-        "ingress": {
-            "vlan": {
-                "id": 1500
+        "geo": {
+            "city_name": "Milton",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 47.2513,
+                "lon": -122.3149
             },
-            "interface": {
-                "id": 563
-            }
+            "region_iso_code": "US-WA",
+            "region_name": "Washington"
         },
-        "ip": [
-            "10.13.38.90"
-        ],
-        "egress": {
-            "interface": {
-                "id": 573
-            }
-        },
-        "egress": {
-            "vlan": {
-                "id": 1500
-            }
-        }
+        "ip": "216.160.83.58",
+        "port": 443
     },
     "ecs": {
         "version": "8.11.0"
     },
-    "related": {
-        "ip": [
-            "195.243.188.74",
-            "88.217.238.90"
-        ]
-    },
     "event": {
-        "agent_id_status": "auth_metadata_missing",
-        "ingested": "2024-07-31T12:08:39Z",
-        "original": "{\"type\":\"SFLOW_5\",\"time_flow_start_ns\":1722427718326647366,\"sampler_address\":\"10.13.38.90\",\"sequence_num\":49724,\"in_if\":563,\"out_if\":573,\"src_addr\":\"195.243.188.74\",\"dst_addr\":\"88.217.238.90\",\"etype\":\"IPv4\",\"proto\":\"ESP\",\"src_port\":0,\"dst_port\":0,\"src_vlan\":1500,\"dst_vlan\":1500,\"sampling_rate\":1000,\"bytes\":1482}",
-        "timezone": "+00:00",
-        "kind": "event",
         "action": "SFLOW_5",
         "category": [
             "network"
         ],
+        "kind": "event",
+        "original": "{\"type\":\"SFLOW_5\",\"time_flow_start_ns\":1722384059314899647,\"sampler_address\":\"67.43.156.1\",\"sequence_num\":44555,\"in_if\":563,\"out_if\":573,\"src_addr\":\"216.160.83.57\",\"dst_addr\":\"216.160.83.58\",\"etype\":\"IPv4\",\"proto\":\"TCP\",\"src_port\":10876,\"dst_port\":443,\"src_vlan\":1500,\"dst_vlan\":1500,\"sampling_rate\":1000,\"bytes\":70}",
+        "timezone": "+00:00",
         "type": [
             "connection"
-        ],
-        "dataset": "goflow2.sflow"
+        ]
+    },
+    "network": {
+        "bytes": 70000,
+        "packets": 1000,
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "observer": {
+        "egress": {
+            "interface": {
+                "id": "573"
+            },
+            "vlan": {
+                "id": "1500"
+            }
+        },
+        "ingress": {
+            "interface": {
+                "id": "563"
+            },
+            "vlan": {
+                "id": "1500"
+            }
+        },
+        "ip": [
+            "67.43.156.1"
+        ]
+    },
+    "related": {
+        "ip": [
+            "216.160.83.57",
+            "216.160.83.58"
+        ]
     },
     "sflow": {
-        "sequence_num": 49724,
+        "bytes": 70,
         "sample_rate": 1000,
-        "bytes": 1482
+        "sequence_num": 44555
+    },
+    "source": {
+        "address": [
+            "216.160.83.57"
+        ],
+        "as": {
+            "number": 209
+        },
+        "geo": {
+            "city_name": "Milton",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 47.2513,
+                "lon": -122.3149
+            },
+            "region_iso_code": "US-WA",
+            "region_name": "Washington"
+        },
+        "ip": "216.160.83.57",
+        "port": 10876
     },
     "tags": [
-        "sflow",
+        "preserve_original_event",
         "forwarded",
-        "preserve_original_event"
-    ],
-    "input": {
-        "type": "log"
-    },
-    "@timestamp": "2024-07-31T12:08:38.000Z",
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "goflow2.sflow"
-    }
+        "sflow"
+    ]
 }
 
 ```

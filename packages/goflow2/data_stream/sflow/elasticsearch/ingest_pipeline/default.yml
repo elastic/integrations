@@ -31,16 +31,17 @@ processors:
     tag: remove_message
     field: message
 - script:
-    source: ctx.goflow2.time_flow_start_ns = (ctx.goflow2?.time_flow_start_ns / 1000000000);
+    source: ctx.goflow2.time_flow_start_ns = (ctx.goflow2?.time_flow_start_ns / 1000000);
     tag: script_calculate_time_flow_start_ns
 - script:
     source: ctx.goflow2.flow_size = ctx.goflow2?.bytes * ctx.goflow2?.sampling_rate;
+    if: ctx.goflow2?.bytes != null && ctx.goflow2?.bytes != '' && ctx.goflow2?.sampling_rate != null && ctx.goflow2?.sampling_rate != ''
     tag: script_calculate_flow_size
 - date:
     field: goflow2.time_flow_start_ns
     target_field: "@timestamp"
     formats:
-    - UNIX
+    - UNIX_MS
     timezone: UTC
     ignore_failure: false
     tag: date_parse_time_flow_start_ns
@@ -53,10 +54,12 @@ processors:
     field: observer.ip
     value:
     - "{{{goflow2.sampler_address}}}"
+    if: ctx.goflow2?.sampler_address != null && ctx.goflow2?.sampler_address != ''
     tag: append_sampler_address_to_observer_ip
 - rename:
     field: goflow2.sequence_num
     target_field: sflow.sequence_num
+    if: ctx.goflow2?.sequence_num != null && ctx.goflow2?.sequence_num != ''
     tag: rename_sequence_num_to_sflow_sequence_num
 - rename:
     field: goflow2.in_if
@@ -141,14 +144,17 @@ processors:
 - rename:
     field: goflow2.sampling_rate
     target_field: network.packets
+    if: ctx.goflow2?.sampling_rate != null && ctx.goflow2?.sampling_rate != ''
     tag: rename_sampling_rate_to_network_packets
 - rename:
     field: goflow2.bytes
     target_field: sflow.bytes
+    if: ctx.goflow2?.bytes != null && ctx.goflow2?.bytes != ''
     tag: rename_bytes_to_sflow_bytes
 - rename:
     field: goflow2.flow_size
     target_field: network.bytes
+    ignore_missing: true
     tag: rename_flow_size_to_network_bytes
 - geoip:
     if: ctx.source?.geo == null
@@ -208,6 +214,7 @@ processors:
     - goflow2.dst_addr
     - goflow2.src_addr
     - goflow2.sampler_address
+    - goflow2.bytes
     ignore_missing: true
     ignore_failure: true
     tag: remove_unused_fields
