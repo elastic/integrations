@@ -93,7 +93,6 @@ An example event for `cloudfront` looks as following:
     },
     "aws": {
         "cloudfront": {
-            "content_type": "text/html",
             "domain": "d111111abcdef8.cloudfront.net",
             "edge_detailed_result_type": "Hit",
             "edge_location": "LAX1",
@@ -158,6 +157,7 @@ An example event for `cloudfront` looks as following:
                 "bytes": 78
             },
             "bytes": 392,
+            "mime_type": "text/html",
             "status_code": 200
         },
         "version": "2.0"
