@@ -1,0 +1,729 @@
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event read/sent.
+- name: claroty_ctd
+  type: group
+  fields:
+    - name: event
+      type: group
+      fields:
+        - name: action
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: Action of the Activity Log (e.g. Added, Removed, Updated, Created, etc.).
+            - name: status
+              type: keyword
+              description: Describes the final Status for the Activity Log (e.g. Info, Failure, Success, etc.).
+        - name: alert
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the Alert.
+            - name: link
+              type: keyword
+              description: URL for viewing the event in CTD.
+            - name: score
+              type: long
+              description: Alerts are scored from a scale of 0 through 100. Actual alert score can be higher than 100 depending on the sum of various indicator scores, however it is capped at max 100.
+            - name: status
+              type: keyword
+              description: 'Used to differentiate alerts with an Unresolved vs. Resolved status. Because resolved alerts are not sent by default, this field is empty. To enable receiving resolved alerts in Syslog, use this CLI command: lm set_config report_resolved_alerts True lm rw notifications.'
+            - name: type_id
+              type: keyword
+              description: The Class ID of the Alert (As it is in CTD's Back-end).
+        - name: application
+          type: keyword
+          description: Application used in this Insight.
+        - name: assigned_to
+          type: keyword
+          description: Name of the user who was assigned to this Alert.
+        - name: busy
+          type: group
+          fields:
+            - name: dm
+              type: group
+              fields:
+                - name: a_value
+                  type: double
+                  description: How frequently the particular disk partition is in use (as a percentage between 0 and 1.
+                - name: value
+                  type: double
+                  description: How frequently the particular disk partition is in use (as a percentage between 0 and 1.
+            - name: fd
+              type: double
+              description: How frequently the particular disk partition is in use (as a percentage between 0 and 1.
+            - name: sda
+              type: group
+              fields:
+                - name: a_value
+                  type: double
+                  description: How frequently the particular disk partition is in use (as a percentage between 0 and 1.
+                - name: b_value
+                  type: double
+                  description: How frequently the particular disk partition is in use (as a percentage between 0 and 1.
+                - name: value
+                  type: double
+                  description: How frequently the particular disk partition is in use (as a percentage between 0 and 1.
+            - name: sr
+              type: double
+              description: How frequently the particular disk partition is in use (as a percentage between 0 and 1.
+        - name: capsaver
+          type: group
+          fields:
+            - name: folder_cleanup
+              type: boolean
+            - name: utilzation_test
+              type: keyword
+        - name: category
+          type: keyword
+          description: Category/Type of the Alert.
+        - name: class_id
+          type: keyword
+          description: CEF Event Class ID.
+        - name: class_type
+          type: keyword
+          description: CEF Event Class type for alert and event.
+        - name: community
+          type: keyword
+          description: In Insights involving SNMP queries this will mention the community type used during the authentication.
+        - name: conclude_time
+          type: long
+        - name: cpu
+          type: double
+          description: 'CPU Utilization: CPU load average as a percentage of the total available CPU capacity (including all available cores).'
+        - name: ctrl_site
+          type: double
+        - name: cve
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Unique identifier of the CVE.
+            - name: modified_date
+              type: date
+              description: The date and time the CVE was modified by global security community.
+            - name: pipe_service
+              type: keyword
+              description: In Insights involving SMB access, this will list the pipe service that was accessed.
+            - name: publish_date
+              type: date
+              description: The date and time the CVE was found by global security community.
+            - name: score
+              type: double
+              description: CVSS - Common Vulnerability Scoring System score (0-10).
+        - name: default_password
+          type: boolean
+          description: Checks if the Asset uses a default password.
+        - name: destination
+          type: group
+          fields:
+            - name: asset_type
+              type: keyword
+              description: The asset type of the secondary asset, e.g. Engineering Station If multiple destinations exist, they won't be presented.
+            - name: host
+              type: keyword
+              description: The host name of the secondary asset involved in the Alert. May be FQDN or hostname.
+            - name: ip
+              type: ip
+              description: The IPv4 address of the secondary asset involved in the Alert.
+            - name: mac
+              type: keyword
+              description: The MAC address of the secondary asset involved in the Alert.
+            - name: zone
+              type: keyword
+              description: Destination Zone Name If multiple destinations exist, they won't be presented.
+        - name: device_external_id
+          type: keyword
+          description: Name of the site generating the message.
+        - name: dissection
+          type: group
+          fields:
+            - name: coverage
+              type: long
+            - name: efficiency
+              type: group
+              fields:
+                - name: dcerpc
+                  type: double
+                - name: factory_talk_rna
+                  type: double
+                - name: ge_ifix
+                  type: double
+                - name: http
+                  type: double
+                - name: jrmi
+                  type: double
+                - name: ldap
+                  type: double
+                - name: llc
+                  type: double
+                - name: matrikon_nopc
+                  type: double
+                - name: modbus
+                  type: double
+                - name: rdp
+                  type: double
+                - name: smb
+                  type: double
+                - name: ssh
+                  type: double
+                - name: ssl
+                  type: double
+                - name: tcp_http
+                  type: double
+                - name: vnc
+                  type: double
+                - name: vrrp_protocol_matcher
+                  type: double
+                - name: zabbix
+                  type: double
+        - name: dissector_ng_packet_drops
+          type: long
+        - name: dropped_entities
+          type: long
+          description: The number of entities dropped by the system due to reaching the limit of number of entities.
+        - name: end_of_life_date
+          type: date
+          description: In Unsupported OS Insights, this presented the End of Life date for the primary asset of this insight.
+        - name: event_type_id
+          type: keyword
+          description: The Class ID of the Event (As it is in CTD's Back-end).
+        - name: exceptions
+          type: long
+          description: The number of new logged exceptions.
+        - name: external
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the Alert.
+            - name: links
+              type: keyword
+              description: More information about publicly available signatures.
+        - name: file_path
+          type: keyword
+          description: The filepath or file share envolved in the Insight.
+        - name: full_output_packet_drops
+          type: long
+        - name: input_packet_drops
+          type: long
+        - name: insight
+          type: group
+          fields:
+            - name: password_plaintext
+              type: boolean
+              description: Checks if the Asset implements a protocol that transfers data in plain-text.
+            - name: state
+              type: keyword
+              description: Describes the PLC’s state.
+            - name: user
+              type: keyword
+              description: The User name involved in the Insight.
+        - name: insights
+          type: group
+          fields:
+            - name: protocol
+              type: keyword
+              description: The Protocol envolved in the Insight.
+            - name: protocol_version
+              type: keyword
+              description: The Version of the Protocol envolved in the Insight.
+            - name: severity
+              type: keyword
+              description: Indicates the Insight Severity (Low, Medium, and High).
+        - name: last_managed
+          type: date
+          description: In Insights involving managed PLC’s this will present the date when it was last managed.
+        - name: log_type
+          type: keyword
+          description: Describes the level type that created the Activity Log (e.g. System or User.).
+        - name: loop_call_duration
+          type: group
+          fields:
+            - name: baseline_tracker_wrker_handle_network_statistics
+              type: double
+            - name: cloud_client_wrkr_base_run_cloud_connected
+              type: double
+            - name: poll_objects
+              type: double
+        - name: is_ghost
+          type: boolean
+          description: In Insights involving communication with other IP’s this will describe if the external IP’s are Ghost assets or real assets.
+        - name: memory
+          type: double
+          description: 'Memory Usage: The percent of current memory consumption.The value is a number between 0 and 100.'
+        - name: message
+          type: keyword
+          description: Full description of the message.
+        - name: method
+          type: keyword
+          description: The query method used in the Insight.
+        - name: mitre_attack
+          type: group
+          fields:
+            - name: tactic_names
+              type: keyword
+              description: The MITRE ATT&CK® for ICS framework Tactic that are mapped to this Alert.
+            - name: technique_ids
+              type: keyword
+              description: The MITRE ATT&CK® for ICS framework Techniques that are mapped to this Alert.
+        - name: model
+          type: keyword
+          description: This presented the model of the primary asset of this insight.
+        - name: mysql_query
+          type: double
+          description: MySQL Query time, in seconds.
+        - name: name
+          type: keyword
+          description: CEF Event Name.
+        - name: no_password
+          type: boolean
+          description: Checks if the Asset has no password.
+        - name: number_of
+          type: group
+          fields:
+            - name: accesed_client
+              type: long
+              description: For Insights presenting assets that are identified as web servers, this field will show the clients connecting to this web server.
+            - name: interface
+              type: long
+              description: For Insights presenting assets with multiple interfaces, this field will show the number of interfaces on the specific asset.
+            - name: neighbours
+              type: long
+              description: In Insights presenting the highly Connected Assets, this field will show the number of connected assets.
+        - name: operating_system
+          type: keyword
+          description: This presented the Operating System of the primary asset of this insight.
+        - name: output_packet_drops
+          type: long
+        - name: postgres_query
+          type: double
+          description: Postgres Query time, in seconds.
+        - name: protocol
+          type: keyword
+          description: Protocol used within the Alert.
+        - name: psql_idle
+          type: group
+          fields:
+            - name: in_transaction_sessions
+              type: long
+            - name: sessions
+              type: long
+        - name: queue
+          type: group
+          fields:
+            - name: baseline_tracker
+              type: long
+              description: Baseline Tracker queue message count.
+            - name: bridge
+              type: long
+              description: Bridge queue message count.
+            - name: central_bridge
+              type: long
+              description: CentralBridge queue message count.
+            - name: concluding
+              type: long
+              description: Concluding queue message count.
+            - name: diode_feeder
+              type: long
+              description: DiodeFeeder queue message count.
+            - name: dissector
+              type: group
+              fields:
+                - name: a_value
+                  type: long
+                  description: DissectorA queue message count.
+                - name: ng
+                  type: long
+                  description: DissectorNg queue message count.
+                - name: value
+                  type: long
+                  description: Dissector queue message count.
+            - name: indicator_service
+              type: long
+              description: IndicatorService queue message count.
+            - name: leecher
+              type: long
+              description: Leecher queue message count.
+            - name: monitor
+              type: long
+              description: Monitor queue message count.
+            - name: network_statistics
+              type: long
+              description: NetworkStatistics queue message count.
+            - name: packets
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: Packets queue message count.
+                - name: errors
+                  type: long
+                  description: PacketsErrors queue message count.
+            - name: preprocessing
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: Preprocessing queue message count.
+                - name: ng
+                  type: long
+                  description: PreprocessingNg queue message count.
+            - name: priority_processing
+              type: long
+              description: PriorityProcessing queue message count.
+            - name: processing
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: Processing queue message count.
+                - name: high
+                  type: long
+                  description: ProcessingHigh queue message count.
+            - name: purge
+              type: long
+              description: Purge queue message count.
+            - name: statistics_ng
+              type: long
+              description: StatisticsNg queue message count.
+            - name: syslog
+              type: group
+              fields:
+                - name: events
+                  type: long
+                  description: SyslogEvents queue message count.
+                - name: insights
+                  type: long
+                  description: SyslogInsights queue message count.
+                - name: alerts
+                  type: long
+                  description: SyslogSlerts queue message count.
+            - name: zordon_updates
+              type: long
+              description: ZordonUpdates queue message count.
+        - name: read_count
+          type: group
+          fields:
+            - name: dissector
+              type: group
+              fields:
+                - name: a_value
+                  type: long
+                  description: The queue read count for each component.
+                - name: count
+                  type: long
+                  description: The queue read count for each component.
+                - name: ng
+                  type: long
+                  description: The queue read count for each component.
+            - name: preprocessing
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: The queue read count for each component.
+                - name: ng
+                  type: long
+                  description: The queue read count for each component.
+        - name: real_time
+          type: date
+          description: Timestamp of HealthCheck creation.
+        - name: resolved
+          type: group
+          fields:
+            - name: as
+              type: keyword
+              description: 'Type of resolution. (Unresolved, Valid, Incident, Training, User Alert Rules, Unqualified, Ignore, Acknowledge, Auto Approved With No Expiration, Auto Approved With Expiration, Auto Archived With No Expiration, Auto Archived With Expiration). Because resolved alerts are not sent by default, this field is empty. To enable receiving resolved alerts in Syslog, use this CLI command: lm set_config report_resolved_alerts True lm rw notifications.'
+            - name: by
+              type: keyword
+              description: 'Name of the user (or System) who resolved the Alert. Because resolved alerts are not sent by default, this field is empty. To enable receiving resolved alerts in Syslog, use this CLI command: lm set_config report_resolved_alerts True lm rw notifications.'
+        - name: risk_score
+          type: long
+          description: In Insights presenting the top risky assets, this will present the risk for the specific asset.
+        - name: sensor_name
+          type: keyword
+        - name: series
+          type: keyword
+          description: This presented the series of the primary asset of this insight.
+        - name: service
+          type: group
+          fields:
+            - name: docker
+              type: keyword
+              description: Whether the service is running (Up or Down).
+            - name: firewalld
+              type: keyword
+              description: Whether the service is running (Up or Down).
+            - name: icsranger
+              type: keyword
+              description: Whether the service is running (Up or Down).
+            - name: jwthenticator
+              type: keyword
+              description: Whether the service is running (Up or Down).
+            - name: mariadb
+              type: keyword
+              description: Whether the service is running (Up or Down).
+            - name: netunnel
+              type: keyword
+              description: Whether the service is running (Up or Down).
+            - name: postgres
+              type: keyword
+              description: Whether the service is running (Up or Down).
+            - name: rabbit_mq
+              type: keyword
+              description: Whether the service is running (Up or Down).
+            - name: redis
+              type: keyword
+              description: Whether the service is running (Up or Down).
+            - name: watchdog
+              type: keyword
+              description: Whether the service is running (Up or Down).
+        - name: severity
+          type: long
+          description: CEF Event Severity.
+        - name: signature
+          type: group
+          fields:
+            - name: confidence
+              type: keyword
+              description: A score representing the probability that a communication event that triggers the signature is a network threat. Expressed on a scale of 1% to 100%, It is calculated using a combination of signature parameters and Claroty research, and does not apply to user-powered signatures.
+            - name: criticality
+              type: keyword
+              description: A score calculated using a combination of signature parameters and Claroty research. Possible values include Low, Medium, High, and Critical. This score is not calculated for user-powered signatures.
+            - name: id
+              type: keyword
+              description: ID number assigned to the signature by its creator.
+            - name: last_updated
+              type: date
+              description: Date this revision was last updated by its creator.
+            - name: name
+              type: keyword
+              description: Name assigned to the signature by its creator.
+            - name: powered_by
+              type: keyword
+              description: 'Creator and maintainer of the signature. Options include: Claroty - Signatures created by Team82 or by Claroty''s data team Emerging Threats, Other - Publicly available signatures Username of the user who uploaded the signature User - User-powered signatures created in a version earlier than v4.8.0.'
+            - name: tags
+              type: keyword
+              description: Attack types and other enriched signature information.
+        - name: site
+          type: keyword
+          description: The ID of the site.
+        - name: sniffer_status
+          type: group
+          fields:
+            - name: central
+              type: keyword
+            - name: site
+              type: double
+            - name: value
+              type: keyword
+        - name: source
+          type: group
+          fields:
+            - name: asset_type
+              type: keyword
+              description: The asset type of the primary asset, e.g. Engineering Station.
+            - name: host
+              type: keyword
+              description: The host name of the Primary asset involved in the Alert. May be FQDN or hostname.
+            - name: ip
+              type: ip
+              description: The IPv4 address of the primary asset involved in the Alert.
+            - name: mac
+              type: keyword
+              description: The MAC address of the primary asset involved in the Alert.
+            - name: zone
+              type: keyword
+              description: Source Zone Name.
+        - name: story_id
+          type: keyword
+          description: The Story ID for which this Alert is correlated.
+        - name: tag_artifacts_drops
+          type: group
+          fields:
+            - name: dissector_pypy
+              type: group
+              fields:
+                - name: sum
+                  type: long
+                - name: value
+                  type: long
+            - name: preprocessor
+              type: group
+              fields:
+                - name: sum
+                  type: long
+                - name: value
+                  type: long
+            - name: processor
+              type: group
+              fields:
+                - name: sum
+                  type: long
+                - name: value
+                  type: long
+            - name: sniffer
+              type: group
+              fields:
+                - name: sum
+                  type: long
+                - name: value
+                  type: long
+        - name: time
+          type: date
+          description: 'Timestamp of Alert creation Format is: MMM dd yyyy HH:mm:ss Timezone should be UTC.'
+        - name: unhandled_events
+          type: long
+          description: The number of events that have not been handled by the system.
+        - name: used
+          type: group
+          fields:
+            - name: etc
+              type: double
+              description: The percent of disk space currently used in this particular directory.
+            - name: opt_icsranger
+              type: double
+              description: The percent of disk space currently used in this particular directory.
+            - name: tmp
+              type: double
+              description: The percent of disk space currently used in this particular directory.
+            - name: var
+              type: double
+              description: The percent of disk space currently used in this particular directory.
+        - name: user
+          type: keyword
+          description: The User name involved in the Activity Log.
+        - name: version
+          type: keyword
+          description: CEF Event Version.
+        - name: worker
+          type: group
+          fields:
+            - name: active
+              type: group
+              fields:
+                - name: executer
+                  type: keyword
+                  description: Availability and last restart info for the Active Executer worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+                - name: value
+                  type: keyword
+                  description: Availability and last restart info for the Active worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: authentication
+              type: keyword
+              description: Availability and last restart info for the Authentication worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: baseline_tracker
+              type: keyword
+              description: Availability and last restart info for the Baseline Tracker worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: bridge
+              type: keyword
+              description: Availability and last restart info for the Bridge worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: cacher
+              type: keyword
+              description: Availability and last restart info for the Cacher worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: capsaver
+              type: keyword
+              description: Availability and last restart info for the CapSaver worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: cloud
+              type: group
+              fields:
+                - name: agent
+                  type: keyword
+                  description: Availability and last restart info for the Cloud Agent worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+                - name: client
+                  type: keyword
+                  description: Availability and last restart info for the Cloud Client worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: concluder
+              type: keyword
+              description: Availability and last restart info for the Concluder worker worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: configurator
+              type: group
+              fields:
+                - name: nginx
+                  type: keyword
+                  description: Availability and last restart info for the Configurator Nginx worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+                - name: value
+                  type: keyword
+                  description: Availability and last restart info for the Configurator worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: dissector
+              type: group
+              fields:
+                - name: a_value
+                  type: keyword
+                  description: Availability and last restart info for the Dissector A worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+                - name: value
+                  type: keyword
+                  description: Availability and last restart info for the Dissector worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: enricher
+              type: keyword
+              description: Availability and last restart info for the Enricher worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: indicators
+              type: group
+              fields:
+                - name: api
+                  type: keyword
+                  description: Availability and last restart info for the Indicators API worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+                - name: value
+                  type: keyword
+                  description: Availability and last restart info for the Indicators worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: insights
+              type: keyword
+              description: Availability and last restart info for the Insights worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: known_threats
+              type: keyword
+              description: Availability and last restart info for the Known Threats worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: leecher
+              type: keyword
+              description: Availability and last restart info for the Leecher worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: mailer
+              type: keyword
+              description: Availability and last restart info for the Mailer worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: mitre
+              type: keyword
+              description: Availability and last restart info for the MITRE worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: notifications
+              type: keyword
+              description: Availability and last restart info for the Notifications worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: preprocessor
+              type: keyword
+              description: Availability and last restart info for the Preprocessor worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: processor
+              type: keyword
+              description: Availability and last restart info for the Processor worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: scheduler
+              type: keyword
+            - name: sensor
+              type: keyword
+              description: Availability and last restart info for the Sensor worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: sync_manager
+              type: keyword
+              description: Availability and last restart info for the Sync Manager worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: web
+              type: group
+              fields:
+                - name: auth
+                  type: keyword
+                  description: Availability and last restart info for the Web Authentication worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+                - name: nginx
+                  type: keyword
+                  description: Availability and last restart info for the Web Nginx worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+                - name: ranger
+                  type: keyword
+                  description: Availability and last restart info for the Web Ranger worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+                - name: ws
+                  type: keyword
+                  description: Availability and last restart info for the Web Web socket worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications).
+            - name: workers
+              type: group
+              fields:
+                - name: restart
+                  type: long
+                  description: The total number of workers restarted.
+                - name: stop
+                  type: long
+                  description: The total number of stopped workers.
+        - name: yara_scanner_test
+          type: long
