@@ -8,13 +8,13 @@ For more detailed information refer to the following blog:
 ## Installation
 1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Data Exfiltration Detection**. Configure the integration name and agent policy. Click Save and Continue.
-1. **Check the health of the transform**: The transform is scheduled to run every 30 minutes. This transform creates the index `ml_network_ded-<VERSION>`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`. 
+1. **Install assets**: Install the assets by clicking **Settings > Install Data Exfiltration Detection assets**.
+1. **Check the health of the transform**: The transform is scheduled to run every 30 minutes. This transform creates the index `ml_network_ded-<VERSION>`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`. Follow the instructions under the header `Customize Data Exfiltration Detection Transform` below to adjust filters based on your environment's needs.
 1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on two indices. One has file events (`logs-endpoint.events.file-*`), and the other index (`ml_network_ded.all`) collects network logs from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
     1. Go to **Stack Management > Kibana > Data Views** and click **Create data view**.
     1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-endpoint.events.file-*, ml_network_ded.all`, and copy the same in the **Name** field.
     1. Select `@timestamp` under the **Timestamp** field and click on **Save data view to Kibana**.
     1. Use the new data view (`logs-endpoint.events.file-*, ml_network_ded.all`) to create anomaly detection jobs for this package.
-1. **Install assets**: Install the assets by clicking **Settings > Install Data Exfiltration Detection assets**.
 1. **Add preconfigured anomaly detection jobs**: In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for **Data Exfiltration Detection**. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. **_Note_**: In the Machine Learning app, these configurations are available only when data exists that matches the query specified in the [ded-ml file](https://github.com/elastic/integrations/blob/main/packages/ded/kibana/ml_module/ded-ml.json#L10). For example, this would be available in `logs-endpoint.events.*` if you used Elastic Defend to collect events.
 1. **Data view configuration for Dashboards**: For the dashboard to work as expected, the following settings need to be configured in Kibana. 
     1. You have started the above anomaly detection jobs.
@@ -39,7 +39,9 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 
 When querying the destination index (`ml_network_ded-<VERSION>`) for network logs, we advise using the alias for the destination index (`ml_network_ded.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
 
-To customize the filters in the Data Exfiltration transform, follow the below steps. You can use these instructions to add or remove filters for fields such as `process.name`, `source.ip`, `destination.ip`, and others.
+## Customize Data Exfiltration Detection Transform
+
+To customize filters in the Data Exfiltration Detection transform, follow the below steps. You can use these instructions to add or remove filters for fields such as `process.name`, `source.ip`, `destination.ip`, and others.
 1. Go to **Stack Management > Data > Transforms > `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`**.
 1. Click on the **Actions** bar at the far right of the transform and select the **Clone** option.
 ![Data Exfiltration Detection Rules](../img/ded_transform_1.png)
