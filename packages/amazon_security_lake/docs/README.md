@@ -2058,8 +2058,12 @@ This is the `Event` dataset.
 | ocsf.vulnerabilities.cve.cvss.severity | The Common Vulnerability Scoring System (CVSS) Qualitative Severity Rating. A textual representation of the numeric score. | keyword |
 | ocsf.vulnerabilities.cve.cvss.vector_string | The CVSS vector string is a text representation of a set of CVSS metrics. It is commonly used to record or transfer CVSS metric information in a concise form. For example: 3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:H. | keyword |
 | ocsf.vulnerabilities.cve.cvss.version | The CVSS version. For example: 3.1. | keyword |
+| ocsf.vulnerabilities.cve.cwe | The Common Weakness Enumeration (CWE) object describes the type of weakness identified in the vulnerability. | flattened |
 | ocsf.vulnerabilities.cve.cwe_uid | The Common Weakness Enumeration (CWE) unique identifier. For example: CWE-787. | keyword |
 | ocsf.vulnerabilities.cve.cwe_url | Common Weakness Enumeration (CWE) definition URL. For example: https://cwe.mitre.org/data/definitions/787.html. | keyword |
+| ocsf.vulnerabilities.cve.desc | The description of the vulnerability. | keyword |
+| ocsf.vulnerabilities.cve.epss | The Exploit Prediction Scoring System (EPSS) object describes the estimated probability a vulnerability will be exploited. | flattened |
+| ocsf.vulnerabilities.cve.fix_available | Indicates if a fix is available for the reported vulnerability. | boolean |
 | ocsf.vulnerabilities.cve.modified_time | The Record Modified Date identifies when the CVE record was last updated. | date |
 | ocsf.vulnerabilities.cve.modified_time_dt | The Record Modified Date identifies when the CVE record was last updated. | date |
 | ocsf.vulnerabilities.cve.product.feature.name | The name of the feature. | keyword |
@@ -2076,9 +2080,9 @@ This is the `Event` dataset.
 | ocsf.vulnerabilities.cve.title | The title of the cve. | keyword |
 | ocsf.vulnerabilities.cve.type | The vulnerability type as selected from a large dropdown menu during CVE refinement. | keyword |
 | ocsf.vulnerabilities.cve.uid | The Common Vulnerabilities and Exposures unique number assigned to a specific computer vulnerability. A CVE Identifier begins with 4 digits representing the year followed by a sequence of digits that acts as a unique identifier. For example: CVE-2021-12345. | keyword |
-| ocsf.vulnerabilities.cwe | The Common Weakness Enumeration (CWE) unique identifier. For example: CWE-787. | flattened |
-| ocsf.vulnerabilities.desc | The description of the vulnerability. | keyword |
-| ocsf.vulnerabilities.fix_available | Indicates if a fix is available for the reported vulnerability. | boolean |
+| ocsf.vulnerabilities.cwe.caption | The caption assigned to the Common Weakness Enumeration unique identifier. | keyword |
+| ocsf.vulnerabilities.cwe.src_url | URL pointing to the CWE Specification. | keyword |
+| ocsf.vulnerabilities.cwe.uid | The Common Weakness Enumeration unique number assigned to a specific weakness. | keyword |
 | ocsf.vulnerabilities.kb_articles | The KB article/s related to the entity. | keyword |
 | ocsf.vulnerabilities.packages.architecture | Architecture is a shorthand name describing the type of computer hardware the packaged software is meant to run on. | keyword |
 | ocsf.vulnerabilities.packages.epoch | The software package epoch. Epoch is a way to define weighted dependencies based on version numbers. | long |
