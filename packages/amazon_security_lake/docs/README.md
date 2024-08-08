@@ -223,9 +223,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.actor.process.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.actor.process.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.actor.process.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.actor.process.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.actor.process.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.actor.process.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.actor.process.file.product.name | The name of the feature. | keyword |
 | ocsf.actor.process.file.product.path | The installation path of the product. | keyword |
@@ -393,9 +391,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.parent_process.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.actor.process.parent_process.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.actor.process.parent_process.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.actor.process.parent_process.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.actor.process.parent_process.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.actor.process.parent_process.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.actor.process.parent_process.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.actor.process.parent_process.file.product.name | The name of the feature. | keyword |
 | ocsf.actor.process.parent_process.file.product.path | The installation path of the product. | keyword |
@@ -620,9 +616,7 @@ This is the `Event` dataset.
 | ocsf.api.service.uid | The unique identifier of the service. | keyword |
 | ocsf.api.service.version | The version of the service. | keyword |
 | ocsf.api.version | The version of the API service. | keyword |
-| ocsf.app.feature.name | The name of the feature. | keyword |
-| ocsf.app.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.app.feature.version | The version of the feature. | keyword |
+| ocsf.app.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.app.lang | The two letter lower case language codes, as defined by ISO 639-1. | keyword |
 | ocsf.app.name | The CIS benchmark name. | keyword |
 | ocsf.app.path | The installation path of the product. | keyword |
@@ -947,9 +941,7 @@ This is the `Event` dataset.
 | ocsf.driver.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.driver.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.driver.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.driver.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.driver.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.driver.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.driver.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.driver.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.driver.file.product.name | The name of the product. | keyword |
 | ocsf.driver.file.product.path | The installation path of the product. | keyword |
@@ -1170,9 +1162,7 @@ This is the `Event` dataset.
 | ocsf.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.file.product.name | The name of the product. | keyword |
 | ocsf.file.product.path | The installation path of the product. | keyword |
@@ -1314,9 +1304,7 @@ This is the `Event` dataset.
 | ocsf.file_result.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.file_result.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.file_result.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.file_result.product.feature.name | The name of the feature. | keyword |
-| ocsf.file_result.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.file_result.product.feature.version | The version of the feature. | keyword |
+| ocsf.file_result.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.file_result.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.file_result.product.name | The name of the product. | keyword |
 | ocsf.file_result.product.path | The installation path of the product. | keyword |
@@ -1456,9 +1444,7 @@ This is the `Event` dataset.
 | ocsf.malware.cves.cwe_url | Common Weakness Enumeration (CWE) definition URL. | keyword |
 | ocsf.malware.cves.modified_time | The Record Modified Date identifies when the CVE record was last updated. | date |
 | ocsf.malware.cves.modified_time_dt | The Record Modified Date identifies when the CVE record was last updated. | date |
-| ocsf.malware.cves.product.feature.name | The name of the feature. | keyword |
-| ocsf.malware.cves.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.malware.cves.product.feature.version | The version of the feature. | keyword |
+| ocsf.malware.cves.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.malware.cves.product.lang | The two letter lower case language codes, as defined by ISO 639-1. | keyword |
 | ocsf.malware.cves.product.name | The name of the product. | keyword |
 | ocsf.malware.cves.product.path | The installation path of the product. | keyword |
@@ -1495,9 +1481,7 @@ This is the `Event` dataset.
 | ocsf.metadata.processed_time | The event processed time, such as an ETL operation. | date |
 | ocsf.metadata.processed_time_dt | The event processed time, such as an ETL operation. | date |
 | ocsf.metadata.product.cpe_name | The Common Platform Enumeration (CPE) name as described by (NIST) For example, cpe:/a:apple:safari:16.2. | keyword |
-| ocsf.metadata.product.feature.name | The name of the feature. | keyword |
-| ocsf.metadata.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.metadata.product.feature.version | The version of the feature. | keyword |
+| ocsf.metadata.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.metadata.product.lang | The two letter lowercase language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.metadata.product.name | The name of the product. | keyword |
 | ocsf.metadata.product.path | The installation path of the product. | keyword |
@@ -1606,9 +1590,7 @@ This is the `Event` dataset.
 | ocsf.module.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.module.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.module.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.module.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.module.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.module.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.module.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.module.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.module.file.product.name | The name of the product. | keyword |
 | ocsf.module.file.product.path | The installation path of the product. | keyword |
@@ -2066,9 +2048,7 @@ This is the `Event` dataset.
 | ocsf.vulnerabilities.cve.fix_available | Indicates if a fix is available for the reported vulnerability. | boolean |
 | ocsf.vulnerabilities.cve.modified_time | The Record Modified Date identifies when the CVE record was last updated. | date |
 | ocsf.vulnerabilities.cve.modified_time_dt | The Record Modified Date identifies when the CVE record was last updated. | date |
-| ocsf.vulnerabilities.cve.product.feature.name | The name of the feature. | keyword |
-| ocsf.vulnerabilities.cve.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.vulnerabilities.cve.product.feature.version | The version of the feature. | keyword |
+| ocsf.vulnerabilities.cve.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.vulnerabilities.cve.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.vulnerabilities.cve.product.name | The name of the product. | keyword |
 | ocsf.vulnerabilities.cve.product.path | The installation path of the product. | keyword |
