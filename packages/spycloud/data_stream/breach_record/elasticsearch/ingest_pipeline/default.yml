@@ -12,7 +12,7 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind
-      value: event
+      value: alert
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -86,26 +86,55 @@ processors:
       tag: rename_cc_bin
       target_field: spycloud.breach_record.cc.bin
       ignore_missing: true
+  - set:
+      field: spycloud.breach_record.cc.bin
+      tag: mask_cc_bin
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.breach_record?.cc?.bin != null
+      ignore_empty_value: true
   - rename:
       field: json.cc_expiration
       tag: rename_cc_expiration
       target_field: spycloud.breach_record.cc.expiration
       ignore_missing: true
+  - set:
+      field: spycloud.breach_record.cc.expiration
+      tag: mask_cc_expiration
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.breach_record?.cc?.expiration != null
+      ignore_empty_value: true
   - rename:
       field: json.cc_last_four
       tag: rename_cc_last_four
       target_field: spycloud.breach_record.cc.last_four
       ignore_missing: true
+  - set:
+      field: spycloud.breach_record.cc.last_four
+      tag: mask_cc_last_four
+      value: '****'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.breach_record?.cc?.last_four != null
+      ignore_empty_value: true
   - rename:
       field: json.cc_number
       tag: rename_cc_number
       target_field: spycloud.breach_record.cc.number
       ignore_missing: true
+  - set:
+      field: spycloud.breach_record.cc.number
+      tag: mask_cc_number
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.breach_record?.cc?.number != null
+      ignore_empty_value: true
   - rename:
       field: json.company_name
       tag: rename_company_name
       target_field: spycloud.breach_record.company_name
       ignore_missing: true
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_breach_record_company_name
+      copy_from: spycloud.breach_record.company_name
+      ignore_empty_value: true
   - rename:
       field: json.country_code
       tag: rename_country_code
@@ -305,6 +334,12 @@ processors:
       tag: rename_password
       target_field: spycloud.breach_record.password.value
       ignore_missing: true
+  - set:
+      field: spycloud.breach_record.password.value
+      tag: mask_password
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.breach_record?.password?.value != null
+      ignore_empty_value: true
   - date:
       field: json.record_addition_date
       tag: date_record_addition_date
@@ -492,6 +527,25 @@ processors:
       tag: set_host_os_full_from_breach_record_user_os
       copy_from: spycloud.breach_record.user.os
       ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: script_to_set_host_os_type
+      description: Script to set host_os_type.
+      if: ctx.spycloud?.breach_record?.user?.os != null
+      source: |
+        if (ctx.spycloud.breach_record.user.os.toLowerCase().contains('windows')) {
+            ctx.host.os.type = 'windows';
+        } else if (ctx.spycloud.breach_record.user.os.toLowerCase().contains('linux')) {
+            ctx.host.os.type = 'linux';
+        } else if (ctx.spycloud.breach_record.user.os.toLowerCase().contains('mac')) {
+            ctx.host.os.type = 'macos';
+        } else if (ctx.spycloud.breach_record.user.os.toLowerCase().contains('unix')) {
+            ctx.host.os.type = 'unix';
+        } else if (ctx.spycloud.breach_record.user.os.toLowerCase().contains('ios')) {
+            ctx.host.os.type = 'ios';
+        } else if (ctx.spycloud.breach_record.user.os.toLowerCase().contains('android')) {
+            ctx.host.os.type = 'android';
+        }
   - rename:
       field: json.user_sys_domain
       tag: rename_user_sys_domain
@@ -530,6 +584,7 @@ processors:
         - spycloud.breach_record.user.hostname
         - spycloud.breach_record.user.os
         - spycloud.breach_record.user.name
+        - spycloud.breach_record.company_name
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

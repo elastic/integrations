@@ -50,9 +50,7 @@ program: |
           "events": has(first_body.results) ?
           (
             first_body.results.size() > 0 ?
-            (
               first_body.results.map(e, {"message": e.encode_json()})
-            )
             :
               [{"message":"No hits for Breach Catalog using since filter"}]
           )
@@ -60,7 +58,7 @@ program: |
             [{"message": first_body.encode_json()}],
           "cursor": {
             ?"last_published_date": (has(first_body.results) && first_body.results.size() > 0) ?
-                optional.of(([?state.?cursor.last_published_date] + first_body.results.map(e, e.spycloud_publish_date)).max())
+              optional.of(string(([?state.?cursor.last_published_date] + first_body.results.map(e, e.spycloud_publish_date)).map(t, timestamp(t)).max()))
               :
                 state.?cursor.last_published_date,
             "last_modified_date": state.?cursor.last_modified_date.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
@@ -118,9 +116,7 @@ program: |
         "events": has(second_body.results) ?
         (
           second_body.size() > 0 ?
-          (
             second_body.results.map(e, {"message": e.encode_json()})
-          )
           :
             [{"message":"No hits for Breach Catalog using since_modification_date filter"}]
         )
@@ -128,7 +124,7 @@ program: |
           [{"message": second_body.encode_json()}],
         "cursor": {
           ?"last_modified_date": (has(second_body.results) && second_body.results.size() > 0) ?
-              optional.of(([?state.?cursor.last_modified_date] + second_body.results.map(e, e.record_modification_date)).max())
+              optional.of(string(([?state.?cursor.last_modified_date] + second_body.results.map(e, e.record_modification_date)).map(t, timestamp(t)).max()))
               :
                 state.?cursor.last_modified_date,
           "last_published_date": state.?cursor.last_published_date.orValue(null),
@@ -164,6 +160,9 @@ tags:
 {{/if}}
 {{#if preserve_duplicate_custom_fields}}
   - preserve_duplicate_custom_fields
+{{/if}}
+{{#if hide_sensitive_true}}
+  - hide_sensitive_true
 {{/if}}
 {{#each tags as |tag|}}
   - {{tag}}

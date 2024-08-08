@@ -69,21 +69,45 @@ processors:
       tag: rename_cc_bin
       target_field: spycloud.compass.cc.bin
       ignore_missing: true
+  - set:
+      field: spycloud.compass.cc.bin
+      tag: mask_cc_bin
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.compass?.cc?.bin != null
+      ignore_empty_value: true
   - rename:
       field: json.cc_expiration
       tag: rename_cc_expiration
       target_field: spycloud.compass.cc.expiration
       ignore_missing: true
+  - set:
+      field: spycloud.compass.cc.expiration
+      tag: mask_cc_expiration
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.compass?.cc?.expiration != null
+      ignore_empty_value: true
   - rename:
       field: json.cc_last_four
       tag: rename_cc_last_four
       target_field: spycloud.compass.cc.last_four
       ignore_missing: true
+  - set:
+      field: spycloud.compass.cc.last_four
+      tag: mask_cc_last_four
+      value: '****'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.compass?.cc?.last_four != null
+      ignore_empty_value: true
   - rename:
       field: json.cc_number
       tag: rename_cc_number
       target_field: spycloud.compass.cc.number
       ignore_missing: true
+  - set:
+      field: spycloud.compass.cc.number
+      tag: mask_cc_number
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.compass?.cc?.number != null
+      ignore_empty_value: true
   - rename:
       field: json.country_code
       tag: rename_country_code
@@ -283,6 +307,12 @@ processors:
       tag: rename_password
       target_field: spycloud.compass.password.value
       ignore_missing: true
+  - set:
+      field: spycloud.compass.password.value
+      tag: mask_password
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud.compass.password?.value != null
+      ignore_empty_value: true
   - rename:
       field: json.postal_code
       tag: rename_postal_code
@@ -313,6 +343,12 @@ processors:
       tag: rename_social_security_number
       target_field: spycloud.compass.social_security_number
       ignore_missing: true
+  - set:
+      field: spycloud.compass.social_security_number
+      tag: mask_social_security_number
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.compass?.social_security_number != null
+      ignore_empty_value: true
   - convert:
       field: json.source_id
       tag: convert_source_id_to_string
@@ -340,6 +376,12 @@ processors:
       tag: rename_ssn_last_four
       target_field: spycloud.compass.ssn_last_four
       ignore_missing: true
+  - set:
+      field: spycloud.compass.ssn_last_four
+      tag: mask_ssn_last_four
+      value: '******'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive_true') && ctx.spycloud?.compass?.ssn_last_four != null
+      ignore_empty_value: true
   - rename:
       field: json.target_domain
       tag: rename_target_domain
@@ -432,6 +474,25 @@ processors:
       tag: set_host_os_full_from_compass_user_os
       copy_from: spycloud.compass.user.os
       ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: script_to_set_host_os_type
+      description: Script to set host_os_type.
+      if: ctx.spycloud?.compass?.user?.os != null
+      source: |
+        if (ctx.spycloud.compass.user.os.toLowerCase().contains('windows')) {
+            ctx.host.os.type = 'windows';
+        } else if (ctx.spycloud.compass.user.os.toLowerCase().contains('linux')) {
+            ctx.host.os.type = 'linux';
+        } else if (ctx.spycloud.compass.user.os.toLowerCase().contains('mac')) {
+            ctx.host.os.type = 'macos';
+        } else if (ctx.spycloud.compass.user.os.toLowerCase().contains('unix')) {
+            ctx.host.os.type = 'unix';
+        } else if (ctx.spycloud.compass.user.os.toLowerCase().contains('ios')) {
+            ctx.host.os.type = 'ios';
+        } else if (ctx.spycloud.compass.user.os.toLowerCase().contains('android')) {
+            ctx.host.os.type = 'android';
+        }
   - rename:
       field: json.user_sys_domain
       tag: rename_user_sys_domain

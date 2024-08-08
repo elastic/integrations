@@ -48,8 +48,8 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 ### To collect logs through REST API, follow the below steps:
 
-- Considering you already have a SpyCloud account, log in to your SpyCloud instance to obtain your API key. Navigate to Main > API, where you will find your API key under the Keys > API Key section.
-- To obtain the Base URL, navigate to Main > API and click on the "View Docs" link, your URL can be located within the API Reference section.
+- Considering you already have a SpyCloud account, log in to your SpyCloud instance to obtain your API key. Navigate to **Main > API**, where you will find your API key under the **Keys > API Key** section.
+- To obtain the Base URL, navigate to **Main > API** and click on the **View Docs** link, your URL can be located within the **API Reference** section.
 
 **NOTE**: Your system's IP should be allowlisted by the SpyCloud team to be able to access the APIs and get the data.
 

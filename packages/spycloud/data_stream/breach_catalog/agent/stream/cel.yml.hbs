@@ -23,13 +23,10 @@ program: |
   request(
     "GET",
     state.url + "/breach/catalog?" + {
-      ?"since": (state.?want_more.orValue(false) ? optional.none()
+      ?"since": (state.?want_more.orValue(false) || !has(state.?cursor.last_published_date)) ?
+        optional.none()
       :
-        has(state.?cursor.last_published_date) ?
-          optional.of([(timestamp(state.cursor.last_published_date) - duration("24h")).format("2006-01-02")])
-        :
-          optional.none()
-      ),
+        optional.of([(timestamp(state.cursor.last_published_date) - duration("24h")).format("2006-01-02")]),
       ?"cursor": state.?want_more.orValue(false) ? optional.of([state.pagination_token]) : optional.none(),
     }.format_query()
   ).with({
@@ -46,7 +43,7 @@ program: |
           [{"message": body.encode_json()}],
         "cursor": {
           ?"last_published_date": (has(body.results) && body.results.size() > 0) ?
-            optional.of(([?state.?cursor.last_published_date] + body.results.map(e, e.spycloud_publish_date)).max())
+              optional.of(string(([?state.?cursor.last_published_date] + body.results.map(e, e.spycloud_publish_date)).map(t, timestamp(t)).max()))
           :
             state.?cursor.last_published_date,
         },

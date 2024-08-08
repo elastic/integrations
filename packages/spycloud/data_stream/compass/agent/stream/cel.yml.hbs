@@ -49,7 +49,7 @@ program: |
             [{"message": body.encode_json()}],
         "cursor": {
           ?"last_published_date": (has(body.results) && body.results.size() > 0) ?
-              optional.of(([?state.?cursor.last_published_date] + body.results.map(e, e.spycloud_publish_date)).max())
+              optional.of(string(([?state.?cursor.last_published_date] + body.results.map(e, e.spycloud_publish_date)).map(t, timestamp(t)).max()))
             :
               state.?cursor.last_published_date,
         },
@@ -79,6 +79,9 @@ tags:
 {{/if}}
 {{#if preserve_duplicate_custom_fields}}
   - preserve_duplicate_custom_fields
+{{/if}}
+{{#if hide_sensitive_true}}
+  - hide_sensitive_true
 {{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
