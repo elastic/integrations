@@ -100,6 +100,9 @@
         - name: zone
           type: keyword
           description: The availability zone in the cloud region, as defined by the cloud provider.
+    - name: command_uid
+      type: keyword
+      description: The command identifier that is associated with this scan event. This ID uniquely identifies the proactive scan command, e.g., if remotely initiated.
     - name: count
       type: long
       description: The number of times that events in the same logical group occurred during the event Start Time to End Time period.
@@ -331,6 +334,33 @@
     - name: message
       type: keyword
       description: The description of the event, as defined by the event source.
+    - name: num_detections
+      type: integer
+      description: The number of detections.
+    - name: num_files
+      type: integer
+      description: The number of files scanned.
+    - name: num_folders
+      type: integer
+      description: The number of folders scanned.
+    - name: num_network_items
+      type: integer
+      description: The number of network items scanned.
+    - name: num_processes
+      type: integer
+      description: The number of processes scanned.
+    - name: num_registry_items
+      type: integer
+      description: The number of registry items scanned.
+    - name: num_resolutions
+      type: integer
+      description: The number of items that were resolved.
+    - name: num_skipped_items
+      type: integer
+      description: The number of items that were skipped.
+    - name: num_trusted_items
+      type: integer
+      description: The number of trusted items.
     - name: observables
       type: group
       fields:
@@ -361,6 +391,42 @@
         - name: value
           type: keyword
           description: The value associated with the observable attribute.
+    - name: policy
+      type: group
+      fields:
+        - name: desc
+          type: keyword
+          description: The description of the policy.
+        - name: group
+          type: group
+          fields:
+            - name: domain
+              type: keyword
+              description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+            - name: desc
+              type: keyword
+              description: The group description.
+            - name: name
+              type: keyword
+              description: The group name.
+            - name: privileges
+              type: keyword
+              description: The group privileges.
+            - name: type
+              type: keyword
+              description: The type of the group or account.
+            - name: uid
+              type: keyword
+              description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+        - name: name
+          type: keyword
+          description: 'The policy name. For example: IAM Policy.'
+        - name: uid
+          type: keyword
+          description: A unique identifier of the policy instance.
+        - name: version
+          type: keyword
+          description: The policy version number.
     - name: proxy
       type: group
       fields:
@@ -469,6 +535,25 @@
     - name: raw_data
       type: flattened
       description: The event data as received from the event source.
+    - name: scan
+      type: group
+      description: The Scan object describes characteristics of a proactive scan.
+      fields:
+        - name: name
+          type: keyword
+          description: The administrator-supplied or application-generated name of the scan.
+        - name: type
+          type: keyword
+          description: The type of scan.
+        - name: type_id
+          type: integer
+          description: The type id of the scan.
+        - name: uid
+          type: keyword
+          description: The application-defined unique identifier assigned to an instance of a scan.
+    - name: schedule_uid
+      type: keyword
+      description: The unique identifier of the schedule associated with a scan job.
     - name: severity
       type: keyword
       description: The event severity, normalized to the caption of the severity_id value. In the case of 'Other', it is defined by the event source.
@@ -493,6 +578,9 @@
     - name: status_id
       type: keyword
       description: The normalized identifier of the event status.
+    - name: total
+      type: integer
+      description: The total number of items that were scanned; zero if no items were scanned.
     - name: time
       type: date
       description: The normalized event occurrence time.

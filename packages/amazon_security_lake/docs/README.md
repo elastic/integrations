@@ -704,6 +704,7 @@ This is the `Event` dataset.
 | ocsf.codes | The list of return codes to the FTP command. | long |
 | ocsf.command | The command name. | keyword |
 | ocsf.command_responses | The list of responses to the FTP command. | keyword |
+| ocsf.command_uid | The command identifier that is associated with this scan event. This ID uniquely identifies the proactive scan command, e.g., if remotely initiated. | keyword |
 | ocsf.comment | The user provided comment about why the entity was changed. | keyword |
 | ocsf.compliance.control | A Control is prescriptive, prioritized, and simplified set of best practices that one can use to strengthen their cybersecurity posture. e.g. AWS SecurityHub Controls, CIS Controls. | keyword |
 | ocsf.compliance.requirements | A list of requirements associated to a specific control in an industry or regulatory framework. e.g. NIST.800-53.r5 AU-10. | keyword |
@@ -1642,6 +1643,15 @@ This is the `Event` dataset.
 | ocsf.module.type | The module type. | keyword |
 | ocsf.name | The name of the data affiliated with the command. | keyword |
 | ocsf.nist | The NIST Cybersecurity Framework recommendations for managing the cybersecurity risk. | keyword |
+| ocsf.num_detections | The number of detections. | integer |
+| ocsf.num_files | The number of files scanned. | integer |
+| ocsf.num_folders | The number of folders scanned. | integer |
+| ocsf.num_network_items | The number of network items scanned. | integer |
+| ocsf.num_processes | The number of processes scanned. | integer |
+| ocsf.num_registry_items | The number of registry items scanned. | integer |
+| ocsf.num_resolutions | The number of items that were resolved. | integer |
+| ocsf.num_skipped_items | The number of items that were skipped. | integer |
+| ocsf.num_trusted_items | The number of trusted items. | integer |
 | ocsf.observables.name | The full name of the observable attribute. The name is a pointer/reference to an attribute within the event data. For example: file.name. | keyword |
 | ocsf.observables.reputation.base_score | The reputation score as reported by the event source. | double |
 | ocsf.observables.reputation.provider | The provider of the reputation information. | keyword |
@@ -1651,6 +1661,7 @@ This is the `Event` dataset.
 | ocsf.observables.type_id | The observable value type identifier. | keyword |
 | ocsf.observables.value | The value associated with the observable attribute. | keyword |
 | ocsf.open_type | Indicates how the file was opened (e.g. normal, delete on close). | keyword |
+| ocsf.policy | The policy that was used to scan the device. | flattened |
 | ocsf.port | The dynamic port established for impending data transfers. | long |
 | ocsf.precision | The NTP precision quantifies a clock's accuracy and stability in log2 seconds, as defined in RFC-5905. | integer |
 | ocsf.prev_security_states.state | The security state, normalized to the caption of the state_id value. | keyword |
@@ -1806,6 +1817,11 @@ This is the `Event` dataset.
 | ocsf.risk_level | The risk level, normalized to the caption of the risk_level_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.risk_level_id | The normalized risk level id. | keyword |
 | ocsf.risk_score | The risk score as reported by the event source. | long |
+| ocsf.scan.name | The administrator-supplied or application-generated name of the scan. | keyword |
+| ocsf.scan.type | The type of scan. | keyword |
+| ocsf.scan.type_id | The type id of the scan. | integer |
+| ocsf.scan.uid | The application-defined unique identifier assigned to an instance of a scan. | keyword |
+| ocsf.schedule_uid | The unique identifier of the schedule associated with a scan job. | keyword |
 | ocsf.security_level | The current security level of the entity. | keyword |
 | ocsf.security_level_id | The current security level of the entity. | integer |
 | ocsf.security_states.state | The security state, normalized to the caption of the state_id value. | keyword |
@@ -1914,6 +1930,7 @@ This is the `Event` dataset.
 | ocsf.tls.server_ciphers | The server cipher suites that were exchanged during the TLS handshake negotiation. | keyword |
 | ocsf.tls.sni | The Server Name Indication (SNI) extension sent by the client. | keyword |
 | ocsf.tls.version | The TLS protocol version. | keyword |
+| ocsf.total | The total number of items that were scanned; zero if no items were scanned. | integer |
 | ocsf.traffic.bytes | The total number of bytes (in and out). | long |
 | ocsf.traffic.bytes_in | The number of bytes sent from the destination to the source. | long |
 | ocsf.traffic.bytes_out | The number of bytes sent from the source to the destination. | long |

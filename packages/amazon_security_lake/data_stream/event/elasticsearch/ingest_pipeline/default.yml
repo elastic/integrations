@@ -40,7 +40,7 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','5019','6001','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','5019','6001','6002','6003','6004','6005','6007'].contains(ctx.ocsf.class_uid)
       value: event
   - set:
       field: event.kind
@@ -136,7 +136,7 @@ processors:
       tag: append_info_into_event_type
       value: info
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1007','2001', '2002','2003','2004','2005','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','5019','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1007','2001', '2002','2003','2004','2005','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5004','5019','6002','6003','6004','6005','6007'].contains(ctx.ocsf.class_uid)
   - append:
       field: event.type
       tag: append_user_into_event_type
@@ -178,13 +178,13 @@ processors:
       tag: append_start_into_event_type
       value: start
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['1007','3002','4001','4013','4007','6002'].contains(ctx.ocsf.class_uid) && ['Launch','Logon','Open','Start','Symmetric Active Exchange','Client Synchronization','Broadcast','Control'].contains(ctx.ocsf.activity_name)
+      if: ctx.ocsf?.class_uid != null && ['1007','3002','4001','4013','4007','6002','6007'].contains(ctx.ocsf.class_uid) && ['Launch','Logon','Open','Start','Started','Symmetric Active Exchange','Client Synchronization','Broadcast','Control'].contains(ctx.ocsf.activity_name)
   - append:
       field: event.type
       tag: append_end_into_event_type
       value: end
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['1007','2005','3002','4001','4007','4013','6002'].contains(ctx.ocsf.class_uid) && ['Terminate','Logoff','Close','Stop','Symmetric Passive Response','Server Response','Private Use Case','Other'].contains(ctx.ocsf.activity_name)
+      if: ctx.ocsf?.class_uid != null && ['1007','2005','3002','4001','4007','4013','6002','6007'].contains(ctx.ocsf.class_uid) && ['Terminate','Logoff','Close','Completed','Stop','Symmetric Passive Response','Server Response','Private Use Case','Other'].contains(ctx.ocsf.activity_name)
   - append:
       field: event.type
       tag: append_denied_into_event_type
@@ -220,7 +220,7 @@ processors:
       tag: append_error_into_event_type
       value: error
       allow_duplicates: false
-      if: ctx.ocsf?.class_uid != null && ['6004'].contains(ctx.ocsf.class_uid) && ['Access Error'].contains(ctx.ocsf.activity_name)
+      if: ctx.ocsf?.class_uid != null && ['6004','6007'].contains(ctx.ocsf.class_uid) && ['Access Error','Error'].contains(ctx.ocsf.activity_name)
   - set:
       field: cloud.account.id
       tag: set_cloud_account_uid
@@ -705,7 +705,7 @@ processors:
             ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_actor" }}'
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','2003','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5019','6001','6002','6003','6004','6005'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','2003','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','4013','5001','5002','5003','5019','6001','6002','6003','6004','6005','6007'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
       tag: pipeline_object_actor
       ignore_missing_pipeline: true
   - pipeline:
@@ -720,7 +720,7 @@ processors:
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_device" }}'
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','2003','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4011','4012','4013','5001','5002','5004','5019','6001','6002','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.device != null
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','2002','2003','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4011','4012','4013','5001','5002','5004','5019','6001','6002','6004','6007'].contains(ctx.ocsf.class_uid) && ctx.ocsf.device != null
       tag: pipeline_object_device
       ignore_missing_pipeline: true
   - pipeline:
