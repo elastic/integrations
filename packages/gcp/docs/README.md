@@ -233,7 +233,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.authentication_info.authority_selector | The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority. | keyword |
 | gcp.audit.authentication_info.principal_email | The email address of the authenticated user making the request. | keyword |
 | gcp.audit.authentication_info.principal_subject | String representation of identity of requesting party. Populated for both first and third party identities. Only present for APIs that support third-party identities. | keyword |
+| gcp.audit.authentication_info.service_account_delegation_info | The service account key that was used to request the OAuth 2.0 access token. This field identifies the service account key by its full resource name. | flattened |
 | gcp.audit.authentication_info.service_account_key_name | The service account key that was used to request the OAuth 2.0 access token. This field identifies the service account key by its full resource name. | keyword |
+| gcp.audit.authentication_info.third_party_principal | The third party identification (if any) of the authenticated user making the request. When the JSON object represented here has a proto equivalent, the proto name will be indicated in the @type property. | flattened |
 | gcp.audit.authorization_info.granted | Whether or not authorization for resource and permission was granted. | boolean |
 | gcp.audit.authorization_info.permission | The required IAM permission. | keyword |
 | gcp.audit.authorization_info.resource | The resource being accessed, as a REST-style string. | keyword |
