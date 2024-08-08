@@ -307,22 +307,22 @@ An example event for `message_release` looks as following:
 {
     "@timestamp": "2015-11-25T14:49:18.000Z",
     "agent": {
-        "ephemeral_id": "6bd37042-b585-478e-960c-8bb6acaaf432",
-        "id": "8888f265-dd42-4dd0-9838-7ac79735d22f",
+        "ephemeral_id": "1d83df91-a476-4e1f-97e3-d79c28684f58",
+        "id": "b8a1f62f-c7d4-40fb-b0ac-ccb8b21bb57b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "mimecast.message_release_logs",
-        "namespace": "65262",
+        "namespace": "18089",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8888f265-dd42-4dd0-9838-7ac79735d22f",
+        "id": "b8a1f62f-c7d4-40fb-b0ac-ccb8b21bb57b",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -333,6 +333,8 @@ An example event for `message_release` looks as following:
                 "user@domain.tld"
             ]
         },
+        "local_id": "eNpVj21LhEAUhf_LfN2VnRl1RpclCN...",
+        "subject": "Exclusive Offer - You don't want to miss this!",
         "to": {
             "address": [
                 "user@domain.tld"
@@ -347,7 +349,7 @@ An example event for `message_release` looks as following:
         ],
         "dataset": "mimecast.message_release_logs",
         "id": "eNpVj21LhEAUhf_LfN2VnRl1RpclCN...",
-        "ingested": "2024-08-08T00:14:00Z",
+        "ingested": "2024-08-08T21:00:56Z",
         "kind": "event",
         "original": "{\"attachments\":true,\"detectionLevel\":\"moderate\",\"fromEnv\":{\"displayableName\":\"FirstName LastName\",\"emailAddress\":\"user@domain.tld\"},\"fromHdr\":{\"displayableName\":\"FirstName LastName\",\"emailAddress\":\"user@domain.tld\"},\"heldGroup\":\"IT Staff Global\",\"heldReason\":\"High-Confidence Impersonation Protection\",\"id\":\"eNpVj21LhEAUhf_LfN2VnRl1RpclCN...\",\"messageInfo\":\"Expired in queue - rejected by housekeeping\",\"operator\":\"admin@domain.tld\",\"policy\":\"Moderate Spam Detection\",\"rejectReason\":\"Message contains undesirable content\",\"released\":\"2015-11-25T14:49:18+00:00\",\"route\":\"inbound\",\"size\":5043,\"spamProcessingDetail\":{\"dkim\":{\"allow\":true,\"info\":\"allow\"},\"dmarc\":{\"allow\":true,\"info\":\"allow\"},\"greyEmail\":true,\"managedSender\":{\"allow\":true,\"info\":\"allow\"},\"permittedSender\":{\"allow\":true,\"info\":\"allow\"},\"rbl\":{\"allow\":true,\"info\":\"allow\"},\"spamVerdict\":{\"categories\":[{\"name\":\"spam\",\"risk\":\"low\",\"subcategories\":[{\"augmentations\":[{\"name\":\"body\",\"risk\":\"negligible\"}],\"name\":\"phishing\",\"risk\":\"low\"}]}],\"decision\":\"spam\",\"description\":\"\",\"risk\":\"low\"},\"spf\":{\"allow\":true,\"info\":\"allow\"}},\"spamScore\":12,\"status\":\"released\",\"subject\":\"Exclusive Offer - You don't want to miss this!\",\"to\":[{\"displayableName\":\"FirstName LastName\",\"emailAddress\":\"user@domain.tld\"}]}",
         "reason": "Message contains undesirable content",
@@ -454,7 +456,7 @@ An example event for `message_release` looks as following:
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "mimecast-siem-logs"
+        "mimecast-message-release-logs"
     ],
     "user": {
         "email": [
@@ -503,6 +505,7 @@ An example event for `message_release` looks as following:
 | mimecast.spamProcessingDetail.dkim.info | Details about the check result. | keyword |
 | mimecast.spamProcessingDetail.dmarc.allow | Indicates checks for whether the message passed DMARC checks are performed. | boolean |
 | mimecast.spamProcessingDetail.dmarc.info | Details about the check result. | keyword |
+| mimecast.spamProcessingDetail.grayEmail | Indicates with the spam was classified as graymail or bulk. Note that this API uses graymail and greymail interchangeably. | boolean |
 | mimecast.spamProcessingDetail.greyEmail | Indicates with the spam was classified as graymail or bulk. Note that this API uses graymail and greymail interchangeably. | boolean |
 | mimecast.spamProcessingDetail.managedSender.allow | Indicates checks for whether the sender has been permitted by a Managed Sender entry are performed. | boolean |
 | mimecast.spamProcessingDetail.managedSender.info | Details about the check result. | keyword |
