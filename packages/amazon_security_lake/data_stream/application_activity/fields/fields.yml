@@ -49,6 +49,39 @@
     - name: category_uid
       type: keyword
       description: The category unique identifier of the event.3 Identity & Access ManagementIdentity & Access Management (IAM) events relate to the supervision of the system's authentication and access control model. Examples of such events are the success or failure of authentication, granting of authority, password change, entity change, privileged use etc.
+    - name: connection_info
+      type: group
+      fields:
+        - name: boundary
+          type: keyword
+          description: The boundary of the connection, normalized to the caption of 'boundary_id'. In the case of 'Other', it is defined by the event source.For cloud connections, this translates to the traffic-boundary(same VPC, through IGW, etc.). For traditional networks, this is described as Local, Internal, or External.
+        - name: boundary_id
+          type: keyword
+          description: The normalized identifier of the boundary of the connection. For cloud connections, this translates to the traffic-boundary (same VPC, through IGW, etc.). For traditional networks, this is described as Local, Internal, or External.
+        - name: direction
+          type: keyword
+          description: The direction of the initiated connection, traffic, or email, normalized to the caption of the direction_id value. In the case of 'Other', it is defined by the event source.
+        - name: direction_id
+          type: keyword
+          description: The normalized identifier of the direction of the initiated connection, traffic, or email.
+        - name: protocol_name
+          type: keyword
+          description: 'The TCP/IP protocol name in lowercase, as defined by the Internet Assigned Numbers Authority (IANA). See Protocol Numbers. For example: tcp or udp.'
+        - name: protocol_num
+          type: keyword
+          description: 'The TCP/IP protocol number, as defined by the Internet Assigned Numbers Authority (IANA). Use -1 if the protocol is not defined by IANA. See Protocol Numbers. For example: 6 for TCP and 17 for UDP.'
+        - name: protocol_ver
+          type: keyword
+          description: The Internet Protocol version.
+        - name: protocol_ver_id
+          type: keyword
+          description: The Internet Protocol version identifier.
+        - name: tcp_flags
+          type: long
+          description: The network connection TCP header flags (i.e., control bits).
+        - name: uid
+          type: keyword
+          description: The unique identifier of the connection.
     - name: class_name
       type: keyword
       description: 'The event class name, as defined by class_uid value: Security Finding.'
@@ -244,6 +277,12 @@
         - name: value
           type: keyword
           description: The value of the attribute to which the enriched data pertains.
+    - name: expiration_time
+      type: date
+      description: The share expiration time.
+    - name: expiration_time_dt
+      type: date
+      description: The share expiration time (date).
     - name: http_request
       type: group
       fields:
@@ -334,33 +373,9 @@
     - name: message
       type: keyword
       description: The description of the event, as defined by the event source.
-    - name: num_detections
+    - name: num_*
       type: integer
-      description: The number of detections.
-    - name: num_files
-      type: integer
-      description: The number of files scanned.
-    - name: num_folders
-      type: integer
-      description: The number of folders scanned.
-    - name: num_network_items
-      type: integer
-      description: The number of network items scanned.
-    - name: num_processes
-      type: integer
-      description: The number of processes scanned.
-    - name: num_registry_items
-      type: integer
-      description: The number of registry items scanned.
-    - name: num_resolutions
-      type: integer
-      description: The number of items that were resolved.
-    - name: num_skipped_items
-      type: integer
-      description: The number of items that were skipped.
-    - name: num_trusted_items
-      type: integer
-      description: The number of trusted items.
+      description: The number fields for counting various item scan results.
     - name: observables
       type: group
       fields:

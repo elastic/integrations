@@ -261,6 +261,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.version | The file version. For example: 8.0.7601.17514. | keyword |
 | ocsf.actor.process.file.xattributes | An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute. | flattened |
 | ocsf.actor.process.group.desc | The group description. | keyword |
+| ocsf.actor.process.group.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.group.name | The group name. | keyword |
 | ocsf.actor.process.group.privileges | The group privileges. | keyword |
 | ocsf.actor.process.group.type | The type of the group or account. | keyword |
@@ -1073,6 +1074,7 @@ This is the `Event` dataset.
 | ocsf.file.accessor.groups.privileges | The group privileges. | keyword |
 | ocsf.file.accessor.groups.type | The type of the group or account. | keyword |
 | ocsf.file.accessor.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.file.accessor.ldap_person | The LDAP person object. | flattened |
 | ocsf.file.accessor.name | The username. For example, janedoe1. | keyword |
 | ocsf.file.accessor.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.file.accessor.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1101,6 +1103,7 @@ This is the `Event` dataset.
 | ocsf.file.creator.groups.privileges | The group privileges. | keyword |
 | ocsf.file.creator.groups.type | The type of the group or account. | keyword |
 | ocsf.file.creator.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.file.creator.ldap_person | The LDAP person object. | flattened |
 | ocsf.file.creator.name | The username. For example, janedoe1. | keyword |
 | ocsf.file.creator.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.file.creator.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1131,6 +1134,7 @@ This is the `Event` dataset.
 | ocsf.file.modifier.groups.privileges | The group privileges. | keyword |
 | ocsf.file.modifier.groups.type | The type of the group or account. | keyword |
 | ocsf.file.modifier.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.file.modifier.ldap_person | The LDAP person object. | flattened |
 | ocsf.file.modifier.name | The username. For example, janedoe1. | keyword |
 | ocsf.file.modifier.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.file.modifier.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1154,6 +1158,7 @@ This is the `Event` dataset.
 | ocsf.file.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.file.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.file.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.file.owner.ldap_person | The LDAP person object. | flattened |
 | ocsf.file.owner.name | The username. For example, janedoe1. | keyword |
 | ocsf.file.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.file.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1643,15 +1648,7 @@ This is the `Event` dataset.
 | ocsf.module.type | The module type. | keyword |
 | ocsf.name | The name of the data affiliated with the command. | keyword |
 | ocsf.nist | The NIST Cybersecurity Framework recommendations for managing the cybersecurity risk. | keyword |
-| ocsf.num_detections | The number of detections. | integer |
-| ocsf.num_files | The number of files scanned. | integer |
-| ocsf.num_folders | The number of folders scanned. | integer |
-| ocsf.num_network_items | The number of network items scanned. | integer |
-| ocsf.num_processes | The number of processes scanned. | integer |
-| ocsf.num_registry_items | The number of registry items scanned. | integer |
-| ocsf.num_resolutions | The number of items that were resolved. | integer |
-| ocsf.num_skipped_items | The number of items that were skipped. | integer |
-| ocsf.num_trusted_items | The number of trusted items. | integer |
+| ocsf.num_\* | The number fields for counting various item scan results. | integer |
 | ocsf.observables.name | The full name of the observable attribute. The name is a pointer/reference to an attribute within the event data. For example: file.name. | keyword |
 | ocsf.observables.reputation.base_score | The reputation score as reported by the event source. | double |
 | ocsf.observables.reputation.provider | The provider of the reputation information. | keyword |
