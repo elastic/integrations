@@ -26,9 +26,6 @@ processors:
   - rename:
       field: message
       target_field: _temp_.message
-  - set:
-      field: event.created
-      copy_from: "@timestamp"
   - grok:
       field: _temp_.message
       patterns:
@@ -260,6 +257,14 @@ processors:
       field: '@timestamp'
       copy_from: panw.panos.high_resolution_timestamp
       ignore_empty_value: true
+
+  # set '@timestamp' to received_time if it wasn't set by high_resolution_timestamp
+  - set:
+      tag: received_time_to_timestamp
+      field: '@timestamp'
+      copy_from: panw.panos.received_time
+      if: ctx.panw?.panos?.high_resolution_timestamp == null && ctx.panw?.panos?.received_time != null
+
   - date:
       if: ctx.event?.timezone == null && ctx.event.start != null
       field: event.start

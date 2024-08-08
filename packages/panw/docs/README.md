@@ -38,9 +38,9 @@ An example event for `panos` looks as following:
 
 ```json
 {
-    "@timestamp": "2018-11-30T16:09:08.000Z",
+    "@timestamp": "2012-10-30T09:46:12.000+05:00",
     "agent": {
-        "ephemeral_id": "3ead96bc-5dbb-47a7-9814-f64e9fc58437",
+        "ephemeral_id": "ef0f2b29-596f-442b-bfee-3541fce30bb0",
         "id": "3ab5035f-6cf1-44aa-9f6a-d57e4905dda0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -48,11 +48,11 @@ An example event for `panos` looks as following:
     },
     "data_stream": {
         "dataset": "panw.panos",
-        "namespace": "31913",
+        "namespace": "99972",
         "type": "logs"
     },
     "destination": {
-        "bytes": 5976,
+        "domain": "lorexx.cn",
         "geo": {
             "city_name": "Changchun",
             "continent_name": "Asia",
@@ -67,12 +67,7 @@ An example event for `panos` looks as following:
             "region_name": "Jilin Sheng"
         },
         "ip": "175.16.199.1",
-        "nat": {
-            "ip": "175.16.199.1",
-            "port": 443
-        },
-        "packets": 20,
-        "port": 443
+        "port": 80
     },
     "ecs": {
         "version": "8.11.0"
@@ -83,36 +78,35 @@ An example event for `panos` looks as following:
         "version": "8.14.1"
     },
     "event": {
-        "action": "flow_terminated",
+        "action": "url_filtering",
         "agent_id_status": "verified",
         "category": [
+            "intrusion_detection",
+            "threat",
             "network"
         ],
-        "created": "2018-11-30T16:09:08.000Z",
         "dataset": "panw.panos",
-        "duration": 586000000000,
-        "end": "2018-11-30T16:08:50.000+05:00",
-        "ingested": "2024-08-07T21:50:29Z",
-        "kind": "event",
-        "original": "<14>1 2018-11-30T16:09:08Z PA-220 - - - - 1,2018/11/30 16:09:07,012801096514,TRAFFIC,end,2049,2018/11/30 16:09:07,192.168.15.207,175.16.199.1,192.168.1.63,175.16.199.1,new_outbound_from_trust,,,apple-maps,vsys1,trust,untrust,ethernet1/2,ethernet1/1,send_to_mac,2018/11/30 16:09:07,22751,1,55113,443,16418,443,0x400053,tcp,allow,7734,1758,5976,36,2018/11/30 15:59:04,586,computer-and-internet-info,0,32091112,0x0,192.168.0.0-192.168.255.255,United States,0,16,20,tcp-fin,0,0,0,0,,PA-220,from-policy,,,0,,0,,N/A,0,0,0,0",
+        "ingested": "2024-08-08T21:19:23Z",
+        "kind": "alert",
+        "original": "<14>Nov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
-        "start": "2018-11-30T15:59:04.000+05:00",
+        "severity": 5,
         "timezone": "+0500",
         "type": [
-            "allowed",
-            "end",
-            "connection"
+            "allowed"
         ]
     },
     "input": {
         "type": "udp"
     },
     "labels": {
-        "nat_translated": true
+        "captive_portal": true,
+        "container_page": true
     },
     "log": {
+        "level": "informational",
         "source": {
-            "address": "172.19.0.7:40440"
+            "address": "172.19.0.7:52442"
         },
         "syslog": {
             "facility": {
@@ -124,19 +118,14 @@ An example event for `panos` looks as following:
             "severity": {
                 "code": 6,
                 "name": "Informational"
-            },
-            "version": "1"
+            }
         }
     },
-    "message": "192.168.15.207,175.16.199.1,192.168.1.63,175.16.199.1,new_outbound_from_trust,,,apple-maps,vsys1,trust,untrust,ethernet1/2,ethernet1/1,send_to_mac,2018/11/30 16:09:07,22751,1,55113,443,16418,443,0x400053,tcp,allow,7734,1758,5976,36,2018/11/30 15:59:04,586,computer-and-internet-info,0,32091112,0x0,192.168.0.0-192.168.255.255,United States,0,16,20,tcp-fin,0,0,0,0,,PA-220,from-policy,,,0,,0,,N/A,0,0,0,0",
+    "message": "192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
     "network": {
-        "application": "apple-maps",
-        "bytes": 7734,
-        "community_id": [
-            "1:La5Jgm/PJBlaHF8BtgJSyZEmW9E=",
-            "1:sKYRL+yp3SWr5aT5SC1cvyWNnnM="
-        ],
-        "packets": 36,
+        "application": "web-browsing",
+        "community_id": "1:CpnxxiYk2GolQXL1AiyOIq2jeIE=",
+        "direction": "inbound",
         "transport": "tcp",
         "type": "ipv4"
     },
@@ -147,7 +136,6 @@ An example event for `panos` looks as following:
             },
             "zone": "untrust"
         },
-        "hostname": "PA-220",
         "ingress": {
             "interface": {
                 "name": "ethernet1/2"
@@ -155,82 +143,71 @@ An example event for `panos` looks as following:
             "zone": "trust"
         },
         "product": "PAN-OS",
-        "serial_number": "012801096514",
+        "serial_number": "01606001116",
         "type": "firewall",
         "vendor": "Palo Alto Networks"
     },
     "panw": {
         "panos": {
-            "action": "allow",
+            "action": "alert",
             "action_flags": "0x0",
-            "action_source": "from-policy",
-            "device_group_hierarchy1": "0",
-            "device_group_hierarchy2": "0",
-            "device_group_hierarchy3": "0",
-            "device_group_hierarchy4": "0",
-            "endreason": "tcp-fin",
-            "flow_id": "22751",
-            "generated_time": "2018-11-30T16:09:07.000+05:00",
-            "imsi": "0",
-            "log_profile": "send_to_mac",
-            "network": {
-                "nat": {
-                    "community_id": "1:sKYRL+yp3SWr5aT5SC1cvyWNnnM="
-                }
-            },
-            "parent_session": {
-                "id": "0"
-            },
-            "received_time": "2018-11-30T16:09:07.000+05:00",
+            "flow_id": "25149",
+            "generated_time": "2012-04-10T04:39:56.000+05:00",
+            "http_content_type": "text/html",
+            "log_profile": "forwardAll",
+            "logged_time": "2012-04-10T04:39:58.000+05:00",
+            "received_time": "2012-10-30T09:46:12.000+05:00",
             "repeat_count": 1,
-            "ruleset": "new_outbound_from_trust",
-            "sctp": {
-                "assoc_id": "0",
-                "chunks": 0,
-                "chunks_received": 0,
-                "chunks_sent": 0
+            "ruleset": "rule1",
+            "sequence_number": "0",
+            "sub_type": "url",
+            "threat": {
+                "id": "9999",
+                "name": "URL-filtering"
             },
-            "sequence_number": "32091112",
-            "sub_type": "end",
-            "tunnel_type": "N/A",
-            "type": "TRAFFIC",
+            "type": "THREAT",
             "url": {
-                "category": "computer-and-internet-info"
+                "category": "not-resolved"
             },
             "virtual_sys": "vsys1"
         }
     },
     "related": {
-        "hosts": [
-            "PA-220"
-        ],
         "ip": [
-            "192.168.15.207",
-            "175.16.199.1",
-            "192.168.1.63"
+            "192.168.0.2",
+            "175.16.199.1"
+        ],
+        "user": [
+            "crusher"
         ]
     },
     "rule": {
-        "name": "new_outbound_from_trust"
+        "name": "rule1"
     },
     "source": {
-        "bytes": 1758,
         "geo": {
             "name": "192.168.0.0-192.168.255.255"
         },
-        "ip": "192.168.15.207",
-        "nat": {
-            "ip": "192.168.1.63",
-            "port": 16418
-        },
-        "packets": 16,
-        "port": 55113
+        "ip": "192.168.0.2",
+        "port": 59309,
+        "user": {
+            "name": "crusher"
+        }
     },
     "tags": [
         "preserve_original_event",
         "panw-panos",
         "forwarded"
-    ]
+    ],
+    "url": {
+        "domain": "lorexx.cn",
+        "extension": "exe",
+        "original": "lorexx.cn/loader.exe",
+        "path": "/loader.exe"
+    },
+    "user": {
+        "name": "crusher"
+    }
 }
 ```
 
