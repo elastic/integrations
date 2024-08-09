@@ -1,0 +1,63 @@
+---
+description: Processing inventory data from Jamf Pro API
+processors:
+- fingerprint:
+    if: ctx.udid != null
+    fields:
+    - udid
+    target_field: "_id"
+    ignore_missing: true
+- rename:
+    field: message
+    target_field: jamf_pro.inventory
+    
+- script:
+    description: Convert Additional Info keys to snake case.
+    tag: additional-info-keys-to-snake-case
+    lang: painless
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+    source: |
+      Map keysToSnakeCase(Map m) {
+        def regex = /_?([a-z])([A-Z]+)/;
+        def snakeCaseMap = [:];
+
+        for (entry in m.entrySet()) {
+          def k = entry.getKey();
+          def v = entry.getValue();
+
+          if (v instanceof Map) {
+            v = keysToSnakeCase(v);
+          } else if (v instanceof List) {
+            for (int i = 0; i < v.size(); i++) {
+              def item = v.get(i);
+              if (item instanceof Map) {
+                v.set(i, keysToSnakeCase(item));
+              }
+            }
+          }
+
+          k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+          snakeCaseMap.put(k, v);
+        }
+        return snakeCaseMap;
+      }
+            
+      if(ctx.jamf_pro.inventory != null) {
+        ctx.jamf_pro.inventory = keysToSnakeCase(ctx.jamf_pro.inventory);
+      }
+
+- geoip:
+    field: jamf_pro.inventory.general.last_ip_address
+    target_field: jamf_pro.inventory.general.last_ip_address_geo
+    ignore_missing: true
+- set:
+    field: ecs.version
+    value: '8.11.0'
+
+on_failure:
+- set:          
+    field: jamf_pro.inventory.error.message
+    value: '{{ _ingest.on_failure_message }}'
