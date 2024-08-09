@@ -38,17 +38,17 @@ An example event for `panos` looks as following:
 
 ```json
 {
-    "@timestamp": "2012-04-10T04:39:56.000Z",
+    "@timestamp": "2012-10-30T09:46:12.000+05:00",
     "agent": {
-        "ephemeral_id": "be1891e7-30b4-4f85-b31e-e719ee92c1ea",
-        "id": "bf959e04-184d-48cb-92c0-4f7f748a2cc0",
+        "ephemeral_id": "ef0f2b29-596f-442b-bfee-3541fce30bb0",
+        "id": "3ab5035f-6cf1-44aa-9f6a-d57e4905dda0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.14.1"
     },
     "data_stream": {
         "dataset": "panw.panos",
-        "namespace": "ep",
+        "namespace": "99972",
         "type": "logs"
     },
     "destination": {
@@ -73,9 +73,9 @@ An example event for `panos` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bf959e04-184d-48cb-92c0-4f7f748a2cc0",
+        "id": "3ab5035f-6cf1-44aa-9f6a-d57e4905dda0",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.14.1"
     },
     "event": {
         "action": "url_filtering",
@@ -85,20 +85,19 @@ An example event for `panos` looks as following:
             "threat",
             "network"
         ],
-        "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2024-03-11T17:57:37Z",
+        "ingested": "2024-08-08T21:19:23Z",
         "kind": "alert",
         "original": "<14>Nov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
         "severity": 5,
-        "timezone": "+00:00",
+        "timezone": "+0500",
         "type": [
             "allowed"
         ]
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "labels": {
         "captive_portal": true,
@@ -107,7 +106,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "172.18.0.4:53212"
+            "address": "172.19.0.7:52442"
         },
         "syslog": {
             "facility": {
@@ -153,9 +152,11 @@ An example event for `panos` looks as following:
             "action": "alert",
             "action_flags": "0x0",
             "flow_id": "25149",
+            "generated_time": "2012-04-10T04:39:56.000+05:00",
             "http_content_type": "text/html",
             "log_profile": "forwardAll",
-            "logged_time": "2012-04-10T04:39:58.000Z",
+            "logged_time": "2012-04-10T04:39:58.000+05:00",
+            "received_time": "2012-10-30T09:46:12.000+05:00",
             "repeat_count": 1,
             "ruleset": "rule1",
             "sequence_number": "0",
