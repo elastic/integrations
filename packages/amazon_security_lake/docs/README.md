@@ -1722,7 +1722,7 @@ This is the `Event` dataset.
 | ocsf.query_time | The Domain Name System (DNS) query time. | date |
 | ocsf.query_time_dt | The Domain Name System (DNS) query time. | date |
 | ocsf.raw_data | The event data as received from the event source. | flattened |
-| ocsf.raw_data_keyword |  | keyword |
+| ocsf.raw_data_keyword | The event data as received from the event source. | keyword |
 | ocsf.rcode | The DNS server response code, normalized to the caption of the rcode_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.rcode_id | The normalized identifier of the DNS server response code. | keyword |
 | ocsf.relay.hostname | The hostname associated with the network interface. | keyword |
