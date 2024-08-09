@@ -9,14 +9,17 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+      tag: rename_event_original
   - grok:
       field: event.original
       patterns:
         - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) (?<message>(.|\r|\n)*)"
+      tag: grok_event_original
   - set:
       field: event.timezone
       value: "{{_tmp.tz_offset}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
+      tag: set_event_timezone
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -24,29 +27,36 @@ processors:
       formats:
         - yyyy-MM-dd HH:mm:ss,SSS
       if: ctx.event?.timezone != null
+      tag: date_timestamp_timezone
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
       formats:
         - yyyy-MM-dd HH:mm:ss,SSS
       if: ctx.event?.timezone == null
+      tag: date_timestamp_no_timezone
   - pipeline:
       name: '{{ IngestPipeline "events" }}'
       if: "ctx.log?.logger == 'org.keycloak.events'"
+      tag: pipeline_events
   - drop:
-      if: "ctx._tmp?.only_user_events && ctx.log?.logger != 'org.keycloak.events'"
+      if: "ctx._tmp?.only_user_events == true && ctx.log?.logger != 'org.keycloak.events'"
+      tag: drop_user_events
   - remove:
       field:
         - _tmp
       ignore_missing: true
+      tag: remove_tmp
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+      tag: remove_event_original
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
+      tag: painless_remove_null
       source: |
         void handleMap(Map map) {
           for (def x : map.values()) {
@@ -70,9 +80,10 @@ processors:
         }
         handleMap(ctx);
 on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
