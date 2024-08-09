@@ -19,26 +19,40 @@ processors:
   - set:
       field: event.kind
       value: event
+  - dot_expander:
+      field: "*"
+  - script:
+      description: Set 'event.dataset' based on 'aws?.cloudwatch?.log_stream'
+      lang: painless
+      source: |
+        def log_stream = ctx.aws?.cloudwatch?.log_stream;
+        if (log_stream != null) {
+          if (log_stream.startsWith('kube-apiserver-audit')) {
+            ctx.event.dataset = 'kubernetes.audit_logs';
+          }
+          else if (log_stream.startsWith('kube-apiserver')) {
+            ctx.event.dataset = 'kubernetes.apiserver_logs';
+          }
+          else if (log_stream.startsWith('authenticator')) {
+            ctx.event.dataset = 'aws.eks_authenticator_logs';
+          }
+
+          // Remaining streams to be implemented
+        }
   - json:
       field: event.original
-      target_field: _tmp.eks
-      strict_json_parsing: true
-  - set:
-      field: event.dataset
-      value: kubernetes.audit_logs
-      if: "ctx?._tmp?.eks?.apiVersion?.startsWith('audit.k8s.io')"
-  - rename:
-      field: _tmp.eks
       target_field: kubernetes.audit
-      if: "ctx?.event?.dataset == 'kubernetes.audit_logs'"
-  - remove:
-      field: _tmp
+      strict_json_parsing: true
+      if: "ctx.event?.dataset == 'kubernetes.audit_logs'"
+
 
 on_failure:
-  - set:
-      field: error.message
-      value: '{{ _ingest.on_failure_message }}'
   - append:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
