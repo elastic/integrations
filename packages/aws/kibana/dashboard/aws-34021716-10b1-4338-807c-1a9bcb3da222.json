@@ -4,10 +4,10 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"f7f74a2b-0cd6-4f2f-970b-3ac38189af0f\":{\"order\":0,\"width\":\"medium\",\"grow\":false,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"cloud.region\",\"title\":\"cloud.region\",\"id\":\"f7f74a2b-0cd6-4f2f-970b-3ac38189af0f\",\"enhancements\":{}}}}",
+            "panelsJSON": "{\"4b005360-bc48-47e8-a8a3-05f5eeb51785\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":false,\"width\":\"medium\",\"explicitInput\":{\"id\":\"4b005360-bc48-47e8-a8a3-05f5eeb51785\",\"fieldName\":\"cloud.region\",\"title\":\"Cloud Region\",\"grow\":false,\"width\":\"medium\",\"searchTechnique\":\"prefix\",\"existsSelected\":true,\"selectedOptions\":[],\"enhancements\":{}}},\"5f5d2fd9-ae8c-40dd-95b4-a9acaa0ec24a\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":false,\"width\":\"medium\",\"explicitInput\":{\"id\":\"5f5d2fd9-ae8c-40dd-95b4-a9acaa0ec24a\",\"fieldName\":\"aws.dimensions.LoadBalancer\",\"title\":\"Load Balancer\",\"grow\":false,\"width\":\"medium\",\"searchTechnique\":\"prefix\",\"enhancements\":{}}}}",
             "showApplySelections": false
         },
-        "description": "Overview of AWS ELB Metrics",
+        "description": "Overview of AWS NLB Metrics",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -16,21 +16,54 @@
                             "store": "appState"
                         },
                         "meta": {
-                            "alias": null,
+                            "alias": "NLB Metrics Filter",
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
                             "negate": false,
-                            "params": {
-                                "query": "aws.elb_metrics"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "metrics-*",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "aws.elb_metrics"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "aws.elb_metrics"
+                                        }
+                                    }
+                                },
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "aws.cloudwatch.namespace",
+                                        "index": "metrics-*",
+                                        "key": "aws.cloudwatch.namespace",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "AWS/NetworkELB"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "aws.cloudwatch.namespace": "AWS/NetworkELB"
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "AND",
+                            "type": "combined"
                         },
-                        "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "aws.elb_metrics"
-                            }
-                        }
+                        "query": {}
                     }
                 ],
                 "query": {
@@ -49,6 +82,7 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "description": "",
                     "enhancements": {},
                     "savedVis": {
                         "data": {
@@ -65,7 +99,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "This dashboard is deprecated and will be removed in the future. Access the [AWS Load Balancer Overview](#/view/aws-58e41f29-9b73-4ba9-b5f1-3e7b8ac1924b) dashboard for the latest version. \n",
+                            "markdown": "[AWS Load Balancer Overview](#/view/aws-58e41f29-9b73-4ba9-b5f1-3e7b8ac1924b)\n\n",
                             "openLinksInNewTab": true
                         },
                         "title": "",
@@ -74,13 +108,52 @@
                     }
                 },
                 "gridData": {
-                    "h": 3,
-                    "i": "4c1384ba-e143-4cc9-802f-b39c3f6a9513",
-                    "w": 48,
+                    "h": 4,
+                    "i": "5a67f13c-1123-4330-a397-858249b8062c",
+                    "w": 10,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "4c1384ba-e143-4cc9-802f-b39c3f6a9513",
+                "panelIndex": "5a67f13c-1123-4330-a397-858249b8062c",
+                "title": "AWS Load Balancer Dashboards",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 11,
+                            "markdown": "This dashboard contains Network Load Balancer, routing connections to targets (Amazon EC2 instances, microservices, and containers) within Amazon VPC, based on IP protocol data. Ideal for load balancing of both TCP and UDP traffic.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "01ab4ec2-8a2c-409f-a93c-205953ece016",
+                    "w": 38,
+                    "x": 10,
+                    "y": 0
+                },
+                "panelIndex": "01ab4ec2-8a2c-409f-a93c-205953ece016",
+                "title": "Information",
                 "type": "visualization"
             },
             {
@@ -97,6 +170,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "95c74866-a10c-4846-99a6-d4478075f9aa": {
                                             "columnOrder": [
@@ -107,22 +181,24 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Healthy Host Count",
+                                                    "label": " ",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "compact": true
+                                                                "compact": true,
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.HealthyHostCount.max"
+                                                    "sourceField": "aws.networkelb.metrics.HealthyHostCount.max"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -151,12 +227,12 @@
                 },
                 "gridData": {
                     "h": 5,
-                    "i": "feae268c-0715-4675-aa87-eb0f527763bd",
+                    "i": "f0ca9032-2790-4023-b2ac-b3d62ba38ba3",
                     "w": 6,
                     "x": 0,
-                    "y": 3
+                    "y": 4
                 },
-                "panelIndex": "feae268c-0715-4675-aa87-eb0f527763bd",
+                "panelIndex": "f0ca9032-2790-4023-b2ac-b3d62ba38ba3",
                 "title": "Healthy Host Count",
                 "type": "lens"
             },
@@ -174,6 +250,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "b13930d5-a245-45f1-82fe-11c7685a414b": {
                                             "columnOrder": [
@@ -185,7 +262,7 @@
                                                 "13771d8a-9f60-41fc-b3a1-f7ab4eeb8944": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -206,13 +283,13 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 },
                                                 "87310975-9879-4e51-9864-cad27918bb51": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Request Count",
+                                                    "label": "Active Flow Count",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -221,23 +298,25 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.RequestCount.sum"
+                                                    "sourceField": "aws.networkelb.metrics.ActiveFlowCount.avg"
                                                 },
                                                 "cfc0612f-0f75-44f2-9753-6f100f269c55": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -254,7 +333,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "fillOpacity": 0,
@@ -314,25 +393,26 @@
                                     "mode": "full"
                                 },
                                 "yRightScale": "linear",
-                                "yTitle": ""
+                                "yTitle": "Number of Connections"
                             }
                         },
                         "title": "",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Concurrent flows (or connections) from clients to targets",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
-                    "i": "79918be3-fe51-4082-b1fb-3f952f9b0d31",
+                    "i": "e296fd81-01c2-4f2b-a259-bd4aa610f85e",
                     "w": 21,
                     "x": 6,
-                    "y": 3
+                    "y": 4
                 },
-                "panelIndex": "79918be3-fe51-4082-b1fb-3f952f9b0d31",
-                "title": "Request Count",
+                "panelIndex": "e296fd81-01c2-4f2b-a259-bd4aa610f85e",
+                "title": "Active Connection",
                 "type": "lens"
             },
             {
@@ -349,6 +429,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "9d68793b-90e0-4bc9-a029-e5310174d90a": {
                                             "columnOrder": [
@@ -361,26 +442,30 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Latency in seconds",
-                                                    "operationType": "average",
+                                                    "label": "New Flow Count",
+                                                    "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
-                                                            "id": "number"
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.Latency.avg"
+                                                    "sourceField": "aws.networkelb.metrics.NewFlowCount.sum"
                                                 },
                                                 "5fe209cc-36e1-4118-b40b-2f8bfac5a2bf": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -388,7 +473,7 @@
                                                 "ea490648-c816-4c75-96d5-7e18f67cf646": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -409,10 +494,11 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -429,7 +515,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "fillOpacity": 0,
@@ -489,25 +575,26 @@
                                     "mode": "full"
                                 },
                                 "yRightScale": "linear",
-                                "yTitle": ""
+                                "yTitle": "Number Of Connections"
                             }
                         },
                         "title": "",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "New connections established from clients to targets",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
-                    "i": "ca02c1d1-985b-4444-a003-175bd2622744",
+                    "i": "e1938003-b4c2-459c-8eb4-1e609f7ae8a1",
                     "w": 21,
                     "x": 27,
-                    "y": 3
+                    "y": 4
                 },
-                "panelIndex": "ca02c1d1-985b-4444-a003-175bd2622744",
-                "title": "Latency in Seconds",
+                "panelIndex": "e1938003-b4c2-459c-8eb4-1e609f7ae8a1",
+                "title": "New Connection",
                 "type": "lens"
             },
             {
@@ -524,6 +611,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "d825a0ad-7b01-4867-b39d-b265fa804a77": {
                                             "columnOrder": [
@@ -534,22 +622,24 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Unhealthy Host Count",
+                                                    "label": " ",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "compact": true
+                                                                "compact": true,
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.UnHealthyHostCount.max"
+                                                    "sourceField": "aws.networkelb.metrics.UnHealthyHostCount.max"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -578,12 +668,12 @@
                 },
                 "gridData": {
                     "h": 5,
-                    "i": "17ddb725-cbc8-40c4-b499-2479e6028e96",
+                    "i": "f849f812-896c-406d-8c20-7b5f41cd0a1c",
                     "w": 6,
                     "x": 0,
-                    "y": 8
+                    "y": 9
                 },
-                "panelIndex": "17ddb725-cbc8-40c4-b499-2479e6028e96",
+                "panelIndex": "f849f812-896c-406d-8c20-7b5f41cd0a1c",
                 "title": "Unhealthy Host Count",
                 "type": "lens"
             },
@@ -601,6 +691,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "7690d39e-d3ab-4208-9969-d7d04191d29e": {
                                             "columnOrder": [
@@ -612,7 +703,7 @@
                                                 "3f54b8c0-28f2-4e78-9da6-4f5b0a8385f4": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -633,38 +724,43 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 },
                                                 "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Backend Connection Errors",
-                                                    "operationType": "average",
+                                                    "label": "Target TLS Negotiation Errors",
+                                                    "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
-                                                            "id": "number"
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.BackendConnectionErrors.sum"
+                                                    "sourceField": "aws.networkelb.metrics.TargetTLSNegotiationErrorCount.sum"
                                                 },
                                                 "b195b7c0-f9fc-4a17-8ffa-19a3f99ab967": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -681,7 +777,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "fillOpacity": 0,
@@ -741,7 +837,7 @@
                                     "mode": "full"
                                 },
                                 "yRightScale": "linear",
-                                "yTitle": ""
+                                "yTitle": "Number of TLS Errors"
                             }
                         },
                         "title": "",
@@ -752,14 +848,14 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "c4bf55ed-c1dc-42ce-b82b-d3137901ba09",
+                    "h": 11,
+                    "i": "3b20101c-7c08-49ed-9b4a-8804a2e656a5",
                     "w": 23,
                     "x": 0,
-                    "y": 13
+                    "y": 14
                 },
-                "panelIndex": "c4bf55ed-c1dc-42ce-b82b-d3137901ba09",
-                "title": "Backend Connection Errors",
+                "panelIndex": "3b20101c-7c08-49ed-9b4a-8804a2e656a5",
+                "title": "Target TLS Negotiation Error",
                 "type": "lens"
             },
             {
@@ -776,6 +872,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "7ec4934b-efdc-45fa-b892-64d887b29a57": {
                                             "columnOrder": [
@@ -788,21 +885,24 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "HTTP Backend 2XX",
-                                                    "operationType": "average",
+                                                    "label": "Client TLS Negotiation Error",
+                                                    "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
-                                                            "id": "number"
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.HTTPCode_Backend_2XX.sum"
+                                                    "sourceField": "aws.networkelb.metrics.ClientTLSNegotiationErrorCount.sum"
                                                 },
                                                 "0ce67984-0161-42fa-8cac-6127e5b67a5f": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -823,23 +923,25 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 },
                                                 "cf79f5c9-e409-45de-a55b-019e989a43c0": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -856,7 +958,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "fillOpacity": 0,
@@ -916,7 +1018,7 @@
                                     "mode": "full"
                                 },
                                 "yRightScale": "linear",
-                                "yTitle": ""
+                                "yTitle": "Number of TLS Errors"
                             }
                         },
                         "title": "",
@@ -927,14 +1029,14 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "764950dc-c6e9-4ef1-95cc-163c972897ea",
+                    "h": 11,
+                    "i": "61e54b9f-82ac-48f0-b7fb-e71a2661cfc2",
                     "w": 25,
                     "x": 23,
-                    "y": 13
+                    "y": 14
                 },
-                "panelIndex": "764950dc-c6e9-4ef1-95cc-163c972897ea",
-                "title": "HTTP Backend 2XX",
+                "panelIndex": "61e54b9f-82ac-48f0-b7fb-e71a2661cfc2",
+                "title": "Client TLS Negotiation Error",
                 "type": "lens"
             },
             {
@@ -951,6 +1053,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "f7b43736-5165-4dcb-9014-b35785844a79": {
                                             "columnOrder": [
@@ -963,7 +1066,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "HTTP Backend 4XX Errors",
+                                                    "label": "Active Flow Count TCP",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -972,12 +1075,12 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.HTTPCode_Backend_4XX.sum"
+                                                    "sourceField": "aws.networkelb.metrics.ActiveFlowCount_TCP.avg"
                                                 },
                                                 "644bfee1-9394-47fd-833c-3b5fecb0fa19": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -998,23 +1101,25 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 },
                                                 "cced0a45-b5b7-4daf-a7dc-f3bc0ea8f2ca": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -1031,7 +1136,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "fillOpacity": 0,
@@ -1091,7 +1196,7 @@
                                     "mode": "full"
                                 },
                                 "yRightScale": "linear",
-                                "yTitle": ""
+                                "yTitle": "Number of Active Flows"
                             }
                         },
                         "title": "",
@@ -1102,14 +1207,14 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "cca787b6-8a15-41a2-8119-844b10f36fb1",
+                    "h": 11,
+                    "i": "29669251-594b-4bd5-bc5f-2c67d30560bc",
                     "w": 23,
                     "x": 0,
-                    "y": 22
+                    "y": 25
                 },
-                "panelIndex": "cca787b6-8a15-41a2-8119-844b10f36fb1",
-                "title": "HTTP Backend 4XX Errors",
+                "panelIndex": "29669251-594b-4bd5-bc5f-2c67d30560bc",
+                "title": "Active Flow Count TCP",
                 "type": "lens"
             },
             {
@@ -1126,6 +1231,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "ffbfd017-33c1-4c39-b465-a6ae518b91eb": {
                                             "columnOrder": [
@@ -1137,7 +1243,7 @@
                                                 "831c6cca-3fa4-4f38-9b9f-32c44673e4d6": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1158,17 +1264,18 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 },
                                                 "aaa3c457-d1a2-459e-900c-0751073db3d8": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1177,7 +1284,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "HTTP 5XX Errors",
+                                                    "label": "Active Flow Count UDP",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -1186,10 +1293,11 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.HTTPCode_ELB_5XX.sum"
+                                                    "sourceField": "aws.networkelb.metrics.ActiveFlowCount_UDP.avg"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -1206,7 +1314,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "fillOpacity": 0,
@@ -1266,7 +1374,7 @@
                                     "mode": "full"
                                 },
                                 "yRightScale": "linear",
-                                "yTitle": ""
+                                "yTitle": "Number of Active Flows"
                             }
                         },
                         "title": "",
@@ -1277,25 +1385,24 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "a0c04bcf-52e5-4dc3-9f38-518a02f96969",
+                    "h": 11,
+                    "i": "84f765ab-a871-4acf-ab6b-6b4e50f4027c",
                     "w": 25,
                     "x": 23,
-                    "y": 22
+                    "y": 25
                 },
-                "panelIndex": "a0c04bcf-52e5-4dc3-9f38-518a02f96969",
-                "title": "HTTP 5XX Errors",
+                "panelIndex": "84f765ab-a871-4acf-ab6b-6b4e50f4027c",
+                "title": "Active Flow Count UDP",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[DEPRECATED] [Metrics AWS] ELB Overview",
+        "title": "[Metrics AWS] NLB Overview",
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-08-05T12:22:14.803Z",
-    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
-    "id": "aws-e74bf320-b3ce-11e9-87a4-078dbbae220d",
+    "created_at": "2024-07-23T10:11:48.162Z",
+    "id": "aws-34021716-10b1-4338-807c-1a9bcb3da222",
     "managed": false,
     "aws": false,
     "references": [
@@ -1306,47 +1413,52 @@
         },
         {
             "id": "metrics-*",
-            "name": "feae268c-0715-4675-aa87-eb0f527763bd:indexpattern-datasource-layer-95c74866-a10c-4846-99a6-d4478075f9aa",
+            "name": "f0ca9032-2790-4023-b2ac-b3d62ba38ba3:indexpattern-datasource-layer-95c74866-a10c-4846-99a6-d4478075f9aa",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "79918be3-fe51-4082-b1fb-3f952f9b0d31:indexpattern-datasource-layer-b13930d5-a245-45f1-82fe-11c7685a414b",
+            "name": "e296fd81-01c2-4f2b-a259-bd4aa610f85e:indexpattern-datasource-layer-b13930d5-a245-45f1-82fe-11c7685a414b",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "ca02c1d1-985b-4444-a003-175bd2622744:indexpattern-datasource-layer-9d68793b-90e0-4bc9-a029-e5310174d90a",
+            "name": "e1938003-b4c2-459c-8eb4-1e609f7ae8a1:indexpattern-datasource-layer-9d68793b-90e0-4bc9-a029-e5310174d90a",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "17ddb725-cbc8-40c4-b499-2479e6028e96:indexpattern-datasource-layer-d825a0ad-7b01-4867-b39d-b265fa804a77",
+            "name": "f849f812-896c-406d-8c20-7b5f41cd0a1c:indexpattern-datasource-layer-d825a0ad-7b01-4867-b39d-b265fa804a77",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "c4bf55ed-c1dc-42ce-b82b-d3137901ba09:indexpattern-datasource-layer-7690d39e-d3ab-4208-9969-d7d04191d29e",
+            "name": "3b20101c-7c08-49ed-9b4a-8804a2e656a5:indexpattern-datasource-layer-7690d39e-d3ab-4208-9969-d7d04191d29e",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "764950dc-c6e9-4ef1-95cc-163c972897ea:indexpattern-datasource-layer-7ec4934b-efdc-45fa-b892-64d887b29a57",
+            "name": "61e54b9f-82ac-48f0-b7fb-e71a2661cfc2:indexpattern-datasource-layer-7ec4934b-efdc-45fa-b892-64d887b29a57",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "cca787b6-8a15-41a2-8119-844b10f36fb1:indexpattern-datasource-layer-f7b43736-5165-4dcb-9014-b35785844a79",
+            "name": "29669251-594b-4bd5-bc5f-2c67d30560bc:indexpattern-datasource-layer-f7b43736-5165-4dcb-9014-b35785844a79",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "a0c04bcf-52e5-4dc3-9f38-518a02f96969:indexpattern-datasource-layer-ffbfd017-33c1-4c39-b465-a6ae518b91eb",
+            "name": "84f765ab-a871-4acf-ab6b-6b4e50f4027c:indexpattern-datasource-layer-ffbfd017-33c1-4c39-b465-a6ae518b91eb",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_f7f74a2b-0cd6-4f2f-970b-3ac38189af0f:optionsListDataView",
+            "name": "controlGroup_4b005360-bc48-47e8-a8a3-05f5eeb51785:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_5f5d2fd9-ae8c-40dd-95b4-a9acaa0ec24a:optionsListDataView",
             "type": "index-pattern"
         }
     ],
