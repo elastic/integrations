@@ -280,71 +280,70 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-15T16:03:02.820Z",
+    "@timestamp": "2024-08-07T13:49:16.479Z",
     "agent": {
-        "ephemeral_id": "c4fe7d78-3d16-43ec-8056-9d6fa3b45beb",
-        "id": "1b52f58d-1b3f-49f6-be71-11d20f9918f8",
+        "ephemeral_id": "d57642e1-f043-4872-82b6-b570e0959091",
+        "id": "8527f93a-954e-4a4a-bea1-27b1788996a9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.14.1"
     },
     "container": {
-        "id": "a7d5e7bf5bec",
-        "name": "elastic-package-service-falco-event-generator-1"
+        "id": "2ae6a7f15b6e",
+        "name": "elastic-package-service-10413-falco-event-generator-1"
     },
     "data_stream": {
         "dataset": "falco.alerts",
-        "namespace": "ep",
+        "namespace": "39436",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "1b52f58d-1b3f-49f6-be71-11d20f9918f8",
+        "id": "8527f93a-954e-4a4a-bea1-27b1788996a9",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.14.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "falco.alerts",
-        "ingested": "2024-07-15T16:03:12Z",
+        "ingested": "2024-08-08T17:56:33Z",
         "kind": "alert",
-        "original": "{\"uuid\":\"34c62001-dc25-4172-a66c-c8fa2d526880\",\"output\":\"2024-07-15T16:03:02.820333475+0000: Warning Sensitive file opened for reading by trusted program after startup (file=/etc/shadow pcmdline=event-generator run --loop gparent=containerd-shim ggparent=containerd-shim gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=httpd proc_exepath=/bin/event-generator parent=event-generator command=httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s terminal=0 container_id=a7d5e7bf5bec container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Warning\",\"rule\":\"Read sensitive file trusted after startup\",\"time\":\"2024-07-15T16:03:02.820333475Z\",\"output_fields\":{\"container.id\":\"a7d5e7bf5bec\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.time.iso8601\":1721059382820333475,\"evt.type\":\"openat\",\"fd.name\":\"/etc/shadow\",\"proc.aname[2]\":\"containerd-shim\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"init\",\"proc.cmdline\":\"httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s\",\"proc.exepath\":\"/bin/event-generator\",\"proc.name\":\"httpd\",\"proc.pcmdline\":\"event-generator run --loop\",\"proc.pname\":\"event-generator\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1555\",\"container\",\"filesystem\",\"host\",\"maturity_stable\",\"mitre_credential_access\"],\"hostname\":\"c59de1a7ddbc\"}",
+        "original": "{\"uuid\":\"23716645-4d9d-4254-9429-2a287a9af199\",\"output\":\"2024-08-07T13:49:16.479964318+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator3282684109/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=\\u003cNA\\u003e aname[7]=\\u003cNA\\u003e evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls \\u003e /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=2ae6a7f15b6e container_name=elastic-package-service-10413-falco-event-generator-1)\",\"priority\":\"Notice\",\"rule\":\"Run shell untrusted\",\"time\":\"2024-08-07T13:49:16.479964318Z\",\"output_fields\":{\"container.id\":\"2ae6a7f15b6e\",\"container.name\":\"elastic-package-service-10413-falco-event-generator-1\",\"evt.arg.flags\":\"EXE_WRITABLE\",\"evt.time.iso8601\":1723038556479964318,\"evt.type\":\"execve\",\"proc.aname[2]\":\"event-generator\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"containerd-shim\",\"proc.aname[5]\":\"init\",\"proc.aname[6]\":null,\"proc.aname[7]\":null,\"proc.cmdline\":\"bash -c ls \\u003e /dev/null\",\"proc.exepath\":\"/bin/bash\",\"proc.name\":\"bash\",\"proc.pcmdline\":\"httpd --loglevel info run ^helper.RunShell$\",\"proc.pexe\":\"/tmp/falco-event-generator3282684109/httpd\",\"proc.pexepath\":\"/bin/event-generator\",\"proc.pname\":\"httpd\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1059.004\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"process\",\"shell\"],\"hostname\":\"e822ea6618ae\"}",
         "provider": "syscall",
-        "start": 1721059382820333600,
         "timezone": "+00:00"
     },
     "event.category": [
         "process"
     ],
-    "event.severity": 3,
+    "event.severity": 2,
     "event.type": [
-        "access"
+        "start"
     ],
     "falco": {
-        "hostname": "c59de1a7ddbc",
-        "output": "2024-07-15T16:03:02.820333475+0000: Warning Sensitive file opened for reading by trusted program after startup (file=/etc/shadow pcmdline=event-generator run --loop gparent=containerd-shim ggparent=containerd-shim gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=httpd proc_exepath=/bin/event-generator parent=event-generator command=httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s terminal=0 container_id=a7d5e7bf5bec container_name=elastic-package-service-falco-event-generator-1)",
+        "hostname": "e822ea6618ae",
+        "output": "2024-08-07T13:49:16.479964318+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator3282684109/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=<NA> aname[7]=<NA> evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls > /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=2ae6a7f15b6e container_name=elastic-package-service-10413-falco-event-generator-1)",
         "output_fields": {
             "container": {
-                "id": "a7d5e7bf5bec",
-                "name": "elastic-package-service-falco-event-generator-1"
+                "id": "2ae6a7f15b6e",
+                "name": "elastic-package-service-10413-falco-event-generator-1"
             },
             "evt": {
+                "arg": {},
                 "time": {
-                    "iso8601": 1721059382820333600
+                    "iso8601": 1723038556479
                 },
-                "type": "openat"
-            },
-            "fd": {
-                "name": "/etc/shadow"
+                "type": "execve"
             },
             "proc": {
-                "cmdline": "httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s",
-                "exepath": "/bin/event-generator",
-                "name": "httpd",
-                "pcmdline": "event-generator run --loop",
-                "pname": "event-generator",
+                "cmdline": "bash -c ls > /dev/null",
+                "exepath": "/bin/bash",
+                "name": "bash",
+                "pcmdline": "httpd --loglevel info run ^helper.RunShell$",
+                "pexe": "/tmp/falco-event-generator3282684109/httpd",
+                "pexepath": "/bin/event-generator",
+                "pname": "httpd",
                 "tty": 0
             },
             "user": {
@@ -353,31 +352,32 @@ An example event for `alerts` looks as following:
                 "uid": "0"
             }
         },
-        "priority": "Warning",
-        "rule": "Read sensitive file trusted after startup",
+        "priority": "Notice",
+        "rule": "Run shell untrusted",
         "source": "syscall",
         "tags": [
-            "T1555",
+            "T1059.004",
             "container",
-            "filesystem",
             "host",
             "maturity_stable",
-            "mitre_credential_access"
+            "mitre_execution",
+            "process",
+            "shell"
         ],
-        "time": "2024-07-15T16:03:02.820333475Z",
-        "uuid": "34c62001-dc25-4172-a66c-c8fa2d526880"
+        "time": "2024-08-07T13:49:16.479964318Z",
+        "uuid": "23716645-4d9d-4254-9429-2a287a9af199"
     },
     "falco.container.mounts": null,
     "host": {
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "29b44b57f32c4ff282841a8a4406ef95",
+        "id": "bec788532d91483489ff64145e57effe",
         "ip": [
-            "172.30.0.7"
+            "192.168.160.9"
         ],
         "mac": [
-            "02-42-AC-1E-00-07"
+            "02-42-C0-A8-A0-09"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -395,7 +395,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.30.0.4:50956"
+            "address": "192.168.160.5:47058"
         },
         "syslog": {
             "appname": "Falco",
@@ -403,25 +403,29 @@ An example event for `alerts` looks as following:
                 "code": 0,
                 "name": "kernel"
             },
-            "hostname": "7f26c2bd9471",
-            "priority": 4,
-            "procid": "{\"uuid\":\"34c62001-dc25-4172-a66c-c8fa2d526880\",\"output\":\"2024-07-15T16:03:02.820333475+0000: Warning Sensitive file opened for reading by trusted program after startup (file=/etc/shadow pcmdline=event-generator run --loop gparent=containerd-shim ggparent=containerd-shim gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=httpd proc_exepath=/bin/event-generator parent=event-generator command=httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s terminal=0 container_id=a7d5e7bf5bec container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Warning\",\"rule\":\"Read sensitive file trusted after startup\",\"time\":\"2024-07-15T16:03:02.820333475Z\",\"output_fields\":{\"container.id\":\"a7d5e7bf5bec\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.time.iso8601\":1721059382820333475,\"evt.type\":\"openat\",\"fd.name\":\"/etc/shadow\",\"proc.aname[2]\":\"containerd-shim\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"init\",\"proc.cmdline\":\"httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s\",\"proc.exepath\":\"/bin/event-generator\",\"proc.name\":\"httpd\",\"proc.pcmdline\":\"event-generator run --loop\",\"proc.pname\":\"event-generator\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1555\",\"container\",\"filesystem\",\"host\",\"maturity_stable\",\"mitre_credential_access\"",
+            "hostname": "a72f9a747cf8",
+            "priority": 5,
+            "procid": "1",
             "severity": {
-                "code": 4,
-                "name": "Warning"
+                "code": 5,
+                "name": "Notice"
             }
         }
     },
     "observer": {
-        "hostname": "c59de1a7ddbc"
+        "hostname": "e822ea6618ae",
+        "product": "falco",
+        "type": "sensor",
+        "vendor": "sysdig"
     },
     "process": {
-        "command_line": "httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s",
-        "executable": "/bin/event-generator",
-        "name": "httpd",
+        "command_line": "bash -c ls > /dev/null",
+        "executable": "/bin/bash",
+        "name": "bash",
         "parent": {
-            "command_line": "event-generator run --loop",
-            "name": "event-generator"
+            "command_line": "httpd --loglevel info run ^helper.RunShell$",
+            "executable": "/bin/event-generator",
+            "name": "httpd"
         },
         "user": {
             "id": "0",
@@ -430,18 +434,21 @@ An example event for `alerts` looks as following:
     },
     "related": {
         "hosts": [
-            "c59de1a7ddbc"
+            "e822ea6618ae"
         ]
     },
     "rule": {
-        "name": "Read sensitive file trusted after startup"
+        "name": "Run shell untrusted"
     },
     "tags": [
         "preserve_original_event",
         "preserve_falco_fields"
     ],
     "threat.technique.id": [
-        "T1555"
+        "T1059"
+    ],
+    "threat.technique.subtechnique.id": [
+        "T1059.004"
     ]
 }
 ```
