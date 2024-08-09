@@ -1,0 +1,666 @@
+- name: process.group.id
+  type: text
+  description: Preserved Falco field
+- name: process.group.name
+  type: text
+  description: Preserved Falco field
+- name: falco
+  type: group
+  description: Namespace for Falco-specific fields without a direct ECS equivalent.
+  fields:
+    - name: rule
+      type: keyword
+      description: Name of the Falco rule that triggered the alert
+    - name: priority
+      type: keyword
+      description: Falco alert priority
+    - name: hostname
+      type: keyword
+      description: Required field for integration
+    - name: source
+      type: keyword
+      description: Preserved Falco field
+    - name: tags
+      type: keyword
+      description: Preserved Falco field
+    - name: time
+      type: date
+      description: Preserved Falco field
+    - name: uuid
+      type: keyword
+      description: Preserved Falco field
+    - name: container.mounts
+      type: nested
+      description: List of mount information.
+      fields:
+        - name: source
+          type: keyword
+        - name: dest
+          type: keyword
+        - name: mode
+          type: keyword
+        - name: rdrw
+          type: keyword
+        - name: propagation
+          type: keyword
+    - name: output
+      type: text
+      index: false
+    - name: output_fields
+      type: group
+      dynamic: false
+      description: Preserved Falco fields
+      fields:
+        - name: evt.pluginname
+          type: keyword
+          description: Name of the plugin that generated the event (if applicable).
+        - name: evt.plugininfo
+          type: text
+          description: Summary of the event if it came from a plugin-defined event source.
+        - name: evt.is_async
+          type: boolean
+          description: Denotes whether the event is async or not.
+        - name: evt.asynctype
+          type: keyword
+          description: The type of event, if asyncronous.
+        - name: evt.latency
+          type: long
+          description: Delta between an exit event and corresponding enter event.
+          unit: nanos
+        - name: evt.time.iso8601
+          type: date
+          description: Time event occurred
+        - name: evt.deltatime
+          type: long
+          description: Delta between current event and previous.
+          unit: nanos
+        - name: evt.dir
+          type: keyword
+          description: Either an enter event (>) or an exit event (<).
+        - name: evt.cpu
+          type: integer
+          description: Number of the CPU where the event occurred.
+        - name: evt.args
+          type: text
+          description: Aggregated string of all event arguments.
+        - name: evt.arg.flags
+          type: text
+          description: Preserved Falco field
+        - name: evt.info
+          type: text
+          description: Contains either the event arguments, or the data decoded from them.
+        - name: evt.buffer
+          type: binary
+          description: Binary buffer for events which have one.
+        - name: evt.buflen
+          type: unsigned_long
+          description: Length of the binary buffer, if applicable.
+        - name: evt.res
+          type: text
+          description: Return value of the event.
+        - name: evt.rawres
+          type: long
+          description: Return value of the event, as a number.
+        - name: evt.failed
+          type: boolean
+          description: Denotes if the event returned an error status.
+        - name: evt.is_io
+          type: boolean
+          description: Denotes events that read or write to FDs.
+        - name: evt.is_io_read
+          type: boolean
+          description: Denotes events that read from FDs.
+        - name: evt.is_io_write
+          type: boolean
+          description: Denotes events that write to FDs.
+        - name: evt.io_dir
+          type: keyword
+          description: Type based on whether the event reads from or writes to FDs.
+        - name: evt.is_wait
+          type: boolean
+          description: Denotes events that force the thread to wait.
+        - name: evt.wait_latency
+          type: long
+          description: Time spent waiting for events to return, in cases where the thread is forced to wait.
+          unit: nanos
+        - name: evt.is_syslog
+          type: boolean
+          description: Denotes events that are written to /dev/log
+        - name: evt.count.error
+          type: integer
+          description: Returns 1 for events that returned with an error
+        - name: evt.count.error_file
+          type: integer
+          description: Returns 1 for events that returned with an error and are related to file I/O
+        - name: evt.count.error_net
+          type: integer
+          description: Returns 1 for events that returned with an error and are related to network I/O
+        - name: evt.count.error_memory
+          type: integer
+          description: Returns 1 for events that returned with an error and are related to memory allocation.
+        - name: evt.count.error_other
+          type: integer
+          description: Returns 1 for events that returned with an error and are related to none of the previous categories.
+        - name: evt.count.exit
+          type: integer
+          description: Returns 1 for exit events.
+        - name: evt.abspath
+          type: text
+          description: Calculated absolute path.
+        - name: evt.abspath_src
+          type: text
+          description: Source of the absolute path.
+        - name: evt.abspath_dst
+          type: text
+          description: Destination of the absolute path.
+        - name: evt.is_open_read
+          type: boolean
+          description: Denotes whether or not the path was opened for reading for open/openat/openat2/open_by_handle_at events.
+        - name: evt.is_open_write
+          type: boolean
+          description: Denotes whether or not the path was opened for writing for open/openat/openat2/open_by_handle_at events.
+        - name: evt.is_open_exec
+          type: boolean
+          description: Denotes whether or not a file was created with execute permissions for open/openat/openat2/open_by_handle_at or create events.
+        - name: evt.is_open_create
+          type: boolean
+          description: Denotes whether or not a file was created for open/openat/openat2/open_by_handle_at events.
+        - name: proc.exe
+          type: text
+          description: First command line argument, collected from args.
+        - name: proc.pexe
+          type: text
+          description: First command line argument of the parent process.
+        - name: proc.cmdlenargs
+          type: long
+          description: Total length of command line args, excluding whitespace.
+        - name: proc.exeline
+          type: text
+          description: Full command line, with exe as first argument.
+        - name: proc.loginshellid
+          type: long
+          description: PID of the oldest shell among the ancestors of the current process, if applicable.
+        - name: proc.tty
+          type: long
+          description: Controlling terminal of the process.
+        - name: proc.sid.exe
+          type: text
+          description: First command line argument of the current process's session leader.
+        - name: proc.vpgid.exe
+          type: text
+          description: First command line argument of the current process's group leader.
+        - name: proc.is_exe_writable
+          type: boolean
+          description: Denotes if this process' executable file is writable by the same user that spawned the process.
+        - name: proc.is_exe_upper_layer
+          type: boolean
+          description: Denotes if this process' executable file is in upper layer in overlayfs.
+        - name: proc.is_exe_from_memfd
+          type: boolean
+          description: Denotes if this process' executable file is in upper layer in overlayfs.
+        - name: proc.exe_ino
+          type: long
+          description: The inode number of the executable file on disk.
+        - name: proc.exe_ino_ctime
+          type: date_nanos
+          description: Last status change of executable file as epoch timestamp.
+        - name: proc.exe_ino_mtime
+          type: date_nanos
+          description: Last modification time of executable file as epoch timestamp.
+        - name: proc.exe_ino_ctime_duration_proc_start
+          type: long
+          description: Number of nanoseconds between modifying status of executable image and spawning a new process using the changed executable image.
+        - name: proc.exe_ino_ctime_duration_pidns_start
+          type: long
+          description: Number of nanoseconds between PID namespace start ts and ctime exe file if PID namespace start predates ctime.
+        - name: proc.pidns_init_start_ts
+          type: date_nanos
+          description: Start of PID namespace as epoch timestamp.
+        - name: proc.thread.cap_inheritable
+          type: keyword
+          description: Set of inheritable capabilities set.
+        - name: proc.is_container_healthcheck
+          type: boolean
+          description: Denotes if this process is running as a part of the container's health check.
+        - name: proc.is_container_liveness_probe
+          type: boolean
+          description: Denotes if this process is running as a part of the container's liveness probe.
+        - name: proc.is_container_readiness_probe
+          type: boolean
+          description: Denotes if this process is running as a part of the container's readiness probe.
+        - name: proc.fdopencount
+          type: unsigned_long
+          description: Number of open FDs for the process.
+        - name: proc.fdopenlimit
+          type: long
+          description: Maximum number of FDs the process can open.
+        - name: proc.fdusage
+          type: double
+          description: Ratio between open FDs and maximum available FDs for the process.
+        - name: proc.vmsize
+          type: unsigned_long
+          description: Total virtual memory for the process.
+          unit: byte
+        - name: proc.vmrss
+          type: unsigned_long
+          description: Resident non-swapped memory for the process.
+          unit: byte
+        - name: proc.vmswap
+          type: unsigned_long
+          description: Swapped memory for the process.
+        - name: proc.ppid.duration
+          type: long
+          description: Preserved Falco field
+        - name: process.parent.pid
+          type: long
+          description: Preserved Falco field
+        - name: process.pid
+          type: long
+          description: Preserved Falco field
+        - name: process.session_leader.pid
+          type: long
+          description: Preserved Falco field
+        - name: process.group_leader.vpid
+          type: long
+          description: Preserved Falco field
+        - name: thread.pfmajor
+          type: unsigned_long
+          description: Number of major page faults since thread start.
+        - name: thread.pfminor
+          type: unsigned_long
+          description: Number of minor page faults since thread start.
+        - name: thread.ismain
+          type: boolean
+          description: Denotes if the threat generating the event is the main one in the process.
+        - name: thread.vtid
+          type: long
+          description: The ID of the thread generating the event as seen from its current PID namespace.
+        - name: thread.exectime
+          type: long
+          description: CPU time spent by last scheduled thread.
+          unit: nanos
+        - name: thread.totalexectime
+          type: long
+          description: Total CPU time for the current thread since the beginning of the capture.
+          unit: nanos
+        - name: thread.cgroups
+          type: flattened
+          description: Aggregated string of cgroups the thread belongs to.
+        - name: proc.nthreads
+          type: unsigned_long
+          description: Number of alive threads in the process generating the event currently has, including the leader thread.
+        - name: proc.nchilds
+          type: unsigned_long
+          description: Number of alive (not leader) threads in the process generating the event currently has, excluding the leader thread.
+        - name: thread.cpu
+          type: double
+          description: CPU consumed by the thread in the last second.
+        - name: thread.cpu_user
+          type: double
+          description: The user CPU consumed by the thread in the last second.
+        - name: thread.cpu_system
+          type: double
+          description: The system CPU consumed by the thread in the last second.
+        - name: thread.vmsize
+          type: unsigned_long
+          description: Total virtual memory for the process' main thread. Non-main threads will appear as zero.
+        - name: thread.vmrss
+          type: unsigned_long
+          description: Resident non-swapped memory for the process' main thread. Non-main threads will appear as zero.
+        - name: user.homedir
+          type: text
+          description: Home directory of the user.
+        - name: user.shell
+          type: keyword
+          description: User's shell.
+        - name: user.loginuid
+          type: long
+          description: Audit user ID. If an invalid UID is encountered, returns -1.
+        - name: user.loginname
+          type: keyword
+          description: Audit user name.
+        - name: container.id
+          type: keyword
+          description: The truncated container ID (first 12 characters) extracted from the Linux cgroups by Falco within the kernel
+        - name: container.name
+          type: keyword
+          description: The container name
+        - name: container.healthcheck
+          type: text
+          description: The container's health check. Will be N/A if no health check configured.
+        - name: container.liveness_probe
+          type: text
+          description: The container's liveness probe. Will be N/A if no liveness probe configured.
+        - name: container.mounts
+          type: text
+          description: The raw text value for container mounts information
+        - name: container.readiness_probe
+          type: text
+          description: The container's readiness probe. Will be N/A if no readiness probe configured.
+        - name: container.start_ts
+          type: date_nanos
+          description: Container start as epoch timestamp.
+        - name: container.duration
+          type: long
+          description: Number of nanoseconds since container.start_ts.
+          unit: nanos
+        - name: container.cni_json
+          type: object
+          description: Container's CNI result field from the respective container status info.
+          object_type: keyword
+        - name: fd.num
+          type: long
+          description: Unique number identifying the file descriptor.
+        - name: fd.type
+          type: keyword
+          description: Type of FD. Can be 'file', 'directory', 'ipv4', 'ipv6', 'unix', 'pipe', 'event', 'signalfd', 'eventpoll', 'inotify' 'signalfd' or 'memfd'.
+        - name: fd.typechar
+          type: keyword
+          description: Type of FD as a single character. Can be 'f' for file, 4 for IPv4 socket, 6 for IPv6 socket, 'u' for unix socket, p for pipe, 'e' for eventfd, 's' for signalfd, 'l' for eventpoll, 'i' for inotify, 'b' for bpf, 'u' for userfaultd, 'r' for io_uring, 'm' for memfd ,'o' for unknown.
+        - name: fd.name
+          type: text
+          description: FD full name. If the fd is a file, this field contains the full path. If the FD is a socket, this field contain the connection tuple.
+        - name: fd.I4proto
+          type: keyword
+          description: The IP protocol of a socket. Can be 'tcp', 'udp', 'icmp' or 'raw'.
+        - name: fd.sockfamily
+          type: keyword
+          description: The socket family for socket events. Can be 'ip' or 'unix'.
+        - name: fd.is_server
+          type: boolean
+          description: Denotes if process owning the FD is the server endpoint in the connection.
+        - name: fd.uid
+          type: keyword
+          description: Unique identifier for the FD, created from the FD number and thread ID.
+        - name: fd.containername
+          type: keyword
+          description: Concatenation of the container ID and the FD name.
+        - name: fd.containerdirectory
+          type: keyword
+          description: Concatenation of the container ID and the directory name.
+        - name: fd.cproto
+          type: keyword
+          description: For TCP/UDP FDs, the client protocol.
+        - name: fd.sproto
+          type: keyword
+          description: For TCP/UDP FDs, the server protocol.
+        - name: fd.lproto
+          type: keyword
+          description: For TCP/UDP FDs, the local protocol.
+        - name: fd.rproto
+          type: keyword
+          description: For TCP/UDP FDs, the remote protocol.
+        - name: fd.connected
+          type: boolean
+          description: Denotes if the socket is connected for TCP/UDP FDs.
+        - name: fd.name_changed
+          type: boolean
+          description: Denotes if the name of an FD changes due to an event.
+        - name: fd.dev
+          type: integer
+          description: Device number containing the referenced file.
+        - name: fd.dev_major
+          type: integer
+          description: Major device number containing the referenced file.
+        - name: fd.dev_minor
+          type: integer
+          description: Minor device number containing the referenced file.
+        - name: fs.path.name
+          type: keyword
+          description: For any event type that deals with a filesystem path, the path the file syscall is operating on. This path is always fully resolved, prepending the thread cwd when needed.
+        - name: fs.path.source
+          type: keyword
+          description: For any event type that deals with a filesystem path, and specifically for a source and target like mv, cp, etc, the source path the file syscall is operating on. This path is always fully resolved, prepending the thread cwd when needed.
+        - name: fs.path.target
+          type: keyword
+          description: For any event type that deals with a filesystem path, and specifically for a target and target like mv, cp, etc, the target path the file syscall is operating on. This path is always fully resolved, prepending the thread cwd when needed.
+        - name: fdlist.names
+          type: keyword
+          description: For poll events, FD names in the fds argument.
+        - name: fdlist.cips
+          type: ip
+          description: For poll events, client IP addresses in the fds argument.
+        - name: fdlist.sips
+          type: ip
+          description: For poll events, server IP addresses in the fds argument.
+        - name: fdlist.cports
+          type: ip
+          description: For poll events / TCP/UDP FDs, client TCP/UDP ports in the fds argument.
+        - name: fdlist.sports
+          type: ip
+          description: For poll events, server TCP/UDP ports in the fds argument.
+        - name: client.ip
+          type: ip
+          description: Falco copy of the ECS field of the same name
+        - name: server.ip
+          type: ip
+          description: Falco copy of the ECS field of the same name
+        - name: source.ip
+          type: ip
+          description: Falco copy of the ECS field of the same name
+        - name: destination.ip
+          type: ip
+          description: Falco copy of the ECS field of the same name
+        - name: k8s.pod.sandbox_id
+          type: keyword
+          description: Truncated Kubernetes pod sandbox ID (first 12 characters).
+        - name: k8s.pod.full_sandbox_id
+          type: keyword
+          description: Full, non-truncated Kubernetes pod sandbox ID.
+        - name: k8s.pod.cni_json
+          type: object
+          description: Kubernetes CNI result field from the respective pod status info.
+          object_type: keyword
+        - name: output
+          type: text
+          description: Preserved Falco field
+        - name: priority
+          type: keyword
+          description: Preserved Falco field
+        - name: rule
+          type: text
+          description: Preserved Falco field
+        - name: evt.num
+          type: integer
+          description: Preserved Falco field
+        - name: evt.time
+          type: date
+          description: Preserved Falco field
+        - name: evt.source
+          type: text
+          description: Preserved Falco field
+        - name: evt.hostname
+          type: text
+          description: Preserved Falco field
+        - name: proc.exepath
+          type: text
+          description: Preserved Falco field
+        - name: proc.pexepath
+          type: text
+          description: Preserved Falco field
+        - name: proc.name
+          type: text
+          description: Preserved Falco field
+        - name: proc.pname
+          type: text
+          description: Preserved Falco field
+        - name: proc.cmdline
+          type: text
+          description: Preserved Falco field
+        - name: proc.pcmdline
+          type: text
+          description: Preserved Falco field
+        - name: proc.cmdnargs
+          type: integer
+          description: Preserved Falco field
+        - name: proc.args
+          type: text
+          description: Preserved Falco field
+        - name: proc.env
+          type: text
+          description: Preserved Falco field
+        - name: proc.cwd
+          type: text
+          description: Preserved Falco field
+        - name: proc.ppid
+          type: integer
+          description: Preserved Falco field
+        - name: proc.vpid
+          type: integer
+          description: Preserved Falco field
+        - name: proc.pvpid
+          type: integer
+          description: Preserved Falco field
+        - name: proc.sid
+          type: integer
+          description: Preserved Falco field
+        - name: proc.sname
+          type: text
+          description: Preserved Falco field
+        - name: proc.sid.exepath
+          type: text
+          description: Preserved Falco field
+        - name: proc.vpgid
+          type: integer
+          description: Preserved Falco field
+        - name: proc.vpgid.name
+          type: text
+          description: Preserved Falco field
+        - name: proc.vpgid.exepath
+          type: text
+          description: Preserved Falco field
+        - name: proc.duration
+          type: text
+          description: Preserved Falco field
+        - name: proct.ppid.duration
+          type: text
+          description: Preserved Falco field
+        - name: proc.pid.ts
+          type: text
+          description: Preserved Falco field
+        - name: proc.ppid.ts
+          type: text
+          description: Preserved Falco field
+        - name: proc.is_sid_leader
+          type: boolean
+          description: Preserved Falco field
+        - name: proc.is_vpgid_leader
+          type: boolean
+          description: Preserved Falco field
+        - name: thread.cap_permitted
+          type: text
+          description: Preserved Falco field
+        - name: thread.cap_effective
+          type: text
+          description: Preserved Falco field
+        - name: thread.tid
+          type: integer
+          description: Preserved Falco field
+        - name: user.uid
+          type: integer
+          description: Preserved Falco field
+        - name: user.name
+          type: text
+          description: Preserved Falco field
+        - name: group.gid
+          type: integer
+          description: Preserved Falco field
+        - name: group.name
+          type: text
+          description: Preserved Falco field
+        - name: container.image.digest
+          type: text
+          description: Preserved Falco field
+        - name: container.image.tag
+          type: text
+          description: Preserved Falco field
+        - name: container.full_id
+          type: text
+          description: Preserved Falco field
+        - name: container.image.full_id
+          type: keyword
+          description: Full container image ID, enriched as part of the container engine enrichment.
+        - name: container.image.id
+          type: keyword
+          description: Container image ID.
+        - name: container.image.repository
+          type: keyword
+          description: The container image repository.
+        - name: container.type
+          type: text
+          description: Preserved Falco field
+        - name: container.privileged
+          type: boolean
+          description: Preserved Falco field
+        - name: container.ip
+          type: text
+          description: Preserved Falco field
+        - name: container.image.name
+          type: text
+          description: Falco copy of the ECS field of the same name
+        - name: fd.directory
+          type: text
+          description: Preserved Falco field
+        - name: fd.filename
+          type: text
+          description: Preserved Falco field
+        - name: fd.cport
+          type: long
+          description: Preserved Falco field
+        - name: fd.sport
+          type: long
+          description: Preserved Falco field
+        - name: fd.lport
+          type: long
+          description: Preserved Falco field
+        - name: fd.rport
+          type: long
+          description: Preserved Falco field
+        - name: fd.cip.name
+          type: text
+          description: Preserved Falco field
+        - name: fd.sip.name
+          type: text
+          description: Preserved Falco field
+        - name: fd.lip.name
+          type: text
+          description: Preserved Falco field
+        - name: fd.rip.name
+          type: text
+          description: Preserved Falco field
+        - name: fd.ino
+          type: text
+          description: Preserved Falco field
+        - name: syslog.facility.str
+          type: text
+          description: Preserved Falco field
+        - name: syslog.facility
+          type: text
+          description: Preserved Falco field
+        - name: syslog.severity.str
+          type: text
+          description: Preserved Falco field
+        - name: syslog.severity
+          type: text
+          description: Preserved Falco field
+        - name: k8s.ns.name
+          type: text
+          description: Preserved Falco field
+        - name: k8s.pod.name
+          type: text
+          description: Preserved Falco field
+        - name: k8s.pod.uid
+          type: text
+          description: Preserved Falco field
+        - name: k8s.pod.labels
+          type: text
+          description: Preserved Falco field
+        - name: k8s.pod.ip
+          type: text
+          description: Preserved Falco field
+        - name: evt.category
+          type: text
+          description: Preserved Falco field
+        - name: evt.type
+          type: text
+          description: Preserved Falco field
