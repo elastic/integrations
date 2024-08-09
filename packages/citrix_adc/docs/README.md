@@ -1290,6 +1290,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.content_length_bytes |  | long |
 | citrix_adc.log.content_type |  | keyword |
 | citrix_adc.log.content_type_mismatch |  | keyword |
+| citrix_adc.log.context.client.ip |  | ip |
+| citrix_adc.log.context.user.name |  | keyword |
 | citrix_adc.log.cookie_header_length |  | long |
 | citrix_adc.log.crl_name |  | keyword |
 | citrix_adc.log.customer_name |  | keyword |
@@ -1326,6 +1328,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.html_url |  | keyword |
 | citrix_adc.log.http_resources_accessed |  | keyword |
 | citrix_adc.log.ica_rtt |  | keyword |
+| citrix_adc.log.ica_uuid |  | keyword |
 | citrix_adc.log.icap_server.ip |  | ip |
 | citrix_adc.log.icap_server.port |  | long |
 | citrix_adc.log.id |  | keyword |
@@ -1357,6 +1360,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.min_l7_latency |  | long |
 | citrix_adc.log.mode |  | keyword |
 | citrix_adc.log.module_path |  | keyword |
+| citrix_adc.log.monitor.address |  | keyword |
+| citrix_adc.log.monitor.port |  | long |
+| citrix_adc.log.monitor.state |  | keyword |
 | citrix_adc.log.nat.ip |  | ip |
 | citrix_adc.log.nat.port |  | long |
 | citrix_adc.log.natted.ip |  | ip |
@@ -1408,6 +1414,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.serverside.packet_retransmits |  | long |
 | citrix_adc.log.serverside.rtt |  | keyword |
 | citrix_adc.log.service |  | keyword |
+| citrix_adc.log.service_group |  | keyword |
+| citrix_adc.log.service_member |  | keyword |
 | citrix_adc.log.session |  | keyword |
 | citrix_adc.log.session_end_time |  | keyword |
 | citrix_adc.log.session_guid |  | keyword |
