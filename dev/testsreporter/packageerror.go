@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/elastic/integrations/dev/codeowners"
+	"github.com/elastic/integrations/dev/teamlabels"
 )
 
 type PackageError struct {
@@ -18,6 +19,7 @@ type PackageError struct {
 	StackVersion      string
 	BuildURL          string
 	Teams             []string
+	TeamLabels        []string
 	PackageName       string
 	DataStream        string
 	PreviousBuilds    []string
@@ -31,6 +33,7 @@ type PackageErrorOptions struct {
 	BuildURL          string
 	TestCase          testCase
 	CodeownersPath    string
+	TeamLabelsPath    string
 }
 
 func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
@@ -59,6 +62,24 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 		return nil, fmt.Errorf("failed to find owners for package %s: %w", p.PackageName, err)
 	}
 	p.Teams = owners
+
+	// Get Team:Labels to add to Github Issue Labels
+	var ghTeamLabels map[string]string
+	if options.TeamLabelsPath != "" {
+		ghTeamLabels, err = teamlabels.GetTeamLabelsFromPath(options.TeamLabelsPath)
+	} else {
+		ghTeamLabels, err = teamlabels.GetTeamLabels()
+	}
+	if err != nil {
+		fmt.Printf("Error while fetching team labels: %s", err)
+	}
+	for _, owner := range owners {
+		if teamlabel, ok := ghTeamLabels[owner]; ok {
+			p.TeamLabels = append(p.TeamLabels, teamlabel)
+		} else {
+			fmt.Printf("No Team: label for owner %s", owner)
+		}
+	}
 
 	return &p, nil
 }

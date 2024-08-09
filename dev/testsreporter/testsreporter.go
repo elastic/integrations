@@ -20,6 +20,7 @@ type checkOptions struct {
 	StackVersion      string
 	BuildURL          string
 	CodeownersPath    string
+	TeamLabelsPath    string
 }
 
 func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverlessProject string, maxPreviousLinks, maxTestsReported int) error {
@@ -59,6 +60,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 		fmt.Println("---- Issue ----")
 		fmt.Printf("Title: %q\n", r.Title())
 		fmt.Printf("Teams: %q\n", strings.Join(r.Owners(), ", "))
+		fmt.Printf("TeamLabels: %q\n", strings.Join(r.TeamLabels(), ", "))
 		fmt.Printf("Summary:\n%s\n", r.Summary())
 		fmt.Println("----")
 		fmt.Println()
@@ -66,7 +68,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 		ghIssue := NewGithubIssue(GithubIssueOptions{
 			Title:       r.Title(),
 			Description: r.Description(),
-			Labels:      []string{"flaky-test", "automation"},
+			Labels:      r.Labels(),
 			Repository:  "elastic/integrations",
 		})
 
@@ -102,6 +104,7 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 				BuildURL:          options.BuildURL,
 				TestCase:          c,
 				CodeownersPath:    options.CodeownersPath,
+				TeamLabelsPath:    options.TeamLabelsPath,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to create package error: %w", err)
