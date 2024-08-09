@@ -20,8 +20,3 @@ variable "ENVIRONMENT" {
 variable "REPO" {
   default = "unknown-repo-name"
 }
-
-variable "bucket_name" {
-  default = "elastic-package-security-lake-logs-bucket"
-}
-
