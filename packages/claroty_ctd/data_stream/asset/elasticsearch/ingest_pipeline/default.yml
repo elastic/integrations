@@ -1,0 +1,1615 @@
+---
+description: Pipeline for processing Asset logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: host
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - rename:
+      field: json.active_queries_names
+      tag: rename_active_queries_names
+      target_field: claroty_ctd.asset.active.queries_names
+      ignore_missing: true
+  - rename:
+      field: json.active_scans_names
+      tag: rename_active_scans_names
+      target_field: claroty_ctd.asset.active.scans_names
+      ignore_missing: true
+  - rename:
+      field: json.active_tasks_names
+      tag: rename_active_tasks_names
+      target_field: claroty_ctd.asset.active.tasks_names
+      ignore_missing: true
+  - convert:
+      field: json.approved
+      tag: convert_approved_to_boolean
+      target_field: claroty_ctd.asset.approved
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.os_architecture
+      tag: rename_os_architecture
+      target_field: claroty_ctd.asset.os.architecture
+      ignore_missing: true
+  - rename:
+      field: json.os_build
+      tag: rename_os_build
+      target_field: claroty_ctd.asset.os.build
+      ignore_missing: true
+  - rename:
+      field: json.os_revision
+      tag: rename_os_revision
+      target_field: claroty_ctd.asset.os.revision
+      ignore_missing: true
+  - rename:
+      field: json.os_service_pack
+      tag: rename_os_service_pack
+      target_field: claroty_ctd.asset.os.service_pack
+      ignore_missing: true
+  - rename:
+      field: json.asset_type__
+      tag: rename_asset_type__
+      target_field: claroty_ctd.asset.asset_types.name
+      ignore_missing: true
+  - convert:
+      field: json.asset_type
+      tag: convert_asset_type_to_long
+      target_field: claroty_ctd.asset.asset_types.number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.children
+      tag: rename_children
+      target_field: claroty_ctd.asset.children
+      ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_risk_level
+      processor:
+        convert:
+          field: _ingest._value.risk_level
+          tag: convert_children_risk_level_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.risk_level
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.plc_slots
+      tag: rename_plc_slots
+      target_field: claroty_ctd.asset.plc_slots
+      ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slot_plcslotinformations
+      processor:
+        rename:
+          field: _ingest._value.PLCSlotInformation
+          tag: rename_plcslotinformation
+          target_field: _ingest._value.plcslotinformations
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slot_plcslotinformations_value_plcinformation
+      processor:
+            rename:
+              field: _ingest._value.plcslotinformations.value.PLCInformation
+              tag: rename_plcslotinformations_value_plcinformation
+              target_field: _ingest._value.plcslotinformations.value.plcinformation
+              ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slots_plcslotinformation_information_type
+      processor:
+        convert:
+          field: _ingest._value.plcslotinformation.information_type
+          tag: convert_plcslotinformation_information_type_to_long
+          type: long
+          target_field: _ingest._value.plcslotinformation.information_type
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.plcslotinformation.information_type
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slots_plcslotinformation_priority
+      processor:
+        convert:
+          field: _ingest._value.plcslotinformation.priority
+          tag: convert_plc_slots_plcslotinformation_priority_to_long
+          type: long
+          target_field: _ingest._value.plcslotinformation.priority
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.plcslotinformation.priority
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slots_plcslotinformation_slot
+      processor:
+        convert:
+          field: _ingest._value.plcslotinformations.slot
+          tag: convert_plc_slots_plcslotinformation_priority_to_long
+          type: long
+          target_field: _ingest._value.plcslotinformations.slot
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.plcslotinformations.slot
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slots_plcslotinformations_value_plcinformation_information_type
+      processor:
+        convert:
+          field: _ingest._value.plcslotinformations.value.plcinformation.information_type
+          tag: convert_plc_slots_plcslotinformations_value_plcinformation_information_type_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.plcslotinformations.value.plcinformation.information_type
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slots_plcslotinformations_information_type
+      processor:
+        convert:
+          field: _ingest._value.plcslotinformations.information_type
+          tag: convert_plc_slots_plcslotinformations_information_type_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.plcslotinformations.information_type
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slots_plcslotinformations_value_plcinformation_priority
+      processor:
+        convert:
+          field: _ingest._value.plcslotinformations.value.plcinformation.priority
+          tag: convert_plc_slots_plcslotinformations_value_plcinformation_priority_to_long
+          type: long
+          target_field: _ingest._value.plcslotinformations.value.plcinformation.priority
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.plcslotinformations.value.plcinformation.priority
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slots_plcslotinformations_priority
+      processor:
+        convert:
+          field: _ingest._value.plcslotinformations.priority
+          tag: convert_plc_slots_plcslotinformations_priority_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.plcslotinformations.priority
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.plc_slots
+      if: ctx.claroty_ctd?.asset?.plc_slots instanceof List
+      tag: foreach_plc_slots_plcslotinformations_slot
+      processor:
+        convert:
+          field: _ingest._value.slot
+          tag: convert_plc_slots_slot_to_long
+          type: long
+          target_field: _ingest._value.slot
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.slot
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_os_architecture
+      processor:
+        rename:
+          field: _ingest._value.os_architecture
+          tag: rename_children_os_architecture
+          target_field: _ingest._value.os.architecture
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_os_revision
+      processor:
+        rename:
+          field: _ingest._value.os_revision
+          tag: rename_children_os_revision
+          target_field: _ingest._value.os.revision
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_os_build
+      processor:
+        rename:
+          field: _ingest._value.os_build
+          tag: rename_children_os_build
+          target_field: _ingest._value.os.build
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_os_service_pack
+      processor:
+        rename:
+          field: _ingest._value.os_service_pack
+          tag: rename_children_os_service_pack
+          target_field: _ingest._value.os.service_pack
+          ignore_missing: true
+  - rename:
+      field: claroty_ctd.asset.children.virtual_zone_id
+      tag: rename_children_virtual_zone_id
+      target_field: claroty_ctd.asset.children.virtual_zone.id
+      ignore_missing: true
+  - rename:
+      field: json.serial_number
+      tag: rename_serial_number
+      target_field: claroty_ctd.asset.serial_number
+      ignore_missing: true
+  - rename:
+      field: json.state
+      tag: rename_state
+      target_field: claroty_ctd.asset.state
+      ignore_missing: true
+  - rename:
+      field: json.edge_last_run
+      tag: rename_edge_last_run
+      target_field: claroty_ctd.asset.edge_last_run
+      ignore_missing: true
+  - rename:
+      field: json.firmware
+      tag: rename_firmware
+      target_field: claroty_ctd.asset.firmware
+      ignore_missing: true
+  - rename:
+      field: json.model
+      tag: rename_model
+      target_field: claroty_ctd.asset.model
+      ignore_missing: true
+  - date:
+      field: json.last_entity_seen
+      tag: date_timestamp
+      target_field: claroty_ctd.asset.last_entity_seen
+      formats:
+        - ISO8601
+      if: ctx.json?.last_entity_seen != null && ctx.json.last_entity_seen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ipv4
+      tag: rename_ipv4
+      target_field: claroty_ctd.asset.ipv4
+      ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.ipv4
+      if: ctx.claroty_ctd?.asset?.ipv4 instanceof List
+      tag: foreach_ipv4
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_destination_entity_ipv4_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.ipv4
+      if: ctx.claroty_ctd?.asset?.ipv4 instanceof List
+      tag: foreach_ipv4
+      processor:
+        append:
+          field: related.ip
+          tag: append_log_ipv4_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          if: ctx.claroty_ctd?.asset?.ipv4 != null
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_id
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_children_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_edge_id
+      processor:
+        convert:
+          field: _ingest._value.edge_id
+          tag: convert_children_edge_id_to_keyword
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_virtual_zone_name
+      processor:
+        rename:
+          field: _ingest._value.virtual_zone_name
+          tag: rename_children_virtual_zone_name
+          target_field: _ingest._value.virtual_zone.name
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_special_hint__
+      processor:
+        rename:
+          field: _ingest._value.special_hint__
+          tag: rename_children_special_hint__
+          target_field: _ingest._value.special_hints.name
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_special_hint
+      processor:
+        convert:
+          field: _ingest._value.special_hint
+          tag: convert_children_special_hint_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.special_hint
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_special_hint
+      processor:
+        rename:
+          field: _ingest._value.special_hint
+          tag: rename_children_special_hint
+          target_field: _ingest._value.special_hints.value
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_subnet_type
+      processor:
+        convert:
+          field: _ingest._value.subnet_type
+          tag: convert_children_subnet_type_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.subnet_type
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_asset_type__
+      processor:
+        rename:
+          field: _ingest._value.asset_type__
+          tag: rename_children_asset_type__
+          target_field: _ingest._value.asset_types.name
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_asset_type
+      processor:
+        convert:
+          field: _ingest._value.asset_type
+          tag: convert_children_asset_type_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.asset_type
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_asset_type
+      processor:
+        rename:
+          field: _ingest._value.asset_type
+          tag: rename_children_asset_type
+          target_field: _ingest._value.asset_types.number
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_criticality__
+      processor:
+        rename:
+          field: _ingest._value.criticality__
+          tag: rename_children_criticality__
+          target_field: _ingest._value.criticalities.name
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_criticality
+      processor:
+        convert:
+          field: _ingest._value.criticality
+          tag: convert_children_criticality_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.criticality
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_criticality
+      processor:
+        rename:
+          field: _ingest._value.criticality
+          tag: rename_children_criticality
+          target_field: _ingest._value.criticalities.value
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_network_id
+      processor:
+        convert:
+          field: _ingest._value.network.id
+          tag: convert_children_network_id_to_keyword
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_network_id
+      processor:
+        convert:
+          field: _ingest._value.network_id
+          tag: convert_children_network_id_to_keyword
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_network_site_id
+      processor:
+        convert:
+          field: _ingest._value.network.site_id
+          tag: convert_children_network_site_id_to_keyword
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_network_resource_id
+      processor:
+        convert:
+          field: _ingest._value.network.resource_id
+          tag: convert_children_network_resource_id_to_keyword
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_site_id
+      processor:
+        convert:
+          field: _ingest._value.site_id
+          tag: convert_children_site_id_to_keyword
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_subnet_id
+      processor:
+        convert:
+          field: _ingest._value.subnet_id
+          tag: convert_children_subnet_id_to_keyword
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_subnet_id
+      processor:
+        convert:
+          field: _ingest._value.subnet_id
+          tag: convert_children_subnet_id_to_keyword
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_virtual_zone_id
+      processor:
+        convert:
+          field: _ingest._value.virtual_zone_id
+          tag: convert_children_virtual_zone_id_to_string
+          type: string
+          target_field: _ingest._value.virtual_zone_id
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.virtual_zone_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_virtual_zone_id
+      processor:
+        rename:
+          field: _ingest._value.virtual_zone_id
+          tag: rename_children_virtual_zone_id
+          target_field: _ingest._value.virtual_zone.id
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_first_seen
+      processor:
+        date:
+          field: _ingest._value.first_seen
+          tag: date_children_first_seen
+          formats:
+            - ISO8601
+          if: ctx.json?.first_seen != null && ctx.json.first_seen != ''
+          on_failure:
+            - remove:
+                field: _ingest._value.first_seen
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_last_entity_seen
+      processor:
+        date:
+          field: _ingest._value.last_entity_seen
+          tag: date_children_last_entity_seen
+          target_field: _ingest._value.last_entity_seen
+          formats:
+            - ISO8601
+          if: ctx.json?.last_entity_seen != null && ctx.json.last_entity_seen != ''
+          on_failure:
+            - remove:
+                field: _ingest._value.last_entity_seen
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_last_seen
+      processor:
+        date:
+          field: _ingest._value.last_seen
+          tag: date_children_last_seen
+          target_field: _ingest._value.last_seen
+          formats:
+            - ISO8601
+          if: ctx.json?.last_seen != null && ctx.json.last_seen != ''
+          on_failure:
+            - remove:
+                field: _ingest._value.last_seen
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_last_updated
+      processor:
+        date:
+          field: _ingest._value.last_updated
+          tag: date_children_last_updated
+          target_field: _ingest._value.last_updated
+          formats:
+            - ISO8601
+          if: ctx.json?.last_updated != null && ctx.json.last_updated != ''
+          on_failure:
+            - remove:
+                field: _ingest._value.last_updated
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_timestamp
+      processor:
+        date:
+          field: _ingest._value.timestamp
+          tag: date_children_timestamp
+          formats:
+            - ISO8601
+          if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+          on_failure:
+            - remove:
+                field: _ingest._value.timestamp
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_approved
+      processor:
+        convert:
+          field: _ingest._value.approved
+          tag: convert_children_approved_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.approved
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_parsed
+      processor:
+        convert:
+          field: _ingest._value.parsed
+          tag: convert_children_parsed_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.parsed
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_ghost
+      processor:
+        convert:
+          field: _ingest._value.ghost
+          tag: convert_children_ghost_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ghost
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.class_type
+      tag: rename_class_type
+      target_field: claroty_ctd.asset.class_type
+      ignore_missing: true
+  - rename:
+      field: json.code_sections
+      tag: rename_code_sections
+      target_field: claroty_ctd.asset.code_sections
+      ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.code_sections
+      if: ctx.claroty_ctd?.asset?.code_sections instanceof List
+      tag: foreach_code_sections_rid
+      processor:
+        convert:
+          field: _ingest._value.rid
+          tag: convert_code_sections_rid_to_string
+          type: string
+          ignore_missing: true
+  - rename:
+      field: json.criticality__
+      tag: rename_criticality_name
+      target_field: claroty_ctd.asset.criticalities.name
+      ignore_missing: true
+  - convert:
+      field: json.criticality
+      tag: convert_criticality_number_to_long
+      target_field: claroty_ctd.asset.criticalities.value
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      tag: set_event_severity_from_asset_criticalities_value
+      copy_from: claroty_ctd.asset.criticalities.value
+      ignore_empty_value: true
+  - rename:
+      field: json.custom_attributes
+      tag: rename_custom_attributes
+      target_field: claroty_ctd.asset.custom_attributes
+      ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.custom_attributes
+      if: ctx.claroty_ctd?.asset?.custom_attributes instanceof List
+      tag: foreach_custom_attributes
+      processor:
+        convert:
+          field: _ingest._value.asset_id
+          tag: convert_custom_attributes_asset_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.custom_attributes
+      if: ctx.claroty_ctd?.asset?.custom_attributes instanceof List
+      tag: foreach_custom_attributes
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_custom_attributes_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.custom_attributes
+      if: ctx.claroty_ctd?.asset?.custom_attributes instanceof List
+      tag: foreach_custom_attributes
+      processor:
+        convert:
+          field: _ingest._value.site_id
+          tag: convert_custom_attributes_site_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.custom_attributes
+      if: ctx.claroty_ctd?.asset?.custom_attributes instanceof List
+      tag: foreach_custom_attributes_category_id
+      processor:
+        convert:
+          field: _ingest._value.category.id
+          tag: convert_custom_attributes_category_id_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.custom_attributes
+      if: ctx.claroty_ctd?.asset?.custom_attributes instanceof List
+      tag: foreach_custom_attributes
+      processor:
+        convert:
+          field: _ingest._value.category.site_id
+          tag: convert_custom_attributes_category_site_id_to_string
+          type: string
+          ignore_missing: true
+  - rename:
+      field: json.custom_informations
+      tag: rename_custom_informations
+      target_field: claroty_ctd.asset.custom_informations
+      ignore_missing: true
+  - rename:
+      field: json.children.custom_informations
+      tag: rename_children_custom_informations
+      target_field: claroty_ctd.asset.children.custom_informations
+      ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.custom_informations
+      if: ctx.claroty_ctd?.asset?.custom_informations instanceof List
+      tag: foreach_custom_information_category
+      processor:
+        convert:
+          field: _ingest._value.category
+          tag: convert_custom_information_category_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.category
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.custom_informations
+      if: ctx.claroty_ctd?.asset?.custom_informations instanceof List
+      tag: foreach_custom_information_priority
+      processor:
+        convert:
+          field: _ingest._value.priority
+          tag: convert_custom_information_priority_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.priority
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.custom_informations
+      if: ctx.claroty_ctd?.asset?.custom_informations instanceof List
+      tag: foreach_custom_information_type
+      processor:
+        convert:
+          field: _ingest._value.type
+          tag: convert_custom_information_type_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.type
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_custom_information
+      processor:
+        foreach:
+          field: _ingest._value.custom_informations
+          tag: foreach_children_custom_informations_category
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.category
+              tag: convert_children_custom_information_category_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+               - remove:
+                   field: _ingest._value.category
+                   ignore_missing: true
+               - append:
+                   field: error.message
+                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_custom_information
+      processor:
+        foreach:
+          field: _ingest._value.custom_informations
+          tag: foreach_children_custom_informations_priority
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.priority
+              tag: convert_children_custom_information_priority_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+               - remove:
+                   field: _ingest._value.priority
+                   ignore_missing: true
+               - append:
+                   field: error.message
+                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_custom_information
+      processor:
+        foreach:
+          field: _ingest._value.custom_informations
+          tag: foreach_children_custom_informations_type
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.type
+              tag: convert_custom_information_type_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+               - remove:
+                   field: _ingest._value.type
+                   ignore_missing: true
+               - append:
+                   field: error.message
+                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+     field: json.project_parsed.creation_time
+     tag: convert_children_project_parsed_creation_time_to_long
+     type: long
+     ignore_missing: true
+     on_failure:
+      - remove:
+          field: json.project_parsed.creation_time
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_project_parsed_information_type
+      processor:
+        convert:
+          field: _ingest._value.project_parsed.information_type
+          tag: convert_children_project_parsed_information_type_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.project_parsed.information_type
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_project_parsed_modification_time
+      processor:
+        convert:
+          field: _ingest._value.project_parsed.modification_time
+          tag: convert_children_project_parsed_modification_time_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.project_parsed.modification_time
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_project_parsed_creation_time
+      processor:
+        convert:
+          field: _ingest._value.project_parsed.creation_time
+          tag: convert_children_project_parsed_creation_time_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.project_parsed.creation_time
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_project_parsed_priority
+      processor:
+        convert:
+          field: _ingest._value.project_parsed.priority
+          tag: convert_custom_project_parsed_priority_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.project_parsed.priority
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.display_name
+      tag: rename_display_name
+      target_field: claroty_ctd.asset.display_name
+      ignore_missing: true
+  - date:
+      field: json.first_seen
+      tag: date_first_seen
+      target_field: claroty_ctd.asset.first_seen
+      formats:
+        - ISO8601
+      if: ctx.json?.first_seen != null && ctx.json.first_seen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ghost
+      tag: convert_ghost_to_boolean
+      target_field: claroty_ctd.asset.ghost
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.hostname
+      tag: rename_hostname
+      target_field: claroty_ctd.asset.hostname
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_asset_hostname
+      copy_from: claroty_ctd.asset.hostname
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_log_hostname_into_related_hosts
+      value: '{{{claroty_ctd.asset.hostname}}}'
+      allow_duplicates: false
+      if: ctx.claroty_ctd?.asset?.hostname != null
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: claroty_ctd.asset.id
+      ignore_missing: true
+  - convert:
+      field: claroty_ctd.asset.id
+      tag: convert_id_to_keyword
+      target_field: claroty_ctd.asset.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_asset_id
+      copy_from: claroty_ctd.asset.id
+      ignore_empty_value: true
+  - rename:
+      field: json.insight_names
+      tag: rename_insight_names
+      target_field: claroty_ctd.asset.insight_names
+      ignore_missing: true
+  - convert:
+      field: json.installed_programs_count
+      tag: convert_installed_programs_count_to_long
+      target_field: claroty_ctd.asset.installed_programs_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_seen
+      tag: date_last_seen
+      target_field: claroty_ctd.asset.last_seen
+      formats:
+        - ISO8601
+      if: ctx.json?.last_seen != null && ctx.json.last_seen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_updated
+      tag: date_last_updated
+      target_field: claroty_ctd.asset.last_updated
+      formats:
+        - ISO8601
+      if: ctx.json?.last_updated != null && ctx.json.last_updated != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_asset_last_updated
+      copy_from: claroty_ctd.asset.last_updated
+      ignore_empty_value: true
+  - foreach:
+      field: claroty_ctd.asset.project_parsed
+      if: ctx.claroty_ctd?.asset?.project_parsed instanceof List
+      tag: foreach_project_parsed_creation_time
+      processor:
+        convert:
+          field: _ingest._value.creation_time
+          tag: convert_project_parsed_creation_time_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+           - remove:
+               field: _ingest._value.creation_time
+               ignore_missing: true
+           - append:
+               field: error.message
+               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.project_parsed.information_type
+      tag: convert_project_parsed_information_type_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+       - remove:
+           field: json.project_parsed.information_type
+           ignore_missing: true
+       - append:
+           field: error.message
+           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+     field: json.project_parsed.modification_time
+     tag: convert_project_parsed_modification_time_to_long
+     type: long
+     ignore_missing: true
+     on_failure:
+      - remove:
+          field: json.project_parsed.modification_time
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.project_parsed.priority
+      tag: convert_project_parsed_priority_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+       - remove:
+           field: json.project_parsed.priority
+           ignore_missing: true
+       - append:
+           field: error.message
+           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mac
+      tag: rename_mac
+      target_field: claroty_ctd.asset.mac
+      ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.mac
+      if: ctx.claroty_ctd?.asset?.mac instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: host.mac
+          tag: append_claroty_ctd_asset_mac_into_host_mac_for_each_mac
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          if: ctx.claroty_ctd?.asset?.mac != null
+  - foreach:
+      field: host.mac
+      if: ctx.host?.mac instanceof List
+      ignore_failure: true
+      processor:
+        gsub:
+          field: _ingest._value
+          tag: gsub_asset_mac_for_each_mac
+          pattern: ':'
+          replacement: '-'
+          ignore_missing: true
+  - foreach:
+      field: host.mac
+      if: ctx.claroty_ctd?.asset?.mac instanceof List
+      ignore_failure: true
+      processor:
+        uppercase:
+          field: _ingest._value
+          tag: uppercase_claroty_ctd_asset_mac_for_each_mac
+          ignore_missing: true
+  - rename:
+      field: json.name
+      tag: rename_name
+      target_field: claroty_ctd.asset.name
+      ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_asset_name
+      copy_from: claroty_ctd.asset.name
+      ignore_empty_value: true
+  - lowercase:
+      field: host.name
+      tag: lowercase_host_name
+      ignore_missing: true
+  - rename:
+      field: json.network.id
+      tag: rename_network_id
+      target_field: claroty_ctd.asset.network.id
+      ignore_missing: true
+  - convert:
+      field: claroty_ctd.asset.network.id
+      tag: convert_network_id_to_keyword
+      target_field: claroty_ctd.asset.network.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.network.name
+      tag: rename_network_name
+      target_field: claroty_ctd.asset.network.name
+      ignore_missing: true
+  - set:
+      field: network.name
+      tag: set_network_name_from_asset_network_name
+      copy_from: claroty_ctd.asset.network.name
+      ignore_empty_value: true
+  - rename:
+      field: json.network.resource_id
+      tag: rename_network_resource_id
+      target_field: claroty_ctd.asset.network.resource_id
+      ignore_missing: true
+  - rename:
+      field: json.network.site_id
+      tag: rename_network_site_id
+      target_field: claroty_ctd.asset.network.site_id
+      ignore_missing: true
+  - convert:
+      field: claroty_ctd.asset.network.site_id
+      tag: convert_network_site_id_to_keyword
+      target_field: claroty_ctd.asset.network.site_id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.network_id
+      tag: rename_network_id
+      target_field: claroty_ctd.asset.network_id
+      ignore_missing: true
+  - convert:
+      field: claroty_ctd.asset.network_id
+      tag: convert_network_id_to_keyword
+      target_field: claroty_ctd.asset.network_id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.num_alerts
+      tag: convert_num_alerts_to_long
+      target_field: claroty_ctd.asset.num_alerts
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.parsed
+      tag: convert_parsed_to_boolean
+      target_field: claroty_ctd.asset.parsed
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.patch_count
+      tag: convert_patch_count_to_long
+      target_field: claroty_ctd.asset.patch_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.installed_antivirus
+      tag: rename_protocol
+      target_field: claroty_ctd.asset.installed_antivirus
+      ignore_missing: true
+  - rename:
+      field: json.domain_workgroup
+      tag: rename_protocol
+      target_field: claroty_ctd.asset.domain_workgroup
+      ignore_missing: true
+  - rename:
+      field: json.protocol
+      tag: rename_protocol
+      target_field: claroty_ctd.asset.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_asset_protocol
+      copy_from: claroty_ctd.asset.protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - convert:
+      field: json.purdue_level
+      tag: convert_purdue_level_to_double
+      target_field: claroty_ctd.asset.purdue_level
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resource_id
+      tag: rename_resource_id
+      target_field: claroty_ctd.asset.resource_id
+      ignore_missing: true
+  -  convert:
+      field: json.risk_level
+      tag: convert_risk_level_to_long
+      target_field: claroty_ctd.asset.risk_level
+      type: long
+      ignore_missing: true
+      on_failure:
+       - append:
+           field: error.message
+           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.site_id
+      tag: rename_site_id
+      target_field: claroty_ctd.asset.site_id
+      ignore_missing: true
+  - convert:
+      field: claroty_ctd.asset.site_id
+      tag: convert_site_id_to_keyword
+      target_field: claroty_ctd.asset.site_id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.site_name
+      tag: rename_site_name
+      target_field: claroty_ctd.asset.site_name
+      ignore_missing: true
+  - rename:
+      field: json.special_hint__
+      tag: rename_special_hint__
+      target_field: claroty_ctd.asset.special_hints.name
+      ignore_missing: true
+  - convert:
+      field: json.special_hint
+      tag: convert_special_hint_to_long
+      target_field: claroty_ctd.asset.special_hints.value
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.subnet_id
+      tag: rename_subnet_id
+      target_field: claroty_ctd.asset.subnet_id
+      ignore_missing: true
+  - rename:
+      field: json.project_parsed
+      tag: rename_project_parsed
+      target_field: claroty_ctd.asset.project_parsed
+      ignore_missing: true
+  - convert:
+      field: claroty_ctd.asset.subnet_id
+      tag: convert_subnet_id_to_keyword
+      target_field: claroty_ctd.asset.subnet_id
+      type: string
+      ignore_missing: true
+  - date:
+      field: json.timestamp
+      tag: date_timestamp
+      target_field: claroty_ctd.asset.timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.usb_devices_count
+      tag: convert_usb_devices_count_to_long
+      target_field: claroty_ctd.asset.usb_devices_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.valid
+      tag: convert_valid_to_boolean
+      target_field: claroty_ctd.asset.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.vendor
+      tag: rename_vendor
+      target_field: claroty_ctd.asset.vendor
+      ignore_missing: true
+  - set:
+      field: device.manufacturer
+      tag: set_device_manufacturer_from_asset_vendor
+      copy_from: claroty_ctd.asset.vendor
+      ignore_empty_value: true
+  - rename:
+      field: json.virtual_zone_id
+      tag: rename_virtual_zone_id
+      target_field: claroty_ctd.asset.virtual_zone.id
+      ignore_missing: true
+  - rename:
+      field: json.edge_id
+      tag: rename_edge_id
+      target_field: claroty_ctd.asset.edge_id
+      ignore_missing: true
+  - rename:
+      field: json.default_gateway
+      tag: rename_default_gateway
+      target_field: claroty_ctd.asset.default_gateway
+      ignore_missing: true
+  - convert:
+      field: claroty_ctd.asset.virtual_zone.id
+      tag: convert_virtual_zone_id_to_keyword
+      target_field: claroty_ctd.asset.virtual_zone.id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: claroty_ctd.asset.edge_id
+      tag: convert_edge_id_to_keyword
+      target_field: claroty_ctd.asset.edge_id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.virtual_zone_name
+      tag: rename_virtual_zone_name
+      target_field: claroty_ctd.asset.virtual_zone.name
+      ignore_missing: true
+  - rename:
+      field: json.vlan
+      tag: rename_vlan
+      target_field: claroty_ctd.asset.vlan
+      ignore_missing: true
+  - set:
+      field: network.vlan.id
+      tag: set_network_vlan_id_from_asset_vlan
+      copy_from: claroty_ctd.asset.vlan
+      ignore_empty_value: true
+  - remove:
+      field:
+        - claroty_ctd.asset.criticalities.value
+        - claroty_ctd.asset.hostname
+        - claroty_ctd.asset.id
+        - claroty_ctd.asset.last_updated
+        - claroty_ctd.asset.mac
+        - claroty_ctd.asset.name
+        - claroty_ctd.asset.network.name
+        - claroty_ctd.asset.protocol
+        - claroty_ctd.asset.vendor
+        - claroty_ctd.asset.vlan
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

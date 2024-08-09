@@ -1,0 +1,36 @@
+host: "{{listen_address}}:{{listen_port}}"
+{{#if tcp_options}}
+{{tcp_options}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- replace:
+    fields:
+      - field: "message"
+        pattern: '\\'
+      - field: "message"
+        pattern: "Alert/"
+        replacement: "Alert-"
+    ignore_missing: false
+    fail_on_error: true
+- decode_cef:
+    field: message
+    ecs: false
+- rename:
+    fields:
+      - {from: "message", to: "event.original"}
+{{#if processors}}
+{{processors}}
+{{/if}}
