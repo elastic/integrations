@@ -307,7 +307,7 @@ An example event for `message_release` looks as following:
 {
     "@timestamp": "2015-11-25T14:49:18.000Z",
     "agent": {
-        "ephemeral_id": "1d83df91-a476-4e1f-97e3-d79c28684f58",
+        "ephemeral_id": "bd2896a5-8b1e-4131-8c40-5ce6861eda18",
         "id": "b8a1f62f-c7d4-40fb-b0ac-ccb8b21bb57b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -315,7 +315,7 @@ An example event for `message_release` looks as following:
     },
     "data_stream": {
         "dataset": "mimecast.message_release_logs",
-        "namespace": "18089",
+        "namespace": "98280",
         "type": "logs"
     },
     "ecs": {
@@ -349,7 +349,7 @@ An example event for `message_release` looks as following:
         ],
         "dataset": "mimecast.message_release_logs",
         "id": "eNpVj21LhEAUhf_LfN2VnRl1RpclCN...",
-        "ingested": "2024-08-08T21:00:56Z",
+        "ingested": "2024-08-09T04:45:59Z",
         "kind": "event",
         "original": "{\"attachments\":true,\"detectionLevel\":\"moderate\",\"fromEnv\":{\"displayableName\":\"FirstName LastName\",\"emailAddress\":\"user@domain.tld\"},\"fromHdr\":{\"displayableName\":\"FirstName LastName\",\"emailAddress\":\"user@domain.tld\"},\"heldGroup\":\"IT Staff Global\",\"heldReason\":\"High-Confidence Impersonation Protection\",\"id\":\"eNpVj21LhEAUhf_LfN2VnRl1RpclCN...\",\"messageInfo\":\"Expired in queue - rejected by housekeeping\",\"operator\":\"admin@domain.tld\",\"policy\":\"Moderate Spam Detection\",\"rejectReason\":\"Message contains undesirable content\",\"released\":\"2015-11-25T14:49:18+00:00\",\"route\":\"inbound\",\"size\":5043,\"spamProcessingDetail\":{\"dkim\":{\"allow\":true,\"info\":\"allow\"},\"dmarc\":{\"allow\":true,\"info\":\"allow\"},\"greyEmail\":true,\"managedSender\":{\"allow\":true,\"info\":\"allow\"},\"permittedSender\":{\"allow\":true,\"info\":\"allow\"},\"rbl\":{\"allow\":true,\"info\":\"allow\"},\"spamVerdict\":{\"categories\":[{\"name\":\"spam\",\"risk\":\"low\",\"subcategories\":[{\"augmentations\":[{\"name\":\"body\",\"risk\":\"negligible\"}],\"name\":\"phishing\",\"risk\":\"low\"}]}],\"decision\":\"spam\",\"description\":\"\",\"risk\":\"low\"},\"spf\":{\"allow\":true,\"info\":\"allow\"}},\"spamScore\":12,\"status\":\"released\",\"subject\":\"Exclusive Offer - You don't want to miss this!\",\"to\":[{\"displayableName\":\"FirstName LastName\",\"emailAddress\":\"user@domain.tld\"}]}",
         "reason": "Message contains undesirable content",
@@ -362,84 +362,86 @@ An example event for `message_release` looks as following:
         "type": "cel"
     },
     "mimecast": {
-        "attachments": true,
-        "detectionLevel": "moderate",
-        "fromEnv": {
-            "displayableName": "FirstName LastName",
-            "emailAddress": "user@domain.tld"
-        },
-        "fromHdr": {
-            "displayableName": "FirstName LastName",
-            "emailAddress": "user@domain.tld"
-        },
-        "heldGroup": "IT Staff Global",
-        "heldReason": "High-Confidence Impersonation Protection",
-        "id": "eNpVj21LhEAUhf_LfN2VnRl1RpclCN...",
-        "messageInfo": "Expired in queue - rejected by housekeeping",
-        "operator": "admin@domain.tld",
-        "policy": "Moderate Spam Detection",
-        "rejectReason": "Message contains undesirable content",
-        "released": "2015-11-25T14:49:18+00:00",
-        "route": "inbound",
-        "size": 5043,
-        "spamProcessingDetail": {
-            "dkim": {
-                "allow": true,
-                "info": "allow"
-            },
-            "dmarc": {
-                "allow": true,
-                "info": "allow"
-            },
-            "greyEmail": true,
-            "managedSender": {
-                "allow": true,
-                "info": "allow"
-            },
-            "permittedSender": {
-                "allow": true,
-                "info": "allow"
-            },
-            "rbl": {
-                "allow": true,
-                "info": "allow"
-            },
-            "spamVerdict": {
-                "categories": [
-                    {
-                        "name": "spam",
-                        "risk": "low",
-                        "subcategories": [
-                            {
-                                "augmentations": [
-                                    {
-                                        "name": "body",
-                                        "risk": "negligible"
-                                    }
-                                ],
-                                "name": "phishing",
-                                "risk": "low"
-                            }
-                        ]
-                    }
-                ],
-                "decision": "spam",
-                "risk": "low"
-            },
-            "spf": {
-                "allow": true,
-                "info": "allow"
-            }
-        },
-        "spamScore": 12,
-        "status": "released",
-        "subject": "Exclusive Offer - You don't want to miss this!",
-        "to": [
-            {
+        "message_release_logs": {
+            "attachments": true,
+            "detectionLevel": "moderate",
+            "fromEnv": {
                 "displayableName": "FirstName LastName",
                 "emailAddress": "user@domain.tld"
-            }
-        ]
+            },
+            "fromHdr": {
+                "displayableName": "FirstName LastName",
+                "emailAddress": "user@domain.tld"
+            },
+            "heldGroup": "IT Staff Global",
+            "heldReason": "High-Confidence Impersonation Protection",
+            "id": "eNpVj21LhEAUhf_LfN2VnRl1RpclCN...",
+            "messageInfo": "Expired in queue - rejected by housekeeping",
+            "operator": "admin@domain.tld",
+            "policy": "Moderate Spam Detection",
+            "rejectReason": "Message contains undesirable content",
+            "released": "2015-11-25T14:49:18+00:00",
+            "route": "inbound",
+            "size": 5043,
+            "spamProcessingDetail": {
+                "dkim": {
+                    "allow": true,
+                    "info": "allow"
+                },
+                "dmarc": {
+                    "allow": true,
+                    "info": "allow"
+                },
+                "greyEmail": true,
+                "managedSender": {
+                    "allow": true,
+                    "info": "allow"
+                },
+                "permittedSender": {
+                    "allow": true,
+                    "info": "allow"
+                },
+                "rbl": {
+                    "allow": true,
+                    "info": "allow"
+                },
+                "spamVerdict": {
+                    "categories": [
+                        {
+                            "name": "spam",
+                            "risk": "low",
+                            "subcategories": [
+                                {
+                                    "augmentations": [
+                                        {
+                                            "name": "body",
+                                            "risk": "negligible"
+                                        }
+                                    ],
+                                    "name": "phishing",
+                                    "risk": "low"
+                                }
+                            ]
+                        }
+                    ],
+                    "decision": "spam",
+                    "risk": "low"
+                },
+                "spf": {
+                    "allow": true,
+                    "info": "allow"
+                }
+            },
+            "spamScore": 12,
+            "status": "released",
+            "subject": "Exclusive Offer - You don't want to miss this!",
+            "to": [
+                {
+                    "displayableName": "FirstName LastName",
+                    "emailAddress": "user@domain.tld"
+                }
+            ]
+        }
     },
     "related": {
         "hosts": [
@@ -485,45 +487,45 @@ An example event for `message_release` looks as following:
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| mimecast.attachments | Indicates whether the message contains attachments. | boolean |
-| mimecast.detectionLevel | Spam detection level, if held by a spam policy. Possible values are: relaxed, moderate, aggressive, cluster or whitelisted_cluster. | keyword |
-| mimecast.fromEnv.displayableName | Display name of the user address from the "from" envelope. If none exists, this field will be empty. | keyword |
-| mimecast.fromEnv.emailAddress | The routable email address of the user from the "from" envelope. | keyword |
-| mimecast.fromHdr.displayableName | Display name of the user address from the "from" header. If none exists, this field will be empty. | keyword |
-| mimecast.fromHdr.emailAddress | The routable email address of the user from the "from" header. | keyword |
-| mimecast.heldGroup | The recipient group of the held message, if message was sent to a group. | keyword |
-| mimecast.heldReason | Detail around the reason the message was initially held. If held by a specific policy definition, this will be the name of the policy definition that triggered the message to be held. | keyword |
-| mimecast.id | The Mimecast secure ID of the specific message release log. | keyword |
-| mimecast.messageInfo | Additional information around the release reason. | text |
-| mimecast.operator | Email address of the user that released the message. | keyword |
-| mimecast.policy | Name of the policy definition that triggered the message to be held. | keyword |
-| mimecast.rejectReason | Detail on the reason a message was rejected, if message was rejected. | keyword |
-| mimecast.released | Timestamp of the message release action in ISO 8601 format. | keyword |
-| mimecast.route | Message direction. Possible values are: inbound or outbound. | keyword |
-| mimecast.size | Total size of the message, in bytes. | long |
-| mimecast.spamProcessingDetail.dkim.allow | Indicates checks for whether the message passed DKIM checks are performed. | boolean |
-| mimecast.spamProcessingDetail.dkim.info | Details about the check result. | keyword |
-| mimecast.spamProcessingDetail.dmarc.allow | Indicates checks for whether the message passed DMARC checks are performed. | boolean |
-| mimecast.spamProcessingDetail.dmarc.info | Details about the check result. | keyword |
-| mimecast.spamProcessingDetail.grayEmail | Indicates with the spam was classified as graymail or bulk. Note that this API uses graymail and greymail interchangeably. | boolean |
-| mimecast.spamProcessingDetail.greyEmail | Indicates with the spam was classified as graymail or bulk. Note that this API uses graymail and greymail interchangeably. | boolean |
-| mimecast.spamProcessingDetail.managedSender.allow | Indicates checks for whether the sender has been permitted by a Managed Sender entry are performed. | boolean |
-| mimecast.spamProcessingDetail.managedSender.info | Details about the check result. | keyword |
-| mimecast.spamProcessingDetail.permittedSender.allow | Indicates checks for whether the sender has been permitted by policy are performed. | boolean |
-| mimecast.spamProcessingDetail.permittedSender.info | Details about the check result. | keyword |
-| mimecast.spamProcessingDetail.rbl.allow | Indicates checks for whether the message passed RBL checks are performed. | boolean |
-| mimecast.spamProcessingDetail.rbl.info | Details about the check result. | keyword |
-| mimecast.spamProcessingDetail.spamVerdict.categories | Spam detection type categories. | flattened |
-| mimecast.spamProcessingDetail.spamVerdict.decision | Indicating what the ultimate verdict was for the message. | keyword |
-| mimecast.spamProcessingDetail.spamVerdict.description | Description of the spam verdict decision. | keyword |
-| mimecast.spamProcessingDetail.spamVerdict.risk | Identified risk level within the spam detection. Possible values are: negligible, low, high. | keyword |
-| mimecast.spamProcessingDetail.spf.allow | Indicates checks for whether the message passed SPF checks are performed. | boolean |
-| mimecast.spamProcessingDetail.spf.info | Details about the check result. | keyword |
-| mimecast.spamScore | The message spam score, based on the applied spam scanning policy definition. | double |
-| mimecast.status | Status of the message. Possible values are released or rejected. | keyword |
-| mimecast.subject | The released message's subject line. | keyword |
-| mimecast.to.displayableName | Display name of the user address from the "to" header. If none exists, this field will be empty. | keyword |
-| mimecast.to.emailAddress | The routable email address of the user from the "to" header. | keyword |
+| mimecast.message_release_logs.attachments | Indicates whether the message contains attachments. | boolean |
+| mimecast.message_release_logs.detectionLevel | Spam detection level, if held by a spam policy. Possible values are: relaxed, moderate, aggressive, cluster or whitelisted_cluster. | keyword |
+| mimecast.message_release_logs.fromEnv.displayableName | Display name of the user address from the "from" envelope. If none exists, this field will be empty. | keyword |
+| mimecast.message_release_logs.fromEnv.emailAddress | The routable email address of the user from the "from" envelope. | keyword |
+| mimecast.message_release_logs.fromHdr.displayableName | Display name of the user address from the "from" header. If none exists, this field will be empty. | keyword |
+| mimecast.message_release_logs.fromHdr.emailAddress | The routable email address of the user from the "from" header. | keyword |
+| mimecast.message_release_logs.heldGroup | The recipient group of the held message, if message was sent to a group. | keyword |
+| mimecast.message_release_logs.heldReason | Detail around the reason the message was initially held. If held by a specific policy definition, this will be the name of the policy definition that triggered the message to be held. | keyword |
+| mimecast.message_release_logs.id | The Mimecast secure ID of the specific message release log. | keyword |
+| mimecast.message_release_logs.messageInfo | Additional information around the release reason. | text |
+| mimecast.message_release_logs.operator | Email address of the user that released the message. | keyword |
+| mimecast.message_release_logs.policy | Name of the policy definition that triggered the message to be held. | keyword |
+| mimecast.message_release_logs.rejectReason | Detail on the reason a message was rejected, if message was rejected. | keyword |
+| mimecast.message_release_logs.released | Timestamp of the message release action in ISO 8601 format. | keyword |
+| mimecast.message_release_logs.route | Message direction. Possible values are: inbound or outbound. | keyword |
+| mimecast.message_release_logs.size | Total size of the message, in bytes. | long |
+| mimecast.message_release_logs.spamProcessingDetail.dkim.allow | Indicates checks for whether the message passed DKIM checks are performed. | boolean |
+| mimecast.message_release_logs.spamProcessingDetail.dkim.info | Details about the check result. | keyword |
+| mimecast.message_release_logs.spamProcessingDetail.dmarc.allow | Indicates checks for whether the message passed DMARC checks are performed. | boolean |
+| mimecast.message_release_logs.spamProcessingDetail.dmarc.info | Details about the check result. | keyword |
+| mimecast.message_release_logs.spamProcessingDetail.grayEmail | Indicates with the spam was classified as graymail or bulk. Note that this API uses graymail and greymail interchangeably. | boolean |
+| mimecast.message_release_logs.spamProcessingDetail.greyEmail | Indicates with the spam was classified as graymail or bulk. Note that this API uses graymail and greymail interchangeably. | boolean |
+| mimecast.message_release_logs.spamProcessingDetail.managedSender.allow | Indicates checks for whether the sender has been permitted by a Managed Sender entry are performed. | boolean |
+| mimecast.message_release_logs.spamProcessingDetail.managedSender.info | Details about the check result. | keyword |
+| mimecast.message_release_logs.spamProcessingDetail.permittedSender.allow | Indicates checks for whether the sender has been permitted by policy are performed. | boolean |
+| mimecast.message_release_logs.spamProcessingDetail.permittedSender.info | Details about the check result. | keyword |
+| mimecast.message_release_logs.spamProcessingDetail.rbl.allow | Indicates checks for whether the message passed RBL checks are performed. | boolean |
+| mimecast.message_release_logs.spamProcessingDetail.rbl.info | Details about the check result. | keyword |
+| mimecast.message_release_logs.spamProcessingDetail.spamVerdict.categories | Spam detection type categories. | flattened |
+| mimecast.message_release_logs.spamProcessingDetail.spamVerdict.decision | Indicating what the ultimate verdict was for the message. | keyword |
+| mimecast.message_release_logs.spamProcessingDetail.spamVerdict.description | Description of the spam verdict decision. | keyword |
+| mimecast.message_release_logs.spamProcessingDetail.spamVerdict.risk | Identified risk level within the spam detection. Possible values are: negligible, low, high. | keyword |
+| mimecast.message_release_logs.spamProcessingDetail.spf.allow | Indicates checks for whether the message passed SPF checks are performed. | boolean |
+| mimecast.message_release_logs.spamProcessingDetail.spf.info | Details about the check result. | keyword |
+| mimecast.message_release_logs.spamScore | The message spam score, based on the applied spam scanning policy definition. | double |
+| mimecast.message_release_logs.status | Status of the message. Possible values are released or rejected. | keyword |
+| mimecast.message_release_logs.subject | The released message's subject line. | keyword |
+| mimecast.message_release_logs.to.displayableName | Display name of the user address from the "to" header. If none exists, this field will be empty. | keyword |
+| mimecast.message_release_logs.to.emailAddress | The routable email address of the user from the "to" header. | keyword |
 
 
 ### SIEM Logs
