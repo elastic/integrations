@@ -5,10 +5,6 @@ processors:
         field: sql.driver
         ignore_missing: true
         ignore_failure: true
-    - remove:
-        field: sql.query
-        ignore_missing: true
-        ignore_failure: true
     - rename:
         field: sql
         target_field: oracle
@@ -73,6 +69,30 @@ processors:
         target_field: oracle.tablespace.space.total.bytes
         ignore_failure: true
         ignore_missing: true
+    - rename:
+        field: oracle.tablespace.tb_extended_total
+        target_field: oracle.tablespace.extended_space.total.bytes
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.tb_extended_free
+        target_field: oracle.tablespace.extended_space.free.bytes
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.tb_extended_used
+        target_field: oracle.tablespace.extended_space.used.bytes
+        ignore_failure: true
+        ignore_missing: true
+    - fingerprint:
+        fields: ["oracle.query"]
+        target_field: oracle.tablespace.query_id
+        ignore_failure: true
+        ignore_missing: true
+    - remove:
+        field: oracle.query
+        ignore_missing: true
+        ignore_failure: true
 
 on_failure:
 - set:

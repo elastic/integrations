@@ -102,11 +102,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 Tablespace metrics describes the tablespace usage metrics of all types of tablespaces in the oracle database.
 
+Tablespace metrics also describes [extended space](https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_TABLESPACE_USAGE_METRICS.html#:~:text=unexpired%20undo%20segments.-,TABLESPACE_SIZE,-NUMBER) of all type of tablespaces.
+
 To collect the Tablespace metrics, Oracle integration relies on a specific set of views. Make sure that the user configured within the Oracle DSN configuration has `READ` access permissions to the following views:
  
 - `SYS.DBA_DATA_FILES`
 - `SYS.DBA_TEMP_FILES`
 - `DBA_FREE_SPACE`
+- `DBA_TABLESPACE_USAGE_METRICS`
+- `DBA_TABLESPACES`
 
 **ECS Field Reference**
 
