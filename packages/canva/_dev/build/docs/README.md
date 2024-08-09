@@ -44,26 +44,26 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 ### To stream data from Canva to the AWS S3 Bucket:
 
-- Follow the link [here](https://www.canva.dev/docs/audit-logs/setup/) to forward your Audit log data from Canva to the AWS S3 bucket.
-- Canva add events to your S3 bucket every minute as a gzipped archive containing JSONL content and requires PutObject permission on the S3 bucket.
+- Follow the instructions [here](https://www.canva.dev/docs/audit-logs/setup/) to forward your Audit log data from Canva to the AWS S3 bucket.
+- Canva adds events to your S3 bucket every minute as a gzipped archive containing JSONL content and requires PutObject permission on the S3 bucket.
 - It store the files in hourly folders, in the format orgId/yyyy/MM/dd/HH.
 
 ### To collect data from AWS S3 Bucket, follow the below steps:
 
-- Create an Amazon S3 bucket. Refer to the link [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html).
+- Create an Amazon S3 bucket. Refer to the instructions [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html).
 - The default value of the "Bucket List Prefix" should be empty. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
 
 ### To collect data from AWS SQS, follow the below steps:
 
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first set up an AWS S3 Bucket as mentioned in the above documentation.
-2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Amazon Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
   - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
-3. Set up event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+3. Set up event notifications for an S3 bucket. Follow the instructions [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
   - Users have to set the prefix parameter the same as the S3 Bucket List Prefix as created earlier. (for example, `log/` for a log data stream.)
   - Select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
 
 **Note**:
-  - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
+  - Credentials for the above AWS S3 and SQS input types should be configured using the instructions [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
 ### Enabling the integration in Elastic:
