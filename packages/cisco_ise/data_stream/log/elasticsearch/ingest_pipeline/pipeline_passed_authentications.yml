@@ -4,11 +4,13 @@ processors:
       field: event.kind
       value: event
   - grok:
+      tag: grok_message_0
       field: message
       if: ctx.cisco_ise?.log?.segment?.number == 0
       patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
+      tag: grok_message_1
       field: message
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
@@ -46,6 +48,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - grok:
+      tag: grok_description
       field: cisco_ise.log.message.description
       if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
       patterns:
@@ -55,11 +58,13 @@ processors:
       field: event.action
       ignore_missing: true
   - append:
+      tag: append_authentication
       field: event.category
       value: authentication
       if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5231','5233','5239'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
+      tag: appen_event_type
       field: event.type
       value: info
       if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5231','5233','5239'].contains(ctx.cisco_ise.log.message.code)
@@ -124,7 +129,10 @@ processors:
       target_field: cisco_ise.log.calling_station.id
       ignore_missing: true
   - foreach:
-      if: "ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List"
+      tag: foreach_av_pair
+      if: >-
+        ctx.cisco_ise?.log != null && ctx.cisco_ise?.log?.log_details != null &&
+        ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List
       field: cisco_ise.log.log_details.cisco-av-pair
       processor:
         kv:
@@ -138,7 +146,10 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
   - kv:
-      if: "ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && !(ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List)"
+      tag: kv_av_pair
+      if: >-
+        ctx.cisco_ise?.log != null && ctx.cisco_ise?.log?.log_details != null &&
+        ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && !(ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List)
       field : cisco_ise.log.log_details.cisco-av-pair
       target_field: cisco_ise.log.cisco_av_pair
       field_split: ', '
@@ -242,6 +253,7 @@ processors:
       field: cisco_ise.log.log_details.IpAddress
       ignore_missing: true
   - append:
+      tag: append_related_ip_0
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
@@ -297,6 +309,7 @@ processors:
       field: cisco_ise.log.log_details.NAS-IP-Address
       ignore_missing: true
   - append:
+      tag: append_related_ip_1
       field: related.ip
       value: '{{{cisco_ise.log.nas.ip}}}'
       if: ctx.cisco_ise?.log?.nas?.ip != null
@@ -451,12 +464,14 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - append:
+      tag: append_user_name_0
       field: user.name
       value: '{{{cisco_ise.log.log_details.UserName}}}'
       if: ctx.cisco_ise?.log?.log_details?.UserName != null
       ignore_failure: true
       allow_duplicates: false
   - append:
+      tag: append_related_user_0
       field: related.user
       value: '{{{cisco_ise.log.log_details.UserName}}}'
       if: ctx.cisco_ise?.log?.log_details?.UserName != null
@@ -466,27 +481,35 @@ processors:
       field: cisco_ise.log.log_details.UserName
       ignore_missing: true
   - append:
+      tag: append_user_name_1
       field: user.name
       value: '{{{cisco_ise.log.log_details.User-Name}}}'
-      if: ctx.cisco_ise?.log?.log_details['User-Name'] != null
+      if: >-
+        ctx.cisci_ise?.log != null && ctx.cisco_ise?.log?.log_details != null &&
+        ctx.cisco_ise?.log?.log_details['User-Name'] != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_1
       field: related.user
       value: '{{{cisco_ise.log.log_details.lUser-Name}}}'
-      if: ctx.cisco_ise?.log?.log_details['User-Name'] != null
+      if: >-
+        ctx.cisco_ise?.log != null && ctx.cisco_ise?.log?.log_details != null &&
+        ctx.cisco_ise?.log?.log_details['User-Name'] != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
       field: cisco_ise.log.log_details.User-Name
       ignore_missing: true
   - append:
+      tag: append_user_name_2
       field: user.name
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
       if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_2
       field: related.user
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
       if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
@@ -508,6 +531,7 @@ processors:
       field: cisco_ise.log.log_details.DestinationIPAddress
       ignore_missing: true
   - append:
+      tag: append_related_ip_2
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
@@ -538,6 +562,7 @@ processors:
       field: cisco_ise.log.log_details.Device IP Address
       ignore_missing: true
   - append:
+      tag: append_related_ip_3
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
@@ -557,4 +582,5 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
