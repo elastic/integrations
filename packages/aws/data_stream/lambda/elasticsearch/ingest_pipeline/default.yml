@@ -1,5 +1,5 @@
 ---
-description: "Ingest Pipeline for Amazon Redshift metrics"
+description: "Pipeline for Lambda metrics"
 
 processors:
   - dot_expander:
@@ -12,17 +12,7 @@ processors:
         if(ctx.cloud?.account?.id != null && ctx.cloud?.account?.name == null) {
             ctx.cloud.account.name = ctx.cloud.account.id;
         }
-  - rename:
-      field: aws.dimensions.service class
-      target_field: aws.dimensions.service_class
-      ignore_missing: true
-  - remove:
-      field:
-        - aws.dimensions.service class
-      ignore_missing: true
-
-
-
-
-
-
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
