@@ -93,7 +93,7 @@ An example event for `breach_catalog` looks as following:
 {
     "@timestamp": "2022-11-24T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "f86c89b3-70df-4910-bc06-33ba173b5f94",
+        "ephemeral_id": "90dc28d2-8a37-4b01-b145-4ee5f9207fcf",
         "id": "401b5614-f720-4272-afd1-fdd38e876355",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -101,7 +101,7 @@ An example event for `breach_catalog` looks as following:
     },
     "data_stream": {
         "dataset": "spycloud.breach_catalog",
-        "namespace": "65748",
+        "namespace": "88948",
         "type": "logs"
     },
     "ecs": {
@@ -116,7 +116,7 @@ An example event for `breach_catalog` looks as following:
         "agent_id_status": "verified",
         "dataset": "spycloud.breach_catalog",
         "id": "39997",
-        "ingested": "2024-08-08T12:08:56Z",
+        "ingested": "2024-08-09T09:31:23Z",
         "kind": "asset",
         "original": "{\"acquisition_date\":\"2022-10-14T00:00:00Z\",\"assets\":{\"address_2\":363,\"age\":817,\"city\":1859,\"country\":177225,\"country_code\":177225,\"dob\":198,\"email\":177219,\"first_name\":177114,\"full_name\":177030,\"gender\":119505,\"industry\":162612,\"job_title\":160712,\"last_name\":177099,\"middle_name\":17749,\"phone\":511,\"postal_code\":1971,\"social_facebook\":51841,\"social_twitter\":57193},\"confidence\":3,\"description\":\"This source has been marked as sensitive due to one of the following reasons: Revealing the source may compromise an on-going investigation. The affected site is of a controversial nature but does not validate email addresses and could therefore be used to tarnish an employee's reputation.\",\"id\":39997,\"num_records\":177225,\"spycloud_publish_date\":\"2022-11-24T00:00:00Z\",\"title\":\"Sensitive Source\",\"type\":\"PRIVATE\",\"uuid\":\"9f5bf34b-092e-46f4-b87f-02c91b0adb3a\"}"
     },
@@ -441,7 +441,7 @@ An example event for `breach_record` looks as following:
 {
     "@timestamp": "2023-11-29T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "dde3a142-a8f9-4b3d-a78f-f623d3b6eea2",
+        "ephemeral_id": "cd4912d6-0935-4cbf-ae4b-8e9fbac4dbad",
         "id": "401b5614-f720-4272-afd1-fdd38e876355",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -449,7 +449,7 @@ An example event for `breach_record` looks as following:
     },
     "data_stream": {
         "dataset": "spycloud.breach_record",
-        "namespace": "84538",
+        "namespace": "30900",
         "type": "logs"
     },
     "destination": {
@@ -468,7 +468,7 @@ An example event for `breach_record` looks as following:
         "agent_id_status": "verified",
         "dataset": "spycloud.breach_record",
         "id": "3350f1da-fa39-4415-b2cc-02057e2fbe99",
-        "ingested": "2024-08-08T12:10:33Z",
+        "ingested": "2024-08-09T09:33:05Z",
         "kind": "alert",
         "original": "{\"account_image_url\":\"https://www.chess.com/bundles/web/images/noavatar_l.84a92436.gif\",\"account_login_time\":\"2018-06-29T23:51:46Z\",\"account_modification_time\":\"2018-06-29T23:51:10Z\",\"account_signup_time\":\"2016-07-29T18:47:11Z\",\"av_softwares\":[\"McAfee\",\"Windows Defender\"],\"cc_bin\":\"489486\",\"cc_expiration\":\"06/2025\",\"cc_last_four\":\"1237\",\"cc_number\":\"3fdd0ce028ffaa147afdb6461f6ce95f8c07f484\",\"company_name\":\"ABC Corporation\",\"country\":\"United States\",\"country_code\":\"US\",\"display_resolution\":\"1920x1080\",\"document_id\":\"3350f1da-fa39-4415-b2cc-02057e2fbe99\",\"domain\":\"example1.com\",\"email\":\"john.doe@example.com\",\"email_domain\":\"example.com\",\"email_username\":\"john.doe\",\"first_name\":\"John\",\"full_name\":\"John Doe\",\"homepage\":\"https://www.chess.com/member/sarahjoh\",\"industry\":\"Technology\",\"infected_machine_id\":\"ABC123\",\"infected_path\":\"/documents/confidential\",\"infected_time\":\"2023-01-15T12:30:45Z\",\"ip_addresses\":[\"89.160.20.128\",\"89.160.20.112\"],\"job_title\":\"Software Engineer\",\"keyboard_languages\":[\"English\",\"Spanish\"],\"last_name\":\"Doe\",\"log_id\":\"76afa48107ec32f51a2aba4a314357c1e69d2267f1b04bf1afc948d0f77b1658\",\"password\":\"P@ssw0rd123\",\"password_plaintext\":\"******\",\"password_type\":\"alphanumeric\",\"record_addition_date\":\"2023-12-06T00:00:00Z\",\"record_cracked_date\":\"2023-11-29T00:00:00Z\",\"record_modification_date\":\"2023-11-29T00:00:00Z\",\"salt\":\"fbbdhd\",\"severity\":3,\"sighting\":17,\"social_linkedin\":[\"ildar-bazanov-961b14160\"],\"source_id\":50436,\"spycloud_publish_date\":\"2023-01-20T08:00:00Z\",\"target_domain\":\"example.com\",\"target_subdomain\":\"login.example.com\",\"target_url\":\"https://example.com/login\",\"user_browser\":\"Chrome\",\"user_hostname\":\"workstation-1\",\"user_os\":\"Windows 10\",\"user_sys_domain\":\"8ad8.default\",\"user_sys_registered_owner\":\"John Milk\",\"username\":\"john_doe\"}",
         "severity": 3
@@ -526,10 +526,10 @@ An example event for `breach_record` looks as following:
                 "Windows Defender"
             ],
             "cc": {
-                "bin": "******",
-                "expiration": "******",
-                "last_four": "****",
-                "number": "******"
+                "bin": "REDACTED",
+                "expiration": "REDACTED",
+                "last_four": "REDACTED",
+                "number": "REDACTED"
             },
             "company_name": "ABC Corporation",
             "country": {
@@ -567,7 +567,7 @@ An example event for `breach_record` looks as following:
             "password": {
                 "plaintext": "******",
                 "type": "alphanumeric",
-                "value": "******"
+                "value": "REDACTED"
             },
             "record": {
                 "addition_date": "2023-12-06T00:00:00.000Z",
@@ -602,7 +602,7 @@ An example event for `breach_record` looks as following:
     "tags": [
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
-        "hide_sensitive_true",
+        "hide_sensitive",
         "forwarded",
         "spycloud-breach_record"
     ],
@@ -699,7 +699,7 @@ An example event for `compass` looks as following:
 {
     "@timestamp": "2022-11-17T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "110ce7dc-5604-480f-8f88-2dcee00ebaca",
+        "ephemeral_id": "6fe389c2-f840-4526-a13c-8721be3d71b4",
         "id": "401b5614-f720-4272-afd1-fdd38e876355",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -707,7 +707,7 @@ An example event for `compass` looks as following:
     },
     "data_stream": {
         "dataset": "spycloud.compass",
-        "namespace": "33082",
+        "namespace": "65185",
         "type": "logs"
     },
     "destination": {
@@ -726,7 +726,7 @@ An example event for `compass` looks as following:
         "agent_id_status": "verified",
         "dataset": "spycloud.compass",
         "id": "3807a672-e5c4-4a58-8ade-93a690136c24",
-        "ingested": "2024-08-08T12:11:58Z",
+        "ingested": "2024-08-09T09:34:36Z",
         "kind": "event",
         "original": "{\"av_softwares\":[\"Windows Defender\"],\"country\":\"PHILIPPINES\",\"country_code\":\"PH\",\"document_id\":\"3807a672-e5c4-4a58-8ade-93a690136c24\",\"domain\":\"gmail.com\",\"email\":\"wer****************r@gmail.com\",\"email_domain\":\"gmail.com\",\"email_username\":\"wer****************r\",\"infected_machine_id\":\"76c9a60b-1d06-4bc1-8e08-4f07f82c0bdd\",\"infected_path\":\"C:\\\\Windows\\\\Microsoft.NET\\\\Framework\\\\v4.0.30319\\\\AppLaunch.exe\",\"infected_time\":\"2022-08-11T18:02:31Z\",\"ip_addresses\":[\"110.18.12.120\"],\"keyboard_languages\":\"english (united states)\",\"log_id\":\"fc201cf30d2727c57f07f05f3ab6ee43c7260609d973d508f818c1abcc4fcb39\",\"password\":\"********\",\"password_plaintext\":\"********\",\"password_type\":\"plaintext\",\"severity\":25,\"source_id\":40351,\"spycloud_publish_date\":\"2022-11-17T00:00:00Z\",\"target_domain\":\"sparefactor.com\",\"target_subdomain\":\"application.sparefactor.com\",\"target_url\":\"application.sparefactor.com\",\"user_browser\":\"Google Chrome [Default]\",\"user_hostname\":\"LAPTOP-4G2P1N13\",\"user_os\":\"Windows 10 Home Single Language [x64]\",\"user_sys_registered_owner\":\"NewAdmin\"}",
         "severity": 25
@@ -791,7 +791,7 @@ An example event for `compass` looks as following:
             "password": {
                 "plaintext": "********",
                 "type": "plaintext",
-                "value": "******"
+                "value": "REDACTED"
             },
             "severity": 25,
             "source_id": "40351",
@@ -814,7 +814,7 @@ An example event for `compass` looks as following:
     "tags": [
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
-        "hide_sensitive_true",
+        "hide_sensitive",
         "forwarded",
         "spycloud-compass"
     ],
