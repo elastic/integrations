@@ -1,3 +1,21 @@
 vars:
   hosts:
-    - "oracle://sys:Oradoc_db1@oracle:1521/ORCLCDB.localdomain?sysdba=1"
+    - "oracle://sys:Oradoc_db1@{{Hostname}}:{{Port}}/ORCLCDB.localdomain?sysdba=1"
+agent:
+  runtime: docker
+  provisioning_script:
+    language: "bash"
+    contents: |
+      apt-get update && apt-get -y install libaio1 wget unzip
+      mkdir -p /opt/oracle
+      cd /opt/oracle
+      wget https://download.oracle.com/otn_software/linux/instantclient/214000/instantclient-basic-linux.x64-21.4.0.0.0dbru.zip && unzip -o instantclient-basic-linux.x64-21.4.0.0.0dbru.zip
+      wget https://download.oracle.com/otn_software/linux/instantclient/217000/instantclient-sqlplus-linux.x64-21.7.0.0.0dbru.zip && unzip -o instantclient-sqlplus-linux.x64-21.7.0.0.0dbru.zip
+      echo /opt/oracle/instantclient_21_4 > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+      cp /opt/oracle/instantclient_21_7/glogin.sql /opt/oracle/instantclient_21_7/libsqlplus.so /opt/oracle/instantclient_21_7/libsqlplusic.so /opt/oracle/instantclient_21_7/sqlplus /opt/oracle/instantclient_21_4/
+  pre_start_script:
+    language: "sh"
+    contents: |
+      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-""}:/opt/oracle/instantclient_21_4"
+      export PATH="${PATH}:/opt/oracle/instantclient_21_7:/opt/oracle/instantclient_21_4"
+      cd /opt/oracle/instantclient_21_4

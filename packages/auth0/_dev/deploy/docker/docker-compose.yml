@@ -19,3 +19,16 @@ services:
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
       - STREAM_INSECURE=true
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/auth0-ndjson.log
+  auth0-http-server:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    hostname: auth0
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-logs.yml
