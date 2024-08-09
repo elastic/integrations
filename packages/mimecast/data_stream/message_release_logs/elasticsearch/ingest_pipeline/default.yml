@@ -1,0 +1,228 @@
+---
+description: Pipeline for processing Mimecast siem_logs.
+processors:
+  # Generic event/ecs fields we always want to populate.
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      description: Parse 'message' JSON contents into a 'mimecast' object.
+      field: event.original
+      target_field: mimecast
+
+  - date:
+      tag: parse_released_timestamp
+      description: Use 'mimecast.released' as the '@timestamp'
+      field: mimecast.released
+      if: ctx.mimecast?.released != null
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ssZZZZZ
+  - fingerprint:
+      fields:
+        - mimecast.id
+        - '@timestamp'
+      target_field: "_id"
+      ignore_missing: true
+
+  - append:
+      field: email.from.address
+      value: '{{{mimecast.fromEnv.emailAddress}}}'
+      if: ctx.mimecast?.fromEnv?.emailAddress != null
+      allow_duplicates: false
+  - append:
+      field: email.from.address
+      value: '{{{mimecast.fromHdr.emailAddress}}}'
+      if: ctx.mimecast?.fromHdr?.emailAddress != null
+      allow_duplicates: false
+  - foreach:
+      field: mimecast.to
+      if: ctx.mimecast?.to instanceof List
+      processor:
+        append:
+          field: email.to.address
+          value: '{{{_ingest._value.emailAddress}}}'
+          allow_duplicates: false
+  - set:
+      field: email.direction
+      copy_from: mimecast.route
+      ignore_empty_value: true
+  - set:
+      field: email.local_id
+      copy_from: mimecast.id
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      copy_from: mimecast.subject
+      ignore_empty_value: true
+
+  - set:
+      field: user.email
+      copy_from: email.from.address
+      ignore_empty_value: true
+      if: ctx.email.direction == 'outbound'
+  - append:
+      field: user.full_name
+      value: '{{{mimecast.fromEnv.displayableName}}}'
+      if: ctx.email.direction == 'outbound' && ctx.mimecast?.fromEnv?.emailAddress != null
+  - set:
+      field: user.email
+      copy_from: email.to.address
+      ignore_empty_value: true
+      if: ctx.email.direction == 'inbound'
+  - foreach:
+      field: mimecast.to
+      if: ctx.email.direction == 'inbound' && ctx.mimecast?.to instanceof List
+      processor:
+        append:
+          field: user.full_name
+          value: '{{{_ingest._value.displayableName}}}'
+          allow_duplicates: false
+
+  - script:
+      description: Populate related.* fields.
+      lang: painless
+      ignore_failure: true
+      source: |
+        def splitmail(String email) {
+          String[] parts = email.splitOnToken("@");
+          if (parts.length != 2) {
+              return null;
+          }
+          return parts;
+        }
+        def users = new HashSet();
+        def hosts = new HashSet();
+        if (ctx.mimecast?.fromEnv?.displayableName != null) {
+          users.add(ctx.mimecast.fromEnv.displayableName);
+        }
+        if (ctx.mimecast?.operator != null) {
+          def parts = splitmail(ctx.mimecast.operator);
+          if (parts != null) {
+            users.add(parts[0]);
+            hosts.add(parts[1]);
+          }
+          users.add(ctx.mimecast.operator);
+        }
+        if (ctx.mimecast?.fromEnv?.emailAddress != null) {
+          def parts = splitmail(ctx.mimecast.fromEnv.emailAddress);
+          if (parts != null) {
+            users.add(parts[0]);
+            hosts.add(parts[1]);
+          }
+          users.add(ctx.mimecast.fromEnv.emailAddress);
+        }
+        if (ctx.mimecast?.fromHdr?.displayableName != null) {
+          users.add(ctx.mimecast.fromHdr.displayableName);
+        }
+        if (ctx.mimecast?.fromHdr?.emailAddress != null) {
+          def parts = splitmail(ctx.mimecast.fromHdr.emailAddress);
+          if (parts != null) {
+            users.add(parts[0]);
+            hosts.add(parts[1]);
+          }
+          users.add(ctx.mimecast.fromHdr.emailAddress);
+        }
+        for (def to: ctx.mimecast.to) {
+          if (to.displayableName != null) {
+            users.add(to.displayableName);
+          }
+          if (to.emailAddress != null) {
+            def parts = splitmail(to.emailAddress);
+            if (parts != null) {
+              users.add(parts[0]);
+              hosts.add(parts[1]);
+            }
+            users.add(to.emailAddress);
+          }
+        }
+        if (users.size() != 0 || hosts.size() != 0) {
+          if (ctx.related == null) {
+            ctx.related = new HashMap();
+          }
+          if (users.size() != 0 && ctx.related.user == null) {
+            ctx.related.user = new ArrayList();
+            for (def u: users) {
+              ctx.related.user.add(u);
+            }
+            Collections.sort(ctx.related.user);
+          }
+          if (hosts.size() != 0 && ctx.related.hosts == null) {
+            ctx.related.hosts = new ArrayList();
+            for (def h: hosts) {
+              ctx.related.hosts.add(h);
+            }
+            Collections.sort(ctx.related.hosts);
+          }
+        }
+
+  - set:
+      field: event.action
+      copy_from: mimecast.status
+      ignore_empty_value: true
+  - set:
+      field: event.category
+      value: [email]
+  - set:
+      field: event.id
+      copy_from: mimecast.id
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.reason
+      copy_from: mimecast.rejectReason
+      ignore_empty_value: true
+  - set:
+      field: event.risk_score
+      copy_from: mimecast.spamScore
+      ignore_empty_value: true
+  - set:
+      field: event.type
+      value: [info]
+
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      ignore_failure: true
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      tag: move_fields_into_place
+      field: mimecast
+      target_field: mimecast.message_release_logs
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
