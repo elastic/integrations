@@ -111,41 +111,46 @@ processors:
 # .protoPayload.authenticationInfo
 # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#AuthenticationInfo
 ##
-# email address of authenticated user (redacted) or service account
-# principalEmail -> client.user.email
-  - set:
-      field: client.user.email
-      copy_from: json.protoPayload.authenticationInfo.principalEmail
+  - rename:
+      field: json.protoPayload.authenticationInfo.authoritySelector
+      target_field: gcp.audit.authentication_info.authority_selector
       ignore_failure: true
-# identity of requesting first or third party
-# principalSubject -> client.user.id
-  - set:
-      field: client.user.id
-      copy_from: json.protoPayload.authenticationInfo.principalSubject
+  - rename:
+      field: json.protoPayload.authenticationInfo.principalEmail
+      target_field: gcp.audit.authentication_info.principal_email
       ignore_failure: true
-  - set:
-      field: gcp.audit.authentication_info.authority_selector
-      copy_from: json.protoPayload.authenticationInfo.authoritySelector
+  - rename:
+      field: json.protoPayload.authenticationInfo.principalSubject
+      target_field: gcp.audit.authentication_info.principal_subject
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.serviceAccountKeyName
+      target_field: gcp.audit.authentication_info.service_account_key_name
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
+      target_field: gcp.audit.authentication_info.service_account_delegation_info
+      ignore_failure: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.thirdPartyPrincipal
+      target_field: gcp.audit.authentication_info.third_party_principal
       ignore_failure: true
 
+  # email address of authenticated user (redacted) or service account
+  # principal_email -> client.user.email
   - rename:
       field: gcp.audit.authentication_info.principal_email
       target_field: client.user.email
       if: ctx.client?.user?.email == null
       ignore_missing: true
-  - remove:
-      field: gcp.audit.authentication_info.principal_email
-      if: ctx.client?.user?.email == ctx.gcp?.audit?.authentication_info?.principal_email
-      ignore_missing: true
+  # identity of requesting first or third party
+  # principal_subject -> client.user.id
   - rename:
       field: gcp.audit.authentication_info.principal_subject
       target_field: client.user.id
       if: ctx.client?.user?.id == null
       ignore_missing: true
-  - remove:
-      field: gcp.audit.authentication_info.principal_subject
-      if: ctx.client?.user?.id == ctx.gcp?.audit?.authentication_info?.principal_subject
-      ignore_missing: true
+
 ##
 # AuthorizationInfo
 # .protoPayload.authorizationInfo
