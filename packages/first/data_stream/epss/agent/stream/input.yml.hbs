@@ -1,0 +1,70 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  batch_size: {{batch_size}}
+max_executions: 5000
+program: |
+  request(
+    "GET", 
+    state.url + "?" + {
+      "limit": [string(state.batch_size)],
+      "offset": [(
+        has(state.cursor) && has(state.cursor.nextOffset) && state.cursor.nextOffset != null
+        ?
+            string(state.cursor.nextOffset)
+        :
+            "0"
+      )]
+    }.format_query()
+  ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
+    "events": body.data.map(
+      e, 
+      {
+          "message": e.encode_json(),
+      }
+    ),
+    "url": state.url,
+    "want_more": body.offset + body.limit < body.total,
+    "batch_size": state.batch_size,
+    "cursor": {
+        "nextOffset": (
+          body.offset + body.limit < body.total
+          ?
+            body.offset + body.limit
+          :
+            null
+        )
+    },
+  }))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

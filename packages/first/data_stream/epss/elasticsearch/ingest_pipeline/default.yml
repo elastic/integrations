@@ -1,0 +1,80 @@
+---
+description: Pipeline for processing First EPSS data.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
+  - set:
+      field: event.kind
+      tag: set_event_kind_1
+      value: enrichment
+  - set:
+      field: event.category
+      tag: set_event_catgeory
+      value: [vulnerability]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: [info]
+  - json:
+      field: message
+      tag: json_message
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.cve
+      tag: rename_cve
+      target_field: first.epss.cve
+  - set:
+      field: vulnerability.id
+      tag: set_vulnerability_id
+      copy_from: first.epss.cve
+      ignore_empty_value: true
+  - rename:
+      field: json.date
+      tag: rename_date
+      target_field: first.epss.date
+  - rename:
+      field: json.epss
+      tag: rename_epss
+      target_field: first.epss.epss
+  - convert:
+      field: first.epss.epss
+      type: float
+      ignore_missing: true
+  - rename:
+      field: json.percentile
+      tag: rename_percentile
+      target_field: first.epss.percentile
+  - convert:
+      field: first.epss.percentile
+      type: float
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_to_set_vulnerability_reference
+      description: Script to set vunlerability.reference
+      if: ctx.vulnerability?.id != null
+      source: >-
+        ctx.vulnerability.reference = 'https://api.first.org/data/v1/epss?pretty=true&cve=' + ctx.vulnerability.id;
+  - remove:
+      tag: remove_json
+      field:
+        - json
+        - message
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
