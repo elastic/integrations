@@ -1,17 +1,10 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
-
 # First EPSS
 
-<!-- The First EPSS integration allows you to monitor {name of service}. {name of service} is {describe service}.
-
-Use the First EPSS integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
-
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
+The First EPSS integration allows you to ingest data from First EPSS API. The Exploit Prediction Scoring System (EPSS) is a data-driven effort for estimating the likelihood (probability) that a software vulnerability will be exploited in the wild..
 
 ## Data streams
 
-<!-- The First EPSS integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
+The First EPSS integration collects one type of data streams: logs.
 
 <!-- If applicable -->
 <!-- **Logs** help you keep a record of events happening in {service}.
@@ -82,3 +75,27 @@ An example event for `{data stream name}` looks as following:
 <!-- #### Exported fields
 
 {insert table} -->
+
+<!-- Repeat for both Logs and Metrics if applicable -->
+## Logs
+
+<!-- Repeat for each data stream of the current type -->
+### EPSS
+
+The `epss` data stream retrieves the full list of EPSS scores of CVEs every interval from the the EPSS API url `https://api.first.org/data/v1/epss`
+
+#### Exported fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| first_epss.cve | CVE number | keyword |
+| first_epss.date | EPSS calculation date | date |
+| first_epss.epss | Exploit Prediction Scoring System score value | float |
+| first_epss.percentile | Exploit Prediction Scoring System percentile value | float |
+| input.type | Input type | keyword |
