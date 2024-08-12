@@ -1,0 +1,61 @@
+title: "Goflow2 sFlow"
+type: logs
+streams:
+  - input: filestream
+    template_path: filestream.yml.hbs
+    title: sFlow logs
+    description: Collect sFlow logs form GoFlow2
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/sflow/goflow2/*.log
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: ignore_older
+        type: text
+        title: Ignore events older than
+        default: 72h
+        required: false
+        show_user: false
+        multi: false
+        description: >-
+          If this option is specified, events that are older than the specified amount of time are ignored. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+      - name: exclude_files
+        type: text
+        title: Exclude files
+        multi: true
+        required: false
+        show_user: false
+        description: Regular expression patterns in [RE2 syntax](https://github.com/google/re2/wiki/Syntax) matching files to exclude from input. See [exclude_files](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-log.html#filebeat-input-log-exclude-files) for details.
+        default:
+          - \.gz$
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - sflow
+          - forwarded
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        default: |
+          - add_locale: ~
