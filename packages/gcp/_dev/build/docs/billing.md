@@ -22,7 +22,7 @@ Before using any GCP integration you will need:
 * **GCP Credentials** to connect with your GCP account.
 * **GCP Permissions** to make sure the service account you're using to connect has permission to share the relevant data.
 
-To collect GCP Billing metrics, you would need specific permissions to access the necessary data. Here's a list of permissions required:
+To collect GCP Billing metrics, the following permissions are required to access the necessary data:
 
 - `roles/bigquery.dataViewer`
 - `roles/bigquery.jobUser`
