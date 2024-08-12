@@ -390,12 +390,11 @@ processors:
       field: "message"
       patterns:
        - "AAA user %{AUTH} Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?%{CISCO_USER:source.user.name}(%{SPACE})?: user IP = %{IPORNONE}"
-       - "AAA user %{AUTH} Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = : user IP = %{IPORNONE}"
       pattern_definitions:
         AUTH: (authentication|authorization)
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
         USERNAME: "[a-zA-Z0-9._'-]+"
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))|
         IPORNONE: (%{IP:source.address}|None)
   - grok:
       if: "ctx._temp_.cisco.message_id == '113008'"
@@ -907,7 +906,6 @@ processors:
       field: "message"
       description: "713049"
       patterns:
-        - "Group = %{NOTSPACE}, IP = %{IP:source.address}, Security negotiation complete for LAN-to-LAN Group (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
         - "Group = %{NOTSPACE}, Username = %{NOTSPACE:user.name}, IP = %{IP:source.address}, Security negotiation complete for User (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
         - "Group = %{NOTSPACE}, IP = %{IP:source.address}, Security negotiation complete [a-z\\s]+ (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
   - grok:
@@ -1831,8 +1829,7 @@ processors:
       patterns:
         - (%{CISCO_DOMAIN})?%{CISCO_USER_EMAIL:source.user.email}
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
-        - \*+
-        - ""
+        - \*+|
       pattern_definitions:
         USERNAME: "[^@$]+"
         CISCO_USER_EMAIL: "%{CISCO_USER}@%{HOSTNAME:source.user.domain}"
