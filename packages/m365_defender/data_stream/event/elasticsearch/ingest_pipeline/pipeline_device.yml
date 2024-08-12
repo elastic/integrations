@@ -214,6 +214,20 @@ processors:
       tag: rename_additional_fields_dns_answers
       ignore_missing: true
       if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
+  - json:
+      field: m365_defender.event.additional_fields.TTLs
+      tag: json_m365_defender_event_additional_fields_ttls
+      if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: m365_defender.event.additional_fields.TTLs
+      target_field: m365_defender.event.dns.ttls
+      tag: rename_additional_fields_dns_ttls
+      ignore_missing: true
+      if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
   - script:
       description: Add m365_defender.event.dns.header_flags from flags inside AdditionalFields
       lang: painless
@@ -2324,12 +2338,27 @@ processors:
       tag: set_dns_response_code
       ignore_empty_value: true
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('dnsconnectioninspected')
-  - set:
-      field: dns.answers
-      copy_from: m365_defender.event.dns.answers
-      tag: set_dns_answers
-      ignore_empty_value: true
-      if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('dnsconnectioninspected')
+  - script:
+      lang: painless
+      tag: set_dns_answers_and_ttls
+      if: "ctx.m365_defender?.event?.dns?.answers != null && ctx.m365_defender?.event?.dns?.ttls != null"
+      source: >-
+        def answers = ctx.m365_defender.event.dns.answers;
+        def ttls = ctx.m365_defender.event.dns.ttls;
+        if (answers.isEmpty() || ttls.isEmpty() || answers.length != ttls.length) {
+          return;
+        }
+        def lst = new ArrayList();
+        for (def i = 0; i < answers.length; i++) {
+          lst.add([
+            "data": answers[i],
+            "ttl": (int)ttls[i]
+          ])
+        }
+        if (ctx.dns == null) {
+          ctx.dns = new HashMap();
+        }
+        ctx.dns.answers = lst;
   - set:
       field: dns.header_flags
       copy_from: m365_defender.event.dns.header_flags
@@ -2850,6 +2879,7 @@ processors:
         - m365_defender.event.dns.qtype_name
         - m365_defender.event.dns.rcode_name
         - m365_defender.event.dns.answers
+        - m365_defender.event.dns.ttls
         - m365_defender.event.dns.header_flags
       ignore_missing: true
   - remove:
