@@ -13,17 +13,6 @@ This integration encompasses event and inventory data ingestion from Jamf Pro.
 
 * __Jamf Pro Active License and OAuth2 Credentials:__
 This connector utilizes Jamf Pro API, therefore active license is a requirement
-* __Jamf API Application:__
-To allow connection and application on a Jamf Pro must be created.  
-Authentication into app requires:
-- client_id
-- client_secret
-These can be received on app creation page or regenerated from app control page
-
-Permission required for Jamf Pro application
-- _Read Computer Inventory Collection_: Access to read inventory data from the computer collection.
-- _Read Computers_: Allows the application to access and read data from computers.
-Permissions can be set up on app creation or can be updated for existing app
 
 ## Setup
 
@@ -34,6 +23,15 @@ Permissions can be set up on app creation or can be updated for existing app
 
 To create a connection to Jamf Pro, an [application must be created](https://learn.jamf.com/en-US/bundle/jamf-pro-documentation-current/page/API_Roles_and_Clients.html) first. 
 Credentials generated during this process are required for the subsequent steps.
+
+__Permission required for Jamf Pro application__  
+- _Read Computer Inventory Collection_: Access to read inventory data from the computer collection.
+- _Read Computers_: Allows the application to access and read data from computers.  
+__Jamf Pro API Credentials__  
+**client_id** is an app specific ID, it is generated on createin step and available from app settings
+**client_secret** generated after app is created, it is available only after creation. Can be regenerated if lost.
+
+Permissions can be set up on app creation or can be updated for existing app
 
 ### Step 2: Integration Setup:
 To set up the  integration 3 fields are required:
