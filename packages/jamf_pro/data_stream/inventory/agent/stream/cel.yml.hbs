@@ -49,12 +49,21 @@ program: |
           }]
         }
       :
+      (int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount ?
         state.with({
           "events": body.results.map(e, {
               "message": e,
           }),
-          "want_more": (int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount,
+          "want_more": true,
           "cursor": {"page": int(state.?cursor.page.orValue(0)) + 1},
+        })
+        :
+        state.with({
+          "events": body.results.map(e, {
+              "message": e,
+          }),
+          "want_more": false,
+          "cursor": {"page":0},
         })
     )
   )
