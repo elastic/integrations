@@ -24,7 +24,6 @@ Before using any GCP integration you will need:
 
 To collect GCP Billing metrics, the following permissions are required to access the necessary data:
 
-
 - `roles/bigquery.dataViewer`
 - `roles/bigquery.jobUser`
 - `roles/billing.viewer`
