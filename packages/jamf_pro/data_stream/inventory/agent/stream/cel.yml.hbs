@@ -18,6 +18,13 @@ auth:
 interval: {{interval}}
 max_executions: {{max_executions}}
 
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 
 keep_null: true
 program: |
@@ -26,7 +33,7 @@ program: |
       state.url.trim_right("/")  + "?" +	{
       "section" : state.sections,
       "page-size": [string(state.page_size)],
-      "page": [string(state.?cursor.?page.orValue(int(0)))]
+      "page": [string(state.?cursor.page.orValue(0))]
     }.format_query()
   ).with({
     "Header": ({
@@ -46,36 +53,84 @@ program: |
           "events": body.results.map(e, {
               "message": e,
           }),
-          "want_more": (int(state.?cursor.?page.orValue(int(0))) + 1) * int(state.page_size) < int(body.totalCount),
-          "cursor": {"page": int(state.?cursor.?page.orValue(int(0))) + 1},
+          "want_more": (int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount,
+          "cursor": {"page": int(state.?cursor.page.orValue(0)) + 1},
         })
     )
   )
 state:
   page_size: {{page_size}}
   sections: [
-  {{#if enable_section_general }} "GENERAL", {{/if}}
-  {{#if enable_section_hardware }} "HARDWARE", {{/if}}
-  {{#if enable_section_operating_system }} "OPERATING_SYSTEM", {{/if}}
-  {{#if enable_section_disk_encryption }} "DISK_ENCRYPTION", {{/if}}
-  {{#if enable_section_purchasing }} "PURCHASING", {{/if}}
-  {{#if enable_section_applications }} "APPLICATIONS", {{/if}}
-  {{#if enable_section_storage }} "STORAGE", {{/if}}
-  {{#if enable_section_user_and_location  }} "USER_AND_LOCATION", {{/if}}
-  {{#if enable_section_configuration_profiles }} "CONFIGURATION_PROFILES", {{/if}}
-  {{#if enable_section_printers }} "PRINTERS", {{/if}}
-  {{#if enable_section_services }} "SERVICES", {{/if}}
-  {{#if enable_section_local_user_accounts }} "LOCAL_USER_ACCOUNTS", {{/if}}
-  {{#if enable_section_certificates }} "CERTIFICATES", {{/if}}
-  {{#if enable_section_attachments }} "ATTACHMENTS", {{/if}}
-  {{#if enable_section_plugins }} "PLUGINS", {{/if}}
-  {{#if enable_section_package_receipts }} "PACKAGE_RECEIPTS", {{/if}}
-  {{#if enable_section_fonts }} "FONTS", {{/if}}
-  {{#if enable_section_security }} "SECURITY", {{/if}}
-  {{#if enable_section_licensed_software }} "LICENSED_SOFTWARE", {{/if}}
-  {{#if enable_section_ibeacons }} "IBEACONS", {{/if}}
-  {{#if enable_section_software_updates }} "SOFTWARE_UPDATES", {{/if}}
-  {{#if enable_section_extension_attributes }} "EXTENSION_ATTRIBUTES", {{/if}}
-  {{#if enable_section_content_caching }} "CONTENT_CACHING", {{/if}}
-  {{#if enable_section_group_membership }} "GROUP_MEMBERSHIP", {{/if}}
+  {{#if enable_section_general }} 
+ - GENERAL
+  {{/if}}
+  {{#if enable_section_hardware }} 
+ - HARDWARE
+  {{/if}}
+  {{#if enable_section_operating_system }} 
+ - OPERATING_SYSTEM
+  {{/if}}
+  {{#if enable_section_disk_encryption }} 
+ - DISK_ENCRYPTION
+  {{/if}}
+  {{#if enable_section_purchasing }} 
+ - PURCHASING
+  {{/if}}
+  {{#if enable_section_applications }} 
+ - APPLICATIONS
+  {{/if}}
+  {{#if enable_section_storage }} 
+ - STORAGE
+  {{/if}}
+  {{#if enable_section_user_and_location  }} 
+ - USER_AND_LOCATION
+  {{/if}}
+  {{#if enable_section_configuration_profiles }} 
+ - CONFIGURATION_PROFILES
+  {{/if}}
+  {{#if enable_section_printers }} 
+ - PRINTERS
+  {{/if}}
+  {{#if enable_section_services }} 
+ - SERVICES
+  {{/if}}
+  {{#if enable_section_local_user_accounts }} 
+ - LOCAL_USER_ACCOUNTS
+  {{/if}}
+  {{#if enable_section_certificates }} 
+ - CERTIFICATES
+  {{/if}}
+  {{#if enable_section_attachments }} 
+ - ATTACHMENTS
+  {{/if}}
+  {{#if enable_section_plugins }} 
+ - PLUGINS
+  {{/if}}
+  {{#if enable_section_package_receipts }} 
+ - PACKAGE_RECEIPTS
+  {{/if}}
+  {{#if enable_section_fonts }} 
+ - FONTS
+  {{/if}}
+  {{#if enable_section_security }} 
+ - SECURITY
+  {{/if}}
+  {{#if enable_section_licensed_software }} 
+ - LICENSED_SOFTWARE
+  {{/if}}
+  {{#if enable_section_ibeacons }} 
+ - IBEACONS
+  {{/if}}
+  {{#if enable_section_software_updates }} 
+ - SOFTWARE_UPDATES
+  {{/if}}
+  {{#if enable_section_extension_attributes }} 
+ - EXTENSION_ATTRIBUTES
+  {{/if}}
+  {{#if enable_section_content_caching }} 
+ - CONTENT_CACHING
+  {{/if}}
+  {{#if enable_section_group_membership }} 
+ - GROUP_MEMBERSHIP
+  {{/if}}
   ]
