@@ -52,49 +52,51 @@ By default these sections are included into Jamf API query:
  - _HARDWARE_
  - _OPERATING_SYSTEM_
 All the sections can be enabled or disabled on connector's settings page
- Sample events:
+
+An example event for `inventory` looks as following:
+
 ```json
 {
-    "@timestamp": "2024-08-05T17:21:03.410Z",
+    "@timestamp": "2024-08-12T09:43:09.268Z",
     "agent": {
-        "ephemeral_id": "94a3cd55-7aa4-43f6-b70e-c95b49f1bd2f",
-        "id": "745c66c5-5a2e-447e-b799-7e91aaeccc7e",
-        "name": "elastic-agent-27337",
+        "ephemeral_id": "76ae6902-5ce1-4af5-9467-29c69ef7663d",
+        "id": "b3ca712d-0550-462e-b8f0-f9c8c4f3448c",
+        "name": "elastic-agent-31016",
         "type": "filebeat",
-        "version": "8.14.3"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_pro.inventory",
-        "namespace": "28750",
+        "namespace": "41826",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "745c66c5-5a2e-447e-b799-7e91aaeccc7e",
+        "id": "b3ca712d-0550-462e-b8f0-f9c8c4f3448c",
         "snapshot": false,
-        "version": "8.14.3"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.inventory",
-        "ingested": "2024-08-05T17:21:06Z"
+        "ingested": "2024-08-12T09:43:12Z"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-27337",
-        "id": "d7b94aeb4f9141eaa5f345ec31e65c86",
+        "hostname": "elastic-agent-31016",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.160.2",
-            "172.22.0.10"
+            "172.26.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-AC-16-00-0A",
-            "02-42-C0-A8-A0-02"
+            "02-42-AC-12-00-04",
+            "02-42-AC-1A-00-02"
         ],
-        "name": "elastic-agent-27337",
+        "name": "elastic-agent-31016",
         "os": {
             "codename": "focal",
             "family": "debian",
@@ -169,3 +171,160 @@ All the sections can be enabled or disabled on connector's settings page
     }
 }
 ```
+
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version |  | keyword |
+| event.dataset |  | constant_keyword |
+| event.module |  | constant_keyword |
+| input.type | Input type | keyword |
+| jamf_pro.inventory.applications.bundle_id |  | keyword |
+| jamf_pro.inventory.applications.external_version_id |  | keyword |
+| jamf_pro.inventory.applications.mac_app_store |  | boolean |
+| jamf_pro.inventory.applications.name |  | keyword |
+| jamf_pro.inventory.applications.path |  | keyword |
+| jamf_pro.inventory.applications.size_megabytes |  | float |
+| jamf_pro.inventory.applications.update_available |  | boolean |
+| jamf_pro.inventory.applications.version |  | keyword |
+| jamf_pro.inventory.attachments |  | nested |
+| jamf_pro.inventory.certificates |  | nested |
+| jamf_pro.inventory.configuration_profiles.display_name |  | keyword |
+| jamf_pro.inventory.configuration_profiles.id |  | keyword |
+| jamf_pro.inventory.configuration_profiles.last_installed |  | date |
+| jamf_pro.inventory.configuration_profiles.profile_identifier |  | keyword |
+| jamf_pro.inventory.configuration_profiles.removable |  | boolean |
+| jamf_pro.inventory.configuration_profiles.username |  | keyword |
+| jamf_pro.inventory.disk_encryption.boot_partition_encryption_details.partition_file_vault2percent |  | float |
+| jamf_pro.inventory.disk_encryption.boot_partition_encryption_details.partition_file_vault2state |  | keyword |
+| jamf_pro.inventory.disk_encryption.boot_partition_encryption_details.partition_name |  | keyword |
+| jamf_pro.inventory.disk_encryption.disk_encryption_configuration_name |  | keyword |
+| jamf_pro.inventory.disk_encryption.file_vault2eligibility_message |  | text |
+| jamf_pro.inventory.disk_encryption.file_vault2enabled_user_names |  | flattened |
+| jamf_pro.inventory.disk_encryption.individual_recovery_key_validity_status |  | keyword |
+| jamf_pro.inventory.disk_encryption.institutional_recovery_key_present |  | boolean |
+| jamf_pro.inventory.error.message |  | text |
+| jamf_pro.inventory.extension_attributes |  | nested |
+| jamf_pro.inventory.fonts |  | nested |
+| jamf_pro.inventory.general.asset_tag |  | keyword |
+| jamf_pro.inventory.general.barcode1 |  | keyword |
+| jamf_pro.inventory.general.barcode2 |  | keyword |
+| jamf_pro.inventory.general.declarative_device_management_enabled |  | boolean |
+| jamf_pro.inventory.general.distribution_point |  | keyword |
+| jamf_pro.inventory.general.enrolled_via_automated_device_enrollment |  | boolean |
+| jamf_pro.inventory.general.enrollment_method |  | keyword |
+| jamf_pro.inventory.general.initial_entry_date |  | date |
+| jamf_pro.inventory.general.itunes_store_account_active |  | boolean |
+| jamf_pro.inventory.general.jamf_binary_version |  | keyword |
+| jamf_pro.inventory.general.last_cloud_backup_date |  | date |
+| jamf_pro.inventory.general.last_contact_time |  | date |
+| jamf_pro.inventory.general.last_enrolled_date |  | date |
+| jamf_pro.inventory.general.last_ip_address |  | ip |
+| jamf_pro.inventory.general.last_ip_address_geo.city_name |  | keyword |
+| jamf_pro.inventory.general.last_ip_address_geo.continent_name |  | keyword |
+| jamf_pro.inventory.general.last_ip_address_geo.country_iso_code |  | keyword |
+| jamf_pro.inventory.general.last_ip_address_geo.country_name |  | keyword |
+| jamf_pro.inventory.general.last_ip_address_geo.location |  | geo_point |
+| jamf_pro.inventory.general.last_ip_address_geo.region_iso_code |  | keyword |
+| jamf_pro.inventory.general.last_ip_address_geo.region_name |  | keyword |
+| jamf_pro.inventory.general.last_reported_ip |  | ip |
+| jamf_pro.inventory.general.management_id |  | keyword |
+| jamf_pro.inventory.general.mdm_capable.capable |  | boolean |
+| jamf_pro.inventory.general.mdm_capable.capable_users |  | nested |
+| jamf_pro.inventory.general.mdm_profile_expiration |  | date |
+| jamf_pro.inventory.general.name |  | keyword |
+| jamf_pro.inventory.general.platform |  | keyword |
+| jamf_pro.inventory.general.remote_management.managed |  | boolean |
+| jamf_pro.inventory.general.remote_management.management_username |  | keyword |
+| jamf_pro.inventory.general.report_date |  | date |
+| jamf_pro.inventory.general.site.id |  | keyword |
+| jamf_pro.inventory.general.site.name |  | keyword |
+| jamf_pro.inventory.general.supervised |  | boolean |
+| jamf_pro.inventory.general.user_approved_mdm |  | boolean |
+| jamf_pro.inventory.group_memberships.group_id |  | keyword |
+| jamf_pro.inventory.group_memberships.group_name |  | keyword |
+| jamf_pro.inventory.group_memberships.smart_group |  | boolean |
+| jamf_pro.inventory.hardware.alt_mac_address |  | keyword |
+| jamf_pro.inventory.hardware.alt_network_adapter_type |  | keyword |
+| jamf_pro.inventory.hardware.apple_silicon |  | boolean |
+| jamf_pro.inventory.hardware.battery_capacity_percent |  | integer |
+| jamf_pro.inventory.hardware.ble_capable |  | boolean |
+| jamf_pro.inventory.hardware.boot_rom |  | keyword |
+| jamf_pro.inventory.hardware.bus_speed_mhz |  | long |
+| jamf_pro.inventory.hardware.cache_size_kilobytes |  | long |
+| jamf_pro.inventory.hardware.core_count |  | integer |
+| jamf_pro.inventory.hardware.mac_address |  | keyword |
+| jamf_pro.inventory.hardware.make |  | keyword |
+| jamf_pro.inventory.hardware.model |  | keyword |
+| jamf_pro.inventory.hardware.model_identifier |  | keyword |
+| jamf_pro.inventory.hardware.network_adapter_type |  | keyword |
+| jamf_pro.inventory.hardware.nic_speed |  | keyword |
+| jamf_pro.inventory.hardware.open_ram_slots |  | integer |
+| jamf_pro.inventory.hardware.optical_drive |  | keyword |
+| jamf_pro.inventory.hardware.processor_architecture |  | keyword |
+| jamf_pro.inventory.hardware.processor_count |  | integer |
+| jamf_pro.inventory.hardware.processor_speed_mhz |  | long |
+| jamf_pro.inventory.hardware.processor_type |  | keyword |
+| jamf_pro.inventory.hardware.serial_number |  | keyword |
+| jamf_pro.inventory.hardware.smc_version |  | keyword |
+| jamf_pro.inventory.hardware.supports_ios_app_installs |  | boolean |
+| jamf_pro.inventory.hardware.total_ram_megabytes |  | long |
+| jamf_pro.inventory.ibeacons |  | nested |
+| jamf_pro.inventory.id |  | keyword |
+| jamf_pro.inventory.licensed_software |  | nested |
+| jamf_pro.inventory.local_user_accounts.admin |  | boolean |
+| jamf_pro.inventory.local_user_accounts.fullname |  | keyword |
+| jamf_pro.inventory.local_user_accounts.uid |  | keyword |
+| jamf_pro.inventory.local_user_accounts.username |  | keyword |
+| jamf_pro.inventory.operating_system.active_directory_status |  | keyword |
+| jamf_pro.inventory.operating_system.build |  | keyword |
+| jamf_pro.inventory.operating_system.file_vault2status |  | keyword |
+| jamf_pro.inventory.operating_system.name |  | keyword |
+| jamf_pro.inventory.operating_system.rapid_security_response |  | keyword |
+| jamf_pro.inventory.operating_system.software_update_device_id |  | keyword |
+| jamf_pro.inventory.operating_system.supplemental_build_version |  | keyword |
+| jamf_pro.inventory.operating_system.version |  | keyword |
+| jamf_pro.inventory.package_receipts.cached |  | flattened |
+| jamf_pro.inventory.package_receipts.installed_by_installer_swu |  | flattened |
+| jamf_pro.inventory.package_receipts.installed_by_jamf_pro |  | flattened |
+| jamf_pro.inventory.plugins |  | nested |
+| jamf_pro.inventory.printers |  | nested |
+| jamf_pro.inventory.purchasing.apple_care_id |  | keyword |
+| jamf_pro.inventory.purchasing.extension_attributes |  | nested |
+| jamf_pro.inventory.purchasing.lease_date |  | date |
+| jamf_pro.inventory.purchasing.leased |  | boolean |
+| jamf_pro.inventory.purchasing.life_expectancy |  | integer |
+| jamf_pro.inventory.purchasing.po_date |  | date |
+| jamf_pro.inventory.purchasing.po_number |  | keyword |
+| jamf_pro.inventory.purchasing.purchase_price |  | float |
+| jamf_pro.inventory.purchasing.purchased |  | boolean |
+| jamf_pro.inventory.purchasing.purchasing_account |  | keyword |
+| jamf_pro.inventory.purchasing.purchasing_contact |  | keyword |
+| jamf_pro.inventory.purchasing.vendor |  | keyword |
+| jamf_pro.inventory.purchasing.warranty_date |  | date |
+| jamf_pro.inventory.security.gatekeeper_status |  | keyword |
+| jamf_pro.inventory.security.sip_status |  | keyword |
+| jamf_pro.inventory.services |  | nested |
+| jamf_pro.inventory.software_updates.name |  | keyword |
+| jamf_pro.inventory.software_updates.package_name |  | keyword |
+| jamf_pro.inventory.software_updates.version |  | keyword |
+| jamf_pro.inventory.storage.boot_drive_available_space_megabytes |  | long |
+| jamf_pro.inventory.storage.disks.device |  | keyword |
+| jamf_pro.inventory.storage.disks.id |  | keyword |
+| jamf_pro.inventory.storage.disks.model |  | keyword |
+| jamf_pro.inventory.udid |  | keyword |
+| jamf_pro.inventory.user_and_location.building_id |  | keyword |
+| jamf_pro.inventory.user_and_location.department_id |  | keyword |
+| jamf_pro.inventory.user_and_location.email |  | keyword |
+| jamf_pro.inventory.user_and_location.extension_attributes |  | nested |
+| jamf_pro.inventory.user_and_location.phone |  | keyword |
+| jamf_pro.inventory.user_and_location.position |  | keyword |
+| jamf_pro.inventory.user_and_location.realname |  | keyword |
+| jamf_pro.inventory.user_and_location.room |  | keyword |
+| jamf_pro.inventory.user_and_location.username |  | keyword |
