@@ -389,7 +389,7 @@ processors:
       description: "113005"
       field: "message"
       patterns:
-       - "AAA user %{AUTH} Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?%{CISCO_USER:source.user.name}(%{SPACE})?: user IP = %{IPORNONE}"
+      - "AAA user %{AUTH} Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = %{CISCO_USER:source.user.name}(%{SPACE})?: user IP = %{IPORNONE}"
       pattern_definitions:
         AUTH: (authentication|authorization)
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
@@ -1824,12 +1824,12 @@ processors:
   # Support masked user value
   - grok:
       field: "source.user.name"
-      if: 'ctx.source?.user?.name != null'
+      if: 'ctx.source?.user?.name != null && ctx.source.user.name != ""'
       tag: "grok_source_user_name"
       patterns:
         - (%{CISCO_DOMAIN})?%{CISCO_USER_EMAIL:source.user.email}
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
-        - \*+|
+        - \*+
       pattern_definitions:
         USERNAME: "[^@$]+"
         CISCO_USER_EMAIL: "%{CISCO_USER}@%{HOSTNAME:source.user.domain}"
