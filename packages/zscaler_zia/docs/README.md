@@ -1838,6 +1838,7 @@ An example event for `web` looks as following:
 | zscaler_zia.web.url.category_method | Refers to the source of the URL's category. | keyword |
 | zscaler_zia.web.url.class | The class of the destination URL. | keyword |
 | zscaler_zia.web.url.filter_rule_label | The name of the rule that was applied to the URL filter. | keyword |
+| zscaler_zia.web.url.name | The destination URL. | keyword |
 | zscaler_zia.web.user_agent.class | The user agent class. | keyword |
 | zscaler_zia.web.user_agent.name | The full user agent string for both known and unknown agents. | keyword |
 | zscaler_zia.web.user_agent.token | The user agent token. | keyword |
