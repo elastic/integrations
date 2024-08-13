@@ -33,9 +33,13 @@ program: |
       state.url.trim_right("/")  + "?" +	{
       "section" : state.sections,
       "page-size": [string(state.page_size)],
-      "page": [string(state.?cursor.page.orValue(0))]
-    }.format_query()
-  ).with({
+      "page": [string(state.?cursor.page.orValue(0))],
+      ?"filter": (state.?cursor.use_frequency_reducer.orValue(false)) ? 
+        optional.of(['general.reportDate>"'+string(now - duration(state.frequency_safe_period))+'"']) 
+        :
+        optional.none(),
+     }.format_query()
+  ).with({  
     "Header": ({
       "Content-Type": ["application/json"]
     })
@@ -56,12 +60,16 @@ program: |
           "want_more": (int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount,
           "cursor": {
             "page": (int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount ?
-              int(state.?cursor.?page.orValue(int(0))) + 1 : 0
+              int(state.?cursor.?page.orValue(int(0))) + 1 : 0,
+            "use_frequency_reducer": state.use_frequency_reducer && 
+                ((int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount)
             },
         })
     )
   )
 state:
+  frequency_safe_period: {{frequency_safe_period}}
+  use_frequency_reducer: true
   page_size: {{page_size}}
   sections:
   {{#if enable_section_general }} 
