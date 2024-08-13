@@ -3247,6 +3247,6 @@ The Windows `perfmon` data stream provides performance counter values.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | windows.perfmon.instance | Instance value. | keyword |
-| windows.perfmon.metrics.\*.\* | Metric values returned. | object |
+| windows.perfmon.metrics.\*.\* | Metric values returned. |  |
 | windows.perfmon.object | Object value. | keyword |
 
