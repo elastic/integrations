@@ -19,6 +19,9 @@ interval: {{interval}}
 max_executions: {{max_executions}}
 
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
@@ -35,7 +38,7 @@ program: |
       "page-size": [string(state.page_size)],
       "page": [string(state.?cursor.page.orValue(0))],
       ?"filter": (state.?cursor.use_frequency_reducer.orValue(false)) ? 
-        optional.of(['general.reportDate>"'+string(now - duration(state.frequency_safe_period))+'"']) 
+        optional.of(['general.reportDate>"'+string(now - duration("24h"))+'"']) 
         :
         optional.none(),
      }.format_query()
@@ -68,7 +71,7 @@ program: |
     )
   )
 state:
-  frequency_safe_period: {{frequency_safe_period}}
+  preserve_original_event: {{preserve_original_event}}
   use_frequency_reducer: true
   page_size: {{page_size}}
   sections:

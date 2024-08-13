@@ -57,6 +57,52 @@ processors:
     field: ecs.version
     value: '8.11.0'
 
+##############
+# ECS compat #
+##############
+
+- set:
+    field: source.ip
+    copy_from: jamf_pro.inventory.general.last_ip_address
+    ignore_empty_value: true
+    
+- set:
+    field: source.address
+    copy_from: source.ip
+    ignore_empty_value: true
+- set:
+    field: source.mac
+    copy_from: jamf_pro.inventory.hardware.mac_address
+    ignore_empty_value: true
+- set:
+    field: source.geo
+    copy_from: jamf_pro.inventory.general.last_ip_address_geo
+    ignore_empty_value: true
+- set:
+    field: os.name
+    copy_from: jamf_pro.inventory.operating_system.name
+    ignore_empty_value: true
+- set:
+    field: os.version
+    copy_from: jamf_pro.inventory.operating_system.version
+    ignore_empty_value: true
+- set:
+    field: os.platform
+    copy_from: jamf_pro.inventory.general.platform
+    ignore_empty_value: true
+- set:
+    field: user.name
+    copy_from: jamf_pro.inventory.user_and_location.name
+    ignore_empty_value: true
+- set:
+    field: user.email
+    copy_from: jamf_pro.inventory.user_and_location.email
+    ignore_empty_value: true
+- set:
+    field: user.full_name
+    copy_from: jamf_pro.inventory.user_and_location.realname
+    ignore_empty_value: true
+    
 on_failure:
 - set:          
     field: jamf_pro.inventory.error.message
