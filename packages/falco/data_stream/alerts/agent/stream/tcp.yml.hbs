@@ -8,6 +8,14 @@ tags:
 {{/if}}
 processors:
   - add_locale: ~
+{{#if preserve_original_event}}
+  - copy_fields:
+      fields:
+        - from: message
+          to: event.original
+      fail_on_error: false
+      ignore_missing: true
+{{/if}}
   - syslog:
       field: message
 {{#if processors}}
