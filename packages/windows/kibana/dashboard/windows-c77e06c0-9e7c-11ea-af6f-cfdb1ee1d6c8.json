@@ -3,10 +3,46 @@
         "description": "Overview dashboard for powershell integration.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "windows.powershell",
+                                "windows.powershell_operational"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "windows.powershell"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "windows.powershell_operational"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
-                    "query": "(data_stream.dataset:windows.powershell OR data_stream.dataset:windows.powershell_operational)"
+                    "query": ""
                 }
             }
         },
@@ -2046,6 +2082,11 @@
     "id": "windows-c77e06c0-9e7c-11ea-af6f-cfdb1ee1d6c8",
     "managed": true,
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "fa41e799-b6b3-49ec-a11c-3f20231a4a79:indexpattern-datasource-layer-46154467-653a-42f7-b698-046f7c5e71c9",
