@@ -54,7 +54,10 @@ program: |
               "message": e,
           }),
           "want_more": (int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount,
-          "cursor": {"page": int(state.?cursor.?page.orValue(int(0))) + 1},
+          "cursor": {
+            "page": (int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount ?
+              int(state.?cursor.?page.orValue(int(0))) + 1 : 0
+            },
         })
     )
   )
