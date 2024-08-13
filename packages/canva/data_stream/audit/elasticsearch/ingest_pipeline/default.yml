@@ -9,10 +9,6 @@ processors:
       field: event.kind
       tag: set_event_kind
       value: event
-  - append:
-      field: event.category
-      tag: append_event_category
-      value: iam
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -35,6 +31,13 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: iam
+      if: ctx.json?.action?.type != null && !(
+        ctx.json?.action?.type.contains('APP') || ctx.json?.action?.type.contains('EXPORT') || ctx.json?.action?.type.contains('DESIGN')
+        )
   - script:
       description: Append action type values to the event type.
       tag: script_to_append_event_type
@@ -42,13 +45,21 @@ processors:
       if: ctx.json?.action?.type != null
       source: >-
         def eventType = new ArrayList();
+        if (ctx.event.type != null)
+        {
+            eventType = ctx.event.type;
+        }
         def val = ctx.json.action.type;
-        if (val.toLowerCase().contains('remove') || val.toLowerCase().contains('delet')) {
+         if (val.toLowerCase().contains('remove') || val.toLowerCase().contains('delete')) {
           eventType.add('deletion');
         } else if (val.toLowerCase().contains('update') || val.toLowerCase().contains('change')) {
           eventType.add('change');
         } else if (val.toLowerCase().contains('create') || val.toLowerCase().contains('add')) {
           eventType.add('creation');
+        } else if (val.toLowerCase().contains('user')) {
+          eventType.add('user');
+        } else if (val.toLowerCase().contains('group')) {
+          eventType.add('group');
         } else {
           eventType.add('info');
         }
@@ -82,257 +93,105 @@ processors:
       tag: rename_action_changed_fields
       target_field: canva.audit.action.changed_fields
       ignore_missing: true
-  - foreach:
-      field: json.action.changes
+  - script:
+      lang: painless
+      description: Convert changes fields to boolean.
       if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.access.read
-          tag: convert_action_changes_access_read_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.access.read
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
+      tag: convert_changes_fields_to_boolean
+      source: |
+        def convertKeysToBoolean(Map versionMap, String[] keysToConvert) {
+            def convertedMap = [: ];
+            versionMap.entrySet().forEach(entry -> {
+                def key = entry.getKey().toString();
+                def value = entry.getValue();
+                if (Arrays.asList(keysToConvert).contains(key)) {
+                    if (value instanceof String) {
+                        convertedMap[key] = Boolean.parseBoolean(value);
+                    } else if (value instanceof Boolean) {
+                        convertedMap[key] = (Boolean) value;
+                    } else {
+                        throw new Exception('Unsupported type');
+                    }
+                } else {
+                    convertedMap[key] = value;
+                }
+            });
+            return convertedMap;
+        }
+        def valuesToConvert = new String[] {
+            'read',
+            'write',
+            'owning_team_only'
+        };
+        ArrayList keysToConvert = new ArrayList([
+            'access',
+            'new_access',
+            'new_link_role',
+            'old_access',
+            'old_link_role'
+        ]);
+        def changeArray = ctx.json.action.changes;
+        if (changeArray instanceof List) {
+            for (int i = 0; i < changeArray.size(); i++) {
+                for (def j = 0; j < keysToConvert.length; j++) {
+                    if (changeArray[i][keysToConvert[j]] != null) {
+                        changeArray[i][keysToConvert[j]] = convertKeysToBoolean(changeArray[i][keysToConvert[j]], valuesToConvert);
+                    }
+                }
+                if (changeArray[i]['new_link_role'] != null && changeArray[i]['new_link_role']['access'] != null) {
+                    changeArray[i]['new_link_role']['access'] = convertKeysToBoolean(changeArray[i]['new_link_role']['access'], valuesToConvert);
+                }
+                if (changeArray[i]['old_link_role'] != null && changeArray[i]['old_link_role']['access'] != null) {
+                    changeArray[i]['old_link_role']['access'] = convertKeysToBoolean(changeArray[i]['old_link_role']['access'], valuesToConvert);
+                }
+                changeArray[i] = convertKeysToBoolean(changeArray[i], valuesToConvert);
+            }
+        }
+        ctx.json.action.put('changes', changeArray);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Append changes fields to related User.
       if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.access.write
-          tag: convert_action_changes_access_write_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.access.write
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.new_access.read
-          tag: convert_action_changes_new_access_read_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.new_access.read
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.new_access.write
-          tag: convert_action_changes_new_access_write_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.new_access.write
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.new_link_role.access.read
-          tag: convert_action_changes_new_link_role_access_read_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.new_link_role.access.read
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.new_link_role.owning_team_only
-          tag: convert_action_changes_new_link_role_owning_team_only_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.new_link_role.owning_team_only
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.new_link_role.access.write
-          tag: convert_action_changes_new_link_role_access_write_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.new_link_role.access.write
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.old_access.read
-          tag: convert_action_changes_old_access_read_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.old_access.read
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.old_access.write
-          tag: convert_action_changes_old_access_write_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.old_access.write
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.old_link_role.access.read
-          tag: convert_action_changes_old_link_role_access_read_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.old_link_role.access.read
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.old_link_role.access.write
-          tag: convert_action_changes_old_link_role_access_write_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.old_link_role.access.write
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.old_link_role.owning_team_only
-          tag: convert_action_changes_old_link_role_owning_team_only_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.old_link_role.owning_team_only
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        convert:
-          field: _ingest._value.owning_team_only
-          tag: convert_action_changes_owning_team_only_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.owning_team_only
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.new_link_role
-      if: ctx.json?.action?.new_link_role != null
-      processor:
-        convert:
-          field: _ingest._value.owning_team_only
-          tag: convert_action_new_link_role_owning_team_only_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.owning_team_only
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        append:
-          field: related.user
-          tag: append_action_changes_user_display_name_into_related_user
-          value: '{{{_ingest._value.user.display_name}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        append:
-          field: related.user
-          tag: append_action_changes_user_email_into_related_user
-          value: '{{{_ingest._value.user.email}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.action.changes
-      if: ctx.json?.action?.changes instanceof List
-      processor:
-        append:
-          field: related.user
-          tag: append_action_changes_user_id_into_related_user
-          value: '{{{_ingest._value.user.id}}}'
-          allow_duplicates: false
+      tag: append_changes_fields_to_related_user
+      source: |
+        def relatedUser = new HashSet();
+        def relatedList = new ArrayList();
+        if (ctx.related == null) {
+            ctx.related = new HashMap();
+        }
+        if (ctx.related.user != null) {
+            relatedUser.add(ctx.related.user);
+        }
+        def changeArray = ctx.json.action.changes;
+        if (changeArray instanceof List) {
+            for (int i = 0; i < changeArray.size(); i++) {
+                if (changeArray[i]['user'] != null) {
+                    if (changeArray[i]['user']['display_name'] != null) {
+                        relatedUser.add(changeArray[i]['user']['display_name']);
+                    }
+                    if (changeArray[i]['user']['email'] != null) {
+                        relatedUser.add(changeArray[i]['user']['email']);
+                    }
+                    if (changeArray[i]['user']['id'] != null) {
+                        relatedUser.add(changeArray[i]['user']['id']);
+                    }
+                }
+                if (changeArray[i]['new_owner'] != null && changeArray[i]['new_owner']['email'] != null) {
+                    relatedUser.add(changeArray[i]['new_owner']['email']);
+                }
+                if (changeArray[i]['recipient'] != null) {
+                    relatedUser.add(changeArray[i]['recipient']);
+                }
+            }
+        }
+         for (def res : relatedUser) {
+            relatedList.add(res);
+         }
+        ctx.related.put('user', relatedList);
   - rename:
       field: json.action.changes
       tag: rename_action_changes
@@ -410,6 +269,15 @@ processors:
       tag: rename_action_emails
       target_field: canva.audit.action.emails
       ignore_missing: true
+  - foreach:
+      field: canva.audit.action.emails
+      if: ctx.canva?.audit?.action?.emails instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_action_emails_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - script:
       description: Script to set the event duration.
       tag: script_to_set_event_duration
@@ -473,6 +341,11 @@ processors:
       tag: rename_action_managing_entity_organization_id
       target_field: canva.audit.action.managing_entity.organization.id
       ignore_missing: true
+  - set:
+      field: organization.id
+      tag: set_organization_id
+      copy_from: canva.audit.action.managing_entity.organization.id
+      ignore_empty_value: true
   - rename:
       field: json.action.managing_entity.type
       tag: rename_action_managing_entity_type
@@ -557,6 +430,11 @@ processors:
       tag: rename_action_phone_number
       target_field: canva.audit.action.phone_number
       ignore_missing: true
+  - set:
+      field: canva.audit.action.phone_number
+      tag: mask_action_phone_number
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.canva?.audit?.action?.phone_number != null
   - rename:
       field: json.action.reason.type
       tag: rename_action_reason_type
@@ -646,6 +524,11 @@ processors:
       tag: rename_action_team_address_street1
       target_field: canva.audit.action.team_address.street1
       ignore_missing: true
+  - set:
+      field: canva.audit.action.team_address.street1
+      tag: mask_team_address_street1
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.canva?.audit?.action?.team_address?.street1 != null
   - rename:
       field: json.action.team_address.subdivision
       tag: rename_action_team_address_subdivision
@@ -930,11 +813,13 @@ processors:
   - set:
       field: event.outcome
       value: failure
-      if: ctx.canva?.audit?.outcome?.result != null && ctx.canva.audit.outcome.result == 'DENIED'
+      if: ctx.canva?.audit?.outcome?.result == 'DENIED'
+      override: true
   - set:
       field: event.outcome
       value: success
-      if: ctx.canva?.audit?.outcome?.result != null && ctx.canva.audit.outcome.result == 'PERMITTED'
+      if: ctx.canva?.audit?.outcome?.result == 'PERMITTED'
+      override: true
   - rename:
       field: json.target.id
       tag: rename_target_id
@@ -1133,6 +1018,7 @@ processors:
         - canva.audit.target.user.email
         - canva.audit.target.user.id
         - canva.audit.timestamp
+        - canva.audit.action.managing_entity.organization.id
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')

@@ -12,7 +12,7 @@ The Canva integration can be used in two different modes to collect data:
 
 ## Data streams
 
-The Canva integration collects Audit logs in an audit data stream.
+The Canva integration collects Audit logs in the **Audit** data stream.
 
 **Audit** contains the information about the user activies in Canva. The user changing account settings, installing Canva app, managing teams, and groups information can be logged through the Audit logs.
 
@@ -105,8 +105,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2024-01-01T01:00:00.123Z",
     "agent": {
-        "ephemeral_id": "5752bbd2-1318-440a-94be-61018a4b5b76",
-        "id": "f119c526-2b9c-44e1-9796-8a6ffd688989",
+        "ephemeral_id": "10166c35-0c59-4fea-976e-8615fb6be40a",
+        "id": "cfee7fe4-90a0-4cc8-8f00-1699ef5c3603",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -114,8 +114,8 @@ An example event for `audit` looks as following:
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-canva-bucket-43697",
-                "name": "elastic-package-canva-bucket-43697"
+                "arn": "arn:aws:s3:::elastic-package-canva-bucket-76803",
+                "name": "elastic-package-canva-bucket-76803"
             },
             "object": {
                 "key": "audit.log"
@@ -365,9 +365,6 @@ An example event for `audit` looks as following:
                 "locale": "string",
                 "login_type": "PASSWORD",
                 "managing_entity": {
-                    "organization": {
-                        "id": "Abc11233"
-                    },
                     "team": {
                         "display_name": "AcmeCorporation",
                         "id": "BXeFatjDhdR"
@@ -398,7 +395,7 @@ An example event for `audit` looks as following:
                 "permissions": [
                     "DESIGN_CONTENT_READ"
                 ],
-                "phone_number": "string",
+                "phone_number": "REDACTED",
                 "reason": {
                     "type": "SAML_JIT_PROVISIONING"
                 },
@@ -419,7 +416,7 @@ An example event for `audit` looks as following:
                     "city": "SurryHills",
                     "country_code": "AU",
                     "postcode": "2010",
-                    "street1": "110Kippaxstreet",
+                    "street1": "REDACTED",
                     "subdivision": "AU-NSW"
                 },
                 "title": "Myawesomedesign",
@@ -485,7 +482,7 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "canva.audit",
-        "namespace": "10380",
+        "namespace": "91976",
         "type": "logs"
     },
     "device": {
@@ -495,7 +492,7 @@ An example event for `audit` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f119c526-2b9c-44e1-9796-8a6ffd688989",
+        "id": "cfee7fe4-90a0-4cc8-8f00-1699ef5c3603",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -509,7 +506,7 @@ An example event for `audit` looks as following:
         "duration": 10540800000000000,
         "end": "2024-07-06T18:57:27.000Z",
         "id": "3849ef51-ca85-4028-bae3-1b8de3ee5738",
-        "ingested": "2024-08-07T09:38:52Z",
+        "ingested": "2024-08-13T15:05:32Z",
         "kind": "event",
         "original": "{\"id\":\"3849ef51-ca85-4028-bae3-1b8de3ee5738\",\"timestamp\":1704070800123,\"actor\":{\"type\":\"USER\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"},\"organization\":{\"id\":\"OXtgecafZvh\"},\"details\":{\"type\":\"SCIM\"}},\"target\":{\"target_type\":\"USER\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"},\"organization\":{\"id\":\"abc\"},\"owner\":{\"type\":\"USER\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"},\"organization\":{\"id\":\"abc\"}},\"resource_type\":\"DESIGN\",\"id\":\"abc123\",\"name\":\"abc\"},\"action\":{\"type\":\"REMOVE_TEAM_FROM_ORGANIZATION\",\"display_name\":\"Marketing\",\"first_name\":\"string\",\"last_name\":\"string\",\"email\":\"alex.doe@example.com\",\"email_verified\":true,\"phone_number\":\"string\",\"country_code\":\"string\",\"locale\":\"string\",\"managing_entity\":{\"type\":\"TEAM\",\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"},\"organization\":{\"id\":\"Abc11233\"}},\"saml_accounts\":[{\"idp_issuer\":\"string\",\"name_id\":\"string\"}],\"oauth_accounts\":[{\"platform\":\"string\",\"external_user_id\":\"string\"}],\"totp_mfa_enabled\":true,\"sms_mfa_enabled\":true,\"reason\":{\"type\":\"SAML_JIT_PROVISIONING\"},\"changed_fields\":\"ADDRESS\",\"login_type\":\"PASSWORD\",\"oauth_platform\":\"APPLE\",\"user_scope\":\"CURRENT_USER\",\"session_scope\":\"CURRENT_SESSION\",\"app_id\":\"string\",\"app_version\":\"string\",\"app_name\":\"string\",\"permissions\":[\"DESIGN_CONTENT_READ\"],\"old_permissions\":[\"DESIGN_CONTENT_READ\"],\"new_permissions\":[\"DESIGN_CONTENT_READ\"],\"output_type\":\"PDF\",\"create_type\":\"CREATE\",\"title\":\"Myawesomedesign\",\"original_design_id\":\"DAGKs37VOUl\",\"design_type\":\"Presentation(16:9)\",\"view_type\":\"VIEW_IN_EDITOR\",\"changes\":[{\"type\":\"CREATE_DESIGN_ACCESS_INVITE\",\"token_prefix\":\"ZMrbBHL2\",\"recipient\":\"ash.doe@example.com\",\"access\":{\"read\":true,\"write\":true}},{\"type\":\"REDEEM_DESIGN_ACCESS_INVITE\",\"token_prefix\":\"ZMrbBHL2\",\"recipient\":\"ash.doe@example.com\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"}},{\"type\":\"DELETE_DESIGN_ACCESS_INVITE\",\"token_prefix\":\"ZMrbBHL2\",\"recipient\":\"ash.doe@example.com\"},{\"type\":\"UPDATE_DESIGN_OWNER\",\"old_owner\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"new_owner\":{\"id\":\"UXqwwoQDSbb\",\"display_name\":\"AshDoe\",\"email\":\"ash.doe@example.com\"}},{\"type\":\"CREATE_DESIGN_ACCESS_RESTRICTION\"},{\"type\":\"GRANT_USER_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"}},{\"type\":\"REVOKE_USER_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"}},{\"type\":\"UPDATE_USER_DESIGN_ACCESS\",\"old_access\":{\"read\":true,\"write\":false},\"new_access\":{\"read\":true,\"write\":true},\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"}},{\"type\":\"GRANT_GROUP_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"group\":\"GADkBZ48E04\"},{\"type\":\"REVOKE_GROUP_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"group\":\"GADkBZ48E04\"},{\"type\":\"UPDATE_GROUP_DESIGN_ACCESS\",\"old_access\":{\"read\":true,\"write\":false},\"new_access\":{\"read\":true,\"write\":true},\"group\":\"GADkBZ48E04\"},{\"type\":\"GRANT_TEAM_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"}},{\"type\":\"REVOKE_TEAM_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"}},{\"type\":\"UPDATE_TEAM_DESIGN_ACCESS\",\"old_access\":{\"read\":true,\"write\":false},\"new_access\":{\"read\":true,\"write\":true},\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"}},{\"type\":\"GRANT_ORGANIZATION_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"organization\":{\"id\":\"OXtgecafZvh\"}},{\"type\":\"REVOKE_ORGANIZATION_DESIGN_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"organization\":{\"id\":\"OXtgecafZvh\"}},{\"type\":\"UPDATE_ORGANIZATION_DESIGN_ACCESS\",\"old_access\":{\"read\":true,\"write\":false},\"new_access\":{\"read\":true,\"write\":true},\"organization\":{\"id\":\"OXtgecafZvh\"}},{\"type\":\"GRANT_DESIGN_LINK_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"owning_team_only\":true},{\"type\":\"REVOKE_DESIGN_LINK_ACCESS\",\"access\":{\"read\":true,\"write\":true},\"owning_team_only\":true},{\"type\":\"UPDATE_DESIGN_LINK_ACCESS\",\"old_link_role\":{\"access\":{\"read\":true,\"write\":false},\"owning_team_only\":true},\"new_link_role\":{\"access\":{\"read\":true,\"write\":true},\"owning_team_only\":false}}],\"description\":\"TheAcmeCorporationmarketinggroup.\",\"old_display_name\":\"Marketing\",\"new_display_name\":\"Growth\",\"user\":{\"id\":\"UXoqDbwwSbQ\",\"display_name\":\"JaneDoe\",\"email\":\"jane.doe@example.com\"},\"role\":\"ADMIN\",\"new_role\":\"ADMIN\",\"old_role\":\"ADMIN\",\"team_address\":{\"street1\":\"110Kippaxstreet\",\"city\":\"SurryHills\",\"subdivision\":\"AU-NSW\",\"country_code\":\"AU\",\"postcode\":2010},\"approval_status\":\"PENDING\",\"emails\":[\"ash.doe@example.com\",\"alex.doe@example.com\"],\"report_type\":\"USER\",\"start_timestamp\":1709751447000,\"end_timestamp\":1720292247000,\"old_name\":\"UntitledCorporation\",\"new_name\":\"AcmeCorporation\",\"default_team_id\":\"BXeFatjDhdR\",\"default_team_policy\":\"ADMIN_AND_UP\",\"team\":{\"id\":\"BXeFatjDhdR\",\"display_name\":\"AcmeCorporation\"}},\"outcome\":{\"result\":\"PERMITTED\",\"details\":{\"type\":\"RESOURCE_CREATED\",\"resource_id\":\"DXWEBartcNg\",\"resource_type\":\"DESIGN\",\"user_id\":\"ac343\"}},\"context\":{\"ip_address\":\"81.2.69.142\",\"session\":\"abc111\",\"request_id\":\"fafas\",\"device_id\":\"Ddb44\"}}",
         "outcome": "success",
@@ -523,18 +520,22 @@ An example event for `audit` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-canva-bucket-43697.s3.us-east-1.amazonaws.com/audit.log"
+            "path": "https://elastic-package-canva-bucket-76803.s3.us-east-1.amazonaws.com/audit.log"
         },
         "offset": 0
+    },
+    "organization": {
+        "id": "Abc11233"
     },
     "related": {
         "ip": [
             "81.2.69.142"
         ],
         "user": [
-            "JaneDoe",
             "jane.doe@example.com",
+            "ash.doe@example.com",
             "UXoqDbwwSbQ",
+            "JaneDoe",
             "Marketing",
             "alex.doe@example.com",
             "string",
@@ -561,6 +562,7 @@ An example event for `audit` looks as following:
     "tags": [
         "collect_sqs_logs",
         "preserve_original_event",
+        "hide_sensitive",
         "forwarded",
         "canva-audit"
     ],

@@ -12,7 +12,7 @@ The Canva integration can be used in two different modes to collect data:
 
 ## Data streams
 
-The Canva integration collects Audit logs in an audit data stream.
+The Canva integration collects Audit logs in the **Audit** data stream.
 
 **Audit** contains the information about the user activies in Canva. The user changing account settings, installing Canva app, managing teams, and groups information can be logged through the Audit logs.
 
