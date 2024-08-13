@@ -20,6 +20,49 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script: 
+      description: Recursively traverses the ocsf object to convert suspected timestamps to milliseconds.
+      tag: convert_timestamps_to_milliseconds
+      lang: painless
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      source: >-
+        def convertToMilliseconds(long timestamp) {
+              int digits = ("" + timestamp).length(); 
+              if (digits > 16 && digits <= 19) {
+                  return timestamp / 1000000;  // Convert nanoseconds to milliseconds
+              } else if (digits > 13 && digits <= 16) {
+                  return timestamp / 1000;  // Convert microseconds to milliseconds
+              } else if (digits > 10 && digits <= 13) {
+                  return timestamp;  // Already in milliseconds, no conversion needed
+              } else if (digits <= 10) {
+                  return timestamp * 1000;  // Convert seconds to milliseconds
+              } else {
+                  throw new IllegalArgumentException("Timestamp format not recognized: " + timestamp);
+              }
+          }
+
+          def processFields(Map fields) {
+              for (entry in fields.entrySet()) {
+                  def fieldName = entry.getKey();
+                  def fieldValue = entry.getValue();
+                  // Check if the field is a nested object (Map)
+                  if (fieldValue instanceof Map) {
+                      // Recursively process nested objects
+                      processFields((Map) fieldValue);
+                  } else if (fieldName.endsWith('time') || fieldName.endsWith('_time')) {
+                      // If the field name ends with "time" or "_time" and is a number, convert it
+                      if (fieldValue instanceof Number) {
+                          fields[fieldName] = convertToMilliseconds(((Number) fieldValue).longValue());
+                      }
+                  }
+              }
+              return null;
+          }
+          processFields(ctx.ocsf);
+    
   - rename:
       field: ocsf.resource
       target_field: ocsf.resources

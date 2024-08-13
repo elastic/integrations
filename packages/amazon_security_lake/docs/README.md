@@ -142,6 +142,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.accessor.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.accessor.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.accessor.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.file.accessor.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.file.accessor.name | The username. For example, janedoe1. | keyword |
 | ocsf.actor.process.file.accessor.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.accessor.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
@@ -168,6 +169,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.creator.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.creator.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.creator.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.file.creator.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.file.creator.name | The name of the city. | keyword |
 | ocsf.actor.process.file.creator.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.creator.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
@@ -196,6 +198,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.modifier.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.modifier.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.modifier.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.file.modifier.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.file.modifier.name | The username. For example, janedoe1. | keyword |
 | ocsf.actor.process.file.modifier.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.modifier.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
@@ -217,6 +220,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.file.owner.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.file.owner.name | The username. For example, janedoe1. | keyword |
 | ocsf.actor.process.file.owner.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.owner.type | The event occurred on a personal device.The type of the user. For example, System, AWS IAM User, etc. | keyword |
@@ -310,6 +314,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.accessor.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.parent_process.file.accessor.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.parent_process.file.accessor.name | The username. For example, janedoe1. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.org.\* |  | object |
 | ocsf.actor.process.parent_process.file.accessor.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
@@ -336,6 +341,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.creator.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.parent_process.file.creator.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.parent_process.file.creator.name | The name of the city. | keyword |
 | ocsf.actor.process.parent_process.file.creator.org.\* |  | object |
 | ocsf.actor.process.parent_process.file.creator.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
@@ -364,6 +370,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.modifier.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.parent_process.file.modifier.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.parent_process.file.modifier.name | The username. For example, janedoe1. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.org.\* |  | object |
 | ocsf.actor.process.parent_process.file.modifier.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
@@ -385,6 +392,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.parent_process.file.owner.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.parent_process.file.owner.name | The username. For example, janedoe1. | keyword |
 | ocsf.actor.process.parent_process.file.owner.org.\* |  | object |
 | ocsf.actor.process.parent_process.file.owner.type | The event occurred on a personal device.The type of the user. For example, System, AWS IAM User, etc. | keyword |
@@ -452,6 +460,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.session.is_remote | The indication of whether the session is remote. | boolean |
 | ocsf.actor.process.parent_process.session.issuer | The identifier of the session issuer. | keyword |
 | ocsf.actor.process.parent_process.session.mfa |  | boolean |
+| ocsf.actor.process.parent_process.session.terminal | The Pseudo Terminal associated with the session. Ex, the tty or pts value. | keyword |
 | ocsf.actor.process.parent_process.session.uid | The unique identifier of the session. | keyword |
 | ocsf.actor.process.parent_process.session.uuid | The universally unique identifier of the session. | keyword |
 | ocsf.actor.process.parent_process.terminated_time | The time when the process was terminated. | date |
@@ -490,6 +499,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.session.is_remote | The indication of whether the session is remote. | boolean |
 | ocsf.actor.process.session.issuer | The identifier of the session issuer. | keyword |
 | ocsf.actor.process.session.mfa |  | boolean |
+| ocsf.actor.process.session.terminal | The Pseudo Terminal associated with the session. Ex, the tty or pts value. | keyword |
 | ocsf.actor.process.session.uid | The unique identifier of the session. | keyword |
 | ocsf.actor.process.session.uuid | The universally unique identifier of the session. | keyword |
 | ocsf.actor.process.terminated_time | The time when the process was terminated. | date |
@@ -748,6 +758,7 @@ This is the `Event` dataset.
 | ocsf.device.first_seen_time | The initial discovery time of the device. | date |
 | ocsf.device.first_seen_time_dt | The initial discovery time of the device. | date |
 | ocsf.device.groups.desc | The group description. | keyword |
+| ocsf.device.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.device.groups.name | The group name. | keyword |
 | ocsf.device.groups.privileges | The group privileges. | keyword |
 | ocsf.device.groups.type | The type of the group or account. | keyword |
