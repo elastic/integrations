@@ -1,0 +1,30 @@
+config_version: 1
+resource.url: {{server_url}}
+auth_request_body: '{"clientId":"{{client_id}}","accessKey":"{{secret_key}}"}'
+program: |
+  (
+    request("GET", state.url.trim_right("/") + {{auth_uri}})
+    .with(
+      {
+        "Header": {"Content-Type": ["application/json"]},
+        "Body": auth_request_body
+      }
+      )
+    .do_request().as(resp,
+      resp.StatusCode == 200 ?
+      (bytes(resp.Body).decode_json().as(body, {
+        "events": [body.data.token]
+      },
+      "url": {{server_url}},
+    )
+    )
+    :
+    {
+      "events": {
+        "error": string(resp.message)
+      }
+    }
+
+  )
+  debug(resp)
+  )
