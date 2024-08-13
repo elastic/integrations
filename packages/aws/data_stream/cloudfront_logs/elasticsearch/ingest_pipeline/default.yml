@@ -385,11 +385,11 @@ processors:
   - set:
       field: network.type
       value: ipv4
-      if: ctx.source?.ip != null && ctx.source?.ip.contains('.')
+      if: ctx.source?.ip != null && ctx.source.ip.contains('.')
   - set:
       field: network.type
       value: ipv6
-      if: ctx.source?.ip != null && ctx.source?.ip.contains(':')
+      if: ctx.source?.ip != null && ctx.source.ip.contains(':')
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
@@ -436,7 +436,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
       ignore_failure: true
       ignore_missing: true
 
