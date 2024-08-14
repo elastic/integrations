@@ -5,6 +5,11 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
+  # Remove after development
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - remove:
       field: message
       if: 'ctx.event?.original != null'
@@ -24,8 +29,9 @@ processors:
       field: "*"
   - kv:
       field: event.original
-      field_split: '\s(?![-_,:()\w\"\\! ]+?(\s+|\d+|[,_\.]+|$))'
-      value_split: '(?<!\\)='
+      #field_split: '\s(?![-_,:()\w\"\\! ]+?(\s+|\d+|[,_\.]+|$))'
+      field_split: ' (?=[a-zA-Z0-9_\-]+=)'
+      value_split: '(?<=\S+)='
       target_field: _tmp
       strip_brackets: true
   - rename:
@@ -52,13 +58,29 @@ processors:
       field: _tmp.error
       target_field: aws.eks.authenticator.error_message
       ignore_missing: true
+  - remove:
+      field: _tmp.groups
+      if: ctx._tmp?.groups != null && ctx._tmp?.groups == '[]'
+  - gsub:
+      field: _tmp.groups
+      pattern: '\[|\]'
+      replacement: ""
+      ignore_missing: true
+  - split:
+      field: _tmp.groups
+      separator: ' '
+      ignore_missing: true
   - rename:
-      field: _tmp.level
-      target_field: log.level
+      field: _tmp.groups
+      target_field: aws.eks.authenticator.groups
       ignore_missing: true
   - rename:
       field: _tmp.method
       target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: _tmp.level
+      target_field: log.level
       ignore_missing: true
   - rename:
       field: _tmp.msg
@@ -79,8 +101,16 @@ processors:
   - remove:
       field: _tmp.time
   - rename:
+      field: _tmp.uid
+      target_field: aws.eks.authenticator.uid
+      ignore_missing: true
+  - rename:
       field: _tmp.userid
       target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: _tmp.username
+      target_field: user.name
       ignore_missing: true
   - rename:
       field: _tmp
