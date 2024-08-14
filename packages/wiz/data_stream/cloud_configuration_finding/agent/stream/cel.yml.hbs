@@ -1,0 +1,195 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  endpoint_params:
+    grant_type: client_credentials
+    audience: wiz-api
+state:
+  initial_interval: {{initial_interval}}
+  want_more: false
+  batch_size: {{batch_size}}
+  query: >-
+    query CloudConfigurationFindingsPage($filterBy: ConfigurationFindingFilters $first: Int $after: String $orderBy: ConfigurationFindingOrder){
+       configurationFindings(filterBy: $filterBy first: $first after: $after orderBy: $orderBy) {
+         nodes {
+          id
+          targetExternalId
+          targetObjectProviderUniqueId
+          analyzedAt
+          firstSeenAt
+          severity
+          result
+          status
+          remediation
+          resource {
+            id
+            providerId
+            name
+            nativeType
+            type
+            region
+            subscription {
+              id
+              name
+              externalId
+              cloudProvider
+            }
+            projects {
+              id
+              name
+              riskProfile {
+                businessImpact
+              }
+            }
+            tags {
+              key
+              value
+            }
+          }
+          rule {
+            id
+            graphId
+            name
+            description
+            remediationInstructions
+            functionAsControl
+          }
+          securitySubCategories {
+            id
+            title
+            category {
+              id
+              name
+              framework {
+                id
+                name
+              }
+            }
+          }
+          ignoreRules{
+            id
+            name
+            enabled
+            expiredAt
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+program: |
+  post_request(
+    state.url + "/graphql",
+    "application/json",
+    {
+      "query": state.query,
+      "variables": {
+          "first": state.batch_size,
+          "after": (has(state.end_cursor) && has(state.end_cursor.value) && state.end_cursor.value != null ? state.end_cursor.value : null),
+          "filterBy": {
+            "analyzedAt": {
+                "after":
+                (
+                    has(state.want_more) && !state.want_more
+                    ?
+                     (
+                         has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
+                         ?
+                         state.cursor.last_timestamp
+                         :
+                         (now() - duration(state.initial_interval)).format(time_layout.RFC3339)
+                     )
+                    :
+                     (
+                       has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null
+                       ?
+                       state.cursor.first_timestamp
+                       :
+                       null
+                     )
+                ) }
+                }
+            }
+      }.encode_json()
+    ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
+   "events": body.data.configurationFindings.nodes.map(e, {
+   "message": e.encode_json(),
+   }),
+    "cursor": {
+      "last_timestamp": (
+        has(body.data.configurationFindings.nodes) && body.data.configurationFindings.nodes.size() > 0
+        ?
+         (
+          has(state.cursor) && has(state.cursor.last_timestamp) && body.data.configurationFindings.nodes.map(e, e.analyzedAt).max() < state.cursor.last_timestamp
+          ?
+          state.cursor.last_timestamp
+          :
+          body.data.configurationFindings.nodes.map(e, e.analyzedAt).max()
+          )
+        :
+          (
+          has(state.cursor) && has(state.cursor.last_timestamp)
+          ?
+          state.cursor.last_timestamp
+          :
+          null
+          )
+        ),
+        "first_timestamp": (
+           has(state.cursor) && has(state.cursor.first_timestamp) && has(body.data) && state.cursor.first_timestamp != null
+            ?
+            ( body.data.configurationFindings.pageInfo.hasNextPage ? state.cursor.first_timestamp : state.cursor.last_timestamp )
+            :
+            (now() - duration(state.initial_interval)).format(time_layout.RFC3339)
+        ),
+      },
+    "end_cursor": {
+      "value": (
+      has(body.data) && has(body.data.configurationFindings) && has(body.data.configurationFindings.pageInfo) && has(body.data.configurationFindings.pageInfo.hasNextPage) && body.data.configurationFindings.pageInfo.hasNextPage
+       ?
+       body.data.configurationFindings.pageInfo.endCursor
+       :
+       null
+       )
+      },
+    "query": state.query,
+    "url": state.url,
+    "want_more": body.data.configurationFindings.pageInfo.hasNextPage,
+    "batch_size": state.batch_size,
+    }))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
