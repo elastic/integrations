@@ -115,9 +115,19 @@ processors:
       target_field: wiz.cloud_configuration_finding.rule.id
       ignore_missing: true
   - set:
+      field: rule.uuid
+      tag: set_rule_uuid
+      copy_from: wiz.cloud_configuration_finding.rule.id
+      ignore_empty_value: true
+  - rename:
+      field: json.rule.shortId
+      tag: rename_rule_short_id
+      target_field: wiz.cloud_configuration_finding.rule.short_id
+      ignore_missing: true
+  - set:
       field: rule.id
       tag: set_rule_id
-      copy_from: wiz.cloud_configuration_finding.rule.id
+      copy_from: wiz.cloud_configuration_finding.rule.short_id
       ignore_empty_value: true
   - rename:
       field: json.rule.name
@@ -170,6 +180,7 @@ processors:
         - wiz.cloud_configuration_finding.rule.name
         - wiz.cloud_configuration_finding.resource.provider_id
         - wiz.cloud_configuration_finding.rule.id
+        - wiz.cloud_configuration_finding.rule.short_id
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
