@@ -1,0 +1,141 @@
+---
+description: Pipeline for processing Kubernetes controllermanager logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: ["api"]
+  - append:
+      field: event.type
+      value: ["access"]
+  - set:
+      field: orchestrator.type
+      value: kubernetes
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - grok:
+      field: event.original
+      patterns:
+      # Format as defined in klog docs: https://github.com/kubernetes/klog/blob/75663bb798999a49e3e4c0f2375ed5cca8164194/klog.go#L639C2-L639C50
+      # Lmmdd hh:mm:ss.uuuuuu threadid file:line] msg...
+       - '^%{KLOGSEVERITY:_tmp.severity_char}%{KLOGTIMESTAMP:_tmp.timestamp}\s+%{POSINT:process.thread.id:long} %{DATA:log.origin.file.name}\:%{POSINT:log.origin.file.line:long}\] "%{DATA:event.action}" %{KLOGPARAMETERS:_tmp.klog_kv_string}$'
+       - '^%{KLOGSEVERITY:_tmp.severity_char}%{KLOGTIMESTAMP:_tmp.timestamp}\s+%{POSINT:process.thread.id:long} %{DATA:log.origin.file.name}\:%{POSINT:log.origin.file.line:long}\] %{GREEDYDATA:message}$'
+      pattern_definitions:
+        KLOGSEVERITY: '[D,I,W,E,C]'
+        KLOGTIMESTAMP: '\d{4}\s%{TIME}'
+        KLOGPARAMETERS: '[a-zA-Z0-9_\-]+=.*'
+  - script:
+      description: Parse klog severity
+      lang: painless
+      source: |
+        String severity_char = ctx._tmp?.severity_char;
+        if (severity_char == 'D') {
+          ctx.log.level = 'debug';
+          ctx.event.severity = 7;
+        }
+        else if (severity_char == 'I') {
+          ctx.log.level = 'informational';
+          ctx.event.severity = 6;
+        }
+        else if (severity_char == 'W') {
+          ctx.log.level = 'warning';
+          ctx.event.severity = 4;
+        }
+        else if (severity_char == 'E') {
+          ctx.log.level = 'error';
+          ctx.event.severity = 3;
+        }
+        else if (severity_char == 'C') {
+          ctx.log.level = 'critical';
+          ctx.event.severity = 2;
+        }
+  - date:
+      field: _tmp.timestamp
+      formats:
+        - MMdd HH:mm:ss.SSSSSS
+  - kv:
+      field: _tmp.klog_kv_string
+      field_split: ' (?=[a-zA-Z0-9_\-]+=)'
+      value_split: '(?<=\S+)='
+      target_field: _tmp.klog_parameters
+      strip_brackets: true
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.apiVersion
+      target_field: orchestrator.api_version
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.kind
+      target_field: orchestrator.resource.parent.type
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.message
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.object
+      target_field: orchestrator.resource.name
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.reason
+      target_field: event.reason
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.type
+      target_field: kubernetes.controllermanager.type
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.type
+      target_field: kubernetes.controllermanager.type
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.fieldPath
+      if: ctx._tmp?.klog_parameters?.fieldPath != null && ctx._tmp.klog_parameters.fieldPath == ''
+  - rename:
+      field: _tmp.klog_parameters.fieldPath
+      target_field: kubernetes.controllermanager.field_path
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.key
+      target_field: kubernetes.controllermanager.key
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.key
+      target_field: kubernetes.controllermanager.key
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.nextSyncIn
+      target_field: kubernetes.controllermanager.next_sync_in
+      ignore_missing: true
+
+  - rename:
+      field: _tmp.klog_parameters
+      target_field: kubernetes.controllermanager.parameters
+      if: 'ctx?._tmp?.klog_parameters != null && ctx._tmp.klog_parameters.size() > 0'
+  - remove:
+      field: _tmp
+
+on_failure:
+  - append:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
