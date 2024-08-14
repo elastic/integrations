@@ -55,31 +55,31 @@ An example event for `inventory` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-13T19:39:34.011Z",
+    "@timestamp": "2024-08-14T09:24:23.474Z",
     "agent": {
-        "ephemeral_id": "08b7bfa5-5094-4304-95bd-2ff1a25a18d7",
-        "id": "d3ca40f2-83c8-47d0-b890-1e6ca0fbec4e",
-        "name": "elastic-agent-43767",
+        "ephemeral_id": "e4ee350a-041e-415b-bef7-815fb35a225b",
+        "id": "b10a8700-bb85-4378-af35-2a9d801d1bed",
+        "name": "elastic-agent-44416",
         "type": "filebeat",
         "version": "8.13.4"
     },
     "data_stream": {
         "dataset": "jamf_pro.inventory",
-        "namespace": "29224",
+        "namespace": "91243",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d3ca40f2-83c8-47d0-b890-1e6ca0fbec4e",
+        "id": "b10a8700-bb85-4378-af35-2a9d801d1bed",
         "snapshot": false,
         "version": "8.13.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.inventory",
-        "ingested": "2024-08-13T19:39:36Z"
+        "ingested": "2024-08-14T09:24:26Z"
     },
     "input": {
         "type": "cel"

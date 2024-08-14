@@ -59,6 +59,7 @@ program: |
         state.with({
           "events": body.results.map(e, {
               "message": e,
+              ?"original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none()
           }),
           "want_more": body.totalCount > size(body.results),
           "cursor": {
