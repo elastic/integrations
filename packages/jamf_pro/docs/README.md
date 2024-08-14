@@ -55,31 +55,39 @@ An example event for `inventory` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-14T09:24:23.474Z",
+    "@timestamp": "2024-08-14T12:43:32.513Z",
     "agent": {
-        "ephemeral_id": "e4ee350a-041e-415b-bef7-815fb35a225b",
-        "id": "b10a8700-bb85-4378-af35-2a9d801d1bed",
-        "name": "elastic-agent-44416",
+        "ephemeral_id": "c2bfced6-8a09-4048-bdef-266609498144",
+        "id": "a5858c6a-df97-45d8-b27d-fc9c7655dcf9",
+        "name": "elastic-agent-39553",
         "type": "filebeat",
         "version": "8.13.4"
     },
     "data_stream": {
         "dataset": "jamf_pro.inventory",
-        "namespace": "91243",
+        "namespace": "28068",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b10a8700-bb85-4378-af35-2a9d801d1bed",
+        "id": "a5858c6a-df97-45d8-b27d-fc9c7655dcf9",
         "snapshot": false,
         "version": "8.13.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.inventory",
-        "ingested": "2024-08-14T09:24:26Z"
+        "ingested": "2024-08-14T12:43:35Z"
+    },
+    "host": {
+        "address": [
+            "10.122.26.87"
+        ],
+        "ip": [
+            "10.122.26.87"
+        ]
     },
     "input": {
         "type": "cel"
@@ -92,6 +100,9 @@ An example event for `inventory` looks as following:
             "configuration_profiles": null,
             "content_caching": null,
             "disk_encryption": null,
+            "error": {
+                "message": "cannot access method/field [mac_address] from a null def reference"
+            },
             "extension_attributes": null,
             "fonts": null,
             "general": {
@@ -143,13 +154,6 @@ An example event for `inventory` looks as following:
             "user_and_location": null
         }
     },
-    "os": {
-        "platform": "Mac"
-    },
-    "source": {
-        "address": "10.122.26.87",
-        "ip": "10.122.26.87"
-    },
     "tags": [
         "forwarded"
     ]
@@ -168,6 +172,7 @@ An example event for `inventory` looks as following:
 | ecs | Meta-information specific to ECS. | group |
 | event.dataset |  | constant_keyword |
 | event.module |  | constant_keyword |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | input.type | Input type | keyword |
 | jamf_pro.inventory.applications.bundle_id |  | keyword |
 | jamf_pro.inventory.applications.external_version_id |  | keyword |
@@ -313,5 +318,5 @@ An example event for `inventory` looks as following:
 | jamf_pro.inventory.user_and_location.room |  | keyword |
 | jamf_pro.inventory.user_and_location.username |  | keyword |
 | os | The OS fields contain information about the operating system. | group |
-| source | Source fields capture details about the sender of a network exchange/packet. These fields are populated from a network event, packet, or other event containing details of a network transaction. Source fields are usually populated in conjunction with destination fields. The source and destination fields are considered the baseline and should always be filled if an event contains source and destination details from a network transaction. If the event also contains identification of the client and server roles, then the client and server fields should also be populated. | group |
+| related | This field set is meant to facilitate pivoting around a piece of data. Some pieces of information can be seen in many places in an ECS event. To facilitate searching for them, store an array of all seen values to their corresponding field in `related.`. A concrete example is IP addresses, which can be under host, observer, source, destination, client, server, and network.forwarded_ip. If you append all IPs to `related.ip`, you can then search for a given IP trivially, no matter where it appeared, by querying `related.ip:192.0.2.15`. | group |
 | user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |

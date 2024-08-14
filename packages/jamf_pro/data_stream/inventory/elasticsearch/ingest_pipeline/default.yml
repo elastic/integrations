@@ -62,22 +62,29 @@ processors:
 ##############
 
 - set:
-    field: source.ip
-    copy_from: jamf_pro.inventory.general.last_ip_address
+    if: "ctx?.jamf_pro.inventory.general != null || ctx?.jamf_pro.inventory.general.last_ip_address != ''"
+    field: host.ip
+    value: 
+      - '{{{jamf_pro.inventory.general.last_ip_address}}}'
     ignore_empty_value: true
-    
+    ignore_failure: true
+
 - set:
-    field: source.address
-    copy_from: source.ip
+    field: host.address
+    copy_from: host.ip
     ignore_empty_value: true
 - set:
-    field: source.mac
-    copy_from: jamf_pro.inventory.hardware.mac_address
+    if: "ctx?.jamf_pro.inventory.hardware != null || ctx?.jamf_pro.inventory.hardware.mac_address != ''"
+    field: host.mac
+    value: 
+      - '{{{jamf_pro.inventory.hardware.mac_address}}}'
     ignore_empty_value: true
+    ignore_failure: true
 - set:
-    field: source.geo
+    field: host.geo
     copy_from: jamf_pro.inventory.general.last_ip_address_geo
     ignore_empty_value: true
+    ignore_failure: true
 - set:
     field: os.name
     copy_from: jamf_pro.inventory.operating_system.name
@@ -102,7 +109,16 @@ processors:
     field: user.full_name
     copy_from: jamf_pro.inventory.user_and_location.realname
     ignore_empty_value: true
-    
+- set:
+    field: related.user
+    value: 
+      - '{{{user.email}}}'
+    ignore_empty_value: true
+- set:
+    field: related.ip
+    copy_from: host.ip
+    ignore_empty_value: true
+
 on_failure:
 - set:          
     field: jamf_pro.inventory.error.message
