@@ -3121,7 +3121,7 @@ Fields published for MongoDB packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| mongodb.cursorId | The cursor identifier returned in the OP_REPLY. This must be the value that was returned from the database. | keyword |
+| mongodb.cursorId | The cursor identifier returned in the OP_REPLY. This must be the value that was returned from the database. | long |
 | mongodb.error | If the MongoDB request has resulted in an error, this field contains the error message returned by the server. | keyword |
 | mongodb.fullCollectionName | The full collection name. The full collection name is the concatenation of the database name with the collection name, using a dot (.) for the concatenation. For example, for the database foo and the collection bar, the full collection name is foo.bar. | keyword |
 | mongodb.numberReturned | The number of documents in the reply. | long |
@@ -3130,7 +3130,7 @@ Fields published for MongoDB packets.
 | mongodb.query | A JSON document that represents the query. The query will contain one or more elements, all of which must match for a document to be included in the result set. Possible elements include $query, $orderby, $hint, $explain, and $snapshot. | keyword |
 | mongodb.returnFieldsSelector | A JSON document that limits the fields in the returned documents. The returnFieldsSelector contains one or more elements, each of which is the name of a field that should be returned, and the integer value 1. | keyword |
 | mongodb.selector | A BSON document that specifies the query for selecting the document to update or delete. | keyword |
-| mongodb.startingFrom | Where in the cursor this reply is starting. | keyword |
+| mongodb.startingFrom | Where in the cursor this reply is starting. | long |
 | mongodb.update | A BSON document that specifies the update to be performed. For information on specifying updates, see the Update Operations documentation from the MongoDB Manual. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
@@ -3139,7 +3139,7 @@ Fields published for MongoDB packets.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
-| network_traffic.mongodb.cursorId | The cursor identifier returned in the OP_REPLY. This must be the value that was returned from the database. | keyword |
+| network_traffic.mongodb.cursorId | The cursor identifier returned in the OP_REPLY. This must be the value that was returned from the database. | long |
 | network_traffic.mongodb.error | If the MongoDB request has resulted in an error, this field contains the error message returned by the server. | keyword |
 | network_traffic.mongodb.fullCollectionName | The full collection name. The full collection name is the concatenation of the database name with the collection name, using a dot (.) for the concatenation. For example, for the database foo and the collection bar, the full collection name is foo.bar. | keyword |
 | network_traffic.mongodb.method | The command/verb/method of the transaction. | keyword |
@@ -3150,7 +3150,7 @@ Fields published for MongoDB packets.
 | network_traffic.mongodb.resource | The logical resource that this transaction refers to. | keyword |
 | network_traffic.mongodb.returnFieldsSelector | A JSON document that limits the fields in the returned documents. The returnFieldsSelector contains one or more elements, each of which is the name of a field that should be returned, and the integer value 1. | keyword |
 | network_traffic.mongodb.selector | A BSON document that specifies the query for selecting the document to update or delete. | keyword |
-| network_traffic.mongodb.startingFrom | Where in the cursor this reply is starting. | keyword |
+| network_traffic.mongodb.startingFrom | Where in the cursor this reply is starting. | long |
 | network_traffic.mongodb.update | A BSON document that specifies the update to be performed. For information on specifying updates, see the Update Operations documentation from the MongoDB Manual. | keyword |
 | network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
