@@ -36,8 +36,8 @@ processors:
       tag: append_event_category
       value: iam
       if: ctx.json?.action?.type != null && !(
-        ctx.json?.action?.type.contains('APP') || ctx.json?.action?.type.contains('EXPORT') || ctx.json?.action?.type.contains('DESIGN')
-        )
+          ctx.json.action.type.contains('APP') || ctx.json.action.type.contains('EXPORT') || ctx.json.action.type.contains('DESIGN')
+          )
   - script:
       description: Append action type values to the event type.
       tag: script_to_append_event_type
@@ -45,12 +45,11 @@ processors:
       if: ctx.json?.action?.type != null
       source: >-
         def eventType = new ArrayList();
-        if (ctx.event.type != null)
-        {
-            eventType = ctx.event.type;
+        if (ctx.event.type != null) {
+          eventType = ctx.event.type;
         }
         def val = ctx.json.action.type;
-         if (val.toLowerCase().contains('remove') || val.toLowerCase().contains('delete')) {
+        if (val.toLowerCase().contains('remove') || val.toLowerCase().contains('delete')) {
           eventType.add('deletion');
         } else if (val.toLowerCase().contains('update') || val.toLowerCase().contains('change')) {
           eventType.add('change');
