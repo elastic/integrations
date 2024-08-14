@@ -130,9 +130,7 @@ processors:
       ignore_missing: true
   - foreach:
       tag: foreach_av_pair
-      if: >-
-        ctx.cisco_ise?.log != null && ctx.cisco_ise?.log?.log_details != null &&
-        ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List
+      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['cisco-av-pair'] instanceof List
       field: cisco_ise.log.log_details.cisco-av-pair
       processor:
         kv:
@@ -147,9 +145,7 @@ processors:
       ignore_missing: true
   - kv:
       tag: kv_av_pair
-      if: >-
-        ctx.cisco_ise?.log != null && ctx.cisco_ise?.log?.log_details != null &&
-        ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && !(ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List)
+      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['cisco-av-pair'] instanceof String
       field : cisco_ise.log.log_details.cisco-av-pair
       target_field: cisco_ise.log.cisco_av_pair
       field_split: ', '
@@ -484,18 +480,14 @@ processors:
       tag: append_user_name_1
       field: user.name
       value: '{{{cisco_ise.log.log_details.User-Name}}}'
-      if: >-
-        ctx.cisci_ise?.log != null && ctx.cisco_ise?.log?.log_details != null &&
-        ctx.cisco_ise?.log?.log_details['User-Name'] != null
+      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['User-Name'] != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       tag: append_related_user_1
       field: related.user
-      value: '{{{cisco_ise.log.log_details.lUser-Name}}}'
-      if: >-
-        ctx.cisco_ise?.log != null && ctx.cisco_ise?.log?.log_details != null &&
-        ctx.cisco_ise?.log?.log_details['User-Name'] != null
+      value: '{{{cisco_ise.log.log_details.User-Name}}}'
+      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['User-Name'] != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
