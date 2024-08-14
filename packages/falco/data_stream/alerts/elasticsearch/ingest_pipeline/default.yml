@@ -12,6 +12,31 @@ processors:
 - json:
     field: message
     target_field: falco
+    if: ctx?.message != null
+- script:
+    tag: move_falco_fields
+    lang: painless
+    if: ctx?.output_fields != null
+    params:
+        fields:
+            - uuid
+            - output
+            - priority
+            - rule
+            - time
+            - output_fields
+            - source
+            - tags
+            - hostname
+    source: >-
+        def m = new HashMap();
+        for (def v : params.fields) {
+            if (ctx.containsKey(v)) {
+                m[v] = ctx[v];
+                ctx.remove(v);
+            }
+        }
+        ctx['falco'] = m
 - dot_expander:
     field: 'container.image'
     path: falco.output_fields
