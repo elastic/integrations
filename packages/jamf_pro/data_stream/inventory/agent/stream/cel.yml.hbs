@@ -36,9 +36,9 @@ program: |
       state.url.trim_right("/")  + "?" +	{
       "section" : state.sections,
       "page-size": [string(state.page_size)],
-      "page": [string(state.?cursor.page.orValue(0))],
-      ?"filter": (state.?cursor.use_frequency_reducer.orValue(false)) ? 
-        optional.of(['general.reportDate>"'+string(now - duration("24h"))+'"']) 
+      "sort": ["general.reportDate:asc"],
+      ?"filter": has(state.?cursor.last_report_date) && (state.?cursor.last_report_date.orValue("") != "") ? 
+        optional.of(['general.reportDate>"'+state.cursor.last_report_date+'"']) 
         :
         optional.none(),
      }.format_query()
@@ -60,19 +60,17 @@ program: |
           "events": body.results.map(e, {
               "message": e,
           }),
-          "want_more": (int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount,
+          "want_more": body.totalCount > size(body.results),
           "cursor": {
-            "page": (int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount ?
-              int(state.?cursor.?page.orValue(int(0))) + 1 : 0,
-            "use_frequency_reducer": state.use_frequency_reducer && 
-                ((int(state.?cursor.page.orValue(0)) + 1) * int(state.page_size) < body.totalCount)
+            "last_report_date": size(body.results) == 0 ? 
+              state.?cursor.last_report_date.orValue("") :
+              string(body.results[size(body.results)-1].general.reportDate)
             },
         })
     )
   )
 state:
   preserve_original_event: {{preserve_original_event}}
-  use_frequency_reducer: true
   page_size: {{page_size}}
   sections:
   {{#if enable_section_general }} 

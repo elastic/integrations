@@ -55,55 +55,31 @@ An example event for `inventory` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-12T09:43:09.268Z",
+    "@timestamp": "2024-08-13T19:39:34.011Z",
     "agent": {
-        "ephemeral_id": "76ae6902-5ce1-4af5-9467-29c69ef7663d",
-        "id": "b3ca712d-0550-462e-b8f0-f9c8c4f3448c",
-        "name": "elastic-agent-31016",
+        "ephemeral_id": "08b7bfa5-5094-4304-95bd-2ff1a25a18d7",
+        "id": "d3ca40f2-83c8-47d0-b890-1e6ca0fbec4e",
+        "name": "elastic-agent-43767",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.13.4"
     },
     "data_stream": {
         "dataset": "jamf_pro.inventory",
-        "namespace": "41826",
+        "namespace": "29224",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b3ca712d-0550-462e-b8f0-f9c8c4f3448c",
+        "id": "d3ca40f2-83c8-47d0-b890-1e6ca0fbec4e",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.13.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.inventory",
-        "ingested": "2024-08-12T09:43:12Z"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "elastic-agent-31016",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": [
-            "172.26.0.2",
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02-42-AC-12-00-04",
-            "02-42-AC-1A-00-02"
-        ],
-        "name": "elastic-agent-31016",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "6.8.0-39-generic",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
+        "ingested": "2024-08-13T19:39:36Z"
     },
     "input": {
         "type": "cel"
@@ -166,7 +142,17 @@ An example event for `inventory` looks as following:
             "udid": "5982CE36-4526-580B-B4B9-ECC6782535BC",
             "user_and_location": null
         }
-    }
+    },
+    "os": {
+        "platform": "Mac"
+    },
+    "source": {
+        "address": "10.122.26.87",
+        "ip": "10.122.26.87"
+    },
+    "tags": [
+        "forwarded"
+    ]
 }
 ```
 
