@@ -245,6 +245,24 @@ processors:
       value: 'UNKNOWN'
       if: ctx?.wiz?.cloud_configuration_finding?.result != 'PASS' && ctx?.wiz?.cloud_configuration_finding?.result != 'FAIL'
       ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: 'success'
+      if: ctx?.wiz?.cloud_configuration_finding?.result == 'PASS'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: 'failure'
+      if: ctx?.wiz?.cloud_configuration_finding?.result == 'FAIL'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_unknown
+      value: 'unknown'
+      if: ctx?.wiz?.cloud_configuration_finding?.result != 'PASS' && ctx?.wiz?.cloud_configuration_finding?.result != 'FAIL'
+      ignore_empty_value: true
   - remove:
       field: json
       tag: remove_json
