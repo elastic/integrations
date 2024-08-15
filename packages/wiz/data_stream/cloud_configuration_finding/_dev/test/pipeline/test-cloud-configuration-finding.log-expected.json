@@ -31,6 +31,9 @@
                 "sub_type": "Pod",
                 "type": "POD"
             },
+            "result": {
+                "evaluation": "FAILED"
+            },
             "rule": {
                 "id": "Pod-32",
                 "name": "Pod should run containers with authorized additional capabilities (PSS Restricted)",
@@ -57,6 +60,7 @@
                         },
                         "type": "POD"
                     },
+                    "result": "FAIL",
                     "rule": {
                         "description": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
                         "id": "73553de7-f2ad-4ffb-b425-c69815033530",
@@ -96,6 +100,9 @@
                 "sub_type": "rootUser",
                 "type": "USER_ACCOUNT"
             },
+            "result": {
+                "evaluation": "PASSED"
+            },
             "rule": {
                 "id": "IAM-006",
                 "name": "Root account access keys should not exist",
@@ -125,6 +132,7 @@
                         },
                         "type": "USER_ACCOUNT"
                     },
+                    "result": "PASS",
                     "rule": {
                         "description": "This rule checks if the AWS Root Account has access keys. \nThis rule fails if `AccountAccessKeysPresent` is not set to `0`. Note that it does not take into consideration the status of the keys if present. \nThe root account should avoid using access keys. Since the root account has full permissions across the entire account, creating access keys for it increases the chance that they will be compromised. Instead, it is recommended to create IAM users with predefined roles.\n>**Note** \nSee Cloud Configuration Rule `IAM-207` to see if the Root account's access keys are active.",
                         "id": "563ed717-4fb6-47fd-929e-9c794e201d0a",
@@ -168,6 +176,9 @@
                 "sub_type": "Microsoft.Compute/virtualMachines",
                 "type": "VIRTUAL_MACHINE"
             },
+            "result": {
+                "evaluation": "PASSED"
+            },
             "rule": {
                 "id": "VirtualMachines-021",
                 "name": "Virtual Machine should not be stopped (allocated) for more than a week",
@@ -194,6 +205,80 @@
                         },
                         "type": "VIRTUAL_MACHINE"
                     },
+                    "result": "PASS",
+                    "rule": {
+                        "description": "This rule checks if the Virtual Machine (VM) is stopped (and not deallocated) for at least a week. \nThis rule fails if `code: PowerState/stopped` and the timestamp was more than 7 days ago. \nWhen you are logged in to the operating system of an Azure VM, you can issue a command to shut down the server (or via Azure CLI). This will kick you out of the OS and stop all processes but will maintain the allocated hardware (including the IP addresses currently assigned). If you find the VM in the Azure console, you will see the state listed as `Stopped`. The biggest thing you need to know about this state is that **you are still being charged by the hour for this instance**. \nFor cost optimization and management purposes, it is recommended to deallocate (charges no longer apply) VMs that have been stopped for more than a week.",
+                        "id": "56c8890d-ad68-4659-9414-fb0ed7258c31",
+                        "name": "Virtual Machine should not be stopped (allocated) for more than a week",
+                        "short_id": "VirtualMachines-021"
+                    }
+                }
+            }
+        },
+        {
+            "@timestamp": "2024-08-15T11:41:17.517Z",
+            "cloud": {
+                "account": {
+                    "id": "434f3cbb-30f2-4bc0-8bba-cb080280652b",
+                    "name": "partner integrations"
+                },
+                "provider": "Azure",
+                "region": "eastus"
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "category": [
+                    "configuration"
+                ],
+                "id": "6fe49e83-2f3a-5b62-99de-beae16c7bfae",
+                "kind": "event",
+                "original": "{\"analyzedAt\":\"2024-08-15T11:41:17.517926Z\",\"id\":\"6fe49e83-2f3a-5b62-99de-beae16c7bfae\",\"remediation\":null,\"resource\":{\"id\":\"8a53b2d9-f6c6-59e4-bce0-736a45e9aa3f\",\"name\":\"annam-vm\",\"nativeType\":\"Microsoft.Compute/virtualMachines\",\"providerId\":\"80045425-a0a9-4457-82c2-2c5f47419d83\",\"region\":\"eastus\",\"subscription\":{\"cloudProvider\":\"Azure\",\"externalId\":\"434f3cbb-30f2-4bc0-8bba-cb080280652b\",\"id\":\"064ecbb5-19ee-540d-b9f5-99c3a4e2d0db\",\"name\":\"partner integrations\"},\"tags\":[],\"type\":\"VIRTUAL_MACHINE\"},\"result\":\"IN_PROGRESS\",\"rule\":{\"description\":\"This rule checks if the Virtual Machine (VM) is stopped (and not deallocated) for at least a week. \\nThis rule fails if `code: PowerState/stopped` and the timestamp was more than 7 days ago. \\nWhen you are logged in to the operating system of an Azure VM, you can issue a command to shut down the server (or via Azure CLI). This will kick you out of the OS and stop all processes but will maintain the allocated hardware (including the IP addresses currently assigned). If you find the VM in the Azure console, you will see the state listed as `Stopped`. The biggest thing you need to know about this state is that **you are still being charged by the hour for this instance**. \\nFor cost optimization and management purposes, it is recommended to deallocate (charges no longer apply) VMs that have been stopped for more than a week.\",\"id\":\"56c8890d-ad68-4659-9414-fb0ed7258c31\",\"name\":\"Virtual Machine should not be stopped (allocated) for more than a week\",\"remediationInstructions\":\"Perform the following command to deallocate the VM via Azure CLI:\\n```\\naz vm deallocate \\\\\\n\\t--ids {{vmId}}\\n```\",\"shortId\":\"VirtualMachines-021\"},\"severity\":\"LOW\"}",
+                "type": [
+                    "info"
+                ]
+            },
+            "host": {
+                "name": "annam-vm"
+            },
+            "message": "This rule checks if the Virtual Machine (VM) is stopped (and not deallocated) for at least a week. \nThis rule fails if `code: PowerState/stopped` and the timestamp was more than 7 days ago. \nWhen you are logged in to the operating system of an Azure VM, you can issue a command to shut down the server (or via Azure CLI). This will kick you out of the OS and stop all processes but will maintain the allocated hardware (including the IP addresses currently assigned). If you find the VM in the Azure console, you will see the state listed as `Stopped`. The biggest thing you need to know about this state is that **you are still being charged by the hour for this instance**. \nFor cost optimization and management purposes, it is recommended to deallocate (charges no longer apply) VMs that have been stopped for more than a week.",
+            "resource": {
+                "id": "80045425-a0a9-4457-82c2-2c5f47419d83",
+                "name": "annam-vm",
+                "sub_type": "Microsoft.Compute/virtualMachines",
+                "type": "VIRTUAL_MACHINE"
+            },
+            "result": {
+                "evaluation": "UNKNOWN"
+            },
+            "rule": {
+                "id": "VirtualMachines-021",
+                "name": "Virtual Machine should not be stopped (allocated) for more than a week",
+                "uuid": "56c8890d-ad68-4659-9414-fb0ed7258c31"
+            },
+            "tags": [
+                "preserve_original_event",
+                "preserve_duplicate_custom_fields"
+            ],
+            "wiz": {
+                "cloud_configuration_finding": {
+                    "analyzed_at": "2024-08-15T11:41:17.517Z",
+                    "id": "6fe49e83-2f3a-5b62-99de-beae16c7bfae",
+                    "resource": {
+                        "id": "8a53b2d9-f6c6-59e4-bce0-736a45e9aa3f",
+                        "name": "annam-vm",
+                        "native_type": "Microsoft.Compute/virtualMachines",
+                        "provider_id": "80045425-a0a9-4457-82c2-2c5f47419d83",
+                        "region": "eastus",
+                        "subscription": {
+                            "cloud_provider": "Azure",
+                            "external_id": "434f3cbb-30f2-4bc0-8bba-cb080280652b",
+                            "name": "partner integrations"
+                        },
+                        "type": "VIRTUAL_MACHINE"
+                    },
+                    "result": "IN_PROGRESS",
                     "rule": {
                         "description": "This rule checks if the Virtual Machine (VM) is stopped (and not deallocated) for at least a week. \nThis rule fails if `code: PowerState/stopped` and the timestamp was more than 7 days ago. \nWhen you are logged in to the operating system of an Azure VM, you can issue a command to shut down the server (or via Azure CLI). This will kick you out of the OS and stop all processes but will maintain the allocated hardware (including the IP addresses currently assigned). If you find the VM in the Azure console, you will see the state listed as `Stopped`. The biggest thing you need to know about this state is that **you are still being charged by the hour for this instance**. \nFor cost optimization and management purposes, it is recommended to deallocate (charges no longer apply) VMs that have been stopped for more than a week.",
                         "id": "56c8890d-ad68-4659-9414-fb0ed7258c31",

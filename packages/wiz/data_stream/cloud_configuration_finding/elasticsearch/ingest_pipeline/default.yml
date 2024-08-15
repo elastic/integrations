@@ -222,6 +222,29 @@ processors:
       copy_from: wiz.cloud_configuration_finding.resource.name
       if: ctx?.resource?.type == 'VIRTUAL_MACHINE'
       ignore_empty_value: true
+  - rename:
+      field: json.result
+      tag: rename_result
+      target_field: wiz.cloud_configuration_finding.result
+      ignore_missing: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_passed
+      value: 'PASSED'
+      if: ctx?.wiz?.cloud_configuration_finding?.result == 'PASS'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_failed
+      value: 'FAILED'
+      if: ctx?.wiz?.cloud_configuration_finding?.result == 'FAIL'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_unknown
+      value: 'UNKNOWN'
+      if: ctx?.wiz?.cloud_configuration_finding?.result != 'PASS' && ctx?.wiz?.cloud_configuration_finding?.result != 'FAIL'
+      ignore_empty_value: true
   - remove:
       field: json
       tag: remove_json
