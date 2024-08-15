@@ -271,6 +271,16 @@ processors:
       value: 'unknown'
       if: ctx?.wiz?.cloud_configuration_finding?.result != 'PASS' && ctx?.wiz?.cloud_configuration_finding?.result != 'FAIL'
       ignore_empty_value: true
+  - rename:
+      field: json.evidence
+      tag: rename_evidence
+      target_field: wiz.cloud_configuration_finding.evidence
+      ignore_missing: true
+  - set:
+      field: result.evidence
+      tag: set_result_evidence
+      copy_from: wiz.cloud_configuration_finding.evidence
+      ignore_empty_value: true
   - remove:
       field: json
       tag: remove_json
@@ -292,6 +302,7 @@ processors:
         - wiz.cloud_configuration_finding.rule.name
         - wiz.cloud_configuration_finding.rule.id
         - wiz.cloud_configuration_finding.rule.short_id
+        - wiz.cloud_configuration_finding.evidence
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
