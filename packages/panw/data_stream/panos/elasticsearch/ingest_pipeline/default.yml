@@ -29,7 +29,7 @@ processors:
   - grok:
       field: _temp_.message
       patterns:
-        - "^%{DATA},%{TIMESTAMP:event.created},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD:_temp_.config_version},%{TIMESTAMP:_temp_.generated_time},%{GREEDYDATA:message}$"
+        - "^%{DATA},%{TIMESTAMP:_temp_.received_time},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD:_temp_.config_version},%{TIMESTAMP:_temp_.generated_time},%{GREEDYDATA:message}$"
         - "^%{SYSLOGTIMESTAMP:_temp_.syslog_time} %{IPORHOST:observer.hostname} %{NOTSPACE:observer.serial_number},%{PANW_DATE:_temp_.generated_time},%{FIELD:panw.panos.type},%{GREEDYDATA:message}$"
       pattern_definitions:
         TIMESTAMP: "%{PANW_DATE}|%{TIMESTAMP_ISO8601}"
@@ -103,7 +103,6 @@ processors:
       ignore_failure: true
 
 # Extract user domain from source and destination user
-
   - grok:
       field: _temp_.srcuser
       tag: process_srcuser
@@ -148,10 +147,11 @@ processors:
       copy_from: source.user
       if: ctx.source?.user != null
 
-# Set @timestamp to the time when the entry was generated at the data plane.
+# Set 'panw.panos.generated_time' to the time when the entry was generated at the data plane.
   - date:
       if: ctx.event?.timezone == null
       field: '_temp_.generated_time'
+      target_field: 'panw.panos.generated_time'
       formats:
         - 'yyyy/MM/dd HH:mm:ss'
         - 'strict_date_optional_time_nanos'
@@ -159,38 +159,31 @@ processors:
   - date:
       if: ctx.event?.timezone != null
       field: _temp_.generated_time
+      target_field: 'panw.panos.generated_time'
       formats:
         - 'yyyy/MM/dd HH:mm:ss'
         - 'strict_date_optional_time_nanos'
       timezone: '{{{ event.timezone }}}'
       on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
-  - set:
-      field: panw.panos.generated_time
-      copy_from: '@timestamp'
-      ignore_failure: true
 
-# event.created is the time the event was received at the management plane.
+# 'panw.panos.received_time' is the time the event was received at the management plane.
   - date:
-      if: ctx.event?.timezone == null && ctx.event.created != null
-      field: 'event.created'
-      target_field: 'event.created'
+      if: ctx.event?.timezone == null && ctx._temp_?.received_time != null
+      field: '_temp_.received_time'
+      target_field: 'panw.panos.received_time'
       formats:
         - 'yyyy/MM/dd HH:mm:ss'
         - 'strict_date_optional_time_nanos'
       on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
   - date:
-      if: ctx.event?.timezone != null && ctx.event.created != null
-      field: event.created
-      target_field: event.created
+      if: ctx.event?.timezone != null && ctx._temp_?.received_time  != null
+      field: '_temp_.received_time'
+      target_field: 'panw.panos.received_time'
       formats:
         - 'yyyy/MM/dd HH:mm:ss'
         - 'strict_date_optional_time_nanos'
       timezone: '{{{ event.timezone }}}'
       on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
-  - set:
-      field: panw.panos.received_time
-      copy_from: event.created
-      ignore_failure: true
 
 # convert date fields as the output of the CSV processor is always a string.
   - date:
@@ -264,6 +257,14 @@ processors:
       field: '@timestamp'
       copy_from: panw.panos.high_resolution_timestamp
       ignore_empty_value: true
+
+  # set '@timestamp' to received_time if it wasn't set by high_resolution_timestamp
+  - set:
+      tag: received_time_to_timestamp
+      field: '@timestamp'
+      copy_from: panw.panos.received_time
+      if: ctx.panw?.panos?.high_resolution_timestamp == null && ctx.panw?.panos?.received_time != null
+
   - date:
       if: ctx.event?.timezone == null && ctx.event.start != null
       field: event.start
@@ -1623,7 +1624,6 @@ processors:
         - panw.panos.event.status
         - panw.panos.file.type
         - panw.panos.forwarded_ip
-        - panw.panos.generated_time
         - panw.panos.host.id
         - panw.panos.host.ip
         - panw.panos.http_method
@@ -1648,7 +1648,6 @@ processors:
         - panw.panos.protocol
         - panw.panos.public.ip
         - panw.panos.public.ipv6
-        - panw.panos.received_time
         - panw.panos.recipient
         - panw.panos.referrer
         - panw.panos.rule_uuid
