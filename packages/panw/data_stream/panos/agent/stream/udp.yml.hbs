@@ -14,9 +14,11 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
 - add_locale: ~
-{{#if preserve_original_event}}
 - copy_fields:
      fields:
+       - from: '@timestamp'
+         to: event.created
+{{#if preserve_original_event}}
        - from: message
          to: event.original
 {{/if}}
