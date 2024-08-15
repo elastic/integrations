@@ -184,6 +184,16 @@ processors:
       tag: set_resource_name
       copy_from: wiz.cloud_configuration_finding.resource.name
       ignore_empty_value: true
+  - rename:
+      field: json.resource.type
+      tag: rename_resource_type
+      target_field: wiz.cloud_configuration_finding.resource.type
+      ignore_missing: true
+  - set:
+      field: resource.type
+      tag: set_resource_type
+      copy_from: wiz.cloud_configuration_finding.resource.type
+      ignore_empty_value: true
   - remove:
       field: json
       tag: remove_json
@@ -195,12 +205,13 @@ processors:
         - wiz.cloud_configuration_finding.resource.subscription.external_id
         - wiz.cloud_configuration_finding.resource.subscription.name
         - wiz.cloud_configuration_finding.resource.region
+        - wiz.cloud_configuration_finding.resource.name
+        - wiz.cloud_configuration_finding.resource.type
+        - wiz.cloud_configuration_finding.resource.provider_id
         - wiz.cloud_configuration_finding.first_seen_at
         - wiz.cloud_configuration_finding.id
         - wiz.cloud_configuration_finding.rule.description
-        - wiz.cloud_configuration_finding.resource.name
         - wiz.cloud_configuration_finding.rule.name
-        - wiz.cloud_configuration_finding.resource.provider_id
         - wiz.cloud_configuration_finding.rule.id
         - wiz.cloud_configuration_finding.rule.short_id
       tag: remove_custom_duplicate_fields
