@@ -1,5 +1,12 @@
 - source_dataset: awsfirehose
   rules:
+    - target_dataset: aws.eks_logs
+      if: >-
+        (ctx['aws.cloudwatch.log_group'] != null && ctx['aws.cloudwatch.log_group'].startsWith('/aws/eks/')) ||
+        (ctx.aws?.cloudwatch?.log_group != null && ctx.aws.cloudwatch.log_group.startsWith('/aws/eks/'))
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
     - target_dataset: aws.firewall_logs
       if: ctx.message != null && ctx.message.contains('firewall_name') && ctx.message.contains('availability_zone') && ctx.message.contains('event_timestamp') && ctx.message.contains('event')
       namespace:
@@ -30,8 +37,8 @@
         - default
     - target_dataset: aws.route53_resolver_logs
       if: >-
-        ctx.message != null && ctx.message.contains('version') && ctx.message.contains('account_id') && ctx.message.contains('region') && 
-        ctx.message.contains('vpc_id') && ctx.message.contains('query_timestamp') && ctx.message.contains('query_name') 
+        ctx.message != null && ctx.message.contains('version') && ctx.message.contains('account_id') && ctx.message.contains('region') &&
+        ctx.message.contains('vpc_id') && ctx.message.contains('query_timestamp') && ctx.message.contains('query_name')
         && ctx.message.contains('query_type') && ctx.message.contains('query_class') && ctx.message.contains('rcode')
         && ctx.message.contains('answers') && ctx.message.contains('srcaddr') && ctx.message.contains('srcport')
         && ctx.message.contains('transport') && ctx.message.contains('srcids')
@@ -58,7 +65,7 @@
       # terminatingRuleMatchDetails httpSourceName httpSourceId ruleGroupList rateBasedRuleList
       # nonTerminatingMatchingRules httpRequest labels
       if: >-
-        (ctx['aws.kinesis.name'] != null && ctx['aws.kinesis.name'].contains('aws-waf-logs-')) 
+        (ctx['aws.kinesis.name'] != null && ctx['aws.kinesis.name'].contains('aws-waf-logs-'))
         || (ctx['aws.cloudwatch.log_group'] != null && ctx['aws.cloudwatch.log_group'].contains('aws-waf-logs-'))
         || (ctx.message != null && ctx.message.contains('webaclld') && ctx.message.contains('terminatingRule')
         && ctx.message.contains('httpSource') && ctx.message.contains('ruleGroupList') && ctx.message.contains('rateBasedRuleList')
@@ -78,7 +85,7 @@
         || (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('caller')
         && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('httpMethod')
         && ctx.message.contains('resourcePath') && ctx.message.contains('status') && ctx.message.contains('protocol')
-        && ctx.message.contains('responseLength')) 
+        && ctx.message.contains('responseLength'))
         || (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('caller')
         && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('eventType')
         && ctx.message.contains('routeKey') && ctx.message.contains('status') && ctx.message.contains('connectionId'))
@@ -154,7 +161,7 @@
             }
           }
           if (hostHeader != "-" && hostHeader.contains('s3') && hostHeader.contains('amazonaws.com')) {
-            return true;      
+            return true;
           } else if (tokenCount==25) {
             return true;
           }

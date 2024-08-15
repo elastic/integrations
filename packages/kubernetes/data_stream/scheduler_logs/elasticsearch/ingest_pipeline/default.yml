@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Kubernetes apiserver logs.
+description: Pipeline for processing Kubernetes scheduler logs.
 processors:
   - set:
       field: ecs.version
@@ -13,6 +13,9 @@ processors:
   - append:
       field: event.type
       value: ["access"]
+  - set:
+      field: orchestrator.type
+      value: kubernetes
   - rename:
       field: message
       target_field: event.original
@@ -72,8 +75,28 @@ processors:
       strip_brackets: true
       ignore_missing: true
   - rename:
-      field: _tmp.klog_parameters.err
-      target_field: kubernetes.error.message
+      field: _tmp.klog_parameters.node
+      target_field: kubernetes.node.name
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.pod
+      target_field: kubernetes.pod.name
+      ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.evaluatedNodes
+      target_field: kubernetes.scheduler.evaluated_nodes
+      type: long
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.evaluatedNodes
+      ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.feasibleNodes
+      target_field: kubernetes.scheduler.feasible_nodes
+      type: long
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.feasibleNodes
       ignore_missing: true
   - rename:
       field: _tmp.klog_parameters
@@ -83,9 +106,13 @@ processors:
       field: _tmp
 
 on_failure:
-  - set:
+  - append:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+
