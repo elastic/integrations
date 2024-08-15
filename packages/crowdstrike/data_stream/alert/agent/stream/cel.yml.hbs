@@ -30,7 +30,7 @@ program: |
     state.want_more ?
       state.?page.start
     :
-      optional.of(state.?cursor.last_timestamp.orValue(now - duration(state.initial_interval)))
+      optional.of(state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)))
   ).as(filter, state.with(
     get_request(
       state.url.trim_right("/") + "/alerts/queries/alerts/v2?" + {
@@ -38,7 +38,7 @@ program: |
         "offset": [string(state.offset)],
         "limit": [string(state.batch_size)],
         ?"filter": filter.hasValue() ?
-          optional.of(['timestamp:>"'+string(filter.value())+'"'])
+          optional.of(['timestamp:>"'+filter.value()+'"'])
         :
           optional.none(),
       }.format_query()
@@ -83,7 +83,7 @@ program: |
           }),
           "cursor": {
             ?"last_timestamp": has(inner_body.resources) && inner_body.resources.size() > 0 ?
-              optional.of(string(inner_body.resources.map(e, timestamp(e.timestamp)).max()))
+              optional.of(inner_body.resources.map(e, timestamp(e.timestamp)).max().format(time_layout.RFC3339))
             :
               state.?cursor.last_timestamp
           },
@@ -91,7 +91,7 @@ program: |
             "start": has(state.?cursor.start) ?
               (state.want_more ? state.cursor.start : state.cursor.last_timestamp)
             :
-              string(now)
+              now.format(time_layout.RFC3339)
           },
         })
       :
