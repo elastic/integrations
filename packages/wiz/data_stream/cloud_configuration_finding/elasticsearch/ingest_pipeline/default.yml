@@ -40,6 +40,10 @@ processors:
       tag: set_cloud_provider
       copy_from: wiz.cloud_configuration_finding.resource.subscription.cloud_provider
       ignore_empty_value: true
+  - script:
+      tag: lowercase_cloud_provider
+      lang: painless
+      source: "if (ctx.cloud?.provider != null) { ctx.cloud.provider = ctx.cloud.provider.toLowerCase(); }"
   - rename:
       field: json.resource.subscription.externalId
       tag: rename_subscription_externalId
