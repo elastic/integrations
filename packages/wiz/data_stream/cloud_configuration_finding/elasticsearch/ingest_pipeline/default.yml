@@ -37,6 +37,16 @@ processors:
       copy_from: wiz.cloud_configuration_finding.resource.subscription.cloud_provider
       ignore_empty_value: true
   - rename:
+      field: json.resource.subscription.externalId
+      tag: rename_subscription_externalId
+      target_field: wiz.cloud_configuration_finding.resource.subscription.external_id
+      ignore_missing: true
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id
+      copy_from: wiz.cloud_configuration_finding.resource.subscription.external_id
+      ignore_empty_value: true
+  - rename:
       field: json.resource.region
       tag: rename_region
       target_field: wiz.cloud_configuration_finding.resource.region
@@ -172,6 +182,7 @@ processors:
       field:
         - wiz.cloud_configuration_finding.analyzed_at
         - wiz.cloud_configuration_finding.resource.subscription.cloud_provider
+        - wiz.cloud_configuration_finding.resource.subscription.external_id
         - wiz.cloud_configuration_finding.resource.region
         - wiz.cloud_configuration_finding.first_seen_at
         - wiz.cloud_configuration_finding.id
