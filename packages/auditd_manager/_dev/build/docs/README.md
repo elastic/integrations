@@ -12,13 +12,19 @@ The `add_session_metadata` processor for Auditd Manager powers the [Session View
 To enable the `add_session_metadata` processor for Auditd Manager: 
 
 1. Navigate to the Auditd Manager integration configuration in Kibana.
-2. Add the `add_session_metadata` processor configuration under the advanced options section.
+2. Add the `add_session_metadata` processor configuration under the **Processors** section of Advanced options.
+
+```
+  - add_session_metadata:
+     backend: "auto"
+```
+
 3. Add these rules to the **Audit Rules** section of the configuration: 
 
 ```
--a always,exit -F arch=b64 -S execve,execveat -k exec 
--a always,exit -F arch=b64 -S exit_group 
--a always,exit -F arch=b64 -S setsid
+  -a always,exit -F arch=b64 -S execve,execveat -k exec 
+  -a always,exit -F arch=b64 -S exit_group 
+  -a always,exit -F arch=b64 -S setsid
 ```
 
 Changes are applied automatically, and you do not have to restart the service.
@@ -49,28 +55,27 @@ commands to see if the `auditd` service is running and stop it:
 
 * See if `auditd` is running:
 
-```shell
-service auditd status
-```
+  ```shell
+  service auditd status
+  ```
 
 * Stop the `auditd` service:
 
-```shell
-service auditd stop
-```
+  ```shell
+  service auditd stop
+  ```
 
 * Disable `auditd` from starting on boot:
 
-```shell
-chkconfig auditd off
-```
+  ```shell
+  `chkconfig auditd off`
+  ```
 
-To save CPU usage and disk space, you can use this command to stop `journald`
-from listening to audit messages:
+* Stop `journald` from listening to audit messages (to save CPU usage and disk space):
 
-```shell
-systemctl mask systemd-journald-audit.socket
-```
+  ```shell
+  systemctl mask systemd-journald-audit.socket
+  ```
 
 ## Audit rules
 
