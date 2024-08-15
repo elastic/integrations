@@ -194,6 +194,16 @@ processors:
       tag: set_resource_type
       copy_from: wiz.cloud_configuration_finding.resource.type
       ignore_empty_value: true
+  - rename:
+      field: json.resource.nativeType
+      tag: rename_resource_nativeType
+      target_field: wiz.cloud_configuration_finding.resource.native_type
+      ignore_missing: true
+  - set:
+      field: resource.sub_type
+      tag: set_resource_sub_type
+      copy_from: wiz.cloud_configuration_finding.resource.native_type
+      ignore_empty_value: true
   - remove:
       field: json
       tag: remove_json
@@ -207,6 +217,7 @@ processors:
         - wiz.cloud_configuration_finding.resource.region
         - wiz.cloud_configuration_finding.resource.name
         - wiz.cloud_configuration_finding.resource.type
+        - wiz.cloud_configuration_finding.resource.sub_type
         - wiz.cloud_configuration_finding.resource.provider_id
         - wiz.cloud_configuration_finding.first_seen_at
         - wiz.cloud_configuration_finding.id
