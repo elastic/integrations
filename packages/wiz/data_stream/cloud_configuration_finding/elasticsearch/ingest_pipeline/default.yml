@@ -75,12 +75,12 @@ processors:
       tag: append_event_type
       value: info
   - date:
-      field: json.firstSeenAt
-      target_field: wiz.cloud_configuration_finding.first_seen_at
-      tag: date_set_firstseenat
+      field: json.analyzedAt
+      target_field: wiz.cloud_configuration_finding.analyzed_at
+      tag: date_set_analyzedat
       formats:
         - ISO8601
-      if: ctx.json?.firstSeenAt != null && ctx.json.firstSeenAt != ''
+      if: ctx.json?.analyzedAt != null && ctx.json.analyzedAt != ''
       on_failure:
         - append:
             field: error.message
@@ -88,7 +88,7 @@ processors:
   - set:
       field: event.created
       tag: set_event_created
-      copy_from: wiz.cloud_configuration_finding.first_seen_at
+      copy_from: wiz.cloud_configuration_finding.analyzed_at
       ignore_empty_value: true
   - rename:
       field: json.id
@@ -260,7 +260,7 @@ processors:
         - wiz.cloud_configuration_finding.resource.type
         - wiz.cloud_configuration_finding.resource.sub_type
         - wiz.cloud_configuration_finding.resource.provider_id
-        - wiz.cloud_configuration_finding.first_seen_at
+        - wiz.cloud_configuration_finding.analyzed_at
         - wiz.cloud_configuration_finding.id
         - wiz.cloud_configuration_finding.rule.description
         - wiz.cloud_configuration_finding.rule.name
