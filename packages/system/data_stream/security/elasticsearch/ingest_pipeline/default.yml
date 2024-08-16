@@ -10,8 +10,8 @@ processors:
       if: 'ctx?.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
   - gsub:
       field: source.ip
-      pattern: "::ffff:"
-      replacement: ""
+      pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)' 
+      replacement: '$1'
       ignore_missing: true
   - geoip:
       field: source.ip

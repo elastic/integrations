@@ -137,7 +137,6 @@ processors:
                 ]);
               }
             } else {
-              answer = answer.replace("::ffff:", "");
               ips.add(answer);
             }
           }
@@ -163,6 +162,24 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
             allow_duplicates: false
+  - foreach:
+      field: dns.answers
+      if: ctx.dns?.answers instanceof List
+      ignore_failure: true
+      processor:
+        gsub:
+          field: _ingest._value
+          pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)' 
+          replacement: '$1'
+  - foreach:
+      field: dns.resolved_ip
+      if: ctx.dns?.resolved_ip instanceof List
+      ignore_failure: true
+      processor:
+        gsub:
+          field: _ingest._value
+          pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)' 
+          replacement: '$1'
   - foreach:
       field: dns.resolved_ip
       if: ctx.dns?.resolved_ip instanceof List
