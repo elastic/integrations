@@ -1,0 +1,353 @@
+---
+description: Pipeline for processing message_event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - set:
+      field: event.category
+      tag: set_event_category_to_email
+      value: [email]
+  - set:
+      field: event.type
+      tag: set_event_type_to_info
+      value: [info]
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Sublime Security
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Sublime Security
+  - rename:
+      field: json.data.message.canonical_id
+      tag: rename_data_message_canonicalid
+      target_field: sublime_security.message_event.canonical_id
+      ignore_missing: true
+  - rename:
+      field: json.canonical_id
+      tag: rename_canonical_id
+      target_field: sublime_security.message_event.canonical_id
+      ignore_missing: true
+  - date:
+      field: json.created_at
+      tag: date_created_at
+      target_field: sublime_security.message_event.created_at
+      formats:
+        - ISO8601
+      if: ctx.json?.created_at != null && ctx.json.created_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_message_event_created_at
+      copy_from: sublime_security.message_event.created_at
+      ignore_empty_value: true
+  - foreach:
+      field: json.data.flagged_rules
+      if: ctx.json?.data?.flagged_rules instanceof List
+      processor:
+        append:
+          field: rule.id
+          tag: append_data_flagged_rules_id_into_rule_id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.data.flagged_rules
+      if: ctx.json?.data?.flagged_rules instanceof List
+      processor:
+        append:
+          field: rule.name
+          tag: append_data_flagged_rules_name_into_rule_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.data.flagged_rules
+      tag: rename_data_flagged_rules
+      target_field: sublime_security.message_event.data.flagged_rules
+      ignore_missing: true
+  - foreach:
+      field: sublime_security.message_event.data.flagged_rules
+      tag: foreach_sublime_security_message_event_data_flagged_rules_to_remove_id_and_name
+      if: ctx.sublime_security?.message_event?.data?.flagged_rules instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.id
+            - _ingest._value.name
+          tag: remove_duplicate_custom_fields_from_data_flagged_rules_array
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - rename:
+      field: json.data.triggered_actions
+      tag: rename_data_triggered_actions
+      target_field: sublime_security.message_event.data.triggered_actions
+      ignore_missing: true
+  - rename:
+      field: json.data.message.external_id
+      tag: rename_data_message_external_id
+      target_field: sublime_security.message_event.external_id
+      ignore_missing: true
+  - rename:
+      field: json.external_id
+      tag: rename_external_id
+      target_field: sublime_security.message_event.external_id
+      ignore_missing: true
+  - rename:
+      field: json.forward_recipients
+      tag: rename_forward_recipients
+      target_field: sublime_security.message_event.forward_recipients
+      ignore_missing: true
+  - date:
+      field: json.forwarded_at
+      tag: date_forwarded_at
+      target_field: sublime_security.message_event.forwarded_at
+      formats:
+        - ISO8601
+      if: ctx.json?.forwarded_at != null && ctx.json.forwarded_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.message.id
+      tag: rename_data_message_id
+      target_field: sublime_security.message_event.id
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: sublime_security.message_event.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_message_event_id
+      copy_from: sublime_security.message_event.id
+      ignore_empty_value: true
+  - convert:
+      field: json.landed_in_spam
+      tag: convert_landed_in_spam_to_boolean
+      target_field: sublime_security.message_event.landed_in_spam
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mailbox.email
+      tag: rename_mailbox_email
+      target_field: sublime_security.message_event.mailbox.email
+      ignore_missing: true
+  - rename:
+      field: json.data.message.mailbox.external_id
+      tag: rename_data_message_mailbox_external_id
+      target_field: sublime_security.message_event.mailbox.external_id
+      ignore_missing: true
+  - rename:
+      field: json.mailbox.external_id
+      tag: rename_mailbox_external_id
+      target_field: sublime_security.message_event.mailbox.external_id
+      ignore_missing: true
+  - rename:
+      field: json.data.message.mailbox.id
+      tag: rename_data_message_mailbox_id
+      target_field: sublime_security.message_event.mailbox.id
+      ignore_missing: true
+  - rename:
+      field: json.mailbox.id
+      tag: rename_mailbox_id
+      target_field: sublime_security.message_event.mailbox.id
+      ignore_missing: true
+  - rename:
+      field: json.data.message.message_source_id
+      tag: rename_data_message_message_source_id
+      target_field: sublime_security.message_event.message_source_id
+      ignore_missing: true
+  - rename:
+      field: json.message_source_id
+      tag: rename_message_source_id
+      target_field: sublime_security.message_event.message_source_id
+      ignore_missing: true
+  - date:
+      field: json.read_at
+      tag: date_read_at
+      target_field: sublime_security.message_event.read_at
+      formats:
+        - ISO8601
+      if: ctx.json?.read_at != null && ctx.json.read_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.recipients
+      if: ctx.json?.recipients instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_recipients_email_into_email_to_address
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.recipients
+      tag: rename_recipients
+      target_field: sublime_security.message_event.recipients
+      ignore_missing: true
+  - date:
+      field: json.replied_at
+      tag: date_replied_at
+      target_field: sublime_security.message_event.replied_at
+      formats:
+        - ISO8601
+      if: ctx.json?.replied_at != null && ctx.json.replied_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.sender.display_name
+      tag: rename_sender_display_name
+      target_field: sublime_security.message_event.sender.display_name
+      ignore_missing: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_message_event_sender_display_name
+      copy_from: sublime_security.message_event.sender.display_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_sublime_security_message_event_sender_display_name_into_related_user
+      value: '{{{sublime_security.message_event.sender.display_name}}}'
+      allow_duplicates: false
+      if: ctx.sublime_security?.message_event?.sender?.display_name != null
+  - rename:
+      field: json.sender.email
+      tag: rename_sender_email
+      target_field: sublime_security.message_event.sender.email
+      ignore_missing: true
+  - append:
+      field: email.from.address
+      tag: append_sublime_security_message_event_sender_email_into_email_from_address
+      value: '{{{sublime_security.message_event.sender.email}}}'
+      allow_duplicates: false
+      if: ctx.sublime_security?.message_event?.sender?.email != null
+  - append:
+      field: related.user
+      tag: append_sublime_security_message_event_sender_email_into_related_user
+      value: '{{{sublime_security.message_event.sender.email}}}'
+      allow_duplicates: false
+      if: ctx.sublime_security?.message_event?.sender?.email != null
+  - rename:
+      field: json.subject
+      tag: rename_subject
+      target_field: sublime_security.message_event.subject
+      ignore_missing: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_message_event_subject
+      copy_from: sublime_security.message_event.subject
+      ignore_empty_value: true
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: sublime_security.message_event.type
+      ignore_missing: true
+  - foreach:
+      field: sublime_security.message_event.data.flagged_rules
+      if: ctx.sublime_security?.message_event?.data?.flagged_rules instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.id
+            - _ingest._value.name
+          tag: remove_custom_duplicate_fields_from_sublime_security_message_event_data_flagged_rules
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: sublime_security.message_event.recipients
+      if: ctx.sublime_security?.message_event?.recipients instanceof List
+      processor:
+        remove:
+          field: _ingest._value.email
+          tag: remove_custom_duplicate_fields_from_sublime_security_message_event_recipients
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - sublime_security.message_event.created_at
+        - sublime_security.message_event.id
+        - sublime_security.message_event.sender.display_name
+        - sublime_security.message_event.sender.email
+        - sublime_security.message_event.subject
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

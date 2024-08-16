@@ -1,0 +1,2186 @@
+---
+description: Pipeline for processing email_message logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - set:
+      field: event.category
+      tag: set_event_category_to_email
+      value: [email]
+  - set:
+      field: event.type
+      tag: set_event_type_to_info
+      value: [info]
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Sublime Security
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Sublime Security
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        rename:
+          field: _ingest._value.content_id
+          tag: rename_attachments_content_id
+          target_field: _ingest._value.content.id
+          ignore_missing: true
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        rename:
+          field: _ingest._value.content_transfer_encoding
+          tag: rename_attachments_content_transfer_encoding
+          target_field: _ingest._value.content.transfer_encoding
+          ignore_missing: true
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        rename:
+          field: _ingest._value.content_type
+          tag: rename_attachments_content_type
+          target_field: _ingest._value.content.type
+          ignore_missing: true
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        rename:
+          field: _ingest._value.file_name
+          tag: rename_attachments_file_name
+          target_field: _ingest._value.file.name
+          ignore_missing: true
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        rename:
+          field: _ingest._value.file_type
+          tag: rename_attachments_file_type
+          target_field: _ingest._value.file.type
+          ignore_missing: true
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        rename:
+          field: _ingest._value.file_extension
+          tag: rename_attachments_file_extension
+          target_field: _ingest._value.file.extension
+          ignore_missing: true
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attachments_md5_into_related_hash
+          value: '{{{_ingest._value.md5}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attachments_sha1_into_related_hash
+          value: '{{{_ingest._value.sha1}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attachments_sha256_into_related_hash
+          value: '{{{_ingest._value.sha256}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.attachments
+      if: ctx.json?.attachments instanceof List
+      processor:
+        convert:
+          field: _ingest._value.size
+          tag: convert_attachments_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attachments
+      tag: rename_attachments
+      target_field: sublime_security.email_message.attachments
+      ignore_missing: true
+  - script:
+      description: Set email attachments field.
+      tag: script_to_set_email_attachments_field
+      lang: painless
+      if: ctx.sublime_security?.email_message?.attachments instanceof List
+      source: |-
+        def attachmentList = new ArrayList();
+        for (attachment in ctx.sublime_security.email_message.attachments) {
+          def object = new HashMap();
+          object.put('file', new HashMap());
+          object.file.put('hash', new HashMap());
+          object.file.put('mime_type', attachment.content.type);
+          object.file.put('extension', attachment.file.extension);
+          object.file.put('name', attachment.file.name);
+          object.file.put('size', attachment.size);
+          object.file.hash.put('md5', attachment.md5);
+          object.file.hash.put('sha1', attachment.sha1);
+          object.file.hash.put('sha256', attachment.sha256);
+          attachmentList.add(object);
+        }
+        ctx.put('email',new HashMap());
+        ctx.email.attachments = attachmentList;
+  - script:
+      description: Extract extension name from email attachments.
+      tag: script_to_extract_extension_name
+      lang: painless
+      if: ctx.email?.attachments instanceof List
+      source: |-
+        for (attachment in ctx.email.attachments) {
+          if (attachment.file.extension != null && attachment.file.extension.startsWith('.')) {
+            String extension = attachment.file.extension.substring(1);
+            attachment.file.extension = extension;
+          }
+        }
+  - rename:
+      field: json.body.current_thread.text
+      tag: rename_body_current_thread_text
+      target_field: sublime_security.email_message.body.current_thread.text
+      ignore_missing: true
+  - rename:
+      field: json.body.html.charset
+      tag: rename_body_html_charset
+      target_field: sublime_security.email_message.body.html.charset
+      ignore_missing: true
+  - rename:
+      field: json.body.html.content_transfer_encoding
+      tag: rename_body_html_content_transfer_encoding
+      target_field: sublime_security.email_message.body.html.content_transfer_encoding
+      ignore_missing: true
+  - rename:
+      field: json.body.html.display_text
+      tag: rename_body_html_display_text
+      target_field: sublime_security.email_message.body.html.display_text
+      ignore_missing: true
+  - rename:
+      field: json.body.html.inner_text
+      tag: rename_body_html_inner_text
+      target_field: sublime_security.email_message.body.html.inner_text
+      ignore_missing: true
+  - rename:
+      field: json.body.html.raw
+      tag: rename_body_html_raw
+      target_field: sublime_security.email_message.body.html.raw
+      ignore_missing: true
+  - foreach:
+      field: json.body.ips
+      if: ctx.json?.body?.ips instanceof List
+      processor:
+        convert:
+          field: _ingest._value.ip
+          tag: convert_body_ips_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.body.ips
+      if: ctx.json?.body?.ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_body_ips_ip_into_related_ip
+          value: '{{{_ingest._value.ip}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.body.ips
+      tag: rename_body_ips
+      target_field: sublime_security.email_message.body.ips
+      ignore_missing: true
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_body_links_display_url_domain_domain_into_related_hosts
+          value: '{{{_ingest._value.display_url.domain.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.display_url.port
+          tag: convert_body_links_display_url_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.display_url.port
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_body_links_display_url_domain_root_domain_into_related_hosts
+          value: '{{{_ingest._value.display_url.domain.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_body_links_display_url_username_into_related_user
+          value: '{{{_ingest._value.display_url.username}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.display_url.domain.valid
+          tag: convert_body_links_display_url_domain_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.display_url.domain.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_body_links_href_url_domain_domain_into_related_hosts
+          value: '{{{_ingest._value.href_url.domain.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_body_links_href_url_domain_root_domain_into_related_hosts
+          value: '{{{_ingest._value.href_url.domain.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.href_url.port
+          tag: convert_body_links_href_url_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.href_url.port
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_body_links_href_url_username_into_related.user
+          value: '{{{_ingest._value.href_url.username}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.href_url.domain.valid
+          tag: convert_body_links_href_url_domain_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.href_url.domain.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.body.links
+      if: ctx.json?.body?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.mismatched
+          tag: convert_body_links_mismatched_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.mismatched
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Set url field.
+      tag: script_to_set_url_field
+      lang: painless
+      if: ctx.json?.body?.links instanceof List
+      source: |-
+        def links = new ArrayList();
+        for (link in ctx.json.body.links) {
+          def object = new HashMap();
+          if(link?.href_url != null) {
+            object.put('domain', link.href_url.domain.domain);
+            object.put('subdomain', link.href_url.domain.subdomain);
+            object.put('top_level_domain', link.href_url.domain.tld);
+            object.put('fragment', link.href_url.fragment);
+            object.put('password', link.href_url.password);
+            object.put('path', link.href_url.path);
+            object.put('port', link.href_url.port);
+            object.put('query', link.href_url.query_params);
+            object.put('scheme', link.href_url.scheme);
+            object.put('full', link.href_url.url);
+            object.put('username', link.href_url.username);
+            links.add(object);
+          }
+        }
+        ctx.put('url',new HashMap());
+        ctx.url = links;
+  - rename:
+      field: json.body.links
+      tag: rename_body_links
+      target_field: sublime_security.email_message.body.links
+      ignore_missing: true
+  - rename:
+      field: json.body.plain.charset
+      tag: rename_body_plain_charset
+      target_field: sublime_security.email_message.body.plain.charset
+      ignore_missing: true
+  - rename:
+      field: json.body.plain.content_transfer_encoding
+      tag: rename_body_plain_content_transfer_encoding
+      target_field: sublime_security.email_message.body.plain.content_transfer_encoding
+      ignore_missing: true
+  - rename:
+      field: json.body.plain.raw
+      tag: rename_body_plain_raw
+      target_field: sublime_security.email_message.body.plain.raw
+      ignore_missing: true
+  - rename:
+      field: json._errors
+      tag: rename_errors
+      target_field: sublime_security.email_message.errors
+      ignore_missing: true
+  - date:
+      field: json.external.created_at
+      tag: date_external_created_at
+      target_field: sublime_security.email_message.external.created_at
+      formats:
+        - ISO8601
+      if: ctx.json?.external?.created_at != null && ctx.json.external.created_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.origination_timestamp
+      tag: set_email_origination_timestamp_from_email_message_external_created_at
+      copy_from: sublime_security.email_message.external.created_at
+      ignore_empty_value: true
+  - rename:
+      field: json.external.message_id
+      tag: rename_external_message_id
+      target_field: sublime_security.email_message.external.message_id
+      ignore_missing: true
+  - rename:
+      field: json.external.route_type
+      tag: rename_external_route_type
+      target_field: sublime_security.email_message.external.route_type
+      ignore_missing: true
+  - convert:
+      field: json.external.spam
+      tag: convert_external_spam_to_boolean
+      target_field: sublime_security.email_message.external.spam
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.external.spam_folder
+      tag: convert_external_spam_folder_to_boolean
+      target_field: sublime_security.email_message.external.spam_folder
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.external.thread_id
+      tag: rename_external_thread_id
+      target_field: sublime_security.email_message.external.thread_id
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.action
+      tag: rename_headers_auth_summary_dmarc_details_action
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.action
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.disposition
+      tag: rename_headers_auth_summary_dmarc_details_disposition
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.disposition
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.from.domain
+      tag: rename_headers_auth_summary_dmarc_details_from_domain
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.from.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_auth_summary_dmarc_details_from_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.auth_summary.dmarc.details.from.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.from.punycode
+      tag: rename_headers_auth_summary_dmarc_details_from_punycode
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.from.punycode
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.from.root_domain
+      tag: rename_headers_auth_summary_dmarc_details_from_root_domain
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.from.root_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_auth_summary_dmarc_details_from_root_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.auth_summary.dmarc.details.from.root_domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.from.sld
+      tag: rename_headers_auth_summary_dmarc_details_from_sld
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.from.sld
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.from.subdomain
+      tag: rename_headers_auth_summary_dmarc_details_from_subdomain
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.from.subdomain
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.from.tld
+      tag: rename_headers_auth_summary_dmarc_details_from_tld
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.from.tld
+      ignore_missing: true
+  - convert:
+      field: json.headers.auth_summary.dmarc.details.from.valid
+      tag: convert_headers_auth_summary_dmarc_details_from_valid_to_boolean
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.from.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.policy
+      tag: rename_headers_auth_summary_dmarc_details_policy
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.policy
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.sub_policy
+      tag: rename_headers_auth_summary_dmarc_details_sub_policy
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.sub_policy
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.verdict
+      tag: rename_headers_auth_summary_dmarc_details_verdict
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.verdict
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.dmarc.details.version
+      tag: rename_headers_auth_summary_dmarc_details_version
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.details.version
+      ignore_missing: true
+  - convert:
+      field: json.headers.auth_summary.dmarc.pass
+      tag: convert_headers_auth_summary_dmarc_pass_to_boolean
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.pass
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.headers.auth_summary.dmarc.received_hop
+      tag: convert_headers_auth_summary_dmarc_received_hop_to_long
+      target_field: sublime_security.email_message.headers.auth_summary.dmarc.received_hop
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.headers.auth_summary.spf.details.client_ip.ip
+      tag: convert_headers_auth_summary_spf_details_client_ip_ip_to_ip
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.client_ip.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.headers?.auth_summary?.spf?.details?.client_ip?.ip != null && ctx.json.headers.auth_summary.spf.details.client_ip.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_headers_auth_summary_spf_details_client_ip_into_related_ip
+      value: '{{{sublime_security.email_message.headers.auth_summary.spf.details.client_ip.ip}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.auth_summary.spf.details.description
+      tag: rename_headers_auth_summary_spf_details_description
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.description
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.spf.details.designator
+      tag: rename_headers_auth_summary_spf_details_designator
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.designator
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.spf.details.helo.domain
+      tag: rename_headers_auth_summary_spf_details_helo_domain
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.helo.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_auth_summary_spf_details_helo_domain_into_related_host
+      value: '{{{sublime_security.email_message.headers.auth_summary.spf.details.helo.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.auth_summary.spf.details.helo.punycode
+      tag: rename_headers_auth_summary_spf_details_helo_punycode
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.helo.punycode
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.spf.details.helo.root_domain
+      tag: rename_headers_auth_summary_spf_details_helo_root_domain
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.helo.root_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_auth_summary_spf_details_helo_root_domain_into_related_host
+      value: '{{{sublime_security.email_message.headers.auth_summary.spf.details.helo.root_domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.auth_summary.spf.details.helo.sld
+      tag: rename_headers_auth_summary_spf_details_helo_sld
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.helo.sld
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.spf.details.helo.subdomain
+      tag: rename_headers_auth_summary_spf_details_helo_subdomain
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.helo.subdomain
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.spf.details.helo.tld
+      tag: rename_headers_auth_summary_spf_details_helo_tld
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.helo.tld
+      ignore_missing: true
+  - convert:
+      field: json.headers.auth_summary.spf.details.helo.valid
+      tag: convert_headers_auth_summary_spf_details_helo_valid_to_boolean
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.helo.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.auth_summary.spf.details.server.domain
+      tag: rename_headers_auth_summary_spf_details_server_domain
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.server.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_auth_summary_spf_details_server_domain_into_related_host
+      value: '{{{sublime_security.email_message.headers.auth_summary.spf.details.server.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.auth_summary.spf.details.server.punycode
+      tag: rename_headers_auth_summary_spf_details_server_punycode
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.server.punycode
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.spf.details.server.root_domain
+      tag: rename_headers_auth_summary_spf_details_server_root_domain
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.server.root_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_auth_summary_spf_details_server_root_domain_into_related_host
+      value: '{{{sublime_security.email_message.headers.auth_summary.spf.details.server.root_domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.auth_summary.spf.details.server.sld
+      tag: rename_headers_auth_summary_spf_details_server_sld
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.server.sld
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.spf.details.server.subdomain
+      tag: rename_headers_auth_summary_spf_details_server_subdomain
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.server.subdomain
+      ignore_missing: true
+  - rename:
+      field: json.headers.auth_summary.spf.details.server.tld
+      tag: rename_headers_auth_summary_spf_details_server_tld
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.server.tld
+      ignore_missing: true
+  - convert:
+      field: json.headers.auth_summary.spf.details.server.valid
+      tag: convert_headers_auth_summary_spf_details_server_valid_to_boolean
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.server.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.auth_summary.spf.details.verdict
+      tag: rename_headers_auth_summary_spf_details_verdict
+      target_field: sublime_security.email_message.headers.auth_summary.spf.details.verdict
+      ignore_missing: true
+  - convert:
+      field: json.headers.auth_summary.spf.error
+      tag: convert_headers_auth_summary_spf_error_to_boolean
+      target_field: sublime_security.email_message.headers.auth_summary.spf.error
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.headers.auth_summary.spf.pass
+      tag: convert_headers_auth_summary_spf_pass_to_boolean
+      target_field: sublime_security.email_message.headers.auth_summary.spf.pass
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.headers.auth_summary.spf.received_hop
+      tag: convert_headers_auth_summary_spf_received_hop_to_long
+      target_field: sublime_security.email_message.headers.auth_summary.spf.received_hop
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.headers.date
+      tag: date_headers_date
+      target_field: sublime_security.email_message.headers.date
+      formats:
+        - ISO8601
+      if: ctx.json?.headers?.date != null && ctx.json.headers.date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.date_original_offset
+      tag: rename_headers_date_original_offset
+      target_field: sublime_security.email_message.headers.date_original_offset
+      ignore_missing: true
+  - rename:
+      field: json.headers.delivered_to.domain.domain
+      tag: rename_headers_delivered_to_domain_domain
+      target_field: sublime_security.email_message.headers.delivered_to.domain.domain
+      ignore_missing: true
+  - set:
+      field: source.domain
+      tag: set_source_domain_from_email_message_headers_delivered_to_domain_domain
+      copy_from: sublime_security.email_message.headers.delivered_to.domain.domain
+      ignore_empty_value: true
+  - rename:
+      field: json.headers.delivered_to.domain.punycode
+      tag: rename_headers_delivered_to_domain_punycode
+      target_field: sublime_security.email_message.headers.delivered_to.domain.punycode
+      ignore_missing: true
+  - rename:
+      field: json.headers.delivered_to.domain.root_domain
+      tag: rename_headers_delivered_to_domain_root_domain
+      target_field: sublime_security.email_message.headers.delivered_to.domain.root_domain
+      ignore_missing: true
+  - rename:
+      field: json.headers.delivered_to.domain.sld
+      tag: rename_headers_delivered_to_domain_sld
+      target_field: sublime_security.email_message.headers.delivered_to.domain.sld
+      ignore_missing: true
+  - rename:
+      field: json.headers.delivered_to.domain.subdomain
+      tag: rename_headers_delivered_to_domain_subdomain
+      target_field: sublime_security.email_message.headers.delivered_to.domain.subdomain
+      ignore_missing: true
+  - set:
+      field: source.subdomain
+      tag: set_source_subdomain_from_email_message_headers_delivered_to_domain_subdomain
+      copy_from: sublime_security.email_message.headers.delivered_to.domain.subdomain
+      ignore_empty_value: true
+  - rename:
+      field: json.headers.delivered_to.domain.tld
+      tag: rename_headers_delivered_to_domain_tld
+      target_field: sublime_security.email_message.headers.delivered_to.domain.tld
+      ignore_missing: true
+  - set:
+      field: source.top_level_domain
+      tag: set_source_top_level_domain_from_email_message_headers_delivered_to_domain_tld
+      copy_from: sublime_security.email_message.headers.delivered_to.domain.tld
+      ignore_empty_value: true
+  - convert:
+      field: json.headers.delivered_to.domain.valid
+      tag: convert_headers_delivered_to_domain_valid_to_boolean
+      target_field: sublime_security.email_message.headers.delivered_to.domain.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.delivered_to.email
+      tag: rename_headers_delivered_to_email
+      target_field: sublime_security.email_message.headers.delivered_to.email
+      ignore_missing: true
+  - rename:
+      field: json.headers.delivered_to.local_part
+      tag: rename_headers_delivered_to_local_part
+      target_field: sublime_security.email_message.headers.delivered_to.local_part
+      ignore_missing: true
+  - foreach:
+      field: json.headers.domains
+      if: ctx.json?.headers?.domains instanceof List
+      processor:
+        append:
+          field: destination.domain
+          tag: append_headers_domains_domain_into_destination_domain
+          value: '{{{_ingest._value.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.domains
+      if: ctx.json?.headers?.domains instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_domains_domain_into_related_hosts
+          value: '{{{_ingest._value.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.domains
+      if: ctx.json?.headers?.domains instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_domains_root_domain_into_related_hosts
+          value: '{{{_ingest._value.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.domains
+      if: ctx.json?.headers?.domains instanceof List
+      processor:
+        append:
+          field: destination.subdomain
+          tag: append_headers_domains_subdomain_into_destination_subdomain
+          value: '{{{_ingest._value.subdomain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.domains
+      if: ctx.json?.headers?.domains instanceof List
+      processor:
+        append:
+          field: destination.top_level_domain
+          tag: append_headers_domains_tld_into_destination_top_level_domain
+          value: '{{{_ingest._value.tld}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.domains
+      if: ctx.json?.headers?.domains instanceof List
+      processor:
+        convert:
+          field: _ingest._value.valid
+          tag: convert_headers_domains_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.domains
+      tag: rename_headers_domains
+      target_field: sublime_security.email_message.headers.domains
+      ignore_missing: true
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        convert:
+          field: _ingest._value.authentication_results.dmarc_details.from.valid
+          tag: convert_headers_hops_authentication_results_dmarc_details_from_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.authentication_results.dmarc_details.from.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        convert:
+          field: _ingest._value.authentication_results.server.valid
+          tag: convert_headers_hops_authentication_results_server_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.authentication_results.server.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.fields
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.position
+              tag: convert_headers_hops_fields_position_to_long
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.position
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: add mapping of name and value in fields array.
+      tag: script to add mapping of name and value in fields array
+      if: ctx.json?.headers?.hops instanceof List
+      source: |
+        def hops = ctx.json.headers.hops;
+        for (int i = 0; i < hops.size(); i++) {
+          def hop = hops[i];
+          if(hop.fields instanceof List) {
+            for (def field : hop.fields) {
+              def lowercaseName = field.name.toLowerCase();
+              field[lowercaseName] = field.value;
+            }
+          }
+        }
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_headers_hops_authentication_results_dkim_details_body_hash_into_related_hash
+          value: '{{{_ingest._value.authentication_results.dkim_details.body_hash}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_authentication_results_dmarc_details_from_domain_into_related_hosts
+          value: '{{{_ingest._value.authentication_results.dmarc_details.from.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_authentication_results_dmarc_details_from_root_domain_into_related_hosts
+          value: '{{{_ingest._value.authentication_results.dmarc_details.from.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_authentication_results_server_domain_into_related_hosts
+          value: '{{{_ingest._value.authentication_results.server.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_authentication_results_server_root_domain_into_related_hosts
+          value: '{{{_ingest._value.authentication_results.server.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        convert:
+          field: _ingest._value.index
+          tag: convert_headers_hops_index_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.index
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        date:
+          field: _ingest._value.received.time
+          tag: date_headers_hops_received_time
+          target_field: _ingest._value.received.time
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.received.time
+                ignore_missing: true
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        convert:
+          field: _ingest._value.received_spf.client_ip.ip
+          tag: convert_headers_hops_received_spf_client_ip_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.received_spf.client_ip.ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_headers_hops_received_spf_client_ip_ip_into_related_ip
+          value: '{{{_ingest._value.received_spf.client_ip.ip}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_received_spf_helo_domain_into_related_hosts
+          value: '{{{_ingest._value.received_spf.helo.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_received_spf_helo_root_domain_into_related_hosts
+          value: '{{{_ingest._value.received_spf.helo.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        convert:
+          field: _ingest._value.received_spf.helo.valid
+          tag: convert_headers_hops_received_spf_helo_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.received_spf.helo.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_received_spf_server_domain_into_related_hosts
+          value: '{{{_ingest._value.received_spf.server.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_received_spf_server_root_domain_into_related_hosts
+          value: '{{{_ingest._value.received_spf.server.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        convert:
+          field: _ingest._value.received_spf.server.valid
+          tag: convert_headers_hops_received_spf_server_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.received_spf.server.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        convert:
+          field: _ingest._value.authentication_results.spf_details.client_ip.ip
+          tag: convert_headers_hops_authentication_results_spf_details_client_ip_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.authentication_results.spf_details.client_ip.ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_headers_hops_authentication_results_spf_details_client_ip_ip_into_related_ip
+          value: '{{{_ingest._value.authentication_results.spf_details.client_ip.ip}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_authentication_results_spf_details_helo_domain_into_related_hosts
+          value: '{{{_ingest._value.authentication_results.spf_details.helo.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_authentication_results_spf_details_helo_root_domain_into_related_hosts
+          value: '{{{_ingest._value.authentication_results.spf_details.helo.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        convert:
+          field: _ingest._value.authentication_results.spf_details.helo.valid
+          tag: convert_headers_hops_authentication_results_spf_details_helo_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.authentication_results.spf_details.helo.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_authentication_results_spf_details_server_domain_into_related_hosts
+          value: '{{{_ingest._value.authentication_results.spf_details.server.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_hops_authentication_results_spf_details_server_root_domain_into_related_hosts
+          value: '{{{_ingest._value.authentication_results.spf_details.server.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.hops
+      if: ctx.json?.headers?.hops instanceof List
+      processor:
+        convert:
+          field: _ingest._value.authentication_results.spf_details.server.valid
+          tag: convert_headers_hops_authentication_results_spf_details_server_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.authentication_results.spf_details.server.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.hops
+      tag: rename_headers_hops
+      target_field: sublime_security.email_message.headers.hops
+      ignore_missing: true
+  - rename:
+      field: json.headers.in_reply_to
+      tag: rename_headers_in_reply_to
+      target_field: sublime_security.email_message.headers.in_reply_to
+      ignore_missing: true
+  - foreach:
+      field: json.headers.ips
+      if: ctx.json?.headers?.ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_headers_ips_ip_into_related_ip
+          value: '{{{_ingest._value.ip}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.headers.ips
+      tag: rename_headers_ips
+      target_field: sublime_security.email_message.headers.ips
+      ignore_missing: true
+  - rename:
+      field: json.headers.mailer
+      tag: rename_headers_mailer
+      target_field: sublime_security.email_message.headers.mailer
+      ignore_missing: true
+  - set:
+      field: email.x_mailer
+      tag: set_email_x_mailer_from_email_message_headers_mailer
+      copy_from: sublime_security.email_message.headers.mailer
+      ignore_empty_value: true
+  - user_agent:
+      field: email.x_mailer
+      ignore_missing: true
+  - rename:
+      field: json.headers.message_id
+      tag: rename_headers_message_id
+      target_field: sublime_security.email_message.headers.message_id
+      ignore_missing: true
+  - set:
+      field: email.message_id
+      tag: set_email_message_id_from_email_message_headers_message_id
+      copy_from: sublime_security.email_message.headers.message_id
+      ignore_empty_value: true
+  - rename:
+      field: json.headers.references
+      tag: rename_headers_references
+      target_field: sublime_security.email_message.headers.references
+      ignore_missing: true
+  - foreach:
+      field: json.headers.reply_to
+      if: ctx.json?.headers?.reply_to instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_reply_to_email_domain_domain_into_related_hosts
+          value: '{{{_ingest._value.email.domain.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.reply_to
+      if: ctx.json?.headers?.reply_to instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_headers_reply_to_email_domain_root_domain_into_related_hosts
+          value: '{{{_ingest._value.email.domain.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.reply_to
+      if: ctx.json?.headers?.reply_to instanceof List
+      processor:
+        convert:
+          field: _ingest._value.email.domain.valid
+          tag: convert_headers_reply_to_email_domain_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.email.domain.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.headers.reply_to
+      if: ctx.json?.headers?.reply_to instanceof List
+      processor:
+        append:
+          field: email.reply_to.address
+          tag: append_headers_reply_to_email_email_into_email_reply_to_address
+          value: '{{{_ingest._value.email.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.reply_to
+      if: ctx.json?.headers?.reply_to instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_headers_reply_to_email_email_into_related_user
+          value: '{{{_ingest._value.email.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.headers.reply_to
+      if: ctx.json?.headers?.reply_to instanceof List
+      processor:
+        rename:
+          field: _ingest._value.email.email
+          tag: rename_headers_reply_to_email_email_to_value
+          target_field: _ingest._value.email.value
+          ignore_missing: true
+  - rename:
+      field: json.headers.reply_to
+      tag: rename_headers_reply_to
+      target_field: sublime_security.email_message.headers.reply_to
+      ignore_missing: true
+  - rename:
+      field: json.headers.return_path.domain.domain
+      tag: rename_headers_return_path_domain_domain
+      target_field: sublime_security.email_message.headers.return_path.domain.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_return_path_domain_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.return_path.domain.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.return_path.domain.punycode
+      tag: rename_headers_return_path_domain_punycode
+      target_field: sublime_security.email_message.headers.return_path.domain.punycode
+      ignore_missing: true
+  - rename:
+      field: json.headers.return_path.domain.root_domain
+      tag: rename_headers_return_path_domain_root_domain
+      target_field: sublime_security.email_message.headers.return_path.domain.root_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_return_path_domain_root_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.return_path.domain.root_domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.return_path.domain.sld
+      tag: rename_headers_return_path_domain_sld
+      target_field: sublime_security.email_message.headers.return_path.domain.sld
+      ignore_missing: true
+  - rename:
+      field: json.headers.return_path.domain.subdomain
+      tag: rename_headers_return_path_domain_subdomain
+      target_field: sublime_security.email_message.headers.return_path.domain.subdomain
+      ignore_missing: true
+  - rename:
+      field: json.headers.return_path.domain.tld
+      tag: rename_headers_return_path_domain_tld
+      target_field: sublime_security.email_message.headers.return_path.domain.tld
+      ignore_missing: true
+  - convert:
+      field: json.headers.return_path.domain.valid
+      tag: convert_headers_return_path_domain_valid_to_boolean
+      target_field: sublime_security.email_message.headers.return_path.domain.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.return_path.email
+      tag: rename_headers_return_path_email
+      target_field: sublime_security.email_message.headers.return_path.email
+      ignore_missing: true
+  - rename:
+      field: json.headers.return_path.local_part
+      tag: rename_headers_return_path_local_part
+      target_field: sublime_security.email_message.headers.return_path.local_part
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_authenticated_domain.domain
+      tag: rename_headers_x_authenticated_domain_domain
+      target_field: sublime_security.email_message.headers.x_authenticated_domain.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_x_authenticated_domain_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.x_authenticated_domain.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.x_authenticated_domain.punycode
+      tag: rename_headers_x_authenticated_domain_punycode
+      target_field: sublime_security.email_message.headers.x_authenticated_domain.punycode
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_authenticated_domain.root_domain
+      tag: rename_headers_x_authenticated_domain_root_domain
+      target_field: sublime_security.email_message.headers.x_authenticated_domain.root_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_x_authenticated_domain_root_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.x_authenticated_domain.root_domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.x_authenticated_domain.sld
+      tag: rename_headers_x_authenticated_domain_sld
+      target_field: sublime_security.email_message.headers.x_authenticated_domain.sld
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_authenticated_domain.subdomain
+      tag: rename_headers_x_authenticated_domain_subdomain
+      target_field: sublime_security.email_message.headers.x_authenticated_domain.subdomain
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_authenticated_domain.tld
+      tag: rename_headers_x_authenticated_domain_tld
+      target_field: sublime_security.email_message.headers.x_authenticated_domain.tld
+      ignore_missing: true
+  - convert:
+      field: json.headers.x_authenticated_domain.valid
+      tag: convert_headers_x_authenticated_domain_valid_to_boolean
+      target_field: sublime_security.email_message.headers.x_authenticated_domain.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.x_authenticated_sender.domain.domain
+      tag: rename_headers_x_authenticated_sender_domain_domain
+      target_field: sublime_security.email_message.headers.x_authenticated_sender.domain.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_x_authenticated_sender_domain_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.x_authenticated_sender.domain.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.x_authenticated_sender.domain.punycode
+      tag: rename_headers_x_authenticated_sender_domain_punycode
+      target_field: sublime_security.email_message.headers.x_authenticated_sender.domain.punycode
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_authenticated_sender.domain.root_domain
+      tag: rename_headers_x_authenticated_sender_domain_root_domain
+      target_field: sublime_security.email_message.headers.x_authenticated_sender.domain.root_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_x_authenticated_sender_domain_root_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.x_authenticated_sender.domain.root_domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.x_authenticated_sender.domain.sld
+      tag: rename_headers_x_authenticated_sender_domain_sld
+      target_field: sublime_security.email_message.headers.x_authenticated_sender.domain.sld
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_authenticated_sender.domain.subdomain
+      tag: rename_headers_x_authenticated_sender_domain_subdomain
+      target_field: sublime_security.email_message.headers.x_authenticated_sender.domain.subdomain
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_authenticated_sender.domain.tld
+      tag: rename_headers_x_authenticated_sender_domain_tld
+      target_field: sublime_security.email_message.headers.x_authenticated_sender.domain.tld
+      ignore_missing: true
+  - convert:
+      field: json.headers.x_authenticated_sender.domain.valid
+      tag: convert_headers_x_authenticated_sender_domain_valid_to_boolean
+      target_field: sublime_security.email_message.headers.x_authenticated_sender.domain.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.x_authenticated_sender.email
+      tag: rename_headers_x_authenticated_sender_email
+      target_field: sublime_security.email_message.headers.x_authenticated_sender.email
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_authenticated_sender.local_part
+      tag: rename_headers_x_authenticated_sender_local_part
+      target_field: sublime_security.email_message.headers.x_authenticated_sender.local_part
+      ignore_missing: true
+  - convert:
+      field: json.headers.x_client_ip.ip
+      tag: convert_headers_x_client_ip_ip_to_ip
+      target_field: sublime_security.email_message.headers.x_client_ip.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.headers?.x_client_ip?.ip != null && ctx.json.headers.x_client_ip.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_headers_x_client_ip_ip
+      copy_from: sublime_security.email_message.headers.x_client_ip.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_headers_x_client_ip_ip_into_related_ip
+      value: '{{{sublime_security.email_message.headers.x_client_ip.ip}}}'
+      allow_duplicates: false
+  - convert:
+      field: json.headers.x_originating_ip.ip
+      tag: convert_headers_x_originating_ip_ip_to_ip
+      target_field: sublime_security.email_message.headers.x_originating_ip.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.headers?.x_originating_ip?.ip != null && ctx.json.headers.x_originating_ip.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_headers_x_originating_ip_ip_into_related_ip
+      value: '{{{sublime_security.email_message.headers.x_originating_ip.ip}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.x_secure_server_account
+      tag: rename_headers_x_secure_server_account
+      target_field: sublime_security.email_message.headers.x_secure_server_account
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_sender.domain.domain
+      tag: rename_headers_x_sender_domain_domain
+      target_field: sublime_security.email_message.headers.x_sender.domain.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_x_sender_domain_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.x_sender.domain.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.x_sender.domain.punycode
+      tag: rename_headers_x_sender_domain_punycode
+      target_field: sublime_security.email_message.headers.x_sender.domain.punycode
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_sender.domain.root_domain
+      tag: rename_headers_x_sender_domain_root_domain
+      target_field: sublime_security.email_message.headers.x_sender.domain.root_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_headers_x_sender_domain_root_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.headers.x_sender.domain.root_domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.headers.x_sender.domain.sld
+      tag: rename_headers_x_sender_domain_sld
+      target_field: sublime_security.email_message.headers.x_sender.domain.sld
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_sender.domain.subdomain
+      tag: rename_headers_x_sender_domain_subdomain
+      target_field: sublime_security.email_message.headers.x_sender.domain.subdomain
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_sender.domain.tld
+      tag: rename_headers_x_sender_domain_tld
+      target_field: sublime_security.email_message.headers.x_sender.domain.tld
+      ignore_missing: true
+  - convert:
+      field: json.headers.x_sender.domain.valid
+      tag: convert_headers_x_sender_domain_valid_to_boolean
+      target_field: sublime_security.email_message.headers.x_sender.domain.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.headers.x_sender.email
+      tag: rename_headers_x_sender_email
+      target_field: sublime_security.email_message.headers.x_sender.email
+      ignore_missing: true
+  - rename:
+      field: json.headers.x_sender.local_part
+      tag: rename_headers_x_sender_local_part
+      target_field: sublime_security.email_message.headers.x_sender.local_part
+      ignore_missing: true
+  - rename:
+      field: json.mailbox.display_name
+      tag: rename_mailbox_display_name
+      target_field: sublime_security.email_message.mailbox.display_name
+      ignore_missing: true
+  - rename:
+      field: json.mailbox.email.domain.domain
+      tag: rename_mailbox_email_domain_domain
+      target_field: sublime_security.email_message.mailbox.email.domain.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_mailbox_email_domain_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.mailbox.email.domain.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.mailbox.email.domain.punycode
+      tag: rename_mailbox_email_domain_punycode
+      target_field: sublime_security.email_message.mailbox.email.domain.punycode
+      ignore_missing: true
+  - rename:
+      field: json.mailbox.email.domain.root_domain
+      tag: rename_mailbox_email_domain_root_domain
+      target_field: sublime_security.email_message.mailbox.email.domain.root_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_mailbox_email_domain_root_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.mailbox.email.domain.root_domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.mailbox.email.domain.sld
+      tag: rename_mailbox_email_domain_sld
+      target_field: sublime_security.email_message.mailbox.email.domain.sld
+      ignore_missing: true
+  - rename:
+      field: json.mailbox.email.domain.subdomain
+      tag: rename_mailbox_email_domain_subdomain
+      target_field: sublime_security.email_message.mailbox.email.domain.subdomain
+      ignore_missing: true
+  - rename:
+      field: json.mailbox.email.domain.tld
+      tag: rename_mailbox_email_domain_tld
+      target_field: sublime_security.email_message.mailbox.email.domain.tld
+      ignore_missing: true
+  - convert:
+      field: json.mailbox.email.domain.valid
+      tag: convert_mailbox_email_domain_valid_to_boolean
+      target_field: sublime_security.email_message.mailbox.email.domain.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mailbox.email.email
+      tag: rename_mailbox_email_email
+      target_field: sublime_security.email_message.mailbox.email.value
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_mailbox_email_value_into_related_user
+      value: '{{{sublime_security.email_message.mailbox.email.value}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.mailbox.email.local_part
+      tag: rename_mailbox_email_local_part
+      target_field: sublime_security.email_message.mailbox.email.local_part
+      ignore_missing: true
+  - rename:
+      field: json._meta.canonical_id
+      tag: rename_meta_canonical_id
+      target_field: sublime_security.email_message.meta.canonical_id
+      ignore_missing: true
+  - date:
+      field: json._meta.created_at
+      tag: date_meta_created_at
+      target_field: sublime_security.email_message.meta.created_at
+      formats:
+        - ISO8601
+      if: ctx.json?._meta?.created_at != null && ctx.json._meta.created_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_email_message_meta_created_at
+      copy_from: sublime_security.email_message.meta.created_at
+      ignore_empty_value: true
+  - date:
+      field: json._meta.effective_at
+      tag: date_meta_effective_at
+      target_field: sublime_security.email_message.meta.effective_at
+      formats:
+        - ISO8601
+      if: ctx.json?._meta?.effective_at != null && ctx.json._meta.effective_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json._meta.id
+      tag: rename_meta_id
+      target_field: sublime_security.email_message.meta.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_meta_id
+      copy_from: sublime_security.email_message.meta.id
+      ignore_empty_value: true
+  - foreach:
+      field: json.recipients.bcc
+      if: ctx.json?.recipients?.bcc instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_recipients_bcc_email_domain_domain_into_related_hosts
+          value: '{{{_ingest._value.email.domain.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.bcc
+      if: ctx.json?.recipients?.bcc instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_recipients_bcc_email_domain_root_domain_into_related_hosts
+          value: '{{{_ingest._value.email.domain.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.bcc
+      if: ctx.json?.recipients?.bcc instanceof List
+      processor:
+        convert:
+          field: _ingest._value.email.domain.valid
+          tag: convert_recipients_bcc_email_domain_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.email.domain.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.recipients.bcc
+      if: ctx.json?.recipients?.bcc instanceof List
+      processor:
+        append:
+          field: email.bcc.address
+          tag: append_recipients_bcc_email_email_into_email_bcc_address
+          value: '{{{_ingest._value.email.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.bcc
+      if: ctx.json?.recipients?.bcc instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_recipients_bcc_email_email_into_related_user
+          value: '{{{_ingest._value.email.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.bcc
+      if: ctx.json?.recipients?.bcc instanceof List
+      processor:
+        rename:
+          field: _ingest._value.email.email
+          tag: rename_recipients_bcc_email_email_to_value
+          target_field: _ingest._value.email.value
+          ignore_missing: true
+  - rename:
+      field: json.recipients.bcc
+      tag: rename_recipients_bcc
+      target_field: sublime_security.email_message.recipients.bcc
+      ignore_missing: true
+  - foreach:
+      field: json.recipients.cc
+      if: ctx.json?.recipients?.cc instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_recipients_cc_email_domain_domain_into_related_hosts
+          value: '{{{_ingest._value.email.domain.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.cc
+      if: ctx.json?.recipients?.cc instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_recipients_cc_email_domain_root_domain_into_related_hosts
+          value: '{{{_ingest._value.email.domain.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.cc
+      if: ctx.json?.recipients?.cc instanceof List
+      processor:
+        convert:
+          field: _ingest._value.email.domain.valid
+          tag: convert_recipients_cc_email_domain_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.email.domain.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.recipients.cc
+      if: ctx.json?.recipients?.cc instanceof List
+      processor:
+        append:
+          field: email.cc.address
+          tag: append_recipients_cc_email_email_into_email_cc_address
+          value: '{{{_ingest._value.email.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.cc
+      if: ctx.json?.recipients?.cc instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_recipients_cc_email_email_into_related_user
+          value: '{{{_ingest._value.email.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.cc
+      if: ctx.json?.recipients?.cc instanceof List
+      processor:
+        rename:
+          field: _ingest._value.email.email
+          tag: rename_recipients_cc_email_email_to_value
+          target_field: _ingest._value.email.value
+          ignore_missing: true
+  - rename:
+      field: json.recipients.cc
+      tag: rename_recipients_cc
+      target_field: sublime_security.email_message.recipients.cc
+      ignore_missing: true
+  - foreach:
+      field: json.recipients.to
+      if: ctx.json?.recipients?.to instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_recipients_to_email_domain_domain_into_related_hosts
+          value: '{{{_ingest._value.email.domain.domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.to
+      if: ctx.json?.recipients?.to instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_recipients_to_email_domain_root_domain_into_related_hosts
+          value: '{{{_ingest._value.email.domain.root_domain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.to
+      if: ctx.json?.recipients?.to instanceof List
+      processor:
+        convert:
+          field: _ingest._value.email.domain.valid
+          tag: convert_recipients_to_email_domain_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.email.domain.valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.recipients.to
+      if: ctx.json?.recipients?.to instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_recipients_to_email_email_into_email_to_address
+          value: '{{{_ingest._value.email.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.to
+      if: ctx.json?.recipients?.to instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_recipients_to_email_email_into_related_user
+          value: '{{{_ingest._value.email.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients.to
+      if: ctx.json?.recipients?.to instanceof List
+      processor:
+        rename:
+          field: _ingest._value.email.email
+          tag: rename_recipients_to_email_email_to_value
+          target_field: _ingest._value.email.value
+          ignore_missing: true
+  - rename:
+      field: json.recipients.to
+      tag: rename_recipients_to
+      target_field: sublime_security.email_message.recipients.to
+      ignore_missing: true
+  - rename:
+      field: json.sender.display_name
+      tag: rename_sender_display_name
+      target_field: sublime_security.email_message.sender.display_name
+      ignore_missing: true
+  - rename:
+      field: json.sender.email.domain.domain
+      tag: rename_sender_email_domain_domain
+      target_field: sublime_security.email_message.sender.email.domain.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_sender_email_domain_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.sender.email.domain.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.sender.email.domain.punycode
+      tag: rename_sender_email_domain_punycode
+      target_field: sublime_security.email_message.sender.email.domain.punycode
+      ignore_missing: true
+  - rename:
+      field: json.sender.email.domain.root_domain
+      tag: rename_sender_email_domain_root_domain
+      target_field: sublime_security.email_message.sender.email.domain.root_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_sender_email_domain_root_domain_into_related_hosts
+      value: '{{{sublime_security.email_message.sender.email.domain.root_domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.sender.email.domain.sld
+      tag: rename_sender_email_domain_sld
+      target_field: sublime_security.email_message.sender.email.domain.sld
+      ignore_missing: true
+  - rename:
+      field: json.sender.email.domain.subdomain
+      tag: rename_sender_email_domain_subdomain
+      target_field: sublime_security.email_message.sender.email.domain.subdomain
+      ignore_missing: true
+  - rename:
+      field: json.sender.email.domain.tld
+      tag: rename_sender_email_domain_tld
+      target_field: sublime_security.email_message.sender.email.domain.tld
+      ignore_missing: true
+  - convert:
+      field: json.sender.email.domain.valid
+      tag: convert_sender_email_domain_valid_to_boolean
+      target_field: sublime_security.email_message.sender.email.domain.valid
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.sender.email.email
+      tag: rename_sender_email_email
+      target_field: sublime_security.email_message.sender.email.value
+      ignore_missing: true
+  - append:
+      field: email.from.address
+      tag: append_sublime_security_email_message_sender_email_value_into_email_from_address
+      value: '{{{sublime_security.email_message.sender.email.value}}}'
+      allow_duplicates: false
+      if: ctx.sublime_security?.email_message?.sender?.email?.value != null
+  - append:
+      field: related.user
+      tag: append_sender_email_value_into_related_user
+      value: '{{{sublime_security.email_message.sender.email.value}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.sender.email.local_part
+      tag: rename_sender_email_local_part
+      target_field: sublime_security.email_message.sender.email.local_part
+      ignore_missing: true
+  - rename:
+      field: json.subject.subject
+      tag: rename_subject_subject
+      target_field: sublime_security.email_message.subject.subject
+      ignore_missing: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_email_message_subject_subject
+      copy_from: sublime_security.email_message.subject.subject
+      ignore_empty_value: true
+  - convert:
+      field: json.type.inbound
+      tag: convert_type_inbound_to_boolean
+      target_field: sublime_security.email_message.type.inbound
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.direction
+      tag: set_email_direction_inbound_from_type_inbound
+      value: inbound
+      if: ctx.sublime_security?.email_message?.type?.inbound == true
+      ignore_empty_value: true
+  - convert:
+      field: json.type.internal
+      tag: convert_type_internal_to_boolean
+      target_field: sublime_security.email_message.type.internal
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.direction
+      tag: set_email_direction_internal_from_type_internal
+      value: internal
+      if: ctx.sublime_security?.email_message?.type?.internal == true
+      ignore_empty_value: true
+  - convert:
+      field: json.type.outbound
+      tag: convert_type_outbound_to_boolean
+      target_field: sublime_security.email_message.type.outbound
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.direction
+      tag: set_email_direction_outbound_from_type_outbound
+      value: outbound
+      if: ctx.sublime_security?.email_message?.type?.outbound == true
+      ignore_empty_value: true
+  - foreach:
+      field: sublime_security.email_message.attachments
+      if: ctx.sublime_security?.email_message?.attachments instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.content.type
+            - _ingest._value.file.extension
+            - _ingest._value.file.name
+            - _ingest._value.md5
+            - _ingest._value.sha1
+            - _ingest._value.sha256
+            - _ingest._value.size
+          tag: remove_custom_duplicate_fields_from_sublime_security_email_message_attachments
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: sublime_security.email_message.body.links
+      if: ctx.sublime_security?.email_message?.body?.links instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.href_url.domain.domain
+            - _ingest._value.href_url.domain.subdomain
+            - _ingest._value.href_url.domain.tld
+            - _ingest._value.href_url.fragment
+            - _ingest._value.href_url.password
+            - _ingest._value.href_url.path
+            - _ingest._value.href_url.port
+            - _ingest._value.href_url.query_params
+            - _ingest._value.href_url.scheme
+            - _ingest._value.href_url.url
+            - _ingest._value.href_url.username
+          tag: remove_custom_duplicate_fields_from_sublime_security_email_message_body_links
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: sublime_security.email_message.headers.domains
+      if: ctx.sublime_security?.email_message?.headers?.domains instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.domain
+            - _ingest._value.subdomain
+            - _ingest._value.tld
+          tag: remove_custom_duplicate_fields_from_sublime_security_email_message_headers_domains
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: sublime_security.email_message.headers.reply_to
+      if: ctx.sublime_security?.email_message?.headers?.reply_to instanceof List
+      processor:
+        remove:
+          field: _ingest._value.email.value
+          tag: remove_custom_duplicate_fields_from_sublime_security_email_message_headers_reply_to
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: sublime_security.email_message.recipients.bcc
+      if: ctx.sublime_security?.email_message?.recipients?.bcc instanceof List
+      processor:
+        remove:
+          field: _ingest._value.email.value
+          tag: remove_custom_duplicate_fields_from_sublime_security_email_message_recipients_bcc
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: sublime_security.email_message.recipients.cc
+      if: ctx.sublime_security?.email_message?.recipients?.cc instanceof List
+      processor:
+        remove:
+          field: _ingest._value.email.value
+          tag: remove_custom_duplicate_fields_from_sublime_security_email_message_recipients_cc
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: sublime_security.email_message.recipients.to
+      if: ctx.sublime_security?.email_message?.recipients?.to instanceof List
+      processor:
+        remove:
+          field: _ingest._value.email.value
+          tag: remove_custom_duplicate_fields_from_sublime_security_email_message_recipients_to
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - sublime_security.email_message.external.created_at
+        - sublime_security.email_message.headers.delivered_to.domain.domain
+        - sublime_security.email_message.headers.delivered_to.domain.subdomain
+        - sublime_security.email_message.headers.delivered_to.domain.tld
+        - sublime_security.email_message.headers.mailer
+        - sublime_security.email_message.headers.message_id
+        - sublime_security.email_message.headers.x_client_ip.ip
+        - sublime_security.email_message.meta.created_at
+        - sublime_security.email_message.meta.id
+        - sublime_security.email_message.sender.email.value
+        - sublime_security.email_message.subject.subject
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

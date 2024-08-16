@@ -1,0 +1,224 @@
+format_version: 3.2.1
+name: sublime_security
+title: Sublime Security
+version: 0.1.0
+description: Collect logs from Sublime Security with Elastic Agent.
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: '^8.13.0'
+  elastic:
+    subscription: basic
+screenshots:
+  - src: /img/sublime_security-audit.png
+    title: sublime security audit dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/sublime_security-email_message.png
+    title: sublime security email message dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/sublime_security-message_event.png
+    title: sublime security message event dashboard
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sublime_security.svg
+    title: Sublime Security logo
+    size: 32x32
+    type: image/svg+xml
+  - src: /img/sublime_security-dark.svg
+    title: Sublime Security dark logo
+    size: 32x32
+    type: image/svg+xml
+    dark_mode: true
+policy_templates:
+  - name: sublime_security
+    title: Sublime Security logs
+    description: Collect Sublime Security logs.
+    inputs:
+      - type: cel
+        title: Collect Sublime Security logs via API
+        description: Collecting Sublime Security logs via API.
+        vars:
+          - name: url
+            type: url
+            title: URL
+            default: https://api.platform.sublimesecurity.com
+            description: Base URL of the Sublime Security API. Depending on type of deployment, URL may differ.
+            multi: false
+            required: true
+            show_user: false
+          - name: api_key
+            type: password
+            title: API Key
+            description: API Key of the Sublime Security API.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+      - type: aws-s3
+        title: Collect Sublime Security logs via AWS S3 or AWS SQS
+        description: Collecting logs from Sublime Security via AWS S3 or AWS SQS.
+        vars:
+          - name: collect_s3_logs
+            required: true
+            show_user: true
+            title: Collect logs via S3 Bucket
+            description: To collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
+            type: bool
+            multi: false
+            default: false
+          - name: access_key_id
+            type: password
+            title: Access Key ID
+            multi: false
+            required: false
+            show_user: true
+            description: First part of access key. This parameter along with the secret_access_key parameter is required if we are not providing shared_credential_file.
+            secret: true
+          - name: secret_access_key
+            type: password
+            title: Secret Access Key
+            multi: false
+            required: false
+            show_user: true
+            description: Second part of access key. This parameter along with the access_key_id parameter is required if we are not providing shared_credential_file.
+            secret: true
+          - name: region
+            type: text
+            title: '[SQS] Region'
+            multi: false
+            required: false
+            show_user: true
+            description: The name of the AWS region of the end point. If this option is given it takes precedence over the region name obtained from the queue_url value.
+          - name: session_token
+            type: password
+            title: Session Token
+            multi: false
+            required: false
+            show_user: true
+            description: Required when using temporary security credentials.
+            secret: true
+          - name: shared_credential_file
+            type: text
+            title: Shared Credential File
+            multi: false
+            required: false
+            show_user: false
+            description: Directory of the shared credentials file. This parameter is required if we are not providing value for the parameters - secret_access_key and access_key_id.
+          - name: credential_profile_name
+            type: text
+            title: Credential Profile Name
+            multi: false
+            required: false
+            show_user: false
+            description: Profile name in shared credentials file.
+          - name: role_arn
+            type: text
+            title: Role ARN
+            multi: false
+            required: false
+            show_user: false
+            description: AWS IAM Role to assume.
+          - name: default_region
+            type: text
+            title: Default AWS Region
+            multi: false
+            required: false
+            show_user: false
+            default: ""
+            description: >-
+              Default region to query if no other region is set. Most AWS services offer a regional endpoint that can be used to make requests. Some services, such as IAM, do not support regions. If a region is not provided by any other way (environment variable, credential or instance profile), the value set here will be used.
+          - name: endpoint
+            type: text
+            title: Endpoint
+            multi: false
+            required: false
+            show_user: false
+            description: URL of the entry point for an AWS web service.
+          - name: fips_enabled
+            type: bool
+            title: FIPS Enabled
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
