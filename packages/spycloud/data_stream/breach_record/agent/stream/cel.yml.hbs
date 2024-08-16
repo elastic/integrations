@@ -32,9 +32,9 @@ program: |
         :
           (state.?cursor.last_published_date).as(date,
             optional.of([(date.hasValue() ?
-              timestamp(state.cursor.last_published_date) - duration("24h")
+              timestamp(state.cursor.last_published_date)
             :
-              now - (duration(state.initial_interval) + duration("24h"))
+              now - duration(state.initial_interval)
           ).format("2006-01-02")])
         )),
         ?"cursor": state.?want_more.orValue(false) ? optional.of([state.pagination_token_since]) : optional.none(),
@@ -45,40 +45,44 @@ program: |
         "User-Agent": [useragent],
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(first_body,
-        {
-          "events": has(first_body.results) ?
-          (
-            first_body.results.size() > 0 ?
-              first_body.results.map(e, {"message": e.encode_json()})
-            :
-              [{"message":"No hits for Breach Catalog using since filter"}]
-          )
+      bytes(resp.Body).decode_json().as(first_body, {
+        "events": has(first_body.results) ?
+        (
+          first_body.results.size() > 0 ?
+            first_body.results.map(e, {"message": e.encode_json()})
           :
-            [{"message": first_body.encode_json()}],
-          "cursor": {
-            ?"last_published_date": (has(first_body.results) && first_body.results.size() > 0) ?
-              optional.of(string(([?state.?cursor.last_published_date] + first_body.results.map(e, e.spycloud_publish_date)).map(t, timestamp(t)).max()))
-              :
-                state.?cursor.last_published_date,
-            ?"last_modified_date": state.?cursor.last_modified_date,
-          },
-          ?"pagination_token_since": first_body.?cursor,
-          "since_data": first_body.?cursor.orValue("") != "",
-          "want_more": first_body.?cursor.orValue("") != "" || state.?since_modified_data.orValue(false),
-          "api_key": state.api_key,
-          "since_modified_data": state.since_modified_data,
-          ?"pagination_token_since_modified": state.?pagination_token_since_modified,
-          "initial_interval": state.initial_interval,
-          "severity": state.severity,
-        })
-      :
-        {
+            [{"message":"No hits for Breach Catalog using since filter"}]
+        )
+        :
+          [{"message": first_body.encode_json()}],
+        "cursor": {
+          ?"last_published_date": (has(first_body.results) && first_body.results.size() > 0) ?
+            optional.of(string(([?state.?cursor.last_published_date] + first_body.results.map(e, e.spycloud_publish_date)).map(t, timestamp(t)).max()))
+            :
+              state.?cursor.last_published_date,
+          ?"last_modified_date": state.?cursor.last_modified_date,
+        },
+        ?"pagination_token_since": first_body.?cursor,
+        "since_data": first_body.?cursor.orValue("") != "",
+        "want_more": first_body.?cursor.orValue("") != "" || state.?since_modified_data.orValue(false),
+        "api_key": state.api_key,
+        "since_modified_data": state.since_modified_data,
+        ?"pagination_token_since_modified": state.?pagination_token_since_modified,
+        "initial_interval": state.initial_interval,
+        "severity": state.severity,
+      })
+    :
+      {
         "events": {
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": string(resp.Body),
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
           }
         },
         "api_key": state.api_key,
@@ -97,9 +101,9 @@ program: |
           state.?pagination_token_since_modified.orValue("") != "" ? optional.none() :
             (state.?cursor.last_modified_date).as(date,
               optional.of([(date.hasValue() ?
-                timestamp(state.cursor.last_modified_date) - duration("24h")
+                timestamp(state.cursor.last_modified_date)
               :
-                now - (duration(state.initial_interval) + duration("24h"))
+                now - duration(state.initial_interval)
             ).format("2006-01-02")])
           )
         ),
@@ -143,7 +147,12 @@ program: |
           "error": {
             "code": string(response.StatusCode),
             "id": string(response.Status),
-            "message": string(response.Body),
+            "message": "GET:"+(
+              size(response.Body) != 0 ?
+                string(response.Body)
+              :
+                string(response.Status) + ' (' + string(response.StatusCode) + ')'
+            ),
           }
         },
         "api_key": state.api_key,

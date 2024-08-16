@@ -324,6 +324,12 @@ processors:
       tag: rename_password_plaintext
       target_field: spycloud.breach_record.password.plaintext
       ignore_missing: true
+  - set:
+      field: spycloud.breach_record.password.plaintext
+      tag: mask_password_plaintext
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.breach_record?.password?.plaintext != null
+      ignore_empty_value: true
   - rename:
       field: json.password_type
       tag: rename_password_type

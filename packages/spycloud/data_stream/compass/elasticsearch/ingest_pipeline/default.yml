@@ -64,6 +64,12 @@ processors:
       tag: rename_bank_number
       target_field: spycloud.compass.bank_number
       ignore_missing: true
+  - set:
+      field: spycloud.compass.bank_number
+      tag: mask_bank_number
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.compass?.bank_number != null
+      ignore_empty_value: true
   - rename:
       field: json.cc_bin
       tag: rename_cc_bin
@@ -164,11 +170,23 @@ processors:
       tag: rename_drivers_license
       target_field: spycloud.compass.drivers.license.number
       ignore_missing: true
+  - set:
+      field: spycloud.compass.license.number
+      tag: mask_license_number
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.compass?.license?.number != null
+      ignore_empty_value: true
   - rename:
       field: json.drivers_license_state_code
       tag: rename_drivers_license_state_code
       target_field: spycloud.compass.drivers.license.state_code
       ignore_missing: true
+  - set:
+      field: spycloud.compass.license.state_code
+      tag: mask_license_state_code
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.compass?.license?.state_code != null
+      ignore_empty_value: true
   - rename:
       field: json.email_domain
       tag: rename_email_domain
@@ -287,16 +305,34 @@ processors:
       tag: rename_national_id
       target_field: spycloud.compass.national_id
       ignore_missing: true
+  - set:
+      field: spycloud.compass.national_id
+      tag: mask_national_id
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.compass?.national_id != null
+      ignore_empty_value: true
   - rename:
       field: json.passport_number
       tag: rename_passport_number
       target_field: spycloud.compass.passport_number
       ignore_missing: true
+  - set:
+      field: spycloud.compass.passport_number
+      tag: mask_passport_number
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.compass?.passport_number != null
+      ignore_empty_value: true
   - rename:
       field: json.password_plaintext
       tag: rename_password_plaintext
       target_field: spycloud.compass.password.plaintext
       ignore_missing: true
+  - set:
+      field: spycloud.compass.password.plaintext
+      tag: mask_password_plaintext
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.compass?.password?.plaintext != null
+      ignore_empty_value: true
   - rename:
       field: json.password_type
       tag: rename_password_type
@@ -311,13 +347,19 @@ processors:
       field: spycloud.compass.password.value
       tag: mask_password
       value: 'REDACTED'
-      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud.compass.password?.value != null
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.compass?.password?.value != null
       ignore_empty_value: true
   - rename:
       field: json.postal_code
       tag: rename_postal_code
       target_field: spycloud.compass.postal_code
       ignore_missing: true
+  - set:
+      field: spycloud.compass.postal_code
+      tag: mask_postal_code
+      value: 'REDACTED'
+      if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.compass?.postal_code != null
+      ignore_empty_value: true
   - set:
       field: host.geo.postal_code
       tag: set_host_geo_postal_code_from_compass_postal_code

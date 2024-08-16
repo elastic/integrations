@@ -26,7 +26,7 @@ program: |
       ?"since": (state.?want_more.orValue(false) || !has(state.?cursor.last_published_date)) ?
         optional.none()
       :
-        optional.of([(timestamp(state.cursor.last_published_date) - duration("24h")).format("2006-01-02")]),
+        optional.of([timestamp(state.cursor.last_published_date).format("2006-01-02")]),
       ?"cursor": state.?want_more.orValue(false) ? optional.of([state.pagination_token]) : optional.none(),
     }.format_query()
   ).with({
@@ -58,7 +58,12 @@ program: |
         "error": {
           "code": string(resp.StatusCode),
           "id": string(resp.Status),
-          "message": string(resp.Body),
+          "message": "GET:"+(
+            size(resp.Body) != 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+          ),
         },
       },
       "want_more": false,
