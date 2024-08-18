@@ -1,20 +1,34 @@
 title: "Sysdig"
 type: logs
 streams:
-  - input: tcp
+  - input: http_endpoint
     enabled: false
-    template_path: tcp.yml.hbs
-    title: TCP input
-    description: Collect Sysdig alerts using input over TCP
+    template_path: http.yml.hbs
+    title: HTTP input
+    description: Collect Sysdig alerts using input over HTTP
     vars:
+      - name: method
+        title: HTTP Method
+        description: This options specifies which HTTP method to accept.
+        type: select
+        required: true
+        show_user: false
+        options:
+          - value: POST
+            text: POST
+          - value: PUT
+            text: PUT
+          - value: PATCH
+            text: PATCH
+        default: POST
       - name: listen_address
         type: text
         title: Listen Address
         description: |
-          Bind address for the listener. Use 0.0.0.0 to listen on all interfaces.
+          Bind address for the HTTP listener. Use 0.0.0.0 to listen on all interfaces.
         required: true
         show_user: true
-        default: 0.0.0.0
+        default: localhost
       - name: listen_port
         type: text
         title: Listen port
@@ -22,12 +36,159 @@ streams:
           Bind port for the listener.
         required: true
         show_user: true
-        default: 9030
-      - name: preserve_original_event
+        default: 9035
+      - name: url
+        type: text
+        title: URL
+        description: This options specific which URL path to accept requests on. Defaults to /.
+        required: false
+        show_user: true
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: sysdig.alerts
         required: true
         show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: preserve_original_event
         type: bool
-        multi: false
+        title: Preserve Original Event
+        description: This option copies the raw unmodified body of the incoming request to the event.original field as a string before sending the event to Elasticsearch.
+        required: false
+        show_user: true
         default: false
+      - name: prefix
+        type: text
+        title: Prefix
+        description: >-
+          This option specifies which prefix field the incoming request will be mapped to. Care should be taken when setting this option in conjunction with the Preserve Original Event or the Include Headers options. These will collide the `event` and `headers` fields respecetively, so avoid using a prefix that would result in data being placed in those fields if those other options are used. If a collision occurs the behavior is unspecified.
+        required: false
+        show_user: false
+      - name: basic_auth
+        type: bool
+        title: Basic Auth
+        description: Enables or disables HTTP basic auth for each incoming request. If enabled then username and password will also need to be configured.
+        required: false
+        show_user: false
+      - name: username
+        type: text
+        title: Username
+        description: If basic_auth is enabled, this is the username used for authentication against the HTTP listener. Requires password to also be set.
+        required: false
+        show_user: false
+      - name: password
+        type: password
+        title: Password
+        description: If basic_auth is enabled, this is the password used for authentication against the HTTP listener. Requires username to also be set.
+        required: false
+        show_user: false
+        secret: true
+      - name: secret_header
+        type: text
+        title: Secret Header
+        description: The header to check for a specific value specified by secret.value. Certain webhooks provide the possibility to include a special header and secret to identify the source.
+        required: false
+        show_user: false
+        secret: false
+      - name: secret_value
+        type: password
+        title: Secret Value
+        description: The secret stored in the header name specified by secret.header. Certain webhooks provide the possibility to include a special header and secret to identify the source.
+        required: false
+        show_user: false
+        secret: true
+      - name: hmac_header
+        type: text
+        title: HMAC Header
+        description: The name of the header that contains the HMAC signature, for example X-Dropbox-Signature, X-Hub-Signature-256, etc. HMAC signatures may be encoded as hex.
+        required: false
+        show_user: false
+      - name: hmac_key
+        type: password
+        title: HMAC Key
+        description: The secret key used to calculate the HMAC signature. Typically, the webhook sender provides this value.
+        required: false
+        show_user: false
+        secret: true
+      - name: hmac_type
+        type: text
+        title: HMAC Type
+        description: The hash algorithm to use for the HMAC comparison. At this time the only valid values are sha256 or sha1.
+        required: false
+        show_user: false
+      - name: hmac_prefix
+        type: text
+        title: HMAC Prefix
+        description: The prefix for the signature. Certain webhooks prefix the HMAC signature with a value, for example sha256=.
+        required: false
+        show_user: false
+      - name: content_type
+        type: text
+        title: Content Type
+        description: By default the input expects the incoming POST to include a Content-Type of application/json to try to enforce the incoming data to be valid JSON. In certain scenarios when the source of the request is not able to do that, it can be overwritten with another value or set to null.
+        required: false
+        show_user: false
+      - name: response_code
+        type: text
+        title: Response Code
+        description: The HTTP response code returned upon success. Should be in the 2XX range.
+        required: false
+        show_user: false
+      - name: response_body
+        type: text
+        title: Response Body
+        description: The response body returned upon success. Should be a single line JSON string.
+        required: false
+        show_user: false
+      - name: include_headers
+        type: text
+        title: Include Headers
+        description: This options specifies a list of HTTP headers that should be copied from the incoming request and included in the document. All configured headers will always be canonicalized to match the headers of the incoming request. For example, ["content-type"] will become ["Content-Type"] when the filebeat is running.
+        multi: true
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: Options for enabling TLS for the listening webhook endpoint. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          enabled: false
+          certificate: "/etc/pki/client/cert.pem"
+          key: "/etc/pki/client/cert.key"
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        default:
+          - forwarded
+        multi: true
+        show_user: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+

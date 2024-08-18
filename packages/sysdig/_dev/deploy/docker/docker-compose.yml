@@ -1,9 +1,14 @@
 services:
-  sysdig-observability-stream:
-    image: docker.elastic.co/observability/stream:v0.14.0
+  sysdig-alerts-http:
+    image: docker.elastic.co/observability/stream:v0.16.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9030 -p=tcp /sample_logs/sysdig.log
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9035/
+      - STREAM_START_SIGNAL=SIGHUP
+      - STREAM_DELAY=10s
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/sysdig.log
 networks:
   elastic-package-stack_default:
     name: elastic-package-stack_default

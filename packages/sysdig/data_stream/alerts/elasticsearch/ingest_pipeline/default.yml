@@ -10,6 +10,13 @@ processors:
 - dot_expander:
     field: '*'
     path: sysdig.content
+    tag: 'Primary doc_expander for sysdig.content'
+    ignore_failure: true
+- dot_expander:
+    field: '*'
+    path: sysdig.labels
+    tag: 'Primary doc_expander for sysdig.labels'
+    ignore_failure: true
 - set:
     field: event.original
     copy_from: message
@@ -56,16 +63,17 @@ processors:
         }
 - set:
     field: rule.author
-    copy_from: sysdig.content.policyOrigin
+    value: ["{{sysdig.content.policyOrigin}}"]
     ignore_empty_value: true
 - set:
     field: rule.name
     copy_from: sysdig.content.ruleName
     ignore_empty_value: true
-- set:
-    field: rule.version
-    copy_from: sysdig.content.policyVersion
-    ignore_empty_value: true
+- convert:
+    target_field: rule.version
+    field: sysdig.content.policyVersion
+    type: string
+    ignore_missing: true
 - set:
     field: rule.category
     copy_from: sysdig.content.ruleType
@@ -90,18 +98,27 @@ processors:
     field: tags
     copy_from: sysdig.content.ruleTags
     ignore_empty_value: true
-- set:
-    field: agent.id
-    copy_from: sysdig.agentId
-    ignore_empty_value: true
+- convert:
+    target_field: agent.id
+    field: sysdig.agentId
+    type: string
+    ignore_missing: true
 - set:
     field: host.id
     copy_from: sysdig.machineId
     ignore_empty_value: true
-- set:
+- append:
     field: host.mac
-    copy_from: sysdig.hostMac
-    ignore_empty_value: true
+    value: "{{{sysdig.hostMac}}}"
+    if: ctx?.sysdig?.hostMac != null
+- gsub:
+    field: host.mac
+    pattern: '[-:.]'
+    replacement: '-'
+    ignore_missing: true
+- uppercase:
+    field: host.mac
+    ignore_missing: true
 - set:
     field: host.name
     copy_from: sysdig.labels.host.hostName
