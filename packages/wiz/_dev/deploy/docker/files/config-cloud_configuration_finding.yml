@@ -1,0 +1,36 @@
+rules:
+  - path: /oauth/token
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":3600,"token_type":"Bearer","refresh_token":"yyyy"}
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    request_body: /.*"after":null.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {"data": {"configurationFindings": {"nodes": [{"analyzedAt":"2024-08-07T12:55:52.012378Z","id":"1243196d-a365-589a-a8aa-13817c9877b2","remediation":null,"resource":{"id":"f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea","name":"Root user","nativeType":"rootUser","providerId":"arn:aws:iam::998231069301:root","region":null,"cloudPlatform":"EKS","subscription":{"cloudProvider":"AWS","externalId":"998231069301","id":"94e76baa-85fd-5928-b829-1669a2ca9660","name":"wiz-integrations"},"tags":[],"type":"USER_ACCOUNT"},"result":"PASS","rule":{"description":"This rule checks if the AWS Root Account has access keys. \nThis rule fails if `AccountAccessKeysPresent` is not set to `0`. Note that it does not take into consideration the status of the keys if present. \nThe root account should avoid using access keys. Since the root account has full permissions across the entire account, creating access keys for it increases the chance that they will be compromised. Instead, it is recommended to create IAM users with predefined roles.\n>**Note** \nSee Cloud Configuration Rule `IAM-207` to see if the Root account's access keys are active.","id":"563ed717-4fb6-47fd-929e-9c794e201d0a","name":"Root account access keys should not exist","remediationInstructions":"Perform the following steps, while being signed in as the Root user, in order to delete the root user's access keys via AWS CLI: \n1. Use the following command to list the Root user's access keys. \nCopy the `AccessKeyId` from the output and paste it into the `access-key-id` value in the next step. \n```\naws iam list-access-keys\n```\n2. Use the following command to delete the access key(s). \n```\naws iam delete-access-key /\n --access-key-id <value>\n```\n>**Note** \nOnce an access key is removed, any application using it will not work until a new one is configured for it.","shortId":"IAM-006"},"severity":"MEDIUM"}],"pageInfo": {"hasNextPage": true,"endCursor": "eyJmaWVsZHMiOlt7IkZpZWxkIjoiVGltZXN0YW1wIiwiVmFsdWUiOiIyMDIzLTA5LTA0VDExOjE5OjM3LjgwMTU0MVoifV19"}}}}
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    request_body: /.*"after":"eyJmaWVsZHMiOlt7IkZpZWxkIjoiVGltZXN0YW1wIiwiVmFsdWUiOiIyMDIzLTA5LTA0VDExOjE5OjM3LjgwMTU0MVoifV19".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"data": {"configurationFindings": {"nodes": [{"analyzedAt":"2024-08-15T11:41:17.517926Z","id":"6fe49e83-2f3a-5b62-99de-beae16c7bfae","remediation":null,"resource":{"id":"8a53b2d9-f6c6-59e4-bce0-736a45e9aa3f","name":"annam-vm","nativeType":"Microsoft.Compute/virtualMachines","providerId":"80045425-a0a9-4457-82c2-2c5f47419d83","region":"eastus","subscription":{"cloudProvider":"Azure","externalId":"434f3cbb-30f2-4bc0-8bba-cb080280652b","id":"064ecbb5-19ee-540d-b9f5-99c3a4e2d0db","name":"partner integrations"},"tags":[],"type":"VIRTUAL_MACHINE"},"result":"PASS","rule":{"description":"This rule checks if the Virtual Machine (VM) is stopped (and not deallocated) for at least a week. \nThis rule fails if `code: PowerState/stopped` and the timestamp was more than 7 days ago. \nWhen you are logged in to the operating system of an Azure VM, you can issue a command to shut down the server (or via Azure CLI). This will kick you out of the OS and stop all processes but will maintain the allocated hardware (including the IP addresses currently assigned). If you find the VM in the Azure console, you will see the state listed as `Stopped`. The biggest thing you need to know about this state is that **you are still being charged by the hour for this instance**. \nFor cost optimization and management purposes, it is recommended to deallocate (charges no longer apply) VMs that have been stopped for more than a week.","id":"56c8890d-ad68-4659-9414-fb0ed7258c31","name":"Virtual Machine should not be stopped (allocated) for more than a week","remediationInstructions":"Perform the following command to deallocate the VM via Azure CLI:\n```\naz vm deallocate \\\n\t--ids {{vmId}}\n```","shortId":"VirtualMachines-021"},"severity":"LOW","evidence":{"cloudConfigurationLink":"https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing","configurationPath":null,"currentValue":"The VM is stopped(allocated) since 2024-08-15","expectedValue":"The VM should be used or deallocated"}}],"pageInfo": {"hasNextPage": false,"endCursor": "eMJmaWVsZIkZpZWxkIjoiVGltZXN0YW1wIiwiVmFsdWUiOiIyMDIzLTA5LTA0VDExOjE5OjM3LjgwMTU0MVoifV19"}}}}
