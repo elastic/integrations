@@ -53,7 +53,6 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
 5. The integration currently only supports collecting logs via AWS S3.
 6. While adding the integration, you have to configure the following details:
    - bucket arn
-   - collect logs via S3 Bucket toggled on
    - role ARN
    - external id
 

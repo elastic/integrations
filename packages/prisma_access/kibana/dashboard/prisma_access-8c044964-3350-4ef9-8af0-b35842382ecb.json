@@ -3,13 +3,126 @@
         "controlGroupInput": {
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
-            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"0b6f3f41-9e4c-4c15-8c19-05c9519544af\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"0b6f3f41-9e4c-4c15-8c19-05c9519544af\",\"fieldName\":\"log.level\",\"title\":\"Severity\",\"grow\":true,\"width\":\"medium\",\"searchTechnique\":\"prefix\",\"enhancements\":{}}},\"0b82f913-bf6b-4fa8-98b7-611c2f3da908\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"0b82f913-bf6b-4fa8-98b7-611c2f3da908\",\"fieldName\":\"event.action\",\"title\":\"Action\",\"grow\":true,\"width\":\"medium\",\"searchTechnique\":\"prefix\",\"enhancements\":{}}}}"
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "0b6f3f41-9e4c-4c15-8c19-05c9519544af": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "log.level",
+                        "grow": true,
+                        "id": "0b6f3f41-9e4c-4c15-8c19-05c9519544af",
+                        "searchTechnique": "prefix",
+                        "title": "Severity",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "0b82f913-bf6b-4fa8-98b7-611c2f3da908": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "event.action",
+                        "grow": true,
+                        "id": "0b82f913-bf6b-4fa8-98b7-611c2f3da908",
+                        "searchTechnique": "prefix",
+                        "title": "Action",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
         },
         "description": "Overview of the Prisma Access System and Configuration Logs.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "prisma_access.event"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "prisma_access.event"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "negate": false,
+                            "params": [
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "prisma_access.event.class_id",
+                                        "index": "logs-*",
+                                        "key": "prisma_access.event.class_id",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "SYSTEM"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "prisma_access.event.class_id": "SYSTEM"
+                                        }
+                                    }
+                                },
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "prisma_access.event.class_id",
+                                        "index": "logs-*",
+                                        "key": "prisma_access.event.class_id",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "CONFIG"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "prisma_access.event.class_id": "CONFIG"
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "OR",
+                            "type": "combined"
+                        },
+                        "query": {}
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -69,16 +182,6 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-28e67e99-800b-49ff-a694-dc4248f38b84",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "8149876d-cb90-49db-a1bd-97c2ca6469c2",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "5ca570c4-1081-44d7-8794-a1226c9b5005",
                                 "type": "index-pattern"
                             }
                         ],
@@ -145,52 +248,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "8149876d-cb90-49db-a1bd-97c2ca6469c2",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "prisma_access.event"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "prisma_access.event"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "prisma_access.event.class_id",
-                                        "index": "5ca570c4-1081-44d7-8794-a1226c9b5005",
-                                        "key": "prisma_access.event.class_id",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "CONFIG"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "prisma_access.event.class_id": "CONFIG"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -263,12 +321,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "db0511e7-7663-44ae-a805-9c3841f28b73",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "381214da-f609-465e-a0aa-5b5db610544b",
+                                "name": "46c79cc9-addd-419c-98d8-3ffee5fbc544",
                                 "type": "index-pattern"
                             }
                         ],
@@ -343,30 +396,8 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "db0511e7-7663-44ae-a805-9c3841f28b73",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "prisma_access.event"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "prisma_access.event"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
                                         "field": "prisma_access.event.class_id",
-                                        "index": "381214da-f609-465e-a0aa-5b5db610544b",
+                                        "index": "46c79cc9-addd-419c-98d8-3ffee5fbc544",
                                         "key": "prisma_access.event.class_id",
                                         "negate": false,
                                         "params": {
@@ -453,7 +484,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "b51818d6-c7ff-4937-ab56-901779aef6a8",
+                                "name": "967e3cb6-4d4c-453f-973a-54983b9cf1f1",
                                 "type": "index-pattern"
                             }
                         ],
@@ -528,52 +559,20 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "b51818d6-c7ff-4937-ab56-901779aef6a8",
+                                        "field": "prisma_access.event.class_id",
+                                        "index": "967e3cb6-4d4c-453f-973a-54983b9cf1f1",
+                                        "key": "prisma_access.event.class_id",
                                         "negate": false,
-                                        "params": [
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "data_stream.dataset",
-                                                    "index": "logs-*",
-                                                    "key": "data_stream.dataset",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "prisma_access.event"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "prisma_access.event"
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "prisma_access.event.class_id",
-                                                    "index": "logs-*",
-                                                    "key": "prisma_access.event.class_id",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "SYSTEM"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "prisma_access.event.class_id": "SYSTEM"
-                                                    }
-                                                }
-                                            }
-                                        ],
-                                        "relation": "AND",
-                                        "type": "combined"
+                                        "params": {
+                                            "query": "SYSTEM"
+                                        },
+                                        "type": "phrase"
                                     },
-                                    "query": {}
+                                    "query": {
+                                        "match_phrase": {
+                                            "prisma_access.event.class_id": "SYSTEM"
+                                        }
+                                    }
                                 }
                             ],
                             "internalReferences": [],
@@ -622,11 +621,6 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-38f57907-bbf1-4a04-a6ea-0bb49c778c75",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "e3cff864-0e21-42e4-9eb4-4da99ce3c460",
                                 "type": "index-pattern"
                             }
                         ],
@@ -693,62 +687,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "e3cff864-0e21-42e4-9eb4-4da99ce3c460",
-                                        "negate": false,
-                                        "params": [
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "data_stream.dataset",
-                                                    "index": "logs-*",
-                                                    "key": "data_stream.dataset",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "prisma_access.event"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "prisma_access.event"
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "prisma_access.event.class_id",
-                                                    "index": "logs-*",
-                                                    "key": "prisma_access.event.class_id",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "CONFIG"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "prisma_access.event.class_id": "CONFIG"
-                                                    }
-                                                }
-                                            }
-                                        ],
-                                        "relation": "AND",
-                                        "type": "combined"
-                                    },
-                                    "query": {}
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -795,16 +734,6 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b5e035af-39b8-4bfa-93da-2ecff0555c46",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "03a885d4-580e-4ff9-a255-0480912f3ab2",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "91c73a70-324e-4deb-8adc-072731684be2",
                                 "type": "index-pattern"
                             }
                         ],
@@ -872,52 +801,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "03a885d4-580e-4ff9-a255-0480912f3ab2",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "prisma_access.event"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "prisma_access.event"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "prisma_access.event.class_id",
-                                        "index": "91c73a70-324e-4deb-8adc-072731684be2",
-                                        "key": "prisma_access.event.class_id",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "SYSTEM"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "prisma_access.event.class_id": "SYSTEM"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -959,6 +843,15 @@
             },
             {
                 "embeddableConfig": {
+                    "columns": [
+                        "@timestamp",
+                        "prisma_access.event.agent.id",
+                        "user.name",
+                        "prisma_access.event.agent.status",
+                        "prisma_access.event.agent.isolation_status",
+                        "prisma_access.event.agent.data_collection_status",
+                        "prisma_access.event.agent.version"
+                    ],
                     "enhancements": {}
                 },
                 "gridData": {
@@ -974,6 +867,14 @@
             },
             {
                 "embeddableConfig": {
+                    "columns": [
+                        "@timestamp",
+                        "prisma_access.event.data.description",
+                        "prisma_access.event.data.details",
+                        "prisma_access.event.data.result",
+                        "source.ip",
+                        "destination.user.name"
+                    ],
                     "enhancements": {}
                 },
                 "gridData": {
@@ -993,23 +894,23 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-07-02T09:10:23.349Z",
+    "created_at": "2024-08-13T07:24:18.946Z",
     "id": "prisma_access-8c044964-3350-4ef9-8af0-b35842382ecb",
     "managed": false,
     "references": [
         {
             "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "3157e89d-bc4b-456e-8b39-41ed61f95a9c:indexpattern-datasource-layer-28e67e99-800b-49ff-a694-dc4248f38b84",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "3157e89d-bc4b-456e-8b39-41ed61f95a9c:8149876d-cb90-49db-a1bd-97c2ca6469c2",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "3157e89d-bc4b-456e-8b39-41ed61f95a9c:5ca570c4-1081-44d7-8794-a1226c9b5005",
             "type": "index-pattern"
         },
         {
@@ -1019,12 +920,7 @@
         },
         {
             "id": "logs-*",
-            "name": "9b35fc21-1e2c-432c-a4d1-862b2650cc1c:db0511e7-7663-44ae-a805-9c3841f28b73",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "9b35fc21-1e2c-432c-a4d1-862b2650cc1c:381214da-f609-465e-a0aa-5b5db610544b",
+            "name": "9b35fc21-1e2c-432c-a4d1-862b2650cc1c:46c79cc9-addd-419c-98d8-3ffee5fbc544",
             "type": "index-pattern"
         },
         {
@@ -1034,7 +930,7 @@
         },
         {
             "id": "logs-*",
-            "name": "0950a6db-b54a-42d9-a03f-ca5a2af69cff:b51818d6-c7ff-4937-ab56-901779aef6a8",
+            "name": "0950a6db-b54a-42d9-a03f-ca5a2af69cff:967e3cb6-4d4c-453f-973a-54983b9cf1f1",
             "type": "index-pattern"
         },
         {
@@ -1044,22 +940,7 @@
         },
         {
             "id": "logs-*",
-            "name": "c0ab5703-a8ad-44b8-9d9c-34e169852adc:e3cff864-0e21-42e4-9eb4-4da99ce3c460",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "0ad09017-35f8-4c0d-8b76-6b69f04520fe:indexpattern-datasource-layer-b5e035af-39b8-4bfa-93da-2ecff0555c46",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "0ad09017-35f8-4c0d-8b76-6b69f04520fe:03a885d4-580e-4ff9-a255-0480912f3ab2",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "0ad09017-35f8-4c0d-8b76-6b69f04520fe:91c73a70-324e-4deb-8adc-072731684be2",
             "type": "index-pattern"
         },
         {
@@ -1081,6 +962,16 @@
             "id": "logs-*",
             "name": "controlGroup_0b82f913-bf6b-4fa8-98b7-611c2f3da908:optionsListDataView",
             "type": "index-pattern"
+        },
+        {
+            "id": "prisma_access-security-solution-default",
+            "name": "tag-ref-prisma_access-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "prisma_access-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
     "type": "dashboard",
