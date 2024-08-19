@@ -1,30 +1,109 @@
-config_version: 1
+config_version: 3
+{{#if enable_request_tracer}}
+{{/if}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
 resource.url: {{server_url}}
-auth_request_body: '{"clientId":"{{client_id}}","accessKey":"{{secret_key}}"}'
+auth.oauth2:
+  client.id: {{client_id}}
+  token_url: {{server_url}}/auth/external
+  endpoint_params:
+    accessKey: {{secret_key}}
+state:
+  interval: {{interval}}
+  initial_interval: {{initial_interval}}  // Define initial interval
+  want_more: false
+  full_url: {{server_url}}/logs_query/
+  per_page: {{per_page}}
+  page_limit: {{page_limit}}
 program: |
-  (
-    request("GET", state.url.trim_right("/") + {{auth_uri}})
-    .with(
+  request("GET", state.full_url).with({
+    "Header": {"Content-Type": ["application/json"]},
+    "Body": {
       {
-        "Header": {"Content-Type": ["application/json"]},
-        "Body": auth_request_body
+        "filter": "product:\"Forensics\"",
+        "limit": state.per_page,
+        "pageLimit": state.page_limit,
+        "cloudService": "Harmony Endpoint",
+        "timeframe": {
+          //Is this correct way to use apply time?
+          "startTime": '"' + timestamp(now() - duration('"+' + state.initial_interval + '"')).format(time_layout.RFC3339) + '"',
+          "endTime": '"' + timestamp(now()).format(time_layout.RFC3339) + '"'
+        }
+       }
+    }
+  }).do_request().as(resp,
+    resp.StatusCode == 200
+    ?
+    bytes(resp.Body).decode_json().as(body, {
+      "events": body.success,
+      "want_more": false,
+      "cursor": {
+        "taskid": body.data.taskId
       }
-      )
-    .do_request().as(resp,
-      resp.StatusCode == 200 ?
-      (bytes(resp.Body).decode_json().as(body, {
-        "events": [body.data.token]
-      },
-      "url": {{server_url}},
-    )
-    )
+    })
     :
     {
-      "events": {
-        "error": string(resp.message)
-      }
+        "events": [{
+          "error": {
+            "message": "response code: "+resp.StatusCode
+          }
+        }]
     }
+    )
 
+  resource.retry.wait_min(20s)
+  request("GET", state.full_url+"/"+cursor.taskid).with({
+    "Header": {"Content-Type": ["application/json"]}
+  }).do_request.as(resp,
+    resp.StatusCode == 200
+    ?
+    byte(resp.body).decode_json().as(body, {
+      "events": body.success,
+      "pagetokens": body.data.pageTokens
+    })
+    :
+    {
+      "events: [{
+        "error: {
+          "message": "response code: "+resp.StatusCode
+        }"
+      }]"
+    }
   )
-  debug(resp)
+
+  // How to apply pagination based on 'nextPageToken' value from response body.
+  // As discussed in previous call, how to use 'last_seen_ts' to update 'startTime' for next iteration?
+  request("GET", state.full_url+"/retrieve").with({
+    "Header": {"Content-Type": ["application/json"]},
+    "Body": {
+      {
+        "taskid": cursor.taskid,
+        "pagetoken": cursor.pagetokens
+       }
+    }
+  }).do_request.as(resp,
+    resp.StatusCode == 200
+    ?
+    byte(resp.body).decode_json().as(body, {
+      "events": body.data.records,
+      "nextPageToken": body.data.nextPageToken
+      "last_seen_ts": body.data.records[-1].time
+    })
+    :
+    {
+      "events: [{
+        "error: {
+          "message": "response code: "+resp.StatusCode
+        }"
+      }]"
+    }
   )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
