@@ -15,8 +15,8 @@ The datasource within Endace to pivot to. Example: tag:rotation-file
 The tools to use within the Endace Pivot. Example: trafficOverTime_by_app,conversations_by_ipaddress
 
 
-#### `endace_lookback`
-The lookback time in Minutes of how long to look back over ontop of the event start and finish time.
+#### `view_window`
+The view window time in Minutes of how long to look back and forward over ontop of the event start and finish time.
 
 ## Endace Flow
 #### `map_to_ecs`

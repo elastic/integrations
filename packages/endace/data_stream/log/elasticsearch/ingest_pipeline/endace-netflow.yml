@@ -24,11 +24,11 @@ processors:
 
   - date:
       description: "Convert Start time to Epoch"
-      field: netflow.flow_start_milliseconds
+      field: netflow.exporter.timestamp
       formats: ["ISO8601"]
       target_field: _conf.event.start
       output_format: epoch_millis
-      if: ctx.netflow?.flow_start_milliseconds != null && ctx.netflow?.flow_start_milliseconds != ''
+      if: ctx.netflow?.exporter?.timestamp != null && ctx.netflow?.exporter?.timestamp != ''
 
   - convert:
       field: _conf.event.start
@@ -38,11 +38,11 @@ processors:
 
   - date:
       description: "Convert End time to Epoch"
-      field: netflow.flow_end_milliseconds
+      field: netflow.exporter.timestamp
       formats: ["ISO8601"]
       target_field: _conf.event.end
       output_format: epoch_millis
-      if: ctx.netflow?.flow_end_milliseconds != null && ctx.netflow?.flow_end_milliseconds != ''
+      if: ctx.netflow?.exporter?.timestamp != null && ctx.netflow?.exporter?.timestamp != ''
 
   - convert:
       field: _conf.event.end
@@ -51,15 +51,15 @@ processors:
       if: ctx._conf?.event?.end != null && ctx._conf?.event?.end != ''
 
   - script:
-      source: "ctx._conf.timedelta = ctx._conf.endace_lookback * 60 * 1000"
+      source: "ctx._conf.timedelta = ctx._conf.view_window * 60 * 1000"
       tag: "Calculate Timedelta"
       description: "Calculate Timedelta"
-      if: ctx._conf?.endace_lookback != null && ctx._conf?.endace_lookback != ''
+      if: ctx._conf?.view_window != null && ctx._conf?.view_window != ''
 
   - script:
       source: "ctx._conf.event.end = ctx._conf.event.end + ctx._conf.timedelta/2"
       tag: "Calculate Endtime as Timestamp + half of Timedelta"
-      description: "Calculate Endtime + half of lookback"
+      description: "Calculate Endtime + half of Timedelta"
       if: ctx._conf?.event?.end != null && ctx._conf?.event?.end != '' && ctx._conf?.timedelta != null && ctx._conf?.timedelta != ''
 
   - script:
