@@ -173,6 +173,16 @@ processors:
       copy_from: wiz.cloud_configuration_finding.rule.name
       ignore_empty_value: true
   - rename:
+      field: json.rule.remediationInstructions
+      tag: rename_rule_remediation_instructions
+      target_field: wiz.cloud_configuration_finding.rule.remediation_instructions
+      ignore_missing: true
+  - set:
+      field: rule.remediation
+      tag: set_rule_remediation
+      copy_from: wiz.cloud_configuration_finding.rule.remediation_instructions
+      ignore_empty_value: true
+  - rename:
       field: json.resource.id
       tag: rename_resource_id
       target_field: wiz.cloud_configuration_finding.resource.id
@@ -307,6 +317,7 @@ processors:
         - wiz.cloud_configuration_finding.rule.name
         - wiz.cloud_configuration_finding.rule.id
         - wiz.cloud_configuration_finding.rule.short_id
+        - wiz.cloud_configuration_finding.rule.remediation_instructions
         - wiz.cloud_configuration_finding.evidence
       tag: remove_custom_duplicate_fields
       ignore_missing: true

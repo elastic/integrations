@@ -42,6 +42,7 @@
                 "description": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
                 "id": "Pod-32",
                 "name": "Pod should run containers with authorized additional capabilities (PSS Restricted)",
+                "remediation": "Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \r\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \r\n* `securityContext.capabilities.drop` key is set to `ALL`. \r\n",
                 "uuid": "73553de7-f2ad-4ffb-b425-c69815033530"
             },
             "tags": [
@@ -69,6 +70,7 @@
                         "description": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
                         "id": "73553de7-f2ad-4ffb-b425-c69815033530",
                         "name": "Pod should run containers with authorized additional capabilities (PSS Restricted)",
+                        "remediation_instructions": "Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \r\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \r\n* `securityContext.capabilities.drop` key is set to `ALL`. \r\n",
                         "short_id": "Pod-32"
                     }
                 }
@@ -116,6 +118,7 @@
                 "description": "This rule checks if the AWS Root Account has access keys. \nThis rule fails if `AccountAccessKeysPresent` is not set to `0`. Note that it does not take into consideration the status of the keys if present. \nThe root account should avoid using access keys. Since the root account has full permissions across the entire account, creating access keys for it increases the chance that they will be compromised. Instead, it is recommended to create IAM users with predefined roles.\n>**Note** \nSee Cloud Configuration Rule `IAM-207` to see if the Root account's access keys are active.",
                 "id": "IAM-006",
                 "name": "Root account access keys should not exist",
+                "remediation": "Perform the following steps, while being signed in as the Root user, in order to delete the root user's access keys via AWS CLI: \n1. Use the following command to list the Root user's access keys. \nCopy the `AccessKeyId` from the output and paste it into the `access-key-id` value in the next step. \n```\naws iam list-access-keys\n```\n2. Use the following command to delete the access key(s). \n```\naws iam delete-access-key /\n --access-key-id <value>\n```\n>**Note** \nOnce an access key is removed, any application using it will not work until a new one is configured for it.",
                 "uuid": "563ed717-4fb6-47fd-929e-9c794e201d0a"
             },
             "tags": [
@@ -147,6 +150,7 @@
                         "description": "This rule checks if the AWS Root Account has access keys. \nThis rule fails if `AccountAccessKeysPresent` is not set to `0`. Note that it does not take into consideration the status of the keys if present. \nThe root account should avoid using access keys. Since the root account has full permissions across the entire account, creating access keys for it increases the chance that they will be compromised. Instead, it is recommended to create IAM users with predefined roles.\n>**Note** \nSee Cloud Configuration Rule `IAM-207` to see if the Root account's access keys are active.",
                         "id": "563ed717-4fb6-47fd-929e-9c794e201d0a",
                         "name": "Root account access keys should not exist",
+                        "remediation_instructions": "Perform the following steps, while being signed in as the Root user, in order to delete the root user's access keys via AWS CLI: \n1. Use the following command to list the Root user's access keys. \nCopy the `AccessKeyId` from the output and paste it into the `access-key-id` value in the next step. \n```\naws iam list-access-keys\n```\n2. Use the following command to delete the access key(s). \n```\naws iam delete-access-key /\n --access-key-id <value>\n```\n>**Note** \nOnce an access key is removed, any application using it will not work until a new one is configured for it.",
                         "short_id": "IAM-006"
                     }
                 }
@@ -203,6 +207,7 @@
                 "description": "This rule checks if the Virtual Machine (VM) is stopped (and not deallocated) for at least a week. \nThis rule fails if `code: PowerState/stopped` and the timestamp was more than 7 days ago. \nWhen you are logged in to the operating system of an Azure VM, you can issue a command to shut down the server (or via Azure CLI). This will kick you out of the OS and stop all processes but will maintain the allocated hardware (including the IP addresses currently assigned). If you find the VM in the Azure console, you will see the state listed as `Stopped`. The biggest thing you need to know about this state is that **you are still being charged by the hour for this instance**. \nFor cost optimization and management purposes, it is recommended to deallocate (charges no longer apply) VMs that have been stopped for more than a week.",
                 "id": "VirtualMachines-021",
                 "name": "Virtual Machine should not be stopped (allocated) for more than a week",
+                "remediation": "Perform the following command to deallocate the VM via Azure CLI:\n```\naz vm deallocate \\\n\t--ids {{vmId}}\n```",
                 "uuid": "56c8890d-ad68-4659-9414-fb0ed7258c31"
             },
             "tags": [
@@ -236,6 +241,7 @@
                         "description": "This rule checks if the Virtual Machine (VM) is stopped (and not deallocated) for at least a week. \nThis rule fails if `code: PowerState/stopped` and the timestamp was more than 7 days ago. \nWhen you are logged in to the operating system of an Azure VM, you can issue a command to shut down the server (or via Azure CLI). This will kick you out of the OS and stop all processes but will maintain the allocated hardware (including the IP addresses currently assigned). If you find the VM in the Azure console, you will see the state listed as `Stopped`. The biggest thing you need to know about this state is that **you are still being charged by the hour for this instance**. \nFor cost optimization and management purposes, it is recommended to deallocate (charges no longer apply) VMs that have been stopped for more than a week.",
                         "id": "56c8890d-ad68-4659-9414-fb0ed7258c31",
                         "name": "Virtual Machine should not be stopped (allocated) for more than a week",
+                        "remediation_instructions": "Perform the following command to deallocate the VM via Azure CLI:\n```\naz vm deallocate \\\n\t--ids {{vmId}}\n```",
                         "short_id": "VirtualMachines-021"
                     }
                 }
@@ -287,6 +293,7 @@
                 "description": "This rule checks if the Virtual Machine (VM) is stopped (and not deallocated) for at least a week. \nThis rule fails if `code: PowerState/stopped` and the timestamp was more than 7 days ago. \nWhen you are logged in to the operating system of an Azure VM, you can issue a command to shut down the server (or via Azure CLI). This will kick you out of the OS and stop all processes but will maintain the allocated hardware (including the IP addresses currently assigned). If you find the VM in the Azure console, you will see the state listed as `Stopped`. The biggest thing you need to know about this state is that **you are still being charged by the hour for this instance**. \nFor cost optimization and management purposes, it is recommended to deallocate (charges no longer apply) VMs that have been stopped for more than a week.",
                 "id": "VirtualMachines-021",
                 "name": "Virtual Machine should not be stopped (allocated) for more than a week",
+                "remediation": "Perform the following command to deallocate the VM via Azure CLI:\n```\naz vm deallocate \\\n\t--ids {{vmId}}\n```",
                 "uuid": "56c8890d-ad68-4659-9414-fb0ed7258c31"
             },
             "tags": [
@@ -315,6 +322,7 @@
                         "description": "This rule checks if the Virtual Machine (VM) is stopped (and not deallocated) for at least a week. \nThis rule fails if `code: PowerState/stopped` and the timestamp was more than 7 days ago. \nWhen you are logged in to the operating system of an Azure VM, you can issue a command to shut down the server (or via Azure CLI). This will kick you out of the OS and stop all processes but will maintain the allocated hardware (including the IP addresses currently assigned). If you find the VM in the Azure console, you will see the state listed as `Stopped`. The biggest thing you need to know about this state is that **you are still being charged by the hour for this instance**. \nFor cost optimization and management purposes, it is recommended to deallocate (charges no longer apply) VMs that have been stopped for more than a week.",
                         "id": "56c8890d-ad68-4659-9414-fb0ed7258c31",
                         "name": "Virtual Machine should not be stopped (allocated) for more than a week",
+                        "remediation_instructions": "Perform the following command to deallocate the VM via Azure CLI:\n```\naz vm deallocate \\\n\t--ids {{vmId}}\n```",
                         "short_id": "VirtualMachines-021"
                     }
                 }
