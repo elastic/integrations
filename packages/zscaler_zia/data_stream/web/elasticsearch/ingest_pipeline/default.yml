@@ -1323,16 +1323,15 @@ processors:
       allow_duplicates: false
       if: ctx.zscaler_zia?.web?.url?.filter_rule_label != null
   - urldecode:
-      field: json.url
-      target_field: zscaler_zia.web.url.name
-      tag: urldecode_url
-      ignore_missing: true
-      ignore_failure: true
-  - urldecode:
       field: json.eurl
       target_field: json.eurl
       tag: urldecode_eurl
       ignore_missing: true
+  - set:
+      field: zscaler_zia.web.url.name
+      tag: set_web_url_name
+      copy_from: json.eurl
+      ignore_empty_value: true
   - script:
       description: Build URI for parsing.
       tag: Build URI for parsing

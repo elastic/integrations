@@ -48,6 +48,17 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 
 {{fields "dlp_logs"}}
 
+### Message Release Logs
+
+This is the `mimecast.message_release_logs` dataset. These logs contain information about
+messages that were either released to the recipient, with details about the user that
+processed the release. More information about [these logs](
+https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-message-release-logs/). 
+
+{{event "message_release_logs"}}
+
+{{fields "message_release_logs"}}
+
 ### SIEM Logs
 
 This is the `mimecast.siem_logs` dataset. These logs contain information about

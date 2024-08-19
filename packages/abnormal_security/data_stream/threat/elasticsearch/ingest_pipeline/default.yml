@@ -1,0 +1,548 @@
+---
+description: Pipeline for processing threat logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - drop:
+      if: ctx.message == 'retry'
+      tag: drop_retry_events
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.receivedTime
+        - json.abxMessageId
+        - json.threatId
+        - json.internetMessageId
+      tag: fingerprint_threat
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_enrichment
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: email
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Abnormal
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Inbound Email Security
+  - convert:
+      field: json.abxMessageId
+      tag: convert_abxMessageId_to_string
+      target_field: abnormal_security.threat.abx_message_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_threat_abx_message_id
+      copy_from: abnormal_security.threat.abx_message_id
+      ignore_empty_value: true
+  - rename:
+      field: json.abxPortalUrl
+      tag: rename_abxPortalUrl
+      target_field: abnormal_security.threat.abx_portal_url
+      ignore_missing: true
+  - set:
+      field: event.reference
+      tag: set_event_reference_from_threat_abx_portal_url
+      copy_from: abnormal_security.threat.abx_portal_url
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.reference
+      tag: set_threat_indicator_reference_from_threat_abx_portal_url
+      copy_from: abnormal_security.threat.abx_portal_url
+      ignore_empty_value: true
+  - convert:
+      field: json.attachmentCount
+      tag: convert_attachmentCount_to_long
+      target_field: abnormal_security.threat.attachment_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attachmentNames
+      tag: rename_attachmentNames
+      target_field: abnormal_security.threat.attachment_names
+      ignore_missing: true
+  - script:
+      description: Set email.attachments field.
+      tag: script_to_set_email_attachments_field
+      lang: painless
+      if: ctx.abnormal_security?.threat?.attachment_names instanceof List
+      source: |-
+        def attachmentList = new ArrayList();
+        for (name in ctx.abnormal_security.threat.attachment_names) {
+          def attachment = new HashMap();
+          attachment.put('file', new HashMap());
+          attachment.file.put('name', name);
+          String[] tokenList = name.splitOnToken('.');
+          if(tokenList.length > 1){
+            attachment.file.put('extension', tokenList[tokenList.length - 1]);
+          }
+          attachmentList.add(attachment);
+        }
+        ctx.put('email',new HashMap());
+        ctx.email.attachments = attachmentList;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attackStrategy
+      tag: rename_attackStrategy
+      target_field: abnormal_security.threat.attack.strategy
+      ignore_missing: true
+  - append:
+      field: threat.technique.name
+      tag: append_abnormal_security_threat_attack_strategy_into_threat_technique_name
+      value: '{{{abnormal_security.threat.attack.strategy}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.attack?.strategy != null
+  - rename:
+      field: json.attackType
+      tag: rename_attackType
+      target_field: abnormal_security.threat.attack.type
+      ignore_missing: true
+  - append:
+      field: threat.tactic.name
+      tag: append_abnormal_security_threat_attack_type_into_threat_tactic_name
+      value: '{{{abnormal_security.threat.attack.type}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.attack?.type != null
+  - rename:
+      field: json.attackVector
+      tag: rename_attackVector
+      target_field: abnormal_security.threat.attack.vector
+      ignore_missing: true
+  - rename:
+      field: json.attackedParty
+      tag: rename_attackedParty
+      target_field: abnormal_security.threat.attacked_party
+      ignore_missing: true
+  - convert:
+      field: json.autoRemediated
+      tag: convert_autoRemediated_to_boolean
+      target_field: abnormal_security.threat.auto_remediated
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ccEmails
+      tag: rename_ccEmails
+      target_field: abnormal_security.threat.cc_emails
+      ignore_missing: true
+  - set:
+      field: email.cc.address
+      tag: set_email_cc_address_from_threat_cc_emails
+      copy_from: abnormal_security.threat.cc_emails
+      ignore_empty_value: true
+  - foreach:
+      field: abnormal_security.threat.cc_emails
+      if: ctx.abnormal_security?.threat?.cc_emails instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_threat_cc_emails_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.fromAddress
+      tag: rename_fromAddress
+      target_field: abnormal_security.threat.from_address
+      ignore_missing: true
+  - append:
+      field: email.from.address
+      tag: append_abnormal_security_threat_from_address_into_email_from_address
+      value: '{{{abnormal_security.threat.from_address}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.from_address != null
+  - set:
+      field: threat.indicator.email.address
+      tag: set_threat_indicator_email_address_from_threat_from_address
+      copy_from: abnormal_security.threat.from_address
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_threat_from_address
+      copy_from: abnormal_security.threat.from_address
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_from_address_into_related_user
+      value: '{{{abnormal_security.threat.from_address}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.from_address != null
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_email-addr
+      value: email-addr
+  - rename:
+      field: json.fromName
+      tag: rename_fromName
+      target_field: abnormal_security.threat.from_name
+      ignore_missing: true
+  - grok:
+      field: abnormal_security.threat.from_name
+      tag: grok_abnormal_security_threat_from_name
+      patterns:
+        - '^%{EMAILADDRESS:user.email}$'
+        - '^%{DATA:user.name}$'
+      ignore_failure: true
+  - append:
+      field: related.user
+      tag: append_from_name_into_related_user
+      value: '{{{abnormal_security.threat.from_name}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.from_name != null
+  - rename:
+      field: json.threatId
+      tag: rename_threatId
+      target_field: abnormal_security.threat.id
+      ignore_missing: true
+  - rename:
+      field: json.impersonatedParty
+      tag: rename_impersonatedParty
+      target_field: abnormal_security.threat.impersonated_party
+      ignore_missing: true
+  - rename:
+      field: json.internetMessageId
+      tag: rename_internetMessageId
+      target_field: abnormal_security.threat.internet_message_id
+      ignore_missing: true
+  - set:
+      field: email.message_id
+      tag: set_email_message_id_from_threat_internet_message_id
+      copy_from: abnormal_security.threat.internet_message_id
+      ignore_empty_value: true
+  - convert:
+      field: json.isRead
+      tag: convert_isRead_to_boolean
+      target_field: abnormal_security.threat.is_read
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.postRemediated
+      tag: convert_postRemediated_to_boolean
+      target_field: abnormal_security.threat.post_remediated
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.receivedTime
+      tag: date_receivedTime
+      target_field: abnormal_security.threat.received_time
+      formats:
+        - ISO8601
+      if: ctx.json?.receivedTime != null && ctx.json.receivedTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_threat_received_time
+      copy_from: abnormal_security.threat.received_time
+      ignore_empty_value: true
+  - set:
+      field: email.delivery_timestamp
+      tag: set_email_delivery_timestamp_from_threat_received_time
+      copy_from: abnormal_security.threat.received_time
+      ignore_empty_value: true
+  - rename:
+      field: json.recipientAddress
+      tag: rename_recipientAddress
+      target_field: abnormal_security.threat.recipient_address
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_recipient_address_into_related_user
+      value: '{{{abnormal_security.threat.recipient_address}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.recipient_address != null
+  - rename:
+      field: json.remediationStatus
+      tag: rename_remediationStatus
+      target_field: abnormal_security.threat.remediation_status
+      ignore_missing: true
+  - date:
+      field: json.remediationTimestamp
+      tag: date_remediationTimestamp
+      target_field: abnormal_security.threat.remediation_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.remediationTimestamp != null && ctx.json.remediationTimestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.replyToEmails
+      tag: rename_replyToEmails
+      target_field: abnormal_security.threat.reply_to_emails
+      ignore_missing: true
+  - set:
+      field: email.reply_to.address
+      tag: set_email_reply_to_address_from_threat_reply_to_emails
+      copy_from: abnormal_security.threat.reply_to_emails
+      ignore_empty_value: true
+  - foreach:
+      field: abnormal_security.threat.reply_to_emails
+      if: ctx.abnormal_security?.threat?.reply_to_emails instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_threat_reply_to_emails_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.returnPath
+      tag: rename_returnPath
+      target_field: abnormal_security.threat.return_path
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_return_path_into_related_user
+      value: '{{{abnormal_security.threat.return_path}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.return_path != null
+  - rename:
+      field: json.senderDomain
+      tag: rename_senderDomain
+      target_field: abnormal_security.threat.sender_domain
+      ignore_missing: true
+  - set:
+      field: source.domain
+      tag: set_source_domain_from_threat_sender_domain
+      copy_from: abnormal_security.threat.sender_domain
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_sender_domain_into_related_hosts
+      value: '{{{abnormal_security.threat.sender_domain}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.sender_domain != null
+  - convert:
+      field: json.senderIpAddress
+      tag: convert_senderIpAddress_to_ip
+      target_field: abnormal_security.threat.sender_ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.senderIpAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_threat_sender_ip_address
+      copy_from: abnormal_security.threat.sender_ip_address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_sender_ip_address_into_related_ip
+      value: '{{{abnormal_security.threat.sender_ip_address}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.threat?.sender_ip_address != null
+  - date:
+      field: json.sentTime
+      tag: date_sentTime
+      target_field: abnormal_security.threat.sent_time
+      formats:
+        - ISO8601
+      if: ctx.json?.sentTime != null && ctx.json.sentTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.origination_timestamp
+      tag: set_email_origination_timestamp_from_threat_sent_time
+      copy_from: abnormal_security.threat.sent_time
+      ignore_empty_value: true
+  - rename:
+      field: json.subject
+      tag: rename_subject
+      target_field: abnormal_security.threat.subject
+      ignore_missing: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_threat_subject
+      copy_from: abnormal_security.threat.subject
+      ignore_empty_value: true
+  - rename:
+      field: json.summaryInsights
+      tag: rename_summaryInsights
+      target_field: abnormal_security.threat.summary_insights
+      ignore_missing: true
+  - split:
+      field: json.toAddresses
+      separator: ','
+      tag: split_toAddresses
+      target_field: abnormal_security.threat.to_addresses
+      ignore_missing: true
+      if: ctx.json?.toAddresses instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.toAddresses
+      tag: rename_toAddresses
+      target_field: abnormal_security.threat.to_addresses
+      if: ctx.json?.toAddresses instanceof List
+      ignore_missing: true
+  - trim:
+      field: abnormal_security.threat.to_addresses
+      tag: trim_threat_to_addresses
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.to.address
+      tag: set_email_to_address_from_threat_to_addresses
+      copy_from: abnormal_security.threat.to_addresses
+      ignore_empty_value: true
+  - foreach:
+      field: abnormal_security.threat.to_addresses
+      if: ctx.abnormal_security?.threat?.to_addresses instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_to_addresses_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: json.urlCount
+      tag: convert_urlCount_to_long
+      target_field: abnormal_security.threat.url_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.urls
+      tag: rename_urls
+      target_field: abnormal_security.threat.urls
+      ignore_missing: true
+  - remove:
+      field:
+        - abnormal_security.threat.abx_message_id
+        - abnormal_security.threat.abx_portal_url
+        - abnormal_security.threat.attack.type
+        - abnormal_security.threat.from_address
+        - abnormal_security.threat.from_name
+        - abnormal_security.threat.internet_message_id
+        - abnormal_security.threat.received_time
+        - abnormal_security.threat.sender_domain
+        - abnormal_security.threat.sent_time
+        - abnormal_security.threat.subject
+        - abnormal_security.threat.attachment_names
+        - abnormal_security.threat.cc_emails
+        - abnormal_security.threat.reply_to_emails
+        - abnormal_security.threat.to_addresses
+        - abnormal_security.threat.sender_ip_address
+        - abnormal_security.threat.attack.strategy
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

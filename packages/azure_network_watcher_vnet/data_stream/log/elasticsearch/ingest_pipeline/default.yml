@@ -106,11 +106,11 @@ processors:
       field: json.macAddress
       tag: uppercase_mac_address
       ignore_missing: true
-      if: ctx.json?.macAddress !='' && ctx.json.macAddress != null
+      if: ctx.json?.macAddress != null && ctx.json.macAddress != ''
       target_field: azure_network_watcher_vnet.log.mac_address
   - gsub:
       field: azure_network_watcher_vnet.log.mac_address
-      if: ctx.azure_network_watcher_vnet?.log?.mac_address != '' && ctx.azure_network_watcher_vnet.log.mac_address!= null
+      if: ctx.azure_network_watcher_vnet?.log?.mac_address != null && ctx.azure_network_watcher_vnet.log.mac_address!= ''
       tag: gsub_mac_address
       pattern: '(..)(?!$)'
       replacement: '$1-'
