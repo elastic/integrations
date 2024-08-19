@@ -414,6 +414,7 @@ An example event for `telemetry` looks as following:
             }
         },
         "interactive": false,
+        "name": "zsh",
         "parent": {
             "entity_id": "A7EDC884-C034-50E7-A3AA-2E281B3E0777",
             "pid": 64632,
