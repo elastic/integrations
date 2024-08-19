@@ -1323,20 +1323,49 @@ processors:
       allow_duplicates: false
       if: ctx.zscaler_zia?.web?.url?.filter_rule_label != null
   - urldecode:
-      field: json.url
-      target_field: zscaler_zia.web.url.name
-      tag: urldecode_url
+      field: json.eurl
+      target_field: json.eurl
+      tag: urldecode_eurl
       ignore_missing: true
-      ignore_failure: true
   - set:
-      field: url.original
-      tag: set_url_original_from_web_url_name
-      copy_from: zscaler_zia.web.url.name
+      field: zscaler_zia.web.url.name
+      tag: set_web_url_name
+      copy_from: json.eurl
       ignore_empty_value: true
+  - script:
+      description: Build URI for parsing.
+      tag: Build URI for parsing
+      lang: painless
+      if: ctx.network?.protocol != null && ctx.json?.eurl != null
+      params:
+        valid_protocols:
+          - http
+          - https
+        default_protocol: https
+      source: |
+        // Remap network.protocol to a valid value, if necessary.
+        if (params.valid_protocols.contains(ctx.network.protocol)) {
+          ctx.json['url'] = ctx.network.protocol + '://' + ctx.json.eurl;
+        } else {
+          ctx.json['url'] = params.default_protocol + '://' + ctx.json.eurl;
+        }
   - uri_parts:
+      field: json.url
+      if: ctx.json?.url != null && ctx.json.url != ''
+      on_failure:
+        - set:
+            field: url.original
+            value: '{{{json.eurl}}}'
+            if: ctx.json?.eurl != null && ctx.json.eurl != ''
+  - set:
+      field: url.full
+      value: '{{{url.original}}}'
+      if: ctx.url?.original != null && ctx.url.original != ''
+  - urldecode:
       field: url.original
-      tag: uri_parts_url_original
       ignore_missing: true
+      tag: urldecode_url_original
+      if: ctx.url?.original != null && ctx.url.original != ''
       on_failure:
         - append:
             field: error.message
