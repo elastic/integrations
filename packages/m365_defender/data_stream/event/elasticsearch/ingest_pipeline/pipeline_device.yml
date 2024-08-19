@@ -2345,8 +2345,16 @@ processors:
       source: >-
         def answers = ctx.m365_defender.event.dns.answers;
         def ttls = ctx.m365_defender.event.dns.ttls;
-        if (answers.isEmpty() || ttls.isEmpty() || answers.length != ttls.length) {
+        if (answers.isEmpty() || ttls.isEmpty()) {
           return;
+        } else if (answers.length != ttls.length) {
+          if (ctx.error == null) {
+            ctx.error = new HashMap();
+          }
+          if (ctx.error.message == null) {
+            ctx.error.message = new ArrayList();
+          }
+          ctx.error.message.add('DNS answers and TTLs have a different lenght');
         }
         def lst = new ArrayList();
         for (def i = 0; i < answers.length; i++) {
