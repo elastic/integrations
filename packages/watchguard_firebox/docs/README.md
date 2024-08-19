@@ -396,6 +396,7 @@ An example event for `log` looks as following:
 | watchguard_firebox.log.mbx |  | keyword |
 | watchguard_firebox.log.md5 |  | keyword |
 | watchguard_firebox.log.member_id |  | keyword |
+| watchguard_firebox.log.member_info |  | keyword |
 | watchguard_firebox.log.message |  | keyword |
 | watchguard_firebox.log.method |  | keyword |
 | watchguard_firebox.log.msg |  | keyword |
