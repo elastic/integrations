@@ -74,6 +74,20 @@ processors:
       tag: set_cloud_region
       copy_from: wiz.cloud_configuration_finding.resource.region
       ignore_empty_value: true
+  - rename:
+      field: json.resource.cloudPlatform
+      tag: rename_cloud_plarform
+      target_field: wiz.cloud_configuration_finding.resource.cloud_platform
+      ignore_missing: true
+  - set:
+      field: cloud.service.name
+      tag: set_cloud_service_name
+      copy_from: wiz.cloud_configuration_finding.resource.cloud_platform
+      ignore_empty_value: true
+  - script:
+      tag: lowercase_cloud_service_name
+      lang: painless
+      source: "if (ctx.cloud?.service?.name != null) { ctx.cloud.service.name = ctx.cloud.service.name.toLowerCase(); }"
   - append:
       field: event.category
       tag: append_event_category
