@@ -2,6 +2,16 @@
 description: "Pipeline for RDS metrics"
 
 processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
+  - script:
+      lang: painless
+      description: This script converts aws.rds.metrics.CPUUtilization.avg from percentage to decimal.
+      source: |
+        if(ctx.agent?.type == "firehose" && ctx.aws?.rds?.metrics?.CPUUtilization?.avg != null && ctx.aws?.rds?.cpu?.total?.pct == null) {
+            ctx.aws.rds.metrics.CPUUtilization.avg = ctx.aws.rds.metrics.CPUUtilization.avg / 100;
+        }
   - rename:
       field: aws.rds.metrics.BurstBalance.avg
       target_field: aws.rds.burst_balance.pct
@@ -278,3 +288,7 @@ processors:
       field: aws.rds.metrics.AuroraVolumeBytesLeftTotal.avg
       target_field: aws.rds.aurora_volume_left_total.bytes
       ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

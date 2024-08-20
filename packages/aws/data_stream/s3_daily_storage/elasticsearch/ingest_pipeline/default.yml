@@ -2,6 +2,14 @@
 description: "Pipeline for S3 daily storage metrics"
 
 processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
+  - set:
+      field: cloud.account.name
+      copy_from: cloud.account.id
+      override: false
+      ignore_empty_value: true
   - rename:
       field: aws.s3.metrics.NumberOfObjects.avg
       target_field: aws.s3_daily_storage.number_of_objects
@@ -17,4 +25,5 @@ processors:
   - remove:
       field:
         - aws.s3.metrics
+      if: ctx.agent?.type != "firehose"
       ignore_missing: true
