@@ -3,7 +3,30 @@
         "description": "",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "proxysg.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "proxysg.log"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -18,6 +41,42 @@
             "useMargins": true
         },
         "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "# Broadcom ProxySG Overview",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "51b84edf-724b-42e7-9494-f48d2b3430f3",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "51b84edf-724b-42e7-9494-f48d2b3430f3",
+                "type": "visualization"
+            },
             {
                 "embeddableConfig": {
                     "attributes": {
@@ -143,7 +202,7 @@
                     "i": "08f71d29-4990-4220-ac23-3c12a4ce0ac6",
                     "w": 24,
                     "x": 0,
-                    "y": 0
+                    "y": 5
                 },
                 "panelIndex": "08f71d29-4990-4220-ac23-3c12a4ce0ac6",
                 "title": "Action",
@@ -274,7 +333,7 @@
                     "i": "1f4b04ac-a583-4c7c-a814-309ffe186fdb",
                     "w": 24,
                     "x": 24,
-                    "y": 0
+                    "y": 5
                 },
                 "panelIndex": "1f4b04ac-a583-4c7c-a814-309ffe186fdb",
                 "title": "Top Hosts",
@@ -286,7 +345,7 @@
                         "references": [
                             {
                                 "id": "security-solution-default",
-                                "name": "indexpattern-datasource-layer-9f1ee751-ce74-4425-b9f4-2732b94b080d",
+                                "name": "indexpattern-datasource-layer-908e6dd7-7edb-402f-8d45-6c4fe7b9826d",
                                 "type": "index-pattern"
                             }
                         ],
@@ -295,16 +354,27 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "9f1ee751-ce74-4425-b9f4-2732b94b080d": {
+                                        "908e6dd7-7edb-402f-8d45-6c4fe7b9826d": {
                                             "columnOrder": [
-                                                "543129c5-642d-4916-a3c5-4b5818e011a1",
-                                                "e9bd4c7c-b9f1-45db-8662-3366c1762964"
+                                                "c492c21c-dc49-4ff2-8e7e-c05f949f88e0",
+                                                "42b5c77f-5d93-4f6d-887d-e04342e9d494"
                                             ],
                                             "columns": {
-                                                "543129c5-642d-4916-a3c5-4b5818e011a1": {
-                                                    "dataType": "ip",
+                                                "42b5c77f-5d93-4f6d-887d-e04342e9d494": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "c492c21c-dc49-4ff2-8e7e-c05f949f88e0": {
+                                                    "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of client.ip",
+                                                    "label": "Top 5 values of proxysg.server_to_client.status",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -313,7 +383,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "e9bd4c7c-b9f1-45db-8662-3366c1762964",
+                                                            "columnId": "42b5c77f-5d93-4f6d-887d-e04342e9d494",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -324,18 +394,7 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "client.ip"
-                                                },
-                                                "e9bd4c7c-b9f1-45db-8662-3366c1762964": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "proxysg.server_to_client.status"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -357,81 +416,40 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
                                 "layers": [
                                     {
-                                        "accessors": [
-                                            "e9bd4c7c-b9f1-45db-8662-3366c1762964"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "9f1ee751-ce74-4425-b9f4-2732b94b080d",
+                                        "categoryDisplay": "default",
+                                        "layerId": "908e6dd7-7edb-402f-8d45-6c4fe7b9826d",
                                         "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_stacked",
-                                        "showGridlines": false,
-                                        "xAccessor": "543129c5-642d-4916-a3c5-4b5818e011a1"
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "42b5c77f-5d93-4f6d-887d-e04342e9d494"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "c492c21c-dc49-4ff2-8e7e-c05f949f88e0"
+                                        ]
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
+                                "shape": "treemap"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsPie"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "e8cd7c51-e2bd-40e8-9090-0d9074173c24",
+                    "i": "b6ee9c85-cbe4-45d9-ae09-2adffdb4c159",
                     "w": 24,
                     "x": 0,
-                    "y": 30
+                    "y": 20
                 },
-                "panelIndex": "e8cd7c51-e2bd-40e8-9090-0d9074173c24",
-                "title": "Top Client IPs",
+                "panelIndex": "b6ee9c85-cbe4-45d9-ae09-2adffdb4c159",
+                "title": "Top Status Codes",
                 "type": "lens"
             },
             {
@@ -582,7 +600,7 @@
                     "i": "9dd4d0a2-f37d-49f0-abe7-88d72d21b91b",
                     "w": 24,
                     "x": 24,
-                    "y": 15
+                    "y": 20
                 },
                 "panelIndex": "9dd4d0a2-f37d-49f0-abe7-88d72d21b91b",
                 "title": "Top Server IPs",
@@ -594,7 +612,7 @@
                         "references": [
                             {
                                 "id": "security-solution-default",
-                                "name": "indexpattern-datasource-layer-908e6dd7-7edb-402f-8d45-6c4fe7b9826d",
+                                "name": "indexpattern-datasource-layer-9f1ee751-ce74-4425-b9f4-2732b94b080d",
                                 "type": "index-pattern"
                             }
                         ],
@@ -603,27 +621,16 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "908e6dd7-7edb-402f-8d45-6c4fe7b9826d": {
+                                        "9f1ee751-ce74-4425-b9f4-2732b94b080d": {
                                             "columnOrder": [
-                                                "c492c21c-dc49-4ff2-8e7e-c05f949f88e0",
-                                                "42b5c77f-5d93-4f6d-887d-e04342e9d494"
+                                                "543129c5-642d-4916-a3c5-4b5818e011a1",
+                                                "e9bd4c7c-b9f1-45db-8662-3366c1762964"
                                             ],
                                             "columns": {
-                                                "42b5c77f-5d93-4f6d-887d-e04342e9d494": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "c492c21c-dc49-4ff2-8e7e-c05f949f88e0": {
-                                                    "dataType": "string",
+                                                "543129c5-642d-4916-a3c5-4b5818e011a1": {
+                                                    "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of proxysg.server_to_client.status",
+                                                    "label": "Top 5 values of client.ip",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -632,7 +639,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "42b5c77f-5d93-4f6d-887d-e04342e9d494",
+                                                            "columnId": "e9bd4c7c-b9f1-45db-8662-3366c1762964",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -643,7 +650,18 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "proxysg.server_to_client.status"
+                                                    "sourceField": "client.ip"
+                                                },
+                                                "e9bd4c7c-b9f1-45db-8662-3366c1762964": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -665,40 +683,81 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
                                 "layers": [
                                     {
-                                        "categoryDisplay": "default",
-                                        "layerId": "908e6dd7-7edb-402f-8d45-6c4fe7b9826d",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metrics": [
-                                            "42b5c77f-5d93-4f6d-887d-e04342e9d494"
+                                        "accessors": [
+                                            "e9bd4c7c-b9f1-45db-8662-3366c1762964"
                                         ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "c492c21c-dc49-4ff2-8e7e-c05f949f88e0"
-                                        ]
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "9f1ee751-ce74-4425-b9f4-2732b94b080d",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "543129c5-642d-4916-a3c5-4b5818e011a1"
                                     }
                                 ],
-                                "shape": "treemap"
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "b6ee9c85-cbe4-45d9-ae09-2adffdb4c159",
+                    "i": "e8cd7c51-e2bd-40e8-9090-0d9074173c24",
                     "w": 24,
                     "x": 0,
-                    "y": 15
+                    "y": 35
                 },
-                "panelIndex": "b6ee9c85-cbe4-45d9-ae09-2adffdb4c159",
-                "title": "Top Status Codes",
+                "panelIndex": "e8cd7c51-e2bd-40e8-9090-0d9074173c24",
+                "title": "Top Client IPs",
                 "type": "lens"
             }
         ],
@@ -714,6 +773,11 @@
     "references": [
         {
             "id": "security-solution-default",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "security-solution-default",
             "name": "08f71d29-4990-4220-ac23-3c12a4ce0ac6:indexpattern-datasource-layer-1eb6d6b0-8fa4-4164-93fe-5e1234a7a981",
             "type": "index-pattern"
         },
@@ -724,7 +788,7 @@
         },
         {
             "id": "security-solution-default",
-            "name": "e8cd7c51-e2bd-40e8-9090-0d9074173c24:indexpattern-datasource-layer-9f1ee751-ce74-4425-b9f4-2732b94b080d",
+            "name": "b6ee9c85-cbe4-45d9-ae09-2adffdb4c159:indexpattern-datasource-layer-908e6dd7-7edb-402f-8d45-6c4fe7b9826d",
             "type": "index-pattern"
         },
         {
@@ -734,8 +798,13 @@
         },
         {
             "id": "security-solution-default",
-            "name": "b6ee9c85-cbe4-45d9-ae09-2adffdb4c159:indexpattern-datasource-layer-908e6dd7-7edb-402f-8d45-6c4fe7b9826d",
+            "name": "e8cd7c51-e2bd-40e8-9090-0d9074173c24:indexpattern-datasource-layer-9f1ee751-ce74-4425-b9f4-2732b94b080d",
             "type": "index-pattern"
+        },
+        {
+            "id": "proxysg-d713f8d5-a904-479e-a928-0b98ce0a77dd",
+            "name": "tag-ref-d713f8d5-a904-479e-a928-0b98ce0a77dd",
+            "type": "tag"
         }
     ],
     "type": "dashboard",
