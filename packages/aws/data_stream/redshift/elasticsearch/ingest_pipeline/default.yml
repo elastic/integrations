@@ -2,6 +2,14 @@
 description: "Ingest Pipeline for Amazon Redshift metrics"
 
 processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
+  - set:
+      field: cloud.account.name
+      copy_from: cloud.account.id
+      override: false
+      ignore_empty_value: true
   - rename:
       field: aws.dimensions.service class
       target_field: aws.dimensions.service_class
