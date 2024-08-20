@@ -1,6 +1,6 @@
 # Wiz
 
-Wiz continuously prioritizes critical risks based on a deep cloud analysis across misconfigurations, network exposure, secrets, vulnerabilities, malware, and identities to build a single prioritized view of risk for your cloud. This [Wiz](https://www.wiz.io/) integration enables you to consume and analyze Wiz data within Elastic Security, including issues, vulnerability data and audit events, providing you with visibility and context for your cloud environments within Elastic Security.
+Wiz continuously prioritizes critical risks based on a deep cloud analysis across misconfigurations, network exposure, secrets, vulnerabilities, malware, and identities to build a single prioritized view of risk for your cloud. This [Wiz](https://www.wiz.io/) integration enables you to consume and analyze Wiz data within Elastic Security, including issues, vulnerability data, cloud configuration findings and audit events, providing you with visibility and context for your cloud environments within Elastic Security.
 
 ## Data streams
 
@@ -48,6 +48,7 @@ This module has been tested against the **Wiz API Version v1**.
     | Audit         | admin:audit   |
     | Issue         | read:issues   |
     | Vulnerability | read:vulnerabilities |
+    | Cloud Configuration Finding | read:cloud_configuration |
 
 ### To obtain the Wiz URL
 1. Navigate to your user profile and copy the API Endpoint URL.
@@ -210,6 +211,149 @@ An example event for `audit` looks as following:
 | wiz.audit.user.id |  | keyword |
 | wiz.audit.user.name |  | keyword |
 | wiz.audit.user_agent |  | keyword |
+
+
+### Cloud Configuration Finding
+
+This is the `Cloud Configuration Finding` dataset.
+
+#### Example
+
+An example event for `cloud_configuration_finding` looks as following:
+
+```json
+{
+    "@timestamp": "2023-06-12T11:38:07.900Z",
+    "cloud": {
+        "account": {
+            "id": "cfd132be-3bc7-4f86-8efd-ed53ae498fec",
+            "name": "Wiz - DEV Outpost"
+        },
+        "provider": "azure"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "category": [
+            "configuration"
+        ],
+        "created": "2023-06-12T11:38:07.900Z",
+        "id": "bdeba988-f41b-55e6-9b99-96b8d3dc67d4",
+        "kind": "state",
+        "original": "{\"id\":\"bdeba988-f41b-55e6-9b99-96b8d3dc67d4\",\"targetExternalId\":\"k8s/pod/da99fd668e64c2def251b1d48b7b69ad3129638787a0f9144a993fe30fd4554f/default/cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx\",\"targetObjectProviderUniqueId\":\"cd971d74-92db-495c-8244-82da9a988fd0\",\"firstSeenAt\":\"2023-06-12T11:38:07.900129Z\",\"analyzedAt\":\"2023-06-12T11:38:07.900129Z\",\"severity\":\"LOW\",\"result\":\"FAIL\",\"status\":\"OPEN\",\"remediation\":\"Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \\r\\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \\r\\n* `securityContext.capabilities.drop` key is set to `ALL`. \\r\\n\",\"resource\":{\"id\":\"0e814bb7-29e8-5c15-be9c-8da42c67ee99\",\"providerId\":\"provider-id-0e814bb7-29e8-5c15-be9c-8da42c67ee99\",\"name\":\"cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx\",\"nativeType\":\"Pod\",\"type\":\"POD\",\"region\":null,\"subscription\":{\"id\":\"a3a3cc43-1dfd-50f1-882e-692840d4a891\",\"name\":\"Wiz - DEV Outpost\",\"externalId\":\"cfd132be-3bc7-4f86-8efd-ed53ae498fec\",\"cloudProvider\":\"Azure\"},\"projects\":null,\"tags\":[{\"key\":\"pod-template-hash\",\"value\":\"8bc677d64\"},{\"key\":\"app.kubernetes.io/name\",\"value\":\"azure-cluster-autoscaler\"},{\"key\":\"app.kubernetes.io/instance\",\"value\":\"cluster-autoscaler\"}]},\"rule\":{\"id\":\"73553de7-f2ad-4ffb-b425-c69815033530\",\"shortId\":\"Pod-32\",\"graphId\":\"99ffeef7-75df-5c88-9265-5ab50ffbc2b9\",\"name\":\"Pod should run containers with authorized additional capabilities (PSS Restricted)\",\"description\":\"This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \\nThis rule checks whether the pod is running containers with authorized additional capabilities.     \\nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \\nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \\nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.\",\"remediationInstructions\":\"Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \\r\\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \\r\\n* `securityContext.capabilities.drop` key is set to `ALL`. \\r\\n\",\"functionAsControl\":false},\"securitySubCategories\":[{\"id\":\"wsct-id-5206\",\"title\":\"Container Security\",\"category\":{\"id\":\"wct-id-423\",\"name\":\"9 Container Security\",\"framework\":{\"id\":\"wf-id-1\",\"name\":\"Wiz\"}}},{\"id\":\"wsct-id-8176\",\"title\":\"5.1 Containers should not run with additional capabilities\",\"category\":{\"id\":\"wct-id-1295\",\"name\":\"5 Capabilities\",\"framework\":{\"id\":\"wf-id-57\",\"name\":\"Kubernetes Pod Security Standards (Restricted)\"}}},{\"id\":\"wsct-id-8344\",\"title\":\"Cluster misconfiguration\",\"category\":{\"id\":\"wct-id-1169\",\"name\":\"2 Container & Kubernetes Security\",\"framework\":{\"id\":\"wf-id-53\",\"name\":\"Wiz Detailed\"}}}]}",
+        "outcome": "failure",
+        "type": [
+            "info"
+        ]
+    },
+    "message": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
+    "observer": {
+        "vendor": "Wiz"
+    },
+    "resource": {
+        "id": "provider-id-0e814bb7-29e8-5c15-be9c-8da42c67ee99",
+        "name": "cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx",
+        "sub_type": "Pod",
+        "type": "POD"
+    },
+    "result": {
+        "evaluation": "FAILED"
+    },
+    "rule": {
+        "description": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
+        "id": "Pod-32",
+        "name": "Pod should run containers with authorized additional capabilities (PSS Restricted)",
+        "remediation": "Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \r\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \r\n* `securityContext.capabilities.drop` key is set to `ALL`. \r\n",
+        "uuid": "73553de7-f2ad-4ffb-b425-c69815033530"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields"
+    ],
+    "wiz": {
+        "cloud_configuration_finding": {
+            "analyzed_at": "2023-06-12T11:38:07.900Z",
+            "id": "bdeba988-f41b-55e6-9b99-96b8d3dc67d4",
+            "resource": {
+                "id": "0e814bb7-29e8-5c15-be9c-8da42c67ee99",
+                "name": "cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx",
+                "native_type": "Pod",
+                "provider_id": "provider-id-0e814bb7-29e8-5c15-be9c-8da42c67ee99",
+                "subscription": {
+                    "cloud_provider": "Azure",
+                    "external_id": "cfd132be-3bc7-4f86-8efd-ed53ae498fec",
+                    "name": "Wiz - DEV Outpost"
+                },
+                "type": "POD"
+            },
+            "result": "FAIL",
+            "rule": {
+                "description": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
+                "id": "73553de7-f2ad-4ffb-b425-c69815033530",
+                "name": "Pod should run containers with authorized additional capabilities (PSS Restricted)",
+                "remediation_instructions": "Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \r\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \r\n* `securityContext.capabilities.drop` key is set to `ALL`. \r\n",
+                "short_id": "Pod-32"
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.vendor | Vendor name of the observer. | keyword |
+| resource.id |  | keyword |
+| resource.name |  | keyword |
+| resource.sub_type |  | keyword |
+| resource.type |  | keyword |
+| result.evaluation |  | keyword |
+| result.evidence |  | flattened |
+| rule.description |  | text |
+| rule.id |  | keyword |
+| rule.name |  | keyword |
+| rule.remediation |  | text |
+| rule.uuid |  | keyword |
+| tags | User defined tags. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| wiz.cloud_configuration_finding.analyzed_at |  | date |
+| wiz.cloud_configuration_finding.evidence |  | flattened |
+| wiz.cloud_configuration_finding.id |  | keyword |
+| wiz.cloud_configuration_finding.resource.cloud_platform |  | keyword |
+| wiz.cloud_configuration_finding.resource.id |  | keyword |
+| wiz.cloud_configuration_finding.resource.name |  | keyword |
+| wiz.cloud_configuration_finding.resource.native_type |  | keyword |
+| wiz.cloud_configuration_finding.resource.provider_id |  | keyword |
+| wiz.cloud_configuration_finding.resource.region |  | keyword |
+| wiz.cloud_configuration_finding.resource.subscription.cloud_provider |  | keyword |
+| wiz.cloud_configuration_finding.resource.subscription.external_id |  | keyword |
+| wiz.cloud_configuration_finding.resource.subscription.name |  | keyword |
+| wiz.cloud_configuration_finding.resource.type |  | keyword |
+| wiz.cloud_configuration_finding.result |  | keyword |
+| wiz.cloud_configuration_finding.rule.description |  | text |
+| wiz.cloud_configuration_finding.rule.id |  | keyword |
+| wiz.cloud_configuration_finding.rule.name |  | keyword |
+| wiz.cloud_configuration_finding.rule.remediation_instructions |  | text |
+| wiz.cloud_configuration_finding.rule.short_id |  | keyword |
 
 
 ### Issue
