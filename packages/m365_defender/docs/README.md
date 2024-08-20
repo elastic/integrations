@@ -646,7 +646,7 @@ This is the `event` dataset.
 | m365_defender.event.dns.qtype_name | The type of DNS record being queried. | keyword |
 | m365_defender.event.dns.query | The DNS query. | keyword |
 | m365_defender.event.dns.rcode_name | The DNS response code. | keyword |
-| m365_defender.event.dns.ttls | The time interval in seconds that this resource record may be cached before it should be discarded. | long |
+| m365_defender.event.dns.ttls | The time interval in seconds that this resource record may be cached before it should be discarded. | double |
 | m365_defender.event.dns_addresses | DNS server addresses in JSON array format. | keyword |
 | m365_defender.event.email.action | Final action taken on the email based on filter verdict, policies, and user actions: Move message to junk mail folder, Add X-header, Modify subject, Redirect message, Delete message, send to quarantine, No action taken, Bcc message. | keyword |
 | m365_defender.event.email.action_policy | Action policy that took effect: Antispam high-confidence, Antispam, Antispam bulk mail, Antispam phishing, Anti-phishing domain impersonation, Anti-phishing user impersonation, Anti-phishing spoof, Anti-phishing graph impersonation, Antimalware, Safe Attachments, Enterprise Transport Rules (ETR). | keyword |
