@@ -28,26 +28,15 @@ processors:
       if: ctx.tychon?.host?.ipv6 instanceof String && ctx.tychon.host.ipv6 != ""
       ignore_missing: true
 
-  # TODO: can this be simplified (does convert to long do truncation of fractional part)
   - convert:
       field: tychon.host.uptime
       type: string
       ignore_missing: true
-  - set:
+  - gsub:
+      description: Truncate decimal part of host.uptime value
       field: tychon.host.uptime
-      value: '0'
-      if: ctx.tychon?.host?.uptime == ''
-  - split:
-      field: tychon.host.uptime
-      separator: '\.+'
-      target_field: _tmp_uptime
-      ignore_failure: true
-  - set:
-      field: tychon.host.uptime
-      value: '{{{_tmp_uptime.0}}}'
-      ignore_failure: true
-  - remove:
-      field: _tmp_uptime
+      pattern: '\.\d+$'
+      replacement: ""
       ignore_missing: true
   - convert:
       field: tychon.host.uptime
