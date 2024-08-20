@@ -1116,6 +1116,12 @@ processors:
       target_field: panw.panos.x_forwarded_for
       if: ctx._temp_?.srcuser != null && ctx._temp_?.labels != null && (ctx._temp_.labels & 0x00080000) != 0
 
+  - gsub:
+      field: panw.panos.x_forwarded_for
+      pattern: 'x-fwd-for: '
+      replacement: ''
+      ignore_missing: true
+
 # Extract user domain from source and destination user
 
   - grok:
