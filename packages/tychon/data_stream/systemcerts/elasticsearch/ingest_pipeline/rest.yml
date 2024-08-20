@@ -115,6 +115,27 @@ processors:
 
   # ECS fields from the tychon fieldset
 
+  - append:
+      field: related.hash
+      value: "{{tychon.file.hash.md5}}"
+      if: ctx.tychon?.file?.hash?.md5 != null && ctx.tychon.file.hash.md5 != ""
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{tychon.file.hash.sha1}}"
+      if: ctx.tychon?.file?.hash?.sha1 != null && ctx.tychon.file.hash.sha1 != ""
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{tychon.file.hash.sha256}}"
+      if: ctx.tychon?.file?.hash?.sha256 != null && ctx.tychon.file.hash.sha256 != ""
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{tychon.x509.hash}}"
+      if: ctx.tychon?.x509?.hash != null && ctx.tychon.x509.hash != ""
+      allow_duplicates: false
+
   - set:
       field: file.accessed
       copy_from: tychon.file.accessed

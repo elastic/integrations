@@ -13,6 +13,17 @@ processors:
 
   # ECS fields from the tychon fieldset
 
+  - append:
+      field: related.hosts
+      value: "{{tychon.destination.hostname}}"
+      if: ctx.tychon?.destination?.hostname != null && ctx.tychon.destination.hostname != ""
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{tychon.destination.ip}}"
+      if: ctx.tychon?.destination?.ip != null && ctx.tychon.destination.ip != ""
+      allow_duplicates: false
+
   - set:
       field: destination.ip
       copy_from: tychon.destination.ip

@@ -68,6 +68,46 @@ processors:
 
   # ECS fields from the tychon fieldset
 
+  - foreach:
+      field: tychon.host.ip
+      if: ctx.tychon?.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
+  - foreach:
+      field: tychon.host.ipv4
+      if: ctx.tychon?.host?.ipv4 instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
+  - foreach:
+      field: tychon.host.ipv6
+      if: ctx.tychon?.host?.ipv6 instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{tychon.host.domain}}"
+      if: ctx.tychon?.host?.domain != null && ctx.tychon.host.domain != ""
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{tychon.host.hostname}}"
+      if: ctx.tychon?.host?.hostname != null && ctx.tychon.host.hostname != ""
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{tychon.host.id}}"
+      if: ctx.tychon?.host?.id != null && ctx.tychon.host.id != ""
+      allow_duplicates: false
+
   - set:
       field: host.domain
       copy_from: tychon.host.domain
