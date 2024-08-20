@@ -91,7 +91,21 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| auditd.log.ARCH |  | keyword |
+| auditd.log.AUID |  | keyword |
+| auditd.log.EGID |  | keyword |
+| auditd.log.EUID |  | keyword |
+| auditd.log.FSGID |  | keyword |
+| auditd.log.FSUID |  | keyword |
+| auditd.log.GID |  | keyword |
+| auditd.log.SGID |  | keyword |
+| auditd.log.SUID |  | keyword |
+| auditd.log.SYSCALL |  | keyword |
+| auditd.log.UID |  | keyword |
 | auditd.log.a0 | The first argument to the system call. | keyword |
+| auditd.log.a1 | The second argument to the system call. | keyword |
+| auditd.log.a2 | The third argument to the system call. | keyword |
+| auditd.log.a3 | The fourth argument to the system call. | keyword |
 | auditd.log.addr |  | ip |
 | auditd.log.audit_failure |  | keyword |
 | auditd.log.avc.action |  | keyword |
@@ -120,6 +134,7 @@ An example event for `log` looks as following:
 | auditd.log.item | The item field indicates which item out of the total number of items. This number is zero-based; a value of 0 means it is the first item. | keyword |
 | auditd.log.items | The number of items in an event. | keyword |
 | auditd.log.kernel |  | keyword |
+| auditd.log.key | Records the user defined string associated with a rule that generated a particular event in the Audit log. | keyword |
 | auditd.log.key_enforce |  | boolean |
 | auditd.log.kind |  | keyword |
 | auditd.log.ksize |  | long |
