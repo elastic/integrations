@@ -2056,6 +2056,7 @@ processors:
       replacement: '$1-'
       tag: gsub_host_mac
       ignore_missing: true
+      if: ctx._tmp?.mac?.contains('-') == false
   - append:
       field: host.mac
       value: '{{{_tmp.mac}}}'
@@ -2389,7 +2390,7 @@ processors:
       override: true
   - set:
       field: network.protocol
-      value: dns
+      value: ssl
       tag: set_network_protocol_ssl
       if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('ssl')
       override: true
