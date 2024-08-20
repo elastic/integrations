@@ -36,33 +36,18 @@ pivot:
     total_length_process_args:
       sum:
         field: process.args_count
-    session:
-      scripted_metric:
-        combine_script: return state.docs
-        init_script: |-
-          state.docs = []
-        map_script: |-
-          Map span = [
-              '@timestamp':doc['@timestamp'].value
-            ];
-            state.docs.add(span)
-        reduce_script: |-
-          def all_docs = [];
-            for (s in states) {
-              for (span in s) {
-                all_docs.add(span);
-              }
-            }
-            all_docs.sort((HashMap o1, HashMap o2)->o1['@timestamp'].toEpochMilli().compareTo(o2['@timestamp'].toEpochMilli()));
-            def size = all_docs.size();
-            def min_time = all_docs[0]['@timestamp'];
-            def max_time = all_docs[size-1]['@timestamp'];
-            def duration = (max_time.toEpochMilli() - min_time.toEpochMilli())/1000;
-            def ret = new HashMap();
-            ret['start_time'] = min_time;
-            ret['complete_time'] = max_time;
-            ret['duration'] = duration;
-            return ret;
+    session.start_time:
+      min:
+        field: '@timestamp'
+    session.complete_time:
+      max:
+        field: '@timestamp'
+    session.duration:
+      bucket_script:
+        buckets_path:
+          start_time: session.start_time.value
+          complete_time: session.complete_time.value
+        script: Math.round((params.complete_time - params.start_time)/1000)
   group_by:
     'host.name':
       terms:
