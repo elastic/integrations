@@ -131,45 +131,84 @@ An example event for `collector` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-21T13:53:53.737Z",
+    "@timestamp": "2024-08-20T08:38:11.185Z",
+    "agent": {
+        "ephemeral_id": "b9fad797-a22c-47be-b2f4-44c0a89b6c25",
+        "id": "9822f27e-ae7c-4cee-98af-094356f8bf91",
+        "name": "elastic-agent-35087",
+        "type": "metricbeat",
+        "version": "8.14.0"
+    },
     "data_stream": {
         "dataset": "prometheus.collector",
-        "namespace": "default",
+        "namespace": "52976",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
-        "snapshot": true,
-        "version": "8.4.0"
+        "id": "9822f27e-ae7c-4cee-98af-094356f8bf91",
+        "snapshot": false,
+        "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "prometheus.collector",
-        "duration": 10509824,
-        "ingested": "2022-09-21T13:53:54Z",
+        "duration": 1958134070,
+        "ingested": "2024-08-20T08:38:13Z",
         "module": "prometheus"
     },
-    "host": {},
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-35087",
+        "id": "345c85cf1fe945e2b19719b370c09a48",
+        "ip": [
+            "192.168.241.8",
+            "192.168.242.2"
+        ],
+        "mac": [
+            "02-42-C0-A8-F1-08",
+            "02-42-C0-A8-F2-02"
+        ],
+        "name": "elastic-agent-35087",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-189-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
     "metricset": {
         "name": "collector",
         "period": 10000
     },
     "prometheus": {
         "labels": {
-            "instance": "prometheus-server-server:80",
-            "job": "prometheus",
-            "quantile": "0.5",
-            "scrape_job": "kubernetes-services"
+            "dialer_name": "alertmanager",
+            "instance": "svc-prometheus:9090",
+            "job": "prometheus"
         },
-        "prometheus_target_sync_length_seconds": {
-            "value": 0.000103602
+        "labels_fingerprint": "jn10I8M3W8CSQq1v0nbhVyegvgQ=",
+        "net_conntrack_dialer_conn_attempted_total": {
+            "counter": 0,
+            "rate": 0
+        },
+        "net_conntrack_dialer_conn_closed_total": {
+            "counter": 0,
+            "rate": 0
+        },
+        "net_conntrack_dialer_conn_established_total": {
+            "counter": 0,
+            "rate": 0
         }
     },
     "service": {
-        "address": "http://prometheus-server-server:80/metrics",
+        "address": "http://svc-prometheus:9090/metrics",
         "type": "prometheus"
     }
 }
@@ -534,47 +573,73 @@ An example event for `query` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-21T14:06:49.000Z",
+    "@timestamp": "2024-08-20T08:39:07.000Z",
     "agent": {
-        "ephemeral_id": "63ab98c3-c4ae-4a30-84f9-9a2d7f459728",
-        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
-        "name": "kind-control-plane",
+        "ephemeral_id": "cc18c40d-dcb8-4192-aede-e988d68c376c",
+        "id": "842b000b-c1bd-4608-bbd8-2a1849afc2f5",
+        "name": "elastic-agent-31805",
         "type": "metricbeat",
-        "version": "8.4.0"
+        "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "prometheus.query",
-        "namespace": "default",
+        "namespace": "54564",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
-        "snapshot": true,
-        "version": "8.4.0"
+        "id": "842b000b-c1bd-4608-bbd8-2a1849afc2f5",
+        "snapshot": false,
+        "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "prometheus.query",
-        "duration": 1153570,
-        "ingested": "2022-09-21T14:06:50Z",
+        "duration": 6078736,
+        "ingested": "2024-08-20T08:39:10Z",
         "module": "prometheus"
     },
-    "host": {},
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-31805",
+        "id": "345c85cf1fe945e2b19719b370c09a48",
+        "ip": [
+            "192.168.241.8",
+            "192.168.242.2"
+        ],
+        "mac": [
+            "02-42-C0-A8-F1-08",
+            "02-42-C0-A8-F2-02"
+        ],
+        "name": "elastic-agent-31805",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-189-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
     "metricset": {
         "name": "query",
         "period": 10000
     },
     "prometheus": {
-        "labels": {},
+        "labels": {
+            "query_name": "scalar"
+        },
+        "labels_fingerprint": "uE8iX47vrW1H38mLYMD73p8/CcA=",
         "query": {
-            "instant_vector": 0.7838951248394681
+            "scalar": 100
         }
     },
     "service": {
-        "address": "http://prometheus-server-server:80",
+        "address": "http://svc-prometheus:9090",
         "type": "prometheus"
     }
 }
