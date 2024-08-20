@@ -5,12 +5,10 @@ processors:
   - rename:
       field: tychon.edition
       target_field: tychon.package.edition
-      ignore_failure: true
       ignore_missing: true
   - rename:
       field: tychon.comment
       target_field: tychon.package.description
-      ignore_failure: true
       ignore_missing: true
   - script:
       description: Covnert tychon.package.installed from boolean to date
@@ -29,8 +27,7 @@ processors:
   - set:
       field: tychon.package.size
       value: 0
-      ignore_failure: true
-      if: ctx.tychon.package.size == ''
+      if: ctx.tychon?.package?.size == ''
   - convert:
       field: tychon.package.size
       type: long
@@ -61,8 +58,7 @@ processors:
       if: ctx.tychon.package.type == ''
   - script:
       source: ctx.tychon.package.cpe = "cpe:/a:" + ctx.tychon.package.name + ":" + ctx.tychon.package.version
-      if: ctx.tychon.package.cpe == ''
-      ignore_failure: true
+      if: ctx.tychon?.package?.cpe == '' && ctx.tychon?.package?.name != null && ctx.tychon?.package?.version != null
 
   # ECS fields
 
