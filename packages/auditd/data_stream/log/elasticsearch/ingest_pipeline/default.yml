@@ -1955,6 +1955,9 @@ processors:
         def acts = params.types.get(base.record_type);
         if (acts == null && base.syscall != null) {
           acts = params.syscalls.get(base?.syscall);
+          if (acts == null && base.SYSCALL != null) {
+            acts = params.syscalls.get(base?.SYSCALL);
+          }
           if (acts == null) acts = params.syscalls.get('*');
         }
         if (acts == null) return;
@@ -2265,10 +2268,10 @@ processors:
         - append:
             field: error.message
             value: "failed extracting process arguments: {{{ _ingest.on_failure_message }}}"
-  - rename:
-      ignore_failure: true
-      field: auditd.log.record_type
-      target_field: event.action
+  - set:
+      field: event.action
+      copy_from: auditd.log.record_type
+      override: false
   - lowercase:
       ignore_failure: true
       field: event.action
