@@ -3,7 +3,61 @@
         "description": "Overview of NATS server status",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "nats.connection",
+                                "nats.connections",
+                                "nats.routes",
+                                "nats.stats",
+                                "nats.subscriptions"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nats.connection"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nats.connections"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nats.routes"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nats.stats"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nats.subscriptions"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -646,6 +700,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -755,7 +810,7 @@
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": ""
+                                "query": "data_stream.dataset : nats.stats"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3171,10 +3226,15 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2023-10-03T06:56:21.800Z",
+    "created_at": "2024-05-06T10:48:12.566Z",
     "id": "nats-Metrics-Nats-Dashboard",
     "managed": false,
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "metrics-*",
             "name": "6:indexpattern-datasource-layer-2de88d64-8950-46e3-a1db-4a13279f8c82",

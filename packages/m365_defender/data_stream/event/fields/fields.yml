@@ -94,6 +94,7 @@
       description: Threshold assigned to email from bulk mailers, a high bulk complaint level (BCL) means the email is more likely to generate complaints, and thus more likely to be spam.
     - name: category
       type: keyword
+      description: The Advanced Hunting table name with 'AdvancedHunting-' prefix.
     - name: certificate
       type: group
       fields:
@@ -181,6 +182,30 @@
         - name: type
           type: keyword
           description: Type of device based on purpose and functionality, such as network device, workstation, server, mobile, gaming console, or printer.
+    - name: dns
+      type: group
+      fields:
+        - name: qclass_name
+          type: keyword
+          description: The DNS class of records being queried.
+        - name: query
+          type: keyword
+          description: The DNS query.
+        - name: qtype_name
+          type: keyword
+          description: The type of DNS record being queried.
+        - name: rcode_name
+          type: keyword
+          description: The DNS response code.
+        - name: answers
+          type: keyword
+          description: The answers returned by the server from DNS query.
+        - name: header_flags
+          type: keyword
+          description: Array of 2 letter DNS header flags.
+        - name: ttls
+          type: double
+          description: The time interval in seconds that this resource record may be cached before it should be discarded.
     - name: dns_addresses
       type: keyword
       description: DNS server addresses in JSON array format.
@@ -800,6 +825,7 @@
           description: Verdict from the email filtering stack on whether the email contains malware, phishing, or other threats.
     - name: time
       type: date
+      description: The time Microsoft Defender received the event.
     - name: timestamp
       type: date
       description: Date and time when the event was recorded.
@@ -843,3 +869,41 @@
       description: The application from which the user clicked on the link, with the values being Email, Office and Teams.
 - name: url.user_info
   type: keyword
+- name: dll.Ext.size
+  type: long
+  description: Size of the dll executable.
+- name: process.Ext.token.integrity_level_name
+  type: keyword
+  description: Integrity level that determine the levels of protection or access for a principal used by Mandatory Integrity Control (MIC).
+- name: process.Ext.api.name
+  type: keyword
+- name: process.Ext.api.parameters.size
+  type: long
+  description: The size of parameter values passed to the API call.
+- name: process.Ext.api.parameters.protection
+  type: keyword
+  description: The memory protection for the region of pages. Corresponds to `MEMORY_BASIC_INFORMATION.Protect`.
+- name: process.Ext.api.parameters.address
+  type: long
+  description: The target memory address.
+- name: process.Ext.api.parameters.desired_access_numeric
+  type: long
+  description: This parameter indicates the numeric value of the `DesiredAccess` field passed to `OpenProcess` or `OpenThread`.
+- name: Target.process.name
+  type: keyword
+  description: Process name. Sometimes called program name or similar.
+  multi_fields:
+    - name: text
+      type: text
+- name: Target.process.command_line
+  type: wildcard
+  description: Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information.
+  multi_fields:
+    - name: text
+      type: text
+- name: Target.process.executable
+  type: keyword
+  description: Absolute path to the process executable.
+  multi_fields:
+    - name: text
+      type: text

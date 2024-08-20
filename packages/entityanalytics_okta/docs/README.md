@@ -280,6 +280,7 @@ An example event for `user` looks as following:
 | entityanalytics_okta.user.created | timestamp when user was created. | date |
 | entityanalytics_okta.user.credentials.provider.name |  | keyword |
 | entityanalytics_okta.user.credentials.provider.type |  | keyword |
+| entityanalytics_okta.user.credentials.recovery_question.is_set |  | boolean |
 | entityanalytics_okta.user.id | unique key for user. | keyword |
 | entityanalytics_okta.user.last_login | timestamp of last login. | date |
 | entityanalytics_okta.user.last_updated | timestamp when user was last updated. | date |
@@ -324,7 +325,6 @@ An example event for `user` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.identity_source |  | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | user.account.activated_date |  | date |
 | user.account.change_date |  | date |
 | user.account.create_date |  | date |

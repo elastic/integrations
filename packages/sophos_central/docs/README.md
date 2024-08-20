@@ -33,7 +33,7 @@ The Elastic Integration for Sophos Central requires the following Authentication
   - Grant Type
   - Scope
   - Tenant ID
-  - Token URL
+  - Token URL (without the URL path)
 
 **NOTE**: Sophos central supports logs only upto last 24 hrs.
 
@@ -353,7 +353,6 @@ An example event for `alert` looks as following:
 | sophos_central.alert.threat.value | Name of the threat (as identified by threat_id). | keyword |
 | sophos_central.alert.type | Event type. | keyword |
 | sophos_central.alert.when | The date at which the alert was created. | date |
-| tags | User defined tags. | keyword |
 
 
 ### Events
@@ -570,4 +569,3 @@ An example event for `event` looks as following:
 | sophos_central.event.type | The type of this record. | keyword |
 | sophos_central.event.user_id | The identifier of the user for which record is created. | keyword |
 | sophos_central.event.when | The date at which the event was created. | date |
-| tags | User defined tags. | keyword |

@@ -21,7 +21,7 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER}?|%{SYSLOGTIMESTAMP} %{SYSLOGHOST:host.hostname} %{INT}) %{TIMESTAMP_ISO8601:_tmp.timestamp} (%{IP:observer.ip}|%{HOSTNAME:observer.hostname}) PulseSecure: - - - %{DATE2} - %{SYSLOGHOST:observer.name} - \[%{IPORHOST:client.address}\] (%{DATA}::)?(%{HOSTNAME:user.domain}\\)?%{USERNAME:user.name}?(@%{USERNAME:user.domain})?\(%{DATA:pulse_secure.realm}?\)\[%{DATA:pulse_secure.role}\](?::?\[%{DATA:pulse_secure.session.id_short}\])? - %{GREEDYDATA:message}'
+        - '^(<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER}?|%{SYSLOGTIMESTAMP} %{SYSLOGHOST:host.hostname} %{INT}) %{TIMESTAMP_ISO8601:_tmp.timestamp} (%{IP:observer.ip}|%{HOSTNAME:observer.hostname}) PulseSecure: - - - %{DATE2} - %{SYSLOGHOST:observer.name} - \[%{IPORHOST:client.address}\] (%{DATA}::)?(%{HOSTNAME:user.domain}(?:\\){1,2})?%{USERNAME:user.name}?(@%{USERNAME:user.domain})?\(%{DATA:pulse_secure.realm}?\)\[%{DATA:pulse_secure.role}\](?::?\[%{DATA:pulse_secure.session.id_short}\])? - %{GREEDYDATA:message}'
       pattern_definitions:
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         DATE2: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
@@ -51,7 +51,7 @@ processors:
       value: event
   - set:
       field: event.category
-      value: network
+      value: [network]
   - grok:
       field: message
       patterns:
@@ -83,14 +83,12 @@ processors:
       field: event.type
       value:
         - connection
-        - session
         - start
       if: ctx._tmp?.type != null && ctx._tmp?.type == "started"
   - append:
       field: event.type
       value:
         - connection
-        - session
         - end
       if: ctx._tmp?.type != null && ctx._tmp?.type == "ended"
   # IP Geolocation Lookup

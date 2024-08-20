@@ -16,8 +16,7 @@ streams:
         type: text
         title: Interval
         description: >-
-          Interval between two REST API calls. User can choose interval as per their plan mentioned in
-          [Qualys API Limits](https://www.qualys.com/docs/qualys-api-limits.pdf). Supported units for this parameter are h/m/s.
+          Interval between two REST API calls. User can choose interval as per their plan mentioned in [Qualys API Limits](https://www.qualys.com/docs/qualys-api-limits.pdf). Supported units for this parameter are h/m/s.
         default: 4h
         multi: false
         required: true
@@ -26,8 +25,7 @@ streams:
         type: integer
         title: Batch Size
         description: >-
-          Batch size for the response of the Qualys Server API. This parameter specifies the truncation limit for the response.
-          Specify 0 for no truncation limit.
+          Batch size for the response of the Qualys Server API. This parameter specifies the truncation limit for the response. Specify 0 for no truncation limit.
         default: 1000
         multi: false
         required: true
@@ -36,9 +34,7 @@ streams:
         type: text
         title: HTTP Client Timeout
         description: >-
-          Duration before declaring that the HTTP client connection has timed out. Give a timeout of more than 1 minute when
-          retrieving data which is more than 15 days old. Supported time units are ns, us, ms, s, m, h. Requests may take
-          significant time, so short timeouts are not recommended.
+          Duration before declaring that the HTTP client connection has timed out. Give a timeout of more than 1 minute when retrieving data which is more than 15 days old. Supported time units are ns, us, ms, s, m, h. Requests may take significant time, so short timeouts are not recommended.
         multi: false
         required: true
         show_user: false
@@ -52,6 +48,23 @@ streams:
         required: false
         show_user: true
         default: ""
+      - name: cloud_data
+        title: Cloud Metadata Source
+        description: What source to use to populate `cloud.*` fields.
+        type: select
+        multi: false
+        required: true
+        show_user: false
+        options:
+          - text: Elastic Only
+            value: elastic_cloud_data
+          - text: Provider Only
+            value: provider_cloud_data
+          - text: Elastic and Provider
+            value: both
+          - text: None
+            value: ''
+        default: both
       - name: tags
         type: text
         title: Tags
@@ -66,6 +79,14 @@ streams:
         show_user: false
         title: Preserve duplicate custom fields
         description: Preserve qualys_vmdr.asset_host_detection fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_original_event
+        required: true
+        show_user: false
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
         type: bool
         multi: false
         default: false

@@ -243,7 +243,12 @@ processors:
       if: ctx.fortinet?.firewall?.type == 'event'
   - pipeline:
       name: '{{ IngestPipeline "login" }}'
-      if: "ctx.message instanceof String && ctx.message.toLowerCase().contains('login')"
+      if: >-
+        if (ctx.message instanceof String) {
+          String normalizedMessage = ctx.message.toLowerCase();
+          return (normalizedMessage.contains('login') || normalizedMessage.contains('logged in'));
+        }
+        return false;
   - pipeline:
       name: '{{ IngestPipeline "traffic" }}'
       if: ctx.fortinet?.firewall?.type == 'traffic'
@@ -624,6 +629,24 @@ processors:
             }
           }
         }
+  - script:
+      description: Drops null/empty values recursively
+      tag: drop_empty_fields
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))

@@ -150,24 +150,24 @@ An example event for `saml` looks as following:
 {
     "@timestamp": "2021-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "94f52f68-1f24-47ca-8fa8-c3aa5a8c1840",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "21bc9c22-c07c-4d9e-be7d-d847757ace52",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.saml",
-        "namespace": "ep",
+        "namespace": "42924",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "login_failure",
@@ -176,10 +176,10 @@ An example event for `saml` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2023-04-06T05:15:31.203Z",
+        "created": "2024-08-01T22:01:50.429Z",
         "dataset": "google_workspace.saml",
         "id": "1",
-        "ingested": "2023-04-06T05:15:35Z",
+        "ingested": "2024-08-01T22:02:02Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"login_failure\",\"parameters\":[{\"name\":\"application_name\",\"value\":\"app\"},{\"name\":\"failure_type\",\"value\":\"failure_app_not_configured_for_user\"},{\"name\":\"initiated_by\",\"value\":\"idp\"},{\"name\":\"orgunit_path\",\"value\":\"ounit\"},{\"name\":\"saml_second_level_status_code\",\"value\":\"SUCCESS_URI\"},{\"name\":\"saml_status_code\",\"value\":\"SUCCESS_URI\"}],\"type\":\"login\"},\"id\":{\"applicationName\":\"saml\",\"customerId\":\"1\",\"time\":\"2021-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "outcome": "failure",
@@ -249,7 +249,6 @@ An example event for `saml` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -275,7 +274,6 @@ An example event for `saml` looks as following:
 | google_workspace.saml.status_code | SAML status code. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### User Accounts
@@ -288,24 +286,24 @@ An example event for `user_accounts` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "6b64a6b8-ae63-4d23-878e-158d4a808a63",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "65179230-7468-4b71-9b2b-a2cd4f778866",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.user_accounts",
-        "namespace": "ep",
+        "namespace": "10103",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "2sv_disable",
@@ -313,10 +311,10 @@ An example event for `user_accounts` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-04-06T05:17:15.116Z",
+        "created": "2024-08-01T22:03:58.977Z",
         "dataset": "google_workspace.user_accounts",
         "id": "1",
-        "ingested": "2023-04-06T05:17:19Z",
+        "ingested": "2024-08-01T22:04:10Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"2sv_disable\",\"type\":\"2sv_change\"},\"id\":{\"applicationName\":\"user_accounts\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "user_accounts",
@@ -378,7 +376,6 @@ An example event for `user_accounts` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -399,7 +396,6 @@ An example event for `user_accounts` looks as following:
 | google_workspace.user_accounts.email_forwarding_destination_address | Out of domain email the actor has forwarded to. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Login Accounts
@@ -412,24 +408,24 @@ An example event for `login` looks as following:
 {
     "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "f2e19575-53b7-4564-ad62-e91a350870bf",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "8d5b6a07-b1e1-4397-982f-9223504ae534",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.login",
-        "namespace": "ep",
+        "namespace": "61171",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "account_disabled_password_leak",
@@ -437,10 +433,10 @@ An example event for `login` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-04-06T05:13:38.847Z",
+        "created": "2024-08-01T21:59:36.067Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2023-04-06T05:13:42Z",
+        "ingested": "2024-08-01T21:59:48Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"account_disabled_password_leak\",\"parameters\":[{\"name\":\"affected_email_address\",\"value\":\"foo@elastic.co\"}],\"type\":\"account_warning\"},\"id\":{\"applicationName\":\"login\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "login",
@@ -510,7 +506,6 @@ An example event for `login` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -538,7 +533,6 @@ An example event for `login` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Rules
@@ -551,32 +545,32 @@ An example event for `rules` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "76380d39-8099-428b-b019-cf45b160978a",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "5c6a871e-fa71-4f56-b30d-46922ca4e836",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.rules",
-        "namespace": "ep",
+        "namespace": "88921",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "rule_match",
         "agent_id_status": "verified",
-        "created": "2023-04-06T05:14:36.077Z",
+        "created": "2024-08-01T22:00:43.194Z",
         "dataset": "google_workspace.rules",
         "id": "1",
-        "ingested": "2023-04-06T05:14:40Z",
+        "ingested": "2024-08-01T22:00:55Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"rule_match\",\"parameters\":[{\"boolValue\":\"true\",\"name\":\"has_alert\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"intValue\":\"1234\",\"name\":\"resource_recipients_omitted_count\"},{\"multiValue\":[\"managers\"],\"name\":\"rule_name\"},{\"multiIntValue\":[\"12\"],\"name\":\"rule_id\"}],\"type\":\"rule_match_type\"},\"id\":{\"applicationName\":\"rules\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "rules"
@@ -681,7 +675,6 @@ An example event for `rules` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -745,7 +738,6 @@ An example event for `rules` looks as following:
 | google_workspace.rules.update_time_usec | Update time (microseconds since epoch) indicating the version of rule which is used. | date |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Admin
@@ -758,24 +750,24 @@ An example event for `admin` looks as following:
 {
     "@timestamp": "2022-04-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "416ea592-bbd6-4286-8950-b30981d4e0dd",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "e64e710c-e02b-4997-bb7e-83b936dd6aa5",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.admin",
-        "namespace": "ep",
+        "namespace": "62273",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "CHANGE_APPLICATION_SETTING",
@@ -784,10 +776,10 @@ An example event for `admin` looks as following:
             "iam",
             "configuration"
         ],
-        "created": "2023-04-06T05:06:41.510Z",
+        "created": "2024-08-01T21:51:15.529Z",
         "dataset": "google_workspace.admin",
         "id": "1",
-        "ingested": "2023-04-06T05:06:45Z",
+        "ingested": "2024-08-01T21:51:27Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"CHANGE_APPLICATION_SETTING\",\"parameters\":[{\"name\":\"APPLICATION_EDITION\",\"value\":\"basic\"},{\"name\":\"APPLICATION_NAME\",\"value\":\"drive\"},{\"name\":\"GROUP_EMAIL\",\"value\":\"group@example.com\"},{\"name\":\"NEW_VALUE\",\"value\":\"new\"},{\"name\":\"OLD_VALUE\",\"value\":\"old\"},{\"name\":\"ORG_UNIT_NAME\",\"value\":\"org\"},{\"name\":\"SETTING_NAME\",\"value\":\"setting\"}],\"type\":\"APPLICATION_SETTINGS\"},\"id\":{\"applicationName\":\"admin\",\"customerId\":\"1\",\"time\":\"2022-04-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "admin",
@@ -875,7 +867,6 @@ An example event for `admin` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -977,7 +968,6 @@ An example event for `admin` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Drive
@@ -990,24 +980,24 @@ An example event for `drive` looks as following:
 {
     "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "35ba02b7-1bc6-4100-967c-ea2fc9ea67d0",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "afd0c297-d853-427a-96bc-20af38e5b145",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.drive",
-        "namespace": "ep",
+        "namespace": "99832",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "add_to_folder",
@@ -1015,10 +1005,10 @@ An example event for `drive` looks as following:
         "category": [
             "file"
         ],
-        "created": "2023-04-06T05:10:10.985Z",
+        "created": "2024-08-01T21:55:29.295Z",
         "dataset": "google_workspace.drive",
         "id": "1",
-        "ingested": "2023-04-06T05:10:15Z",
+        "ingested": "2024-08-01T21:55:41Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"add_to_folder\",\"parameters\":[{\"boolValue\":false,\"name\":\"billable\"},{\"name\":\"destination_folder_id\",\"value\":\"1234\"},{\"name\":\"destination_folder_title\",\"value\":\"folder title\"},{\"name\":\"doc_id\",\"value\":\"1234\"},{\"name\":\"doc_title\",\"value\":\"document title\"},{\"name\":\"doc_type\",\"value\":\"document\"},{\"name\":\"originating_app_id\",\"value\":\"1234\"},{\"name\":\"owner\",\"value\":\"owner@example.com\"},{\"boolValue\":false,\"name\":\"owner_is_shared_drive\"},{\"boolValue\":true,\"name\":\"primary_event\"},{\"name\":\"visibility\",\"value\":\"people_with_link\"}],\"type\":\"access\"},\"id\":{\"applicationName\":\"drive\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "drive",
@@ -1101,7 +1091,6 @@ An example event for `drive` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1116,6 +1105,7 @@ An example event for `drive` looks as following:
 | event.module | Event module | constant_keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.drive.actor_is_collaborator_account | Whether the actor is a collaborator account. | boolean |
 | google_workspace.drive.added_role | Added membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.billable | Whether this activity is billable. | boolean |
 | google_workspace.drive.destination_folder_id |  | keyword |
@@ -1124,11 +1114,13 @@ An example event for `drive` looks as following:
 | google_workspace.drive.file.owner.email |  | keyword |
 | google_workspace.drive.file.owner.is_shared_drive | Boolean flag denoting whether owner is a shared drive. | boolean |
 | google_workspace.drive.file.type | Document Drive type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
+| google_workspace.drive.is_encrypted | Whether the file is client-side encrypted. | boolean |
 | google_workspace.drive.membership_change_type | Type of change in Team Drive membership of a user/group. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.new_value | When a setting or property of the file changes, the new value for it will appear here. | keyword |
 | google_workspace.drive.old_value | When a setting or property of the file changes, the old value for it will appear here. | keyword |
 | google_workspace.drive.old_visibility | When visibility changes, this holds the old value. | keyword |
 | google_workspace.drive.originating_app_id | The Google Cloud Project ID of the application that performed the action. | keyword |
+| google_workspace.drive.owner_is_team_drive | Whether the owner is a Team Drive. | boolean |
 | google_workspace.drive.primary_event | Whether this is a primary event. A single user action in Drive may generate several events. | boolean |
 | google_workspace.drive.removed_role | Removed membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.shared_drive_id | The unique identifier of the Team Drive. Only populated for for events relating to a Team Drive or item contained inside a Team Drive. | keyword |
@@ -1138,6 +1130,7 @@ An example event for `drive` looks as following:
 | google_workspace.drive.source_folder_title |  | keyword |
 | google_workspace.drive.target | Target user or group. | keyword |
 | google_workspace.drive.target_domain | The domain for which the acccess scope was changed. This can also be the alias all to indicate the access scope was changed for all domains that have visibility for this document. | keyword |
+| google_workspace.drive.target_user | The email address of the user or group whose access permissions were changed, or the name of the domain for which access permissions were changed. | keyword |
 | google_workspace.drive.visibility | Visibility of target file. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
 | google_workspace.drive.visibility_change | When visibility changes, this holds the new overall visibility of the file. | keyword |
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
@@ -1145,7 +1138,6 @@ An example event for `drive` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Groups
@@ -1158,24 +1150,24 @@ An example event for `groups` looks as following:
 {
     "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "3682fa70-8865-4dad-a9fa-d2f1fc4ddd29",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "786aaf54-461f-4190-adaf-05ab3174ad01",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.groups",
-        "namespace": "ep",
+        "namespace": "35359",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "change_acl_permission",
@@ -1183,10 +1175,10 @@ An example event for `groups` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-04-06T05:12:41.726Z",
+        "created": "2024-08-01T21:58:26.973Z",
         "dataset": "google_workspace.groups",
         "id": "1",
-        "ingested": "2023-04-06T05:12:45Z",
+        "ingested": "2024-08-01T21:58:38Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"change_acl_permission\",\"parameters\":[{\"name\":\"acl_permission\",\"value\":\"can_add_members\"},{\"name\":\"group_email\",\"value\":\"group@example.com\"},{\"multiValue\":[\"managers\",\"members\"],\"name\":\"new_value_repeated\"},{\"multiValue\":[\"managers\"],\"name\":\"old_value_repeated\"}],\"type\":\"acl_change\"},\"id\":{\"applicationName\":\"groups\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "groups",
@@ -1269,7 +1261,6 @@ An example event for `groups` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1300,7 +1291,6 @@ An example event for `groups` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Alert
@@ -1313,24 +1303,24 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-07-01T10:49:29.436Z",
     "agent": {
-        "ephemeral_id": "c184a610-116e-4d73-8068-204b91173c48",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "245194a8-7787-44f7-ac57-201f8c49a9a0",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.alert",
-        "namespace": "ep",
+        "namespace": "62301",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "email": {
         "attachments": {
@@ -1369,11 +1359,11 @@ An example event for `alert` looks as following:
             "threat",
             "malware"
         ],
-        "created": "2023-04-06T05:07:37.780Z",
+        "created": "2024-08-01T21:52:26.588Z",
         "dataset": "google_workspace.alert",
         "end": "2022-07-01T10:47:04.530Z",
         "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7",
-        "ingested": "2023-04-06T05:07:41Z",
+        "ingested": "2024-08-01T21:52:38Z",
         "kind": "alert",
         "original": "{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"createTime\":\"2022-07-01T10:49:29.436394Z\",\"customerId\":\"02umwv6u\",\"data\":{\"@type\":\"type.googleapis.com/google.apps.alertcenter.type.MailPhishing\",\"domainId\":{\"customerPrimaryDomain\":\"example.com\"},\"isInternal\":true,\"maliciousEntity\":{\"displayName\":\"string\",\"entity\":{\"displayName\":\"example\",\"emailAddress\":\"example@example.com\"},\"fromHeader\":\"header@example.com\"},\"messages\":[{\"attachmentsSha256Hash\":[\"50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c\",\"228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2\"],\"date\":\"2022-07-01T10:38:13.194711Z\",\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings from sales \",\"messageId\":\"decedih843@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"Sales\"},{\"attachmentsSha256Hash\":[\"5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56\"],\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings \",\"messageId\":\"decedih@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"RE: Example salesorderspca JSON request\"}],\"systemActionType\":\"NO_OPERATION\"},\"deleted\":false,\"endTime\":\"2022-07-01T10:47:04.530834Z\",\"etag\":\"wF2Ix2DWDv8=\",\"metadata\":{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"assignee\":\"example@example.com\",\"customerId\":\"02umwv6u\",\"etag\":\"wF2Ix2DWDv8=\",\"severity\":\"HIGH\",\"status\":\"NOT_STARTED\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"},\"securityInvestigationToolLink\":\"string\",\"source\":\"Gmail phishing\",\"startTime\":\"2022-07-01T10:38:13.194711Z\",\"type\":\"User reported phishing\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"}",
         "start": "2022-07-01T10:38:13.194Z",
@@ -1492,7 +1482,6 @@ An example event for `alert` looks as following:
         "name": "example"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1617,7 +1606,6 @@ An example event for `alert` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 
 
 ### Device
@@ -1630,32 +1618,32 @@ An example event for `device` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "a5e4244f-eef5-477a-a2e3-316e6db7b805",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "9875ab07-088d-4ff3-8cfe-daa3a497cf78",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.device",
-        "namespace": "ep",
+        "namespace": "89096",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "APPLICATION_EVENT",
         "agent_id_status": "verified",
-        "created": "2023-04-06T05:09:25.555Z",
+        "created": "2024-08-01T21:54:32.984Z",
         "dataset": "google_workspace.device",
         "id": "1",
-        "ingested": "2023-04-06T05:09:29Z",
+        "ingested": "2024-08-01T21:54:44Z",
         "kind": [
             "event"
         ],
@@ -1780,6 +1768,18 @@ An example event for `device` looks as following:
         ]
     },
     "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
         "ip": "67.43.156.13",
         "user": {
             "domain": "bar.com",
@@ -1804,7 +1804,6 @@ An example event for `device` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1877,7 +1876,6 @@ An example event for `device` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Group Enterprise
@@ -1890,32 +1888,32 @@ An example event for `group_enterprise` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "21b5c2fc-c221-4241-ac4e-d15195bcd5a7",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "9405bd92-9ad6-4271-9f8f-10d1dc3bae86",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.group_enterprise",
-        "namespace": "ep",
+        "namespace": "26916",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "add_info_setting",
         "agent_id_status": "verified",
-        "created": "2023-04-06T05:11:56.148Z",
+        "created": "2024-08-01T21:57:32.529Z",
         "dataset": "google_workspace.group_enterprise",
         "id": "1",
-        "ingested": "2023-04-06T05:12:00Z",
+        "ingested": "2024-08-01T21:57:44Z",
         "kind": [
             "event"
         ],
@@ -1993,6 +1991,18 @@ An example event for `group_enterprise` looks as following:
         ]
     },
     "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
         "ip": "67.43.156.13",
         "user": {
             "domain": "bar.com",
@@ -2014,7 +2024,6 @@ An example event for `group_enterprise` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2056,7 +2065,6 @@ An example event for `group_enterprise` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Token
@@ -2069,24 +2077,24 @@ An example event for `token` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "8ae7e918-f372-4ff6-9035-9b1c94166ca5",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "22e6154c-9c10-4cb9-b17b-41f429c22724",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.token",
-        "namespace": "ep",
+        "namespace": "16418",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "authorize",
@@ -2094,10 +2102,10 @@ An example event for `token` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-04-06T05:16:28.050Z",
+        "created": "2024-08-01T22:03:00.693Z",
         "dataset": "google_workspace.token",
         "id": "1",
-        "ingested": "2023-04-06T05:16:32Z",
+        "ingested": "2024-08-01T22:03:12Z",
         "kind": [
             "event"
         ],
@@ -2206,6 +2214,18 @@ An example event for `token` looks as following:
         ]
     },
     "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
         "ip": "67.43.156.13",
         "user": {
             "domain": "bar.com",
@@ -2227,7 +2247,6 @@ An example event for `token` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2264,7 +2283,6 @@ An example event for `token` looks as following:
 | google_workspace.token.scope.value | Scopes under which access was granted / revoked. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Access Transparency
@@ -2277,32 +2295,32 @@ An example event for `access_transparency` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "2fe6b5c7-2099-40a4-b604-3307a3659e18",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "e3f2296a-a4a2-4d03-9105-cee5b37c1408",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.access_transparency",
-        "namespace": "ep",
+        "namespace": "83912",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "APPLICATION_EVENT",
         "agent_id_status": "verified",
-        "created": "2023-04-06T05:05:54.066Z",
+        "created": "2024-08-01T21:50:19.274Z",
         "dataset": "google_workspace.access_transparency",
         "id": "1",
-        "ingested": "2023-04-06T05:05:58Z",
+        "ingested": "2024-08-01T21:50:31Z",
         "kind": [
             "event"
         ],
@@ -2374,6 +2392,18 @@ An example event for `access_transparency` looks as following:
         ]
     },
     "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
         "ip": "67.43.156.13",
         "user": {
             "domain": "bar.com",
@@ -2395,7 +2425,6 @@ An example event for `access_transparency` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2435,7 +2464,6 @@ An example event for `access_transparency` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Context Aware Access
@@ -2448,32 +2476,32 @@ An example event for `context_aware_access` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "71645243-c58a-4eed-b3ed-d42137115d43",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "6fde0a21-1448-4531-a5c9-42751772e3a7",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.context_aware_access",
-        "namespace": "ep",
+        "namespace": "14973",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "APPLICATION_EVENT",
         "agent_id_status": "verified",
-        "created": "2023-04-06T05:08:37.473Z",
+        "created": "2024-08-01T21:53:36.823Z",
         "dataset": "google_workspace.context_aware_access",
         "id": "1",
-        "ingested": "2023-04-06T05:08:41Z",
+        "ingested": "2024-08-01T21:53:48Z",
         "kind": [
             "event"
         ],
@@ -2539,6 +2567,18 @@ An example event for `context_aware_access` looks as following:
         ]
     },
     "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
         "ip": "67.43.156.13",
         "user": {
             "domain": "bar.com",
@@ -2560,7 +2600,6 @@ An example event for `context_aware_access` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2595,7 +2634,6 @@ An example event for `context_aware_access` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### GCP
@@ -2608,32 +2646,32 @@ An example event for `gcp` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "6a14d2e3-52cf-4cc4-af8d-ec081ca76a46",
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "ephemeral_id": "73bd4e11-03bc-40dc-a0bc-1d9ca1aaa853",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "google_workspace.gcp",
-        "namespace": "ep",
+        "namespace": "65228",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "id": "c43b6bca-79fe-44a7-b837-da9db4bf7be4",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "IMPORT_SSH_PUBLIC_KEY",
         "agent_id_status": "verified",
-        "created": "2023-04-06T05:11:08.661Z",
+        "created": "2024-08-01T21:56:37.313Z",
         "dataset": "google_workspace.gcp",
         "id": "1",
-        "ingested": "2023-04-06T05:11:12Z",
+        "ingested": "2024-08-01T21:56:49Z",
         "kind": [
             "event"
         ],
@@ -2690,6 +2728,18 @@ An example event for `gcp` looks as following:
         ]
     },
     "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
         "ip": "67.43.156.13",
         "user": {
             "domain": "bar.com",
@@ -2711,7 +2761,6 @@ An example event for `gcp` looks as following:
         "name": "foo"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2741,5 +2790,4 @@ An example event for `gcp` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 

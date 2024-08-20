@@ -1,0 +1,185 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
+  want_more: false
+  since_data: true
+  since_modified_data: true
+  severity: {{severity}}
+redact:
+  fields:
+    - api_key
+program: |
+  state.?since_data.orValue(false) ?
+    request(
+      "GET",
+      state.url + "/breach/data/watchlist?severity=" + string(state.severity) + "&" + {
+        ?"since": (state.?want_more.orValue(false) ? optional.none()
+        :
+          (state.?cursor.last_published_date).as(date,
+            optional.of([(date.hasValue() ?
+              timestamp(state.cursor.last_published_date)
+            :
+              now - duration(state.initial_interval)
+          ).format("2006-01-02")])
+        )),
+        ?"cursor": state.?want_more.orValue(false) ? optional.of([state.pagination_token_since]) : optional.none(),
+      }.format_query()
+    ).with({
+    "Header":{
+        "x-api-key": [state.api_key],
+        "User-Agent": [useragent],
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(first_body, {
+        "events": has(first_body.results) ?
+        (
+          first_body.results.size() > 0 ?
+            first_body.results.map(e, {"message": e.encode_json()})
+          :
+            [{"message":"No hits for Breach Catalog using since filter"}]
+        )
+        :
+          [{"message": first_body.encode_json()}],
+        "cursor": {
+          ?"last_published_date": (has(first_body.results) && first_body.results.size() > 0) ?
+            optional.of(string(([?state.?cursor.last_published_date] + first_body.results.map(e, e.spycloud_publish_date)).map(t, timestamp(t)).max()))
+            :
+              state.?cursor.last_published_date,
+          ?"last_modified_date": state.?cursor.last_modified_date,
+        },
+        ?"pagination_token_since": first_body.?cursor,
+        "since_data": first_body.?cursor.orValue("") != "",
+        "want_more": first_body.?cursor.orValue("") != "" || state.?since_modified_data.orValue(false),
+        "api_key": state.api_key,
+        "since_modified_data": state.since_modified_data,
+        ?"pagination_token_since_modified": state.?pagination_token_since_modified,
+        "initial_interval": state.initial_interval,
+        "severity": state.severity,
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          }
+        },
+        "api_key": state.api_key,
+        "want_more": false,
+        "initial_interval": state.initial_interval,
+        "severity": state.severity,
+        "since_data": true,
+        "since_modified_data": true,
+      }
+    )
+  :
+    request(
+      "GET",
+      state.url + "/breach/data/watchlist?severity=" + string(state.severity) + "&" + {
+        ?"since_modification_date": (!state.?want_more.orValue(false) ? optional.none() :
+          state.?pagination_token_since_modified.orValue("") != "" ? optional.none() :
+            (state.?cursor.last_modified_date).as(date,
+              optional.of([(date.hasValue() ?
+                timestamp(state.cursor.last_modified_date)
+              :
+                now - duration(state.initial_interval)
+            ).format("2006-01-02")])
+          )
+        ),
+        ?"cursor": state.?want_more.orValue(false) && state.?pagination_token_since_modified.orValue("") != "" ? optional.of([state.pagination_token_since_modified]) : optional.none(),
+      }.format_query()
+    ).with({
+    "Header":{
+        "x-api-key": [state.api_key],
+        "User-Agent": [useragent],
+      }
+    }).do_request().as(response,
+    response.StatusCode == 200 ?
+      bytes(response.Body).decode_json().as(second_body, {
+        "events": has(second_body.results) ?
+        (
+          second_body.size() > 0 ?
+            second_body.results.map(e, {"message": e.encode_json()})
+          :
+            [{"message":"No hits for Breach Catalog using since_modification_date filter"}]
+        )
+        :
+          [{"message": second_body.encode_json()}],
+        "cursor": {
+          ?"last_modified_date": (has(second_body.results) && second_body.results.size() > 0) ?
+              optional.of(string(([?state.?cursor.last_modified_date] + second_body.results.map(e, e.record_modification_date)).map(t, timestamp(t)).max()))
+              :
+                state.?cursor.last_modified_date,
+          ?"last_published_date": state.?cursor.last_published_date,
+        },
+        ?"pagination_token_since_modified": second_body.?cursor,
+        "api_key": state.api_key,
+        "want_more": second_body.?cursor.orValue("") != "",
+        "since_data": !(second_body.?cursor.orValue("") != ""),
+        "initial_interval": state.initial_interval,
+        "severity": state.severity,
+        "since_modified_data": state.since_modified_data,
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(response.StatusCode),
+            "id": string(response.Status),
+            "message": "GET:"+(
+              size(response.Body) != 0 ?
+                string(response.Body)
+              :
+                string(response.Status) + ' (' + string(response.StatusCode) + ')'
+            ),
+          }
+        },
+        "api_key": state.api_key,
+        "want_more": false,
+        "initial_interval": state.initial_interval,
+        "severity": state.severity,
+        "since_data": true,
+        "since_modified_data": true,
+      }
+    )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#if hide_sensitive}}
+  - hide_sensitive
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

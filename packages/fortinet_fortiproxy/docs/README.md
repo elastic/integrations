@@ -27,16 +27,30 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-10T17:56:18.000Z",
+    "@timestamp": "2024-04-11T02:56:17.000Z",
     "agent": {
-        "ephemeral_id": "15730798-c03b-4248-952a-4dadafb95773",
-        "id": "45f20157-d3ee-46c2-889e-bbbffe859b95",
+        "ephemeral_id": "5bdc4789-78f8-49b0-807e-5a6c1e876d58",
+        "id": "5b7ea00b-603f-4de7-b7f7-240330ab7d50",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.2"
     },
     "client": {
-        "bytes": 247,
+        "bytes": 798,
+        "ip": "10.0.0.3",
+        "nat": {
+            "ip": "10.0.128.2",
+            "port": 53184
+        },
+        "port": 47886
+    },
+    "data_stream": {
+        "dataset": "fortinet_fortiproxy.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 125800732,
         "geo": {
             "continent_name": "Asia",
             "country_iso_code": "BT",
@@ -46,75 +60,47 @@ An example event for `log` looks as following:
                 "lon": 90.5
             }
         },
-        "ip": "10.10.10.10",
-        "port": 51452,
-        "user": {
-            "group": {
-                "name": "JUSTID-INTERNET"
-            }
-        }
-    },
-    "data_stream": {
-        "dataset": "fortinet_fortiproxy.log",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "destination": {
-        "bytes": 39,
-        "ip": "67.43.156.13",
-        "nat": {
-            "ip": "172.16.200.2",
-            "port": 8091
-        },
+        "ip": "67.43.156.10",
         "port": 443
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "45f20157-d3ee-46c2-889e-bbbffe859b95",
+        "id": "5b7ea00b-603f-4de7-b7f7-240330ab7d50",
         "snapshot": false,
         "version": "8.13.2"
     },
     "event": {
+        "action": "accept",
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "code": "0010000099",
+        "code": "0000000010",
         "dataset": "fortinet_fortiproxy.log",
-        "duration": 71000000000,
-        "ingested": "2024-05-09T17:17:56Z",
+        "duration": 8089000000000,
+        "ingested": "2024-06-07T14:49:44Z",
         "kind": "event",
-        "original": "<189>date=2024-04-10 time=19:56:18 devname=\"TEST-PXY01\" devid=\"FPXTESTPXY01\" eventtime=1712771778239212444 tz=\"+0200\" logid=\"0010000099\" type=\"traffic\" subtype=\"http-transaction\" level=\"notice\" vd=\"KA\" srcip=10.10.10.10 dstip=67.43.156.13 tranip=172.16.200.2 clientip=10.10.10.10 scheme=\"https\" srcport=51452 dstport=443 tranport=8091 hostname=\"qnl-play-fetch.s3.amazonaws.com\" url=\"https://qnl-play-fetch.s3.amazonaws.com/\" prefetch=0 policyid=1 sessionid=433606097 transid=33559030 reqlength=247 resplength=0 rcvdbyte=39 sentbyte=247 resptype=\"normal\" user=\"TESTUSER\" group=\"JUSTID-INTERNET\" httpmethod=\"CONNECT\" agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0\" statuscode=\"200\" rawdata=\"Time=71ms|Header-Host=qnl-play-fetch.s3.amazonaws.com:443\" reqtime=1712771778 resptime=1712771778 respfinishtime=1712771778 duration=71 appcat=\"unscanned\"",
+        "original": "<189>date=2024-04-10 time=19:56:17 devname=\"TEST-PXY01\" devid=\"FPXTESTPXY01\" eventtime=1712771778239212440 tz=\"-0700\" logid=\"0000000010\" type=\"traffic\" subtype=\"forward\" level=\"notice\" vd=\"root\" srcip=10.0.0.3 srcport=47886 srcintf=\"port2\" srcintfrole=\"lan\" dstcountry=\"United States\" srccountry=\"Reserved\" dstip=67.43.156.10 dstport=443 dstintf=\"port1\" dstintfrole=\"undefined\" sessionid=1781818019 service=\"HTTPS\" proxyapptype=\"web-proxy\" proto=6 action=\"accept\" policyid=1 policytype=\"proxy-policy\" poluuid=\"27b09930-033d-51ef-0c72-6c1221a8d893\" policyname=\"test-proxy\" trandisp=\"snat\" transip=10.0.128.2 transport=53184 clientip=10.0.0.3 duration=8089 wanin=125800732 rcvdbyte=125800732 wanout=632 lanin=798 sentbyte=798 lanout=125824455 appcat=\"unscanned\" utmaction=\"allow\"",
         "start": "2024-04-10T17:56:18.239Z",
-        "timezone": "+0200"
+        "timezone": "-0700"
     },
     "fortinet": {
         "proxy": {
-            "prefetch": 0,
-            "rawdata": "Time=71ms|Header-Host=qnl-play-fetch.s3.amazonaws.com:443",
-            "reqtime": 1712771778,
-            "respfinishtime": 1712771778,
-            "resptime": 1712771778,
-            "resptype": "normal",
-            "sessionid": "433606097",
-            "subtype": "http-transaction",
-            "transid": "33559030",
+            "dstintfrole": "undefined",
+            "lanin": 798,
+            "lanout": 125824455,
+            "proxyapptype": "web-proxy",
+            "sessionid": "1781818019",
+            "srcintfrole": "lan",
+            "subtype": "forward",
+            "trandisp": "snat",
             "type": "traffic",
-            "url": "https://qnl-play-fetch.s3.amazonaws.com/",
-            "user": "TESTUSER",
-            "vd": "KA"
-        }
-    },
-    "http": {
-        "request": {
-            "bytes": 247,
-            "method": "CONNECT"
-        },
-        "response": {
-            "bytes": 0,
-            "status_code": 200
+            "utmaction": "allow",
+            "vd": "root",
+            "wanin": 125800732,
+            "wanout": 632
         }
     },
     "input": {
@@ -122,12 +108,12 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "36",
-            "inode": "130",
+            "device_id": "35",
+            "inode": "80",
             "path": "/tmp/service_logs/fortinet-fortiproxy.log"
         },
         "level": "notice",
-        "offset": 4847,
+        "offset": 15140,
         "syslog": {
             "facility": {
                 "code": 23
@@ -139,10 +125,23 @@ An example event for `log` looks as following:
         }
     },
     "network": {
-        "bytes": 286
+        "bytes": 125801530,
+        "iana_number": "6",
+        "protocol": "https",
+        "transport": "tcp"
     },
     "observer": {
+        "egress": {
+            "interface": {
+                "name": "port1"
+            }
+        },
         "hostname": "TEST-PXY01",
+        "ingress": {
+            "interface": {
+                "name": "port2"
+            }
+        },
         "product": "FortiProxy",
         "serial_number": "FPXTESTPXY01",
         "type": "proxy",
@@ -150,19 +149,13 @@ An example event for `log` looks as following:
     },
     "rule": {
         "category": "unscanned",
-        "id": "1"
+        "id": "1",
+        "name": "test-proxy",
+        "ruleset": "proxy-policy",
+        "uuid": "27b09930-033d-51ef-0c72-6c1221a8d893"
     },
     "server": {
-        "bytes": 39,
-        "ip": "67.43.156.13",
-        "nat": {
-            "ip": "172.16.200.2",
-            "port": 8091
-        },
-        "port": 443
-    },
-    "source": {
-        "bytes": 247,
+        "bytes": 125800732,
         "geo": {
             "continent_name": "Asia",
             "country_iso_code": "BT",
@@ -172,36 +165,23 @@ An example event for `log` looks as following:
                 "lon": 90.5
             }
         },
-        "ip": "10.10.10.10",
-        "port": 51452,
-        "user": {
-            "group": {
-                "name": "JUSTID-INTERNET"
-            }
-        }
+        "ip": "67.43.156.10",
+        "port": 443
+    },
+    "source": {
+        "bytes": 798,
+        "ip": "10.0.0.3",
+        "nat": {
+            "ip": "10.0.128.2",
+            "port": 53184
+        },
+        "port": 47886
     },
     "tags": [
         "preserve_original_event",
         "fortinet-fortiproxy",
         "forwarded"
-    ],
-    "url": {
-        "domain": "qnl-play-fetch.s3.amazonaws.com",
-        "scheme": "https"
-    },
-    "user_agent": {
-        "device": {
-            "name": "Other"
-        },
-        "name": "Firefox",
-        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
-        "os": {
-            "full": "Windows 10",
-            "name": "Windows",
-            "version": "10"
-        },
-        "version": "115.0."
-    }
+    ]
 }
 ```
 
@@ -908,7 +888,21 @@ An example event for `log` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| url.username | Username of the request. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |

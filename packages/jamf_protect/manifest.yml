@@ -1,18 +1,26 @@
-format_version: 1.0.0
+format_version: 3.0.3
 name: jamf_protect
 title: Jamf Protect
-version: "0.5.0"
+version: "2.4.0"
 description: Receives events from Jamf Protect with Elastic Agent.
 type: integration
 categories:
   - security
-release: beta
 conditions:
-  kibana.version: ^8.12.0
+  kibana:
+    version: "^8.13.0"
 screenshots:
   - src: /img/jamfprotect_kibana.png
     title: Jamf Protect Kibana
     size: 1800x1138
+    type: image/png
+  - src: /img/jamfprotect_telemetry_kibana1.png
+    title: Jamf Protect Kibana - Telemetry
+    size: 2035x1281
+    type: image/png
+  - src: /img/jamfprotect_telemetry_kibana2.png
+    title: Jamf Protect Kibana - Telemetry
+    size: 2035x1281
     type: image/png
 icons:
   - src: /img/jamf_logo.svg
@@ -38,12 +46,14 @@ policy_templates:
             default: 0.0.0.0
           - name: secret_header
             type: text
+            secret: false
             title: Secret Header
             description: The header to check for a specific value specified by `secret.value`.
             required: false
             show_user: false
           - name: secret_value
             type: password
+            secret: true
             title: Secret Value
             description: The secret stored in the header name specified by `secret.header`.
             required: false
@@ -87,15 +97,9 @@ policy_templates:
             description: |-
               Jamf Protect is an S3-compatible, globally distributed object storage. This parameter can replace Bucket ARN with a Bucket Name for collecting logs from Jamf Protect or another 3rd party S3-compatible service. This is a global setting which can be overriden by specific local bucket names for each data stream if required.
               Using non-AWS S3 compatible buckets requires the use of Access Key ID and Secret Access Key for authentication. To specify the non-AWS S3 bucket name, use the non_aws_bucket_name config and the endpoint must be set to replace the default API endpoint.
-          - name: queue_url
-            type: text
-            title: "[Global][SQS] Queue URL"
-            multi: false
-            required: false
-            show_user: true
-            description: "URL of the AWS SQS queue that messages will be received from. \nThis is only required if you want to collect logs via AWS SQS.\nThis is a global queue URL, i.e this can be overriden by specific local queue URLs for each data stream if required."
           - name: access_key_id
             type: password
+            secret: true
             title: Access Key ID
             multi: false
             required: false
@@ -103,6 +107,7 @@ policy_templates:
             description: First part of access key.
           - name: secret_access_key
             type: password
+            secret: true
             title: Secret Access Key
             multi: false
             required: false
@@ -110,6 +115,7 @@ policy_templates:
             description: Second part of access key.
           - name: session_token
             type: password
+            secret: true
             title: Session Token
             multi: false
             required: false

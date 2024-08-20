@@ -1,0 +1,122 @@
+- name: snyk.issues
+  type: group
+  description: >
+    Module for parsing Snyk project issues.
+
+  fields:
+    - name: id
+      type: keyword
+      description: >
+        The issue reference ID.
+
+    - name: attributes
+      type: group
+      fields:
+        - name: created_at
+          type: date
+        - name: updated_at
+          type: date
+        - name: key
+          type: keyword
+        - name: effective_severity_level
+          description: 'The type from enumeration of the issue’s severity level: info, low, medium, high or critical. This is usually set from the issue’s producer, but can be overridden by policies.'
+          type: keyword
+        - name: ignored
+          type: boolean
+        - name: status
+          description: >-
+            An issue's status: open or resolved.
+          type: keyword
+        - name: title
+          type: keyword
+        - name: type
+          type: keyword
+        - name: classes
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: source
+              type: keyword
+            - name: type
+              type: keyword
+        - name: coordinates
+          type: group
+          fields:
+            - name: is_fixable_manually
+              type: boolean
+            - name: is_fixable_snyk
+              type: boolean
+            - name: is_fixable_upstream
+              type: boolean
+            - name: is_patchable
+              type: boolean
+            - name: is_pinnable
+              type: boolean
+            - name: is_upgradeable
+              type: boolean
+            - name: reachability
+              type: keyword
+            - name: resourcePath
+              type: keyword
+            - name: cloud_resource
+              type: flattened
+              description: A resource location to some service, like a cloud resource.
+            - name: representations
+              type: group
+              description: A list of precise locations that surface an issue. A coordinate may have multiple representations.
+              fields:
+                - name: dependency.package_name
+                  type: keyword
+                - name: dependency.package_version
+                  type: keyword
+        - name: problems
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: source
+              type: keyword
+            - name: type
+              description: 'The problem type: rule or vulnerability.'
+              type: keyword
+            - name: url
+              type: keyword
+            - name: discovered_at
+              description: When this problem was first discovered.
+              type: date
+            - name: disclosed_at
+              description: When this problem was disclosed to the public.
+              type: date
+            - name: updated_at
+              description: When this problem was last updated.
+              type: date
+        - name: risk
+          type: group
+          fields:
+            - name: score
+              type: group
+              fields:
+                - name: model
+                  description: Risk scoring model used to calculate the score value.
+                  type: keyword
+                - name: value
+                  description: Risk score value, which may be used for overall prioritization.
+                  type: long
+                - name: updated_at
+                  type: date
+    - name: relationships
+      type: group
+      fields:
+        - name: organization.data.id
+          type: keyword
+        - name: organization.data.type
+          type: keyword
+        - name: organization.links.related
+          type: keyword
+        - name: scan_item.data.id
+          type: keyword
+        - name: scan_item.data.type
+          type: keyword
+        - name: scan_item.links.related
+          type: keyword

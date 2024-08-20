@@ -1,16 +1,12 @@
 # Symantec Endpoint Security
 
-This Symantec Endpoint Security integration enables your security team to securely stream event data to Elastic Security, via AWS S3, AWS SQS or GCS. When integrated with Elastic Security, this valuable data can be leveraged within Elastic.
-Symantec Endpoint Security (SES) delivers comprehensive protection for all your traditional and mobile devices across the entire attack chain. Symantec endpoint innovations include behavioral isolation, Active Directory security, and Threat Hunter technologies to protect your endpoints against sophisticated threats and targeted attacks.
+Symantec Endpoint Security (SES), is fully cloud-managed version of the on-premises Symantec Endpoint Protection (SEP), which delivers multilayer protection to stop threats regardless of how they attack your endpoints. You manage SES through a unified cloud console that provides threat visibility across your endpoints and uses multiple technologies to manage the security of your organization.
 
-The Symantec Endpoint Security integration can be used in three different modes to collect data:
-- AWS S3 polling mode: Symantec Endpoint Security writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
-- AWS S3 SQS mode: Symantec Endpoint Security writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
-- GCS polling mode: Symantec Endpoint Security writes data to GCS bucket, and Elastic Agent polls the GCS bucket by listing its contents and reading new files.
+This SES Integration enables user to stream Events and EDR incidents data to Elastic, via Data Storage(AWS S3, AWS SQS or GCS) and API endpoint respectively.
 
 ## Data streams
 
-The Symantec Endpoint Security integration collects logs for different events that Integrated Cyber Defense Schema organizes into following categories:
+The Symantec Endpoint Security integration collects logs via Amazon S3 and SQS, and Google GCP for different events that The Integrated Cyber Defense Schema organizes into following categories:
 
 **Security [1]**
 
@@ -87,7 +83,7 @@ The Symantec Endpoint Security integration collects logs for different events th
 |----------------------------------------------------|
 | 1000 - Status                                      |
 
-**NOTE**: The Symantec Endpoint Security integration collects logs for the above mentioned events, but we have combined all of those in one data stream named `event`.
+The Symantec Endpoint Security integration can also retrieve **EDR incidents** via a REST API. See more details in the API documentation [here](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
 
 ## Requirements
 
@@ -112,8 +108,8 @@ With this approach, you install Elastic Agent and manually configure the agent l
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-The minimum **kibana.version** required is **8.12.0**.
+ 
+This module has been tested against **Symantec Integrated Cyber Defense Exchange 1.4.7** for events, and **Symantec Endpoint Security API Version v1** for EDR Incidents.   
 
 ## Setup
 
@@ -168,6 +164,16 @@ A sample JSON Credentials file looks as follows:
 3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
+
+### Steps to obtain Client ID and Client Secret to collect data from EDR Incident API:
+
+1. Login to your [Symantec EDR Cloud console](https://sep.securitycloud.symantec.com/v2/landing).
+2. Click Integration > Client Applications.
+3. Click Add for adding Client Application.
+4. Enter Client Application Name and press the Add button.
+5. Select Client Secret from the top.
+6. Copy the Client ID and Client Secret.
+
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations
@@ -191,12 +197,23 @@ A sample JSON Credentials file looks as follows:
    - Project ID
    - Buckets
    - Service Account Key/Service Account Credentials File
+
+   or if you want to collect logs via the REST API, then you have to put the following details:
+   - Client ID
+   - Client Secret
+   - URL
+   - Token URL
+
 6. Save the integration.
 
 **NOTE**:
 
 1. There are other input combination options available for the AWS S3 and AWS SQS, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
 2. There are other input combination options available for the GCS, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html).
+
+### Troubleshooting
+
+If the user stops integration and starts integration again after 30 days, then user will not be able to collect data and will get an error as Symantec EDR Cloud only collects data for the last 30 days. To avoid this issue, create a new integration instead of restarting it after 30 days.
 
 ## Logs reference
 
@@ -212,17 +229,17 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-02-29T02:00:00.000Z",
     "agent": {
-        "ephemeral_id": "c7db84fe-715c-47ad-8ec5-484489ddd1ea",
-        "id": "fd5c2513-cbef-4142-aa92-f1756f76da26",
+        "ephemeral_id": "12938ae7-0e21-4871-a4b7-84a7c81580d5",
+        "id": "6959e46f-8a34-4f03-83ab-616183948946",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-symantec-endpoint-security-bucket-27504",
-                "name": "elastic-package-symantec-endpoint-security-bucket-27504"
+                "arn": "arn:aws:s3:::elastic-package-symantec-endpoint-security-bucket-47282",
+                "name": "elastic-package-symantec-endpoint-security-bucket-47282"
             },
             "object": {
                 "key": "events.log"
@@ -240,7 +257,7 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "symantec_endpoint_security.event",
-        "namespace": "ep",
+        "namespace": "53478",
         "type": "logs"
     },
     "destination": {
@@ -258,14 +275,14 @@ An example event for `event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fd5c2513-cbef-4142-aa92-f1756f76da26",
+        "id": "6959e46f-8a34-4f03-83ab-616183948946",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "email": {
         "direction": [
-            "unknown",
-            "inbound"
+            "inbound",
+            "unknown"
         ],
         "from": {
             "address": [
@@ -293,9 +310,9 @@ An example event for `event` looks as following:
             "2021-02-11T05:30:04.000Z"
         ],
         "id": "SR-1565234545",
-        "ingested": "2024-04-23T12:21:14Z",
+        "ingested": "2024-07-23T06:58:38Z",
         "kind": "event",
-        "original": "{\"category_id\":3,\"collector_device_ip\":\"175.16.199.0\",\"collector_device_name\":\"Collector_Device_Name\",\"collector_name\":\"Collection12\",\"collector_uid\":\"TT1456\",\"composite\":1,\"container\":{\"host_name\":\"azure-us.local\",\"image_name\":\"Image-sp2133\",\"image_uid\":\"SH4322323\",\"name\":\"User12345\",\"networks\":[{\"bssid\":\"Container-Networks-BSSID 1\",\"gateway_ip\":\"89.160.20.112\",\"gateway_mac\":\"00:B0:D0:63:C2:01\",\"ipv4\":\"81.2.69.144\",\"ipv6\":\"2a02:cf40::\",\"is_public\":true,\"mac\":\"00:B0:D0:63:C2:02\",\"rep_score_id\":0,\"ssid\":\"SSID-4326451\",\"type_id\":0},{\"bssid\":\"HN0845435\",\"gateway_ip\":\"81.2.69.142\",\"gateway_mac\":\"00:B0:D0:63:C2:03\",\"ipv4\":\"81.2.69.144\",\"ipv6\":\"2a02:cf40::\",\"is_public\":true,\"mac\":\"00:B0:D0:63:C2:04\",\"rep_score_id\":1,\"ssid\":\"Container-Networks-SSID 2\",\"type_id\":1}],\"os_name\":\"Windows\",\"uid\":\"UU35r3454\"},\"correlation_uid\":\"DD78666\",\"count\":563,\"customer_registry_uid\":\"CP45254\",\"customer_uid\":\"CH32534\",\"cybox\":{\"domains\":[\"example.com\",\"abc.com\"],\"emails\":[{\"direction_id\":0,\"header_from\":\"abc@example.com\",\"header_message_id\":\"Cybox-Emails-Header_Message_ID 1\",\"header_reply_to\":\"Cybox-Emails-Header_Reply_To 1\",\"header_subject\":\"Cybox-Emails-Header_Subject 1\",\"header_to\":[\"Cybox-Emails-Header_To 1\",\"Cybox-Emails-Header_Tos 1\"],\"sender_ip\":\"81.2.69.144\",\"size\":12345678901,\"smtp_from\":\"Cybox-Emails-SMTP_From 1\",\"smtp_hello\":\"Cybox-Emails-SMTP_Hello 1\",\"smtp_to\":\"Cybox-Emails-SMTP_To 1\"},{\"direction_id\":1,\"header_from\":\"abc@example.com\",\"header_message_id\":\"Cybox-Emails-Header_Message_ID 2\",\"header_reply_to\":\"Cybox-Emails-Header_Reply_To 2\",\"header_subject\":\"Cybox-Emails-Header_Subject 2\",\"header_to\":[\"Cybox-Emails-Header_To 2\",\"Cybox-Emails-Header_Tos 2\"],\"sender_ip\":\"81.2.69.144\",\"size\":12345678902,\"smtp_from\":\"Cybox-Emails-SMTP_From 2\",\"smtp_hello\":\"Cybox-Emails-SMTP_Hello 2\",\"smtp_to\":\"Cybox-Emails-SMTP_To 2\"}],\"files\":[{\"accessed\":1613021404000,\"accessor\":\"Cybox-Files-Accessor 1\",\"attribute_ids\":[1,2,3,4,5,6,7,8,9,10],\"attributes\":12345678901,\"company_name\":\"Microsoft Corporation\",\"confidentiality_id\":0,\"content_type\":{\"family_id\":0,\"subtype\":\"SubType 1\",\"type_id\":0},\"created\":1613021404000,\"creator\":\"Creator 1\",\"creator_process\":\"Cybox-Files-Creator_Process 1\",\"desc\":\"Cybox-Files-Desc 1\",\"folder\":\"c:\\\\windows\\\\system32\\\\cybox\\files\\folder\\\\1\",\"folder_uid\":\"Cybox-Files-Folder_UID 1\",\"is_system\":true,\"md5\":\"HFDajsdf3254345436\",\"mime_type\":\"Cybox-Files-MIME_Type 1\",\"modified\":1613021404000,\"modifier\":\"Cybox-Files-Modifier 1\",\"name\":\"cybox_files_name_1.exe\",\"normalized_path\":\"CSIDL_SYSTEM\\\\cybox_files_normalized_path_1.exe\",\"original_name\":\"Cybox-Files-Original_Name 1\",\"owner\":\"Cybox-Files-Owner 1\",\"parent_name\":\"Cybox-Files-Parent_Name 1\",\"parent_sha2\":\"Cybox-Files-Parent_SHA2 1\",\"path\":\"c:\\\\windows\\\\system32\\\\cybox_files_path_1.exe\",\"product_name\":\"Windows Internet Explorer 1\",\"product_path\":\"Cybox-Files-Product_Path 1\",\"rep_discovered_band\":0,\"rep_discovered_date\":1613021404000,\"rep_prevalence\":12345678901,\"rep_prevalence_band\":0,\"rep_score\":12345678901,\"rep_score_band\":0,\"security_descriptor\":\"Cybox-Files-Security_Descriptor 1\",\"sha1\":\"Cybox-Files-SHA1 1\",\"sha2\":\"Cybox-Files-SHA2 1\",\"signature_company_name\":\"Cybox-Files-Signature_Company_Name 1\",\"signature_created_date\":1613021404000,\"signature_developer_uid\":\"Cybox-Files-Signature_Developer_UID 1\",\"signature_fingerprints\":[{\"algorithm\":\"Cybox-Files-Signature_Fingerprints-Algorithm 1\",\"value\":\"Cybox-Files-Signature_Fingerprints-Value 1\"},{\"algorithm\":\"Cybox-Files-Signature_Fingerprints-Algorithms 1\",\"value\":\"Cybox-Files-Signature_Fingerprints-Values 1\"}],\"signature_issuer\":\"Cybox-Files-Signature_Issuer 1\",\"signature_level_id\":0,\"signature_serial_number\":\"Cybox-Files-Signature_Serial_Number 1\",\"signature_value\":12345678901,\"signature_value_ids\":[0,1,2,3,4,5,6,7,8,9,10],\"size\":12345678901,\"size_compressed\":12345678901,\"src_ip\":\"81.2.69.142\",\"src_name\":\"Cybox-Files-SRC_Name 1\",\"type_id\":1,\"uid\":\"Cybox-Files-UID 1\",\"url\":{\"categories\":[\"Cybox-Files-URL-Category 1\",\"Cybox-Files-URL-Categories 1\"],\"category_ids\":[1,3,4,5,6,7,9,11,14,15,16,17,18,20,21,22,23,24,25,26,27,29,30,31,32,33,34,35,36,37,38,40,43,44,45,46,47,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,66,67,68,71,83,84,85,86,87,88,89,90,92,93,95,96,97,98],\"extension\":\"Cybox-Files-URL-Extension 1\",\"host\":\"www.files-url-host-1.com\",\"method\":\"Cybox-Files-URL-Method 1\",\"parent_categories\":[\"Cybox-Files-URL-Parent_Category 1\",\"Cybox-Files-URL-Parent_Categories 1\"],\"path\":\"/download/trouble/cybox/files/url/path/1\",\"port\":80,\"provider\":\"Cybox-Files-URL-Provider 1\",\"query\":\"q=bad&sort=date_1\",\"referrer\":\"Cybox-Files-URL-Referrer 1\",\"referrer_categories\":[\"Cybox-Files-URL-Referrer_Category 1\",\"Cybox-Files-URL-Referrer_Categories 1\"],\"referrer_category_ids\":[12345678901,67890123451],\"rep_score_id\":0,\"scheme\":\"Cybox-Files-URL-Scheme 1\",\"text\":\"www.files-url-text-1.com/download/trouble\"},\"version\":\"Cybox-Files-Version 1\",\"xattributes\":{\"ads_name\":\"Cybox-Files-XAttributes-ADS_Name 1\",\"ads_size\":\"Cybox-Files-XAttributes-ADS_Size 1\",\"dacl\":\"Cybox-Files-XAttributes-DACL 1\",\"owner\":\"Cybox-Files-XAttributes-Owner 1\",\"primary_group\":\"Cybox-Files-XAttributes-Primary_Group 1\",\"link_name\":\"Cybox-Files-XAttributes-Link_Name 1\",\"hard_link_count\":\"Cybox-Files-XAttributes-Hard_Link_Count 1\",\"Unix_permissions\":\"Cybox-Files-XAttributes-Unix_Permissions 1\"}},{\"accessed\":1613021404000,\"accessor\":\"Cybox-Files-Accessor 2\",\"attribute_ids\":[11,12,13,14,15,16,17],\"attributes\":12345678902,\"company_name\":\"Microsoft Corporation 2\",\"confidentiality_id\":1,\"content_type\":{\"family_id\":1,\"subtype\":\"Cybox-Files-Content_Type-SubType 2\",\"type_id\":1},\"created\":1613021404000,\"creator\":\"Cybox-Files-Creator 2\",\"creator_process\":\"Cybox-Files-Creator_Process 2\",\"desc\":\"Cybox-Files-Desc 2\",\"folder\":\"c:\\\\windows\\\\system32\\\\cybox\\files\\folder\\\\2\",\"folder_uid\":\"Cybox-Files-Folder_UID 2\",\"is_system\":true,\"md5\":\"Cybox-Files-MD5 2\",\"mime_type\":\"Cybox-Files-MIME_Type 2\",\"modified\":1613021404000,\"modifier\":\"Cybox-Files-Modifier 2\",\"name\":\"cybox_files_name_2.exe\",\"normalized_path\":\"CSIDL_SYSTEM\\\\cybox_files_normalized_path_2.exe\",\"original_name\":\"Cybox-Files-Original_Name 2\",\"owner\":\"Cybox-Files-Owner 2\",\"parent_name\":\"Cybox-Files-Parent_Name 2\",\"parent_sha2\":\"Cybox-Files-Parent_SHA2 2\",\"path\":\"c:\\\\windows\\\\system32\\\\cybox_files_path_2.exe\",\"product_name\":\"Windows Internet Explorer 2\",\"product_path\":\"Cybox-Files-Product_Path 2\",\"rep_discovered_band\":1,\"rep_discovered_date\":1613021404000,\"rep_prevalence\":12345678902,\"rep_prevalence_band\":1,\"rep_score\":12345678902,\"rep_score_band\":1,\"security_descriptor\":\"Cybox-Files-Security_Descriptor 2\",\"sha1\":\"Cybox-Files-SHA1 2\",\"sha2\":\"Cybox-Files-SHA2 2\",\"signature_company_name\":\"Cybox-Files-Signature_Company_Name 2\",\"signature_created_date\":1613021404000,\"signature_developer_uid\":\"Cybox-Files-Signature_Developer_UID 2\",\"signature_fingerprints\":[{\"algorithm\":\"Cybox-Files-Signature_Fingerprints-Algorithm 2\",\"value\":\"Cybox-Files-Signature_Fingerprints-Value 2\"},{\"algorithm\":\"Cybox-Files-Signature_Fingerprints-Algorithms 2\",\"value\":\"Cybox-Files-Signature_Fingerprints-Values 2\"}],\"signature_issuer\":\"Cybox-Files-Signature_Issuer 2\",\"signature_level_id\":1,\"signature_serial_number\":\"Cybox-Files-Signature_Serial_Number 2\",\"signature_value\":12345678902,\"signature_value_ids\":[11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],\"size\":12345678902,\"size_compressed\":12345678902,\"src_ip\":\"81.2.69.144\",\"src_name\":\"Cybox-Files-SRC_Name 2\",\"type_id\":1,\"uid\":\"Cybox-Files-UID 2\",\"url\":{\"categories\":[\"Cybox-Files-URL-Category 2\",\"Cybox-Files-URL-Categories 2\"],\"category_ids\":[101,102,103,104,105,106,107,108,109,110,111,112,113,114,116,117,118,121,124],\"extension\":\"Cybox-Files-URL-Extension 2\",\"host\":\"www.files-url-host-2.com\",\"method\":\"Cybox-Files-URL-Method 2\",\"parent_categories\":[\"Cybox-Files-URL-Parent_Category 2\",\"Cybox-Files-URL-Parent_Categories 2\"],\"path\":\"/download/trouble/cybox/files/url/path/2\",\"port\":81,\"provider\":\"Cybox-Files-URL-Provider 2\",\"query\":\"q=bad&sort=date_2\",\"referrer\":\"Cybox-Files-URL-Referrer 2\",\"referrer_categories\":[\"Cybox-Files-URL-Referrer_Category 2\",\"Cybox-Files-URL-Referrer_Categories 2\"],\"referrer_category_ids\":[12345678902,67890123452],\"rep_score_id\":1,\"scheme\":\"Cybox-Files-URL-Scheme 2\",\"text\":\"www.files-url-text-2.com/download/trouble\"},\"version\":\"Cybox-Files-Version 2\",\"xattributes\":{\"ads_name\":\"Cybox-Files-XAttributes-ADS_Name 2\",\"ads_size\":\"Cybox-Files-XAttributes-ADS_Size 2\",\"dacl\":\"Cybox-Files-XAttributes-DACL 2\",\"owner\":\"Cybox-Files-XAttributes-Owner 2\",\"primary_group\":\"Cybox-Files-XAttributes-Primary_Group 2\",\"link_name\":\"Cybox-Files-XAttributes-Link_Name 2\",\"hard_link_count\":\"Cybox-Files-XAttributes-Hard_Link_Count 2\",\"Unix_permissions\":\"Cybox-Files-XAttributes-Unix_Permissions 2\"}}],\"hostnames\":[\"Cybox-Hostname 1\",\"Cybox-Hostnames 1\"],\"icap_reqmod\":[{\"metadata\":{\"field1_keyword\":\"Cybox-ICAP_ReqMod-field1_Keyword\",\"field1_number\":12345678901,\"field1_boolean\":true,\"field1_ip\":\"175.16.199.0\"},\"service\":\"Cybox-ICAP_ReqMod-Service 1\",\"status\":\"Cybox-ICAP_ReqMod-Status 1\",\"status_detail\":\"Cybox-ICAP_ReqMod-Status_Detail 1\"},{\"metadata\":{\"field2_keyword\":\"Cybox-ICAP_ReqMod-field2_Keyword\",\"field2_number\":12345678902,\"field2_boolean\":true,\"field2_ip\":\"175.16.199.0\"},\"service\":\"Cybox-ICAP_ReqMod-Service 2\",\"status\":\"Cybox-ICAP_ReqMod-Status 2\",\"status_detail\":\"Cybox-ICAP_ReqMod-Status_Detail 2\"}],\"icap_respmod\":[{\"metadata\":{\"field1_keyword\":\"Cybox-ICAP_RespMod-field1_Keyword\",\"field1_number\":12345678901,\"field1_boolean\":true,\"field1_ip\":\"175.16.199.0\"},\"service\":\"Cybox-ICAP_RespMod-Service 1\",\"status\":\"Cybox-ICAP_RespMod-Status 1\",\"status_detail\":\"Cybox-ICAP_RespMod-Status_Detail 1\"},{\"metadata\":{\"field2_keyword\":\"Cybox-ICAP_RespMod-field2_Keyword\",\"field2_number\":12345678902,\"field2_boolean\":true,\"field2_ip\":\"175.16.199.0\"},\"service\":\"Cybox-ICAP_RespMod-Service 2\",\"status\":\"Cybox-ICAP_RespMod-Status 2\",\"status_detail\":\"Cybox-ICAP_RespMod-Status_Detail 2\"}],\"ipv4s\":[\"175.16.199.0\",\"175.16.199.0\"],\"ipv6s\":[\"2a02:cf40::\",\"2a02:cf40::\"],\"macs\":[\"00:B0:D0:63:C2:05\",\"00:B0:D0:63:C2:06\"],\"urls\":[{\"categories\":[\"Cybox-URLs-Category 1\",\"Cybox-URLs-Categories 1\"],\"category_ids\":[1,3,4,5,6,7,9,11,14,15,16,17,18,20,21,22,23,24,25,26,27,29,30,31,32,33,34,35,36,37,38,40,43,44,45,46,47,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,66,67,68,71,83,84,85,86,87,88,89,90,92,93,95,96,97,98],\"extension\":\"Cybox-URLs-Extension 1\",\"host\":\"www.urls-host-1.com\",\"method\":\"Cybox-URLs-Method 1\",\"parent_categories\":[\"Cybox-URLs-Parent_Category 1\",\"Cybox-URLs-Parent_Categories 1\"],\"path\":\"/download/trouble/cybox/urls/path/1\",\"port\":80,\"provider\":\"Cybox-URLs-Provider 1\",\"query\":\"q=bad&sort=date_1\",\"referrer\":\"Cybox-URLs-Referrer 1\",\"referrer_categories\":[\"Cybox-URLs-Referrer_Category 1\",\"Cybox-URLs-Referrer_Categories 1\"],\"referrer_category_ids\":[12345678901,67890123451],\"rep_score_id\":0,\"scheme\":\"Cybox-URLs-Scheme 1\",\"text\":\"www.urls-text-1.com/download/trouble\"},{\"categories\":[\"Cybox-URLs-Category 2\",\"Cybox-URLs-Categories 2\"],\"category_ids\":[101,102,103,104,105,106,107,108,109,110,111,112,113,114,116,117,118,121,124],\"extension\":\"Cybox-URLs-Extension 2\",\"host\":\"www.urls-host-2.com\",\"method\":\"Cybox-URLs-Method 2\",\"parent_categories\":[\"Cybox-URLs-Parent_Category 2\",\"Cybox-URLs-Parent_Categories 2\"],\"path\":\"/download/trouble/cybox/urls/path/2\",\"port\":81,\"provider\":\"Cybox-URLs-Provider 2\",\"query\":\"q=bad&sort=date_2\",\"referrer\":\"Cybox-URLs-Referrer 2\",\"referrer_categories\":[\"Cybox-URLs-Referrer_Category 2\",\"Cybox-URLs-Referrer_Categories 2\"],\"referrer_category_ids\":[12345678902,67890123452],\"rep_score_id\":1,\"scheme\":\"Cybox-URLs-Scheme 2\",\"text\":\"www.urls-text-2.com/download/trouble\"}]},\"device_alias_name\":\"Device_Alias_Name\",\"device_cap\":\"Device_Cap\",\"device_cloud_vm\":{\"autoscale_uid\":\"Device_Cloud_VM-Autoscale_UID\",\"dc_region\":\"Device_Cloud_VM-DC_Region\",\"instance_uid\":\"Device_Cloud_VM-Instance_UID\",\"subnet_uid\":\"Device_Cloud_VM-Subnet_UID\",\"vpc_uid\":\"Device_Cloud_VM-VPC_UID\"},\"device_desc\":\"Device_Desc\",\"device_domain\":\"device.domain.internal.somecompany.com\",\"device_domain_uid\":\"Device_Domain_UID\",\"device_end_time\":1613021404000,\"device_gateway\":\"175.16.199.0\",\"device_group\":\"Device_Group\",\"device_group_name\":\"Device_Group_Name\",\"device_hw_bios_date\":\"03/31/16\",\"device_hw_bios_manufacturer\":\"LENOVO\",\"device_hw_bios_ver\":\"LENOVO G5ETA2WW (2.62)\",\"device_hw_cpu_type\":\"x86 Family 6 Model 37 Stepping 5\",\"device_imei\":\"Device_IMEI\",\"device_ip\":\"175.16.199.0\",\"device_is_compliant\":true,\"device_is_personal\":true,\"device_is_trusted\":true,\"device_is_unmanaged\":true,\"device_location\":{\"city\":\"Device_Location-City\",\"continent\":\"Device_Location-Continent\",\"coordinates\":[-12.345,56.789],\"country\":\"US\",\"desc\":\"Device_Location-Desc\",\"isp\":\"Device_Location-ISP\",\"on_premises\":true,\"region\":\"US-CA\"},\"device_mac\":\"00:B0:D0:63:C2:07\",\"device_name\":\"device.name.computer.domain\",\"device_name_md5\":\"4ED962DDBF17E2BBA7B14EBC00F3162E\",\"device_networks\":[{\"bssid\":\"Device_Networks-BSSID 1\",\"gateway_ip\":\"175.16.199.0\",\"gateway_mac\":\"00:B0:D0:63:C2:08\",\"ipv4\":\"175.16.199.0\",\"ipv6\":\"2a02:cf40::\",\"is_public\":true,\"mac\":\"00:B0:D0:63:C2:09\",\"rep_score_id\":0,\"ssid\":\"Device_Networks-SSID 1\",\"type_id\":0},{\"bssid\":\"Device_Networks-BSSID 2\",\"gateway_ip\":\"89.160.20.112\",\"gateway_mac\":\"00:B0:D0:63:C2:10\",\"ipv4\":\"89.160.20.112\",\"ipv6\":\"2a02:cf40::\",\"is_public\":true,\"mac\":\"00:B0:D0:63:C2:11\",\"rep_score_id\":1,\"ssid\":\"Device_Networks-SSID 2\",\"type_id\":1}],\"device_org_unit\":\"Device_Org_Unit\",\"device_os_bits\":12345678901,\"device_os_build\":\"Device_OS_Build\",\"device_os_country\":\"IN\",\"device_os_edition\":\"Professional\",\"device_os_lang\":\"en\",\"device_os_name\":\"Windows Server 2019 Standard Edition\",\"device_os_sp_name\":\"Device_OS_SP_Name\",\"device_os_sp_ver\":\"Device_OS_SP_Ver\",\"device_os_type_id\":0,\"device_os_ver\":\"Windows 10\",\"device_proxy_ip\":\"89.160.20.112\",\"device_proxy_name\":\"Device_Proxy_Name\",\"device_public_ip\":\"89.160.20.112\",\"device_ref_uid\":\"Device_Ref_UID\",\"device_site\":\"Device_Site\",\"device_subnet\":\"81.2.69.144\",\"device_time\":1613021404000,\"device_type\":\"server\",\"device_uid\":\"Device_UID\",\"device_vhost\":\"Device_VHost\",\"device_vhost_id\":0,\"domain_uid\":\"Domain_UID\",\"end_time\":\"2024-02-29T01:00:00.000Z\",\"entity\":{\"data\":{\"field1_keyword\":\"Entity-Data-field1_Keyword\",\"field1_number\":12345678901,\"field1_boolean\":true},\"name\":\"Entity-Name\",\"type\":\"Entity-Type\",\"uid\":\"Entity-UID\",\"version\":\"Entity-Version\"},\"event_id\":2001,\"events\":[{\"connection\":{\"direction_id\":1,\"dst_service\":\"C:\\\\Windows\\\\system32\\\\NTOSKRNL.EXE\",\"src_ip\":\"159.19.163.218\"},\"count\":1,\"device_end_time\":1709225074618,\"device_time\":1709225074618}],\"feature_name\":\"Feature_Name\",\"feature_path\":\"Feature_Path\",\"feature_type\":\"Feature_Type\",\"feature_uid\":\"Feature_UID\",\"feature_ver\":\"2014.1.4.25\",\"id\":12345678901,\"impersonator_customer_uid\":\"Impersonator_Customer_UID\",\"impersonator_domain_uid\":\"Impersonator_Domain_UID\",\"impersonator_user_uid\":\"Impersonator_User_UID\",\"is_user_present\":true,\"log_level\":\"Log Level\",\"log_name\":\"Log_Name\",\"log_time\":\"2024-02-29T01:00:00.000Z\",\"logging_device_ip\":\"89.160.20.112\",\"logging_device_name\":\"Logging_Device_Name\",\"logging_device_post_time\":1613021404000,\"logging_device_ref_uid\":\"Logging_Device_Ref_UID\",\"message\":\"Message\",\"message_code\":\"Message_Code\",\"message_id\":0,\"org_unit_uid\":\"Org_Unit_UID\",\"orig_data\":\"Orig_Data\",\"product_data\":{\"sep_domain_uid\":\"Product_Data-Sep_Domain_UID\",\"sep_hw_uid\":\"Product_Data-Sep_HW_UID\"},\"product_lang\":\"en\",\"product_name\":\"Symantec Endpoint Security\",\"product_uid\":\"Product_UID\",\"product_ver\":\"2014.1.4.25-beta\",\"proxy_device_ip\":\"89.160.20.112\",\"proxy_device_name\":\"Proxy_Device_Name\",\"raw_data\":{\"assetID\":\"vc9DagprQYyLZ23SEY1APw\",\"assetOpstateDTO\":{\"productUuid\":\"31B0C880-0229-49E8-94C5-48D56B1BD7B9\",\"features\":[{\"uuid\":\"1DF0351C-146D-4F07-B155-BF5C7077FF40\",\"featureStatus\":\"SECURE\",\"opstate\":{\"EDRContentSequence\":\"20231128005\",\"EDREngineVersion\":\"4.11.0.10\",\"EDRFramworkVersion\":\"4.10.0.59\",\"FDRStatus\":true,\"LowDiskSpace\":false,\"MaxDBSizeHonored\":true,\"applied_policy\":{\"effective_date\":1709219437080,\"sha2\":\"ee6b0bebbc4575b507ac616d2c362f2c54d462b92cf4068cb6681ae3187d4de3\",\"uid\":\"7dc29d40-f303-477a-9012-287ef252a391\",\"version\":\"16\"},\"disk_usage_mb\":1546,\"fdr_first_event_date\":\"20240227\",\"fdr_state\":1},\"state\":\"ENABLED\",\"statusReason\":[\"-107\",\"0\"],\"prevention_state\":\"1\"}],\"products_active\":0,\"blades\":0}},\"ref_log_name\":\"Ref_Log_Name\",\"ref_log_time\":\"2024-02-29T01:00:00.000Z\",\"ref_orig_uid\":\"Ref_Orig_UID\",\"ref_uid\":\"Ref_UID\",\"remediated\":true,\"remediation\":\"Remediation\",\"remediation_ref\":\"Remediation_Ref\",\"remediation_uid\":0,\"seq_num\":12345678901,\"sessions\":[{\"auth_protocol_id\":0,\"cleartext_credentials\":true,\"direction_id\":0,\"id\":12345678901,\"is_admin\":true,\"logon_type_id\":1,\"port\":80,\"previous_users\":[\"Sessions-Previous_User 1\",\"Sessions-Previous_Users 1\"],\"remote\":true,\"remote_host\":\"Sessions-Remote_Host 1\",\"remote_ip\":\"89.160.20.112\",\"user\":{\"account_disabled\":true,\"cloud_resource_uid\":\"Sessions-User-Cloud_Resource_UID 1\",\"domain\":\"Sessions-User-Domain 1\",\"external_account_uid\":\"Sessions-User-External_Account_UID 1\",\"external_uid\":\"Sessions-User-External_UID 1\",\"full_name\":\"Sessions-User-Full_Name 1\",\"groups\":[\"Sessions-User-Group 1\",\"Sessions-User-Groups 1\"],\"home\":\"Sessions-User-Home 1\",\"is_admin\":true,\"logon_name\":\"Sessions-User-Logon_Name 1\",\"name\":\"session-User-Name 1\",\"password_expires\":true,\"shell\":\"Sessions-User-Shell 1\",\"sid\":\"Sessions-User-SID 1\",\"uid\":\"Sessions-User-UID 1\"}},{\"auth_protocol_id\":1,\"cleartext_credentials\":true,\"direction_id\":1,\"id\":67890123451,\"is_admin\":true,\"logon_type_id\":2,\"port\":81,\"previous_users\":[\"Sessions-Previous_User 2\",\"Sessions-Previous_Users 2\"],\"remote\":true,\"remote_host\":\"Sessions-Remote_Host 2\",\"remote_ip\":\"89.160.20.112\",\"user\":{\"account_disabled\":true,\"cloud_resource_uid\":\"Sessions-User-Cloud_Resource_UID 2\",\"domain\":\"Sessions-User-Domain 2\",\"external_account_uid\":\"Sessions-User-External_Account_UID 2\",\"external_uid\":\"Sessions-User-External_UID 2\",\"full_name\":\"Sessions-User-Full_Name 2\",\"groups\":[\"Sessions-User-Group 2\",\"Sessions-User-Groups 2\"],\"home\":\"Sessions-User-Home 2\",\"is_admin\":true,\"logon_name\":\"Sessions-User-Logon_Name 2\",\"name\":\"session-User-Name 2\",\"password_expires\":true,\"shell\":\"Sessions-User-Shell 2\",\"sid\":\"Sessions-User-SID 2\",\"uid\":\"Sessions-User-UID 2\"}}],\"severity_id\":0,\"source\":{\"facility\":\"Source-Facility\",\"facility_detail\":\"Source-Facility_Detail\",\"facility_uid\":\"Source-Facility_UID\",\"type_id\":1},\"status_detail\":\"Status_Detail\",\"status_id\":0,\"status_os\":\"Status_OS\",\"status_os_src\":12345678901,\"status_stack_trace\":\"Status_Stack_Trace\",\"status_thread_name\":\"Status_Thread_Name\",\"stic_has_pii\":true,\"stic_hw_uid\":\"STIC_HW_UID\",\"stic_ip_hash\":\"STIC_IP_Hash\",\"stic_legacy_ent_uids\":[\"STIC_Legacy_Ent_UIDs 1\",\"STIC_Legacy_Ent_UIDs 2\"],\"stic_legacy_hw_uids\":[\"STIC_Legacy_HW_UIDs 1\",\"STIC_Legacy_HW_UIDs 2\"],\"stic_legacy_uids\":[\"STIC_Legacy_UIDs 1\",\"STIC_Legacy_UIDs 2\"],\"stic_schema_id\":\"STIC_Schema_ID\",\"stic_uid\":\"STIC_UID\",\"stic_version\":\"STIC_Version\",\"subfeature_name\":\"Subfeature_Name\",\"time\":\"2024-02-29T02:00:00Z\",\"timezone\":12345678901,\"type\":\"Type\",\"type_id\":2,\"user\":{\"account_disabled\":true,\"cloud_resource_uid\":\"User-Cloud_Resource_UID\",\"domain\":\"User-Domain\",\"external_account_uid\":\"User-External_Account_UID\",\"external_uid\":\"User-External_UID\",\"full_name\":\"User-Full_Name\",\"groups\":[\"User-Group 1\",\"User-Groups 1\"],\"home\":\"User-Home\",\"is_admin\":true,\"logon_name\":\"User-Logon_Name\",\"name\":\"User123\",\"password_expires\":true,\"shell\":\"User-Shell\",\"sid\":\"TT23009\",\"uid\":\"UU34899825\"},\"user_name\":\"Mohit\",\"user_uid\":\"AB45698\",\"uuid\":\"SR-1565234545\",\"version\":\"1.4\"}",
+        "original": "{\"category_id\":3,\"collector_device_ip\":\"175.16.199.0\",\"collector_device_name\":\"Collector_Device_Name\",\"collector_name\":\"Collection12\",\"collector_uid\":\"TT1456\",\"composite\":1,\"container\":{\"host_name\":\"azure-us.local\",\"image_name\":\"Image-sp2133\",\"image_uid\":\"SH4322323\",\"name\":\"User12345\",\"networks\":[{\"bssid\":\"Container-Networks-BSSID 1\",\"gateway_ip\":\"89.160.20.112\",\"gateway_mac\":\"00:B0:D0:63:C2:01\",\"ipv4\":\"81.2.69.144\",\"ipv6\":\"2a02:cf40::\",\"is_public\":true,\"mac\":\"00:B0:D0:63:C2:02\",\"rep_score_id\":0,\"ssid\":\"SSID-4326451\",\"type_id\":0},{\"bssid\":\"HN0845435\",\"gateway_ip\":\"81.2.69.142\",\"gateway_mac\":\"00:B0:D0:63:C2:03\",\"ipv4\":\"81.2.69.144\",\"ipv6\":\"2a02:cf40::\",\"is_public\":true,\"mac\":\"00:B0:D0:63:C2:04\",\"rep_score_id\":1,\"ssid\":\"Container-Networks-SSID 2\",\"type_id\":1}],\"os_name\":\"Windows\",\"uid\":\"UU35r3454\"},\"correlation_uid\":\"DD78666\",\"count\":563,\"customer_registry_uid\":\"CP45254\",\"customer_uid\":\"CH32534\",\"cybox\":{\"domains\":[\"example.com\",\"abc.com\"],\"emails\":[{\"direction_id\":0,\"header_from\":\"abc@example.com\",\"header_message_id\":\"Cybox-Emails-Header_Message_ID 1\",\"header_reply_to\":\"Cybox-Emails-Header_Reply_To 1\",\"header_subject\":\"Cybox-Emails-Header_Subject 1\",\"header_to\":[\"Cybox-Emails-Header_To 1\",\"Cybox-Emails-Header_Tos 1\"],\"sender_ip\":\"81.2.69.144\",\"size\":12345678901,\"smtp_from\":\"Cybox-Emails-SMTP_From 1\",\"smtp_hello\":\"Cybox-Emails-SMTP_Hello 1\",\"smtp_to\":\"Cybox-Emails-SMTP_To 1\"},{\"direction_id\":1,\"header_from\":\"abc@example.com\",\"header_message_id\":\"Cybox-Emails-Header_Message_ID 2\",\"header_reply_to\":\"Cybox-Emails-Header_Reply_To 2\",\"header_subject\":\"Cybox-Emails-Header_Subject 2\",\"header_to\":[\"Cybox-Emails-Header_To 2\",\"Cybox-Emails-Header_Tos 2\"],\"sender_ip\":\"81.2.69.144\",\"size\":12345678902,\"smtp_from\":\"Cybox-Emails-SMTP_From 2\",\"smtp_hello\":\"Cybox-Emails-SMTP_Hello 2\",\"smtp_to\":\"Cybox-Emails-SMTP_To 2\"}],\"files\":[{\"accessed\":1613021404000,\"accessor\":\"Cybox-Files-Accessor 1\",\"attribute_ids\":[1,2,3,4,5,6,7,8,9,10],\"attributes\":12345678901,\"company_name\":\"Microsoft Corporation\",\"confidentiality_id\":0,\"content_type\":{\"family_id\":0,\"subtype\":\"SubType 1\",\"type_id\":0},\"created\":1613021404000,\"creator\":\"Creator 1\",\"creator_process\":\"Cybox-Files-Creator_Process 1\",\"desc\":\"Cybox-Files-Desc 1\",\"folder\":\"c:\\\\windows\\\\system32\\\\cybox\\\\files\\\\folder\\\\1\",\"folder_uid\":\"Cybox-Files-Folder_UID 1\",\"is_system\":true,\"md5\":\"HFDajsdf3254345436\",\"mime_type\":\"Cybox-Files-MIME_Type 1\",\"modified\":1613021404000,\"modifier\":\"Cybox-Files-Modifier 1\",\"name\":\"cybox_files_name_1.exe\",\"normalized_path\":\"CSIDL_SYSTEM\\\\cybox_files_normalized_path_1.exe\",\"original_name\":\"Cybox-Files-Original_Name 1\",\"owner\":\"Cybox-Files-Owner 1\",\"parent_name\":\"Cybox-Files-Parent_Name 1\",\"parent_sha2\":\"Cybox-Files-Parent_SHA2 1\",\"path\":\"c:\\\\windows\\\\system32\\\\cybox_files_path_1.exe\",\"product_name\":\"Windows Internet Explorer 1\",\"product_path\":\"Cybox-Files-Product_Path 1\",\"rep_discovered_band\":0,\"rep_discovered_date\":1613021404000,\"rep_prevalence\":12345678901,\"rep_prevalence_band\":0,\"rep_score\":12345678901,\"rep_score_band\":0,\"security_descriptor\":\"Cybox-Files-Security_Descriptor 1\",\"sha1\":\"Cybox-Files-SHA1 1\",\"sha2\":\"Cybox-Files-SHA2 1\",\"signature_company_name\":\"Cybox-Files-Signature_Company_Name 1\",\"signature_created_date\":1613021404000,\"signature_developer_uid\":\"Cybox-Files-Signature_Developer_UID 1\",\"signature_fingerprints\":[{\"algorithm\":\"Cybox-Files-Signature_Fingerprints-Algorithm 1\",\"value\":\"Cybox-Files-Signature_Fingerprints-Value 1\"},{\"algorithm\":\"Cybox-Files-Signature_Fingerprints-Algorithms 1\",\"value\":\"Cybox-Files-Signature_Fingerprints-Values 1\"}],\"signature_issuer\":\"Cybox-Files-Signature_Issuer 1\",\"signature_level_id\":0,\"signature_serial_number\":\"Cybox-Files-Signature_Serial_Number 1\",\"signature_value\":12345678901,\"signature_value_ids\":[0,1,2,3,4,5,6,7,8,9,10],\"size\":12345678901,\"size_compressed\":12345678901,\"src_ip\":\"81.2.69.142\",\"src_name\":\"Cybox-Files-SRC_Name 1\",\"type_id\":1,\"uid\":\"Cybox-Files-UID 1\",\"url\":{\"categories\":[\"Cybox-Files-URL-Category 1\",\"Cybox-Files-URL-Categories 1\"],\"category_ids\":[1,3,4,5,6,7,9,11,14,15,16,17,18,20,21,22,23,24,25,26,27,29,30,31,32,33,34,35,36,37,38,40,43,44,45,46,47,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,66,67,68,71,83,84,85,86,87,88,89,90,92,93,95,96,97,98],\"extension\":\"Cybox-Files-URL-Extension 1\",\"host\":\"www.files-url-host-1.com\",\"method\":\"Cybox-Files-URL-Method 1\",\"parent_categories\":[\"Cybox-Files-URL-Parent_Category 1\",\"Cybox-Files-URL-Parent_Categories 1\"],\"path\":\"/download/trouble/cybox/files/url/path/1\",\"port\":80,\"provider\":\"Cybox-Files-URL-Provider 1\",\"query\":\"q=bad&sort=date_1\",\"referrer\":\"Cybox-Files-URL-Referrer 1\",\"referrer_categories\":[\"Cybox-Files-URL-Referrer_Category 1\",\"Cybox-Files-URL-Referrer_Categories 1\"],\"referrer_category_ids\":[12345678901,67890123451],\"rep_score_id\":0,\"scheme\":\"Cybox-Files-URL-Scheme 1\",\"text\":\"www.files-url-text-1.com/download/trouble\"},\"version\":\"Cybox-Files-Version 1\",\"xattributes\":{\"ads_name\":\"Cybox-Files-XAttributes-ADS_Name 1\",\"ads_size\":\"Cybox-Files-XAttributes-ADS_Size 1\",\"dacl\":\"Cybox-Files-XAttributes-DACL 1\",\"owner\":\"Cybox-Files-XAttributes-Owner 1\",\"primary_group\":\"Cybox-Files-XAttributes-Primary_Group 1\",\"link_name\":\"Cybox-Files-XAttributes-Link_Name 1\",\"hard_link_count\":\"Cybox-Files-XAttributes-Hard_Link_Count 1\",\"Unix_permissions\":\"Cybox-Files-XAttributes-Unix_Permissions 1\"}},{\"accessed\":1613021404000,\"accessor\":\"Cybox-Files-Accessor 2\",\"attribute_ids\":[11,12,13,14,15,16,17],\"attributes\":12345678902,\"company_name\":\"Microsoft Corporation 2\",\"confidentiality_id\":1,\"content_type\":{\"family_id\":1,\"subtype\":\"Cybox-Files-Content_Type-SubType 2\",\"type_id\":1},\"created\":1613021404000,\"creator\":\"Cybox-Files-Creator 2\",\"creator_process\":\"Cybox-Files-Creator_Process 2\",\"desc\":\"Cybox-Files-Desc 2\",\"folder\":\"c:\\\\windows\\\\system32\\\\cybox\\\\files\\\\folder\\\\2\",\"folder_uid\":\"Cybox-Files-Folder_UID 2\",\"is_system\":true,\"md5\":\"Cybox-Files-MD5 2\",\"mime_type\":\"Cybox-Files-MIME_Type 2\",\"modified\":1613021404000,\"modifier\":\"Cybox-Files-Modifier 2\",\"name\":\"cybox_files_name_2.exe\",\"normalized_path\":\"CSIDL_SYSTEM\\\\cybox_files_normalized_path_2.exe\",\"original_name\":\"Cybox-Files-Original_Name 2\",\"owner\":\"Cybox-Files-Owner 2\",\"parent_name\":\"Cybox-Files-Parent_Name 2\",\"parent_sha2\":\"Cybox-Files-Parent_SHA2 2\",\"path\":\"c:\\\\windows\\\\system32\\\\cybox_files_path_2.exe\",\"product_name\":\"Windows Internet Explorer 2\",\"product_path\":\"Cybox-Files-Product_Path 2\",\"rep_discovered_band\":1,\"rep_discovered_date\":1613021404000,\"rep_prevalence\":12345678902,\"rep_prevalence_band\":1,\"rep_score\":12345678902,\"rep_score_band\":1,\"security_descriptor\":\"Cybox-Files-Security_Descriptor 2\",\"sha1\":\"Cybox-Files-SHA1 2\",\"sha2\":\"Cybox-Files-SHA2 2\",\"signature_company_name\":\"Cybox-Files-Signature_Company_Name 2\",\"signature_created_date\":1613021404000,\"signature_developer_uid\":\"Cybox-Files-Signature_Developer_UID 2\",\"signature_fingerprints\":[{\"algorithm\":\"Cybox-Files-Signature_Fingerprints-Algorithm 2\",\"value\":\"Cybox-Files-Signature_Fingerprints-Value 2\"},{\"algorithm\":\"Cybox-Files-Signature_Fingerprints-Algorithms 2\",\"value\":\"Cybox-Files-Signature_Fingerprints-Values 2\"}],\"signature_issuer\":\"Cybox-Files-Signature_Issuer 2\",\"signature_level_id\":1,\"signature_serial_number\":\"Cybox-Files-Signature_Serial_Number 2\",\"signature_value\":12345678902,\"signature_value_ids\":[11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],\"size\":12345678902,\"size_compressed\":12345678902,\"src_ip\":\"81.2.69.144\",\"src_name\":\"Cybox-Files-SRC_Name 2\",\"type_id\":1,\"uid\":\"Cybox-Files-UID 2\",\"url\":{\"categories\":[\"Cybox-Files-URL-Category 2\",\"Cybox-Files-URL-Categories 2\"],\"category_ids\":[101,102,103,104,105,106,107,108,109,110,111,112,113,114,116,117,118,121,124],\"extension\":\"Cybox-Files-URL-Extension 2\",\"host\":\"www.files-url-host-2.com\",\"method\":\"Cybox-Files-URL-Method 2\",\"parent_categories\":[\"Cybox-Files-URL-Parent_Category 2\",\"Cybox-Files-URL-Parent_Categories 2\"],\"path\":\"/download/trouble/cybox/files/url/path/2\",\"port\":81,\"provider\":\"Cybox-Files-URL-Provider 2\",\"query\":\"q=bad&sort=date_2\",\"referrer\":\"Cybox-Files-URL-Referrer 2\",\"referrer_categories\":[\"Cybox-Files-URL-Referrer_Category 2\",\"Cybox-Files-URL-Referrer_Categories 2\"],\"referrer_category_ids\":[12345678902,67890123452],\"rep_score_id\":1,\"scheme\":\"Cybox-Files-URL-Scheme 2\",\"text\":\"www.files-url-text-2.com/download/trouble\"},\"version\":\"Cybox-Files-Version 2\",\"xattributes\":{\"ads_name\":\"Cybox-Files-XAttributes-ADS_Name 2\",\"ads_size\":\"Cybox-Files-XAttributes-ADS_Size 2\",\"dacl\":\"Cybox-Files-XAttributes-DACL 2\",\"owner\":\"Cybox-Files-XAttributes-Owner 2\",\"primary_group\":\"Cybox-Files-XAttributes-Primary_Group 2\",\"link_name\":\"Cybox-Files-XAttributes-Link_Name 2\",\"hard_link_count\":\"Cybox-Files-XAttributes-Hard_Link_Count 2\",\"Unix_permissions\":\"Cybox-Files-XAttributes-Unix_Permissions 2\"}}],\"hostnames\":[\"Cybox-Hostname 1\",\"Cybox-Hostnames 1\"],\"icap_reqmod\":[{\"metadata\":{\"field1_keyword\":\"Cybox-ICAP_ReqMod-field1_Keyword\",\"field1_number\":12345678901,\"field1_boolean\":true,\"field1_ip\":\"175.16.199.0\"},\"service\":\"Cybox-ICAP_ReqMod-Service 1\",\"status\":\"Cybox-ICAP_ReqMod-Status 1\",\"status_detail\":\"Cybox-ICAP_ReqMod-Status_Detail 1\"},{\"metadata\":{\"field2_keyword\":\"Cybox-ICAP_ReqMod-field2_Keyword\",\"field2_number\":12345678902,\"field2_boolean\":true,\"field2_ip\":\"175.16.199.0\"},\"service\":\"Cybox-ICAP_ReqMod-Service 2\",\"status\":\"Cybox-ICAP_ReqMod-Status 2\",\"status_detail\":\"Cybox-ICAP_ReqMod-Status_Detail 2\"}],\"icap_respmod\":[{\"metadata\":{\"field1_keyword\":\"Cybox-ICAP_RespMod-field1_Keyword\",\"field1_number\":12345678901,\"field1_boolean\":true,\"field1_ip\":\"175.16.199.0\"},\"service\":\"Cybox-ICAP_RespMod-Service 1\",\"status\":\"Cybox-ICAP_RespMod-Status 1\",\"status_detail\":\"Cybox-ICAP_RespMod-Status_Detail 1\"},{\"metadata\":{\"field2_keyword\":\"Cybox-ICAP_RespMod-field2_Keyword\",\"field2_number\":12345678902,\"field2_boolean\":true,\"field2_ip\":\"175.16.199.0\"},\"service\":\"Cybox-ICAP_RespMod-Service 2\",\"status\":\"Cybox-ICAP_RespMod-Status 2\",\"status_detail\":\"Cybox-ICAP_RespMod-Status_Detail 2\"}],\"ipv4s\":[\"175.16.199.0\",\"175.16.199.0\"],\"ipv6s\":[\"2a02:cf40::\",\"2a02:cf40::\"],\"macs\":[\"00:B0:D0:63:C2:05\",\"00:B0:D0:63:C2:06\"],\"urls\":[{\"categories\":[\"Cybox-URLs-Category 1\",\"Cybox-URLs-Categories 1\"],\"category_ids\":[1,3,4,5,6,7,9,11,14,15,16,17,18,20,21,22,23,24,25,26,27,29,30,31,32,33,34,35,36,37,38,40,43,44,45,46,47,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,66,67,68,71,83,84,85,86,87,88,89,90,92,93,95,96,97,98],\"extension\":\"Cybox-URLs-Extension 1\",\"host\":\"www.urls-host-1.com\",\"method\":\"Cybox-URLs-Method 1\",\"parent_categories\":[\"Cybox-URLs-Parent_Category 1\",\"Cybox-URLs-Parent_Categories 1\"],\"path\":\"/download/trouble/cybox/urls/path/1\",\"port\":80,\"provider\":\"Cybox-URLs-Provider 1\",\"query\":\"q=bad&sort=date_1\",\"referrer\":\"Cybox-URLs-Referrer 1\",\"referrer_categories\":[\"Cybox-URLs-Referrer_Category 1\",\"Cybox-URLs-Referrer_Categories 1\"],\"referrer_category_ids\":[12345678901,67890123451],\"rep_score_id\":0,\"scheme\":\"Cybox-URLs-Scheme 1\",\"text\":\"www.urls-text-1.com/download/trouble\"},{\"categories\":[\"Cybox-URLs-Category 2\",\"Cybox-URLs-Categories 2\"],\"category_ids\":[101,102,103,104,105,106,107,108,109,110,111,112,113,114,116,117,118,121,124],\"extension\":\"Cybox-URLs-Extension 2\",\"host\":\"www.urls-host-2.com\",\"method\":\"Cybox-URLs-Method 2\",\"parent_categories\":[\"Cybox-URLs-Parent_Category 2\",\"Cybox-URLs-Parent_Categories 2\"],\"path\":\"/download/trouble/cybox/urls/path/2\",\"port\":81,\"provider\":\"Cybox-URLs-Provider 2\",\"query\":\"q=bad&sort=date_2\",\"referrer\":\"Cybox-URLs-Referrer 2\",\"referrer_categories\":[\"Cybox-URLs-Referrer_Category 2\",\"Cybox-URLs-Referrer_Categories 2\"],\"referrer_category_ids\":[12345678902,67890123452],\"rep_score_id\":1,\"scheme\":\"Cybox-URLs-Scheme 2\",\"text\":\"www.urls-text-2.com/download/trouble\"}]},\"device_alias_name\":\"Device_Alias_Name\",\"device_cap\":\"Device_Cap\",\"device_cloud_vm\":{\"autoscale_uid\":\"Device_Cloud_VM-Autoscale_UID\",\"dc_region\":\"Device_Cloud_VM-DC_Region\",\"instance_uid\":\"Device_Cloud_VM-Instance_UID\",\"subnet_uid\":\"Device_Cloud_VM-Subnet_UID\",\"vpc_uid\":\"Device_Cloud_VM-VPC_UID\"},\"device_desc\":\"Device_Desc\",\"device_domain\":\"device.domain.internal.somecompany.com\",\"device_domain_uid\":\"Device_Domain_UID\",\"device_end_time\":1613021404000,\"device_gateway\":\"175.16.199.0\",\"device_group\":\"Device_Group\",\"device_group_name\":\"Device_Group_Name\",\"device_hw_bios_date\":\"03/31/16\",\"device_hw_bios_manufacturer\":\"LENOVO\",\"device_hw_bios_ver\":\"LENOVO G5ETA2WW (2.62)\",\"device_hw_cpu_type\":\"x86 Family 6 Model 37 Stepping 5\",\"device_imei\":\"Device_IMEI\",\"device_ip\":\"175.16.199.0\",\"device_is_compliant\":true,\"device_is_personal\":true,\"device_is_trusted\":true,\"device_is_unmanaged\":true,\"device_location\":{\"city\":\"Device_Location-City\",\"continent\":\"Device_Location-Continent\",\"coordinates\":[-12.345,56.789],\"country\":\"US\",\"desc\":\"Device_Location-Desc\",\"isp\":\"Device_Location-ISP\",\"on_premises\":true,\"region\":\"US-CA\"},\"device_mac\":\"00:B0:D0:63:C2:07\",\"device_name\":\"device.name.computer.domain\",\"device_name_md5\":\"4ED962DDBF17E2BBA7B14EBC00F3162E\",\"device_networks\":[{\"bssid\":\"Device_Networks-BSSID 1\",\"gateway_ip\":\"175.16.199.0\",\"gateway_mac\":\"00:B0:D0:63:C2:08\",\"ipv4\":\"175.16.199.0\",\"ipv6\":\"2a02:cf40::\",\"is_public\":true,\"mac\":\"00:B0:D0:63:C2:09\",\"rep_score_id\":0,\"ssid\":\"Device_Networks-SSID 1\",\"type_id\":0},{\"bssid\":\"Device_Networks-BSSID 2\",\"gateway_ip\":\"89.160.20.112\",\"gateway_mac\":\"00:B0:D0:63:C2:10\",\"ipv4\":\"89.160.20.112\",\"ipv6\":\"2a02:cf40::\",\"is_public\":true,\"mac\":\"00:B0:D0:63:C2:11\",\"rep_score_id\":1,\"ssid\":\"Device_Networks-SSID 2\",\"type_id\":1}],\"device_org_unit\":\"Device_Org_Unit\",\"device_os_bits\":12345678901,\"device_os_build\":\"Device_OS_Build\",\"device_os_country\":\"IN\",\"device_os_edition\":\"Professional\",\"device_os_lang\":\"en\",\"device_os_name\":\"Windows Server 2019 Standard Edition\",\"device_os_sp_name\":\"Device_OS_SP_Name\",\"device_os_sp_ver\":\"Device_OS_SP_Ver\",\"device_os_type_id\":0,\"device_os_ver\":\"Windows 10\",\"device_proxy_ip\":\"89.160.20.112\",\"device_proxy_name\":\"Device_Proxy_Name\",\"device_public_ip\":\"89.160.20.112\",\"device_ref_uid\":\"Device_Ref_UID\",\"device_site\":\"Device_Site\",\"device_subnet\":\"81.2.69.144\",\"device_time\":1613021404000,\"device_type\":\"server\",\"device_uid\":\"Device_UID\",\"device_vhost\":\"Device_VHost\",\"device_vhost_id\":0,\"domain_uid\":\"Domain_UID\",\"end_time\":\"2024-02-29T01:00:00.000Z\",\"entity\":{\"data\":{\"field1_keyword\":\"Entity-Data-field1_Keyword\",\"field1_number\":12345678901,\"field1_boolean\":true},\"name\":\"Entity-Name\",\"type\":\"Entity-Type\",\"uid\":\"Entity-UID\",\"version\":\"Entity-Version\"},\"event_id\":2001,\"events\":[{\"connection\":{\"direction_id\":1,\"dst_service\":\"C:\\\\Windows\\\\system32\\\\NTOSKRNL.EXE\",\"src_ip\":\"159.19.163.218\"},\"count\":1,\"device_end_time\":1709225074618,\"device_time\":1709225074618}],\"feature_name\":\"Feature_Name\",\"feature_path\":\"Feature_Path\",\"feature_type\":\"Feature_Type\",\"feature_uid\":\"Feature_UID\",\"feature_ver\":\"2014.1.4.25\",\"id\":12345678901,\"impersonator_customer_uid\":\"Impersonator_Customer_UID\",\"impersonator_domain_uid\":\"Impersonator_Domain_UID\",\"impersonator_user_uid\":\"Impersonator_User_UID\",\"is_user_present\":true,\"log_level\":\"Log Level\",\"log_name\":\"Log_Name\",\"log_time\":\"2024-02-29T01:00:00.000Z\",\"logging_device_ip\":\"89.160.20.112\",\"logging_device_name\":\"Logging_Device_Name\",\"logging_device_post_time\":1613021404000,\"logging_device_ref_uid\":\"Logging_Device_Ref_UID\",\"message\":\"Message\",\"message_code\":\"Message_Code\",\"message_id\":0,\"org_unit_uid\":\"Org_Unit_UID\",\"orig_data\":\"Orig_Data\",\"product_data\":{\"sep_domain_uid\":\"Product_Data-Sep_Domain_UID\",\"sep_hw_uid\":\"Product_Data-Sep_HW_UID\"},\"product_lang\":\"en\",\"product_name\":\"Symantec Endpoint Security\",\"product_uid\":\"Product_UID\",\"product_ver\":\"2014.1.4.25-beta\",\"proxy_device_ip\":\"89.160.20.112\",\"proxy_device_name\":\"Proxy_Device_Name\",\"raw_data\":{\"assetID\":\"vc9DagprQYyLZ23SEY1APw\",\"assetOpstateDTO\":{\"productUuid\":\"31B0C880-0229-49E8-94C5-48D56B1BD7B9\",\"features\":[{\"uuid\":\"1DF0351C-146D-4F07-B155-BF5C7077FF40\",\"featureStatus\":\"SECURE\",\"opstate\":{\"EDRContentSequence\":\"20231128005\",\"EDREngineVersion\":\"4.11.0.10\",\"EDRFramworkVersion\":\"4.10.0.59\",\"FDRStatus\":true,\"LowDiskSpace\":false,\"MaxDBSizeHonored\":true,\"applied_policy\":{\"effective_date\":1709219437080,\"sha2\":\"ee6b0bebbc4575b507ac616d2c362f2c54d462b92cf4068cb6681ae3187d4de3\",\"uid\":\"7dc29d40-f303-477a-9012-287ef252a391\",\"version\":\"16\"},\"disk_usage_mb\":1546,\"fdr_first_event_date\":\"20240227\",\"fdr_state\":1},\"state\":\"ENABLED\",\"statusReason\":[\"-107\",\"0\"],\"prevention_state\":\"1\"}],\"products_active\":0,\"blades\":0}},\"ref_log_name\":\"Ref_Log_Name\",\"ref_log_time\":\"2024-02-29T01:00:00.000Z\",\"ref_orig_uid\":\"Ref_Orig_UID\",\"ref_uid\":\"Ref_UID\",\"remediated\":true,\"remediation\":\"Remediation\",\"remediation_ref\":\"Remediation_Ref\",\"remediation_uid\":0,\"seq_num\":12345678901,\"sessions\":[{\"auth_protocol_id\":0,\"cleartext_credentials\":true,\"direction_id\":0,\"id\":12345678901,\"is_admin\":true,\"logon_type_id\":1,\"port\":80,\"previous_users\":[\"Sessions-Previous_User 1\",\"Sessions-Previous_Users 1\"],\"remote\":true,\"remote_host\":\"Sessions-Remote_Host 1\",\"remote_ip\":\"89.160.20.112\",\"user\":{\"account_disabled\":true,\"cloud_resource_uid\":\"Sessions-User-Cloud_Resource_UID 1\",\"domain\":\"Sessions-User-Domain 1\",\"external_account_uid\":\"Sessions-User-External_Account_UID 1\",\"external_uid\":\"Sessions-User-External_UID 1\",\"full_name\":\"Sessions-User-Full_Name 1\",\"groups\":[\"Sessions-User-Group 1\",\"Sessions-User-Groups 1\"],\"home\":\"Sessions-User-Home 1\",\"is_admin\":true,\"logon_name\":\"Sessions-User-Logon_Name 1\",\"name\":\"session-User-Name 1\",\"password_expires\":true,\"shell\":\"Sessions-User-Shell 1\",\"sid\":\"Sessions-User-SID 1\",\"uid\":\"Sessions-User-UID 1\"}},{\"auth_protocol_id\":1,\"cleartext_credentials\":true,\"direction_id\":1,\"id\":67890123451,\"is_admin\":true,\"logon_type_id\":2,\"port\":81,\"previous_users\":[\"Sessions-Previous_User 2\",\"Sessions-Previous_Users 2\"],\"remote\":true,\"remote_host\":\"Sessions-Remote_Host 2\",\"remote_ip\":\"89.160.20.112\",\"user\":{\"account_disabled\":true,\"cloud_resource_uid\":\"Sessions-User-Cloud_Resource_UID 2\",\"domain\":\"Sessions-User-Domain 2\",\"external_account_uid\":\"Sessions-User-External_Account_UID 2\",\"external_uid\":\"Sessions-User-External_UID 2\",\"full_name\":\"Sessions-User-Full_Name 2\",\"groups\":[\"Sessions-User-Group 2\",\"Sessions-User-Groups 2\"],\"home\":\"Sessions-User-Home 2\",\"is_admin\":true,\"logon_name\":\"Sessions-User-Logon_Name 2\",\"name\":\"session-User-Name 2\",\"password_expires\":true,\"shell\":\"Sessions-User-Shell 2\",\"sid\":\"Sessions-User-SID 2\",\"uid\":\"Sessions-User-UID 2\"}}],\"severity_id\":0,\"source\":{\"facility\":\"Source-Facility\",\"facility_detail\":\"Source-Facility_Detail\",\"facility_uid\":\"Source-Facility_UID\",\"type_id\":1},\"status_detail\":\"Status_Detail\",\"status_id\":0,\"status_os\":\"Status_OS\",\"status_os_src\":12345678901,\"status_stack_trace\":\"Status_Stack_Trace\",\"status_thread_name\":\"Status_Thread_Name\",\"stic_has_pii\":true,\"stic_hw_uid\":\"STIC_HW_UID\",\"stic_ip_hash\":\"STIC_IP_Hash\",\"stic_legacy_ent_uids\":[\"STIC_Legacy_Ent_UIDs 1\",\"STIC_Legacy_Ent_UIDs 2\"],\"stic_legacy_hw_uids\":[\"STIC_Legacy_HW_UIDs 1\",\"STIC_Legacy_HW_UIDs 2\"],\"stic_legacy_uids\":[\"STIC_Legacy_UIDs 1\",\"STIC_Legacy_UIDs 2\"],\"stic_schema_id\":\"STIC_Schema_ID\",\"stic_uid\":\"STIC_UID\",\"stic_version\":\"STIC_Version\",\"subfeature_name\":\"Subfeature_Name\",\"time\":\"2024-02-29T02:00:00Z\",\"timezone\":12345678901,\"type\":\"Type\",\"type_id\":2,\"user\":{\"account_disabled\":true,\"cloud_resource_uid\":\"User-Cloud_Resource_UID\",\"domain\":\"User-Domain\",\"external_account_uid\":\"User-External_Account_UID\",\"external_uid\":\"User-External_UID\",\"full_name\":\"User-Full_Name\",\"groups\":[\"User-Group 1\",\"User-Groups 1\"],\"home\":\"User-Home\",\"is_admin\":true,\"logon_name\":\"User-Logon_Name\",\"name\":\"User123\",\"password_expires\":true,\"shell\":\"User-Shell\",\"sid\":\"TT23009\",\"uid\":\"UU34899825\"},\"user_name\":\"Mohit\",\"user_uid\":\"AB45698\",\"uuid\":\"SR-1565234545\",\"version\":\"1.4\"}",
         "sequence": [
             12345678901
         ],
@@ -304,6 +321,16 @@ An example event for `event` looks as following:
     "file": {
         "accessed": [
             "2021-02-11T05:30:04.000Z"
+        ],
+        "attributes": [
+            "system",
+            "encrypted",
+            "hidden",
+            "readonly",
+            "archive",
+            "compressed",
+            "directory",
+            "execute"
         ],
         "created": [
             "2021-02-11T05:30:04.000Z"
@@ -334,6 +361,9 @@ An example event for `event` looks as following:
             12345678901,
             12345678902
         ],
+        "type": [
+            "file"
+        ],
         "x509": {
             "issuer": {
                 "distinguished_name": [
@@ -358,7 +388,8 @@ An example event for `event` looks as following:
         "os": {
             "name": "Windows Server 2019 Standard Edition",
             "version": [
-                "Device_OS_Build"
+                "Device_OS_Build",
+                "Windows 10"
             ]
         },
         "type": [
@@ -370,7 +401,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-symantec-endpoint-security-bucket-27504.s3.us-east-1.amazonaws.com/events.log"
+            "path": "https://elastic-package-symantec-endpoint-security-bucket-47282.s3.us-east-1.amazonaws.com/events.log"
         },
         "level": [
             "Log Level"
@@ -389,10 +420,19 @@ An example event for `event` looks as following:
     "related": {
         "hash": [
             "4ED962DDBF17E2BBA7B14EBC00F3162E",
+            "STIC_IP_Hash",
             "HFDajsdf3254345436",
             "Cybox-Files-MD5 2",
             "Cybox-Files-SHA1 1",
-            "Cybox-Files-SHA1 2"
+            "Cybox-Files-SHA1 2",
+            "Cybox-Files-SHA2 1",
+            "Cybox-Files-SHA2 2",
+            "Cybox-Files-Parent_SHA2 1",
+            "Cybox-Files-Parent_SHA2 2"
+        ],
+        "hosts": [
+            "Cybox-Files-SRC_Name 1",
+            "Cybox-Files-SRC_Name 2"
         ],
         "ip": [
             "175.16.199.0",
@@ -402,8 +442,13 @@ An example event for `event` looks as following:
             "2a02:cf40::"
         ],
         "user": [
+            "Impersonator_User_UID",
             "AB45698",
             "Mohit",
+            "Sessions-User-UID 1",
+            "Sessions-User-UID 2",
+            "session-User-Name 1",
+            "session-User-Name 2",
             "UU34899825",
             "User123"
         ]
@@ -460,6 +505,7 @@ An example event for `event` looks as following:
             ],
             "emails": [
                 {
+                    "direction_id": "0",
                     "header_message_id": "Cybox-Emails-Header_Message_ID 1",
                     "header_reply_to": "Cybox-Emails-Header_Reply_To 1",
                     "sender_ip": "81.2.69.144",
@@ -469,6 +515,7 @@ An example event for `event` looks as following:
                     "smtp_to": "Cybox-Emails-SMTP_To 1"
                 },
                 {
+                    "direction_id": "1",
                     "header_message_id": "Cybox-Emails-Header_Message_ID 2",
                     "header_reply_to": "Cybox-Emails-Header_Reply_To 2",
                     "sender_ip": "81.2.69.144",
@@ -504,7 +551,7 @@ An example event for `event` looks as following:
                     "creator": "Creator 1",
                     "creator_process": "Cybox-Files-Creator_Process 1",
                     "desc": "Cybox-Files-Desc 1",
-                    "folder": "c:\\windows\\system32\\cybox\u000ciles\u000colder\\1",
+                    "folder": "c:\\windows\\system32\\cybox\\files\\folder\\1",
                     "folder_uid": "Cybox-Files-Folder_UID 1",
                     "is_system": true,
                     "modified": "2021-02-11T05:30:04.000Z",
@@ -555,6 +602,7 @@ An example event for `event` looks as following:
                     "size_compressed": 12345678901,
                     "src_ip": "81.2.69.142",
                     "src_name": "Cybox-Files-SRC_Name 1",
+                    "type_id": "1",
                     "uid": "Cybox-Files-UID 1",
                     "url": {
                         "categories": [
@@ -692,7 +740,7 @@ An example event for `event` looks as following:
                     "creator": "Cybox-Files-Creator 2",
                     "creator_process": "Cybox-Files-Creator_Process 2",
                     "desc": "Cybox-Files-Desc 2",
-                    "folder": "c:\\windows\\system32\\cybox\u000ciles\u000colder\\2",
+                    "folder": "c:\\windows\\system32\\cybox\\files\\folder\\2",
                     "folder_uid": "Cybox-Files-Folder_UID 2",
                     "is_system": true,
                     "modified": "2021-02-11T05:30:04.000Z",
@@ -747,6 +795,7 @@ An example event for `event` looks as following:
                     "size_compressed": 12345678902,
                     "src_ip": "81.2.69.144",
                     "src_name": "Cybox-Files-SRC_Name 2",
+                    "type_id": "1",
                     "uid": "Cybox-Files-UID 2",
                     "url": {
                         "categories": [
@@ -1030,18 +1079,12 @@ An example event for `event` looks as following:
             "vpc_uid": "Device_Cloud_VM-VPC_UID"
         },
         "device_desc": "Device_Desc",
-        "device_domain": "device.domain.internal.somecompany.com",
-        "device_domain_uid": "Device_Domain_UID",
-        "device_end_time": "2021-02-11T05:30:04.000Z",
         "device_gateway": "175.16.199.0",
         "device_group": "Device_Group",
         "device_group_name": "Device_Group_Name",
         "device_hw_bios_date": "03/31/16",
-        "device_hw_bios_manufacturer": "LENOVO",
         "device_hw_bios_ver": "LENOVO G5ETA2WW (2.62)",
-        "device_hw_cpu_type": "x86 Family 6 Model 37 Stepping 5",
         "device_imei": "Device_IMEI",
-        "device_ip": "175.16.199.0",
         "device_is_compliant": true,
         "device_is_personal": true,
         "device_is_trusted": true,
@@ -1055,8 +1098,6 @@ An example event for `event` looks as following:
             "isp": "Device_Location-ISP",
             "on_premises": true
         },
-        "device_mac": "00-B0-D0-63-C2-07",
-        "device_name": "device.name.computer.domain",
         "device_name_md5": "4ED962DDBF17E2BBA7B14EBC00F3162E",
         "device_networks": [
             {
@@ -1086,24 +1127,18 @@ An example event for `event` looks as following:
         ],
         "device_org_unit": "Device_Org_Unit",
         "device_os_bits": 12345678901,
-        "device_os_build": "Device_OS_Build",
-        "device_os_country": "IN",
         "device_os_edition": "Professional",
         "device_os_lang": "en",
-        "device_os_name": "Windows Server 2019 Standard Edition",
         "device_os_sp_name": "Device_OS_SP_Name",
         "device_os_sp_ver": "Device_OS_SP_Ver",
         "device_os_type_id": "0",
-        "device_os_ver": "Windows 10",
+        "device_os_type_value": "Unknown",
         "device_proxy_ip": "89.160.20.112",
         "device_proxy_name": "Device_Proxy_Name",
         "device_public_ip": "89.160.20.112",
         "device_ref_uid": "Device_Ref_UID",
         "device_site": "Device_Site",
         "device_subnet": "81.2.69.144",
-        "device_time": "2021-02-11T05:30:04.000Z",
-        "device_type": "server",
-        "device_uid": "Device_UID",
         "device_vhost": "Device_VHost",
         "device_vhost_id": "0",
         "domain_uid": "Domain_UID",
@@ -1142,8 +1177,6 @@ An example event for `event` looks as following:
         "impersonator_domain_uid": "Impersonator_Domain_UID",
         "impersonator_user_uid": "Impersonator_User_UID",
         "is_user_present": true,
-        "log_level": "Log Level",
-        "log_name": "Log_Name",
         "log_time": "2024-02-29T01:00:00.000Z",
         "logging_device_ip": "89.160.20.112",
         "logging_device_name": "Logging_Device_Name",
@@ -3398,5 +3431,166 @@ An example event for `event` looks as following:
 | ses.verdict_id | The outcome of the Scan. | keyword |
 | ses.verdict_value | The outcome value of the Scan. | keyword |
 | ses.version | The event type version, in the form major.minor. | keyword |
-| tags | User defined tags. | keyword |
+
+
+### Incident
+
+This is the `Incident` dataset.
+
+#### Example
+
+An example event for `incident` looks as following:
+
+```json
+{
+    "@timestamp": "2023-04-26T21:46:10.400Z",
+    "agent": {
+        "ephemeral_id": "d020ce5f-a051-44f6-9381-6690b0aeb6ae",
+        "id": "6959e46f-8a34-4f03-83ab-616183948946",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "symantec_endpoint_security.incident",
+        "namespace": "83934",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "6959e46f-8a34-4f03-83ab-616183948946",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "malware"
+        ],
+        "created": "2023-04-26T21:46:10.400Z",
+        "dataset": "symantec_endpoint_security.incident",
+        "id": "8e7edfb1-27d2-4837-98ca-e7d794119c3b",
+        "ingested": "2024-07-23T06:59:56Z",
+        "kind": "alert",
+        "original": "{\"category_id\":1,\"conclusion\":\"Suspicious Activity\",\"created\":\"2023-04-26T21:46:10.400+00:00\",\"customer_uid\":\"TEST-JvOsaJktSS-eyL-dXhxOvA\",\"detection_type\":\"Advanced Analytics\",\"device_time\":1682545570400,\"domain_uid\":\"TEST-ZBg_IqnyTAijNjP2BOOcuw\",\"event_id\":8075004,\"id\":4,\"incident_uid\":\"8e7edfb1-27d2-4837-98ca-e7d794119c3b\",\"incident_url\":\"https://sep.securitycloud.symantec.com/v2/incidents/incidentListing/8e7edfb1-27d2-4837-98ca-e7d794119c3b/details\",\"message\":\"Victim-2:Signed Binary Proxy Execution, Deobfuscate/Decode Files or Information, Command and Scripting Interpreter: PowerShell, System Services: Service Execution\",\"modified\":\"2023-04-26T22:01:58.648+00:00\",\"priority_id\":4,\"product_name\":\"Symantec Integrated Cyber Defense Manager\",\"product_uid\":\"31B0C880-0229-49E8-94C5-48D56B1BD7B9\",\"ref_incident_uid\":102110,\"remediation\":\"Investigate further activity at the endpoint by downloading a full dump of the endpoint's recorded data. Give particular attention to activities performed by cmd.exe.\",\"resolution_id\":1,\"rule_name\":\"Advanced Attack Technique\",\"severity_id\":4,\"state_id\":1,\"suspected_breach\":\"Yes\",\"time\":1682545570400,\"type\":\"INCIDENT_CREATION\",\"type_id\":8075,\"version\":\"1.0\"}",
+        "provider": "Symantec Integrated Cyber Defense Manager",
+        "reason": "Suspicious Activity",
+        "severity": 4,
+        "type": [
+            "info"
+        ],
+        "url": "https://sep.securitycloud.symantec.com/v2/incidents/incidentListing/8e7edfb1-27d2-4837-98ca-e7d794119c3b/details"
+    },
+    "http": {
+        "version": "1.0"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "message": "Victim-2:Signed Binary Proxy Execution, Deobfuscate/Decode Files or Information, Command and Scripting Interpreter: PowerShell, System Services: Service Execution",
+    "rule": {
+        "name": "Advanced Attack Technique"
+    },
+    "ses": {
+        "incident": {
+            "category": "Security",
+            "category_id": "1",
+            "conclusion": "Suspicious Activity",
+            "created": "2023-04-26T21:46:10.400Z",
+            "customer_uid": "TEST-JvOsaJktSS-eyL-dXhxOvA",
+            "detection_type": "Advanced Analytics",
+            "device_time": "2023-04-26T21:46:10.400Z",
+            "domain_uid": "TEST-ZBg_IqnyTAijNjP2BOOcuw",
+            "event": "Incident Creation: Logged",
+            "event_id": "8075004",
+            "id": "4",
+            "incident_uid": "8e7edfb1-27d2-4837-98ca-e7d794119c3b",
+            "incident_url": "https://sep.securitycloud.symantec.com/v2/incidents/incidentListing/8e7edfb1-27d2-4837-98ca-e7d794119c3b/details",
+            "message": "Victim-2:Signed Binary Proxy Execution, Deobfuscate/Decode Files or Information, Command and Scripting Interpreter: PowerShell, System Services: Service Execution",
+            "modified": "2023-04-26T22:01:58.648Z",
+            "outcome": "Logged",
+            "priority": "Critical",
+            "priority_id": "4",
+            "product_name": "Symantec Integrated Cyber Defense Manager",
+            "product_uid": "31B0C880-0229-49E8-94C5-48D56B1BD7B9",
+            "ref_incident_uid": "102110",
+            "remediation": "Investigate further activity at the endpoint by downloading a full dump of the endpoint's recorded data. Give particular attention to activities performed by cmd.exe.",
+            "resolution": "Insufficient data",
+            "resolution_id": "1",
+            "rule_name": "Advanced Attack Technique",
+            "severity": "Major",
+            "severity_id": 4,
+            "state": "New",
+            "state_id": "1",
+            "suspected_breach": true,
+            "time": "2023-04-26T21:46:10.400Z",
+            "type": "INCIDENT_CREATION",
+            "type_id": "8075",
+            "version": "1.0"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "ses-incident"
+    ],
+    "url": {
+        "domain": "sep.securitycloud.symantec.com",
+        "original": "https://sep.securitycloud.symantec.com/v2/incidents/incidentListing/8e7edfb1-27d2-4837-98ca-e7d794119c3b/details",
+        "path": "/v2/incidents/incidentListing/8e7edfb1-27d2-4837-98ca-e7d794119c3b/details",
+        "scheme": "https"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| ses.incident.category |  | keyword |
+| ses.incident.category_id | Event type category. | keyword |
+| ses.incident.conclusion |  | keyword |
+| ses.incident.created | The creation time of the incident in ISO 8601 format. | date |
+| ses.incident.customer_uid | Customer ID. | keyword |
+| ses.incident.detection_type |  | keyword |
+| ses.incident.device_time | The time that the event occurred at the device. | date |
+| ses.incident.domain_uid | Domain ID. | keyword |
+| ses.incident.event |  | keyword |
+| ses.incident.event_id | ID that identifies the semantics, structure and outcome. | keyword |
+| ses.incident.id | The outcome of the event. | keyword |
+| ses.incident.incident_uid | A unique identifier for this incident. | keyword |
+| ses.incident.incident_url | The URL pointing to ICDM console for this incident details. | keyword |
+| ses.incident.log_time |  | date |
+| ses.incident.message |  | keyword |
+| ses.incident.modified |  | date |
+| ses.incident.outcome |  | keyword |
+| ses.incident.priority |  | keyword |
+| ses.incident.priority_id |  | keyword |
+| ses.incident.product_name | The name of the product originating the incident. | keyword |
+| ses.incident.product_uid | The unique identifier of the product originating the incident. | keyword |
+| ses.incident.ref_incident_uid | User friendly ID for this incident_uid. | keyword |
+| ses.incident.remediation | Recommended action. | keyword |
+| ses.incident.resolution |  | keyword |
+| ses.incident.resolution_id |  | keyword |
+| ses.incident.rule_name | The rule that triggered the incident. | keyword |
+| ses.incident.severity |  | keyword |
+| ses.incident.severity_id |  | long |
+| ses.incident.state |  | keyword |
+| ses.incident.state_id |  | keyword |
+| ses.incident.suspected_breach |  | boolean |
+| ses.incident.time | The event occurrence time. | date |
+| ses.incident.type | Event type. | keyword |
+| ses.incident.type_id |  | keyword |
+| ses.incident.version | API version in the form major.minor. | keyword |
 

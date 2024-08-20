@@ -1,7 +1,6 @@
 type: metrics
 title: Collect OpenAI metrics
 dataset: azure.open_ai
-release: experimental
 streams:
   - input: azure/metrics
     vars:
@@ -56,10 +55,17 @@ streams:
         multi: true
         required: false
         show_user: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
     title: Azure OpenAI metrics
     description: Collect openAI metrics
 elasticsearch:
   # Ensures agents have permissions to write data to `metrics-*-*`
   dynamic_dataset: true
   dynamic_namespace: true
-  index_mode: "time_series"
