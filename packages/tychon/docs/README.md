@@ -73,9 +73,6 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | tychon.destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | tychon.destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tychon.destination.name |  | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -189,9 +186,6 @@ TYCHON checks local browser configuration settings.
 | tychon.destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | tychon.destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tychon.edition | The product edition | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.event.reason | Event reason. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
@@ -343,9 +337,6 @@ TYCHON connects to open ports on the computer and reports back if it is hosting 
 | tags | List of keywords used to tag each event. | keyword |
 | tls.client.supported_ciphers | Array of ciphers offered by the client during the client hello. | keyword |
 | tychon.connection.state | The current state of the connection tested | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.file.accessed | Last time the file was accessed. Note that not all filesystems keep track of access time. | date |
 | tychon.file.attributes | Array of file attributes. Attributes names will vary by platform. Here's a non-exhaustive list of values that are expected in this field: archive, compressed, directory, encrypted, execute, hidden, read, readonly, system, write. | keyword |
 | tychon.file.code_signature.friendly_name | The friendly name of the certificate or cipher | keyword |
@@ -493,9 +484,6 @@ TYCHON Agentless will generate the complete Master Endpoint Record for reporting
 | log.offset | Log Offset. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | tychon.data | The Base64 encoded contents of STIG data to be reported to the DISA server | text |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -597,9 +585,6 @@ TYCHON has integtred with DISA DATT and gathering what Operational Attributes ha
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.attribute.cmrs | The CMRS Tag needed for reporting | keyword |
 | tychon.host.attribute.id | The Identifer at the end of the Display Name | keyword |
@@ -700,9 +685,6 @@ TYCHON scans for Endpoint CPU's and returns the results.
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.cpu.caption | Host Cpu Caption. | text |
@@ -809,9 +791,6 @@ TYCHON scans for Endpoint vulnerablities and returns the results.
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -953,9 +932,6 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | tychon.elastic.service.endpoint.ransomware | Elastic Service Endpoint Ransomware. | keyword |
 | tychon.elastic.service.endpoint.status | Elastic Service Endpoint Status. | keyword |
 | tychon.elastic.service.endpoint.version | Elastic Service Endpoint Version. | version |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1127,9 +1103,6 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | tychon.device.name | Device Name. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1250,9 +1223,6 @@ TYCHON will ensure external devices like usb hard drives and cdrom drives cannot
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.event_data.device_description | The description of the device that connected | keyword |
 | tychon.event_data.device_id | The device Identifer | keyword |
 | tychon.event_data.device_location | The device location of where it was plugged in | keyword |
@@ -1372,9 +1342,6 @@ TYCHON gathers which Windows features have been enabled on endpoints and returns
 | package.reference | Home page or reference URL of the software in this package, if available. | keyword |
 | package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1507,9 +1474,6 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | tychon.disk.serial_number | The unique serial number of the drive | keyword |
 | tychon.disk.size | Total Size of the disk | long |
 | tychon.disk.system | Is this a system drive | boolean |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1617,9 +1581,6 @@ The TYCHON script scans an endpoint's Hardware Configurations and returns inform
 | tychon.device.name | Device Name. | keyword |
 | tychon.device.present | Device Present. | boolean |
 | tychon.device.status | Device Status. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1701,9 +1662,6 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.event.deviceguard.basevirtualizationsupport.available | Event Deviceguard Basevirtualizationsupport Available. | boolean |
 | tychon.event.deviceguard.credentialguard.enabled | Event Deviceguard Credentialguard Enabled. | boolean |
 | tychon.event.deviceguard.credentialguard.running | Event Deviceguard Credentialguard Running. | boolean |
@@ -1858,9 +1816,6 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.adapter.alias | The Alias given to this adapter | keyword |
 | tychon.host.adapter.description | The network adapter description | text |
 | tychon.host.adapter.dhcp.enabled | Is DHCP Enabled on this adapter | boolean |
@@ -1996,9 +1951,6 @@ The TYCHON script scans an endpoint's Software Inventory and returns information
 | package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
 | package.version | Package version | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2044,10 +1996,10 @@ The TYCHON script scans an endpoint's Software Inventory and returns information
 | tychon.package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
 | tychon.package.uninstall | Package Uninstall. | text |
 | tychon.package.version | Package version | keyword |
-| tychon.package.version_build | Package Version Build. | integer |
-| tychon.package.version_major | Package Version Major. | integer |
-| tychon.package.version_minor | Package Version Minor. | integer |
-| tychon.package.version_release | Package Version Release. | integer |
+| tychon.package.version_build | Package Version Build. | keyword |
+| tychon.package.version_major | Package Version Major. | keyword |
+| tychon.package.version_minor | Package Version Minor. | keyword |
+| tychon.package.version_release | Package Version Release. | keyword |
 | tychon.script.current_duration | Scanner Script Duration. | long |
 | tychon.script.current_time | Current datetime. | date |
 | tychon.script.name | Scanner Script Name. | keyword |
@@ -2124,9 +2076,6 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | tychon.benchmark.name | Benchmark Name. | keyword |
 | tychon.benchmark.title | Benchmark Title. | keyword |
 | tychon.benchmark.version | Benchmark Version. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2283,9 +2232,6 @@ TYCHON searches the computer and hard drive for certificate files that stored in
 | tychon.certificate.name | Host Os Feature Name. | keyword |
 | tychon.certificate.type | Host Os Feature Type. | keyword |
 | tychon.connection.state | The current state of the connection tested | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.file.accessed | Last time the file was accessed. Note that not all filesystems keep track of access time. | date |
 | tychon.file.attributes | Array of file attributes. Attributes names will vary by platform. Here's a non-exhaustive list of values that are expected in this field: archive, compressed, directory, encrypted, execute, hidden, read, readonly, system, write. | keyword |
 | tychon.file.code_signature.friendly_name | The Friendly Name of the signing certificate | keyword |
@@ -2461,9 +2407,6 @@ The TYCHON script scans an endpoint's Volume Configurations and returns informat
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| tychon.elastic_agent.id | Elastic Agent Id. | keyword |
-| tychon.elastic_agent.snapshot | Elastic Agent snapshot. | boolean |
-| tychon.elastic_agent.version | Elastic Agent Version. | keyword |
 | tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
