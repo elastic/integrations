@@ -59,6 +59,7 @@ for package in ${PACKAGE_LIST}; do
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
         SERVERLESS: "false"
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
+        ELASTIC_AGENT_DOCKER_IMAGE: "${ELASTIC_AGENT_DOCKER_IMAGE:-""}"
       artifact_paths:
         - build/test-results/*.xml
         - build/test-coverage/*.xml
