@@ -51,6 +51,7 @@ program: |
     ).do_request().as(get_resp, get_resp.StatusCode == 200 ?
       bytes(get_resp.Body).decode_json().as(body, {
         ?"resources": has(body.resources) && body.resources.size() > 0 ? optional.of(body.resources) : optional.none(),
+        "events": [],
         "want_more": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total),
         "offset": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
           int(state.offset) + body.resources.size()
@@ -75,7 +76,7 @@ program: |
       }
     )
   ).as(state, state.with(
-    !has(state.resources) ? {"events": []} : // Exit early due to GET failure or no resources to collect.
+    !has(state.resources) ? state : // Exit early due to GET failure or no resources to collect.
       post_request(
         state.url + "/devices/entities/devices/v2",
         "application/json",
