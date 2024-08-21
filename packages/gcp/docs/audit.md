@@ -37,8 +37,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.logentry_operation.id | Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation. | keyword |
 | gcp.audit.logentry_operation.last | Optional. Set this to True if this is the last log entry in the operation. | boolean |
 | gcp.audit.logentry_operation.producer | Optional. An arbitrary producer identifier. The combination of id and producer must be globally unique. | keyword |
+| gcp.audit.metadata | Service-specific data about the request, response, and other information associated with the current audited event. | flattened |
 | gcp.audit.method_name | The name of the service method or operation. For API calls, this  should be the name of the API method.  For example, 'google.datastore.v1.Datastore.RunQuery'. | keyword |
 | gcp.audit.num_response_items | The number of items returned from a List or Query API method, if applicable. | long |
+| gcp.audit.policy_violation_info.payload | Resource payload that is currently in scope and is subjected to orgpolicy conditions. | flattened |
+| gcp.audit.policy_violation_info.resource_tags | Tags referenced on the resource at the time of evaluation. | flattened |
+| gcp.audit.policy_violation_info.resource_type | Resource type that the orgpolicy is checked against. | keyword |
+| gcp.audit.policy_violation_info.violations.checkedValue | Value that is being checked for the policy. | keyword |
+| gcp.audit.policy_violation_info.violations.constraint | Constraint name. | keyword |
+| gcp.audit.policy_violation_info.violations.errorMessage | Error message that policy is indicating. | keyword |
+| gcp.audit.policy_violation_info.violations.policyType | Indicates the type of the policy. | keyword |
 | gcp.audit.request |  | flattened |
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
@@ -48,6 +56,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.response |  | flattened |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
 | gcp.audit.status.code | The status code, which should be an enum value of google.rpc.Code. | integer |
+| gcp.audit.status.details | A list of messages that carry the error details. | flattened |
 | gcp.audit.status.message | A developer-facing error message, which should be in English. Any user-facing  error message should be localized and sent in the google.rpc.Status.details  field, or localized by the client. | keyword |
 | gcp.audit.type | Type property. | keyword |
 | gcp.destination.instance.project_id | ID of the project containing the VM. | keyword |
