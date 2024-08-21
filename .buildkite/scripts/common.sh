@@ -493,14 +493,22 @@ prepare_stack() {
     echo "--- Prepare stack"
 
     local args="-v"
+    local stack_version=""
     if [ -n "${STACK_VERSION}" ]; then
         args="${args} --version ${STACK_VERSION}"
+        stack_version="${STACK_VERSION}"
     else
         local version
         version=$(oldest_supported_version)
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
+            stack_version="${version}"
         fi
+    fi
+
+    if [[ "${ELASTIC_AGENT_DOCKER_IMAGE:-""}" != "" ]]; then
+        export ELASTIC_AGENT_IMAGE_REF_OVERRIDE="${ELASTIC_AGENT_DOCKER_IMAGE}:${stack_version}"
+        echo "Using Elastic Agent docker image: ${ELASTIC_AGENT_IMAGE_REF_OVERRIDE}"
     fi
 
     echo "Boot up the Elastic stack"
