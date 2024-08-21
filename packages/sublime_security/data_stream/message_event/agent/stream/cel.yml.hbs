@@ -32,22 +32,22 @@ program: |
           state
         :
           state.with({
-            "start_time": state.?cursor.last_timestamp.orValue(string((now - duration(state.initial_interval)).format(time_layout.RFC3339))),
+            "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
             "end_time": now.format(time_layout.RFC3339),
           })
       ).as(state, state.with(
         request(
           "GET",
           state.url.trim_right("/") + "/v0/message-groups?" + {
-            "created_at__gte": [string(state.start_time)],
-            "created_at__lt": [string(state.end_time)],
+            "created_at__gte": [state.start_time],
+            "created_at__lt": [state.end_time],
             "flagged": ["true"],
             "limit": [string(state.page_size)],
             "offset": [string(state.offset)]
           }.format_query()
         ).with({
           "Header": {
-            "Authorization": ["Bearer " + string(state.api_key)],
+            "Authorization": ["Bearer " + state.api_key],
           },
         }).do_request().as(resp, resp.StatusCode == 200 ?
           (
@@ -80,7 +80,7 @@ program: |
         )
       ))
   ).as(state, state.with(
-    has(state.events) && has(state.events.error) ? state :
+    !has(state.worklist) ? state :
       int(state.next) < size(state.worklist) ?
         request(
           "GET",
