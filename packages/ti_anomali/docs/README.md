@@ -44,11 +44,11 @@ An example event for `threatstream` looks as following:
 {
     "@timestamp": "2020-10-08T12:22:11.000Z",
     "agent": {
-        "ephemeral_id": "5f5fdd12-5b96-4370-aae2-3f4ca99136eb",
-        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
+        "ephemeral_id": "2f4f6445-5077-4a66-8582-2c74e071b6dd",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "anomali": {
         "threatstream": {
@@ -73,16 +73,16 @@ An example event for `threatstream` looks as following:
     },
     "data_stream": {
         "dataset": "ti_anomali.threatstream",
-        "namespace": "ep",
+        "namespace": "44735",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -90,7 +90,7 @@ An example event for `threatstream` looks as following:
             "threat"
         ],
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2023-12-22T11:03:22Z",
+        "ingested": "2024-08-01T07:49:22Z",
         "kind": "enrichment",
         "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
@@ -178,4 +178,7 @@ An example event for `threatstream` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
