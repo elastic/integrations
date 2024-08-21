@@ -101,28 +101,236 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Map children fields.
+      if: ctx.json?.children instanceof List
+      params:
+        'asset_type' : 'asset_type'
+        'asset_type__' : 'asset_type__'
+        'class_type' : 'class_type'
+        'criticality' : 'criticality'
+        'criticality__' : 'criticality__'
+        'special_hint' : 'special_hint'
+        'special_hint__' : 'special_hint__'
+        'subnet_id' : 'subnet_id'
+        'edge_id' : 'edge_id'
+        'network_id' : 'network_id'
+        'network.id' : 'network.id'
+        'network.site_id' : 'network.site_id'
+        'network.resource_id' : 'network.resource_id'
+        'resource_id' : 'resource_id'
+        'id' : 'id'
+        'site_id' : 'site_id'
+        'virtual_zone_id' : 'virtual_zone_id'
+        'virtual_zone_name' : 'virtual_zone_name'
+      tag: script_to_map_fields_under_children_object
+      source: |
+        def convertToLong(def value) {
+          if (value instanceof String) {
+            return Long.parseLong(value);
+          } else if (value instanceof Number) {
+            return ((long) value).longValue();
+          } else {
+            throw new Exception('Unsupported type');
+          }
+        }
+        def convertToBoolean(def value) {
+          if (value instanceof String) {
+            return Boolean.parseBoolean(value);
+          } else if (value instanceof Boolean) {
+            return (Boolean) value;
+          } else {
+            throw new Exception('Unsupported type');
+          }
+        }
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = updatedList;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                if (['asset_type','subnet_type','risk_level','custom_informations.category','special_hint','criticality','custom_informations.priority','custom_informations.type','project_parsed.creation_time','project_parsed.information_type','project_parsed.modification_time','project_parsed.priority'].contains(keyMap[key])) {
+                  updatedJson[keyMap[key]] = convertToLong(value);
+                } else if (['subnet_id','id','edge_id','network_id','virtual_zone_id','site_id','network.site_id','network.id','network.resource_id','resource_id'].contains(keyMap[key])) {
+                  updatedJson[keyMap[key]] = value.toString();
+                } else if (['approved','ghost','parsed'].contains(keyMap[key])) {
+                  updatedJson[keyMap[key]] = convertToBoolean(value);
+                } else {
+                  updatedJson[keyMap[key]] = value;
+                }
+              } else {
+                updatedJson[key] = value;
+              }
+            }
+          }
+          return updatedJson;
+        }
+        ctx.claroty_ctd.asset.put('children', new ArrayList());
+        for (child in ctx.json.children) {
+          def children = renameKeys(child, params);
+          ctx.claroty_ctd.asset.children.add(children);
+          }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_virtual_zone_id
+      processor:
+        rename:
+          field: _ingest._value.virtual_zone_id
+          tag: rename_children_virtual_zone_id
+          target_field: _ingest._value.virtual_zone.id
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_virtual_zone_name
+      processor:
+        rename:
+          field: _ingest._value.virtual_zone_name
+          tag: rename_children_virtual_zone_name
+          target_field: _ingest._value.virtual_zone.name
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_special_hint__
+      processor:
+        rename:
+          field: _ingest._value.special_hint__
+          tag: rename_children_special_hint__
+          target_field: _ingest._value.special_hints.name
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_special_hint
+      processor:
+        rename:
+          field: _ingest._value.special_hint
+          tag: rename_children_special_hint
+          target_field: _ingest._value.special_hints.value
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_virtual_zone_id
+      processor:
+        rename:
+          field: _ingest._value.virtual_zone_id
+          tag: rename_children_virtual_zone_id
+          target_field: _ingest._value.virtual_zone.id
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_os_architecture
+      processor:
+        rename:
+          field: _ingest._value.os_architecture
+          tag: rename_children_os_architecture
+          target_field: _ingest._value.os.architecture
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_os_revision
+      processor:
+        rename:
+          field: _ingest._value.os_revision
+          tag: rename_children_os_revision
+          target_field: _ingest._value.os.revision
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_os_build
+      processor:
+        rename:
+          field: _ingest._value.os_build
+          tag: rename_children_os_build
+          target_field: _ingest._value.os.build
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_os_service_pack
+      processor:
+        rename:
+          field: _ingest._value.os_service_pack
+          tag: rename_children_os_service_pack
+          target_field: _ingest._value.os.service_pack
+          ignore_missing: true
   - rename:
-      field: json.children
-      tag: rename_children
-      target_field: claroty_ctd.asset.children
+      field: claroty_ctd.asset.children.virtual_zone_id
+      tag: rename_children_virtual_zone_id
+      target_field: claroty_ctd.asset.children.virtual_zone.id
       ignore_missing: true
   - foreach:
       field: claroty_ctd.asset.children
       if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_risk_level
+      tag: foreach_children_asset_type__
       processor:
-        convert:
-          field: _ingest._value.risk_level
-          tag: convert_children_risk_level_to_long
-          type: long
+        rename:
+          field: _ingest._value.asset_type__
+          tag: rename_children_asset_type__
+          target_field: _ingest._value.asset_types.name
           ignore_missing: true
-          on_failure:
-           - remove:
-               field: _ingest._value.risk_level
-               ignore_missing: true
-           - append:
-               field: error.message
-               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_asset_type
+      processor:
+        rename:
+          field: _ingest._value.asset_type
+          tag: rename_children_asset_type
+          target_field: _ingest._value.asset_types.number
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_criticality__
+      processor:
+        rename:
+          field: _ingest._value.criticality__
+          tag: rename_children_criticality__
+          target_field: _ingest._value.criticalities.name
+          ignore_missing: true
+  - foreach:
+      field: claroty_ctd.asset.children
+      if: ctx.claroty_ctd?.asset?.children instanceof List
+      tag: foreach_children_criticality
+      processor:
+        rename:
+          field: _ingest._value.criticality
+          tag: rename_children_criticality
+          target_field: _ingest._value.criticalities.value
+          ignore_missing: true
   - rename:
       field: json.plc_slots
       tag: rename_plc_slots
@@ -289,51 +497,6 @@ processors:
            - append:
                field: error.message
                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_os_architecture
-      processor:
-        rename:
-          field: _ingest._value.os_architecture
-          tag: rename_children_os_architecture
-          target_field: _ingest._value.os.architecture
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_os_revision
-      processor:
-        rename:
-          field: _ingest._value.os_revision
-          tag: rename_children_os_revision
-          target_field: _ingest._value.os.revision
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_os_build
-      processor:
-        rename:
-          field: _ingest._value.os_build
-          tag: rename_children_os_build
-          target_field: _ingest._value.os.build
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_os_service_pack
-      processor:
-        rename:
-          field: _ingest._value.os_service_pack
-          tag: rename_children_os_service_pack
-          target_field: _ingest._value.os.service_pack
-          ignore_missing: true
-  - rename:
-      field: claroty_ctd.asset.children.virtual_zone_id
-      tag: rename_children_virtual_zone_id
-      target_field: claroty_ctd.asset.children.virtual_zone.id
-      ignore_missing: true
   - rename:
       field: json.serial_number
       tag: rename_serial_number
@@ -403,260 +566,6 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
           if: ctx.claroty_ctd?.asset?.ipv4 != null
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_id
-      processor:
-        convert:
-          field: _ingest._value.id
-          tag: convert_children_id_to_string
-          type: string
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_edge_id
-      processor:
-        convert:
-          field: _ingest._value.edge_id
-          tag: convert_children_edge_id_to_keyword
-          type: string
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_virtual_zone_name
-      processor:
-        rename:
-          field: _ingest._value.virtual_zone_name
-          tag: rename_children_virtual_zone_name
-          target_field: _ingest._value.virtual_zone.name
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_special_hint__
-      processor:
-        rename:
-          field: _ingest._value.special_hint__
-          tag: rename_children_special_hint__
-          target_field: _ingest._value.special_hints.name
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_special_hint
-      processor:
-        convert:
-          field: _ingest._value.special_hint
-          tag: convert_children_special_hint_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-           - remove:
-               field: _ingest._value.special_hint
-               ignore_missing: true
-           - append:
-               field: error.message
-               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_special_hint
-      processor:
-        rename:
-          field: _ingest._value.special_hint
-          tag: rename_children_special_hint
-          target_field: _ingest._value.special_hints.value
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_subnet_type
-      processor:
-        convert:
-          field: _ingest._value.subnet_type
-          tag: convert_children_subnet_type_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-           - remove:
-               field: _ingest._value.subnet_type
-               ignore_missing: true
-           - append:
-               field: error.message
-               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_asset_type__
-      processor:
-        rename:
-          field: _ingest._value.asset_type__
-          tag: rename_children_asset_type__
-          target_field: _ingest._value.asset_types.name
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_asset_type
-      processor:
-        convert:
-          field: _ingest._value.asset_type
-          tag: convert_children_asset_type_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.asset_type
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_asset_type
-      processor:
-        rename:
-          field: _ingest._value.asset_type
-          tag: rename_children_asset_type
-          target_field: _ingest._value.asset_types.number
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_criticality__
-      processor:
-        rename:
-          field: _ingest._value.criticality__
-          tag: rename_children_criticality__
-          target_field: _ingest._value.criticalities.name
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_criticality
-      processor:
-        convert:
-          field: _ingest._value.criticality
-          tag: convert_children_criticality_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.criticality
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_criticality
-      processor:
-        rename:
-          field: _ingest._value.criticality
-          tag: rename_children_criticality
-          target_field: _ingest._value.criticalities.value
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_network_id
-      processor:
-        convert:
-          field: _ingest._value.network.id
-          tag: convert_children_network_id_to_keyword
-          type: string
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_network_id
-      processor:
-        convert:
-          field: _ingest._value.network_id
-          tag: convert_children_network_id_to_keyword
-          type: string
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_network_site_id
-      processor:
-        convert:
-          field: _ingest._value.network.site_id
-          tag: convert_children_network_site_id_to_keyword
-          type: string
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_network_resource_id
-      processor:
-        convert:
-          field: _ingest._value.network.resource_id
-          tag: convert_children_network_resource_id_to_keyword
-          type: string
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_site_id
-      processor:
-        convert:
-          field: _ingest._value.site_id
-          tag: convert_children_site_id_to_keyword
-          type: string
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_subnet_id
-      processor:
-        convert:
-          field: _ingest._value.subnet_id
-          tag: convert_children_subnet_id_to_keyword
-          type: string
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_subnet_id
-      processor:
-        convert:
-          field: _ingest._value.subnet_id
-          tag: convert_children_subnet_id_to_keyword
-          type: string
-          ignore_missing: true
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_virtual_zone_id
-      processor:
-        convert:
-          field: _ingest._value.virtual_zone_id
-          tag: convert_children_virtual_zone_id_to_string
-          type: string
-          target_field: _ingest._value.virtual_zone_id
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.virtual_zone_id
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_virtual_zone_id
-      processor:
-        rename:
-          field: _ingest._value.virtual_zone_id
-          tag: rename_children_virtual_zone_id
-          target_field: _ingest._value.virtual_zone.id
-          ignore_missing: true
   - foreach:
       field: claroty_ctd.asset.children
       if: ctx.claroty_ctd?.asset?.children instanceof List
@@ -746,57 +655,6 @@ processors:
           on_failure:
             - remove:
                 field: _ingest._value.timestamp
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_approved
-      processor:
-        convert:
-          field: _ingest._value.approved
-          tag: convert_children_approved_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.approved
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_parsed
-      processor:
-        convert:
-          field: _ingest._value.parsed
-          tag: convert_children_parsed_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.parsed
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_ghost
-      processor:
-        convert:
-          field: _ingest._value.ghost
-          tag: convert_children_ghost_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.ghost
                 ignore_missing: true
             - append:
                 field: error.message
@@ -901,11 +759,6 @@ processors:
       tag: rename_custom_informations
       target_field: claroty_ctd.asset.custom_informations
       ignore_missing: true
-  - rename:
-      field: json.children.custom_informations
-      tag: rename_children_custom_informations
-      target_field: claroty_ctd.asset.children.custom_informations
-      ignore_missing: true
   - foreach:
       field: claroty_ctd.asset.custom_informations
       if: ctx.claroty_ctd?.asset?.custom_informations instanceof List
@@ -953,152 +806,6 @@ processors:
           on_failure:
            - remove:
                field: _ingest._value.type
-               ignore_missing: true
-           - append:
-               field: error.message
-               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_custom_information
-      processor:
-        foreach:
-          field: _ingest._value.custom_informations
-          tag: foreach_children_custom_informations_category
-          ignore_failure: true
-          processor:
-            convert:
-              field: _ingest._value.category
-              tag: convert_children_custom_information_category_to_long
-              type: long
-              ignore_missing: true
-              on_failure:
-               - remove:
-                   field: _ingest._value.category
-                   ignore_missing: true
-               - append:
-                   field: error.message
-                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_custom_information
-      processor:
-        foreach:
-          field: _ingest._value.custom_informations
-          tag: foreach_children_custom_informations_priority
-          ignore_failure: true
-          processor:
-            convert:
-              field: _ingest._value.priority
-              tag: convert_children_custom_information_priority_to_long
-              type: long
-              ignore_missing: true
-              on_failure:
-               - remove:
-                   field: _ingest._value.priority
-                   ignore_missing: true
-               - append:
-                   field: error.message
-                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_custom_information
-      processor:
-        foreach:
-          field: _ingest._value.custom_informations
-          tag: foreach_children_custom_informations_type
-          ignore_failure: true
-          processor:
-            convert:
-              field: _ingest._value.type
-              tag: convert_custom_information_type_to_long
-              type: long
-              ignore_missing: true
-              on_failure:
-               - remove:
-                   field: _ingest._value.type
-                   ignore_missing: true
-               - append:
-                   field: error.message
-                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-     field: json.project_parsed.creation_time
-     tag: convert_children_project_parsed_creation_time_to_long
-     type: long
-     ignore_missing: true
-     on_failure:
-      - remove:
-          field: json.project_parsed.creation_time
-          ignore_missing: true
-      - append:
-          field: error.message
-          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_project_parsed_information_type
-      processor:
-        convert:
-          field: _ingest._value.project_parsed.information_type
-          tag: convert_children_project_parsed_information_type_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-           - remove:
-               field: _ingest._value.project_parsed.information_type
-               ignore_missing: true
-           - append:
-               field: error.message
-               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_project_parsed_modification_time
-      processor:
-        convert:
-          field: _ingest._value.project_parsed.modification_time
-          tag: convert_children_project_parsed_modification_time_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-           - remove:
-               field: _ingest._value.project_parsed.modification_time
-               ignore_missing: true
-           - append:
-               field: error.message
-               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_project_parsed_creation_time
-      processor:
-        convert:
-          field: _ingest._value.project_parsed.creation_time
-          tag: convert_children_project_parsed_creation_time_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-           - remove:
-               field: _ingest._value.project_parsed.creation_time
-               ignore_missing: true
-           - append:
-               field: error.message
-               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: claroty_ctd.asset.children
-      if: ctx.claroty_ctd?.asset?.children instanceof List
-      tag: foreach_children_project_parsed_priority
-      processor:
-        convert:
-          field: _ingest._value.project_parsed.priority
-          tag: convert_custom_project_parsed_priority_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-           - remove:
-               field: _ingest._value.project_parsed.priority
                ignore_missing: true
            - append:
                field: error.message

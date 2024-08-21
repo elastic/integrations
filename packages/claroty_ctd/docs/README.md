@@ -101,8 +101,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2023-08-13T01:00:00.000Z",
     "agent": {
-        "ephemeral_id": "56c3b8df-8211-44ab-b061-d606cb19aa41",
-        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
+        "ephemeral_id": "ef2e9fcb-f315-4ca9-b622-f0e1c025b476",
+        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -320,21 +320,21 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_ctd.event",
-        "namespace": "15412",
+        "namespace": "12569",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
+        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "claroty_ctd.event",
-        "ingested": "2024-08-07T11:01:10Z",
+        "ingested": "2024-08-20T18:01:26Z",
         "kind": "event",
         "original": "<134>1 2023-08-15T01:00:00Z Site syslog-HealthCheck-Default - - - CEF:0|Claroty|CTD|4.10.0|HealthCheck|Health|0|CtdRealTime=Aug 14 2023 01:00:00 CtdTimeGenerated=Aug 13 2023 01:00:00 CtdMessage=Successfully ran health monitoring CtdSite=Default CtdCpu=12.21 CtdMem=13.31 CtdUsedOptIcsranger=14.41 CtdUsedVar=15.51 CtdUsedTmp=16.61 CtdUsedEtc=17.71 CtdBusyFd=0.11 CtdBusySda=0.22 CtdBusySdaA=0.33 CtdBusySdaB=0.44 CtdBusySr=0.55 CtdBusyDm=0.66 CtdBusyDmA=0.77 CtdQuBaselineTracker=1 CtdQuBridge=2 CtdQuCentralBridge=3 CtdQuConcluding=4 CtdQuDiodeFeeder=5 CtdQuDissector=6 CtdQuDissectorA=7 CtdQuDissectorNg=8 CtdQuIndicatorService=9 CtdQuLeecher=10 CtdQuMonitor=11 CtdQuNetworkStatistics=12 CtdQuPackets=13 CtdQuPacketsErrors=14 CtdQuPreprocessing=15 CtdQuPreprocessingNg=16 CtdQuPriorityProcessing=17 CtdQuProcessing=18 CtdQuProcessingHigh=19 CtdQuStatisticsNg=20 CtdQuZordonUpdates=21 CtdQueuePurge=22 CtdQuSyslogAlerts=23 CtdQuSyslogEvents=24 CtdQuSyslogInsights=25 CtdRdDissector=26 CtdRdDissectorA=27 CtdRdDissectorNg=28 CtdRdPreprocessing=29 CtdRdPreprocessingNg=30 CtdSvcMariaDb=Down CtdSvcPostgres=Down CtdSvcRedis=Down CtdSvcRabbitMq=Down CtdSvcIcsranger=Down CtdSvcWatchdog=Down CtdSvcFirewalld=Down CtdSvcNetunnel=Down CtdSvcJwthenticator=Down CtdSvcDocker=Down CtdExceptions=31 CtdInputPacketDrops=32 CtdOutputPacketDrops=33 CtdFullOutputPacketDrops=34 CtdDissectorNgPacketDrops=35 CtdTagArtifactsDropsPreprocessor=36 CtdTagArtifactsDropsPreprocessorSum=37 CtdTagArtifactsDropsProcessor=38 CtdTagArtifactsDropsProcessorSum=39 CtdTagArtifactsDropsSniffer=40 CtdTagArtifactsDropsSnifferSum=41 CtdTagArtifactsDropsDissectorPypy=42 CtdTagArtifactsDropsDissectorPypySum=43 CtdCapsaverFolderCleanup=TRUE CtdDissectionCoverage=44 CtdCapsaverUtilzationTest=N/A CtdYaraScannerTest=45 CtdWrkrWorkersStop=46 CtdWrkrWorkersRestart=47 CtdWrkrActiveExecuter={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrSensor={'api': 'Available', 'last_re- start': '18 min, 34 sec'} CtdWrkrAuthentication={'api': 'Not Available', 'last_restart': '21 min, 18 sec'} CtdWrkrMailer={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrMitre={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrNotifications={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrProcessor={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrCloudAgent={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrCloudClient={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrScheduler={'api': 'Available', 'last_re- start': '21 min, 19 sec'} CtdWrkrknownThreats={'api': 'Available', 'last_re- start': '18 min, 58 sec'} CtdWrkrCacher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrInsights={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrActive={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrEnricher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrIndicators={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrIndicatorsApi={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrConcluder={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrPreprocessor={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrLeecher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrSyncManager={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrBridge={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrWebRanger={'api': 'Not Available', 'last_restart': '21 min, 6 sec'} CtdWrkrWebWs={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrWebAuth={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrWebNginx={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrConfigurator={'api': 'Available', 'last_re- start': '21 min, 18 sec'} CtdWrkrConfiguratorNginx={'api': 'Not Available', 'last_restart': '19 min, 17 sec'} CtdWrkrCapsaver={'api': 'Not Available', 'last_restart': '19 min, 17 sec'} CtdWrkrBaselineTracker={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrDissector={'api': 'Available', 'last_re- start': '18 min, 34 sec'} CtdWrkrDissectorA={'api': 'Available', 'last_re- start': '18 min, 34 sec'} CtdSensorName=Sensor-1 CtdCtrlSite=48 CtdLoopCallDurationBaselineTrackerWrkerHandleNetworkStatistics=1.2345 CtdDissectionEfficiencyModbus=2.2345 CtdDissectionEfficiencySmb=3.2345 CtdDissectionEfficiencyDcerpc=4.2345 CtdDissectionEfficiencyZabbix=5.2345 CtdDissectionEfficiencyFactorytalkRna=6.2345 CtdDissectionEfficiencySsl=7.2345 CtdDissectionEfficiencyVrrpProtocolMatcher=8.2345 CtdDissectionEfficiencyRdp=9.2345 CtdDissectionEfficiencySsh=10.2345 CtdDissectionEfficiencyHttp=11.2345 CtdDissectionEfficiencyTcpHttp=12.2345 CtdDissectionEfficiencyLdap=13.2345 CtdDissectionEfficiencyJrmi=14.2345 CtdDissectionEfficiencyGeIfix=15.2345 CtdDissectionEfficiencyLlc=16.2345 CtdDissectionEfficiencyMatrikonNopc=17.2345 CtdDissectionEfficiencyVnc=18.2345 CtdUnhandledEvents=49 CtdConcludeTime=50 CtdMysqlQuery=19.2345 CtdPostgresQuery=20.2345 CtdDroppedEntities=51 CtdPsqlIdleSessions=52 CtdPsqlIdleInTransactionSessions=53 CtdSnifferStatus=N/A CtdLoopCallDurationPollObjects=21.2345 CtdLoopCallDurationCloudClientWrkrBaseRunCloudConnected=22.2345 CtdSnifferStatusCentral=N/A CtdSnifferStatusSite=23.2345"
     },
@@ -348,7 +348,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.245.7:40476"
+            "address": "192.168.240.4:50643"
         }
     },
     "message": "Successfully ran health monitoring",
@@ -605,8 +605,8 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2024-07-24T15:09:48.000Z",
     "agent": {
-        "ephemeral_id": "db6c9a65-3eb1-4091-9c79-ad942163d8dd",
-        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
+        "ephemeral_id": "e41bc6bc-0813-48a8-947f-ad9c0530d6c8",
+        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -648,12 +648,12 @@ An example event for `asset` looks as following:
             ],
             "installed_programs_count": 0,
             "ipv4": [
-                "10.0.5.2"
+                "1.128.0.0"
             ],
             "last_entity_seen": "2023-04-17T07:36:30.000Z",
             "last_seen": "2023-04-17T07:36:30.000Z",
             "last_updated": "2024-07-24T15:09:48.000Z",
-            "name": "10.0.5.2",
+            "name": "1.128.0.0",
             "network": {
                 "id": "1",
                 "name": "Default",
@@ -691,14 +691,14 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_ctd.asset",
-        "namespace": "84918",
+        "namespace": "45302",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
+        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -708,9 +708,9 @@ An example event for `asset` looks as following:
             "host"
         ],
         "dataset": "claroty_ctd.asset",
-        "ingested": "2024-08-07T10:58:29Z",
+        "ingested": "2024-08-20T17:58:48Z",
         "kind": "event",
-        "original": "{\"active_queries_names\":[],\"active_tasks_names\":[],\"approved\":true,\"asset_type\":1,\"asset_type__\":\"eHMI\",\"children\":[],\"class_type\":\"OT\",\"code_sections\":[],\"criticality\":0,\"criticality__\":\"eLow\",\"custom_attributes\":[{\"asset_id\":1,\"category\":{\"description\":\"sdfas\",\"id\":1,\"name\":\"Some Asset\",\"resource_id\":\"1-1\",\"site_id\":1},\"id\":1,\"resource_id\":\"1-1\",\"site_id\":1,\"value\":\"some value\"}],\"custom_informations\":[],\"default_gateway\":null,\"display_name\":null,\"domain_workgroup\":null,\"edge_id\":null,\"edge_last_run\":null,\"first_seen\":\"2023-04-17T07:30:15+00:00\",\"ghost\":false,\"id\":1,\"insight_names\":[\"Managed PLCs (by Rockwell users)\",\"Privileged Operations (Operated PLCs)\"],\"installed_antivirus\":null,\"installed_programs_count\":0,\"ipv4\":[\"10.0.5.2\"],\"last_entity_seen\":\"2023-04-17T07:36:30+00:00\",\"last_seen\":\"2023-04-17T07:36:30+00:00\",\"last_updated\":\"2024-07-24T15:09:48+00:00\",\"name\":\"10.0.5.2\",\"network\":{\"id\":1,\"name\":\"Default\",\"resource_id\":\"1-1\",\"site_id\":1},\"network_id\":1,\"num_alerts\":0,\"os_architecture\":null,\"os_build\":null,\"os_revision\":null,\"os_service_pack\":null,\"parsed\":false,\"patch_count\":0,\"project_parsed\":null,\"protocol\":[\"CIP\",\"ENIP\",\"PCCC\",\"TCP\"],\"purdue_level\":2,\"resource_id\":\"1-1\",\"risk_level\":0,\"site_id\":1,\"site_name\":\"site-10-0-11-136\",\"special_hint\":0,\"special_hint__\":\"eUnicast\",\"state\":null,\"subnet\":{\"name\":\"10.0.0.0/8\"},\"subnet_id\":1,\"subnet_type\":0,\"timestamp\":\"2023-04-17T07:30:15+00:00\",\"usb_devices_count\":0,\"valid\":true,\"virtual_zone_id\":2,\"virtual_zone_name\":\"HMI: Rockwell\"}",
+        "original": "{\"active_queries_names\":[],\"active_tasks_names\":[],\"approved\":true,\"asset_type\":1,\"asset_type__\":\"eHMI\",\"children\":[],\"class_type\":\"OT\",\"code_sections\":[],\"criticality\":0,\"criticality__\":\"eLow\",\"custom_attributes\":[{\"asset_id\":1,\"category\":{\"description\":\"sdfas\",\"id\":1,\"name\":\"Some Asset\",\"resource_id\":\"1-1\",\"site_id\":1},\"id\":1,\"resource_id\":\"1-1\",\"site_id\":1,\"value\":\"some value\"}],\"custom_informations\":[],\"default_gateway\":null,\"display_name\":null,\"domain_workgroup\":null,\"edge_id\":null,\"edge_last_run\":null,\"first_seen\":\"2023-04-17T07:30:15+00:00\",\"ghost\":false,\"id\":1,\"insight_names\":[\"Managed PLCs (by Rockwell users)\",\"Privileged Operations (Operated PLCs)\"],\"installed_antivirus\":null,\"installed_programs_count\":0,\"ipv4\":[\"1.128.0.0\"],\"last_entity_seen\":\"2023-04-17T07:36:30+00:00\",\"last_seen\":\"2023-04-17T07:36:30+00:00\",\"last_updated\":\"2024-07-24T15:09:48+00:00\",\"name\":\"1.128.0.0\",\"network\":{\"id\":1,\"name\":\"Default\",\"resource_id\":\"1-1\",\"site_id\":1},\"network_id\":1,\"num_alerts\":0,\"os_architecture\":null,\"os_build\":null,\"os_revision\":null,\"os_service_pack\":null,\"parsed\":false,\"patch_count\":0,\"project_parsed\":null,\"protocol\":[\"CIP\",\"ENIP\",\"PCCC\",\"TCP\"],\"purdue_level\":2,\"resource_id\":\"1-1\",\"risk_level\":0,\"site_id\":1,\"site_name\":\"site-10-0-11-136\",\"special_hint\":0,\"special_hint__\":\"eUnicast\",\"state\":null,\"subnet\":{\"name\":\"1.128.0.0\"},\"subnet_id\":1,\"subnet_type\":0,\"timestamp\":\"2023-04-17T07:30:15+00:00\",\"usb_devices_count\":0,\"valid\":true,\"virtual_zone_id\":2,\"virtual_zone_name\":\"HMI: Rockwell\"}",
         "severity": 0,
         "type": [
             "info"
@@ -718,7 +718,7 @@ An example event for `asset` looks as following:
     },
     "host": {
         "id": "1",
-        "name": "10.0.5.2"
+        "name": "1.128.0.0"
     },
     "input": {
         "type": "cel"
@@ -734,7 +734,7 @@ An example event for `asset` looks as following:
     },
     "related": {
         "ip": [
-            "10.0.5.2"
+            "1.128.0.0"
         ]
     },
     "tags": [
@@ -940,8 +940,8 @@ An example event for `baseline` looks as following:
 {
     "@timestamp": "2024-07-09T12:03:12.000Z",
     "agent": {
-        "ephemeral_id": "d2cbbef7-25e8-4c83-9ece-aed047dd6d93",
-        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
+        "ephemeral_id": "777cd7da-4c22-422a-82b1-d7be5eec94e0",
+        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -957,7 +957,7 @@ An example event for `baseline` looks as following:
                 "entity": {
                     "asset_name": "Chemical_plant",
                     "id": "2",
-                    "ipv4": "10.1.0.41",
+                    "ipv4": "1.128.0.0",
                     "mac": "00:00:BC:C7:8F:06",
                     "resource_id": "2-1",
                     "virtual_zone_id": "3",
@@ -977,9 +977,9 @@ An example event for `baseline` looks as following:
             "source": {
                 "asset_id": "1",
                 "entity": {
-                    "asset_name": "10.0.5.2",
+                    "asset_name": "1.128.0.0",
                     "id": "1",
-                    "ipv4": "10.0.5.2",
+                    "ipv4": "1.128.0.0",
                     "resource_id": "1-1",
                     "virtual_zone": {
                         "id": "2",
@@ -994,19 +994,19 @@ An example event for `baseline` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_ctd.baseline",
-        "namespace": "14636",
+        "namespace": "52357",
         "type": "logs"
     },
     "destination": {
         "domain": "Chemical_plant",
-        "ip": "10.1.0.41",
+        "ip": "1.128.0.0",
         "mac": "00-00-BC-C7-8F-06"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9783be93-6fa9-44ba-8f6d-eda7dcb99151",
+        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1018,9 +1018,9 @@ An example event for `baseline` looks as following:
         "dataset": "claroty_ctd.baseline",
         "hash": "513826395598251000",
         "id": "1",
-        "ingested": "2024-08-07T10:59:19Z",
+        "ingested": "2024-08-20T17:59:38Z",
         "kind": "event",
-        "original": "{\"approved\":true,\"category\":3,\"category_access\":1,\"description\":\"CIP : Read attribute 'Minor Events Reported' of object FaultLog\",\"destination_asset_id\":51,\"destination_entity\":{\"asset_name\":\"Chemical_plant\",\"id\":2,\"ipv4\":\"10.1.0.41\",\"mac\":\"00:00:BC:C7:8F:06\",\"resource_id\":\"2-1\",\"virtual_zone_id\":3,\"virtual_zone_name\":\"PLC: Rockwell\"},\"dst_port\":null,\"frequency\":0,\"has_values\":false,\"hash\":513826395598251000,\"id\":1,\"interval\":null,\"last_seen\":\"2023-04-17T07:30:09+00:00\",\"last_updated\":\"2024-07-09T12:03:12+00:00\",\"protocol\":\"CIP\",\"resource_id\":\"1-1\",\"session_state\":3,\"site_id\":1,\"source_asset_id\":1,\"source_entity\":{\"asset_name\":\"10.0.5.2\",\"id\":1,\"ipv4\":\"10.0.5.2\",\"resource_id\":\"1-1\",\"virtual_zone_id\":2,\"virtual_zone_name\":\"HMI: Rockwell\"},\"src_port\":null,\"timestamp\":\"2023-04-17T07:30:09+00:00\",\"transmission\":null,\"type\":0,\"valid\":true}",
+        "original": "{\"approved\":true,\"category\":3,\"category_access\":1,\"description\":\"CIP : Read attribute 'Minor Events Reported' of object FaultLog\",\"destination_asset_id\":51,\"destination_entity\":{\"asset_name\":\"Chemical_plant\",\"id\":2,\"ipv4\":\"1.128.0.0\",\"mac\":\"00:00:BC:C7:8F:06\",\"resource_id\":\"2-1\",\"virtual_zone_id\":3,\"virtual_zone_name\":\"PLC: Rockwell\"},\"dst_port\":null,\"frequency\":0,\"has_values\":false,\"hash\":513826395598251000,\"id\":1,\"interval\":null,\"last_seen\":\"2023-04-17T07:30:09+00:00\",\"last_updated\":\"2024-07-09T12:03:12+00:00\",\"protocol\":\"CIP\",\"resource_id\":\"1-1\",\"session_state\":3,\"site_id\":1,\"source_asset_id\":1,\"source_entity\":{\"asset_name\":\"1.128.0.0\",\"id\":1,\"ipv4\":\"1.128.0.0\",\"resource_id\":\"1-1\",\"virtual_zone_id\":2,\"virtual_zone_name\":\"HMI: Rockwell\"},\"src_port\":null,\"timestamp\":\"2023-04-17T07:30:09+00:00\",\"transmission\":null,\"type\":0,\"valid\":true}",
         "type": [
             "info"
         ]
@@ -1037,12 +1037,11 @@ An example event for `baseline` looks as following:
             "513826395598251000"
         ],
         "ip": [
-            "10.1.0.41",
-            "10.0.5.2"
+            "1.128.0.0"
         ]
     },
     "source": {
-        "ip": "10.0.5.2"
+        "ip": "1.128.0.0"
     },
     "tags": [
         "preserve_original_event",
