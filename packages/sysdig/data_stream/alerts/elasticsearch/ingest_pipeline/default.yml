@@ -4,9 +4,15 @@ processors:
 - set:
     field: event.kind
     value: 'alert'
+- set:
+    field: event.original
+    copy_from: message
+    ignore_empty_value: true
+    if: ctx.event?.original == null && ctx['tags'] != null && ctx['tags'].contains('preserve_original_event')
 - json:
     field: message
     target_field: sysdig
+    if: ctx?.message != null
 - dot_expander:
     field: '*'
     path: sysdig.content
@@ -17,11 +23,6 @@ processors:
     path: sysdig.labels
     tag: 'Primary doc_expander for sysdig.labels'
     ignore_failure: true
-- set:
-    field: event.original
-    copy_from: message
-    ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_original_event')
 - set:
     field: event.id
     copy_from: sysdig.id
@@ -38,29 +39,38 @@ processors:
     field: log.syslog.severity.code
     copy_from: sysdig.severity
     ignore_empty_value: true
-- script:
-    lang: painless
-    tag: 'painless_set_severity_name'
-    if: ctx?.sysdig?.severity != null
-    source: |
-        def priority = ctx.sysdig.severity;
-        if (priority == 0) {
-            ctx['log.syslog.severity.name'] = "emergency";
-        } else if (priority == 1) {
-            ctx['log.syslog.severity.name'] = "alert";
-        } else if (priority == 2) {
-            ctx['log.syslog.severity.name'] = "critical";
-        } else if (priority == 3) {
-            ctx['log.syslog.severity.name'] = 4;
-        } else if (priority == 4) {
-            ctx['log.syslog.severity.name'] = "warning";
-        } else if (priority == 5) {
-            ctx['log.syslog.severity.name'] = "notice";
-        } else if (priority == 6) {
-            ctx['log.syslog.severity.name'] = "informational";
-        } else if (priority == 7) {
-            ctx['log.syslog.severity.name'] = "debug";
-        }
+- set:
+    field: log.syslog.severity.name
+    value: "emergency"
+    if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 0"
+- set:
+    field: log.syslog.severity.name
+    value: "alert"
+    if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 1"
+- set:
+    field: log.syslog.severity.name
+    value: "critical"
+    if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 2"
+- set:
+    field: log.syslog.severity.name
+    value: "error"
+    if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 3"
+- set:
+    field: log.syslog.severity.name
+    value: "warning"
+    if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 4"
+- set:
+    field: log.syslog.severity.name
+    value: "notice"
+    if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 5"
+- set:
+    field: log.syslog.severity.name
+    value: "informational"
+    if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 6"
+- set:
+    field: log.syslog.severity.name
+    value: "debug"
+    if: "ctx.sysdig?.severity != null && ctx.sysdig.severity == 7"
 - set:
     field: rule.author
     value: ["{{sysdig.content.policyOrigin}}"]
