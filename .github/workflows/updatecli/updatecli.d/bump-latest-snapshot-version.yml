@@ -62,3 +62,13 @@ targets:
       file: '.buildkite/pipeline.schedule-daily.yml'
       matchpattern: '(Stack Version) v8\.\d+"'
       replacepattern: 'Stack Version v{{ source "latestSnapshotMajorMinor" }}"'
+
+  update-snapshot-weekly-build:
+    name: '[updatecli] Update latest snapshot in catalog-info for weekly schedule to {{ source "latestSnapshot" }}'
+    kind: file
+    sourceid: latestSnapshot
+    scmid: default
+    spec:
+      file: 'catalog-info.yaml'
+      matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
+      replacepattern: '$1 {{ source "latestSnapshot" }}'
