@@ -17,11 +17,59 @@ processors:
       patterns:
       - '^%{DATETIME:postgresql.log.timestamp}%{CHAR:separator}%{GREEDYDATA:raw_message}'
       pattern_definitions:
-        DATETIME: '[-0-9]+ %{TIME} %{WORD:event.timezone}'
+        PG_DATETIME: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{ISO8601_HOUR}:?%{MINUTE}(?::?%{SECOND})'
+        POSTGRES_TZ: '([a-zA-Z]{1,4})|(?:Z|[+-]%{HOUR}(?::?%{MINUTE})?)'
+        DATETIME: '%{PG_DATETIME:_temp_.timestamp} %{POSTGRES_TZ:event.timezone}'
         CHAR: .
         GREEDYDATA: |-
           (.|
           |	)*
+  - script:
+      lang: painless
+      tag: script_timezone
+      description: >-
+        Add support to map timezone abbreviations that are not supported by
+        Java manually. If no match is found, it will default to
+        UTC as before.
+      if: ctx._temp_?.timestamp != null
+      source: |-
+       String get_timezone(def ctx) { 
+          if (ctx.event?.timezone != null) {
+          
+            // if timezone is in format of CEST,EST etc.
+            if (ctx.event.timezone.length() <= 4) {
+              // all time zone abbreviations need to be uppercase
+              return ctx.event.timezone.toUpperCase();
+            }
+
+            // if timezone is in format of +00:00, -00:00, +00 & -00
+            if(ctx.event?.timezone.contains('+') || ctx.event?.timezone.contains('-')) {
+              // if timezone is in format of +00 or -00
+              if (ctx.event.timezone.length() == 3) {
+                return "UTC"+ctx.event.timezone+":00";
+              }
+              return "UTC"+ctx.event.timezone;
+            }
+              
+            return ctx.event.timezone;
+          }
+                  
+          ctx.event.timezone = 'UTC';
+          return 'UTC';
+        }
+        
+        def event_timezone = get_timezone(ctx);
+        if (!(event_timezone.contains('+')) && !(event_timezone.contains('-')) && !(event_timezone.length() > 4)) {
+          // timezone abbreviation e.g. CEST need to be put inside the timestamp
+          SimpleDateFormat sdf = new SimpleDateFormat("z");
+          sdf.parse(event_timezone);
+          ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
+          ctx?._temp_.timestamp = ctx?._temp_.timestamp + " " + event_timezone;
+        } else {
+          // timezone is either abbreviation+-offset e.g. UTC+1 or long representation
+          // e.g. Europe/Athens needs to be put as a ZoneId and *not* inside the timestamp
+          ctx._temp_.date_timezone = event_timezone;
+        }  
   - pipeline:
       name: '{{ IngestPipeline "pipeline-log" }}'
       if: ctx.separator != ',' && ctx.separator != ':'
@@ -32,11 +80,18 @@ processors:
       name: '{{ IngestPipeline "pipeline-aws-log" }}'
       if: ctx.separator == ':'
   - date:
-      field: postgresql.log.timestamp
+      field: _temp_.timestamp
       target_field: '@timestamp'
+      timezone: '{{{_temp_.date_timezone}}}'
       formats:
       - yyyy-MM-dd HH:mm:ss.SSS zz
       - yyyy-MM-dd HH:mm:ss zz
+      - yyyy-MM-dd HH:mm:ss.SSS 
+      - yyyy-MM-dd HH:mm:ss 
+      on_failure:
+        - set:
+            field: error.message
+            value: '{{ _ingest.on_failure_message }}'
   - script:
       lang: painless
       source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
@@ -78,6 +133,9 @@ processors:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: _temp_
       ignore_missing: true
   - script:
       lang: painless
