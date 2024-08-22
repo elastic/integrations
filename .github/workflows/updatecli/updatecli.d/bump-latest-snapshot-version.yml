@@ -43,8 +43,8 @@ sources:
           captureindex: 1
 
 targets:
-  update-snapshot:
-    name: '[updatecli] Update latest snapshot to {{ source "latestSnapshot" }}'
+  update-snapshot-daily:
+    name: '[updatecli] [daily] Update latest snapshot to {{ source "latestSnapshot" }}'
     kind: file
     sourceid: latestSnapshot
     scmid: default
@@ -53,8 +53,8 @@ targets:
       matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
       replacepattern: '$1 {{ source "latestSnapshot" }}'
 
-  update-snapshot-label:
-    name: '[updatecli] Update latest snapshot label step to {{ source "latestSnapshotMajorMinor" }}'
+  update-snapshot-label-daily:
+    name: '[updatecli] [daily] Update latest snapshot label step to {{ source "latestSnapshotMajorMinor" }}'
     kind: file
     sourceid: latestSnapshotMajorMinor
     scmid: default
@@ -65,12 +65,22 @@ targets:
 
   ## TODO: Looks like these targets are running with the contents from main branch
   ## Uncomment this target once this code is merged
-  # update-snapshot-weekly-build:
-  #   name: '[updatecli] Update latest snapshot in catalog-info for weekly schedule to {{ source "latestSnapshot" }}'
-  #   kind: file
-  #   sourceid: latestSnapshot
-  #   scmid: default
-  #   spec:
-  #     file: 'catalog-info.yaml'
-  #     matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
-  #     replacepattern: '$1 {{ source "latestSnapshot" }}'
+  #update-snapshot-daily:
+  #  name: '[updatecli] [weekly] Update latest snapshot to {{ source "latestSnapshot" }}'
+  #  kind: file
+  #  sourceid: latestSnapshot
+  #  scmid: default
+  #  spec:
+  #    file: '.buildkite/pipeline.schedule-weekly.yml'
+  #    matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
+  #    replacepattern: '$1 {{ source "latestSnapshot" }}'
+
+  #update-snapshot-label-daily:
+  #  name: '[updatecli] [weekly] Update latest snapshot label step to {{ source "latestSnapshotMajorMinor" }}'
+  #  kind: file
+  #  sourceid: latestSnapshotMajorMinor
+  #  scmid: default
+  #  spec:
+  #    file: '.buildkite/pipeline.schedule-weekly.yml'
+  #    matchpattern: '(Stack Version) v8\.\d+"'
+  #    replacepattern: 'Stack Version v{{ source "latestSnapshotMajorMinor" }}"'
