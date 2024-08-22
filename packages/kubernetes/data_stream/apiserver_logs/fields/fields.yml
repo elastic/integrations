@@ -5,3 +5,42 @@
       type: keyword
       description:
         Kubernetes error message (move to error message as soon as elastic-package test is fixed)
+- name: kubernetes.apiserver
+  type: group
+  fields:
+    - name: backstop
+      type: boolean
+      description:
+        Backstop
+- name: kubernetes.apiserver.flowcontrol
+  type: group
+  description: Flowcontrol fields.
+  fields:
+    - name: concurrency_denominator
+      type: long
+      description: Concurrency denominator.
+    - name: concurrency_limit
+      type: float
+      description: Gauge vector holding the upper bound on each priority level's dynamic concurrency limit.
+    - name: prioritylevel.name
+      type: keyword
+      description: The prioritylevel name.
+- name: kubernetes.apiserver.flowcontrol.demand
+  type: group
+  description: Flowcontrol demand (seats) fields.
+  fields:
+    - name: seats_average
+      type: float
+      description: Gauge vector holding, for each priority level, the time-weighted average seat demand seen during the last concurrency borrowing adjustment period.
+    - name: seats_fair_fraction
+      type: float
+      description: gauge holding the fair allocation fraction determined in the last borrowing adjustment.
+    - name: seats_high_watermark
+      type: long
+      description: gauge vector holding, for each priority level, the maximum seat demand seen during the last concurrency borrowing adjustment period.
+    - name: seats_smoothed
+      type: float
+      description: gauge vector holding, for each priority level, the smoothed enveloped seat demand determined at the last concurrency adjustment.
+    - name: seats_stdev
+      type: float
+      description: gauge vector holding, for each priority level, the time-weighted population standard deviation of seat demand seen during the last concurrency borrowing adjustment period.

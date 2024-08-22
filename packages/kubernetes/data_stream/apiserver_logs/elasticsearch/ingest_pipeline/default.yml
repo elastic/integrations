@@ -71,10 +71,82 @@ processors:
       target_field: _tmp.klog_parameters
       strip_brackets: true
       ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.backstop
+      target_field: kubernetes.apiserver.backstop
+      type: boolean
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.backstop
+      ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.concurrencyDenominator
+      target_field: kubernetes.apiserver.flowcontrol.concurrency_denominator
+      type: long
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.concurrencyDenominator
+      ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.currentCL
+      target_field: kubernetes.apiserver.flowcontrol.concurrency_limit
+      type: long
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.currentCL
+      ignore_missing: true
   - rename:
       field: _tmp.klog_parameters.err
       target_field: kubernetes.error.message
       ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.fairFrac
+      target_field: kubernetes.apiserver.flowcontrol.demand.seats_fair_fraction
+      type: float
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.fairFrac
+      ignore_missing: true
+  - rename:
+      field: _tmp.klog_parameters.plName
+      target_field: kubernetes.apiserver.flowcontrol.prioritylevel.name
+      ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.seatDemandAvg
+      target_field: kubernetes.apiserver.flowcontrol.demand.seats_average
+      type: float
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.seatDemandAvg
+      ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.seatDemandHighWatermark
+      target_field: kubernetes.apiserver.flowcontrol.demand.seats_high_watermark
+      type: long
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.seatDemandHighWatermark
+      ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.seatDemandSmoothed
+      target_field: kubernetes.apiserver.flowcontrol.demand.seats_smoothed
+      type: float
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.seatDemandSmoothed
+      ignore_missing: true
+  - convert:
+      field: _tmp.klog_parameters.seatDemandStdev
+      target_field: kubernetes.apiserver.flowcontrol.demand.seats_stdev
+      type: float
+      ignore_missing: true
+  - remove:
+      field: _tmp.klog_parameters.seatDemandStdev
+      ignore_missing: true
+
+
+
+
   - rename:
       field: _tmp.klog_parameters
       target_field: kubernetes.scheduler.parameters
