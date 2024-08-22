@@ -340,6 +340,16 @@ processors:
       tag: set_result_evidence_cloud_configuration_link
       copy_from: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
       ignore_empty_value: true
+  - set:
+      field: rule.reference
+      tag: set_rule_reference
+      copy_from: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
+      ignore_empty_value: true
+  - set:
+      field: rule.references
+      tag: set_rule_references
+      copy_from: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
+      ignore_empty_value: true
   - remove:
       field: json
       tag: remove_json
@@ -362,7 +372,10 @@ processors:
         - wiz.cloud_configuration_finding.rule.id
         - wiz.cloud_configuration_finding.rule.short_id
         - wiz.cloud_configuration_finding.rule.remediation_instructions
-        - wiz.cloud_configuration_finding.evidence
+        - wiz.cloud_configuration_finding.evidence.expected_value
+        - wiz.cloud_configuration_finding.evidence.current_value
+        - wiz.cloud_configuration_finding.evidence.configuration_path
+        - wiz.cloud_configuration_finding.evidence.cloud_configuration_link
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
