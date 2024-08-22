@@ -133,6 +133,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| related.entity |  | keyword |
 
 
 An example event for `cloudtrail` looks as following:
