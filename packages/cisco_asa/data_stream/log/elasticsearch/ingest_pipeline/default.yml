@@ -389,7 +389,7 @@ processors:
       description: "113005"
       field: "message"
       patterns:
-      - "AAA user %{AUTH} Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?%{CISCO_USER:source.user.name}(%{SPACE})?: user IP = %{IPORNONE}"
+      - "AAA user %{AUTH} Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?(%{CISCO_USER:source.user.name}|)(%{SPACE})?: user IP = %{IPORNONE}"
       pattern_definitions:
         AUTH: (authentication|authorization)
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
@@ -906,8 +906,8 @@ processors:
       field: "message"
       description: "713049"
       patterns:
-        - "Group = %{NOTSPACE}, IP = %{IP:source.address}, Security negotiation complete for LAN-to-LAN Group (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
         - "Group = %{NOTSPACE}, Username = %{NOTSPACE:user.name}, IP = %{IP:source.address}, Security negotiation complete for User (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
+        - "Group = %{NOTSPACE}, IP = %{IP:source.address}, Security negotiation complete [a-z\\s]+ (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '716002'"
       tag: parse_716002
@@ -942,8 +942,8 @@ processors:
       field: "message"
       description: "716059"
       patterns:
-        - '^Group <%{NOTBRACKET:_temp_.cisco.webvpn.group_name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:destination.address}> AnyConnect session resumed. Connection from %{NOTSPACE:source.address}\.$'
-        - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:destination.address} AnyConnect session resumed. Connection from %{NOTSPACE:source.address}\.$'
+        - '^Group <%{NOTBRACKET:_temp_.cisco.webvpn.group_name}> User( <%{NOTBRACKET:source.user.name}>)? IP <%{NOTBRACKET:destination.address}> AnyConnect session (resumed connection|resumed. Connection) from( IP)? <%{NOTSPACE:source.address}>\.$'
+        - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User( %{NOTSPACE:source.user.name})? IP %{NOTSPACE:destination.address} AnyConnect session (resumed connection|resumed. Connection) from( IP)? %{NOTSPACE:source.address}\.$'
       pattern_definitions:
         NOTBRACKET: "[^<>]+"
   - dissect:
@@ -951,13 +951,13 @@ processors:
       tag: parse_721016
       field: message
       description: "721016"
-      pattern: '(%{_temp_.cisco.device_type}) WebVPN session for client user %{source.user.name}, IP %{destination.ip} has been created.'
+      pattern: '(%{_temp_.cisco.device_type}) WebVPN session for client user %{source.user.name}, IP%{?} %{destination.ip} has been created.'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '721018'"
       tag: parse_721018
       field: message
       description: "721018"
-      pattern: '(%{_temp_.cisco.device_type}) WebVPN session for client user %{source.user.name}, IP %{destination.ip} has been deleted.'
+      pattern: '(%{_temp_.cisco.device_type}) WebVPN session for client user %{source.user.name}, IP%{?} %{destination.ip} has been deleted.'
   - grok:
       if: "['722011', '722022', '722023', '722028', '722032', '722033', '722034', '722037', '722051'].contains(ctx._temp_.cisco.message_id)"
       tag: parse_svc_message
@@ -1824,7 +1824,7 @@ processors:
   # Support masked user value
   - grok:
       field: "source.user.name"
-      if: 'ctx.source?.user?.name != null'
+      if: 'ctx.source?.user?.name != null && ctx.source.user.name != ""'
       tag: "grok_source_user_name"
       patterns:
         - (%{CISCO_DOMAIN})?%{CISCO_USER_EMAIL:source.user.email}

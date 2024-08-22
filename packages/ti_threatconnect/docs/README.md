@@ -89,22 +89,22 @@ An example event for `indicator` looks as following:
 {
     "@timestamp": "2023-12-05T06:38:53.000Z",
     "agent": {
-        "ephemeral_id": "43b1a042-a9b3-4d01-b836-a9349883688b",
-        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "ephemeral_id": "bfc8c3c8-d6ef-467f-a80c-6c75059c9a7c",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_threatconnect.indicator",
-        "namespace": "ep",
+        "namespace": "53159",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -115,7 +115,7 @@ An example event for `indicator` looks as following:
         ],
         "dataset": "ti_threatconnect.indicator",
         "id": "test.user@elastic.co",
-        "ingested": "2024-05-16T22:35:04Z",
+        "ingested": "2024-08-02T06:30:51Z",
         "kind": "enrichment",
         "original": "{\"active\":true,\"activeLocked\":false,\"address\":\"test.user@elastic.co\",\"associatedGroups\":{\"data\":[{\"createdBy\":{\"firstName\":\"test\",\"id\":69,\"lastName\":\"user\",\"owner\":\"Elastic\",\"pseudonym\":\"testW\",\"userName\":\"test.user@elastic.co\"},\"dateAdded\":\"2023-12-05T06:38:33Z\",\"downVoteCount\":\"0\",\"id\":609427,\"lastModified\":\"2023-12-05T06:43:21Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/vulnerability/vulnerability.xhtml?vulnerability=609427\",\"name\":\"Test2 \",\"ownerId\":51,\"ownerName\":\"Elastic\",\"type\":\"Vulnerability\",\"upVoteCount\":\"0\",\"webLink\":\"https://app.threatconnect.com/#/details/groups/609427/overview\"},{\"createdBy\":{\"firstName\":\"test\",\"id\":69,\"lastName\":\"user\",\"owner\":\"Elastic\",\"pseudonym\":\"testW\",\"userName\":\"test.user@elastic.co\"},\"dateAdded\":\"2023-12-04T07:18:52Z\",\"documentDateAdded\":\"2023-12-04T07:18:53Z\",\"documentType\":\"PDF\",\"downVoteCount\":\"0\",\"fileName\":\"testthreatgroup.pdf\",\"fileSize\":24467,\"generatedReport\":true,\"id\":601237,\"lastModified\":\"2023-12-05T06:38:46Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/report/report.xhtml?report=601237\",\"name\":\"TestThreatGroup\",\"ownerId\":51,\"ownerName\":\"Elastic\",\"status\":\"Success\",\"type\":\"Report\",\"upVoteCount\":\"0\",\"webLink\":\"https://app.threatconnect.com/#/details/groups/601237/overview\"}]},\"associatedIndicators\":{\"data\":[{\"active\":true,\"activeLocked\":false,\"address\":\"testing@poverts.com\",\"confidence\":61,\"dateAdded\":\"2023-08-25T12:57:24Z\",\"id\":891599,\"lastModified\":\"2023-12-05T06:50:06Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/indicators/details/emailaddress.xhtml?emailaddress=testing%40poverts.com\\u0026owner=Elastic\",\"ownerId\":51,\"ownerName\":\"Elastic\",\"privateFlag\":false,\"rating\":3,\"summary\":\"testing@poverts.com\",\"type\":\"EmailAddress\",\"webLink\":\"https://app.threatconnect.com/#/details/indicators/891599/overview\"},{\"active\":true,\"activeLocked\":false,\"dateAdded\":\"2023-08-24T06:28:17Z\",\"id\":738667,\"lastModified\":\"2023-12-05T06:47:59Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/indicators/details/url.xhtml?orgid=738667\\u0026owner=Elastic\",\"ownerId\":51,\"ownerName\":\"Elastic\",\"privateFlag\":false,\"summary\":\"http://www.testingmcafeesites.com/testcat_pc.html\",\"text\":\"http://www.testingmcafeesites.com/testcat_pc.html\",\"type\":\"URL\",\"webLink\":\"https://app.threatconnect.com/#/details/indicators/738667/overview\"}]},\"attributes\":{},\"dateAdded\":\"2023-08-24T06:19:58Z\",\"id\":736758,\"lastModified\":\"2023-12-05T06:38:53Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/indicators/details/emailaddress.xhtml?emailaddress=test.user%40elastic.co\\u0026owner=Elastic\",\"ownerId\":51,\"ownerName\":\"Elastic\",\"privateFlag\":false,\"securityLabels\":{\"data\":[{\"color\":\"FFC000\",\"dateAdded\":\"2016-08-31T00:00:00Z\",\"description\":\"This security label is used for information that requires support to be effectively acted upon, yet carries risks to privacy, reputation, or operations if shared outside of the organizations involved. Information with this label can be shared with members of an organization and its clients.\",\"id\":3,\"name\":\"TLP:AMBER\",\"owner\":\"System\"}]},\"summary\":\"test.user@elastic.co\",\"tags\":{\"data\":[{\"description\":\"Adversaries may steal monetary resources from targets through extortion, social engineering, technical theft, or other methods aimed at their own financial gain at the expense of the availability of these resources for victims. Financial theft is the ultimate objective of several popular campaign types including extortion by ransomware,(Citation: FBI-ransomware) business email compromise (BEC) and fraud,(Citation: FBI-BEC) \\\"pig butchering,\\\"(Citation: wired-pig butchering) bank hacking,(Citation: DOJ-DPRK Heist) and exploiting cryptocurrency networks.(Citation: BBC-Ronin) \\n\\nAdversaries may [Compromise Accounts](https://attack.mitre.org/techniques/T1586) to conduct unauthorized transfers of funds.(Citation: Internet crime report 2022) In the case of business email compromise or email fraud, an adversary may utilize [Impersonation](https://attack.mitre.org/techniques/T1656) of a trusted entity. Once the social engineering is successful, victims can be deceived into sending money to financial accounts controlled by an adversary.(Citation: FBI-BEC) This creates the potential for multiple victims (i.e., compromised accounts as well as the ultimate monetary loss) in incidents involving financial theft.(Citation: VEC)\\n\\nExtortion by ransomware may occur, for example, when an adversary demands payment from a victim after [Data Encrypted for Impact](https://attack.mitre.org/techniques/T1486) (Citation: NYT-Colonial) and [Exfiltration](https://attack.mitre.org/tactics/TA0010) of data, followed by threatening public exposure unless payment is made to the adversary.(Citation: Mandiant-leaks)\\n\\nDue to the potentially immense business impact of financial theft, an adversary may abuse the possibility of financial theft and seeking monetary gain to divert attention from their true goals such as [Data Destruction](https://attack.mitre.org/techniques/T1485) and business disruption.(Citation: AP-NotPetya)\",\"id\":463701,\"lastUsed\":\"2023-12-04T06:44:44Z\",\"name\":\"Financial Theft\",\"platforms\":{\"count\":6,\"data\":[\"Linux\",\"macOS\",\"Windows\",\"Office 365\",\"SaaS\",\"Google Workspace\"]},\"techniqueId\":\"T1657\"}]},\"threatAssessConfidence\":0,\"threatAssessRating\":0,\"threatAssessScore\":281,\"threatAssessScoreFalsePositive\":0,\"threatAssessScoreObserved\":0,\"type\":\"EmailAddress\",\"webLink\":\"https://app.threatconnect.com/#/details/indicators/736758/overview\"}",
         "type": [
@@ -350,6 +350,9 @@ An example event for `indicator` looks as following:
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset. | long |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 | threat_connect.indicator.active.locked | Indicates whether the active status is locked. | boolean |
 | threat_connect.indicator.active.value | Indicates whether the indicator is active. | boolean |
 | threat_connect.indicator.address | The email address associated with the Email Address Indicator. | keyword |

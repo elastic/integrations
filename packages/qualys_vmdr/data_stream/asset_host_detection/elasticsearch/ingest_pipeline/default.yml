@@ -5,6 +5,31 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
+
+  # Set up tag logic for choosing which cloud metadata to include.
+  - append:
+      field: tags
+      value: ["elastic_cloud_data", "provider_cloud_data"]
+      if: ctx.tags?.contains('both') == true
+  - script:
+      lang: painless
+      if: ctx.tags?.contains('both') == true
+      source: ctx.tags.remove(ctx.tags.indexOf('both'));
+  - script:
+      lang: painless
+      if: ctx.cloud == null && ctx.tags?.contains('elastic_cloud_data') == true
+      source: ctx.tags.remove(ctx.tags.indexOf('elastic_cloud_data'));
+  - set:
+      field: _conf.want_provider_cloud
+      value: true
+      if: ctx.tags?.contains('provider_cloud_data') == true
+  - remove:
+      description: Remove elastic agent-provided cloud metadata fields if not requested.
+      field: cloud
+      if: ctx.tags != null && !ctx.tags.contains('elastic_cloud_data')
+      ignore_missing: true
+      ignore_failure: true
+
   - fail:
       tag: cel_failure
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -128,6 +153,7 @@ processors:
       field: cloud.instance.id
       tag: set_cloud_instance_id
       copy_from: qualys_vmdr.asset_host_detection.cloud_resource_id
+      if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - rename:
       field: json.CLOUD_SERVICE
@@ -138,6 +164,7 @@ processors:
       field: cloud.service.name
       tag: set_cloud_service_name
       copy_from: qualys_vmdr.asset_host_detection.cloud_service
+      if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - rename:
       field: json.CLOUD_PROVIDER
@@ -148,6 +175,7 @@ processors:
       field: cloud.provider
       tag: set_cloud_provider
       copy_from: qualys_vmdr.asset_host_detection.cloud_provider
+      if: ctx._conf?.want_provider_cloud == true
       ignore_empty_value: true
   - rename:
       field: json.QG_HOSTID
@@ -785,6 +813,142 @@ processors:
             - _ingest._value.LAST_SUCCESS_DATE
           tag: remove_qualys_vmdr_asset_host_detection_cloud_provider_tags_cloud_tag_fields
           ignore_missing: true
+
+  - script:
+      lang: painless
+      tag: cloud_provider_attributes
+      if: >-
+        ctx._conf?.want_provider_cloud == true && (
+          ctx.qualys_vmdr?.asset_host_detection?.metadata?.ec2?.attribute instanceof List ||
+          ctx.qualys_vmdr?.asset_host_detection?.metadata?.google?.attribute instanceof List ||
+          ctx.qualys_vmdr?.asset_host_detection?.metadata?.azure?.attribute instanceof List
+        )
+      source: |-
+        def accIDs = new ArrayList();
+        def projIDs = new ArrayList();
+        def names = new ArrayList();
+        def regions = new ArrayList();
+        def types = new ArrayList();
+        def zones = new ArrayList();
+        // Collate attributes.
+        if (ctx.qualys_vmdr?.asset_host_detection?.metadata?.ec2?.attribute instanceof List) {
+          for (def attr: ctx.qualys_vmdr.asset_host_detection.metadata.ec2.attribute) {
+            if (attr.value == null && attr.value == "") {
+              continue;
+            }
+            if (attr.name == "latest/dynamic/instance-identity/document/accountId") {
+              accIDs.add(attr.value);
+              continue;
+            }
+            if (attr.name == "latest/dynamic/instance-identity/document/instanceType") {
+              types.add(attr.value);
+              continue;
+            }
+            if (attr.name == "latest/dynamic/instance-identity/document/region") {
+              regions.add(attr.value);
+              continue;
+            }
+            if (attr.name == "latest/dynamic/instance-identity/document/availabilityZone") {
+              zones.add(attr.value);
+            }
+          }
+        }
+        if (ctx.qualys_vmdr?.asset_host_detection?.metadata?.google?.attribute instanceof List) {
+          for (def attr: ctx.qualys_vmdr.asset_host_detection.metadata.google.attribute) {
+            if (attr.value == null && attr.value == "") {
+              continue;
+            }
+            if (attr.name == "projectId") {
+              names.add(attr.value);
+              continue;
+            }
+            if (attr.name == "projectIdNo") {
+              projIDs.add(attr.value);
+              continue;
+            }
+            if (attr.name == "machineType") {
+              types.add(attr.value);
+              continue;
+            }
+            if (attr.name == "location") {
+              regions.add(attr.value);
+              continue;
+            }
+            if (attr.name == "zone") {
+              zones.add(attr.value);
+            }
+          }
+        }
+        if (ctx.qualys_vmdr?.asset_host_detection?.metadata?.azure?.attribute instanceof List) {
+          for (def attr: ctx.qualys_vmdr.asset_host_detection.metadata.azure.attribute) {
+            if (attr.value == null && attr.value == "") {
+              continue;
+            }
+            if (attr.name == "subscriptionId") {
+              projIDs.add(attr.value);
+              continue;
+            }
+            if (attr.name == "location") {
+              regions.add(attr.value);
+            }
+          }
+        }
+        // Apply collation.
+        if (accIDs.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          if (ctx.cloud.account == null) {
+            ctx.cloud.account = new HashMap();
+          }
+          ctx.cloud.account.id = accIDs;
+        }
+        if (projIDs.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          if (ctx.cloud.project == null) {
+            ctx.cloud.project = new HashMap();
+          }
+          ctx.cloud.project.id = projIDs;
+        }
+        if (names.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          if (ctx.cloud.project == null) {
+            ctx.cloud.project = new HashMap();
+          }
+          ctx.cloud.project.name = names;
+        }
+        if (regions.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          ctx.cloud.region = regions;
+        }
+        if (types.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          if (ctx.cloud.machine == null) {
+            ctx.cloud.machine = new HashMap();
+          }
+          ctx.cloud.machine.type = types;
+        }
+        if (zones.length != 0) {
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          ctx.cloud.availability_zone = zones;
+        }
+
+  - set:
+      field: cloud.instance.name
+      copy_from: qualys_vmdr.asset_host_detection.dns_data.hostname
+      if: ctx._conf?.want_provider_cloud == true
+      ignore_empty_value: true
+
   - script:
       lang: painless
       tag: script_to_set_IS_DISABLED
@@ -1386,6 +1550,7 @@ processors:
       field:
         - json
         - message
+        - _conf
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_FOUND_DATETIME
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_REOPENED_DATETIME
         - qualys_vmdr.asset_host_detection.vulnerability.IS_DISABLED

@@ -140,6 +140,12 @@ processors:
       field: observer.hostname
       copy_from: hostname
       if: ctx?.observer?.name == null && ctx?.hostname != null
+  - rename:
+      description: Rename network.transport to network.iana_number if it is a number.
+      if: ctx.network?.iana_number == null && ctx.network?.transport != null && ctx.network.transport.chars().allMatch(Character::isDigit)
+      field: network.transport
+      target_field: network.iana_number
+      ignore_missing: true
   - lowercase:
       field: network.transport
       ignore_missing: true
@@ -188,7 +194,6 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
   - script:
       description: Enrich event with ECS fields.
       lang: painless
@@ -250,6 +255,7 @@ processors:
         }
   - community_id:
       ignore_missing: true
+      ignore_failure: true
       icmp_type: iptables.icmp.type
       icmp_code: iptables.icmp.code
   - script:
@@ -378,4 +384,7 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}' in pipeline {{{_ingest.pipeline}}}
+        {{#_ingest.on_failure_processor_tag}} with tag '{{ _ingest.on_failure_processor_tag }}'{{/_ingest.on_failure_processor_tag}}
+        failed with message '{{ _ingest.on_failure_message }}'

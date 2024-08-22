@@ -5,13 +5,13 @@ go 1.22.0
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cli/go-gh/v2 v2.9.0
-	github.com/elastic/elastic-package v0.101.2
+	github.com/elastic/elastic-package v0.102.0
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/package-registry v1.24.0
 	github.com/magefile/mage v1.15.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/tools v0.23.0
+	golang.org/x/tools v0.24.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -174,14 +174,14 @@ require (
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.25.0 // indirect
-	golang.org/x/mod v0.19.0 // indirect
-	golang.org/x/net v0.27.0 // indirect
+	golang.org/x/crypto v0.26.0 // indirect
+	golang.org/x/mod v0.20.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/oauth2 v0.18.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
-	golang.org/x/term v0.22.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/term v0.23.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/api v0.171.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
@@ -192,13 +192,13 @@ require (
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	helm.sh/helm/v3 v3.15.2 // indirect
+	helm.sh/helm/v3 v3.15.3 // indirect
 	howett.net/plist v1.0.0 // indirect
-	k8s.io/api v0.30.2 // indirect
+	k8s.io/api v0.30.3 // indirect
 	k8s.io/apiextensions-apiserver v0.30.0 // indirect
-	k8s.io/apimachinery v0.30.2 // indirect
-	k8s.io/cli-runtime v0.30.2 // indirect
-	k8s.io/client-go v0.30.2 // indirect
+	k8s.io/apimachinery v0.30.3 // indirect
+	k8s.io/cli-runtime v0.30.3 // indirect
+	k8s.io/client-go v0.30.3 // indirect
 	k8s.io/component-base v0.30.0 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
