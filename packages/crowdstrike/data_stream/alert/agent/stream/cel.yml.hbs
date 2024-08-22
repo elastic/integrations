@@ -51,6 +51,7 @@ program: |
     ).do_request().as(get_resp, get_resp.StatusCode == 200 ?
       bytes(get_resp.Body).decode_json().as(body, {
         ?"resources": has(body.resources) && body.resources.size() > 0 ? optional.of(body.resources) : optional.none(),
+        "events": [],
         "want_more": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total),
         "offset": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
           int(state.offset) + body.resources.size()

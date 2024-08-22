@@ -825,15 +825,19 @@ processors:
       field: "message"
       description: "716002"
       patterns:
-        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> WebVPN session terminated: %{GREEDYDATA:event.reason}."
+        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTANGLE:source.user.name}> IP <%{IP:source.address}> WebVPN session terminated: %{GREEDYDATA:event.reason}."
         - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} WebVPN session terminated: %{GREEDYDATA:event.reason}."
+      pattern_definitions:
+        NOTANGLE: "[^>]+"
   - grok:
       if: "ctx._temp_.cisco.message_id == '722051'"
       field: "message"
       description: "722051"
       patterns:
-        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> IPv4 Address <%{IP:_temp_.cisco.assigned_ip}> %{GREEDYDATA}"
+        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTANGLE:source.user.name}> IP <%{IP:source.address}> IPv4 Address <%{IP:_temp_.cisco.assigned_ip}> %{GREEDYDATA}"
         - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} IPv4 Address %{IP:_temp_.cisco.assigned_ip} %{GREEDYDATA}"
+      pattern_definitions:
+        NOTANGLE: "[^>]+"
   - grok:
       if: "ctx._temp_.cisco.message_id == '733100'"
       field: "message"

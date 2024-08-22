@@ -1,0 +1,277 @@
+---
+description: Process goflow2 sflow data
+processors:
+- set:
+    field: event.kind
+    value: event
+    tag: set_event_kind
+- append:
+    field: event.category
+    value:
+    - network
+    tag: set_event_category
+- append:
+    field: event.type
+    value:
+    - connection
+    tag: append_event_type
+- set:
+    field: ecs.version
+    value: 8.11.0
+    tag: set_ecs_version
+- json:
+    field: message
+    target_field: goflow2
+    tag: json_message_to_goflow2
+- set:
+    tag: set_event_original
+    field: event.original
+    copy_from: message
+- remove:
+    tag: remove_message
+    field: message
+- script:
+    source: ctx.goflow2.time_flow_start_ns = (ctx.goflow2?.time_flow_start_ns / 1000000);
+    tag: script_calculate_time_flow_start_ns
+- script:
+    source: ctx.goflow2.flow_size = ctx.goflow2?.bytes * ctx.goflow2?.sampling_rate;
+    if: ctx.goflow2?.bytes != null && ctx.goflow2?.bytes != '' && ctx.goflow2?.sampling_rate != null && ctx.goflow2?.sampling_rate != ''
+    tag: script_calculate_flow_size
+- date:
+    field: goflow2.time_flow_start_ns
+    target_field: "@timestamp"
+    formats:
+    - UNIX_MS
+    timezone: UTC
+    ignore_failure: false
+    tag: date_parse_time_flow_start_ns
+- rename:
+    field: goflow2.type
+    target_field: event.action
+    if: ctx.goflow2?.type != null && ctx.goflow2?.type != ''
+    tag: rename_type_to_event_action
+- append:
+    field: observer.ip
+    value:
+    - "{{{goflow2.sampler_address}}}"
+    if: ctx.goflow2?.sampler_address != null && ctx.goflow2?.sampler_address != ''
+    tag: append_sampler_address_to_observer_ip
+- rename:
+    field: goflow2.sequence_num
+    target_field: sflow.sequence_num
+    if: ctx.goflow2?.sequence_num != null && ctx.goflow2?.sequence_num != ''
+    tag: rename_sequence_num_to_sflow_sequence_num
+- rename:
+    field: goflow2.in_if
+    target_field: observer.ingress.interface.id
+    if: ctx.goflow2?.in_if != null && ctx.goflow2?.in_if != ''
+    tag: rename_in_if_to_observer_ingress_interface_id
+- convert:
+    field: observer.ingress.interface.id
+    type: string
+    ignore_missing: true
+    tag: convert_observer_ingress_interface_id_to_string
+- rename:
+    field: goflow2.out_if
+    target_field: observer.egress.interface.id
+    if: ctx.goflow2?.out_if != null && ctx.goflow2?.out_if != ''
+    tag: rename_out_if_to_observer_egress_interface_id
+- convert:
+    field: observer.egress.interface.id
+    type: string
+    ignore_missing: true
+    tag: convert_observer_egress_interface_id_to_string
+- convert:
+    field: goflow2.src_addr
+    type: ip
+    if: ctx.goflow2?.src_addr != null && ctx.goflow2?.src_addr != ''
+    tag: convert_src_addr_to_ip
+- rename:
+    field: goflow2.src_addr
+    target_field: source.ip
+    if: ctx.goflow2?.src_addr != null && ctx.goflow2?.src_addr != ''
+    tag: rename_src_addr_to_source_ip
+- convert:
+    field: goflow2.dst_addr
+    type: ip
+    if: ctx.goflow2?.dst_addr != null && ctx.goflow2?.dst_addr != ''
+    tag: convert_dst_addr_to_ip
+- rename:
+    field: goflow2.dst_addr
+    target_field: destination.ip
+    if: ctx.goflow2?.dst_addr != null && ctx.goflow2?.dst_addr != ''
+    tag: rename_dst_addr_to_destination_ip
+- rename:
+    field: goflow2.etype
+    target_field: network.type
+    if: ctx.goflow2?.etype != null && ctx.goflow2?.etype != ''
+    tag: rename_etype_to_network_type
+- rename:
+    field: goflow2.proto
+    target_field: network.transport
+    if: ctx.goflow2?.proto != null && ctx.goflow2?.proto != ''
+    tag: rename_proto_to_network_transport
+- rename:
+    field: goflow2.src_port
+    target_field: source.port
+    if: ctx.goflow2?.src_port != null && ctx.goflow2?.src_port != ''
+    tag: rename_src_port_to_source_port
+- rename:
+    field: goflow2.dst_port
+    target_field: destination.port
+    if: ctx.goflow2?.dst_port != null && ctx.goflow2?.dst_port != ''
+    tag: rename_dst_port_to_destination_port
+- rename:
+    field: goflow2.src_vlan
+    target_field: observer.ingress.vlan.id
+    if: ctx.goflow2?.src_vlan != null && ctx.goflow2?.src_vlan != ''
+    tag: rename_src_vlan_to_observer_ingress_vlan_id
+- convert:
+    field: observer.ingress.vlan.id
+    type: string
+    ignore_missing: true
+    tag: convert_observer_ingress_vlan_id_to_string
+- rename:
+    field: goflow2.dst_vlan
+    target_field: observer.egress.vlan.id
+    if: ctx.goflow2?.dst_vlan != null && ctx.goflow2?.dst_vlan != ''
+    tag: rename_dst_vlan_to_observer_egress_vlan_id
+- convert:
+    field: observer.egress.vlan.id
+    type: string
+    ignore_missing: true
+    tag: convert_observer_egress_vlan_id_to_string
+- rename:
+    field: goflow2.sampling_rate
+    target_field: network.packets
+    if: ctx.goflow2?.sampling_rate != null && ctx.goflow2?.sampling_rate != ''
+    tag: rename_sampling_rate_to_network_packets
+- rename:
+    field: goflow2.bytes
+    target_field: sflow.bytes
+    if: ctx.goflow2?.bytes != null && ctx.goflow2?.bytes != ''
+    tag: rename_bytes_to_sflow_bytes
+- rename:
+    field: goflow2.flow_size
+    target_field: network.bytes
+    ignore_missing: true
+    tag: rename_flow_size_to_network_bytes
+- geoip:
+    if: ctx.source?.geo == null
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+    tag: geoip_source_ip_to_source_geo
+- geoip:
+    if: ctx.destination?.geo == null
+    field: destination.ip
+    target_field: destination.geo
+    ignore_missing: true
+    tag: geoip_destination_ip_to_destination_geo
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+    tag: geoip_source_ip_to_source_as
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.ip
+    target_field: destination.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+    tag: geoip_destination_ip_to_destination_as
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+    tag: rename_source_as_asn_to_source_as_number
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+    tag: rename_source_as_organization_name_to_source_as_organization_name
+- rename:
+    field: destination.as.asn
+    target_field: destination.as.number
+    ignore_missing: true
+    tag: rename_destination_as_asn_to_destination_as_number
+- rename:
+    field: destination.as.organization_name
+    target_field: destination.as.organization.name
+    ignore_missing: true
+    tag: rename_destination_as_organization_name_to_destination_as_organization_name
+- remove:
+    field:
+    - goflow2.time_flow_start_ns
+    - goflow2.proto
+    - goflow2.etype
+    - goflow2.dst_addr
+    - goflow2.src_addr
+    - goflow2.sampler_address
+    - goflow2.bytes
+    ignore_missing: true
+    ignore_failure: true
+    tag: remove_unused_fields
+- remove:
+    field:
+    - goflow2
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.goflow2?.size() == 0
+    tag: remove_goflow2_array_if_empty
+- lowercase:
+    field: network.transport
+    ignore_missing: true
+    tag: lowercase_network_transport
+- lowercase:
+    field: network.type
+    ignore_missing: true
+    tag: lowercase_network_type
+- set:
+    field: sflow.sample_rate
+    copy_from: network.packets
+    ignore_empty_value: true
+    tag: set_sflow_sample_rate
+- append:
+    field: destination.address
+    value:
+    - "{{{destination.ip}}}"
+    if: ctx.destination?.ip != null && ctx.destination?.ip != ''
+    tag: append_destination_ip_to_destination_address
+- append:
+    field: source.address
+    value:
+    - "{{{source.ip}}}"
+    if: ctx.source?.ip != null && ctx.source?.ip != ''
+    tag: append_source_ip_to_source_address
+- append:
+    field: related.ip
+    value:
+    - "{{{source.ip}}}"
+    if: ctx.source?.ip != null && ctx.source?.ip != ''
+    tag: append_source_ip_to_related_ip
+- append:
+    field: related.ip
+    value:
+    - "{{{destination.ip}}}"
+    if: ctx.destination?.ip != null && ctx.destination?.ip != ''
+    tag: append_destination_ip_to_related_ip
+- remove:
+    field: event.original
+    if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+    ignore_failure: true
+    ignore_missing: true
+    tag: remove_event_orginial_if_not_tags_preserve_original_event
+on_failure:
+- set:
+    field: error.message
+    value: Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag
+      }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message
+      }} - Source {{_source}}
+    tag: set_error_message_on_failure

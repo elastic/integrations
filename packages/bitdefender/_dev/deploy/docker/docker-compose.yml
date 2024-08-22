@@ -1,6 +1,6 @@
 version: '2.3'
 services:
-  bitdefender-push-notification-http:
+  bitdefender-push-notification-qradar-http:
     image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
@@ -9,16 +9,25 @@ services:
       - STREAM_ADDR=http://elastic-agent:8383/bitdefender/push/notification
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/qradar_format.log
-  bitdefender-push-notification-https:
+  bitdefender-push-notification-jsonrpc-http:
     image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
       - STREAM_PROTOCOL=webhook
-      - STREAM_ADDR=https://elastic-agent:8384/bitdefender/push/notification
+      - STREAM_ADDR=http://elastic-agent:8384/bitdefender/push/notification
+      - STREAM_WEBHOOK_HEADER=Authorization=abc123
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/jsonrpc_format.log
+  bitdefender-push-notification-jsonrpc-https:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=https://elastic-agent:8385/bitdefender/push/notification
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
       - STREAM_INSECURE=true
-    command: log --start-signal=SIGHUP --delay=5s /sample_logs/qradar_format.log
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/jsonrpc_format.log
   bitdefender-gravityzone-api-mock:
     image: docker.elastic.co/observability/stream:v0.15.0
     hostname: bitdefender_gravityzone_api_mock

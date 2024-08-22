@@ -4,11 +4,14 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  - rename:
+  - set:
+      tag: set_event_original
+      field: event.original
+      copy_from: message
+  - remove:
+      tag: remove_message
       field: message
-      target_field: event.original
       ignore_missing: true
-      if: ctx.event?.original == null
   - grok:
       field: event.original
       tag: "grok_syslog_line"
