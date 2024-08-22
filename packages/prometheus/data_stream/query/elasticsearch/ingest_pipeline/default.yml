@@ -8,6 +8,10 @@ processors:
           field: "prometheus.labels.query_name"
           value: "{{_ingest._key}}"
           description: Add query_name as a label to cover cases, when query returns a single value with no labels
+  - fingerprint:
+      fields: ["prometheus.labels"]
+      target_field: "prometheus.labels_fingerprint"
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind
