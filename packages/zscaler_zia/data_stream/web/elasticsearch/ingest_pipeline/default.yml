@@ -116,9 +116,9 @@ processors:
       tag: rename_appriskscore
       target_field: zscaler_zia.web.app.risk_score
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.apprulelabel
-      tag: rename_apprulelabel
+      tag: urldecode_apprulelabel
       target_field: zscaler_zia.web.app.rule_label
       ignore_missing: true
   - append:
@@ -356,9 +356,9 @@ processors:
       tag: set_device_model_identifier_from_web_device_model
       copy_from: zscaler_zia.web.device.model
       ignore_empty_value: true
-  - rename:
+  - urldecode:
       field: json.devicename
-      tag: rename_devicename
+      tag: urldecode_devicename
       target_field: zscaler_zia.web.device.name
       ignore_missing: true
   - set:
@@ -526,9 +526,9 @@ processors:
       tag: rename_fileclass
       target_field: zscaler_zia.web.file.class
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.filename
-      tag: rename_filename
+      tag: urldecode_filename
       target_field: zscaler_zia.web.file.name
       ignore_missing: true
   - append:
@@ -588,9 +588,9 @@ processors:
       tag: rename_forward_type
       target_field: zscaler_zia.web.forward_type
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.host
-      tag: rename_host
+      tag: urldecode_host
       target_field: zscaler_zia.web.host
       ignore_missing: true
   - set:
@@ -629,14 +629,19 @@ processors:
       tag: rename_keyprotectiontype
       target_field: zscaler_zia.web.key_protection_type
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.location
-      tag: rename_location
+      tag: urldecode_location
       target_field: zscaler_zia.web.location
       ignore_missing: true
-  - rename:
+  - urldecode:
+      field: json.department
+      tag: urldecode_department
+      target_field: zscaler_zia.web.department
+      ignore_missing: true
+  - urldecode:
       field: json.login
-      tag: rename_login
+      tag: urldecode_login
       target_field: zscaler_zia.web.login
       ignore_missing: true
   - set:
@@ -713,9 +718,9 @@ processors:
       tag: rename_mobappcategory
       target_field: zscaler_zia.web.mobile.application.category
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.mobappname
-      tag: rename_mobappname
+      tag: urldecode_mobappname
       target_field: zscaler_zia.web.mobile.application.name
       ignore_missing: true
   - rename:
@@ -892,15 +897,20 @@ processors:
       tag: rename_rdr_rulename
       target_field: zscaler_zia.web.redirect_policy_name
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.refererhost
-      tag: rename_refererhost
+      tag: urldecode_refererhost
       target_field: zscaler_zia.web.referer.host
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.refererurl
-      tag: rename_refererurl
+      tag: urldecode_refererurl
       target_field: zscaler_zia.web.referer.name
+      ignore_missing: true
+  - urldecode:
+      field: json.refererpath
+      tag: urldecode_refererpath
+      target_field: zscaler_zia.web.referer.path
       ignore_missing: true
   - set:
       field: http.request.referrer
@@ -1030,9 +1040,9 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
+  - urldecode:
       field: json.rulelabel
-      tag: rename_rulelabel
+      tag: urldecode_rulelabel
       target_field: zscaler_zia.web.rule.name
       ignore_missing: true
   - append:
@@ -1264,9 +1274,9 @@ processors:
       tag: rename_upload_fileclass
       target_field: zscaler_zia.web.upload.file.class
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.upload_filename
-      tag: rename_upload_filename
+      tag: urldecode_upload_filename
       target_field: zscaler_zia.web.upload.file.name
       ignore_missing: true
   - append:
@@ -1311,9 +1321,9 @@ processors:
       tag: rename_urlclass
       target_field: zscaler_zia.web.url.class
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.urlfilterrulelabel
-      tag: rename_urlfilterrulelabel
+      tag: urldecode_urlfilterrulelabel
       target_field: zscaler_zia.web.url.filter_rule_label
       ignore_missing: true
   - append:
@@ -1370,6 +1380,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - urldecode:
+      field: json.urlpath
+      target_field: zscaler_zia.web.url.path
+      tag: urldecode_urlpath
+      ignore_missing: true
   - rename:
       field: json.useragentclass
       tag: rename_useragentclass
@@ -1400,9 +1415,9 @@ processors:
       tag: rename_useragenttoken
       target_field: zscaler_zia.web.user_agent.token
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.userlocationname
-      tag: rename_userlocationname
+      tag: urldecode_userlocationname
       target_field: zscaler_zia.web.user_location_name
       ignore_missing: true
   - convert:
