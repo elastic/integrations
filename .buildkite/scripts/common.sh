@@ -519,12 +519,12 @@ prepare_stack() {
     ${ELASTIC_PACKAGE_BIN} stack status
     echo ""
 
-    # if [[ "${ELASTIC_AGENT_DOCKER_IMAGE:-""}" != "" ]]; then
+    if [[ "${ELASTIC_AGENT_DOCKER_IMAGE:-""}" != "" ]]; then
         echo ""
-        echo "Images used for Elastic Agent"
+        echo "Images used for Elastic Agent:"
         docker ps --format "{{.Names}} {{.Image}}" |grep "elastic-agent"
         echo ""
-    # fi
+    fi
 }
 
 is_serverless() {
@@ -757,7 +757,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E '^nginx$'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
 }
 
 check_package() {
