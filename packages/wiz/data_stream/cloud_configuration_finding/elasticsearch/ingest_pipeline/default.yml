@@ -301,14 +301,44 @@ processors:
       if: ctx?.wiz?.cloud_configuration_finding?.result != 'PASS' && ctx?.wiz?.cloud_configuration_finding?.result != 'FAIL'
       ignore_empty_value: true
   - rename:
-      field: json.evidence
-      tag: rename_evidence
-      target_field: wiz.cloud_configuration_finding.evidence
+      field: json.evidence.currentValue
+      tag: rename_evidence_current_value
+      target_field: wiz.cloud_configuration_finding.evidence.current_value
       ignore_missing: true
   - set:
-      field: result.evidence
-      tag: set_result_evidence
-      copy_from: wiz.cloud_configuration_finding.evidence
+      field: result.evidence.current_value
+      tag: set_result_evidence_current_value
+      copy_from: wiz.cloud_configuration_finding.evidence.current_value
+      ignore_empty_value: true
+  - rename:
+      field: json.evidence.expectedValue
+      tag: rename_evidence_expected_value
+      target_field: wiz.cloud_configuration_finding.evidence.expected_value
+      ignore_missing: true
+  - set:
+      field: result.evidence.expected_value
+      tag: set_result_evidence_expected_value
+      copy_from: wiz.cloud_configuration_finding.evidence.expected_value
+      ignore_empty_value: true
+  - rename:
+      field: json.evidence.configurationPath
+      tag: rename_evidence_configuration_path
+      target_field: wiz.cloud_configuration_finding.evidence.configuration_path
+      ignore_missing: true
+  - set:
+      field: result.evidence.configuration_path
+      tag: set_result_evidence_configuration_path
+      copy_from: wiz.cloud_configuration_finding.evidence.configuration_path
+      ignore_empty_value: true
+  - rename:
+      field: json.evidence.cloudConfigurationLink
+      tag: rename_evidence_cloud_configuration_link
+      target_field: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
+      ignore_missing: true
+  - set:
+      field: result.evidence.cloud_configuration_link
+      tag: set_result_evidence_cloud_configuration_link
+      copy_from: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
       ignore_empty_value: true
   - remove:
       field: json

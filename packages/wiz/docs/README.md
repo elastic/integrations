@@ -325,7 +325,10 @@ An example event for `cloud_configuration_finding` looks as following:
 | resource.sub_type |  | keyword |
 | resource.type |  | keyword |
 | result.evaluation |  | keyword |
-| result.evidence |  | flattened |
+| result.evidence.cloud_configuration_link |  | text |
+| result.evidence.configuration_path |  | text |
+| result.evidence.current_value |  | text |
+| result.evidence.expected_value |  | text |
 | rule.description |  | text |
 | rule.id |  | keyword |
 | rule.name |  | keyword |
@@ -336,7 +339,10 @@ An example event for `cloud_configuration_finding` looks as following:
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | wiz.cloud_configuration_finding.analyzed_at |  | date |
-| wiz.cloud_configuration_finding.evidence |  | flattened |
+| wiz.cloud_configuration_finding.evidence.cloud_configuration_link |  | text |
+| wiz.cloud_configuration_finding.evidence.configuration_path |  | text |
+| wiz.cloud_configuration_finding.evidence.current_value |  | text |
+| wiz.cloud_configuration_finding.evidence.expected_value |  | text |
 | wiz.cloud_configuration_finding.id |  | keyword |
 | wiz.cloud_configuration_finding.resource.cloud_platform |  | keyword |
 | wiz.cloud_configuration_finding.resource.id |  | keyword |
