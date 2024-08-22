@@ -22,7 +22,7 @@ scms:
       username: '{{ requiredEnv "GITHUB_ACTOR" }}'
       token: '{{ requiredEnv "GITHUB_TOKEN" }}'
       commitusingapi: true
-      branch: pull/10844/merge
+      branch: main
 
 sources:
   latestSnapshot:
@@ -63,13 +63,14 @@ targets:
       matchpattern: '(Stack Version) v8\.\d+"'
       replacepattern: 'Stack Version v{{ source "latestSnapshotMajorMinor" }}"'
 
-  update-snapshot-weekly-build:
-    name: '[updatecli] Update latest snapshot in catalog-info for weekly schedule to {{ source "latestSnapshot" }}'
-    kind: file
-    sourceid: latestSnapshot
-    scmid: default
-    spec:
-      file: 'catalog-info.yaml'
-      matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
-      # matchpattern: (ELASTIC_PR_COMMENTS_ENABLED:) '[^\s]*'
-      replacepattern: '$1 {{ source "latestSnapshot" }}'
+  ## TODO: Looks like these targets are running with the contents from main branch
+  ## Uncomment this target once this code is merged
+  # update-snapshot-weekly-build:
+  #   name: '[updatecli] Update latest snapshot in catalog-info for weekly schedule to {{ source "latestSnapshot" }}'
+  #   kind: file
+  #   sourceid: latestSnapshot
+  #   scmid: default
+  #   spec:
+  #     file: 'catalog-info.yaml'
+  #     matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
+  #     replacepattern: '$1 {{ source "latestSnapshot" }}'
