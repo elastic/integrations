@@ -61,16 +61,6 @@ processors:
       ignore_failure: true
       if: ctx.event?.created == null
   - date:
-      tag: date-agent-local-time
-      description: Parse timestamp from event.
-      field: crowdstrike.AgentLocalTime
-      target_field: event.created
-      formats:
-        - ISO8601
-        - UNIX
-      ignore_failure: true
-      if: ctx.event?.created == null
-  - date:
       tag: date-_time
       description: Parse _time from event.
       field: crowdstrike._time
@@ -84,7 +74,7 @@ processors:
       tag: set-timestamp
       field: "@timestamp"
       copy_from: event.created
-      if: ctx.event?.created != null && (ctx.crowdstrike?.ContextTimeStamp == null || ctx.crowdstrike?.ContextTimeStamp == "")
+      if: ctx.event?.created != null
   - set:
       tag: set-timestamp-ingest
       field: "@timestamp"
@@ -107,13 +97,6 @@ processors:
         if (timestamp > 0x0100000000000000L) { // See https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 for constant.
           ctx.crowdstrike.ContextTimeStamp = (timestamp / 10000000) - 11644473600L;
         }
-  - date:
-      tag: date-context-timestamp
-      if: (ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != "")
-      field: crowdstrike.ContextTimeStamp
-      formats:
-        - UNIX
-      ignore_failure: true
   - script:
       tag: date-start-timestamp-from-nt
       description: Conditionally convert StartTime from Windows NT timestamp format to UNIX.
@@ -2443,6 +2426,12 @@ processors:
         - UNIX
       if: ctx.crowdstrike?.Time != null && ctx.crowdstrike?.Time != ""
   - date:
+      field: crowdstrike.ContextTimeStamp
+      target_field: crowdstrike.ContextTimeStamp
+      formats:
+        - UNIX
+      if: ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != ""
+  - date:
       field: crowdstrike.BiosReleaseDate
       target_field: crowdstrike.BiosReleaseDate
       formats:
@@ -2513,7 +2502,6 @@ processors:
         - _temp
         - crowdstrike.timestamp
         - crowdstrike._time
-        - crowdstrike.ContextTimeStamp
         - crowdstrike.CreationTimeStamp
         - crowdstrike.DomainName
         - crowdstrike.ConnectionDirection

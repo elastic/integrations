@@ -1104,6 +1104,7 @@ and/or `session_token`.
 | crowdstrike.ConnectType |  | keyword |
 | crowdstrike.ConnectionFlags |  | keyword |
 | crowdstrike.ContextProcessId |  | keyword |
+| crowdstrike.ContextTimeStamp | System local time of event creation. | date |
 | crowdstrike.CpuClockSpeed |  | keyword |
 | crowdstrike.CpuFeaturesMask |  | keyword |
 | crowdstrike.CpuProcessorName |  | keyword |
