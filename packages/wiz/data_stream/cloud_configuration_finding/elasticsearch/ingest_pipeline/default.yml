@@ -35,15 +35,11 @@ processors:
       tag: rename_cloudProvider
       target_field: wiz.cloud_configuration_finding.resource.subscription.cloud_provider
       ignore_missing: true
-  - set:
-      field: cloud.provider
-      tag: set_cloud_provider
-      copy_from: wiz.cloud_configuration_finding.resource.subscription.cloud_provider
-      ignore_empty_value: true
-  - script:
-      tag: lowercase_cloud_provider
-      lang: painless
-      source: "if (ctx.cloud?.provider != null) { ctx.cloud.provider = ctx.cloud.provider.toLowerCase(); }"
+  - lowercase:
+      field: wiz.cloud_configuration_finding.resource.subscription.cloud_provider
+      target_field: cloud.provider
+      tag: set_cloud_provider_lowercase
+      ignore_missing: true
   - rename:
       field: json.resource.subscription.externalId
       tag: rename_subscription_externalId
@@ -79,15 +75,11 @@ processors:
       tag: rename_cloud_plarform
       target_field: wiz.cloud_configuration_finding.resource.cloud_platform
       ignore_missing: true
-  - set:
-      field: cloud.service.name
-      tag: set_cloud_service_name
-      copy_from: wiz.cloud_configuration_finding.resource.cloud_platform
-      ignore_empty_value: true
-  - script:
-      tag: lowercase_cloud_service_name
-      lang: painless
-      source: "if (ctx.cloud?.service?.name != null) { ctx.cloud.service.name = ctx.cloud.service.name.toLowerCase(); }"
+  - lowercase:
+      field: wiz.cloud_configuration_finding.resource.cloud_platform
+      target_field: cloud.service.name
+      tag: set_cloud_service_name_lowercase
+      ignore_missing: true
   - append:
       field: event.category
       tag: append_event_category
