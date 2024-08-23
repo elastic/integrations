@@ -240,12 +240,12 @@ processors:
       copy_from: wiz.cloud_configuration_finding.resource.provider_id
       if: ctx.resource?.type == 'USER_ACCOUNT'
       ignore_empty_value: true
-  - set:
-      field: host.name
-      tag: set_host_name_if_vm
-      copy_from: wiz.cloud_configuration_finding.resource.name
+  - lowercase:
+      field: wiz.cloud_configuration_finding.resource.name
+      target_field: host.name
+      tag: set_host_name_lowercase_if_vm
       if: ctx?.resource?.type == 'VIRTUAL_MACHINE'
-      ignore_empty_value: true
+      ignore_missing: true
   - rename:
       field: json.result
       tag: rename_result
