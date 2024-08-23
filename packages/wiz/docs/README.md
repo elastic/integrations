@@ -332,6 +332,8 @@ An example event for `cloud_configuration_finding` looks as following:
 | rule.description |  | text |
 | rule.id |  | keyword |
 | rule.name |  | keyword |
+| rule.reference |  | text |
+| rule.references |  | text |
 | rule.remediation |  | text |
 | rule.uuid |  | keyword |
 | tags | User defined tags. | keyword |
