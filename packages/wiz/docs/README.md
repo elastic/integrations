@@ -729,8 +729,6 @@ An example event for `vulnerability` looks as following:
 | wiz.vulnerability.vulnerable_asset.cloud.platform |  | keyword |
 | wiz.vulnerability.vulnerable_asset.cloud.provider_url |  | keyword |
 | wiz.vulnerability.vulnerable_asset.cwe |  | keyword |
-| wiz.vulnerability.vulnerable_asset.data_source.Id |  | keyword |
-| wiz.vulnerability.vulnerable_asset.data_source.URL |  | keyword |
 | wiz.vulnerability.vulnerable_asset.has_limited_internet_exposure |  | boolean |
 | wiz.vulnerability.vulnerable_asset.has_wide_internet_exposure |  | boolean |
 | wiz.vulnerability.vulnerable_asset.id |  | keyword |
@@ -744,7 +742,6 @@ An example event for `vulnerability` looks as following:
 | wiz.vulnerability.vulnerable_asset.package.version |  | keyword |
 | wiz.vulnerability.vulnerable_asset.provider_unique_id |  | keyword |
 | wiz.vulnerability.vulnerable_asset.region |  | keyword |
-| wiz.vulnerability.vulnerable_asset.score.base |  | double |
 | wiz.vulnerability.vulnerable_asset.status |  | keyword |
 | wiz.vulnerability.vulnerable_asset.subscription.external_id |  | keyword |
 | wiz.vulnerability.vulnerable_asset.subscription.id |  | keyword |
