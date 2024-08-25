@@ -1,4 +1,4 @@
-# First
+# First EPSS
 
 ## Overview
 
@@ -8,7 +8,7 @@ The Exploit Prediction Scoring System (EPSS) is a data-driven effort for estimat
 
 ## Data streams
 
-The First EPSS integration collects one type of data stream: `epss`
+The First EPSS integration collects one type of data stream: `vulnerability`
 
 ### EPSS
 
@@ -32,11 +32,11 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs reference
 
-### EPSS
+### Vulnerability
 
 Retrieves CVEs using the First EPSS API.
 
-An example event for `epss` looks as following:
+An example event for `vulnerability` looks as following:
 
 ```json
 {
@@ -103,16 +103,4 @@ An example event for `epss` looks as following:
 
 #### Exported fields
 
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| first.epss.cve | CVE number | keyword |
-| first.epss.date | Exploit Prediction Scoring System score calculation date | date |
-| first.epss.epss | Exploit Prediction Scoring System score value | float |
-| first.epss.percentile | Exploit Prediction Scoring System percentile value | float |
-| input.type | Input type | keyword |
+{{fields "vulnerability"}}
