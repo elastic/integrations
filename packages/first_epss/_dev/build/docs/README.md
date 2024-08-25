@@ -40,8 +40,8 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-  "_index": ".ds-logs-first.epss-default-2024.08.11-000001",
-  "_id": "SmDFQZEBL7kK8upPQ5pd",
+  "_index": ".ds-logs-first_epss.vulnerability-default-2024.08.25-000001",
+  "_id": "DKKmi5EBUs3vuMyo3CjX",
   "_version": 1,
   "_score": 0,
   "_source": {
@@ -50,32 +50,62 @@ An example event for `vulnerability` looks as following:
     },
     "agent": {
       "name": "docker-fleet-agent",
-      "id": "c884e63b-dea9-403d-86dc-10493c97c4a9",
-      "ephemeral_id": "20f70707-53e7-4c22-84ef-d4c049bdf8a6",
+      "id": "8b72fd47-8834-4fb6-8c39-c6bbe8ab8a13",
       "type": "filebeat",
-      "version": "8.14.3"
+      "ephemeral_id": "d503405a-e1a9-4200-baa7-acf87dd9ae70",
+      "version": "8.15.0"
     },
-    "@timestamp": "2024-08-11T14:08:52.538Z",
+    "@timestamp": "2024-08-25T22:27:33.219Z",
     "ecs": {
       "version": "8.11.0"
     },
     "data_stream": {
       "namespace": "default",
       "type": "logs",
-      "dataset": "first.epss"
+      "dataset": "first_epss.vulnerability"
+    },
+    "host": {
+      "hostname": "docker-fleet-agent",
+      "os": {
+        "kernel": "6.10.0-linuxkit",
+        "codename": "focal",
+        "name": "Ubuntu",
+        "family": "debian",
+        "type": "linux",
+        "version": "20.04.6 LTS (Focal Fossa)",
+        "platform": "ubuntu"
+      },
+      "containerized": false,
+      "ip": [
+        "172.23.0.7"
+      ],
+      "name": "docker-fleet-agent",
+      "id": "1e6dd5e4f8a3409dbea97e40111e935a",
+      "mac": [
+        "02-42-AC-17-00-07"
+      ],
+      "architecture": "aarch64"
     },
     "elastic_agent": {
-      "id": "c884e63b-dea9-403d-86dc-10493c97c4a9",
-      "version": "8.14.3",
+      "id": "8b72fd47-8834-4fb6-8c39-c6bbe8ab8a13",
+      "version": "8.15.0",
       "snapshot": false
     },
+    "first_epss": {
+      "vulnerability": {
+        "date": "2024-08-25T00:00:00.000Z",
+        "cve": "CVE-1999-0001",
+        "percentile": 0.73458,
+        "epss": 0.00383
+      }
+    },
     "vulnerability": {
-      "reference": "https://api.first.org/data/v1/epss?pretty=true&cve=CVE-2024-6505",
-      "id": "CVE-2024-6505"
+      "reference": "https://api.first.org/data/v1/epss?pretty=true&cve=CVE-1999-0001",
+      "id": "CVE-1999-0001"
     },
     "event": {
       "agent_id_status": "verified",
-      "ingested": "2024-08-11T14:08:52Z",
+      "ingested": "2024-08-25T22:27:34Z",
       "kind": "enrichment",
       "category": [
         "vulnerability"
@@ -83,20 +113,8 @@ An example event for `vulnerability` looks as following:
       "type": [
         "info"
       ],
-      "dataset": "first.epss"
-    },
-    "first": {
-      "epss": {
-        "date": "2024-08-11",
-        "cve": "CVE-2024-6505",
-        "percentile": 0.13869,
-        "epss": 0.00044
-      }
-    },
-    "tags": [
-      "forwarded",
-      "first"
-    ]
+      "dataset": "first_epss.vulnerability"
+    }
   }
 }
 ```
