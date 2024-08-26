@@ -75,6 +75,11 @@ processors:
       type: ip
       target_field: source.ip
       ignore_missing: true
+  - set:
+      tag: set_source_address
+      field: source.address
+      copy_from: source.ip
+      ignore_empty_value: true
   - append:
       tag: append_related_source_ip
       field: related.ip
@@ -87,6 +92,11 @@ processors:
       field: _tmp.destination_bytes
       target_field: destination.bytes
       ignore_missing: true
+  - set:
+      tag: set_http_request_body_bytes
+      field: http.request.body.bytes
+      copy_from: destination.bytes
+      ignore_empty_value: true
 
   - rename:
       tag: move_http_method
@@ -103,6 +113,11 @@ processors:
       field: _tmp.url
       target_field: url.original
       if: ctx._tmp?.url != null && ctx.http?.request?.method == 'CONNECT'
+  - set:
+      tag: set_destination_address
+      field: destination.address
+      copy_from: url.domain
+      ignore_empty_value: true
 
   - set:
       tag: set_event_outcome_success
