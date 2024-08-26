@@ -57,24 +57,20 @@ processors:
 # ECS compat #
 ##############
 
-- set:
+- append:
     if: "ctx?.jamf_pro.inventory.general != null && ctx?.jamf_pro.inventory.general.last_ip_address != ''"
     field: host.ip
-    value: 
-      - '{{{jamf_pro.inventory.general.last_ip_address}}}'
-    ignore_empty_value: true
+    value: '{{{jamf_pro.inventory.general.last_ip_address}}}'
     ignore_failure: true
 
 - set:
     field: host.address
     copy_from: host.ip
     ignore_empty_value: true
-- set:
+- append:
     if: "ctx?.jamf_pro.inventory.hardware != null && ctx?.jamf_pro.inventory.hardware.mac_address != ''"
     field: host.mac
-    value: 
-      - '{{{jamf_pro.inventory.hardware.mac_address}}}'
-    ignore_empty_value: true
+    value: '{{{jamf_pro.inventory.hardware.mac_address}}}'
     ignore_failure: true
 - set:
     field: host.geo
@@ -105,11 +101,9 @@ processors:
     field: user.full_name
     copy_from: jamf_pro.inventory.user_and_location.realname
     ignore_empty_value: true
-- set:
+- append:
     field: related.user
-    value: 
-      - '{{{user.email}}}'
-    ignore_empty_value: true
+    value: '{{{user.email}}}'
 - set:
     field: related.ip
     copy_from: host.ip
