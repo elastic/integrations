@@ -266,12 +266,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # convert dns_ fields to ip
   - convert:
       field: gigamon.ami.dns_arcount
       if: ctx.gigamon?.ami?.dns_arcount != null
       tag: convert_dns_arcount
       type: long
-  # convert dns_ fields to ip
       on_failure:
         - remove:
             field: gigamon.ami.dns_arcount
@@ -284,7 +284,6 @@ processors:
       if: ctx.gigamon?.ami?.dns_reverse_addr != null
       tag: convert_dns_reverse_addr
       type: ip
-  # convert dns_ fields to double
       on_failure:
         - remove:
             field: gigamon.ami.dns_reverse_addr
@@ -292,12 +291,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # convert dns_ fields to double
   - convert:
       field: gigamon.ami.dns_response_time
       if: ctx.gigamon?.ami?.dns_response_time != null
       tag: convert_dns_response_time
       type: double
-  # convert http_ fields to long
       on_failure:
         - remove:
             field: gigamon.ami.dns_response_time
@@ -305,6 +304,7 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # convert http_ fields to long
   - convert:
       field: gigamon.ami.http_code
       if: ctx.gigamon?.ami?.http_code != null
@@ -830,11 +830,6 @@ processors:
         - ts
         - json
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
       ignore_missing: true
   - script:
       lang: painless
