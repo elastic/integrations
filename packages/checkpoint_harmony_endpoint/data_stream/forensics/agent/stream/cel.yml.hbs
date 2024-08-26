@@ -4,102 +4,295 @@ config_version: 3
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 request.tracer.maxbackups: 5
 resource.url: {{server_url}}
-auth.oauth2:
-  client.id: {{client_id}}
-  token_url: {{server_url}}/auth/external
-  endpoint_params:
-    accessKey: {{secret_key}}
 state:
-  interval: {{interval}}
+  server_url: {{server_url}}
+  client_id: {{client_id}}
+  access_key: {{access_key}}
   initial_interval: {{initial_interval}}  // Define initial interval
-  want_more: false
-  full_url: {{server_url}}/logs_query/
-  per_page: {{per_page}}
+  interval: {{interval}}   // Define interval
+  limit: {{limit}}
   page_limit: {{page_limit}}
+  want_more: true
+  cursor:
+    auth_token: null
+    task_id: null,
+    task_ready: null,
+    page_token: null,
+    next_startTime: null,
+    last_page: false
 program: |
-  request("GET", state.full_url).with({
-    "Header": {"Content-Type": ["application/json"]},
-    "Body": {
-      {
-        "filter": "product:\"Forensics\"",
-        "limit": state.per_page,
-        "pageLimit": state.page_limit,
-        "cloudService": "Harmony Endpoint",
-        "timeframe": {
-          //Is this correct way to use apply time?
-          "startTime": '"' + timestamp(now() - duration('"+' + state.initial_interval + '"')).format(time_layout.RFC3339) + '"',
-          "endTime": '"' + timestamp(now()).format(time_layout.RFC3339) + '"'
-        }
-       }
-    }
-  }).do_request().as(resp,
-    resp.StatusCode == 200
+  (
+    has(state.cursor.task_ready) && (state.cursor.task_ready == null || state.cursor.task_ready == false)
     ?
-    bytes(resp.Body).decode_json().as(body, {
-      "events": body.success,
-      "want_more": false,
-      "cursor": {
-        "taskid": body.data.taskId
-      }
-    })
-    :
-    {
-        "events": [{
-          "error": {
-            "message": "response code: "+resp.StatusCode
+    (
+      has(state.cursor.task_id) && state.cursor.task_id == null
+      ?
+      (
+        has(state.cursor.auth_token) && state.cursor.auth_token != null && state.cursor.auth_token != ""
+        ?
+            state.cursor.auth_token
+        :
+          request("POST", state.base_url.trim_right("/")+"/auth/external").with({
+            "Header": {
+              "Accept": ["application/json"],
+              "Content-Type": ["application/json"],
+            },
+            "Body": {
+              "clientId": state.auth_client_id,
+              "accessKey": state.auth_access_key,
+            }.encode_json(),
+          }).do_request().as(resp, 
+          resp.StatusCode == 200       // Authentication successful. Toke is generated.
+          ?
+          (
+            bytes(resp.Body).decode_json().as(body, 
+              body.data.token
+            )
+          )
+          :     // Error with token generation
+          (
+            bytes(resp.Body).decode_json().as(body, 
+              body.message
+            )
+          )
+        )
+      ).as(auth_token, 
+        request("POST", state.base_url.trim_right("/")+"/app/laas-logs-api/api/logs_query").with({
+          "Header": {
+            "Accept": ["application/json"],
+            "Content-Type": ["application/json"],
+            "Authorization": ["Bearer "+auth_token],
+          },
+          "Body": {
+            "filter": "product:\"Forensics\"",
+            "limit": state.limit,    //Number of records to return per search query
+            "pageLimit": state.page_limit,    //Number of records per page
+            "cloudService": "Harmony Endpoint",
+            "timeframe": {
+              "startTime": state.cursor.next_startTime == null ? 
+                timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)
+                :
+                timestamp(state.cursor.next_startTime).format(time_layout.RFC3339),
+              "endTime": timestamp(now().format(time_layout.RFC3339))
+            }
+          }.encode_json(),
+        }).do_request().as(resp,    
+          resp.StatusCode == 200    //Check if search query is correct.
+          ?
+          bytes(resp.Body).decode_json().as(body, 
+          {
+            "events": [],
+            "want_more": true,
+            "cursor": {
+                "auth_token": auth_token,
+                "task_id": body.data.taskId,
+                "task_ready": false,
+                "page_token": null,
+                "next_startTime": state.cursor.next_startTime,
+                "last_page": false
+            },
+            "base_url": state.base_url,
+            "auth_client_id": state.auth_client_id,
+            "auth_access_key": state.auth_access_key,
+            "limit": state.limit,
+            "page_limit": state.page_limit,
+            "initial_interval": state.initial_interval,
+            "interval": state.interval
+          })
+          :
+          {
+            "events": {
+              "error": {
+                "message": "Error " + bytes(resp.Body).decode_json().as(body, body.message)
+              }
+            },
+            "want_more": false,
+            "cursor": {
+              "auth_token": null,
+              "task_id": null,
+              "task_ready": false,
+              "page_token": null,
+              "next_startTime": state.cursor.next_startTime,
+              "last_page": false
+            },
+            "base_url": state.base_url,
+            "auth_client_id": state.auth_client_id,
+            "auth_access_key": state.auth_access_key,
+            "limit": state.limit,
+            "page_limit": state.page_limit,
+            "initial_interval": state.initial_interval,
+            "interval": state.interval
           }
-        }]
-    }
+          )
+        )
+      :
+      (
+        has(state.cursor.task_id) && state.cursor.task_ready != true
+        ?
+        (
+          //Request to check if query operation is completed.
+          request("GET", state.base_url.trim_right("/")+"/app/laas-logs-api/api/logs_query/"+state.cursor.task_id).with({
+          "Header": {
+              "Accept": ["application/json"],
+              "Content-Type": ["application/json"],
+              "Authorization": ["Bearer "+ state.cursor.auth_token],
+          }
+          }).do_request().as(resp,     // Handle errors
+            bytes(resp.Body).decode_json().as(body, 
+            body.data.state == "Ready"   // Search query processed. Result is 'ready'.
+            ?
+            {
+              "events": [],
+              "want_more": true, 
+              "cursor": {
+                  "auth_token": state.cursor.auth_token,
+                  "task_id": state.cursor.task_id,
+                  "task_ready": true,
+                  "page_token": body.data.pageTokens[0],
+                  "next_startTime": state.cursor.next_startTime,
+                  "last_page": null
+              },
+              "base_url": state.base_url,
+              "auth_client_id": state.auth_client_id,
+              "auth_access_key": state.auth_access_key,
+              "limit": state.limit,
+              "page_limit": state.page_limit,
+              "initial_interval": state.initial_interval,
+              "interval": state.interval
+            }
+            :
+            (
+              body.data.state == "Done"  // If search query returns 0 result.
+              ?
+              {
+                "events": [],
+                "want_more": false,
+                "cursor": {
+                  "auth_token": state.cursor.auth_token,
+                  "task_id": state.cursor.task_id,
+                  "task_ready": false,
+                  "page_token": null,
+                  // Search query returned zero results. Set next_startTime = now() - 1m (To compensate for HTTP response and processing time)
+                  "next_startTime": timestamp(now() - duration("1m")).format(time_layout.RFC3339),
+                  "last_page": null
+                },
+                "base_url": state.base_url,
+                "auth_client_id": state.auth_client_id,
+                "auth_access_key": state.auth_access_key,
+                "limit": state.limit,
+                "page_limit": state.page_limit,
+                "initial_interval": state.initial_interval,
+                "interval": state.interval
+              }
+              :                          // Search query still 'Processing'
+              {
+                "events": [],
+                "want_more": true,
+                "cursor": {
+                  "auth_token": state.cursor.auth_token,
+                  "task_id": state.cursor.task_id,
+                  "task_ready": false,
+                  "page_token": null,
+                  "next_startTime": state.cursor.next_startTime,
+                  "last_page": null
+                },
+                "base_url": state.base_url,
+                "auth_client_id": state.auth_client_id,
+                "auth_access_key": state.auth_access_key,
+                "limit": state.limit,
+                "page_limit": state.page_limit,
+                "initial_interval": state.initial_interval,
+                "interval": state.interval
+              }
+            )
+            )
+          )
+        )
+        :
+        ({
+          "events": [{
+            "error": {
+              "message": "Error"
+            }
+          }],
+          "want_more": true,
+          "cursor": {
+            "auth_token": state.cursor.auth_token,
+            "task_id": state.cursor.task_id,
+            "task_ready": false,
+            "page_token": null,
+            "next_startTime": state.cursor.next_startTime,
+            "last_page": null
+          },
+          "base_url": state.base_url,
+          "auth_client_id": state.auth_client_id,
+          "auth_access_key": state.auth_access_key,
+          "limit": state.limit,
+          "page_limit": state.page_limit,
+          "initial_interval": state.initial_interval,
+          "interval": state.interval
+        })
+      )
     )
-
-  resource.retry.wait_min(20s)
-  request("GET", state.full_url+"/"+cursor.taskid).with({
-    "Header": {"Content-Type": ["application/json"]}
-  }).do_request.as(resp,
-    resp.StatusCode == 200
-    ?
-    byte(resp.body).decode_json().as(body, {
-      "events": body.success,
-      "pagetokens": body.data.pageTokens
-    })
     :
-    {
-      "events: [{
-        "error: {
-          "message": "response code: "+resp.StatusCode
-        }"
-      }]"
-    }
+    (
+      request("POST", state.base_url.trim_right("/")+"/app/laas-logs-api/api/logs_query/retrieve").with({
+          "Header": {
+              "Accept": ["application/json"],
+              "Content-Type": ["application/json"],
+              "Authorization": ["Bearer "+ state.cursor.auth_token],
+          },
+          "Body": {
+              "taskId": state.cursor.task_id,
+              "pageToken": state.cursor.page_token
+          }.encode_json(),
+      }).do_request().as(resp,   // TODO - Handle error
+        bytes(resp.Body).decode_json().as(body, 
+        body.data.nextPageToken == "NULL"
+        ?
+        {
+          "events": body.data.records,
+          "want_more": false,
+          "cursor": {
+            "auth_token": null,
+            "task_id": null,
+            "task_ready": null,
+            "page_token": null,
+            "next_startTime": timestamp(timestamp(body.data.records[0].time) + duration("1s")).format(time_layout.RFC3339),
+            "last_page": true
+          },
+          "base_url": state.base_url,
+          "auth_client_id": state.auth_client_id,
+          "auth_access_key": state.auth_access_key,
+          "limit": state.limit,
+          "page_limit": state.page_limit,
+          "initial_interval": state.initial_interval,
+          "interval": state.interval
+        }
+        :
+        {
+          "events": body.data.records,
+          "want_more": true,
+          "cursor": {
+            "auth_token": state.cursor.auth_token,
+            "task_id": state.cursor.task_id,
+            "task_ready": true,
+            "page_token": body.data.nextPageToken,
+            "next_startTime": timestamp(timestamp(body.data.records[0].time) + duration("1s")).format(time_layout.RFC3339),
+            "last_page": false
+          },
+          "base_url": state.base_url,
+          "auth_client_id": state.auth_client_id,
+          "auth_access_key": state.auth_access_key,
+          "limit": state.limit,
+          "page_limit": state.page_limit,
+          "initial_interval": state.initial_interval,
+          "interval": state.interval
+        }
+        )
+      )
+    )
   )
-
-  // How to apply pagination based on 'nextPageToken' value from response body.
-  // As discussed in previous call, how to use 'last_seen_ts' to update 'startTime' for next iteration?
-  request("GET", state.full_url+"/retrieve").with({
-    "Header": {"Content-Type": ["application/json"]},
-    "Body": {
-      {
-        "taskid": cursor.taskid,
-        "pagetoken": cursor.pagetokens
-       }
-    }
-  }).do_request.as(resp,
-    resp.StatusCode == 200
-    ?
-    byte(resp.body).decode_json().as(body, {
-      "events": body.data.records,
-      "nextPageToken": body.data.nextPageToken
-      "last_seen_ts": body.data.records[-1].time
-    })
-    :
-    {
-      "events: [{
-        "error: {
-          "message": "response code: "+resp.StatusCode
-        }"
-      }]"
-    }
-  )
-
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
