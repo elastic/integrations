@@ -15,10 +15,6 @@ processors:
     description: Convert Additional Info keys to snake case.
     tag: additional-info-keys-to-snake-case
     lang: painless
-    on_failure:
-      - append:
-          field: error.message
-          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     source: |
       Map keysToSnakeCase(Map m) {
         def regex = /_?([a-z])([A-Z]+)/;
@@ -62,7 +58,7 @@ processors:
 ##############
 
 - set:
-    if: "ctx?.jamf_pro.inventory.general != null || ctx?.jamf_pro.inventory.general.last_ip_address != ''"
+    if: "ctx?.jamf_pro.inventory.general != null && ctx?.jamf_pro.inventory.general.last_ip_address != ''"
     field: host.ip
     value: 
       - '{{{jamf_pro.inventory.general.last_ip_address}}}'
@@ -74,7 +70,7 @@ processors:
     copy_from: host.ip
     ignore_empty_value: true
 - set:
-    if: "ctx?.jamf_pro.inventory.hardware != null || ctx?.jamf_pro.inventory.hardware.mac_address != ''"
+    if: "ctx?.jamf_pro.inventory.hardware != null && ctx?.jamf_pro.inventory.hardware.mac_address != ''"
     field: host.mac
     value: 
       - '{{{jamf_pro.inventory.hardware.mac_address}}}'
@@ -120,6 +116,10 @@ processors:
     ignore_empty_value: true
 
 on_failure:
-- set:          
-    field: jamf_pro.inventory.error.message
-    value: '{{ _ingest.on_failure_message }}'
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  
