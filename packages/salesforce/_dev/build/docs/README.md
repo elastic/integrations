@@ -4,7 +4,7 @@
 
 The Salesforce integration enables users to monitor their [Salesforce](https://www.salesforce.com/) instance effectively. Salesforce is a comprehensive customer relationship management (CRM) platform that supports businesses in managing marketing, sales, commerce, service, and IT teams from a unified platform accessible from anywhere.
 
-### Key Benefits of Salesforce Integration:
+### Key benefits of Salesforce Integration
 
 - **Operational Insights**: Gain valuable insights into login and logout activities and other operational events within your organization.
 - **Data Visualization**: Create detailed visualizations to monitor, measure, and analyze usage trends and key data, helping you derive actionable business insights.
@@ -12,28 +12,27 @@ The Salesforce integration enables users to monitor their [Salesforce](https://w
 
 ## Data streams
 
-The Salesforce integration collects log events using the Salesforce REST API.
+The Salesforce integration provides the following data streams:
 
-Logs help users maintain a record of events occurring in Salesforce. The log data streams collected by the Salesforce integration include:
+- `login`: Tracks login activity of users who log in to Salesforce.
+- `logout`: Tracks logout activity of users who log out from Salesforce.
+- `apex`: Represents information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, etc.
+- `setupaudittrail`: Represents changes users made in the organization's setup area for at least the last 180 days.
+
+The Salesforce integration collects events using the Salesforce REST API. We are collecting following events:
 
 - [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm)
 - [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm)
 - [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm)
 - [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm)
 - [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm)
-- [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
-
-Data streams:
-- `login`: Tracks login activity of users who log in to Salesforce.
-- `logout`: Tracks logout activity of users who log out from Salesforce.
-- `apex`: Represents information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, etc.
-- `setupaudittrail`: Represents changes users made in the organization's setup area for at least the last 180 days.
+- [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm)
 
 ## Compatibility
 
-This integration has been tested against Salesforce Spring '22 (v54.0) release.
+This integration has been tested against Salesforce Spring '22 (v54.0) release. Minimum supported version is v46.0.
 
-### Finding Your Salesforce Instance Version
+### Finding your Salesforce Instance Version
 
 You can determine your Salesforce instance version using one of the following methods:
 
@@ -47,9 +46,8 @@ You can determine your Salesforce instance version using one of the following me
 
 1. Use your Salesforce Instance URL with the following format:
    `(Salesforce Instance URL)/services/data`
-2. Example: `https://na9.salesforce.com/services/data`
 
-This will return an XML response listing available API versions. For example:
+Example: `https://na9.salesforce.com/services/data`. This will return an XML response listing with available API versions:
 
 ```xml
 <Versions>
@@ -85,7 +83,7 @@ Ensure that the `API Enabled` permission is selected for the user profile in you
 2. Click on the profile link associated with the `User Account` used for data collection.
 3. Search for the `API Enabled` permission on the profile page. If it’s not present, search under `System Permissions` and check if the `API Enabled` privilege is selected. If not, enable it for data collection.
 
-### Collecting Data Using Real-Time Event Monitoring API
+### Collecting Data using Real-Time Event Monitoring API
 
 To enable data collection using the [Real-Time Event Monitoring API](https://help.salesforce.com/s/articleView?id=sf.real_time_event_monitoring_enable.htm&type=5):
 
@@ -94,29 +92,23 @@ To enable data collection using the [Real-Time Event Monitoring API](https://hel
 3. For each event type you want to monitor (e.g., Login Event, Logout Event), click the dropdown arrow and select "Enable Storage".
 4. Ensure you have the necessary permissions: "View Real-Time Event Monitoring Data" and "Use Real-Time Event Monitoring APIs".
 
-> Note: Real-Time Event Monitoring may require additional licensing. Check with your Salesforce account representative if you're unsure about your subscription level.
+> **Note**: Real-Time Event Monitoring may require additional licensing. Check with your Salesforce account representative if you're unsure about your subscription level.
 
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-> **Note:** Please enable either the `login` data stream or the `logout` data stream to avoid data duplication.
-
 ## Configuration
 
-To configure the Salesforce integration in Elastic, you will need the following information from your Salesforce instance:
+To configure the Salesforce integration, you will need the following information from your Salesforce instance:
 
 ### Salesforce Instance URL
 
 The Salesforce Instance URL is the URL of your Salesforce Organization. It can be found in the address bar in Salesforce Classic or Salesforce Lightning.
 
-- **Salesforce Classic**: The value before 'salesforce.com' in the URL is your Salesforce Instance.
+- **Salesforce Classic**: Given the example URL `https://na9.salesforce.com/home/home.jsp`, the Salesforce Instance URL is extracted as `https://na9.salesforce.com`.
 
-  Example URL: `https://na9.salesforce.com/home/home.jsp`
-
-  In this example, the Salesforce Instance URL is: `https://na9.salesforce.com`
-
-- **Salesforce Lightning**: The instance URL is available under your user name in the “View Profile” tab.
+- **Salesforce Lightning**: The instance URL is available under your user name in the "View Profile" tab.
 
 ### Client Key and Client Secret for Authentication
 
@@ -151,7 +143,7 @@ The User ID of the registered user in Salesforce.
 
 The password used for authenticating the above user.
 
-## Additional Information
+## Additional information
 
 Follow the steps below if you need to find the API version:
 
@@ -171,6 +163,24 @@ Once the Salesforce integration is successfully configured, you can validate the
 
 If the dashboard displays the data correctly, your integration is successfully validated.
 
+## Salesforce Integration: v0.15.0 and Beyond
+
+With version 0.15.0, we've significantly enhanced the Salesforce integration, introducing major changes in data collection mechanisms, authentication, and data streams. Due to these changes, we recommend using Salesforce integration v0.15.0 or above and uninstalling previous versions.
+
+### Key enhancements
+
+1. Unified data collection: The integration now uses a single Filebeat input ([Salesforce input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-salesforce.html)) for data collection from EventLogFile and Real-time Event Monitoring APIs.
+2. JWT authentication: Introduced JWT authentication mechanism.
+3. Expanded configuration options: Added `initial_interval` and other options to fine-tune data collection, including historical data retrieval.
+4. Change in data-collection mechanism: Replaced Streaming API (cometd) with Real-time Event Monitoring APIs.
+5. Performance optimization: Significantly reduced CPU and memory usage during data collection.
+6. Enhanced dashboards: Improved visualizations.
+
+### Breaking changes
+
+1. Data stream consolidation: Reduced from 6 to 4 data streams — `apex`, `login`, `logout`, and `setupaudittrail`.
+2. Field mapping updates: Modified mappings for multiple fields.
+3. Additional changes: Various other modifications to enhance overall integration performance and functionality.
 
 ## Troubleshooting
 
@@ -178,45 +188,27 @@ This section provides solutions to common issues you might encounter while using
 
 ### Request timeout
 
-If you experience delays in the response from the Salesforce server in the `Apex`, `Login Rest`, `Logout Rest`, or `SetupAuditTrail` data streams, you might encounter the following error:
+If you experience delays in the response from the Salesforce server in the `apex`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter the following error:
 
 ```
 Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
 ```
 
-**Solution:** Consider increasing the `Request timeout` configuration from the `Advanced options` section of the affected data stream.
+**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream.
 
 ### Data ingestion error
 
-If you encounter data ingestion errors, you might see logs similar to the following:
+If you encounter data ingestion errors, you might see an error message similar to the following:
 
-```json
-{
-    "log.level": "error",
-    "@timestamp": "2022-11-24T12:59:36.835+0530",
-    "log.logger": "input.httpjson-cursor",
-    "log.origin": {
-        "[file.name](http://file.name/)": "compat/compat.go",
-        "file.line": 124
-    },
-    "message": "Input 'httpjson-cursor' failed with: input.go:130: input 8A049E17A5CA661D failed (id=8A049E17A5CA661D)\n\toauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request\n\tResponse: {\"error\":\"invalid_grant\",\"error_description\":\"authentication failure\"}",
-    "[service.name](http://service.name/)": "filebeat",
-    "id": "8A049E17A5CA661D",
-    "ecs.version": "1.6.0"
-}
-```
+> oauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request
 
-**Solution:** Ensure that the `API Enabled` permission is provided to the `profile` associated with the `username` used for the integration. Refer to the **Prerequisites** section above for more information.
+**Solution:** Ensure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. Refer to the **Prerequisites** section above for more information.
 
 If the error persists, follow these steps:
 
 1. Go to `Setup` > `Quick Find` > `Manage Connected Apps`.
 2. Click on the Connected App name created to generate the client ID and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
 3. Click on `Edit Policies` and select `Relax IP restrictions` from the dropdown for IP Relaxation.
-
-### Missing old events in "Login events table" panel
-
-If **Login events table** does not display older documents after upgrading to version `0.8.0` or later, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `login` data stream.
 
 ## Logs reference
 

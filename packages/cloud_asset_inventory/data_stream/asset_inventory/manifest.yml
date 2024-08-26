@@ -7,12 +7,13 @@ elasticsearch:
   index_template:
     mappings:
       dynamic: false
+# IMPORTANT: set all streams as disabled by default
 streams:
   - input: cloudbeat/asset_inventory_aws
     title: AWS Asset Inventory
     description: Asset Inventory Discovery for AWS
     template_path: aws.yml.hbs
-    enabled: true
+    enabled: false
     vars:
       - name: access_key_id
         type: text
@@ -58,3 +59,66 @@ streams:
         multi: false
         required: false
         show_user: false
+  - input: cloudbeat/asset_inventory_azure
+    title: Azure Asset Inventory
+    description: Asset Inventory Discovery for Azure
+    template_path: azure.yml.hbs
+    enabled: false
+    vars:
+      - name: azure.account_type
+        type: text
+        title: Account type
+        multi: false
+        required: false
+        show_user: false
+      - name: azure.credentials.type
+        type: text
+        title: Credentials type
+        multi: false
+        required: false
+        show_user: false
+      - name: azure.credentials.client_id
+        type: text
+        title: Client ID
+        multi: false
+        required: false
+        show_user: true
+      - name: azure.credentials.tenant_id
+        type: text
+        title: Tenant ID
+        multi: false
+        required: false
+        show_user: true
+      - name: azure.credentials.client_secret
+        type: password
+        title: Client Secret
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: azure.credentials.client_username
+        type: text
+        title: Client Username
+        multi: false
+        required: false
+        show_user: true
+      - name: azure.credentials.client_password
+        type: password
+        title: Client Password
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: azure.credentials.client_certificate_path
+        type: text
+        title: Client Certificate Path
+        multi: false
+        required: false
+        show_user: true
+      - name: azure.credentials.client_certificate_password
+        type: password
+        title: Client Certificate Password
+        multi: false
+        required: false
+        show_user: true
+        secret: true

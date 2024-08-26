@@ -50,6 +50,7 @@ for package in ${PACKAGE_LIST}; do
     - label: "Check integrations ${package}"
       key: "test-integrations-${package}"
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
+      timeout_in_minutes: 240
       agents:
         provider: gcp
         image: ${IMAGE_UBUNTU_X86_64}

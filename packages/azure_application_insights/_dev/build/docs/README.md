@@ -63,6 +63,10 @@ Costs: Metric queries are charged based on the number of standard API calls. See
 
 {{event "app_insights"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "app_state"}}
 
 

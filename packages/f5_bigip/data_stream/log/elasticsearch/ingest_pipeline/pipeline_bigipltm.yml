@@ -1,23 +1,39 @@
 ---
 description: Pipeline for F5 BIG-IP Local Traffic Manager logs.
 processors:
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: network
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Local Traffic Manager
   - date:
       field: json.event_timestamp
+      tag: date_event_timestamp
       target_field: f5_bigip.log.event.timestamp
       if: ctx.json?.event_timestamp != null && ctx.json.event_timestamp != ''
       formats:
+        - yyyy-MM-dd:HH:mm.SSSz
         - yyyy-MM-dd:HH:mm:ss.SSSz
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
+      tag: set_timestamp
       copy_from: f5_bigip.log.event.timestamp
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.client_ip
+      tag: convert_client_ip_to_ip
       target_field: f5_bigip.log.client.ip
       if: ctx.json?.client_ip != ''
       type: ip
@@ -25,46 +41,56 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: client.ip
+      tag: set_client_ip
       copy_from: f5_bigip.log.client.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{client.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.http_method
+      tag: rename_http_method
       target_field: f5_bigip.log.http.method
       ignore_missing: true
   - set:
       field: http.request.method
+      tag: set_http_request_method
       copy_from: f5_bigip.log.http.method
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.http_referrer
+      tag: rename_http_referrer
       target_field: f5_bigip.log.http.referrer
       ignore_missing: true
   - set:
       field: http.request.referrer
+      tag: set_http_request_referrer
       copy_from: f5_bigip.log.http.referrer
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.http_status
+      tag: rename_http_status
       target_field: f5_bigip.log.http.status
       ignore_missing: true
   - rename:
       field: json.http_version
+      tag: rename_http_version
       target_field: f5_bigip.log.http.version
       ignore_missing: true
   - set:
       field: http.version
+      tag: set_http_version
       copy_from: f5_bigip.log.http.version
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.server_ip
+      tag: convert_server_ip_to_ip
       target_field: f5_bigip.log.server.ip
       if: ctx.json?.server_ip != ''
       type: ip
@@ -72,18 +98,21 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: server.ip
+      tag: set_server_ip
       copy_from: f5_bigip.log.server.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{server.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.src_ip
+      tag: convert_src_ip_to_ip
       target_field: f5_bigip.log.src.ip
       if: ctx.json?.src_ip != ''
       type: ip
@@ -91,22 +120,26 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
+      tag: set_source_ip
       copy_from: f5_bigip.log.src.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.http_user_agent
+      tag: rename_http_user_agent
       target_field: f5_bigip.log.http.user_agent
       ignore_missing: true
   - user_agent:
       field: f5_bigip.log.http.user_agent
+      tag: user_agent_on_http_user_agent
       on_failure:
         - set:
             field: user_agent.original
@@ -114,26 +147,32 @@ processors:
             ignore_failure: true
   - rename:
       field: json.event_source
+      tag: rename_event_source
       target_field: f5_bigip.log.event.source
       ignore_missing: true
   - rename:
       field: json.http_uri
+      tag: rename_http_uri
       target_field: f5_bigip.log.http.uri
       ignore_missing: true
   - rename:
       field: json.telemetryEventCategory
+      tag: rename_telemetry_event_category
       target_field: f5_bigip.log.telemetry.event.category
       ignore_missing: true
   - rename:
       field: json.tenant
+      tag: rename_tenant
       target_field: f5_bigip.log.tenant
       ignore_missing: true
   - rename:
       field: json.virtual_name
+      tag: rename_virtual_name
       target_field: f5_bigip.log.virtual.name
       ignore_missing: true
   - convert:
       field: json.bytes_in
+      tag: convert_bytes_in_to_long
       target_field: f5_bigip.log.bytes.in
       if: ctx.json?.bytes_in != ''
       type: long
@@ -141,9 +180,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.bytes_out
+      tag: convert_bytes_out_to_long
       target_field: f5_bigip.log.bytes.out
       if: ctx.json?.bytes_out != ''
       type: long
@@ -151,53 +191,63 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
+      description: calculate total bytes of in and out if in and out are not null
       if: ctx.f5_bigip?.log?.bytes?.in != null && ctx.f5_bigip.log.bytes.out != null
       source: |
         ctx.network = new HashMap();
         ctx.network.bytes = ctx.f5_bigip.log.bytes.in + ctx.f5_bigip.log.bytes.out;
   - set:
       field: network.direction
+      tag: set_network_direction
       value: ingress
       if: ctx.f5_bigip?.log?.bytes?.in != null && ctx.f5_bigip.log.bytes.in != 0 && ctx.f5_bigip.log.bytes.out == 0
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       field: network.direction
+      tag: set_network_direction
       value: egress
       if: ctx.f5_bigip?.log?.bytes?.out != null && ctx.f5_bigip.log.bytes.out != 0 && ctx.f5_bigip.log.bytes.in == 0
-      ignore_failure: true
+      ignore_empty_value: true
   - set:
       field: network.protocol
+      tag: set_network_protocol
       value: http
       if: ctx.f5_bigip?.log?.http?.method != null && ctx.f5_bigip.log.http.method != ''
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.cookie
+      tag: rename_cookie
       target_field: f5_bigip.log.cookie
       ignore_missing: true
   - rename:
       field: json.http_content_type
+      tag: rename_http_content_type
       target_field: f5_bigip.log.http.content_type
       ignore_missing: true
   - rename:
       field: json.http_host
+      tag: rename_http_host
       target_field: f5_bigip.log.http.host
       ignore_missing: true
   - rename:
       field: json.http_url
+      tag: rename_http_url
       target_field: f5_bigip.log.http.url
       ignore_missing: true
   - uri_parts:
       field: f5_bigip.log.http.url
+      tag: uri_parts_on_http_url
       if: ctx.f5_bigip?.log?.http?.url != null
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.node
+      tag: convert_node_to_ip
       target_field: f5_bigip.log.node
       if: ctx.json?.node != ''
       type: ip
@@ -205,14 +255,16 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{f5_bigip.log.node}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.node_port
+      tag: convert_node_port_to_long
       target_field: f5_bigip.log.node_port
       if: ctx.json?.node_port != ''
       type: long
@@ -220,9 +272,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.req_elapsed_time
+      tag: convert_req_elapsed_time_to_long
       target_field: f5_bigip.log.req.elapsed_time
       if: ctx.json?.req_elapsed_time != ''
       type: long
@@ -230,53 +283,62 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.req_start_time
+      tag: date_req_start_time
       target_field: f5_bigip.log.req.start_time
       if: ctx.json?.req_start_time != null && ctx.json.req_start_time != ''
       formats:
         - yyyy/MM/dd HH:mm:ss
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.res_start_time
+      tag: date_res_start_time
       target_field: f5_bigip.log.res.start_time
       if: ctx.json?.res_start_time != null && ctx.json.res_start_time != ''
       formats:
         - yyyy/MM/dd HH:mm:ss
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.user
+      tag: rename_user
       target_field: f5_bigip.log.user.name
       ignore_missing: true
   - set:
       field: user.name
+      tag: set_user_name
       copy_from: f5_bigip.log.user.name
-      ignore_failure: true
+      ignore_empty_value: true
   - append:
       field: related.user
+      tag: append_related_user
       value: '{{{user.name}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.vip
+      tag: rename_vip
       target_field: f5_bigip.log.vip
       ignore_missing: true
   - rename:
       field: json.virtual_server
+      tag: rename_virtual_server
       target_field: f5_bigip.log.virtual.server
       ignore_missing: true
   - remove:
       field: json
+      tag: remove_json
+      ignore_failure: true
       ignore_missing: true
   - remove:
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       field:
         - f5_bigip.log.event.timestamp
         - f5_bigip.log.client.ip
@@ -291,10 +353,3 @@ processors:
         - f5_bigip.log.http.user_agent
       ignore_failure: true
       ignore_missing: true
-on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'

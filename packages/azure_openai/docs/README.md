@@ -2,6 +2,8 @@
 
 The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects metrics and logs through [azure-monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/metrics-index) and Azure [event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/stream-monitoring-data-event-hubs) respectively.
 
+To fully populate the Azure OpenAI dashboard lenses, enabling both logs and metrics data streams and setting up the Azure Billing integration in advance is necessary.
+
 ## Data streams
 
 ### Logs
@@ -10,19 +12,41 @@ The Azure OpenAI logs data stream captures the audit events and the request-resp
 
 Supported Azure log categories:
 
-| Data Stream |  Log Category   |
-|:-----------:|:---------------:|
-|    logs     |      audit      |
-|    logs     | requestresponse |
+| Data Stream |       Log Category       |
+|:-----------:|:------------------------:|
+|    logs     |          Audit           |
+|    logs     |     RequestResponse      |
+|    logs     | ApiManagementGatewayLogs |
 
-
-**Note**:
-
-The logs data stream fetches the default cognitive services log listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution). This doesn't record the inputs and outputs of the service, like prompts, tokens, and models.
 
 #### Requirements and setup
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+
+#### Default Logging
+
+The Azure OpenAI provides native logging and monitoring with which you can track the telemetry of the service. The Audit and the RequestResponse log categories comes under the native logging. But the default logging doesn't log the inputs and outputs of the service. These are the useful to ensure that the services operates as expected.
+
+The logs collected using the default cognitive services is listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution).
+
+#### Advance Logging
+
+The API Management services provides the advance logging capabilities. The ApiManagementGatewayLogs category comes under the advance logging. This is not directly available in the Azure OpenAI service itself. You have to setup the API Management services in the Azure to access the Azure OpenAI. Once the setup is done add the diagnostic setting for the API Management service.
+
+You can find information on how to implement the comprehensive solution using API Management services to monitor the Azure OpenAI services [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai). 
+
+**Diagnostic settings**
+
+- Enable the category `Logs related to ApiManagement Gateway` to stream the logs to the event hub.
+
+```text
+   ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
+   │   APIM service   │      │  Diagnostic  │     │    Event Hub    │
+   │    <<source>>    │─────▶│   settings   │────▶│ <<destination>> │
+   └──────────────────┘      └──────────────┘     └─────────────────┘
+```
+
+The logs collected using the API Management services for the enterprise customer of the Azure OpenAI services is listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Azure%20OpenAI%20logging-,This%20solution,-Request%20count). This records the inputs and outputs of the request, like prompts, tokens, and model usage.
 
 #### Settings
 
@@ -37,7 +61,7 @@ An example event for `logs` looks as following:
     "@timestamp": "2024-04-08T12:23:02.435Z",
     "azure": {
         "open_ai": {
-            "caller_ip_address": "81.2.69.144",
+            "caller_ip_address": "81.2.69.***",
             "category": "RequestResponse",
             "correlation_id": "9d3a6e98-fc11-48d0-82cf-4de065c1a1f8",
             "event": "ShoeboxCallResult",
@@ -66,13 +90,17 @@ An example event for `logs` looks as following:
     },
     "event": {
         "duration": 102000000,
-        "original": "{\"Tenant\":\"eastus\",\"callerIpAddress\":\"81.2.69.144\",\"category\":\"RequestResponse\",\"correlationId\":\"9d3a6e98-fc11-48d0-82cf-4de065c1a1f8\",\"durationMs\":102,\"event\":\"ShoeboxCallResult\",\"location\":\"eastus\",\"operationName\":\"Create_Thread\",\"properties\":\"{\\\"apiName\\\":\\\"Azure OpenAI API version 2024-02-15-preview\\\",\\\"requestTime\\\":638481757794854611,\\\"requestLength\\\":2,\\\"responseTime\\\":638481757795877942,\\\"responseLength\\\":113,\\\"objectId\\\":\\\"\\\"}\",\"resourceId\":\"/SUBSCRIPTIONS/12CABCB4-86E8-404F-A3D2-1DC9982F45CA/RESOURCEGROUPS/OBS-OPENAI-SERVICE-RS/PROVIDERS/MICROSOFT.COGNITIVESERVICES/ACCOUNTS/OBS-OPENAI-TEST-01\",\"resultSignature\":\"200\",\"time\":\"2024-04-08T12:23:02.4350000Z\"}"
+        "original": "{\"Tenant\":\"eastus\",\"callerIpAddress\":\"81.2.69.***\",\"category\":\"RequestResponse\",\"correlationId\":\"9d3a6e98-fc11-48d0-82cf-4de065c1a1f8\",\"durationMs\":102,\"event\":\"ShoeboxCallResult\",\"location\":\"eastus\",\"operationName\":\"Create_Thread\",\"properties\":\"{\\\"apiName\\\":\\\"Azure OpenAI API version 2024-02-15-preview\\\",\\\"requestTime\\\":638481757794854611,\\\"requestLength\\\":2,\\\"responseTime\\\":638481757795877942,\\\"responseLength\\\":113,\\\"objectId\\\":\\\"\\\"}\",\"resourceId\":\"/SUBSCRIPTIONS/12CABCB4-86E8-404F-A3D2-1DC9982F45CA/RESOURCEGROUPS/OBS-OPENAI-SERVICE-RS/PROVIDERS/MICROSOFT.COGNITIVESERVICES/ACCOUNTS/OBS-OPENAI-TEST-01\",\"resultSignature\":\"200\",\"time\":\"2024-04-08T12:23:02.4350000Z\"}"
     },
     "tags": [
         "preserve_original_event"
     ]
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -83,21 +111,61 @@ An example event for `logs` looks as following:
 | azure.open_ai.caller_ip_address | The client IP address. (x - last octet masked). | keyword |
 | azure.open_ai.category | The log category name. | keyword |
 | azure.open_ai.correlation_id | The correlation id as key. | keyword |
+| azure.open_ai.deployment_version | The deployment version. | keyword |
 | azure.open_ai.event | The event type of the service request. | keyword |
+| azure.open_ai.is_request_success | True if the request is success else return false. | boolean |
 | azure.open_ai.location | The location. | keyword |
 | azure.open_ai.operation_name | The log action performed. | keyword |
+| azure.open_ai.properties.api_id | The request API Id. | keyword |
 | azure.open_ai.properties.api_name | The API name of the request. | keyword |
+| azure.open_ai.properties.api_revision | The request API revision. | keyword |
+| azure.open_ai.properties.backend_method | The backend request method. | keyword |
+| azure.open_ai.properties.backend_protocol | The backend protocol. | keyword |
+| azure.open_ai.properties.backend_request_body.messages.content | The prompt input. | keyword |
+| azure.open_ai.properties.backend_request_body.messages.role | The API access role. | keyword |
+| azure.open_ai.properties.backend_request_body.model | The model name. | keyword |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results | Content filtered by custom content filter. | flattened |
+| azure.open_ai.properties.backend_response_body.choices.finish_reason | A string indicating the reason why the response was generated (e.g., "max_tokens"). | keyword |
+| azure.open_ai.properties.backend_response_body.choices.index | The index of the response in the array. | long |
+| azure.open_ai.properties.backend_response_body.choices.logprobs | An object containing information about the probability distribution over possible responses. | flattened |
+| azure.open_ai.properties.backend_response_body.choices.message.content | The response text content. | keyword |
+| azure.open_ai.properties.backend_response_body.choices.message.role | The API access role. | keyword |
+| azure.open_ai.properties.backend_response_body.created | The timestamp when the request was created. | long |
+| azure.open_ai.properties.backend_response_body.error.code | The error code. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.code | The error code. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result | Content filtered by custom content filter. | flattened |
+| azure.open_ai.properties.backend_response_body.error.message | The error message. | text |
+| azure.open_ai.properties.backend_response_body.error.param | Parameter passed to the API. | keyword |
+| azure.open_ai.properties.backend_response_body.error.status | The response status code. | long |
+| azure.open_ai.properties.backend_response_body.id | A unique identifier for the request. | keyword |
+| azure.open_ai.properties.backend_response_body.model | The ID of the OpenAI model used to generate the response. | keyword |
+| azure.open_ai.properties.backend_response_body.object | The operation type. | keyword |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results | Content filtered by custom content filter. | flattened |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.prompt_index | Index of the prompt used to generate response. | long |
+| azure.open_ai.properties.backend_response_body.system_fingerprint | The fingerprint is generated by Azure API Management and is used to track the performance and usage of the backend service. | keyword |
+| azure.open_ai.properties.backend_response_body.usage.input_tokens | the total input tokens. | long |
+| azure.open_ai.properties.backend_response_body.usage.output_tokens | The total output tokens. | long |
+| azure.open_ai.properties.backend_response_body.usage.total_tokens | The sum of input and output tokens. | long |
+| azure.open_ai.properties.backend_response_code | The backend HTTP response code. | long |
+| azure.open_ai.properties.backend_time | The backend response time. | long |
+| azure.open_ai.properties.backend_url | The backend URL connects to the Azure OpenAI model. | keyword |
+| azure.open_ai.properties.cache | The request cache. | keyword |
+| azure.open_ai.properties.client_protocol | The client HTTP protocol. | keyword |
+| azure.open_ai.properties.client_tls_version | The client TLS version. | keyword |
 | azure.open_ai.properties.model_deployment_name | The deployed model name. | keyword |
 | azure.open_ai.properties.model_name | The OpenAI model. | keyword |
 | azure.open_ai.properties.model_version | The OpenAI model version. | keyword |
 | azure.open_ai.properties.object_id | The object id of the request. | keyword |
+| azure.open_ai.properties.operation_id | The operation performed. | keyword |
 | azure.open_ai.properties.request_length | Length of the request. | double |
 | azure.open_ai.properties.request_time | Request time taken. | long |
 | azure.open_ai.properties.response_length | Length of the response. | double |
 | azure.open_ai.properties.response_time | Response time taken. | long |
 | azure.open_ai.properties.stream_type | The stream type of the request. | keyword |
 | azure.open_ai.result_signature | The response status. | keyword |
+| azure.open_ai.sku | Stock Keeping Unit that is associated with a particular API Management instance. | keyword |
 | azure.open_ai.tenant | The tenant location. | keyword |
+| azure.open_ai.truncated | Condition where the response message is too large to fit in a single packet, so it is truncated or cut off. | long |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
@@ -144,53 +212,24 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "cloud": {
-        "provider": "azure",
-        "region": "eastus"
-    },
+    "@timestamp": "2024-04-11T01:46:00.000Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "0c09f097-dc30-44c5-b3e7-083f1a14873c",
         "ephemeral_id": "dcff0e53-fadb-4e97-86a2-1e611f12fc34",
+        "id": "0c09f097-dc30-44c5-b3e7-083f1a14873c",
+        "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.13.0"
     },
-    "@timestamp": "2024-04-11T01:46:00.000Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "azure.open_ai"
-    },
-    "service": {
-        "type": "azure"
-    },
-    "elastic_agent": {
-        "id": "0c09f097-dc30-44c5-b3e7-083f1a14873c",
-        "version": "8.13.0",
-        "snapshot": false
-    },
-    "metricset": {
-        "period": 300000,
-        "name": "monitor"
-    },
-    "event": {
-        "duration": 2216811793,
-        "agent_id_status": "verified",
-        "ingested": "2024-04-11T01:52:30Z",
-        "module": "azure",
-        "dataset": "azure.open_ai"
-    },
     "azure": {
-        "subscription_id": "12cabcb4-86e8-404f-a3d2-1dc9982f45ca",
-        "timegrain": "PT1M",
-        "resource": {
-            "name": "obs-openai-test-01",
-            "id": "/subscriptions/12cabcb4-86e8-404f-a3d2-1dc9982f45ca/resourceGroups/obs-openai-service-rs/providers/Microsoft.CognitiveServices/accounts/obs-openai-test-01",
-            "type": "Microsoft.CognitiveServices/accounts",
-            "group": "obs-openai-service-rs"
+        "dimensions": {
+            "api_name": "Azure OpenAI API version 2024-04-01-preview",
+            "model_deployment_name": "gpt-chat-pilot",
+            "model_name": "gpt-35-turbo",
+            "model_version": "0301",
+            "operation_name": "ChatCompletions_Create",
+            "region": "East US",
+            "status_code": "200",
+            "stream_type": "Streaming"
         },
         "namespace": "Microsoft.CognitiveServices/accounts",
         "open_ai": {
@@ -198,19 +237,52 @@ An example event for `metrics` looks as following:
                 "total": 1
             }
         },
-        "dimensions": {
-            "operation_name": "ChatCompletions_Create",
-            "model_version": "0301",
-            "status_code": "200",
-            "model_name": "gpt-35-turbo",
-            "api_name": "Azure OpenAI API version 2024-04-01-preview",
-            "stream_type": "Streaming",
-            "model_deployment_name": "gpt-chat-pilot",
-            "region": "East US"
-        }
+        "resource": {
+            "group": "obs-openai-service-rs",
+            "id": "/subscriptions/12cabcb4-86e8-404f-a3d2-1dc9982f45ca/resourceGroups/obs-openai-service-rs/providers/Microsoft.CognitiveServices/accounts/obs-openai-test-01",
+            "name": "obs-openai-test-01",
+            "type": "Microsoft.CognitiveServices/accounts"
+        },
+        "subscription_id": "12cabcb4-86e8-404f-a3d2-1dc9982f45ca",
+        "timegrain": "PT1M"
+    },
+    "cloud": {
+        "provider": "azure",
+        "region": "eastus"
+    },
+    "data_stream": {
+        "dataset": "azure.open_ai",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "0c09f097-dc30-44c5-b3e7-083f1a14873c",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "azure.open_ai",
+        "duration": 2216811793,
+        "ingested": "2024-04-11T01:52:30Z",
+        "module": "azure"
+    },
+    "metricset": {
+        "name": "monitor",
+        "period": 300000
+    },
+    "service": {
+        "type": "azure"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 

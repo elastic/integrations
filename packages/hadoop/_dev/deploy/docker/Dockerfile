@@ -4,6 +4,7 @@ COPY ./files/yml /opt/hadoop/etc/hadoop
 COPY ./files/environment.sh environment.sh
 COPY ./files/wordcount.jar wordcount.jar
 COPY ./files/start.sh /opt/hadoop/start.sh
+COPY ./files/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo
 
 RUN sudo yum install openssh-server openssh-clients -y;\
     sudo ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key;\

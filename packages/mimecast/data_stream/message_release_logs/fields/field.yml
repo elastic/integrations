@@ -1,0 +1,164 @@
+- name: mimecast.message_release_logs
+  type: group
+  fields:
+    - name: attachments
+      type: boolean
+      description: Indicates whether the message contains attachments.
+    - name: detectionLevel
+      type: keyword
+      description: >-
+        Spam detection level, if held by a spam policy. Possible values are: relaxed, moderate, aggressive, cluster
+        or whitelisted_cluster.
+    - name: fromEnv
+      type: group
+      fields:
+        - name: displayableName
+          type: keyword
+          description: Display name of the user address from the "from" envelope. If none exists, this field will be empty.
+        - name: emailAddress
+          type: keyword
+          description: The routable email address of the user from the "from" envelope.
+    - name: fromHdr
+      type: group
+      fields:
+        - name: displayableName
+          type: keyword
+          description: Display name of the user address from the "from" header. If none exists, this field will be empty.
+        - name: emailAddress
+          type: keyword
+          description: The routable email address of the user from the "from" header.
+    - name: heldGroup
+      type: keyword
+      description: The recipient group of the held message, if message was sent to a group.
+    - name: heldReason
+      type: keyword
+      description: >-
+        Detail around the reason the message was initially held. If held by a specific policy definition, this will
+        be the name of the policy definition that triggered the message to be held.
+    - name: id
+      type: keyword
+      description: The Mimecast secure ID of the specific message release log.
+    - name: messageInfo
+      type: text
+      description: Additional information around the release reason.
+    - name: operator
+      type: keyword
+      description: Email address of the user that released the message.
+    - name: policy
+      type: keyword
+      description: Name of the policy definition that triggered the message to be held.
+    - name: rejectReason
+      type: keyword
+      description: Detail on the reason a message was rejected, if message was rejected.
+    - name: released
+      type: keyword
+      description: Timestamp of the message release action in ISO 8601 format.
+    - name: route
+      type: keyword
+      description: >-
+        Message direction. Possible values are: inbound or outbound.
+    - name: size
+      type: long
+      description: Total size of the message, in bytes.
+    - name: spamProcessingDetail
+      type: group
+      fields:
+        - name: dkim
+          type: group
+          fields:
+            - name: allow
+              type: boolean
+              description: Indicates checks for whether the message passed DKIM checks are performed.
+            - name: info
+              type: keyword
+              description: Details about the check result.
+        - name: dmarc
+          type: group
+          fields:
+            - name: allow
+              type: boolean
+              description: Indicates checks for whether the message passed DMARC checks are performed.
+            - name: info
+              type: keyword
+              description: Details about the check result.
+        - name: grayEmail
+          type: boolean
+          description: >-
+            Indicates with the spam was classified as graymail or bulk. Note that this
+            API uses graymail and greymail interchangeably.
+        - name: greyEmail
+          type: boolean
+          description: >-
+            Indicates with the spam was classified as graymail or bulk. Note that this
+            API uses graymail and greymail interchangeably.
+        - name: managedSender
+          type: group
+          fields:
+            - name: allow
+              type: boolean
+              description: Indicates checks for whether the sender has been permitted by a Managed Sender entry are performed.
+            - name: info
+              type: keyword
+              description: Details about the check result.
+        - name: permittedSender
+          type: group
+          fields:
+            - name: allow
+              type: boolean
+              description: Indicates checks for whether the sender has been permitted by policy are performed.
+            - name: info
+              type: keyword
+              description: Details about the check result.
+        - name: rbl
+          type: group
+          fields:
+            - name: allow
+              type: boolean
+              description: Indicates checks for whether the message passed RBL checks are performed.
+            - name: info
+              type: keyword
+              description: Details about the check result.
+        - name: spamVerdict
+          type: group
+          fields:
+            - name: categories
+              type: flattened
+              description: Spam detection type categories.
+            - name: decision
+              type: keyword
+              description: Indicating what the ultimate verdict was for the message.
+            - name: description
+              type: keyword
+              description: Description of the spam verdict decision.
+            - name: risk
+              type: keyword
+              description: >-
+                Identified risk level within the spam detection. Possible values are: negligible,
+                low, high.
+        - name: spf
+          type: group
+          fields:
+            - name: allow
+              type: boolean
+              description: Indicates checks for whether the message passed SPF checks are performed.
+            - name: info
+              type: keyword
+              description: Details about the check result.
+    - name: spamScore
+      type: double
+      description: The message spam score, based on the applied spam scanning policy definition.
+    - name: status
+      type: keyword
+      description: Status of the message. Possible values are released or rejected.
+    - name: subject
+      type: keyword
+      description: The released message's subject line.
+    - name: to
+      type: group
+      fields:
+        - name: displayableName
+          type: keyword
+          description: Display name of the user address from the "to" header. If none exists, this field will be empty.
+        - name: emailAddress
+          type: keyword
+          description: The routable email address of the user from the "to" header.

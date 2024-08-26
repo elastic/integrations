@@ -93,11 +93,11 @@ An example event for `applocker_exe_and_dll` looks as following:
 {
     "@timestamp": "2023-07-20T15:05:03.882Z",
     "agent": {
-        "ephemeral_id": "2c907e31-12db-485b-ab67-ef05e8aa1e3d",
-        "id": "51fe65df-a759-4054-ae29-e8242662fb48",
+        "ephemeral_id": "026312ee-e6f4-4086-92cc-0e7c56bdbb5a",
+        "id": "49658d66-b405-4c92-8e7c-5c2646556bf2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.14.1"
     },
     "data_stream": {
         "dataset": "windows.applocker_exe_and_dll",
@@ -108,18 +108,18 @@ An example event for `applocker_exe_and_dll` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51fe65df-a759-4054-ae29-e8242662fb48",
+        "id": "49658d66-b405-4c92-8e7c-5c2646556bf2",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.14.1"
     },
     "event": {
         "action": "None",
         "agent_id_status": "verified",
         "category": "process",
         "code": "8003",
-        "created": "2023-08-03T13:42:19.028Z",
+        "created": "2024-06-21T01:53:30.508Z",
         "dataset": "windows.applocker_exe_and_dll",
-        "ingested": "2023-08-03T13:42:22Z",
+        "ingested": "2024-06-21T01:53:42Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-AppLocker' Guid='{cbda4dbf-8d5d-4f69-9578-be14aa540d22}' /\u003e\u003cEventID\u003e8003\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e3\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2023-07-20T15:05:03.8826518Z' /\u003e\u003cEventRecordID\u003e154247\u003c/EventRecordID\u003e\u003cCorrelation /\u003e\u003cExecution ProcessID='33848' ThreadID='12040' /\u003e\u003cChannel\u003eMicrosoft-Windows-AppLocker/EXE and DLL\u003c/Channel\u003e\u003cComputer\u003eTOPSYLL.local\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-1133191089-1850170202-1535859923-200319' /\u003e\u003c/System\u003e\u003cUserData\u003e\u003cRuleAndFileData xmlns='http://schemas.microsoft.com/schemas/event/Microsoft.Windows/1.0.0.0'\u003e\u003cPolicyNameLength\u003e3\u003c/PolicyNameLength\u003e\u003cPolicyName\u003eEXE\u003c/PolicyName\u003e\u003cRuleId\u003e{00000000-0000-0000-0000-000000000000}\u003c/RuleId\u003e\u003cRuleNameLength\u003e1\u003c/RuleNameLength\u003e\u003cRuleName\u003e-\u003c/RuleName\u003e\u003cRuleSddlLength\u003e1\u003c/RuleSddlLength\u003e\u003cRuleSddl\u003e-\u003c/RuleSddl\u003e\u003cTargetUser\u003eS-1-5-21-1133191089-1850170202-1535859923-200319\u003c/TargetUser\u003e\u003cTargetProcessId\u003e27116\u003c/TargetProcessId\u003e\u003cFilePathLength\u003e101\u003c/FilePathLength\u003e\u003cFilePath\u003e%OSDRIVE%\\USERS\\TOPSY\\APPDATA\\LOCAL\\GITHUBDESKTOP\\APP-3.1.2\\RESOURCES\\APP\\GIT\\MINGW64\\BIN\\GIT.EXE\u003c/FilePath\u003e\u003cFileHashLength\u003e32\u003c/FileHashLength\u003e\u003cFileHash\u003e11D3940DE41D28E044CE45AB76A6D824E617D99B62C5FB44E37BE5CD7B0545F5\u003c/FileHash\u003e\u003cFqbnLength\u003e72\u003c/FqbnLength\u003e\u003cFqbn\u003eO=JOHANNES SCHINDELIN, S=NORDRHEIN-WESTFALEN, C=DE\\GIT\\GIT.EXE\\2.35.5.01\u003c/Fqbn\u003e\u003cTargetLogonId\u003e0x14fcb7\u003c/TargetLogonId\u003e\u003cFullFilePathLength\u003e94\u003c/FullFilePathLength\u003e\u003cFullFilePath\u003eC:\\Users\\TOPSY\\AppData\\Local\\GitHubDesktop\\app-3.1.2\\resources\\app\\git\\mingw64\\bin\\git.exe\u003c/FullFilePath\u003e\u003c/RuleAndFileData\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-AppLocker",
@@ -237,10 +237,10 @@ An example event for `applocker_exe_and_dll` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -255,7 +255,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
 | file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.country | List of country \(C) code | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
@@ -266,7 +266,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -274,7 +274,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
@@ -617,10 +617,10 @@ An example event for `applocker_msi_and_script` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -635,7 +635,7 @@ An example event for `applocker_msi_and_script` looks as following:
 | file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
 | file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.country | List of country \(C) code | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
@@ -646,7 +646,7 @@ An example event for `applocker_msi_and_script` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -654,7 +654,7 @@ An example event for `applocker_msi_and_script` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
@@ -989,10 +989,10 @@ An example event for `applocker_packaged_app_deployment` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -1008,7 +1008,7 @@ An example event for `applocker_packaged_app_deployment` looks as following:
 | file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.country | List of country \(C) code | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
@@ -1019,7 +1019,7 @@ An example event for `applocker_packaged_app_deployment` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -1027,7 +1027,7 @@ An example event for `applocker_packaged_app_deployment` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
@@ -1363,10 +1363,10 @@ An example event for `applocker_packaged_app_execution` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -1382,7 +1382,7 @@ An example event for `applocker_packaged_app_execution` looks as following:
 | file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.country | List of country \(C) code | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
@@ -1393,7 +1393,7 @@ An example event for `applocker_packaged_app_execution` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -1401,7 +1401,7 @@ An example event for `applocker_packaged_app_execution` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
@@ -1721,10 +1721,10 @@ An example event for `powershell` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -1742,7 +1742,7 @@ An example event for `powershell` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -1750,7 +1750,7 @@ An example event for `powershell` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
@@ -2058,10 +2058,10 @@ An example event for `powershell_operational` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -2079,7 +2079,7 @@ An example event for `powershell_operational` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -2087,7 +2087,7 @@ An example event for `powershell_operational` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
@@ -2447,7 +2447,7 @@ An example event for `sysmon_operational` looks as following:
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
-| dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
@@ -2465,10 +2465,10 @@ An example event for `sysmon_operational` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -2505,7 +2505,7 @@ An example event for `sysmon_operational` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -2513,14 +2513,14 @@ An example event for `sysmon_operational` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
@@ -2530,12 +2530,14 @@ An example event for `sysmon_operational` looks as following:
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.caseless | Multi-field of `process.executable`. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.hash.sha1 | SHA1 hash. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
 | process.hash.sha512 | SHA512 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.caseless | Multi-field of `process.name`. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.parent.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
@@ -2740,6 +2742,403 @@ An example event for `sysmon_operational` looks as following:
 | winlog.version | The version number of the event's definition. | long |
 
 
+### Windows Defender/Operational
+
+The Windows `windows_defender` data stream provides events from the Windows
+`Microsoft-Windows-Windows Defender/Operational` event log.
+
+An example event for `windows_defender` looks as following:
+
+```json
+{
+    "@timestamp": "2024-06-21T07:56:39.313Z",
+    "agent": {
+        "ephemeral_id": "e19c080a-8707-424c-a0f5-b7f5d6d10c80",
+        "id": "2a74efbb-9c7f-4476-b542-19107cfeb0b3",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.14.1"
+    },
+    "data_stream": {
+        "dataset": "windows.windows_defender",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "2a74efbb-9c7f-4476-b542-19107cfeb0b3",
+        "snapshot": false,
+        "version": "8.14.1"
+    },
+    "event": {
+        "action": "None",
+        "agent_id_status": "verified",
+        "category": "process",
+        "code": "1151",
+        "created": "2024-06-21T21:40:16.405Z",
+        "dataset": "windows.windows_defender",
+        "ingested": "2024-06-21T21:40:28Z",
+        "kind": "event",
+        "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Windows Defender' Guid='{11cd958a-c507-4ef3-b3f2-5fd9dfbd2c78}'/\u003e\u003cEventID\u003e1151\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2024-06-21T07:56:39.3136791Z'/\u003e\u003cEventRecordID\u003e5655\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='7676' ThreadID='15392'/\u003e\u003cChannel\u003eMicrosoft-Windows-Windows Defender/Operational\u003c/Channel\u003e\u003cComputer\u003eel33t-b00k-1\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-18'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='Product Name'\u003eMicrosoft Defender Antivirus\u003c/Data\u003e\u003cData Name='Platform version'\u003e4.18.24050.7\u003c/Data\u003e\u003cData Name='Unused'\u003e\u003c/Data\u003e\u003cData Name='Engine version'\u003e1.1.24050.5\u003c/Data\u003e\u003cData Name='NRI engine version'\u003e1.1.24050.5\u003c/Data\u003e\u003cData Name='AV security intelligence version'\u003e1.413.419.0\u003c/Data\u003e\u003cData Name='AS security intelligence version'\u003e1.413.419.0\u003c/Data\u003e\u003cData Name='NRI security intelligence version'\u003e1.413.419.0\u003c/Data\u003e\u003cData Name='RTP state'\u003eEnabled\u003c/Data\u003e\u003cData Name='OA state'\u003eEnabled\u003c/Data\u003e\u003cData Name='IOAV state'\u003eEnabled\u003c/Data\u003e\u003cData Name='BM state'\u003eEnabled\u003c/Data\u003e\u003cData Name='Last AV security intelligence age'\u003e0\u003c/Data\u003e\u003cData Name='Last AS security intelligence age'\u003e0\u003c/Data\u003e\u003cData Name='Last quick scan age'\u003e1\u003c/Data\u003e\u003cData Name='Last full scan age'\u003e4294967295\u003c/Data\u003e\u003cData Name='AV security intelligence creation time'\u003e2024-06-20T17:59:45Z\u003c/Data\u003e\u003cData Name='AS security intelligence creation time'\u003e2024-06-20T17:59:47Z\u003c/Data\u003e\u003cData Name='Last quick scan start time'\u003e2024-06-19T15:49:55Z\u003c/Data\u003e\u003cData Name='Last quick scan end time'\u003e2024-06-19T15:51:57Z\u003c/Data\u003e\u003cData Name='Last quick scan source'\u003e2\u003c/Data\u003e\u003cData Name='Last full scan start time'\u003e1601-01-01T00:00:00Z\u003c/Data\u003e\u003cData Name='Last full scan end time'\u003e1601-01-01T00:00:00Z\u003c/Data\u003e\u003cData Name='Last full scan source'\u003e0\u003c/Data\u003e\u003cData Name='Product status'\u003e0x00080000\u003c/Data\u003e\u003cData Name='Latest engine version'\u003e1.1.24050.5\u003c/Data\u003e\u003cData Name='Engine up-to-date'\u003e0\u003c/Data\u003e\u003cData Name='Latest platform version'\u003e4.18.24050.7\u003c/Data\u003e\u003cData Name='Platform up-to-date'\u003e1\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
+        "provider": "Microsoft-Windows-Windows Defender",
+        "type": "start"
+    },
+    "host": {
+        "name": "el33t-b00k-1"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "log": {
+        "level": "information"
+    },
+    "tags": [
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "user": {
+        "id": "S-1-5-18"
+    },
+    "winlog": {
+        "channel": "Microsoft-Windows-Windows Defender/Operational",
+        "computer_name": "el33t-b00k-1",
+        "event_data": {
+            "AS_security_intelligence_creation_time": "2024-06-20T17:59:47Z",
+            "AS_security_intelligence_version": "1.413.419.0",
+            "AV_security_intelligence_creation_time": "2024-06-20T17:59:45Z",
+            "AV_security_intelligence_version": "1.413.419.0",
+            "BM_state": "Enabled",
+            "Engine_up-to-date": "0",
+            "Engine_version": "1.1.24050.5",
+            "IOAV_state": "Enabled",
+            "Last_AS_security_intelligence_age": "0",
+            "Last_AV_security_intelligence_age": "0",
+            "Last_full_scan_age": "4294967295",
+            "Last_full_scan_end_time": "1601-01-01T00:00:00Z",
+            "Last_full_scan_source": "0",
+            "Last_full_scan_start_time": "1601-01-01T00:00:00Z",
+            "Last_quick_scan_age": "1",
+            "Last_quick_scan_end_time": "2024-06-19T15:51:57Z",
+            "Last_quick_scan_source": "2",
+            "Last_quick_scan_start_time": "2024-06-19T15:49:55Z",
+            "Latest_engine_version": "1.1.24050.5",
+            "Latest_platform_version": "4.18.24050.7",
+            "NRI_engine_version": "1.1.24050.5",
+            "NRI_security_intelligence_version": "1.413.419.0",
+            "OA_state": "Enabled",
+            "Platform_up-to-date": "1",
+            "Platform_version": "4.18.24050.7",
+            "Product_Name": "Microsoft Defender Antivirus",
+            "Product_status": "0x00080000",
+            "RTP_state": "Enabled"
+        },
+        "event_id": "1151",
+        "level": "information",
+        "opcode": "Info",
+        "process": {
+            "pid": 7676,
+            "thread": {
+                "id": 15392
+            }
+        },
+        "provider_guid": "{11cd958a-c507-4ef3-b3f2-5fd9dfbd2c78}",
+        "provider_name": "Microsoft-Windows-Windows Defender",
+        "record_id": "5655",
+        "task": "None",
+        "time_created": "2024-06-21T07:56:39.313Z",
+        "user": {
+            "identifier": "S-1-5-18"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
+| destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| destination.user.id | Unique identifier of the user. | keyword |
+| destination.user.name | Short name or login of the user. | keyword |
+| destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
+| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
+| file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
+| file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
+| file.x509.subject.country | List of country \(C) code | keyword |
+| file.x509.subject.locality | List of locality names (L) | keyword |
+| file.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
+| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.pid | Process id. | long |
+| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
+| process.title.text | Multi-field of `process.title`. | match_only_text |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| source.user.id | Unique identifier of the user. | keyword |
+| source.user.name | Short name or login of the user. | keyword |
+| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
+| tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
+| winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
+| winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
+| winlog.computer_name | The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`. | keyword |
+| winlog.event_data | The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
+| winlog.event_data.AS_security_intelligence_creation_time |  | date |
+| winlog.event_data.AS_security_intelligence_version |  | keyword |
+| winlog.event_data.AV_security_intelligence_creation_time |  | date |
+| winlog.event_data.AV_security_intelligence_version |  | keyword |
+| winlog.event_data.AuthenticationPackageName |  | keyword |
+| winlog.event_data.BM_state |  | keyword |
+| winlog.event_data.Binary |  | keyword |
+| winlog.event_data.BitlockerUserInputTime |  | keyword |
+| winlog.event_data.BootMode |  | keyword |
+| winlog.event_data.BootType |  | keyword |
+| winlog.event_data.BuildVersion |  | keyword |
+| winlog.event_data.Company |  | keyword |
+| winlog.event_data.CorruptionActionState |  | keyword |
+| winlog.event_data.CreationUtcTime |  | keyword |
+| winlog.event_data.Description |  | keyword |
+| winlog.event_data.Detail |  | keyword |
+| winlog.event_data.DeviceName |  | keyword |
+| winlog.event_data.DeviceNameLength |  | keyword |
+| winlog.event_data.DeviceTime |  | keyword |
+| winlog.event_data.DeviceVersionMajor |  | keyword |
+| winlog.event_data.DeviceVersionMinor |  | keyword |
+| winlog.event_data.DriveName |  | keyword |
+| winlog.event_data.DriverName |  | keyword |
+| winlog.event_data.DriverNameLength |  | keyword |
+| winlog.event_data.DwordVal |  | keyword |
+| winlog.event_data.Engine_up-to-date |  | keyword |
+| winlog.event_data.Engine_version |  | keyword |
+| winlog.event_data.EntryCount |  | keyword |
+| winlog.event_data.ExtraInfo |  | keyword |
+| winlog.event_data.FailureName |  | keyword |
+| winlog.event_data.FailureNameLength |  | keyword |
+| winlog.event_data.FileVersion |  | keyword |
+| winlog.event_data.FinalStatus |  | keyword |
+| winlog.event_data.Group |  | keyword |
+| winlog.event_data.IOAV_state |  | keyword |
+| winlog.event_data.IdleImplementation |  | keyword |
+| winlog.event_data.IdleStateCount |  | keyword |
+| winlog.event_data.ImpersonationLevel |  | keyword |
+| winlog.event_data.IntegrityLevel |  | keyword |
+| winlog.event_data.IpAddress |  | keyword |
+| winlog.event_data.IpPort |  | keyword |
+| winlog.event_data.KeyLength |  | keyword |
+| winlog.event_data.LastBootGood |  | keyword |
+| winlog.event_data.LastShutdownGood |  | keyword |
+| winlog.event_data.Last_AS_security_intelligence_age |  | keyword |
+| winlog.event_data.Last_AV_security_intelligence_age |  | keyword |
+| winlog.event_data.Last_full_scan_age |  | keyword |
+| winlog.event_data.Last_full_scan_end_time |  | date |
+| winlog.event_data.Last_full_scan_source |  | keyword |
+| winlog.event_data.Last_full_scan_start_time |  | date |
+| winlog.event_data.Last_quick_scan_age |  | keyword |
+| winlog.event_data.Last_quick_scan_end_time |  | date |
+| winlog.event_data.Last_quick_scan_source |  | keyword |
+| winlog.event_data.Last_quick_scan_start_time |  | date |
+| winlog.event_data.Latest_engine_version |  | keyword |
+| winlog.event_data.Latest_platform_version |  | keyword |
+| winlog.event_data.LmPackageName |  | keyword |
+| winlog.event_data.LogonGuid |  | keyword |
+| winlog.event_data.LogonId |  | keyword |
+| winlog.event_data.LogonProcessName |  | keyword |
+| winlog.event_data.LogonType |  | keyword |
+| winlog.event_data.MajorVersion |  | keyword |
+| winlog.event_data.MaximumPerformancePercent |  | keyword |
+| winlog.event_data.MemberName |  | keyword |
+| winlog.event_data.MemberSid |  | keyword |
+| winlog.event_data.MinimumPerformancePercent |  | keyword |
+| winlog.event_data.MinimumThrottlePercent |  | keyword |
+| winlog.event_data.MinorVersion |  | keyword |
+| winlog.event_data.NRI_engine_version |  | keyword |
+| winlog.event_data.NRI_security_intelligence_version |  | keyword |
+| winlog.event_data.NewProcessId |  | keyword |
+| winlog.event_data.NewProcessName |  | keyword |
+| winlog.event_data.NewSchemeGuid |  | keyword |
+| winlog.event_data.NewTime |  | keyword |
+| winlog.event_data.NominalFrequency |  | keyword |
+| winlog.event_data.Number |  | keyword |
+| winlog.event_data.OA_state |  | keyword |
+| winlog.event_data.OldSchemeGuid |  | keyword |
+| winlog.event_data.OldTime |  | keyword |
+| winlog.event_data.OriginalFileName |  | keyword |
+| winlog.event_data.Path |  | keyword |
+| winlog.event_data.PerformanceImplementation |  | keyword |
+| winlog.event_data.Platform_up-to-date |  | keyword |
+| winlog.event_data.Platform_version |  | keyword |
+| winlog.event_data.PreviousCreationUtcTime |  | keyword |
+| winlog.event_data.PreviousTime |  | keyword |
+| winlog.event_data.PrivilegeList |  | keyword |
+| winlog.event_data.ProcessId |  | keyword |
+| winlog.event_data.ProcessName |  | keyword |
+| winlog.event_data.ProcessPath |  | keyword |
+| winlog.event_data.ProcessPid |  | keyword |
+| winlog.event_data.Product |  | keyword |
+| winlog.event_data.Product_Name |  | keyword |
+| winlog.event_data.Product_status |  | keyword |
+| winlog.event_data.PuaCount |  | keyword |
+| winlog.event_data.PuaPolicyId |  | keyword |
+| winlog.event_data.QfeVersion |  | keyword |
+| winlog.event_data.RTP_state |  | keyword |
+| winlog.event_data.Reason |  | keyword |
+| winlog.event_data.SchemaVersion |  | keyword |
+| winlog.event_data.ScriptBlockText |  | keyword |
+| winlog.event_data.ServiceName |  | keyword |
+| winlog.event_data.ServiceVersion |  | keyword |
+| winlog.event_data.ShutdownActionType |  | keyword |
+| winlog.event_data.ShutdownEventCode |  | keyword |
+| winlog.event_data.ShutdownReason |  | keyword |
+| winlog.event_data.Signature |  | keyword |
+| winlog.event_data.SignatureStatus |  | keyword |
+| winlog.event_data.Signed |  | keyword |
+| winlog.event_data.StartTime |  | keyword |
+| winlog.event_data.State |  | keyword |
+| winlog.event_data.Status |  | keyword |
+| winlog.event_data.StopTime |  | keyword |
+| winlog.event_data.SubjectDomainName |  | keyword |
+| winlog.event_data.SubjectLogonId |  | keyword |
+| winlog.event_data.SubjectUserName |  | keyword |
+| winlog.event_data.SubjectUserSid |  | keyword |
+| winlog.event_data.TSId |  | keyword |
+| winlog.event_data.TargetDomainName |  | keyword |
+| winlog.event_data.TargetInfo |  | keyword |
+| winlog.event_data.TargetLogonGuid |  | keyword |
+| winlog.event_data.TargetLogonId |  | keyword |
+| winlog.event_data.TargetServerName |  | keyword |
+| winlog.event_data.TargetUserName |  | keyword |
+| winlog.event_data.TargetUserSid |  | keyword |
+| winlog.event_data.TerminalSessionId |  | keyword |
+| winlog.event_data.TokenElevationType |  | keyword |
+| winlog.event_data.TransmittedServices |  | keyword |
+| winlog.event_data.UserSid |  | keyword |
+| winlog.event_data.Version |  | keyword |
+| winlog.event_data.Workstation |  | keyword |
+| winlog.event_data.param1 |  | keyword |
+| winlog.event_data.param2 |  | keyword |
+| winlog.event_data.param3 |  | keyword |
+| winlog.event_data.param4 |  | keyword |
+| winlog.event_data.param5 |  | keyword |
+| winlog.event_data.param6 |  | keyword |
+| winlog.event_data.param7 |  | keyword |
+| winlog.event_data.param8 |  | keyword |
+| winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
+| winlog.keywords | The keywords are used to classify an event. | keyword |
+| winlog.level | The level assigned to the event such as Information, Warning, or Critical. | keyword |
+| winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
+| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.thread.id |  | long |
+| winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
+| winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
+| winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | keyword |
+| winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
+| winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
+| winlog.time_created | The time the event was created. | date |
+| winlog.user.domain | The domain that the account associated with this event is a member of. | keyword |
+| winlog.user.identifier | The Windows security identifier (SID) of the account associated with this event. If Winlogbeat cannot resolve the SID to a name, then the `user.name`, `user.domain`, and `user.type` fields will be omitted from the event. If you discover Winlogbeat not resolving SIDs, review the log for clues as to what the problem may be. | keyword |
+| winlog.user.name | Name of the user associated with this event. | keyword |
+| winlog.user.type | The type of account associated with this event. | keyword |
+| winlog.user_data | The event specific data. This field is mutually exclusive with `event_data`. | object |
+| winlog.user_data.FileHash |  | keyword |
+| winlog.user_data.FileHashLength |  | long |
+| winlog.user_data.FilePath |  | keyword |
+| winlog.user_data.FilePathLength |  | long |
+| winlog.user_data.Fqbn |  | keyword |
+| winlog.user_data.FqbnLength |  | long |
+| winlog.user_data.FullFilePath |  | keyword |
+| winlog.user_data.FullFilePathLength |  | long |
+| winlog.user_data.PolicyName |  | keyword |
+| winlog.user_data.PolicyNameLength |  | long |
+| winlog.user_data.RuleId |  | keyword |
+| winlog.user_data.RuleName |  | keyword |
+| winlog.user_data.RuleNameLength |  | long |
+| winlog.user_data.RuleSddl |  | keyword |
+| winlog.user_data.RuleSddlLength |  | long |
+| winlog.user_data.TargetLogonId |  | keyword |
+| winlog.user_data.TargetProcessId |  | long |
+| winlog.user_data.TargetUser |  | keyword |
+| winlog.user_data.xml_name |  | keyword |
+| winlog.version | The version number of the event's definition. | long |
+
+
 ## Metrics reference
 
 Both data streams are available on Windows only.
@@ -2779,7 +3178,7 @@ The Windows `service` data stream provides service details.
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
@@ -2787,7 +3186,7 @@ The Windows `service` data stream provides service details.
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | windows.service.display_name | The display name of the service. | keyword |  |
@@ -2836,7 +3235,7 @@ The Windows `perfmon` data stream provides performance counter values.
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -2844,7 +3243,7 @@ The Windows `perfmon` data stream provides performance counter values.
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | windows.perfmon.instance | Instance value. | keyword |

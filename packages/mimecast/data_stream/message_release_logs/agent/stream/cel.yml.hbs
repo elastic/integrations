@@ -1,0 +1,105 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+resource.url: {{api_url}}
+fields_under_root: true
+keep_null: true
+state:
+  access_key: {{access_key}}
+  secret_key: {{secret_key}}
+  app_id: {{app_id}}
+  app_key: {{app_key}}
+  page_size: {{batch_size}}
+  look_back: {{initial_interval}}
+redact:
+  fields:
+    - secret_key
+    - access_key
+    - app_id
+    - app_key
+program: |
+  state.with(
+    {
+      "time": now.format(time_layout.RFC1123),
+      "id": uuid(),
+      "data": state.?last_page.data.orValue([{
+        "start": state.?cursor.last.orValue(now - duration(state.look_back)),
+        "end": now,
+      }]),
+    }.as(req,
+      post_request(state.url.trim_right("/") + "/api/gateway/get-held-release-logs", "application/json", 
+        {
+          "meta": {
+            "pagination": {
+              "pageSize": state.page_size,
+              ?"pageToken": state.?last_page.next,
+            }
+          },
+          "data": req.data,
+        }.encode_json()
+      ).with({
+        "Header": {
+          "Authorization": ["MC " + state.access_key + ":" + [
+            req.time,
+            req.id,
+            "/api/gateway/get-held-release-logs",
+            state.app_key
+          ].join(":").hmac("sha1", state.secret_key.base64_decode()).base64()], 
+          "x-mc-app-id": [state.app_id],
+          "x-mc-date": [req.time],
+          "x-mc-req-id": [req.id],
+          "Content-Type": ["application/json"],
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body,
+          body.data.map(e, e.heldReleaseLogs).flatten().as(events, {
+            "events": events.map(e, {"message": e.encode_json()}),
+            "cursor": {
+              "last": ([now] + events.map(e, timestamp(e.released))).max(),
+            },
+            ?"last_page": has(body.?meta.pagination.next) && size(events) != 0 ?
+              optional.of({
+                ?"next": body.?meta.pagination.next,
+                "data": req.data,
+              })
+            :
+              optional.none(),
+            "want_more": has(body.?meta.pagination.next) && size(events) != 0,
+          })
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

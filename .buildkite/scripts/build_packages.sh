@@ -82,7 +82,7 @@ build_packages() {
 }
 
 if [ "${SKIP_PUBLISHING}" == "true" ] ; then
-    echo "packageStoragePublish: skipping because skip_publishing param is ${SKIP_PUBLISHING}"
+    echo "packageStoragePublish: skipping because SKIP_PUBLISHING environment variable is ${SKIP_PUBLISHING}"
     exit 0
 fi
 

@@ -22,6 +22,10 @@ env:
   ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
   # Disable comparison of results in pipeline tests to avoid errors related to GeoIP fields
   ELASTIC_PACKAGE_SERVERLESS_PIPELINE_TEST_DISABLE_COMPARE_RESULTS: "true"
+  # Enable independent Elastic Agents for all packages
+  ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "true"
+  # Set maximum number of parallel tests to run if package allows it
+  ELASTIC_PACKAGE_MAXIMUM_NUMBER_PARALLEL_TESTS: "5"
 
 steps:
   - input: "Input values for the variables"
@@ -72,8 +76,10 @@ steps:
 
   - label: ":junit: Junit annotate"
     plugins:
-      - junit-annotate#v2.4.1:
+      - junit-annotate#v2.5.0:
           artifacts: "build/test-results/*.xml"
+          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
+          report-skipped: true
     agents:
       provider: "gcp"  # junit plugin requires docker
 

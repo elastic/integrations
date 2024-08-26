@@ -6,7 +6,9 @@ processors:
     target_field: json
     field_split: ", "
     value_split: "="
+    trim_value: "\\\\\""
     ignore_missing: true
+    tag: kv_message
 - rename:
     field: json.type
     target_field: keycloak.login.type
@@ -131,6 +133,7 @@ processors:
       - 'groups/%{UUID:group.id}'
     ignore_failure: true
     ignore_missing: true
+    tag: grok_admin_resource_path
 - set:
     field: event.kind
     value: event
@@ -208,11 +211,13 @@ processors:
     field:
       - message
       - json
-    ignore_missing: true  
+    ignore_missing: true
+    tag: remove_message_json
 on_failure:
-- set:
-    field: event.kind
-    value: pipeline_error
-- append:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
