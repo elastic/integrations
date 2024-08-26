@@ -521,7 +521,7 @@ prepare_stack() {
 
     if [[ "${ELASTIC_AGENT_DOCKER_IMAGE:-""}" != "" ]]; then
         echo ""
-        echo "Images used for Elastic Agent"
+        echo "Images used for Elastic Agent:"
         docker ps --format "{{.Names}} {{.Image}}" |grep "elastic-agent"
         echo ""
     fi
