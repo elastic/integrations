@@ -55,31 +55,31 @@ An example event for `inventory` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-14T12:43:32.513Z",
+    "@timestamp": "2024-08-26T11:44:56.001Z",
     "agent": {
-        "ephemeral_id": "c2bfced6-8a09-4048-bdef-266609498144",
-        "id": "a5858c6a-df97-45d8-b27d-fc9c7655dcf9",
-        "name": "elastic-agent-39553",
+        "ephemeral_id": "1f717d76-cb57-4988-8a74-35948dc21c57",
+        "id": "0739d617-54be-43e7-ac20-5ae32f3616d3",
+        "name": "elastic-agent-29226",
         "type": "filebeat",
         "version": "8.13.4"
     },
     "data_stream": {
         "dataset": "jamf_pro.inventory",
-        "namespace": "28068",
+        "namespace": "50924",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a5858c6a-df97-45d8-b27d-fc9c7655dcf9",
+        "id": "0739d617-54be-43e7-ac20-5ae32f3616d3",
         "snapshot": false,
         "version": "8.13.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.inventory",
-        "ingested": "2024-08-14T12:43:35Z"
+        "ingested": "2024-08-26T11:44:58Z"
     },
     "host": {
         "address": [
@@ -100,9 +100,6 @@ An example event for `inventory` looks as following:
             "configuration_profiles": null,
             "content_caching": null,
             "disk_encryption": null,
-            "error": {
-                "message": "cannot access method/field [mac_address] from a null def reference"
-            },
             "extension_attributes": null,
             "fonts": null,
             "general": {
@@ -154,6 +151,17 @@ An example event for `inventory` looks as following:
             "user_and_location": null
         }
     },
+    "os": {
+        "platform": "Mac"
+    },
+    "related": {
+        "ip": [
+            "10.122.26.87"
+        ],
+        "user": [
+            ""
+        ]
+    },
     "tags": [
         "forwarded"
     ]
@@ -169,10 +177,8 @@ An example event for `inventory` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs | Meta-information specific to ECS. | group |
 | event.dataset |  | constant_keyword |
 | event.module |  | constant_keyword |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | input.type | Input type | keyword |
 | jamf_pro.inventory.applications.bundle_id |  | keyword |
 | jamf_pro.inventory.applications.external_version_id |  | keyword |
@@ -317,6 +323,3 @@ An example event for `inventory` looks as following:
 | jamf_pro.inventory.user_and_location.realname |  | keyword |
 | jamf_pro.inventory.user_and_location.room |  | keyword |
 | jamf_pro.inventory.user_and_location.username |  | keyword |
-| os | The OS fields contain information about the operating system. | group |
-| related | This field set is meant to facilitate pivoting around a piece of data. Some pieces of information can be seen in many places in an ECS event. To facilitate searching for them, store an array of all seen values to their corresponding field in `related.`. A concrete example is IP addresses, which can be under host, observer, source, destination, client, server, and network.forwarded_ip. If you append all IPs to `related.ip`, you can then search for a given IP trivially, no matter where it appeared, by querying `related.ip:192.0.2.15`. | group |
-| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |

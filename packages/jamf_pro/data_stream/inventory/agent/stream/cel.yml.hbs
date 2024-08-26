@@ -38,7 +38,7 @@ program: |
       "page-size": [string(state.page_size)],
       "sort": ["general.reportDate:asc"],
       ?"filter": has(state.?cursor.last_report_date) && (state.?cursor.last_report_date.orValue("") != "") ? 
-        optional.of(['general.reportDate>"'+state.cursor.last_report_date+'"']) 
+        optional.of(['general.reportDate>="'+state.cursor.last_report_date+'"']) 
         :
         optional.none(),
      }.format_query()
@@ -63,7 +63,7 @@ program: |
           }),
           "want_more": body.totalCount > size(body.results),
           "cursor": {
-            "last_report_date": size(body.results) == 0 ? 
+            "last_report_date": ((size(body.results) == 0 ) || (size(body.results) == body.totalCount))? 
               state.?cursor.last_report_date.orValue("") :
               string(body.results[size(body.results)-1].general.reportDate)
             },
