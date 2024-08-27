@@ -4,22 +4,14 @@ config_version: 3
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 request.tracer.maxbackups: 5
 resource.url: {{server_url}}
+interval: {{interval}}   // Define interval
 state:
-  server_url: {{server_url}}
+  url: {{base_url}}
   client_id: {{client_id}}
   access_key: {{access_key}}
   initial_interval: {{initial_interval}}  // Define initial interval
-  interval: {{interval}}   // Define interval
   limit: {{limit}}
   page_limit: {{page_limit}}
-  want_more: false
-  cursor:
-    auth_token: null
-    task_id: null
-    task_ready: null
-    page_token: null
-    next_startTime: null
-    last_page: false
 program: |
   (
     has(state.cursor.task_ready) && (state.cursor.task_ready == null || state.cursor.task_ready == false)
@@ -32,7 +24,7 @@ program: |
         ?
             state.cursor.auth_token
         :
-          request("POST", state.base_url.trim_right("/")+"/auth/external").with({
+          request("POST", state.url.trim_right("/")+"/auth/external").with({
             "Header": {
               "Accept": ["application/json"],
               "Content-Type": ["application/json"],
@@ -57,7 +49,7 @@ program: |
           )
         )
       ).as(auth_token, 
-        request("POST", state.base_url.trim_right("/")+"/app/laas-logs-api/api/logs_query").with({
+        request("POST", state.url.trim_right("/")+"/app/laas-logs-api/api/logs_query").with({
           "Header": {
             "Accept": ["application/json"],
             "Content-Type": ["application/json"],
@@ -69,7 +61,7 @@ program: |
             "pageLimit": state.page_limit,    //Number of records per page
             "cloudService": "Harmony Endpoint",
             "timeframe": {
-              "startTime": state.cursor.next_startTime == null ? 
+              "startTime": (!has(state.cursor.next_startTime) || (has(state.cursor.next_startTime) && state.cursor.next_startTime == null)) ? 
                 timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)
                 :
                 timestamp(state.cursor.next_startTime).format(time_layout.RFC3339),
@@ -79,7 +71,7 @@ program: |
         }).do_request().as(resp,    
           resp.StatusCode == 200    //Check if search query is correct.
           ?
-          bytes(resp.Body).decode_json().as(body, 
+          debug("Search Query Response Body => ", bytes(resp.Body).decode_json()).as(body, 
           {
             "events": [],
             "want_more": true,
@@ -91,7 +83,7 @@ program: |
                 "next_startTime": state.cursor.next_startTime,
                 "last_page": false
             },
-            "base_url": state.base_url,
+            "url": state.url,
             "auth_client_id": state.auth_client_id,
             "auth_access_key": state.auth_access_key,
             "limit": state.limit,
@@ -115,7 +107,7 @@ program: |
               "next_startTime": state.cursor.next_startTime,
               "last_page": false
             },
-            "base_url": state.base_url,
+            "url": state.url,
             "auth_client_id": state.auth_client_id,
             "auth_access_key": state.auth_access_key,
             "limit": state.limit,
@@ -131,7 +123,7 @@ program: |
         ?
         (
           //Request to check if query operation is completed.
-          request("GET", state.base_url.trim_right("/")+"/app/laas-logs-api/api/logs_query/"+state.cursor.task_id).with({
+          request("GET", state.url.trim_right("/")+"/app/laas-logs-api/api/logs_query/"+state.cursor.task_id).with({
           "Header": {
               "Accept": ["application/json"],
               "Content-Type": ["application/json"],
@@ -152,7 +144,7 @@ program: |
                   "next_startTime": state.cursor.next_startTime,
                   "last_page": null
               },
-              "base_url": state.base_url,
+              "url": state.url,
               "auth_client_id": state.auth_client_id,
               "auth_access_key": state.auth_access_key,
               "limit": state.limit,
@@ -168,15 +160,15 @@ program: |
                 "events": [],
                 "want_more": false,
                 "cursor": {
-                  "auth_token": state.cursor.auth_token,
-                  "task_id": state.cursor.task_id,
-                  "task_ready": false,
+                  "auth_token": null,
+                  "task_id": null,
+                  "task_ready": null,
                   "page_token": null,
                   // Search query returned zero results. Set next_startTime = now() - 1m (To compensate for HTTP response and processing time)
                   "next_startTime": timestamp(now() - duration("1m")).format(time_layout.RFC3339),
                   "last_page": null
                 },
-                "base_url": state.base_url,
+                "url": state.url,
                 "auth_client_id": state.auth_client_id,
                 "auth_access_key": state.auth_access_key,
                 "limit": state.limit,
@@ -196,7 +188,7 @@ program: |
                   "next_startTime": state.cursor.next_startTime,
                   "last_page": null
                 },
-                "base_url": state.base_url,
+                "url": state.url,
                 "auth_client_id": state.auth_client_id,
                 "auth_access_key": state.auth_access_key,
                 "limit": state.limit,
@@ -224,7 +216,7 @@ program: |
             "next_startTime": state.cursor.next_startTime,
             "last_page": null
           },
-          "base_url": state.base_url,
+          "url": state.url,
           "auth_client_id": state.auth_client_id,
           "auth_access_key": state.auth_access_key,
           "limit": state.limit,
@@ -236,7 +228,7 @@ program: |
     )
     :
     (
-      request("POST", state.base_url.trim_right("/")+"/app/laas-logs-api/api/logs_query/retrieve").with({
+      request("POST", state.url.trim_right("/")+"/app/laas-logs-api/api/logs_query/retrieve").with({
           "Header": {
               "Accept": ["application/json"],
               "Content-Type": ["application/json"],
@@ -259,9 +251,9 @@ program: |
             "task_ready": null,
             "page_token": null,
             "next_startTime": timestamp(timestamp(body.data.records[0].time) + duration("1s")).format(time_layout.RFC3339),
-            "last_page": true
+            "last_page": null
           },
-          "base_url": state.base_url,
+          "url": state.url,
           "auth_client_id": state.auth_client_id,
           "auth_access_key": state.auth_access_key,
           "limit": state.limit,
@@ -281,7 +273,7 @@ program: |
             "next_startTime": timestamp(timestamp(body.data.records[0].time) + duration("1s")).format(time_layout.RFC3339),
             "last_page": false
           },
-          "base_url": state.base_url,
+          "url": state.url,
           "auth_client_id": state.auth_client_id,
           "auth_access_key": state.auth_access_key,
           "limit": state.limit,
