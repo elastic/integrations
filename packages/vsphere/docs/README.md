@@ -276,21 +276,62 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| vsphere.host.cpu.free.mhz | Free CPU of host in Mhz | long |  | gauge |
-| vsphere.host.cpu.total.mhz | Total CPU of host in Mhz | long |  | counter |
-| vsphere.host.cpu.used.mhz | Used CPU of host in Mhz | long |  | gauge |
+| vsphere.host.cpu.free.mhz | Free CPU of host in Mhz. | long |  | gauge |
+| vsphere.host.cpu.total.mhz | Total CPU of host in Mhz. | long |  | counter |
+| vsphere.host.cpu.used.mhz | Used CPU of host in Mhz. | long |  | gauge |
 | vsphere.host.cpu.used.pct | CPU Utilization % of the host | scaled_float | percent | gauge |
-| vsphere.host.memory.free.bytes | Free Memory of host in bytes | long | byte | gauge |
-| vsphere.host.memory.total.bytes | Total Memory of host in bytes | long | byte | gauge |
-| vsphere.host.memory.used.bytes | Used Memory of host in bytes | long | byte | gauge |
+| vsphere.host.datastore.count | Number of datastores on the host. | long |  | counter |
+| vsphere.host.datastore.names | List of all the datastore names. | keyword |  |  |
+| vsphere.host.disk.capacity.usage.bytes | The amount of storage capacity currently being consumed by or on the entity. | long | byte | gauge |
+| vsphere.host.disk.devicelatency.average.ms | Average amount of time it takes to complete an SCSI command from physical device in milliseconds. | long |  | gauge |
+| vsphere.host.disk.latency.total.ms | Highest latency value across all disks used by the host in milliseconds. | long |  | gauge |
+| vsphere.host.disk.read.bytes | Average number of bytes read from the disk each second. | long | byte | gauge |
+| vsphere.host.disk.total.bytes | Aggregated disk I/O rate. | long | byte | gauge |
+| vsphere.host.disk.write.bytes | Average number of bytes written to the disk each second. | long | byte | gauge |
+| vsphere.host.memory.free.bytes | Free Memory of host in bytes. | long | byte | gauge |
+| vsphere.host.memory.total.bytes | Total Memory of host in bytes. | long | byte | gauge |
+| vsphere.host.memory.used.bytes | Used Memory of host in bytes. | long | byte | gauge |
 | vsphere.host.memory.used.pct | Memory utilization % of the host | scaled_float | percent | gauge |
-| vsphere.host.name | Host name | keyword |  |  |
-| vsphere.host.network_names | Network names | keyword |  |  |
+| vsphere.host.name | Host name. | keyword |  |  |
+| vsphere.host.network.bandwidth.received.bytes | Average rate at which data was received during the interval. This represents the bandwidth of the network. | long | byte | gauge |
+| vsphere.host.network.bandwidth.total.bytes | Network utilization (combined transmit-rates and receive-rates). | long | byte | gauge |
+| vsphere.host.network.bandwidth.transmitted.bytes | Average rate at which data was transmitted during the interval. This represents the bandwidth of the network. | long | byte | gauge |
+| vsphere.host.network.count | Number of networks on the host. | long |  | counter |
+| vsphere.host.network.names | List of all the network names. | keyword |  |  |
+| vsphere.host.network.packets.dropped.received.count | Number of received packets dropped. | long |  | counter |
+| vsphere.host.network.packets.dropped.total.count | Total number of packets dropped. | long |  | counter |
+| vsphere.host.network.packets.dropped.transmitted.count | Number of transmitted packets dropped. | long |  | counter |
+| vsphere.host.network.packets.errors.received.count | Number of packets with errors received. | long |  | counter |
+| vsphere.host.network.packets.errors.total.count | Total number of packets with errors. | long |  | counter |
+| vsphere.host.network.packets.errors.transmitted.count | Number of packets with errors transmitted. | long |  | counter |
+| vsphere.host.network.packets.multicast.received.count | Number of multicast packets received. | long |  | counter |
+| vsphere.host.network.packets.multicast.total.count | Total number of multicast packets. | long |  | counter |
+| vsphere.host.network.packets.multicast.transmitted.count | Number of multicast packets transmitted. | long |  | counter |
+| vsphere.host.network.packets.received.count | Number of packets received. | long |  | counter |
+| vsphere.host.network.packets.transmitted.count | Number of packets transmitted. | long |  | counter |
+| vsphere.host.network_names | Network names. | keyword |  |  |
+| vsphere.host.status | The overall health status of a host in the vSphere environment. | keyword |  |  |
+| vsphere.host.uptime | The total uptime of a host in seconds within the vSphere environment. | long |  |  |
+| vsphere.host.vm.count | Number of virtual machines on the host. | long |  | counter |
+| vsphere.host.vm.names | List of all the VM names. | keyword |  |  |
 
 
 ### Datastore Metrics
