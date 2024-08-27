@@ -221,15 +221,20 @@ processors:
       field: checkpoint.uid
       target_field: source.user.id
       ignore_missing: true
-  - rename:
-      field: checkpoint.administrator
-      target_field: source.user.name
-      ignore_missing: true
-  - rename:
-      field: checkpoint.src_user_name
-      target_field: source.user.name
+  - set:
+      field: source.user.name
+      copy_from: checkpoint.user
+      ignore_empty_value: true
+  - set:
+      field: source.user.name
+      copy_from: checkpoint.administrator
       if: ctx.source?.user?.name == null
-      ignore_missing: true
+      ignore_empty_value: true
+  - set:
+      field: source.user.name
+      copy_from: checkpoint.src_user_name
+      if: ctx.source?.user?.name == null
+      ignore_empty_value: true
   - convert:
       field: checkpoint.client_outbound_packets
       target_field: source.packets
