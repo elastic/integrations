@@ -61,7 +61,7 @@ processors:
       ignore_failure: true
       if: ctx.event?.created == null
   - date:
-      tag: date-_time
+      tag: date-Time
       description: Parse Time from event.
       field: crowdstrike.Time
       target_field: event.created
@@ -2430,12 +2430,6 @@ processors:
         - UNIX
       if: ctx.crowdstrike?.FirstSeen != null && ctx.crowdstrike?.FirstSeen != ""
   - date:
-      field: crowdstrike.Time
-      target_field: crowdstrike.Time
-      formats:
-        - UNIX
-      if: ctx.crowdstrike?.Time != null && ctx.crowdstrike?.Time != ""
-  - date:
       field: crowdstrike.ContextTimeStamp
       target_field: crowdstrike.ContextTimeStamp
       formats:
@@ -2512,6 +2506,7 @@ processors:
         - _temp
         - crowdstrike.timestamp
         - crowdstrike._time
+        - crowdstrike.Time
         - crowdstrike.CreationTimeStamp
         - crowdstrike.DomainName
         - crowdstrike.ConnectionDirection

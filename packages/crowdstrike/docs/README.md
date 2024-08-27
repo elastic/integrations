@@ -1363,7 +1363,6 @@ and/or `session_token`.
 | crowdstrike.TargetFileName |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
 | crowdstrike.Technique |  | keyword |
-| crowdstrike.Time |  | date |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
 | crowdstrike.USN |  | keyword |
