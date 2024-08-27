@@ -815,9 +815,9 @@ An example event for `vulnerability` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| observer.vendor | Vendor name of the observer. | keyword |
 | package.fixed_version |  | keyword |
 | package.name | Package name | keyword |
 | package.version | Package version | keyword |
