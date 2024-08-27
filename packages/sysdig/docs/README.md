@@ -44,14 +44,24 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Data stream / event dataset. | constant_keyword |
 | event.module | The module the event belongs to. | constant_keyword |
+| host.name |  | keyword |
 | input.type |  | constant_keyword |
-| sysdig | Extra fields not directly mapped are included here, users can use custom pipelines to move fields away if required. | flattened |
+| log.syslog.severity.code |  | integer |
+| log.syslog.severity.name |  | keyword |
+| orchestrator.cluster.name |  | text |
+| orchestrator.namespace |  | text |
+| orchestrator.resource.name |  | keyword |
+| orchestrator.resource.parent.type |  | text |
+| orchestrator.type |  | text |
+| rule.authority |  | text |
+| rule.category |  | text |
+| rule.name |  | keyword |
+| rule.ruleset |  | text |
+| rule.version |  | text |
 | sysdig.actions |  | flattened |
 | sysdig.agentId | Agent identifier | integer |
 | sysdig.category | Event category from Sysdig | keyword |
 | sysdig.containerId | Identifier of the container | text |
-| sysdig.content | Extra fields not directly mapped are included here, users can use custom pipelines to move fields away if required. | flattened |
-| sysdig.content.fields | Extra fields not directly mapped are included here, users can use custom pipelines to move fields away if required. | flattened |
 | sysdig.content.fields.container.image.tag | Tag for the container image | text |
 | sysdig.content.fields.container.name | Name of the container | text |
 | sysdig.content.fields.proc.cmdline | Command line args for the process | text |
@@ -73,7 +83,6 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 | sysdig.description | Description of the event policy | text |
 | sysdig.hostMac | MAC address of the host machine | text |
 | sysdig.id | Event identifier | text |
-| sysdig.labels | Extra fields not directly mapped are included here, users can use custom pipelines to move fields away if required. | flattened |
 | sysdig.labels.azure.instanceId | Instance identifier for the azure instance | text |
 | sysdig.labels.azure.instanceName | Instance name for the azure instance | text |
 | sysdig.labels.azure.instanceSize | Size for the azure instance | text |
@@ -86,6 +95,7 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 | sysdig.labels.gcp.machineType | Machine type for the gcp instance | text |
 | sysdig.labels.gcp.projectId | Project identifier for the gcp instance | text |
 | sysdig.labels.gcp.projectName | Project name for the gcp instance | text |
+| sysdig.labels.host.hostName | Name of the current host | keyword |
 | sysdig.labels.kubernetes.cluster.name | Name of the k8s cluster | text |
 | sysdig.labels.kubernetes.namespace.name | Namespace of the k8s cluster | text |
 | sysdig.labels.kubernetes.pod.name | Name of the k8s pod | text |
