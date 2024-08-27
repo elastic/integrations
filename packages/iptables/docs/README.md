@@ -235,7 +235,6 @@ An example event for `log` looks as following:
 | iptables.ubiquiti.rule_number | The rule number within the rule set. | keyword |
 | iptables.ubiquiti.rule_set | The rule set name. | keyword |
 | iptables.udp.length | Length of the UDP header and payload. | long |
-| journald.custom.realtime_timestamp | Realtime timestamp. | date |
 | journald.host.boot_id | The kernel boot ID for the boot the message was generated in, formatted as a 128-bit hexadecimal string. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
