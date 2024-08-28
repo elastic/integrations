@@ -400,10 +400,10 @@ An example event for `datastore` looks as following:
                         "ms": 0
                     }
                 }
-            }
-        },
-        "fstype": "local",
-        "name": "LocalDS_0"
+            },
+            "fstype": "local",
+            "name": "LocalDS_0"
+        }
     }
 }
 
