@@ -383,29 +383,30 @@ An example event for `datastore` looks as following:
                 "used": {
                     "bytes": 37566570496,
                     "pct": 0.502988996026061
-                },
-                "read": {
-                    "bytes": 0,
-                    "latency": {
-                        "total": {
-                            "ms": 0
-                        }
-                    }
-                },
-                "write": {
-                    "bytes": 337000,
-                    "latency": {
-                        "total": {
-                            "ms": 0
-                        }
+                }
+            },
+            "read": {
+                "bytes": 0,
+                "latency": {
+                    "total": {
+                        "ms": 0
                     }
                 }
             },
-            "fstype": "local",
-            "name": "LocalDS_0"
-        }
+            "write": {
+                "bytes": 337000,
+                "latency": {
+                    "total": {
+                        "ms": 0
+                    }
+                }
+            }
+        },
+        "fstype": "local",
+        "name": "LocalDS_0"
     }
 }
+
 ```
 
 **ECS Field Reference**
