@@ -299,79 +299,65 @@ An example event for `datastore` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-29T08:03:30.114Z",
-    "agent": {
-        "ephemeral_id": "8b019ff3-cbda-41fa-b1ff-974d482b9694",
-        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.8.1"
-    },
-    "data_stream": {
-        "dataset": "vsphere.datastore",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
-        "snapshot": false,
-        "version": "8.8.1"
-    },
+    "@timestamp": "2017-10-12T08:05:34.853Z",
     "event": {
-        "agent_id_status": "verified",
         "dataset": "vsphere.datastore",
-        "duration": 23155458,
-        "ingested": "2023-06-29T08:03:31Z",
+        "duration": 115000,
         "module": "vsphere"
-    },
-    "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
-        "ip": [
-            "172.23.0.7"
-        ],
-        "mac": [
-            "02-42-AC-17-00-07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
     },
     "metricset": {
         "name": "datastore",
         "period": 10000
     },
     "service": {
-        "address": "https://elastic-package-service_vsphere-metrics_1:8989/sdk",
+        "address": "127.0.0.1:33365",
         "type": "vsphere"
     },
     "vsphere": {
         "datastore": {
+            "iops": 0,
+            "host": {
+                "count": 1,
+                "names": [
+                    "DC3_H0"
+                ]
+            },
+            "status": "green",
+            "vm": {
+                "count": 6,
+                "names": [
+                    "DC3_H0_VM0"
+                ]
+            },
             "capacity": {
                 "free": {
-                    "bytes": 47869427712
+                    "bytes": 37120094208
                 },
                 "total": {
-                    "bytes": 62725623808
+                    "bytes": 74686664704
                 },
                 "used": {
-                    "bytes": 14856196096,
-                    "pct": 0.237
+                    "bytes": 37566570496,
+                    "pct": 0.502988996026061
+                },
+                "read": {
+                    "bytes": 0,
+                    "latency": {
+                        "total": {
+                            "ms": 0
+                        }
+                    }
+                },
+                "write": {
+                    "bytes": 337000,
+                    "latency": {
+                        "total": {
+                            "ms": 0
+                        }
+                    }
                 }
             },
-            "fstype": "OTHER",
+            "fstype": "local",
             "name": "LocalDS_0"
         }
     }
@@ -404,12 +390,22 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| vsphere.datastore.capacity.free.bytes | Free bytes of the datastore | long | byte | gauge |
-| vsphere.datastore.capacity.total.bytes | Total bytes of the datastore | long | byte | gauge |
-| vsphere.datastore.capacity.used.bytes | Used bytes of the datastore | long | byte | gauge |
-| vsphere.datastore.capacity.used.pct | Used percent of the datastore | scaled_float | percent | gauge |
-| vsphere.datastore.fstype | Filesystem type | keyword |  |  |
-| vsphere.datastore.name | Datastore name | keyword |  |  |
+| vsphere.datastore.capacity.free.bytes | Free bytes of the datastore. | long | byte | gauge |
+| vsphere.datastore.capacity.total.bytes | Total bytes of the datastore. | long | byte | gauge |
+| vsphere.datastore.capacity.used.bytes | Used bytes of the datastore. | long | byte | gauge |
+| vsphere.datastore.capacity.used.pct | Percentage of datastore capacity used. | scaled_float | percent | gauge |
+| vsphere.datastore.fstype | Filesystem type. | keyword |  |  |
+| vsphere.datastore.host.count | Number of hosts. | long |  |  |
+| vsphere.datastore.host.names | List of all the host names. | keyword |  |  |
+| vsphere.datastore.iops | Storage I/O Control aggregated Input/Output Operations Per Second. | long |  |  |
+| vsphere.datastore.name | Datastore name. | keyword |  |  |
+| vsphere.datastore.read.bytes | Rate of reading data from the datastore. | long |  |  |
+| vsphere.datastore.read.latency.total.ms | Average amount of time for a read operation from the datastore in milliseconds. | long |  |  |
+| vsphere.datastore.status | Status of the datastore. | keyword |  |  |
+| vsphere.datastore.vm.count | Number of VMs. | long |  |  |
+| vsphere.datastore.vm.names | List of all the VM names. | keyword |  |  |
+| vsphere.datastore.write.bytes | Rate of writing data to the datastore. | long |  |  |
+| vsphere.datastore.write.latency.total.ms | Average amount of time for a write operation from the datastore in milliseconds. | long |  |  |
 
 
 ## Logs
