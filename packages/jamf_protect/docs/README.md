@@ -352,6 +352,7 @@ An example event for `telemetry` looks as following:
             "192.168.64.1",
             "192.168.11.232"
         ],
+        "name": "MacBookPro",
         "os": {
             "family": "macos",
             "full": "14.5 (Build 23F79)",
