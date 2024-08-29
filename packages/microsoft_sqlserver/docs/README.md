@@ -112,7 +112,7 @@ Read more in [instructions about each performance counter metrics](https://docs.
 
 #### Transaction log metrics
 
-By default, the system-level database `transaction_log` metrics for SQL Server instances are collected. Metrics for user-level databases can be collected either by specifying a list of user databases or, alternatively, by enabling the `Fetch from all databases` toggle to collect metrics from all databases on the server.
+The system-level database `transaction_log` metrics for SQL Server instances are collected by default. Metrics for user-level databases can be collected by specifying a list of user databases or by enabling the `Fetch from all databases` toggle to collect metrics from all databases on the server.
 
 Read more in [instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15).
 
