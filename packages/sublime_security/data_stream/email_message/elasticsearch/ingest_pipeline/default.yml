@@ -30,14 +30,14 @@ processors:
       field: event.kind
       tag: set_event_kind_to_event
       value: event
-  - set:
+  - append:
       field: event.category
-      tag: set_event_category_to_email
-      value: [email]
-  - set:
+      tag: append_email_into_event_category
+      value: email
+  - append:
       field: event.type
-      tag: set_event_type_to_info
-      value: [info]
+      tag: append_info_into_event_type
+      value: info
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -761,8 +761,8 @@ processors:
       target_field: sublime_security.email_message.headers.delivered_to.domain.domain
       ignore_missing: true
   - set:
-      field: source.domain
-      tag: set_source_domain_from_email_message_headers_delivered_to_domain_domain
+      field: destination.domain
+      tag: set_destination_domain_from_headers_delivered_to_domain_domain
       copy_from: sublime_security.email_message.headers.delivered_to.domain.domain
       ignore_empty_value: true
   - rename:
@@ -786,8 +786,8 @@ processors:
       target_field: sublime_security.email_message.headers.delivered_to.domain.subdomain
       ignore_missing: true
   - set:
-      field: source.subdomain
-      tag: set_source_subdomain_from_email_message_headers_delivered_to_domain_subdomain
+      field: destination.subdomain
+      tag: set_destination_subdomain_from_headers_delivered_to_domain_subdomain
       copy_from: sublime_security.email_message.headers.delivered_to.domain.subdomain
       ignore_empty_value: true
   - rename:
@@ -796,8 +796,8 @@ processors:
       target_field: sublime_security.email_message.headers.delivered_to.domain.tld
       ignore_missing: true
   - set:
-      field: source.top_level_domain
-      tag: set_source_top_level_domain_from_email_message_headers_delivered_to_domain_tld
+      field: destination.top_level_domain
+      tag: set_destination_top_level_domain_from_headers_delivered_to_domain_tld
       copy_from: sublime_security.email_message.headers.delivered_to.domain.tld
       ignore_empty_value: true
   - convert:
@@ -825,15 +825,6 @@ processors:
       if: ctx.json?.headers?.domains instanceof List
       processor:
         append:
-          field: destination.domain
-          tag: append_headers_domains_domain_into_destination_domain
-          value: '{{{_ingest._value.domain}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.headers.domains
-      if: ctx.json?.headers?.domains instanceof List
-      processor:
-        append:
           field: related.hosts
           tag: append_headers_domains_domain_into_related_hosts
           value: '{{{_ingest._value.domain}}}'
@@ -846,24 +837,6 @@ processors:
           field: related.hosts
           tag: append_headers_domains_root_domain_into_related_hosts
           value: '{{{_ingest._value.root_domain}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.headers.domains
-      if: ctx.json?.headers?.domains instanceof List
-      processor:
-        append:
-          field: destination.subdomain
-          tag: append_headers_domains_subdomain_into_destination_subdomain
-          value: '{{{_ingest._value.subdomain}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.headers.domains
-      if: ctx.json?.headers?.domains instanceof List
-      processor:
-        append:
-          field: destination.top_level_domain
-          tag: append_headers_domains_tld_into_destination_top_level_domain
-          value: '{{{_ingest._value.tld}}}'
           allow_duplicates: false
   - foreach:
       field: json.headers.domains
@@ -1930,6 +1903,11 @@ processors:
       tag: append_sender_email_domain_domain_into_related_hosts
       value: '{{{sublime_security.email_message.sender.email.domain.domain}}}'
       allow_duplicates: false
+  - set:
+      field: source.domain
+      tag: set_source_domain_from_sender_email_domain_domain
+      copy_from: sublime_security.email_message.sender.email.domain.domain
+      ignore_empty_value: true
   - rename:
       field: json.sender.email.domain.punycode
       tag: rename_sender_email_domain_punycode
@@ -1955,11 +1933,21 @@ processors:
       tag: rename_sender_email_domain_subdomain
       target_field: sublime_security.email_message.sender.email.domain.subdomain
       ignore_missing: true
+  - set:
+      field: source.subdomain
+      tag: set_source_subdomain_from_sender_email_domain_subdomain
+      copy_from: sublime_security.email_message.sender.email.domain.subdomain
+      ignore_empty_value: true
   - rename:
       field: json.sender.email.domain.tld
       tag: rename_sender_email_domain_tld
       target_field: sublime_security.email_message.sender.email.domain.tld
       ignore_missing: true
+  - set:
+      field: source.top_level_domain
+      tag: set_source_top_level_domain_from_sender_email_domain_tld
+      copy_from: sublime_security.email_message.sender.email.domain.tld
+      ignore_empty_value: true
   - convert:
       field: json.sender.email.domain.valid
       tag: convert_sender_email_domain_valid_to_boolean
@@ -2086,18 +2074,6 @@ processors:
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
-      field: sublime_security.email_message.headers.domains
-      if: ctx.sublime_security?.email_message?.headers?.domains instanceof List
-      processor:
-        remove:
-          field:
-            - _ingest._value.domain
-            - _ingest._value.subdomain
-            - _ingest._value.tld
-          tag: remove_custom_duplicate_fields_from_sublime_security_email_message_headers_domains
-          ignore_missing: true
-          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-  - foreach:
       field: sublime_security.email_message.headers.reply_to
       if: ctx.sublime_security?.email_message?.headers?.reply_to instanceof List
       processor:
@@ -2144,6 +2120,9 @@ processors:
         - sublime_security.email_message.headers.x_client_ip.ip
         - sublime_security.email_message.meta.created_at
         - sublime_security.email_message.meta.id
+        - sublime_security.email_message.sender.email.domain.domain
+        - sublime_security.email_message.sender.email.domain.subdomain
+        - sublime_security.email_message.sender.email.domain.tld
         - sublime_security.email_message.sender.email.value
         - sublime_security.email_message.subject.subject
       tag: remove_custom_duplicate_fields

@@ -41,10 +41,11 @@ processors:
       field: event.kind
       tag: set_event_kind_to_event
       value: event
-  - set:
+  - append:
       field: event.type
-      tag: set_event_type_to_info
-      value: [info]
+      tag: append_info_into_event_type
+      value: info
+      allow_duplicates: false
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -316,6 +317,21 @@ processors:
       tag: rename_data_request_query
       target_field: sublime_security.audit.data.request.query
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Painless script to set url_query.
+      tag: painless_set_url_query
+      if: ctx.sublime_security?.audit?.data?.request?.query != null
+      source: |-
+        StringBuilder sb = new StringBuilder();
+        Map attributes = ctx.sublime_security.audit.data.request.query;
+        for (entry in attributes.entrySet()) {
+          sb.append(entry.getKey()).append('=').append(entry.getValue()).append('&');
+        }
+        if(ctx.url == null) {
+            ctx.put("url", new HashMap());
+        }
+        ctx.url.query = sb.length() > 0 ? sb.substring(0, sb.length() - 1) : null;
   - rename:
       field: json.data.request.user_agent
       tag: rename_data_request_user_agent
@@ -338,6 +354,12 @@ processors:
       field: json.type
       tag: rename_type
       target_field: sublime_security.audit.type
+      ignore_missing: true
+  - grok:
+      field: sublime_security.audit.type
+      tag: grok_event_action_from_audit_type
+      patterns:
+        - '.*.%{WORD:event.action}'
       ignore_missing: true
   - remove:
       field:

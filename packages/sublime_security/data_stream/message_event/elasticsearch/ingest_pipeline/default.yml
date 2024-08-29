@@ -34,14 +34,14 @@ processors:
       field: event.kind
       tag: set_event_kind_to_event
       value: event
-  - set:
+  - append:
       field: event.category
-      tag: set_event_category_to_email
-      value: [email]
-  - set:
+      tag: append_email_into_event_category
+      value: email
+  - append:
       field: event.type
-      tag: set_event_type_to_info
-      value: [info]
+      tag: append_info_into_event_type
+      value: info
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -220,6 +220,15 @@ processors:
         append:
           field: email.to.address
           tag: append_recipients_email_into_email_to_address
+          value: '{{{_ingest._value.email}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.recipients
+      if: ctx.json?.recipients instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_recipients_email_into_related.user
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - rename:

@@ -1,6 +1,6 @@
 # Sublime Security
 
-Sublime Security is a programmable, AI-powered, cloud email security platform for Microsoft 365 and Google Workspace environments. It is used to block email attacks such as phishing, BEC, malware, threat hunt and auto-triage user reports.
+Sublime Security is a programmable, AI-powered, cloud email security platform for Microsoft 365 and Google Workspace environments. It is used to block email attacks such as phishing, BEC, malware, threat hunt, and auto-triage user reports.
 
 The Sublime Security integration collects data for Audit, Email Message(MDM Schema) and Message Event logs using REST API and AWS-S3 or AWS-SQS:
 
@@ -51,6 +51,8 @@ There are some minimum requirements for running Elastic Agent and for more infor
 - Retrieve your `API Key`. This key will be used further in the Elastic integration setup to authenticate and access different Sublime Security Logs.
 - `Base URL` of Sublime Security is also required for configuring integration.
 
+**Note**: Users with the `Admin` role are allowed to access `Audit` logs. For more information, refer [here](https://docs.sublime.security/docs/role-based-access-control-rbac).
+
 ### To collect data from AWS S3 Bucket or AWS SQS:
 
 #### For AWS S3 Bucket, follow the below steps:
@@ -99,30 +101,31 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2024-08-12T06:04:03.714Z",
     "agent": {
-        "ephemeral_id": "4f82f5d2-c379-4a47-8d0d-542fed38c4df",
-        "id": "2646eb88-37f1-4ecf-95d5-3cb961eaef50",
+        "ephemeral_id": "390c3f2d-c9eb-4229-9992-0f4fc2436f51",
+        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sublime_security.audit",
-        "namespace": "86536",
+        "namespace": "99243",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2646eb88-37f1-4ecf-95d5-3cb961eaef50",
+        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
+        "action": "search",
         "agent_id_status": "verified",
         "dataset": "sublime_security.audit",
         "id": "bd49af79-0cfb-4184-bd18-b0401d69ac61",
-        "ingested": "2024-08-16T07:24:48Z",
+        "ingested": "2024-08-28T10:35:52Z",
         "kind": "event",
         "original": "{\"created_at\":\"2024-08-12T06:04:03.714126Z\",\"created_by\":{\"active\":true,\"created_at\":\"2024-07-12T05:13:47.879426Z\",\"email_address\":\"demo@example.com\",\"first_name\":\"Demo\",\"google_oauth_user_id\":\"d83rb8et4-refe-fe7t4f8efe\",\"id\":\"6e6eca05-4fea-406b-86d4-b40177e25474\",\"is_enrolled\":true,\"last_name\":\"User\",\"microsoft_oauth_user_id\":\"fhe7t4bgf8-freu-ebfur94ref\",\"phone_number\":null,\"role\":\"admin\",\"updated_at\":\"2024-07-12T05:13:47.879426Z\"},\"data\":{\"request\":{\"api_key_name\":\"demo mode local\",\"authentication_method\":\"api_key\",\"body\":\"\",\"id\":\"6ad202de-0def-423d-a0f2-549402e1a9c9\",\"ip\":\"1.128.0.0\",\"method\":\"GET\",\"path\":\"/v0/message-groups\",\"user_agent\":\"Go-http-client/1.1\"}},\"id\":\"bd49af79-0cfb-4184-bd18-b0401d69ac61\",\"type\":\"message_group.search\"}",
         "type": [
@@ -271,8 +274,8 @@ An example event for `email_message` looks as following:
 {
     "@timestamp": "2024-08-02T07:40:25.135Z",
     "agent": {
-        "ephemeral_id": "8cdb8991-fc10-4bae-99cc-d22b69b7ab94",
-        "id": "7ab6d7d7-7383-479b-b13e-80e237006a07",
+        "ephemeral_id": "832ebf28-565e-4f38-a67e-ee5ea9f51e89",
+        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -280,8 +283,8 @@ An example event for `email_message` looks as following:
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-sublime-security-bucket-31832",
-                "name": "elastic-package-sublime-security-bucket-31832"
+                "arn": "arn:aws:s3:::elastic-package-sublime-security-bucket-33881",
+                "name": "elastic-package-sublime-security-bucket-33881"
             },
             "object": {
                 "key": "email-message.log"
@@ -293,27 +296,19 @@ An example event for `email_message` looks as following:
     },
     "data_stream": {
         "dataset": "sublime_security.email_message",
-        "namespace": "31879",
+        "namespace": "57022",
         "type": "logs"
     },
     "destination": {
-        "domain": [
-            "test.com",
-            "example.com"
-        ],
-        "subdomain": [
-            "test",
-            "example"
-        ],
-        "top_level_domain": [
-            "com"
-        ]
+        "domain": "example.com",
+        "subdomain": "example",
+        "top_level_domain": "com"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7ab6d7d7-7383-479b-b13e-80e237006a07",
+        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -397,7 +392,7 @@ An example event for `email_message` looks as following:
         ],
         "dataset": "sublime_security.email_message",
         "id": "01911208-633c-7f03-b303-e594d92cf818",
-        "ingested": "2024-08-16T08:52:58Z",
+        "ingested": "2024-08-28T10:59:37Z",
         "kind": "event",
         "original": "{\"body\":{\"plain\":{\"raw\":\"Sublime Security test message.\\n\",\"charset\":\"utf-8\",\"content_transfer_encoding\":\"base64\"},\"current_thread\":{\"text\":\"Sublime Security test message.\"},\"html\":{\"charset\":\"utf-8\",\"content_transfer_encoding\":\"base64\",\"display_text\":\"Sublime Security test message.\",\"raw\":\"<p>Sublime Security test message.</p>\",\"inner_text\":\"<p>Sublime Security test message.</p>\"},\"ips\":[{\"ip\":\"1.128.0.0\"}],\"links\":[{\"display_text\":\"Click here!\",\"mismatched\":true,\"display_url\":{\"fragment\":\"search\",\"password\":\"pass123\",\"path\":\"/test\",\"port\":80,\"query_params\":\"q=elasticsearch\",\"rewrite\":{\"encoders\":[\"base64\"],\"original\":\"demo\"},\"scheme\":\"https\",\"url\":\"https://example.com/test?q=elasticsearch#search\",\"username\":\"test\",\"domain\":{\"domain\":\"example.com\",\"punycode\":\"demo\",\"root_domain\":\"example.com\",\"subdomain\":\"example\",\"tld\":\"com\",\"valid\":true,\"sld\":\"example\"}}},{\"href_url\":{\"fragment\":\"search\",\"password\":\"pass123\",\"path\":\"/test\",\"port\":80,\"query_params\":\"q=elasticsearch\",\"rewrite\":{\"encoders\":[\"base64\"],\"original\":\"demo\"},\"scheme\":\"https\",\"url\":\"https://example.com/test?q=elasticsearch#search\",\"username\":\"test\",\"domain\":{\"domain\":\"example.com\",\"punycode\":\"demo\",\"root_domain\":\"example.com\",\"subdomain\":\"example\",\"tld\":\"com\",\"valid\":true,\"sld\":\"example\"}}}]},\"external\":{\"created_at\":\"2024-08-02T07:40:25.135939305Z\",\"message_id\":\"2fe271830bbad5fe3a70abbe7a8c0bfe7refe3ffe\",\"route_type\":\"sent\",\"spam\":false,\"spam_folder\":true,\"thread_id\":\"sample_data\"},\"attachments\":[{\"content_id\":\"abc123\",\"content_transfer_encoding\":\"base64\",\"content_type\":\"application/pdf\",\"file_extension\":\".pdf\",\"file_name\":\"sample_document.pdf\",\"file_type\":\"document\",\"md5\":\"1a2b3c\",\"raw\":\"JVBERi0xLjMKJcfs4AAQSkZjRgABAQE\",\"sha1\":\"4d5e6f\",\"sha256\":\"7g8h9i\",\"size\":102400},{\"content_id\":\"xyz456\",\"content_transfer_encoding\":\"7bit\",\"content_type\":\"image/jpeg\",\"file_extension\":\".jpg\",\"file_name\":\"image_photo.jpg\",\"file_type\":\"image\",\"md5\":\"7h8i9j\",\"raw\":\"/9j/4AAQSkZJRgABAQEJVBERi0xLjMKJd\",\"sha1\":\"1k2l3m\",\"sha256\":\"4n5o6p\",\"size\":204800},{\"content_id\":\"efg789\",\"content_transfer_encoding\":\"quoted-printable\",\"content_type\":\"text/plain\",\"file_extension\":\".txt\",\"file_name\":\"notes.txt\",\"file_type\":\"text\",\"md5\":\"1x2y3z\",\"raw\":\"SGVsbG8gdVsbG8gd29yb29ybGQhVsbG8gd29yb\",\"sha1\":\"4a5b6c\",\"sha256\":\"7d8e9f\",\"size\":5120}],\"headers\":{\"x_authenticated_domain\":{\"domain\":\"example.com\",\"punycode\":\"xn--example-d4a.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"sub\",\"tld\":\"com\",\"valid\":true},\"x_authenticated_sender\":{\"domain\":{\"domain\":\"example.com\",\"punycode\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"sub\",\"tld\":\"com\",\"valid\":true},\"email\":\"user@example.com\",\"local_part\":\"user\"},\"x_client_ip\":{\"ip\":\"1.128.0.0\"},\"x_originating_ip\":{\"ip\":\"1.128.0.0\"},\"x_secure_server_account\":\"account_value\",\"x_sender\":{\"domain\":{\"domain\":\"example.com\",\"punycode\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"sub\",\"tld\":\"com\",\"valid\":true},\"email\":\"user@example.com\",\"local_part\":\"user\"},\"return_path\":{\"domain\":{\"domain\":\"example.com\",\"punycode\":\"xn--example-d4a.com\",\"root_domain\":\"example\",\"sld\":\"example\",\"subdomain\":\"sub\",\"tld\":\"com\",\"valid\":true},\"email\":\"user@example.com\",\"local_part\":\"user\"},\"references\":[\"test1\",\"test2\"],\"auth_summary\":{\"dmarc\":{\"details\":{\"action\":\"quarantine\",\"disposition\":\"quarantine\",\"from\":{\"domain\":\"example.com\",\"punycode\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"example\",\"tld\":\"com\",\"valid\":true},\"policy\":\"reject\",\"sub_policy\":\"none\",\"verdict\":\"pass\",\"version\":\"1.0\"},\"pass\":true,\"received_hop\":1},\"spf\":{\"details\":{\"client_ip\":{\"ip\":\"1.128.0.0\"},\"description\":\"SPF record found\",\"designator\":\"pass\",\"helo\":{\"domain\":\"example.com\",\"punycode\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"example\",\"tld\":\"com\",\"valid\":true},\"server\":{\"domain\":\"mail.example.com\",\"punycode\":\"mail.example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"mail\",\"tld\":\"com\",\"valid\":true},\"verdict\":\"pass\"},\"error\":\"true\",\"pass\":true,\"received_hop\":2}},\"date\":\"2019-10-21T18:23:24Z\",\"date_original_offset\":\"-4\",\"hops\":[{\"index\":0,\"fields\":[{\"name\":\"To\",\"value\":\"user@example.com\",\"position\":0},{\"name\":\"Subject\",\"value\":\"Sublime-Security-Standard-Test-String\",\"position\":1},{\"name\":\"Date\",\"value\":\"Mon, 21 Oct 2019 14:23:24 -0400\",\"position\":2},{\"name\":\"From\",\"value\":\"Sublime Security Test <testing@example.com>\",\"position\":3}],\"authentication_results\":{\"compauth\":{\"verdict\":\"pass\",\"reason\":\"reason_value\"},\"dkim\":\"pass\",\"dkim_details\":{\"algorithm\":\"rsa-sha256\",\"body_hash\":\"abcdefg\",\"domain\":\"example.com\",\"headers\":\"from, to, subject\",\"instance\":\"example.com\",\"selector\":\"abcdefg\",\"signature\":\"abcdefg\",\"type\":\"dkim\",\"version\":\"1.0\"},\"dmarc\":\"pass\",\"dmarc_details\":{\"action\":\"quarantine\",\"disposition\":\"quarantine\",\"from\":{\"domain\":\"example.com\",\"punycode\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"example\",\"tld\":\"com\",\"valid\":true},\"policy\":\"reject\",\"sub_policy\":\"none\",\"verdict\":\"pass\",\"version\":\"1.0\"},\"instance\":\"example.com\",\"server\":{\"domain\":\"mail.example.com\",\"punycode\":\"mail.example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"mail\",\"tld\":\"com\",\"valid\":true},\"spf\":\"pass\",\"spf_details\":{\"client_ip\":{\"ip\":\"1.128.0.0\"},\"description\":\"SPF record found\",\"designator\":\"pass\",\"helo\":{\"domain\":\"example.com\",\"punycode\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"example\",\"tld\":\"com\",\"valid\":true},\"server\":{\"domain\":\"mail.example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"mail\",\"tld\":\"com\",\"valid\":true},\"verdict\":\"pass\"},\"type\":\"spf\"},\"received\":{\"additional\":{\"raw\":\"Authentication successful\"},\"id\":{\"raw\":\"msg-12345\"},\"link\":{\"raw\":\"https://mail.example.com/message/12345\"},\"mailbox\":{\"raw\":\"user@example.com\"},\"protocol\":{\"raw\":\"IMAP\"},\"server\":{\"raw\":\"imap.example.com\"},\"source\":{\"raw\":\"81.2.69.144\"},\"time\":\"2019-10-21T18:23:24Z\",\"zone_offset\":\"+00:00\"},\"received_spf\":{\"client_ip\":{\"ip\":\"1.128.0.0\"},\"description\":\"SPF record found\",\"designator\":\"pass\",\"helo\":{\"domain\":\"example.com\",\"punycode\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"example\",\"tld\":\"com\",\"valid\":true},\"server\":{\"domain\":\"mail.example.com\",\"punycode\":\"mail.example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"subdomain\":\"mail\",\"tld\":\"com\",\"valid\":true},\"verdict\":\"pass\"},\"signature\":{\"algorithm\":\"rsa-sha256\",\"body_hash\":\"b9c4a3f9d93d9a38bdf8c47a8f2d2c79ec1d8b1f\",\"domain\":\"example.com\",\"headers\":\"from:to:subject:date\",\"instance\":\"123456\",\"selector\":\"default\",\"signature\":\"d2abf9d6c8f4b8d68d8f3f7b6f9d3b8e6a8c2b3a9f4b8d7b9d3b6a8f9c3b4e5f\",\"type\":\"spf\",\"version\":\"1\"}}],\"in_reply_to\":\"in_reply_to_value\",\"delivered_to\":{\"domain\":{\"domain\":\"example.com\",\"subdomain\":\"example\",\"tld\":\"com\",\"email\":\"testing@sublimesecurity.com\",\"punycode\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"valid\":true},\"email\":\"testing@sublimesecurity.com\",\"local_part\":\"testing\"},\"ips\":[{\"ip\":\"1.128.0.0\"}],\"mailer\":\"MyCustomMailer\",\"message_id\":\"2fe271830bbad5fe3a70abbe7a8c0bfe7refe3ffe\",\"domains\":[{\"domain\":\"test.com\",\"subdomain\":\"test\",\"tld\":\"com\",\"punycode\":\"test.com\",\"root_domain\":\"test.com\",\"sld\":\"test\",\"valid\":true},{\"domain\":\"example.com\",\"subdomain\":\"example\",\"tld\":\"com\",\"punycode\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"valid\":true}],\"reply_to\":[{\"email\":{\"email\":\"user@example.com\",\"local_part\":\"user\",\"domain\":{\"domain\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"tld\":\"com\",\"valid\":true}}},{\"display_name\":\"Example Display Name\",\"email\":{\"domain\":{\"punycode\":\"example.com\",\"subdomain\":\"sub.example\"}}},{\"display_name\":\"Another Display Name\",\"email\":{\"domain\":{\"punycode\":\"anotherexample.com\",\"subdomain\":\"sub.anotherexample\"}}}]},\"type\":{\"outbound\":true},\"mailbox\":{\"email\":{\"email\":\"user@example.com\",\"local_part\":\"user\",\"domain\":{\"domain\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"tld\":\"com\",\"valid\":true,\"punycode\":\"xn--example-d4a.com\",\"subdomain\":\"sub\"}}},\"recipients\":{\"to\":[{\"display_name\":\"Alice Johnson\",\"email\":{\"email\":\"user@example.com\",\"local_part\":\"user\",\"domain\":{\"domain\":\"example.com\",\"root_domain\":\"example.com\",\"sld\":\"example\",\"tld\":\"com\",\"valid\":true,\"punycode\":\"xn--example-d4a.net\",\"subdomain\":\"sub\"}}}],\"bcc\":[{\"display_name\":\"John Doe\",\"email\":{\"domain\":{\"domain\":\"example.com\",\"punycode\":\"xn--example-d4a.com\",\"root_domain\":\"example\",\"sld\":\"example\",\"subdomain\":\"sub\",\"tld\":\"com\",\"valid\":true},\"email\":\"john.doe@example.com\",\"local_part\":\"john.doe\"}}],\"cc\":[{\"display_name\":\"Jane Smith\",\"email\":{\"domain\":{\"domain\":\"example.org\",\"punycode\":\"xn--example-d4a.org\",\"root_domain\":\"example\",\"sld\":\"example\",\"subdomain\":\"sub\",\"tld\":\"org\",\"valid\":true},\"email\":\"jane.smith@example.org\",\"local_part\":\"jane.smith\"}}]},\"sender\":{\"display_name\":\"Sublime Security Test\",\"email\":{\"email\":\"testing@sublimesecurity.com\",\"local_part\":\"testing\",\"domain\":{\"domain\":\"sublimesecurity.com\",\"root_domain\":\"sublimesecurity.com\",\"sld\":\"sublimesecurity\",\"tld\":\"com\",\"valid\":true,\"punycode\":\"xn--example-d4a.com\",\"subdomain\":\"sub\"}}},\"subject\":{\"subject\":\"Sublime-Security-Standard-Test-String\"},\"_meta\":{\"id\":\"01911208-633c-7f03-b303-e594d92cf818\",\"canonical_id\":\"2fe271830bbad5fe3a70abbe7a8c0bfe79eb208a76cde267930d19f0e8cea81c\",\"created_at\":\"2024-08-02T07:40:25.135939305Z\",\"effective_at\":\"2024-08-02T07:40:25.135939305Z\"},\"_errors\":[{\"field\":\"Mime-Version\",\"message\":\"No Mime-Version defined in headers\",\"type\":\"missing_header_field\"}]}",
         "type": [
@@ -409,7 +404,7 @@ An example event for `email_message` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-sublime-security-bucket-31832.s3.us-east-1.amazonaws.com/email-message.log"
+            "path": "https://elastic-package-sublime-security-bucket-33881.s3.us-east-1.amazonaws.com/email-message.log"
         },
         "offset": 0
     },
@@ -450,9 +445,9 @@ An example event for `email_message` looks as following:
         ]
     },
     "source": {
-        "domain": "example.com",
+        "domain": "sublimesecurity.com",
         "ip": "1.128.0.0",
-        "subdomain": "example",
+        "subdomain": "sub",
         "top_level_domain": "com"
     },
     "sublime_security": {
@@ -641,15 +636,21 @@ An example event for `email_message` looks as following:
                 },
                 "domains": [
                     {
+                        "domain": "test.com",
                         "punycode": "test.com",
                         "root_domain": "test.com",
                         "sld": "test",
+                        "subdomain": "test",
+                        "tld": "com",
                         "valid": true
                     },
                     {
+                        "domain": "example.com",
                         "punycode": "example.com",
                         "root_domain": "example.com",
                         "sld": "example",
+                        "subdomain": "example",
+                        "tld": "com",
                         "valid": true
                     }
                 ],
@@ -990,12 +991,9 @@ An example event for `email_message` looks as following:
                 "display_name": "Sublime Security Test",
                 "email": {
                     "domain": {
-                        "domain": "sublimesecurity.com",
                         "punycode": "xn--example-d4a.com",
                         "root_domain": "sublimesecurity.com",
                         "sld": "sublimesecurity",
-                        "subdomain": "sub",
-                        "tld": "com",
                         "valid": true
                     },
                     "local_part": "testing"
@@ -1386,22 +1384,22 @@ An example event for `message_event` looks as following:
 {
     "@timestamp": "2024-07-12T05:15:08.221Z",
     "agent": {
-        "ephemeral_id": "576d3516-85fd-4f4f-aed6-28f3d74bc78c",
-        "id": "2646eb88-37f1-4ecf-95d5-3cb961eaef50",
+        "ephemeral_id": "384edc61-b94b-40cf-9cc6-86d5418d35e5",
+        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sublime_security.message_event",
-        "namespace": "38052",
+        "namespace": "17638",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2646eb88-37f1-4ecf-95d5-3cb961eaef50",
+        "id": "5f3fcbb9-1a97-4ff3-857f-167af6664464",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1428,7 +1426,7 @@ An example event for `message_event` looks as following:
         ],
         "dataset": "sublime_security.message_event",
         "id": "9c426680-5cdf-4283-adbd-d79ba0e52434",
-        "ingested": "2024-08-16T07:28:33Z",
+        "ingested": "2024-08-28T10:36:57Z",
         "kind": "event",
         "original": "{\"canonical_id\":\"dd97dc82731ff7e82edfccaef59826cccd271bd4423e09d1e150ade83037cb37\",\"created_at\":\"2024-07-12T05:15:08.221838Z\",\"external_id\":\"7a2dfbeb-1310-48fc-9ed9-f480608a0306\",\"forward_recipients\":[],\"forwarded_at\":null,\"id\":\"9c426680-5cdf-4283-adbd-d79ba0e52434\",\"landed_in_spam\":false,\"mailbox\":{\"email\":\"demo@example.com\",\"external_id\":null,\"id\":\"433fe142-e2e5-4372-84ea-480279543a9b\"},\"message_source_id\":\"257982a1-f106-4c68-bc64-ff032914ed5f\",\"read_at\":null,\"recipients\":[{\"email\":\"xyz@example.com\"},{\"email\":\"user12@example.com\"},{\"email\":\"user@example.com\"},{\"email\":\"leon12@example.com\"}],\"replied_at\":null,\"sender\":{\"display_name\":\"Bob Doe\",\"email\":\"bob.demo@gmail.com\"},\"subject\":\"Urgent: Wire transfer\"}",
         "type": [
@@ -1444,6 +1442,10 @@ An example event for `message_event` looks as following:
     },
     "related": {
         "user": [
+            "xyz@example.com",
+            "user12@example.com",
+            "user@example.com",
+            "leon12@example.com",
             "Bob Doe",
             "bob.demo@gmail.com"
         ]

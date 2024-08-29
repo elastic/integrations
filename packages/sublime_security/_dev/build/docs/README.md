@@ -1,6 +1,6 @@
 # Sublime Security
 
-Sublime Security is a programmable, AI-powered, cloud email security platform for Microsoft 365 and Google Workspace environments. It is used to block email attacks such as phishing, BEC, malware, threat hunt and auto-triage user reports.
+Sublime Security is a programmable, AI-powered, cloud email security platform for Microsoft 365 and Google Workspace environments. It is used to block email attacks such as phishing, BEC, malware, threat hunt, and auto-triage user reports.
 
 The Sublime Security integration collects data for Audit, Email Message(MDM Schema) and Message Event logs using REST API and AWS-S3 or AWS-SQS:
 
@@ -50,6 +50,8 @@ There are some minimum requirements for running Elastic Agent and for more infor
 #### Step 2: Generating the API Key
 - Retrieve your `API Key`. This key will be used further in the Elastic integration setup to authenticate and access different Sublime Security Logs.
 - `Base URL` of Sublime Security is also required for configuring integration.
+
+**Note**: Users with the `Admin` role are allowed to access `Audit` logs. For more information, refer [here](https://docs.sublime.security/docs/role-based-access-control-rbac).
 
 ### To collect data from AWS S3 Bucket or AWS SQS:
 
