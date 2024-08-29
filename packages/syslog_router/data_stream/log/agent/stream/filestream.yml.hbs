@@ -1,0 +1,43 @@
+paths:
+{{#each paths as |path|}}
+  - {{path}}
+{{/each}}
+prospector.scanner.exclude_files: ['\.gz$']
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_locale: ~
+{{#if patterns}}
+{{patterns}}
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}
+- if:
+    equals:
+      "_conf.use_syslog": true
+  then:
+    - drop_fields:
+        fields: ["_conf.use_syslog"]
+    - syslog:
+        field: message
+        format: auto
+- if:
+    equals:
+      "_conf.use_decode_cef": true
+  then:
+    - drop_fields:
+        fields: ["_conf.use_decode_cef"]
+    - decode_cef:
+        field: message
+{{#if filestream_options}}
+{{filestream_options}}
+{{/if}}
