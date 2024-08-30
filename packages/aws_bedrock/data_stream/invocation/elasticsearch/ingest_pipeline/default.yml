@@ -476,24 +476,20 @@ processors:
               def block = ctx.aws_bedrock.invocation.output.output_body_json;
               if (block instanceof Map) {
                 Map blockMap = (Map) block;
-            
                 if (blockMap.containsKey('output') && blockMap.output instanceof Map) {
-                    Map outputMap = (Map) blockMap.output;
-            
-                    if (outputMap.containsKey('message') && outputMap.message instanceof Map) {
-                        Map messageMap = (Map) outputMap.message;
-            
-                        if (messageMap.containsKey('content') && messageMap.content instanceof List) {
-                            List contentList = (List) messageMap.content;
-                            
-                            //StringBuilder completionText = new StringBuilder();
-                            for (def cont : contentList) {
-                                if (cont.containsKey('text')) {
-                                  completionText.append(cont.text);
-                                }
-                            }
+                  Map outputMap = (Map) blockMap.output;
+                  if (outputMap.containsKey('message') && outputMap.message instanceof Map) {
+                    Map messageMap = (Map) outputMap.message;
+                    if (messageMap.containsKey('content') && messageMap.content instanceof List) {
+                      List contentList = (List) messageMap.content;
+                        //StringBuilder completionText = new StringBuilder();
+                      for (def cont : contentList) {
+                        if (cont.containsKey('text')) {
+                          completionText.append(cont.text);
                         }
+                      }
                     }
+                  }
                 }
               }
             }else if (ctx.aws_bedrock.invocation.output.output_body_json instanceof String){
