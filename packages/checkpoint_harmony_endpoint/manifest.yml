@@ -19,7 +19,7 @@ screenshots:
     size: 600x600
     type: image/png
 icons:
-  - src: /img/sample-logo.svg
+  - src: /img/checkpoint-logo.svg
     title: Sample logo
     size: 32x32
     type: image/svg+xml
@@ -32,14 +32,15 @@ policy_templates:
 #        title: Collect sample logs from instances
 #        description: Collecting sample logs
       - type: cel
-        title: Collect CheckPoint harmony Endpoint logs via API
-        description: Collecting CheckPoint harmony Endpoint logs via API.
+        title: Collect CheckPoint Harmony Endpoint logs via API
+        description: Collecting CheckPoint Harmony Endpoint logs via API.
         vars:
           - name: base_url
             type: text
             title: Server URL
             description: Base URL of the CheckPoint harmony Endpoint API. Defaults to https://cloudinfra-gw.portal.checkpoint.com
             default: https://cloudinfra-gw.portal.checkpoint.com
+            multi: false
             required: true
             show_user: true
           - name: client_id
@@ -62,29 +63,33 @@ policy_templates:
           - name: initial_interval
             type: text
             title: Initial Interval
-            description: Initial interval at which the logs will be pulled. Defaults to 30 days (720 hours). Max is 12960 hours (18 months). Supported units for this parameter are h/m/s.
+            description: Initial interval at which the logs will be pulled. Supported units for this parameter are h/m/s.
             default: 720h
+            multi: false
             required: true
             show_user: true
           - name: interval
             type: text
             title: Interval
-            description: Interval at which the logs will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
-            default: 5m
+            description: Interval at which the logs will be pulled. Recommended value between 10sec to 1 min. Supported units for this parameter are h/m/s.
+            default: 20s
+            multi: false
             required: true
             show_user: true
           - name: limit
             type: integer
             title: Number of results per search
-            description: Sets the number of results to return per search. Limit should not be greated than 'Page Limit'.
-            default: 100
+            description: Sets the number of results to return per search. Limit should not be greated than 'Page Limit'. Maximum allowed value 10000.
+            default: 10000
+            multi: false
             required: true
             show_user: true
           - name: page_limit
             type: integer
             title: Number of results per page
-            description: Sets the number of results to return per page.
-            default: 100
+            description: Sets the number of results to return per page. Maximum allowed value 1000.
+            default: 1000
+            multi: false
             required: true
             show_user: true
 owner:
