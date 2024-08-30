@@ -39,7 +39,10 @@ program: |
   }).do_request().as(resp,
     resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, {
-        "events": has(body.?data.plugin_details) ? body.data.plugin_details.map(e, { "message": e.encode_json() }) : [{}],
+        "events": has(body.?data.plugin_details) ?
+          body.data.plugin_details.map(e, { "message": e.encode_json() })
+        :
+          [],
         "cursor": {
           "last_update_time": (
             has(body.?data.plugin_details) && body.data.plugin_details.size() > 0 ?
