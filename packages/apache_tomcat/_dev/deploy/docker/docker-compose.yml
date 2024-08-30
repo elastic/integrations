@@ -1,7 +1,10 @@
 version: '2.3'
 services:
   apache_tomcat:
-    image: tomcat:${TOMCAT_VERSION:-10.1.5}-jre17
+    build:
+      context: .
+      args:
+        IMAGE: tomcat:${TOMCAT_VERSION:-10.1.5}-jre17
     environment:
       - JAVA_OPTS=-javaagent:/usr/local/tomcat/webapps/jmx_prometheus_javaagent-0.17.2.jar=9090:/usr/local/tomcat/webapps/config.yaml
     volumes:
