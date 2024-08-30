@@ -412,6 +412,46 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.name | Datastore name | keyword |  |  |
 
 
+### Cluster Metrics
+Clusters in vSphere represent a group of ESXi hosts working together to optimize resource allocation, ensure high availability, and manage workloads efficiently.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| agent.id |  | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| vsphere.cluster.das_config.admission.control.enabled | Indicates whether strict admission control is enabled. | boolean |
+| vsphere.cluster.das_config.enabled | Indicates whether vSphere HA feature is enabled. | boolean |
+| vsphere.cluster.datastore.count | Number of Datastores associated with the cluster. | long |
+| vsphere.cluster.datastore.names | List of all the Datastore names associated with the cluster. | keyword |
+| vsphere.cluster.host.count | Number of Hosts associated with the cluster. | long |
+| vsphere.cluster.host.names | List of all the Host names associated with the cluster. | keyword |
+| vsphere.cluster.name | Cluster name. | keyword |
+| vsphere.cluster.network.count | Number of Networks associated with the cluster. | long |
+| vsphere.cluster.network.names | List of all the Network names associated with the cluster. | keyword |
+
+
 ## Logs
 
 To collect logs, a syslog daemon is used. First, you must configure the listening host/IP address (default: localhost) and host port (default: 9525) in the integration. Then, configure vSphere to send logs to a remote syslog host and provide the configured hostname/IP and port of the Elastic Agent host.
