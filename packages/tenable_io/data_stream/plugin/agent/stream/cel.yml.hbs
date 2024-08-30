@@ -48,12 +48,11 @@ program: |
             "cursor": {
               "last_update_time": (
                 has(body.?data.plugin_details) && body.data.plugin_details.size() > 0 ?
-                  (
-                    has(state.?cursor.last_update_time) && body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max() < state.cursor.last_update_time ?
-                      state.cursor.last_update_time
-                    :
-                      body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max()
-                  )
+                  ([?state.?cursor.last_update_time] + body.data.plugin_details.map(e,
+                    e.attributes.plugin_modification_date
+                  )).map(t,
+                    timestamp(t)
+                  ).max()
                 :
                   state.?cursor.last_update_time.orValue(string(timestamp(0)))
               ),
