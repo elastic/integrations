@@ -38,42 +38,46 @@ program: |
     },
   }).do_request().as(resp,
     resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(body, {
-        "events": has(body.?data.plugin_details) ?
-          body.data.plugin_details.map(e, { "message": e.encode_json() })
-        :
-          [],
-        "cursor": {
-          "last_update_time": (
-            has(body.?data.plugin_details) && body.data.plugin_details.size() > 0 ?
-              (
-                has(state.?cursor.last_update_time) && body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max() < state.cursor.last_update_time ?
-                  state.cursor.last_update_time
-                :
-                  body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max()
-              )
+      bytes(resp.Body).decode_json().as(body,
+        (int(state.?count.orValue(0))+int(body.size)).as(count,
+          (count < int(body.total_count)).as(want_more, {
+            "events": has(body.?data.plugin_details) ?
+              body.data.plugin_details.map(e, { "message": e.encode_json() })
             :
-              state.?cursor.last_update_time.orValue(string(timestamp(0)))
-          ),
-          "first_update_time": (
-            has(state.?cursor.first_update_time) && has(body.data.plugin_details) ?
-              (
-                int(state.?count.orValue(0))+int(body.size) < int(body.total_count) ?
-                  state.cursor.first_update_time
+              [],
+            "cursor": {
+              "last_update_time": (
+                has(body.?data.plugin_details) && body.data.plugin_details.size() > 0 ?
+                  (
+                    has(state.?cursor.last_update_time) && body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max() < state.cursor.last_update_time ?
+                      state.cursor.last_update_time
+                    :
+                      body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max()
+                  )
                 :
-                  state.cursor.last_update_time
-              )
-            :
-              string(timestamp(0))
-          ),
-        },
-        "next_page": int(state.?count.orValue(0))+int(body.size) < int(body.total_count) ? int(state.next_page)+1 : 1,
-        "want_more": int(state.?count.orValue(0))+int(body.size) < int(body.total_count),
-        "count": int(state.?count.orValue(0))+int(body.size),
-        "access_key": state.access_key,
-        "secret_key": state.secret_key,
-        "batch_size": state.batch_size,
-      })
+                  state.?cursor.last_update_time.orValue(string(timestamp(0)))
+              ),
+              "first_update_time": (
+                has(state.?cursor.first_update_time) && has(body.data.plugin_details) ?
+                  (
+                    want_more ?
+                      state.cursor.first_update_time
+                    :
+                      state.cursor.last_update_time
+                  )
+                :
+                  string(timestamp(0))
+              ),
+            },
+            "next_page": want_more ? int(state.next_page)+1 : 1,
+            "want_more": want_more,
+            "count": count,
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "batch_size": state.batch_size,
+          })
+        )
+      )
     :
       {
         "events": {
