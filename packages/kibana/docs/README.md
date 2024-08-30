@@ -794,7 +794,7 @@ This status endpoint is available in 6.0 by default and can be enabled in Kibana
 | kibana.status.status.overall.state | Kibana overall state. | keyword |
 | kibana.status.status.overall.level | Kibana overall level (v8 format). | keyword |
 | kibana.status.status.overall.summary | Kibana overall state in a human-readable format. | text |
-| kibana.status.status.core.elasticsearch.level | Kibana overall state. | keyword |
+| kibana.status.status.core.elasticsearch.level | Kibana Elasticsearch client's status. | keyword |
 | kibana.status.status.core.elasticsearch.summary | Kibana Elasticsearch client's status in a human-readable format. | text |
 | kibana.status.status.core.savedObjects.level | Kibana Saved Objects client's status. | keyword |
 | kibana.status.status.core.savedObjects.summary | Kibana Saved Objects client's status in a human-readable format. | text |
@@ -870,7 +870,20 @@ An example event for `status` looks as following:
             },
             "name": "kibana",
             "status": {
-                "overall": {}
+                "overall": {
+                    "level": "available",
+                    "summary": "All services and plugins are available"
+                },
+                "core": {
+                    "elasticsearch": {
+                        "level": "available",
+                        "summary": "Elasticsearch is available"
+                    },
+                    "savedObjects": {
+                        "level": "available",
+                        "summary": "SavedObjects service has completed migrations and is available"
+                    }
+                }
             }
         }
     },
