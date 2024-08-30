@@ -496,6 +496,11 @@ processors:
               completionText.append(ctx.aws_bedrock.invocation.output.output_body_json)
             }
           }
+
+          // Ensure ctx.aws_bedrock.invocation.output is initialized
+          if (ctx.aws_bedrock?.invocation?.output == null) {
+              ctx.aws_bedrock.invocation.output = new HashMap();
+          }
           // Trim completionText if it exceeds 32766 characters
           if (completionText.length() > 32766) {
             completionText.setLength(32766);
@@ -503,6 +508,9 @@ processors:
           ctx.aws_bedrock.invocation.output.completion_text = completionText.toString();
         }
         catch (Exception e) {
+          if (ctx.aws_bedrock?.invocation?.output == null) {
+              ctx.aws_bedrock.invocation.output = new HashMap();
+          }
           ctx.aws_bedrock.invocation.output.completion_text =  '';
           ctx.error.message = e.getMessage()
         }
