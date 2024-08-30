@@ -793,7 +793,7 @@ This status endpoint is available in 6.0 by default and can be enabled in Kibana
 | kibana.status.name | Kibana instance name. | keyword |
 | kibana.status.status.overall.state | Kibana overall state. | keyword |
 | kibana.status.status.overall.level | Kibana overall level (v8 format). | keyword |
-| kibana.status.status.overall.summary | Kibana overall state in a human-readable format. | keyword |
+| kibana.status.status.overall.summary | Kibana overall state in a human-readable format. | text |
 | kibana.status.status.core.elasticsearch.level | Kibana overall state. | keyword |
 | kibana.status.status.core.elasticsearch.summary | Kibana Elasticsearch client's status in a human-readable format. | text |
 | kibana.status.status.core.savedObjects.level | Kibana Saved Objects client's status. | keyword |
