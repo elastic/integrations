@@ -185,7 +185,8 @@ An example event for `threat_intelligence` looks as following:
 | mandiant.threat_intelligence.ioc.last_seen | IOC last seen date. | date |
 | mandiant.threat_intelligence.ioc.last_update_date | IOC last update date. | date |
 | mandiant.threat_intelligence.ioc.mscore | M-Score (IC-Score) between 0 - 100. | integer |
-| mandiant.threat_intelligence.ioc.sources | List of the indicator sources. | object |
+| mandiant.threat_intelligence.ioc.sources.\* |  | keyword |
+| mandiant.threat_intelligence.ioc.sources.osint |  | boolean |
 | mandiant.threat_intelligence.ioc.type | IOC type. | keyword |
 | mandiant.threat_intelligence.ioc.value | IOC value. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
