@@ -47,16 +47,28 @@ processors:
         field: event.category
         value: file
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPDownloadEvent'
-    - rename:
-        field: ctx.jamf_protect.alerts.input.match.facts[0].name
-        target_field: rule.name
-        if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].name != null
-        ignore_missing: true
-    - rename:
-        field: ctx.jamf_protect?.alerts.input.match.facts[0].name
-        target_field: rule.description 
-        if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].human != null
-        ignore_missing: true
+    - script:
+        if: >
+          ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List && 
+          ctx.jamf_protect.alerts.input.match.facts.length != 0 && 
+          ctx.jamf_protect.alerts.input.match.facts[0].name != null
+        lang: painless
+        source: |
+          if (ctx.rule == null) {
+            ctx.rule = new HashMap();
+          }
+          ctx.rule.name = ctx.jamf_protect.alerts.input.match.facts[0].name
+    - script:
+        if: >
+          ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List && 
+          ctx.jamf_protect.alerts.input.match.facts.length != 0 && 
+          ctx.jamf_protect.alerts.input.match.facts[0].human != null
+        lang: painless
+        source: |
+          if (ctx.rule == null) {
+            ctx.rule = new HashMap();
+          }
+          ctx.rule.description = ctx.jamf_protect.alerts.input.match.facts[0].human
     - script:
         description: Populates event.action with the name of the event
         lang: painless
