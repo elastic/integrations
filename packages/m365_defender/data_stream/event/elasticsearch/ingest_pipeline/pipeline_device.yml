@@ -2002,10 +2002,22 @@ processors:
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('macos')
   # host.os.type can also be derived for Windows based on event.category
   - set:
+      field: _tmp.posix
+      value: true
+      if: >-
+        ctx.m365_defender?.event?.additional_fields != null &&
+        !(ctx.m365_defender.event.additional_fields instanceof List) &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixEffectiveGroup != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixEffectiveUser != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixFilePermissions != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixProcessGroupId != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixRealUser != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixSessionId != null
+  - set:
       field: host.os.type
       value: windows
       if: >-
-        ctx.event?.category != null && (
+        ctx.event?.category != null && ctx._tmp?.posix != true && (
             ctx.event.category.contains('api') || 
             ctx.event.category.contains('registry') || 
             ctx.event.category.contains('library') || 
@@ -2023,14 +2035,14 @@ processors:
       field: host.os.type
       value: windows
       if: >-
-        ctx.event?.category != null && ctx.event.category.contains('process') && (
+        ctx.event?.category != null && ctx._tmp?.posix != true && ctx.event.category.contains('process') && (
             ctx.m365_defender?.event?.initiating_process?.account_sid != null
         )
   - set:
       field: host.os.type
       value: windows
       if: >-
-        ctx.event?.category != null && ctx.event.category.contains('authentication') && (
+        ctx.event?.category != null && ctx._tmp?.posix != true && ctx.event.category.contains('authentication') && (
             ctx.m365_defender?.event?.initiating_process?.account_sid != null ||
             ctx.m365_defender?.event?.account?.sid != null
         )
@@ -2038,7 +2050,7 @@ processors:
       field: host.os.type
       value: windows
       if: >-
-        ctx.event?.category != null && ctx.event.category.contains('network') && (
+        ctx.event?.category != null && ctx._tmp?.posix != true && ctx.event.category.contains('network') && (
             ctx.m365_defender?.event?.initiating_process?.account_sid != null
         )
 
