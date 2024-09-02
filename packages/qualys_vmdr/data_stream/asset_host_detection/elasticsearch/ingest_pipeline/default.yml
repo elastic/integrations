@@ -59,11 +59,17 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
+  - convert:
+      if: ctx.json?.ASSET_ID != null
       field: json.ASSET_ID
-      tag: rename_ASSET_ID
       target_field: qualys_vmdr.asset_host_detection.asset_id
+      tag: convert_ASSET_ID_to_long
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.DNS
       tag: rename_DNS
