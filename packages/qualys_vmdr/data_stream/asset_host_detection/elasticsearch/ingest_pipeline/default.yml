@@ -102,11 +102,16 @@ processors:
       value: '{{{qualys_vmdr.asset_host_detection.dns_data.hostname}}}'
       allow_duplicates: false
       if: ctx.qualys_vmdr?.asset_host_detection?.dns_data?.hostname != null
-  - rename:
+  - convert:
       field: json.ID
-      tag: rename_ID
       target_field: qualys_vmdr.asset_host_detection.id
+      tag: convert_ID_to_long
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.id
       tag: set_host_id
