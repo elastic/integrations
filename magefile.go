@@ -167,7 +167,7 @@ func ReportFailedTests(testResultsFolder string) error {
 	}
 
 	logsDBEnabled := false
-	if v, found := os.LookupEnv("STACK_LOGSDB_ENABLED"); found && enabled == "true" {
+	if v, found := os.LookupEnv("STACK_LOGSDB_ENABLED"); found && v == "true" {
 		logsDBEnabled = true
 	}
 
@@ -184,7 +184,9 @@ func ReportFailedTests(testResultsFolder string) error {
 	options := testsreporter.CheckOptions{
 		Serverless:        serverless,
 		ServerlessProject: serverlessProjectEnv,
+		LogsDB:            logsDBEnabled,
 		StackVersion:      stackVersion,
+		BuildURL:          buildURL,
 		MaxPreviousLinks:  defaultPreviousLinksNumber,
 		MaxTestsReported:  maxIssues,
 	}
