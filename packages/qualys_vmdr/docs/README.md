@@ -168,7 +168,7 @@ An example event for `asset_host_detection` looks as following:
                 },
                 "qds": {
                     "severity": "LOW",
-                    "text": "35"
+                    "score": "35"
                 },
                 "qds_factors": [
                     {
