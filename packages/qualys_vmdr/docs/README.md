@@ -298,11 +298,11 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.last.update_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.port |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.protocol |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.qds.score |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.qds.score |  | integer |
 | qualys_vmdr.asset_host_detection.vulnerability.qds.severity |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.qds_factors.name |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.qds_factors.text |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.qid |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.qid |  | integer |
 | qualys_vmdr.asset_host_detection.vulnerability.results |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.service |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.severity |  | long |
