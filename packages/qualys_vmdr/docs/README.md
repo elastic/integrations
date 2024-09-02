@@ -231,7 +231,7 @@ An example event for `asset_host_detection` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| qualys_vmdr.asset_host_detection.asset_id |  | keyword |
+| qualys_vmdr.asset_host_detection.asset_id |  | long |
 | qualys_vmdr.asset_host_detection.cloud_provider |  | keyword |
 | qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.last_success_date |  | date |
 | qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.name |  | keyword |
@@ -243,7 +243,7 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.dns_data.fqdn |  | keyword |
 | qualys_vmdr.asset_host_detection.dns_data.hostname |  | keyword |
 | qualys_vmdr.asset_host_detection.ec2_instance_id |  | keyword |
-| qualys_vmdr.asset_host_detection.id |  | keyword |
+| qualys_vmdr.asset_host_detection.id |  | long |
 | qualys_vmdr.asset_host_detection.ip |  | ip |
 | qualys_vmdr.asset_host_detection.ipv6 |  | ip |
 | qualys_vmdr.asset_host_detection.last_pc_scanned_date |  | date |
@@ -298,11 +298,11 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.last.update_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.port |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.protocol |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.qds.score |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.qds.severity |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.qds.text |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.qds_factors.name |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.qds_factors.text |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.qid |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.qid |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.results |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.service |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.severity |  | long |
