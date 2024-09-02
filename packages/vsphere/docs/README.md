@@ -440,7 +440,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.capacity.used.bytes | Used bytes of the datastore. | long | byte | gauge |
 | vsphere.datastore.capacity.used.pct | Percentage of datastore capacity used. | scaled_float | percent | gauge |
 | vsphere.datastore.fstype | Filesystem type. | keyword |  |  |
-| vsphere.datastore.host.count | Number of hosts. | long |  |  |
+| vsphere.datastore.host.count | Number of hosts associated with the datastore. | long |  |  |
 | vsphere.datastore.host.names | List of all the host names. | keyword |  |  |
 | vsphere.datastore.iops | Storage I/O Control aggregated Input/Output Operations Per Second. | long |  |  |
 | vsphere.datastore.name | Datastore name. | keyword |  |  |
