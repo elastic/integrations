@@ -178,13 +178,18 @@ An example event for `threat_intelligence` looks as following:
 | log.offset | Log offset | long |
 | mandiant.threat_intelligence.ioc.associated_hashes | List of associated hashes and their types. | object |
 | mandiant.threat_intelligence.ioc.attributed_associations | List of attributed associations that this indicator has to other Malware families or Actors. | object |
+| mandiant.threat_intelligence.ioc.campaigns | List of related campaigns. | object |
 | mandiant.threat_intelligence.ioc.categories | Categories associated with this indicator. | keyword |
 | mandiant.threat_intelligence.ioc.first_seen | IOC first seen date. | date |
 | mandiant.threat_intelligence.ioc.id | IOC internal ID. | keyword |
 | mandiant.threat_intelligence.ioc.is_exclusive | Whether the indicator is exclusive to Mandiant or not. | boolean |
+| mandiant.threat_intelligence.ioc.is_publishable | Whether the indicator is publishable or not. | boolean |
 | mandiant.threat_intelligence.ioc.last_seen | IOC last seen date. | date |
 | mandiant.threat_intelligence.ioc.last_update_date | IOC last update date. | date |
+| mandiant.threat_intelligence.ioc.misp_warning_list_hits | Which MISP warning lists the indicator was found in. | keyword |
+| mandiant.threat_intelligence.ioc.misp_warning_list_misses | Which MISP warning lists the indicator was not found in. | keyword |
 | mandiant.threat_intelligence.ioc.mscore | M-Score (IC-Score) between 0 - 100. | integer |
+| mandiant.threat_intelligence.ioc.reports | List of related reports. | object |
 | mandiant.threat_intelligence.ioc.sources | List of the indicator sources. | object |
 | mandiant.threat_intelligence.ioc.type | IOC type. | keyword |
 | mandiant.threat_intelligence.ioc.value | IOC value. | keyword |
