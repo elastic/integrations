@@ -1,0 +1,167 @@
+---
+description: Pipeline for processing sample logs
+processors:
+- set:
+    field: ecs.version
+    value: '8.11.0'
+
+- json:
+    field: message
+    target_field: json
+    if: ctx.message != null
+
+- rename:
+    field: json.event.computer
+    target_field: json.event.is_computer
+    if: ctx.json.event.computer === true || ctx.json.event.computer === false
+
+- rename:
+    field: json
+    target_field: jamf_pro.events
+    if: ctx.json != null
+
+
+- script:
+    description: Convert Additional Info keys to snake case.
+    tag: additional-info-keys-to-snake-case
+    lang: painless
+    source: |
+      Map keysToSnakeCase(Map m) {
+        def regex = /_?([a-z])([A-Z]+)/;
+        def snakeCaseMap = [:];
+
+        for (entry in m.entrySet()) {
+          def k = entry.getKey();
+          def v = entry.getValue();
+
+          if (v instanceof Map) {
+            v = keysToSnakeCase(v);
+          } else if (v instanceof List) {
+            for (int i = 0; i < v.size(); i++) {
+              def item = v.get(i);
+              if (item instanceof Map) {
+                v.set(i, keysToSnakeCase(item));
+              }
+            }
+          }
+
+          k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+          snakeCaseMap.put(k, v);
+        }
+        return snakeCaseMap;
+      }
+            
+      if(ctx.jamf_pro.events != null) {
+        ctx.jamf_pro.events = keysToSnakeCase(ctx.jamf_pro.events);
+      }
+
+
+##############
+# Timestamps #
+##############
+- date:
+    field: jamf_pro.events.webhook.event_timestamp
+    target_field: jamf_pro.events.webhook.event_timestamp
+    ignore_failure: true
+    formats:
+      - UNIX_MS
+
+- date:
+    field: jamf_pro.events.event.last_update
+    target_field: jamf_pro.events.event.last_update
+    ignore_failure: true
+    formats:
+      - UNIX_MS
+      
+- set:
+    field: _tmp._lck
+    value: true
+
+##############
+#   IP src   #
+##############
+
+- set:
+    if: "ctx?.jamf_pro.events.event.ip_address != ''"
+    field: _tmp.ip
+    value: '{{{jamf_pro.events.event.ip_address}}}'
+    ignore_empty_value: true
+
+- set:
+    if: "ctx?.jamf_pro.events.event.computer != null && ctx?.jamf_pro.events.event.computer.reported_ip_address != ''"
+    field: _tmp.ip
+    value: '{{{jamf_pro.events?.event.computer.reported_ip_address}}}'
+    ignore_empty_value: true
+
+- set:
+    if: "ctx.jamf_pro.events.event?.reported_ip_address != ''"
+    field: _tmp.ip
+    value: '{{{jamf_pro.events.event?.reported_ip_address}}}'
+    ignore_empty_value: true
+##############
+#  User src  #
+##############
+- set:
+    field: _tmp.user_name
+    copy_from: jamf_pro.events.event?.username
+    ignore_empty_value: true
+
+- set:
+    field: _tmp.user_name
+    copy_from: jamf_pro.events.event.?computer.username
+    ignore_empty_value: true
+
+- set:
+    field: _tmp.user_email
+    copy_from: jamf_pro.events.event.?computer.email_address
+    ignore_empty_value: true
+
+- set:
+    field: _tmp.user_email
+    copy_from: jamf_pro.events.event.email_address
+    ignore_empty_value: true
+
+##############
+# ECS compat #
+##############
+
+- append:
+    if: "ctx?._tmp.ip != null && ctx?._tmp.ip != ''"
+    field: host.ip
+    value: '{{{_tmp.ip}}}'
+    ignore_failure: true
+
+- set:
+    field: host.address
+    copy_from: host.ip
+    ignore_empty_value: true
+
+- geoip:
+    if: "ctx?._tmp != null"
+    field: _tmp.ip
+    target_field: host.geo
+    ignore_missing: true
+
+- set:
+    field: user.email
+    copy_from: _tmp.user_email
+    ignore_empty_value: true
+- set:
+    field: related.user
+    copy_from: _tmp.user_name
+    ignore_empty_value: true
+
+- remove:
+    field: 
+     - _tmp
+    ignore_missing: true
+
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  
+

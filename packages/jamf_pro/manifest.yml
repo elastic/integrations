@@ -37,12 +37,12 @@ icons:
     size: 128x128
     type: image/svg+xml
 policy_templates:
-  - name: general_senttings
+  - name: general_settings
     title: Jamf Pro settings
     description: Jamf Pro related settings
     inputs:
       - type: cel
-        title: Settings
+        title: Inventory Settings
         description: Jamf Pro related settings
         vars:
           - name: api_host
@@ -61,6 +61,21 @@ policy_templates:
             description: A secret code taken from Jamf Pro in format `2BftX05NhhS21NXCvZlCvzCJTNM54xEgi8ixaaxC_GkND-8udzaz27kr1TuWeKzX`
             secret: true
             required: true
+      - type: http_endpoint
+        title: Events
+        description: Receiving Jamf Pro events.
+        vars:
+          - name: ssl
+            type: yaml
+            title: TLS
+            description: Options for enabling TLS for the listening webhook endpoint. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              enabled: false
+              certificate: "/etc/pki/client/cert.pem"
+              key: "/etc/pki/client/cert.key"
 owner:
   github: elastic/security-service-integrations
   type: elastic
