@@ -452,24 +452,24 @@ processors:
           if (ctx.aws_bedrock?.invocation?.output?.output_body_json != null) {
             if (ctx.aws_bedrock.invocation.output.output_body_json instanceof List) {
               for (def block : ctx.aws_bedrock.invocation.output.output_body_json) {
-                if (block instanceof Map) {
-                  if (block.containsKey('delta') && block.delta instanceof Map && block.delta.containsKey('text')) {
-                    // Titan model response
-                    completionText.append(block.delta.text);
-                  } else if (block.containsKey('outputs') && block.outputs instanceof List) {
-                    // Mistral model response
-                    for (def cont : block.outputs) {
-                      if (cont instanceof Map && cont.containsKey('text')) {
-                          completionText.append(cont.text);
-                      }
+                if (!(block instanceof Map)) continue;
+                
+                if (block.containsKey('delta') && block.delta instanceof Map && block.delta.containsKey('text')) {
+                  // Titan model response
+                  completionText.append(block.delta.text);
+                } else if (block.containsKey('outputs') && block.outputs instanceof List) {
+                  // Mistral model response
+                  for (def cont : block.outputs) {
+                    if (cont instanceof Map && cont.containsKey('text')) {
+                        completionText.append(cont.text);
                     }
-                  } else if (block.containsKey('generation')) {
-                    // Llama3 model response
-                    completionText.append(block.generation);
-                  } else if (block.containsKey('outputText')) {
-                      // Titan Text G1 - Express response
-                      completionText.append(block.outputText);
                   }
+                } else if (block.containsKey('generation')) {
+                  // Llama3 model response
+                  completionText.append(block.generation);
+                } else if (block.containsKey('outputText')) {
+                    // Titan Text G1 - Express response
+                    completionText.append(block.outputText);
                 }
               }
             }else if (ctx.aws_bedrock.invocation.output.output_body_json instanceof Map) {
