@@ -231,6 +231,57 @@ processors:
           ctx.event.type.add('end');
         }
 
+##
+# Actor, related, target
+##
+  - set: 
+      field: actor.entity.id
+      description: set actor.entity.id based on user id
+      copy_from: client.user.id
+      if: ctx.actor?.entity?.id == null
+      ignore_failure: true
+  - set: 
+      field: actor.entity.id
+      description: set actor.entity.id based on user email
+      copy_from: client.user.email
+      if: ctx.actor?.entity?.id == null
+      ignore_failure: true
+  - set:
+      field: target.entity.id
+      description: set target.entity.id based on resourceName
+      if: ctx.json?.protoPayload?.resourceName != null
+      copy_from: json.protoPayload.resourceName
+  - script:
+      lang: painless
+      description: set related entity based on actor, target, source
+      source: | 
+        ctx.related = ctx.related ?: [:];
+        ctx.related.entity = ctx.related.entity ?: [];
+        ctx.related.user = ctx.related.user ?: [];
+        ctx.related.ip = ctx.related.ip ?: [];
+
+        if (ctx.actor?.entity?.id != null) {
+          ctx.related.entity.add(ctx.actor.entity.id);
+          ctx.related.user.add(ctx.actor.entity.id);
+        }
+        
+        if (ctx.target?.entity?.id != null) {
+          ctx.related.entity.add(ctx.target.entity.id);
+        }
+        
+        if (ctx.cloud?.project?.id != null) {
+          ctx.related.entity.add(ctx.cloud.project.id);
+        }
+        
+        if (ctx.source?.ip != null) {
+          ctx.related.ip.add(ctx.source.ip);
+          ctx.related.entity.add(ctx.source.ip);
+        }
+        
+        ctx.related.entity = ctx.related.entity.stream().distinct().collect(Collectors.toList());
+        ctx.related.user = ctx.related.user.stream().distinct().collect(Collectors.toList());
+        ctx.related.ip = ctx.related.ip.stream().distinct().collect(Collectors.toList());
+
 # TODO remove duplicate protoPayload.methodName
   - set:
       field: event.action

@@ -224,6 +224,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| actor.entity.id | The unique identifier for the entity. | keyword |
+| actor.entity.name | The name of the entity. | keyword |
+| actor.entity.type | The type of the entity. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -278,6 +281,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| resource.name |  | keyword |
+| target.entity.id | The unique identifier for the entity. | keyword |
+| target.entity.name | The name of the entity. | keyword |
+| target.entity.type | The type of the entity. | keyword |
 
 
 An example event for `audit` looks as following:
