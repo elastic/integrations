@@ -1,0 +1,58 @@
+---
+description: "Pipeline for EC2 metrics"
+
+processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
+  - set:
+      field: cloud.account.name
+      copy_from: cloud.account.id
+      override: false
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: This script converts aws.ec2.metrics.CPUUtilization.avg from percentage to decimal.
+      source: |
+        if(ctx.aws?.ec2?.metrics?.CPUUtilization?.avg != null && ctx.host?.cpu?.usage == null) {
+            ctx.aws.ec2.metrics.CPUUtilization.avg = ctx.aws.ec2.metrics.CPUUtilization.avg / 100;
+        }
+  - rename:
+      field: aws.ec2.metrics.CPUUtilization.avg
+      target_field: host.cpu.usage
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: aws.ec2.metrics.NetworkIn.sum
+      target_field: host.network.ingress.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: aws.ec2.metrics.NetworkOut.sum
+      target_field: host.network.egress.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: aws.ec2.metrics.NetworkPacketsIn.sum
+      target_field: host.network.ingress.packets
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: aws.ec2.metrics.NetworkPacketsOut.sum
+      target_field: host.network.egress.packets
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: aws.ec2.metrics.DiskReadBytes.sum
+      target_field: host.disk.read.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: aws.ec2.metrics.DiskWriteBytes.sum
+      target_field: host.disk.write.bytes
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
