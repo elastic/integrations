@@ -159,13 +159,11 @@ An example event for `asset_host_detection` looks as following:
                 },
                 "is_disabled": false,
                 "is_ignored": false,
-                "last": {
-                    "fixed_datetime": "2022-12-14T06:52:57.000Z",
-                    "found_datetime": "2024-03-08T20:15:41.000Z",
-                    "processed_datetime": "2024-03-08T20:15:41.000Z",
-                    "test_datetime": "2024-03-08T20:15:41.000Z",
-                    "update_datetime": "2024-03-08T20:15:41.000Z"
-                },
+                "last_fixed_datetime": "2022-12-14T06:52:57.000Z",
+                "last_found_datetime": "2024-03-08T20:15:41.000Z",
+                "last_processed_datetime": "2024-03-08T20:15:41.000Z",
+                "last_test_datetime": "2024-03-08T20:15:41.000Z",
+                "last_update_datetime": "2024-03-08T20:15:41.000Z",
                 "qds": {
                     "severity": "LOW",
                     "score": "35"
@@ -284,8 +282,8 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.affect.running.kernel |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.affect.running.service |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.asset_cve |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.first.found_datetime |  | date |
-| qualys_vmdr.asset_host_detection.vulnerability.first.reopened_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.first_found_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.first_reopened_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.fqdn |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.instance |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.is_disabled |  | boolean |
