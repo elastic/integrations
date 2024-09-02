@@ -1071,12 +1071,17 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_QDS_1
       target_field: qualys_vmdr.asset_host_detection.vulnerability.qds
       ignore_missing: true
-  - rename:
+  - convert:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability != null
       field: qualys_vmdr.asset_host_detection.vulnerability.qds.#text
-      tag: rename_qualys_vmdr_asset_host_detection_vulnerability_qds_#text_1
-      target_field: qualys_vmdr.asset_host_detection.vulnerability.qds.text
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.qds.score
+      tag: convert_qualys_vmdr_asset_host_detection_vulnerability_qds_#text_1_to_long
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.SSL != null
       field: qualys_vmdr.asset_host_detection.vulnerability.SSL
@@ -1294,12 +1299,17 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_QDS_2
       target_field: qualys_vmdr.asset_host_detection.vulnerability.qds
       ignore_missing: true
-  - rename:
+  - convert:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.qds != null
       field: qualys_vmdr.asset_host_detection.vulnerability.qds.#text
-      tag: rename_qualys_vmdr_asset_host_detection_vulnerability_qds_#text_2
-      target_field: qualys_vmdr.asset_host_detection.vulnerability.qds.text
+      target_field: qualys_vmdr.asset_host_detection.vulnerability.qds.score
+      tag: convert_qualys_vmdr_asset_host_detection_vulnerability_qds_#text_2_to_long
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: qualys_vmdr.asset_host_detection.vulnerability.PORT
       target_field: qualys_vmdr.asset_host_detection.vulnerability.port
