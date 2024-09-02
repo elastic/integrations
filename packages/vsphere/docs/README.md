@@ -299,50 +299,52 @@ An example event for `datastore` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2024-09-02T10:04:25.122Z",
     "agent": {
-        "ephemeral_id": "8b019ff3-cbda-41fa-b1ff-974d482b9694",
-        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "4da294a3-ad54-47f4-92c7-544e1356a0d8",
+        "id": "b01ab3cf-51ad-4c4d-87bd-fc2d4aa59d8a",
+        "name": "elastic-agent-76236",
         "type": "metricbeat",
-        "version": "8.8.1"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "vsphere.datastore",
-        "namespace": "ep",
+        "namespace": "86691",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
-        "snapshot": false,
-        "version": "8.8.1"
+        "id": "b01ab3cf-51ad-4c4d-87bd-fc2d4aa59d8a",
+        "snapshot": true,
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.datastore",
-        "duration": 23155458,
-        "ingested": "2023-06-29T08:03:31Z",
+        "duration": 190147614,
+        "ingested": "2024-09-02T10:04:27Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-76236",
+        "id": "e744630f9d4f43dc818e497d221bd0b2",
         "ip": [
-            "172.23.0.7"
+            "172.18.0.4",
+            "172.21.0.2"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "02-42-AC-12-00-04",
+            "02-42-AC-15-00-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-76236",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.104-linuxkit",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -354,59 +356,48 @@ An example event for `datastore` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "127.0.0.1:33365",
+        "address": "https://svc-vsphere-metrics:8989/sdk",
         "type": "vsphere"
     },
     "vsphere": {
         "datastore": {
-            "iops": 0,
+            "capacity": {
+                "free": {
+                    "bytes": 10952166604800
+                },
+                "total": {
+                    "bytes": 10995116277760
+                },
+                "used": {
+                    "bytes": 42949672960,
+                    "pct": 0.004
+                }
+            },
+            "fstype": "OTHER",
             "host": {
                 "count": 1,
-                "names": [
-                    "DC3_H0"
-                ]
+                "names": "DC0_H0"
+            },
+            "name": "LocalDS_0",
+            "read": {
+                "bytes": 1024
             },
             "status": "green",
             "vm": {
-                "count": 6,
+                "count": 4,
                 "names": [
-                    "DC3_H0_VM0"
+                    "DC0_C0_RP0_VM0",
+                    "DC0_C0_RP0_VM1",
+                    "DC0_H0_VM0",
+                    "DC0_H0_VM1"
                 ]
             },
-            "capacity": {
-                "free": {
-                    "bytes": 37120094208
-                },
-                "total": {
-                    "bytes": 74686664704
-                },
-                "used": {
-                    "bytes": 37566570496,
-                    "pct": 0.502988996026061
-                }
-            },
-            "read": {
-                "bytes": 0,
-                "latency": {
-                    "total": {
-                        "ms": 0
-                    }
-                }
-            },
             "write": {
-                "bytes": 337000,
-                "latency": {
-                    "total": {
-                        "ms": 0
-                    }
-                }
-            },
-            "fstype": "local",
-            "name": "LocalDS_0"
+                "bytes": 450560
+            }
         }
     }
 }
-
 ```
 
 **ECS Field Reference**
@@ -441,14 +432,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.capacity.used.pct | Percentage of datastore capacity used. | scaled_float | percent | gauge |
 | vsphere.datastore.fstype | Filesystem type. | keyword |  |  |
 | vsphere.datastore.host.count | Number of hosts associated with the datastore. | long |  |  |
-| vsphere.datastore.host.names | List of all the host names. | keyword |  |  |
+| vsphere.datastore.host.names | List of all the host names associated with the datastore. | keyword |  |  |
 | vsphere.datastore.iops | Storage I/O Control aggregated Input/Output Operations Per Second. | long |  |  |
 | vsphere.datastore.name | Datastore name. | keyword |  |  |
 | vsphere.datastore.read.bytes | Rate of reading data from the datastore. | long |  |  |
 | vsphere.datastore.read.latency.total.ms | Average amount of time for a read operation from the datastore in milliseconds. | long |  |  |
 | vsphere.datastore.status | Status of the datastore. | keyword |  |  |
-| vsphere.datastore.vm.count | Number of VMs. | long |  |  |
-| vsphere.datastore.vm.names | List of all the VM names. | keyword |  |  |
+| vsphere.datastore.vm.count | Number of VMs associated with the datastore. | long |  |  |
+| vsphere.datastore.vm.names | List of all the VM names associated with the datastore. | keyword |  |  |
 | vsphere.datastore.write.bytes | Rate of writing data to the datastore. | long |  |  |
 | vsphere.datastore.write.latency.total.ms | Average amount of time for a write operation from the datastore in milliseconds. | long |  |  |
 
