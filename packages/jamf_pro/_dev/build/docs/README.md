@@ -34,8 +34,9 @@ This connector utilizes Jamf Pro API, therefore active license is a requirement
 * __Establishing A Connection to Jamf Pro:__ Setting up a successful connection with Jamf Pro involves creating an application and configuring the integration.  
 
 
-### Step 1: Create an Application in Jamf Pro:
+#### Step 1: Create an Application in Jamf Pro:
 
+* **Inventory**:
 To create a connection to Jamf Pro, an [application must be created](https://learn.jamf.com/en-US/bundle/jamf-pro-documentation-current/page/API_Roles_and_Clients.html) first. 
 Credentials generated during this process are required for the subsequent steps.
 
@@ -48,13 +49,40 @@ __Jamf Pro API Credentials__
 
 Permissions can be set up on app creation or can be updated for existing app
 
+* **Events**:
+This data_stream is a passive listener, it should be created before webhook will be created at Jamf Pro Dashboard.  
+Network settings should be defined by IT or Security person:
+**Listen Address**  
+**Listen Port**  
+**URL**  
+Auth settings will be required on Jamf Pro Webhook settings:
+**Secret Header**  
+**Secret Header**  
+
+
+
 ### Step 2: Integration Setup:
 To set up the  integration 3 fields are required:
 - jamf_pro host
 - cliet_id
 - client_secret
 
-## Events
+#### Step 3: Create a Webhook in Jamf Pro:
+Following [official documentation](https://learn.jamf.com/en-US/bundle/jamf-pro-documentation-current/page/Webhooks.html):  
+Settings:  
+* _Webhook URL_ must be in form `https://your-kibana-name:9202/jamf-pro-events` Note note: `9202` is a port and `/jamf-pro-events` are default values and can be changed this connector's setup. 
+* _Authentication type_: `None` and `Header Authentication` are supported. Setting to `None` will expect _Webhook URL_ is available with no authorization required.  
+`Header Authentication` will require Auth token name and value.
+
+| Jamf Pro Setting        | Corresponding Connector Setting | Value example                                     |
+|-------------------------|---------------------------------|---------------------------------------------------|
+| _Webhook URL_           | Port + URL                      | `https://your-kibana-name:${PORT}${URL}`          |
+| _Authentication type_   |                                 | Header Authentication                             |
+| _Header Authentication_ | Secret Header + Secret Value    | {"Authorization":"${Header}", "Token":"${Value}"} |
+
+* _Content Type_: `JSON`
+* _Webhook Event_: Event to be selected. In case set of events is required, 1:1 webhooks should be created.
+Connector provides UI to display `ComputerAdded` and `ComputerCheckIn` events.
 
 
 
