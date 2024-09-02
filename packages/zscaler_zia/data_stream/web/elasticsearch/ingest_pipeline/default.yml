@@ -41,6 +41,32 @@ processors:
       field: resp
       tag: remove_resp
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_finish_urlencoding
+      if: ctx?.json != null
+      source: |-
+        // Zscaler hex-encoded data is similar to URL encoded data, but it doesn't encode `%`.
+        // This pre-processing allows the URL decode processor's strict logic to run successfully.
+        def finishUrlEncoding(String s) {
+          if (s == null) {
+            return null
+          }
+          return /(%)(?![0-9A-Fa-f]{2})/.matcher(s).replaceAll('%25');
+        }
+        ctx.json['apprulelabel']       = finishUrlEncoding(ctx.json?.apprulelabel);
+        ctx.json['devicename']         = finishUrlEncoding(ctx.json?.devicename);
+        ctx.json['filename']           = finishUrlEncoding(ctx.json?.filename);
+        ctx.json['host']               = finishUrlEncoding(ctx.json?.host);
+        ctx.json['location']           = finishUrlEncoding(ctx.json?.location);
+        ctx.json['login']              = finishUrlEncoding(ctx.json?.login);
+        ctx.json['mobappname']         = finishUrlEncoding(ctx.json?.mobappname);
+        ctx.json['refererhost']        = finishUrlEncoding(ctx.json?.refererhost);
+        ctx.json['rulelabel']          = finishUrlEncoding(ctx.json?.rulelabel);
+        ctx.json['upload_filename']    = finishUrlEncoding(ctx.json?.upload_filename);
+        ctx.json['urlfilterrulelabel'] = finishUrlEncoding(ctx.json?.urlfilterrulelabel);
+        ctx.json['useragent']          = finishUrlEncoding(ctx.json?.useragent);
+        ctx.json['userlocationname']   = finishUrlEncoding(ctx.json?.userlocationname);
   - append:
       field: event.category
       tag: append_event_category
