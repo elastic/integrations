@@ -243,7 +243,7 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.dns_data.fqdn |  | keyword |
 | qualys_vmdr.asset_host_detection.dns_data.hostname |  | keyword |
 | qualys_vmdr.asset_host_detection.ec2_instance_id |  | keyword |
-| qualys_vmdr.asset_host_detection.id |  | long |
+| qualys_vmdr.asset_host_detection.id |  | keyword |
 | qualys_vmdr.asset_host_detection.ip |  | ip |
 | qualys_vmdr.asset_host_detection.ipv6 |  | ip |
 | qualys_vmdr.asset_host_detection.last_pc_scanned_date |  | date |
