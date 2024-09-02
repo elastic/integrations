@@ -142,45 +142,45 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id |  | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz. | long |
-| vsphere.virtualmachine.cpu.total.mhz | Total CPU in Mhz. | long |
-| vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz. | long |
-| vsphere.virtualmachine.custom_fields | Custom fields. | object |
-| vsphere.virtualmachine.datastore.count | Number of datastores associated to this virtualmachine. | long |
-| vsphere.virtualmachine.datastore.names | Names of the datastore associated to this virtualmachine. | keyword |
-| vsphere.virtualmachine.host.hostname | Hostname of the host. | keyword |
-| vsphere.virtualmachine.host.id | Host id. | keyword |
-| vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes. | long |
-| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes. | long |
-| vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes. | long |
-| vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes. | long |
-| vsphere.virtualmachine.name | Virtual Machine name. | keyword |
-| vsphere.virtualmachine.network.count | Number of networks associated to this virtualmachine. | long |
-| vsphere.virtualmachine.network.names | Names of the networks associated to this virtualmachine. | keyword |
-| vsphere.virtualmachine.network_names | Network names. | keyword |
-| vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |
-| vsphere.virtualmachine.status | Overall health and status of a virtual machine. | keyword |
-| vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz. | long |  | gauge |
+| vsphere.virtualmachine.cpu.total.mhz | Total CPU in Mhz. | long |  | counter |
+| vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz. | long |  | gauge |
+| vsphere.virtualmachine.custom_fields | Custom fields. | object |  |  |
+| vsphere.virtualmachine.datastore.count | Number of datastores associated to this virtualmachine. | long |  |  |
+| vsphere.virtualmachine.datastore.names | Names of the datastore associated to this virtualmachine. | keyword |  |  |
+| vsphere.virtualmachine.host.hostname | Hostname of the host. | keyword |  |  |
+| vsphere.virtualmachine.host.id | Host id. | keyword |  |  |
+| vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.name | Virtual Machine name. | keyword |  |  |
+| vsphere.virtualmachine.network.count | Number of networks associated to this virtualmachine. | long |  |  |
+| vsphere.virtualmachine.network.names | Names of the networks associated to this virtualmachine. | keyword |  |  |
+| vsphere.virtualmachine.network_names | Network names. | keyword |  |  |
+| vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |  |  |
+| vsphere.virtualmachine.status | Overall health and status of a virtual machine. | keyword |  |  |
+| vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  |  |
 
 
 ### Host Metrics
