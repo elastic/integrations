@@ -69,11 +69,11 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 func (p PackageError) String() string {
 	var sb strings.Builder
 
-	if p.Serverless {
-		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.ServerlessProject))
-	}
 	if p.LogsDB {
 		sb.WriteString("[LogsDB] ")
+	}
+	if p.Serverless {
+		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.ServerlessProject))
 	}
 	if p.StackVersion != "" {
 		sb.WriteString("[Stack ")
