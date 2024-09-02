@@ -5,7 +5,7 @@ processors:
     if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
 - set:
     field: event.original
-    value: "{{{message}}}"
+    copy_from: message
 - csv:
     field: event.original
     ignore_failure: true
@@ -70,7 +70,7 @@ processors:
     ignore_missing: true
 - set:
     field: event.ingested 
-    value: "{{{_ingest.timestamp}}}"
+    copy_from: _ingest.timestamp
     ignore_failure: true
 on_failure:
   - set:
