@@ -112,26 +112,26 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-12T21:15:48.751Z",
+    "@timestamp": "2024-09-01T20:43:13.311Z",
     "agent": {
-        "ephemeral_id": "f61f65a0-cfe1-43bc-8b7e-b2bec2ad3fe1",
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
+        "ephemeral_id": "17fd4566-0d6d-4a3b-870d-2b55cb00219b",
+        "id": "eb9762c2-ef0d-4e97-8e71-b8f31265d39c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.alerts",
-        "namespace": "ep",
+        "namespace": "46474",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
+        "id": "eb9762c2-ef0d-4e97-8e71-b8f31265d39c",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "event": {
         "action": "CustomURLHandlerCreation",
@@ -142,7 +142,7 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2024-06-12T21:15:58Z",
+        "ingested": "2024-09-01T20:43:23Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
@@ -180,10 +180,6 @@ An example event for `alerts` looks as following:
     },
     "input": {
         "type": "http_endpoint"
-    },
-    "observer": {
-        "product": "Jamf Protect",
-        "vendor": "Jamf"
     },
     "process": {
         "args": [
@@ -279,6 +275,8 @@ An example event for `alerts` looks as following:
 | input.type | Input type | keyword |
 | jamf_protect.alerts.timestamp_nanoseconds | The timestamp in Epoch nanoseconds. | date |
 | log.offset | Log offset | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | volume.bus_type |  | keyword |
 | volume.file_system_type |  | keyword |
 | volume.nt_name |  | keyword |
