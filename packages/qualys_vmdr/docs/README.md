@@ -276,9 +276,9 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.tags.id |  | keyword |
 | qualys_vmdr.asset_host_detection.tags.name |  | keyword |
 | qualys_vmdr.asset_host_detection.tracking_method |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.affect.exploitable_config |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.affect.running.kernel |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.affect.running.service |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.affect_exploitable_config |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.affect_running_kernel |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.affect_running_service |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.asset_cve |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.first_found_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.first_reopened_datetime |  | date |
@@ -304,8 +304,8 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.severity |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.ssl |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.status |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.times.found |  | long |
-| qualys_vmdr.asset_host_detection.vulnerability.times.reopened |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.times_found |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.times_reopened |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.type |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id |  | keyword |
 
