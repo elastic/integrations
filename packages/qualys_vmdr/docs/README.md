@@ -154,9 +154,7 @@ An example event for `asset_host_detection` looks as following:
                         "kernel": "0"
                     }
                 },
-                "first": {
-                    "found_datetime": "2021-02-05T04:50:45.000Z"
-                },
+                "first_found_datetime": "2021-02-05T04:50:45.000Z",
                 "is_disabled": false,
                 "is_ignored": false,
                 "last_fixed_datetime": "2022-12-14T06:52:57.000Z",
