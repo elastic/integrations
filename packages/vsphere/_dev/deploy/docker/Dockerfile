@@ -1,6 +1,4 @@
-ARG VSPHERE_GOLANG_VERSION
-
-FROM golang:${VSPHERE_GOLANG_VERSION}-alpine
+FROM golang:1.20-alpine
 
 RUN apk add --no-cache curl git
 RUN go install github.com/vmware/govmomi/vcsim@v0.30.4
