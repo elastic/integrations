@@ -1,12 +1,12 @@
 # Endace
 
 Endace provides always-on hybrid cloud packet capture, delivering hard evidence
-to combat cybersecurity threats and resolve network and IT problems proactively.
+to combat cybersecurity threats and proactively resolve network and IT problems.
 This integration allows users to ingest Network flow data from either EndaceFlow
-via syslog input or use Elastic Agent to generate and ship Network Flow data to
-an Elastic deployment. Both of these methods add the `event.reference` field to
+via syslog input or using Elastic Agent to generate and ship NetFlow data to
+an Elastic deployment. Both methods add the `event.reference` field to
 each event when ingested into Elasticsearch.  This field provides a clickable
-URL which will pivot users into a pre-populated EndaceVision Investigation,
+URL that will pivot users into a pre-populated EndaceVision Investigation,
 which enables rapid search and drill down into the estate-wide packet level
 history relevant to the event under investigation.
 
@@ -17,10 +17,10 @@ The base URL for the target EndaceProbe to pivot to.  Use an
 InvestigationManager for estate-wide searches. Example: https://myvprobe.com
 
 #### `endace_datasources`
-The datasource within Endace to pivot to. Example: tag:rotation-file
+The Data Source within Endace to pivot to. Example: tag:rotation-file
 
 #### `endace_tools`
-The default visualizations to render in the EndaceVision Investigation. Example:
+The default investigation tools to include in the EndaceVision Investigation. Example:
 trafficOverTime_by_app,conversations_by_ipaddress
 
 #### `view_window`
