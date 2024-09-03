@@ -53,10 +53,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.code | Identification code for this event. | keyword |
+| event.code | Identification code for the event. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| event.type | Event severity (e.g. info, error). | keyword |
+| event.type | Severity of the event (info, error, etc.). | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -76,7 +76,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | postgresql.log.query_name | Name given to a query when using extended query protocol. If it is `"\<unnamed\>"`, or not present, this field is ignored. | keyword |
 | postgresql.log.query_pos | Character count of the error position (if any). | long |
 | postgresql.log.query_step | Statement step when using extended query protocol (one of statement, parse, bind or execute). | keyword |
-| postgresql.log.sequence_number | Sequence number circumvents that last message was repeated N times. | long |
+| postgresql.log.sequence_number | Sequence number circumvents that the last message was repeated N times. | long |
 | postgresql.log.session_id | PostgreSQL session. | keyword |
 | postgresql.log.session_line_number | Line number inside a session. (%l in `log_line_prefix`). | long |
 | postgresql.log.session_start_time | Time when this session started. | date |
