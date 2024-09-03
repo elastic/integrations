@@ -4,6 +4,11 @@ The Azure Functions integration allows you to monitor Azure Functions. Azure Fun
 
 Use this integration to build web APIs, respond to database changes, process IoT streams, manage message queues, and more. Refer common [Azure Functions scenarios](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scenarios?pivots=programming-language-csharp) for more information.
 
+## Hosting plans
+
+Each Azure Functions app requires a hosting plan: Consumption plan, Flex Consumption plan, Premium plan, Dedicated plan, or Container Apps. For more details on the various plans, check the [Azure Functions hosting options](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale?WT.mc_id=Portal-WebsitesExtension).
+
+These plans differ from eachother in the number of metrics they generate, which are then exported outside of Azure for other monitoring solutions like Elastic Observability. For example, metrics specific to Azure Function Apps, such as 'FunctionExecutionCount' and 'FunctionExecutionUnits', are only available for function apps operating on a Consumption (serverless) plan and are not observed in other plans. On the other hand, all other metrics are generated exclusively for Premium and Dedicated plans and are not available for the Consumption plan.
 
 ## Data streams
 The Azure Functions integration contains two data streams: [Function App Logs](#logs) and [Metrics](#metrics)
