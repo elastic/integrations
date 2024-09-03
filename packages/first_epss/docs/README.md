@@ -30,78 +30,90 @@ For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 
-## Logs reference
+## Data reference
 
 ### Vulnerability
 
-Retrieves CVEs using the First EPSS API.
+This is the `vulnerability` dataset.
+
+#### Example
 
 An example event for `vulnerability` looks as following:
 
 ```json
 {
-  "_index": ".ds-logs-first.epss-default-2024.08.11-000001",
-  "_id": "SmDFQZEBL7kK8upPQ5pd",
-  "_version": 1,
-  "_score": 0,
-  "_source": {
     "input": {
-      "type": "cel"
+        "type": "cel"
     },
     "agent": {
-      "name": "docker-fleet-agent",
-      "id": "c884e63b-dea9-403d-86dc-10493c97c4a9",
-      "ephemeral_id": "20f70707-53e7-4c22-84ef-d4c049bdf8a6",
-      "type": "filebeat",
-      "version": "8.14.3"
+        "name": "docker-fleet-agent",
+        "id": "8b72fd47-8834-4fb6-8c39-c6bbe8ab8a13",
+        "ephemeral_id": "6d478b90-0975-48fa-8437-83e67772c341",
+        "type": "filebeat",
+        "version": "8.15.0"
     },
-    "@timestamp": "2024-08-11T14:08:52.538Z",
+    "@timestamp": "2024-08-25T22:05:13.849Z",
     "ecs": {
-      "version": "8.11.0"
+        "version": "8.11.0"
     },
     "data_stream": {
-      "namespace": "default",
-      "type": "logs",
-      "dataset": "first.epss"
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "first_epss.vulnerability"
     },
     "elastic_agent": {
-      "id": "c884e63b-dea9-403d-86dc-10493c97c4a9",
-      "version": "8.14.3",
-      "snapshot": false
+        "id": "8b72fd47-8834-4fb6-8c39-c6bbe8ab8a13",
+        "version": "8.15.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.10.0-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "172.23.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "id": "1e6dd5e4f8a3409dbea97e40111e935a",
+        "mac": [
+            "02-42-AC-17-00-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "first_epss": {
+        "vulnerability": {
+            "date": "2024-08-25T00:00:00.000Z",
+            "cve": "CVE-2024-25593",
+            "percentile": 0.09538,
+            "epss": 0.00043
+        }
     },
     "vulnerability": {
-      "reference": "https://api.first.org/data/v1/epss?pretty=true&cve=CVE-2024-6505",
-      "id": "CVE-2024-6505"
+        "reference": "https://api.first.org/data/v1/epss?pretty=true&cve=CVE-2024-25593",
+        "id": "CVE-2024-25593"
     },
     "event": {
-      "agent_id_status": "verified",
-      "ingested": "2024-08-11T14:08:52Z",
-      "kind": "enrichment",
-      "category": [
-        "vulnerability"
-      ],
-      "type": [
-        "info"
-      ],
-      "dataset": "first.epss"
-    },
-    "first": {
-      "epss": {
-        "date": "2024-08-11",
-        "cve": "CVE-2024-6505",
-        "percentile": 0.13869,
-        "epss": 0.00044
-      }
-    },
-    "tags": [
-      "forwarded",
-      "first"
-    ]
-  }
+        "agent_id_status": "verified",
+        "ingested": "2024-08-25T22:05:13Z",
+        "kind": "enrichment",
+        "category": [
+            "vulnerability"
+        ],
+        "type": [
+            "info"
+        ],
+        "dataset": "first_epss.vulnerability"
+    }
 }
 ```
-
-#### Exported fields
 
 **Exported fields**
 
@@ -117,3 +129,4 @@ An example event for `vulnerability` looks as following:
 | first_epss.vulnerability.date | Exploit Prediction Scoring System score calculation date. | date |
 | first_epss.vulnerability.epss | Exploit Prediction Scoring System score value. | float |
 | first_epss.vulnerability.percentile | Exploit Prediction Scoring System percentile value. | float |
+| input.type | Type of filebeat input. | keyword |
