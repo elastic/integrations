@@ -316,11 +316,13 @@ processors:
     source: |-
       def positive = new ArrayList();
       def negative = new ArrayList();
-      for (entry in ctx.json.misp.entrySet()) {
-        if (entry.getValue()) {
-          positive.add(entry.getKey());
+      def keys = ctx.json.misp.keySet().asList();
+      keys.sort((a, b) -> a.compareTo(b));
+      for (key in keys) {
+        if (ctx.json.misp[key]) {
+          positive.add(key);
         } else {
-          negative.add(entry.getKey());
+          negative.add(key);
         }
       }
       ctx.json["misp_warning_list_hits"] = positive;
