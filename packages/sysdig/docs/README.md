@@ -2,9 +2,9 @@
 This integration allows for the shipping of [Sysdig](https://sysdig.com/) alerts to Elastic for observability and organizational awareness. Alerts can then be analyzed by using either the dashboard included with the integration or via the creation of custom dashboards within Kibana.
 
 ## Data Streams
-The Sysdig integration collects one type of data stream: logs.
+The Sysdig integration collects one type of data stream: alerts.
 
-**Logs** The Logs data stream collected by the Sysdig integration is comprised of Sysdig Alerts. See more details about Sysdig Alerts in [Sysdig's Alerts Documentation](https://docs.sysdig.com/en/docs/sysdig-monitor/alerts/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
+**Alerts** The Alerts data stream collected by the Sysdig integration is comprised of Sysdig Alerts. See more details about Sysdig Alerts in [Sysdig's Alerts Documentation](https://docs.sysdig.com/en/docs/sysdig-monitor/alerts/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
 
 ## Requirements
 
@@ -114,16 +114,18 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 
 An example event for `alerts` looks as following:
 
+An example event for `alerts` looks as following:
+
 ```json
 {
-    "@timestamp": "2024-08-21T15:09:36.620Z",
+    "@timestamp": "2024-09-03T17:49:40.818Z",
     "SysdigEvent": {
         "category": "runtime",
         "description": "This policy contains rules which provide a greater insight into general activities occuring on the system. They are very noisy, but useful in threat hunting situations if you are looking for specific actions being taken during runtime. It is not recommended to use this policy for detection purposes unless tuning is enabled.  Additional manual tuning will likely be required.",
         "type": "policy"
     },
     "agent": {
-        "ephemeral_id": "186113fb-b9df-4358-af7d-ff53047164aa",
+        "ephemeral_id": "c68fa111-c0ad-4e3f-95d5-2b4ea6d13f50",
         "id": "58014837",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -149,14 +151,14 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.alerts",
-        "namespace": "98399",
+        "namespace": "48937",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "a0dbbd2a-5fd6-4b59-a161-84911cefd66e",
+        "id": "a2ee4dc6-30c0-4a7d-8acd-f7789c44e3fa",
         "snapshot": false,
         "version": "8.14.1"
     },
@@ -164,7 +166,7 @@ An example event for `alerts` looks as following:
         "agent_id_status": "mismatch",
         "dataset": "sysdig.alerts",
         "id": "17dec715376910362c8c3f62a4ceda2e",
-        "ingested": "2024-08-21T15:09:46Z",
+        "ingested": "2024-09-03T17:49:50Z",
         "kind": "alert",
         "provider": "syscall",
         "severity": 7,
@@ -216,22 +218,8 @@ An example event for `alerts` looks as following:
         "category": "runtime",
         "containerId": "6949e5f10829",
         "content": {
-            "baselineId": "",
-            "falsePositive": false,
             "fields": {
-                "container.id": "6949e5f10829",
-                "container.image.repository": "docker.io/dockerbadboy/art",
                 "container.name": "threatgen",
-                "evt.arg.request": "<NA>",
-                "evt.type": "execve",
-                "falco.rule": "User Management Event Detected",
-                "fd.name": "<NA>",
-                "group.gid": "0",
-                "group.name": "root",
-                "proc.aname[2]": "containerd-shim",
-                "proc.aname[3]": "<NA>",
-                "proc.aname[4]": "<NA>",
-                "proc.args": "tmp_suid_user",
                 "proc.cmdline": "userdel tmp_suid_user",
                 "proc.cwd": "/tmp/",
                 "proc.exepath": "/usr/sbin/userdel",
@@ -240,15 +228,10 @@ An example event for `alerts` looks as following:
                 "proc.pid": "2140169",
                 "proc.pname": "pwsh",
                 "proc.ppid": "2140088",
-                "proc.sid": "1",
-                "user.loginname": "<NA>",
-                "user.loginuid": "-1",
                 "user.name": "root",
                 "user.uid": "0"
             },
-            "matchedOnDefault": false,
             "output": "Users management command userdel tmp_suid_user launched by pwsh on threatgen under user root (proc.name=userdel proc.args=tmp_suid_user fd.name=<NA> proc.cmdline=pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC) proc.pname=pwsh gparent=containerd-shim ggparent=<NA> gggparent=<NA> container=container_id=6949e5f10829 container_name=threatgen evt.type=execve evt.arg.request=<NA> proc.pid=2140169 proc.cwd=/tmp/ proc.ppid=2140088 proc.pcmdline=pwsh -c (./RunTests.ps1 STDIN.NETWORK DEV.SHM.EXEC T1048 RECON.FIND.SUID T1611.002 CONTAINER.ESCAPE.NSENTER CREDS.DUMP.MEMORY KILL.MALICIOUS.PROC LOAD.BPF.PROG Base64.PYTHON BASE64.CLI CONNECT.UNEXPECTED RECON.GPG SUBTERFUGE.LASTLOG LD.LINUX.EXEC LD.SO.PRELOAD USERFAULTFD.HANDLER RECON.LINPEAS PROOT.EXEC) proc.sid=1 proc.exepath=/usr/sbin/userdel user.uid=0 user.loginuid=-1 user.loginname=<NA> user.name=root group.gid=0 group.name=root container.id=6949e5f10829 container.name=threatgen image=docker.io/dockerbadboy/art)",
-            "policyId": 10011704,
             "policyOrigin": "Sysdig",
             "policyVersion": 35,
             "ruleName": "User Management Event Detected",
@@ -278,68 +261,30 @@ An example event for `alerts` looks as following:
                 "name": "gcp",
                 "region": "us-central1"
             },
-            "container": {
-                "image": {
-                    "digest": "sha256:26928291789494be49b14bf90b0c50950e9e802c86c2a9dd245b88032d6c9c07",
-                    "id": "15a18c24b1ee",
-                    "repo": "docker.io/dockerbadboy/art",
-                    "tag": "latest"
-                },
-                "label": {
-                    "io": {
-                        "kubernetes": {
-                            "container": {
-                                "name": "threatgen"
-                            },
-                            "pod": {
-                                "name": "threatgen-c65cf6446-5s8kk",
-                                "namespace": "default"
-                            }
-                        }
-                    }
-                },
-                "name": "threatgen"
-            },
             "gcp": {
                 "availabilityZone": "us-central1-c",
-                "image": "projects/gke-node-images/global/images/gke-1289-gke1000000-cos-109-17800-147-54-c-pre",
                 "instanceId": "648229130641697246",
                 "instanceName": "gke-cluster-gcp-demo-san-default-pool-66250c41-vd1o",
                 "machineType": "e2-standard-4",
                 "projectId": "289645096542",
-                "projectName": "alliances-chronicle",
-                "region": "us-central1"
+                "projectName": "alliances-chronicle"
             },
             "host": {
-                "hostName": "gke-cluster-gcp-demo-san-default-pool-66250c41-vd1o",
-                "mac": "42:01:0a:80:00:05"
+                "hostName": "gke-cluster-gcp-demo-san-default-pool-66250c41-vd1o"
             },
             "kubernetes": {
                 "cluster": {
                     "name": "gke-alliances-demo-6"
                 },
-                "deployment": {
-                    "name": "threatgen"
-                },
                 "namespace": {
                     "name": "default"
-                },
-                "node": {
-                    "name": "gke-cluster-gcp-demo-san-default-pool-66250c41-vd1o"
                 },
                 "pod": {
                     "name": "threatgen-c65cf6446-5s8kk"
                 },
-                "replicaSet": {
-                    "name": "threatgen-c65cf6446"
-                },
                 "workload": {
-                    "name": "threatgen",
                     "type": "deployment"
                 }
-            },
-            "process": {
-                "name": "userdel tmp_suid_user"
             }
         },
         "machineId": "42:01:0a:80:00:05",

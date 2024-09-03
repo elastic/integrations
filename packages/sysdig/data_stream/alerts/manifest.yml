@@ -9,22 +9,8 @@ streams:
     enabled: false
     template_path: http.yml.hbs
     title: HTTP input
-    description: Collect Sysdig alerts using input over HTTP
+    description: Collect Sysdig Alerts over an HTTP Webhook
     vars:
-      - name: method
-        title: HTTP Method
-        description: This options specifies which HTTP method to accept.
-        type: select
-        required: true
-        show_user: false
-        options:
-          - value: POST
-            text: POST
-          - value: PUT
-            text: PUT
-          - value: PATCH
-            text: PATCH
-        default: POST
       - name: listen_address
         type: text
         title: Listen Address
@@ -45,21 +31,6 @@ streams:
         type: text
         title: URL
         description: This options specific which URL path to accept requests on. Defaults to /.
-        required: false
-        show_user: true
-      - name: data_stream.dataset
-        type: text
-        title: Dataset name
-        description: |
-          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
-        default: sysdig.alerts
-        required: true
-        show_user: true
-      - name: pipeline
-        type: text
-        title: Ingest Pipeline
-        description: |
-          The Ingest Node pipeline ID to be used by the integration.
         required: false
         show_user: true
       - name: preserve_original_event
@@ -193,6 +164,7 @@ streams:
         required: false
         default:
           - forwarded
+          - sysdig-alerts
         multi: true
         show_user: true
       - name: enable_request_tracer
