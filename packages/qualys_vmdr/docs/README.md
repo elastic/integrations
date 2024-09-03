@@ -96,155 +96,76 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
+    "@timestamp": "2024-09-03T21:58:42.109Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "4ac7c7e4-f06c-4640-9526-3046c63279ef",
-        "ephemeral_id": "db334fd8-7add-4929-8e35-82385a633847",
+        "ephemeral_id": "a359e9ae-1899-4fa4-9274-489732cf28b8",
+        "id": "f5bb6a54-2f0f-43e3-8016-d1510e71d83c",
+        "name": "elastic-agent-32019",
         "type": "filebeat",
         "version": "8.15.0"
     },
+    "data_stream": {
+        "dataset": "qualys_vmdr.asset_host_detection",
+        "namespace": "34087",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
     "elastic_agent": {
-        "id": "4ac7c7e4-f06c-4640-9526-3046c63279ef",
-        "version": "8.15.0",
-        "snapshot": false
+        "id": "f5bb6a54-2f0f-43e3-8016-d1510e71d83c",
+        "snapshot": false,
+        "version": "8.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "qualys_vmdr.asset_host_detection",
+        "ingested": "2024-09-03T21:58:45Z",
+        "kind": "alert",
+        "original": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE HOST_LIST_VM_DETECTION_OUTPUT SYSTEM \"https://qualysapi.qualys.com/api/2.0/fo/asset/host/vm/detection/dtd/output.dtd\">\n<HOST_LIST_VM_DETECTION_OUTPUT>\n  <RESPONSE>\n    <DATETIME>2023-07-03T06:51:41Z</DATETIME>\n    <HOST_LIST>\n      <HOST>\n        <ID>12048633</ID>\n        <IP>10.50.2.111</IP>\n        <TRACKING_METHOD>IP</TRACKING_METHOD>\n        <OS>\n          <![CDATA[Windows 2016/2019/10]]>\n        </OS>\n        <DNS>\n          <![CDATA[adfssrvr.adfs.local]]>\n        </DNS>\n        <DNS_DATA>\n          <HOSTNAME>\n            <![CDATA[adfssrvr]]>\n          </HOSTNAME>\n          <DOMAIN>\n            <![CDATA[adfs.local]]>\n          </DOMAIN>\n          <FQDN>\n            <![CDATA[adfssrvr.adfs.local]]>\n          </FQDN>\n        </DNS_DATA>\n        <NETBIOS>\n          <![CDATA[ADFSSRVR]]>\n        </NETBIOS>\n        <LAST_SCAN_DATETIME>2023-07-03T06:25:17Z</LAST_SCAN_DATETIME>\n        <LAST_VM_SCANNED_DATE>2023-07-03T06:23:47Z</LAST_VM_SCANNED_DATE>\n        <LAST_VM_SCANNED_DURATION>1113</LAST_VM_SCANNED_DURATION>\n        <LAST_PC_SCANNED_DATE>2023-06-28T09:58:12Z</LAST_PC_SCANNED_DATE>\n        <DETECTION_LIST>\n          <DETECTION>\n            <UNIQUE_VULN_ID>5555555555</UNIQUE_VULN_ID>\n            <QID>197595</QID>\n            <TYPE>Confirmed</TYPE>\n            <SEVERITY>3</SEVERITY>\n            <SSL>0</SSL>\n            <RESULTS><![CDATA[Package Installed Version Required Version\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092]]></RESULTS>\n            <STATUS>Active</STATUS>\n            <FIRST_FOUND_DATETIME>2021-02-05T04:50:45Z</FIRST_FOUND_DATETIME>\n            <LAST_FOUND_DATETIME>2024-03-08T20:15:41Z</LAST_FOUND_DATETIME>\n            <QDS severity=\"LOW\">35</QDS>\n            <QDS_FACTORS>\n              <QDS_FACTOR name=\"CVSS\"><![CDATA[7.7]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_version\"><![CDATA[v3.x]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"epss\"><![CDATA[0.00232]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_vector\"><![CDATA[AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H]]></QDS_FACTOR>\n            </QDS_FACTORS>\n            <TIMES_FOUND>5393</TIMES_FOUND>\n            <LAST_TEST_DATETIME>2024-03-08T20:15:41Z</LAST_TEST_DATETIME>\n            <LAST_UPDATE_DATETIME>2024-03-08T20:15:41Z</LAST_UPDATE_DATETIME>\n            <LAST_FIXED_DATETIME>2022-12-14T06:52:57Z</LAST_FIXED_DATETIME>\n            <IS_IGNORED>0</IS_IGNORED>\n            <IS_DISABLED>0</IS_DISABLED>\n            <AFFECT_RUNNING_KERNEL>0</AFFECT_RUNNING_KERNEL>\n            <LAST_PROCESSED_DATETIME>2024-03-08T20:15:41Z</LAST_PROCESSED_DATETIME>\n          </DETECTION>\n          <DETECTION>\n            <UNIQUE_VULN_ID>6666666666</UNIQUE_VULN_ID>\n            <QID>197597</QID>\n            <TYPE>Confirmed</TYPE>\n            <SEVERITY>5</SEVERITY>\n            <SSL>0</SSL>\n            <RESULTS><![CDATA[Package Installed Version Required Version\nlinux-image-4.15.0  1027-aws_4.15.0-1126.135  1047\nlinux-headers-4.15.0  1027-aws_4.15.0-1126.135  1047\nlinux-modules-4.15.0  1027-aws_4.15.0-1126.135  1047\nlinux-aws-headers-4.15.0  1027_4.15.0-1126.135  1047]]></RESULTS>\n            <STATUS>Active</STATUS>\n            <FIRST_FOUND_DATETIME>2021-02-05T04:50:45Z</FIRST_FOUND_DATETIME>\n            <LAST_FOUND_DATETIME>2024-03-08T20:15:41Z</LAST_FOUND_DATETIME>\n            <QDS severity=\"CRITICAL\">95</QDS>\n            <QDS_FACTORS>\n              <QDS_FACTOR name=\"RTI\"><![CDATA[local]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"exploit_maturity\"><![CDATA[weaponized,poc]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CISA_vuln\"><![CDATA[YES]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS\"><![CDATA[7.8]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_version\"><![CDATA[v3.x]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"epss\"><![CDATA[0.00052]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"trending\"><![CDATA[02222024,02162024,02262024,02152024,02012024,02252024,02212024,02282024,02102024,02062024,02082024,02042024,02052024]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_vector\"><![CDATA[AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"mitigation_controls\"><![CDATA[18436,18437]]></QDS_FACTOR>\n            </QDS_FACTORS>\n            <TIMES_FOUND>5393</TIMES_FOUND>\n            <LAST_TEST_DATETIME>2024-03-08T20:15:41Z</LAST_TEST_DATETIME>\n            <LAST_UPDATE_DATETIME>2024-03-08T20:15:41Z</LAST_UPDATE_DATETIME>\n            <LAST_FIXED_DATETIME>2022-12-14T06:52:57Z</LAST_FIXED_DATETIME>\n            <IS_IGNORED>0</IS_IGNORED>\n            <IS_DISABLED>0</IS_DISABLED>\n            <AFFECT_RUNNING_KERNEL>0</AFFECT_RUNNING_KERNEL>\n            <LAST_PROCESSED_DATETIME>2024-03-08T20:15:41Z</LAST_PROCESSED_DATETIME>\n          </DETECTION>\n        </DETECTION_LIST>\n      </HOST>\n    </HOST_LIST>\n    <WARNING>\n      <CODE>1980</CODE>\n      <TEXT>1000 record limit exceeded. Use URL to get next batch of results.</TEXT>\n      <URL><![CDATA[http://qualys_vmdr:8090/api/2.0/fo/asset/host/vm/detection/?action=list&truncation_limit=1000&id_min=5641289]]></URL>\n      </WARNING>\n  </RESPONSE>\n</HOST_LIST_VM_DETECTION_OUTPUT>",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "id": "12048633",
+        "ip": [
+            "10.50.2.111"
+        ]
+    },
+    "input": {
+        "type": "cel"
     },
     "qualys_vmdr": {
         "asset_host_detection": {
-            "metadata": {
-                "google": {
-                    "attribute": [
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "latest/dynamic/instance-identity/document/imageId",
-                            "value": "projects/debian-cloud/global/images/debian-11-bullseye-v20221206"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "latest/dynamic/instance-identity/document/privateIp",
-                            "value": "10.0.0.1"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "latest/meta-data/hostname",
-                            "value": "myserver.internal"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "latest/meta-data/instance-id",
-                            "value": "1234567898765432123"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "latest/meta-data/mac",
-                            "value": "aa:bb:cc:dd:ee:ff"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "latest/meta-data/public-ipv4",
-                            "value": "34.34.34.34"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "machineType",
-                            "value": "e2-standard-4"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "network",
-                            "value": "internal"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "projectId",
-                            "value": "mysuperproject"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "projectIdNo",
-                            "value": "123456789876"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "state",
-                            "value": "RUNNING"
-                        },
-                        {
-                            "last": {
-                                "success_date": "2024-09-02T13:09:01.000Z",
-                                "status": "Success"
-                            },
-                            "name": "zone",
-                            "value": "us-central1-a"
-                        }
-                    ]
-                }
-            },
-            "qg_hostid": "20247932-9ca8-4351-80ee-3a3769b85db7",
-            "os": "Debian Linux 11.11",
-            "ip": "10.128.0.2",
-            "dns": "myserver.internal",
-            "dns_data": {
-                "hostname": "myserver",
-                "fqdn": "myserver.internal",
-                "domain": "internal"
-            },
-            "cloud_resource_id": "1234567898765432123",
-            "last_scan_datetime": "2024-09-03T06:57:35.000Z",
-            "cloud_provider": "GCP",
-            "asset_id": 123456789,
+            "id": "12048633",
+            "ip": "10.50.2.111",
+            "last_pc_scanned_date": "2023-06-28T09:58:12.000Z",
+            "last_scan_datetime": "2023-07-03T06:25:17.000Z",
+            "last_vm_scanned_date": "2023-07-03T06:23:47.000Z",
+            "last_vm_scanned_duration": 1113,
+            "tracking_method": "IP",
             "vulnerability": {
-                "qds": {
-                    "severity": "HIGH",
-                    "score": 72
-                },
-                "last_processed_datetime": "2024-09-02T14:19:14.000Z",
-                "type": "Confirmed",
-                "qid": 6000245,
-                "ssl": "0",
-                "first_found_datetime": "2023-10-11T21:50:47.000Z",
-                "times_found": 2,
+                "affect_running_kernel": "0",
+                "first_found_datetime": "2021-02-05T04:50:45.000Z",
+                "is_disabled": false,
                 "is_ignored": false,
+                "last_fixed_datetime": "2022-12-14T06:52:57.000Z",
+                "last_found_datetime": "2024-03-08T20:15:41.000Z",
+                "last_processed_datetime": "2024-03-08T20:15:41.000Z",
+                "last_test_datetime": "2024-03-08T20:15:41.000Z",
+                "last_update_datetime": "2024-03-08T20:15:41.000Z",
+                "qds": {
+                    "score": 35,
+                    "severity": "LOW"
+                },
                 "qds_factors": [
                     {
-                        "name": "exploit_maturity",
-                        "text": "poc"
-                    },
-                    {
                         "name": "CVSS",
-                        "text": "9.8"
+                        "text": "7.7"
                     },
                     {
                         "name": "CVSS_version",
@@ -252,130 +173,39 @@ An example event for `asset_host_detection` looks as following:
                     },
                     {
                         "name": "epss",
-                        "text": "0.00319"
-                    },
-                    {
-                        "name": "trending",
-                        "text": "08092024,08122024,08062024,08282024,08152024"
+                        "text": "0.00232"
                     },
                     {
                         "name": "CVSS_vector",
-                        "text": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                        "text": "AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H"
                     }
                 ],
-                "severity": 4,
-                "last_update_datetime": "2024-09-02T14:19:14.000Z",
-                "is_disabled": false,
-                "unique_vuln_id": "1234567898",
-                "last_test_datetime": "2024-09-02T14:19:13.000Z",
-                "last_fixed_datetime": "2023-10-12T04:27:09.000Z",
-                "status": "Fixed",
-                "last_found_datetime": "2023-10-12T00:41:34.000Z"
-            },
-            "cloud_service": "Compute Engine",
-            "tags": [
-                {
-                    "name": "Cloud Agent",
-                    "id": "123456789"
-                },
-                {
-                    "name": "GCP",
-                    "id": "234567898"
-                }
-            ],
-            "cloud_provider_tags": {
-                "cloud_tag": [
-                    {
-                        "name": "division",
-                        "last_success_date": "2024-09-02T13:09:01.000Z",
-                        "value": "IT"
-                    }
-                ]
-            },
-            "network_id": "0",
-            "last_vm_scanned_date": "2024-09-03T06:57:35.000Z",
-            "ec2_instance_id": "1234567898765432123",
-            "id": "123456789",
-            "last_vm_auth_scanned_date": "2024-09-03T06:57:35.000Z",
-            "tracking_method": "AGENT"
+                "qid": 197595,
+                "results": "Package Installed Version Required Version\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092",
+                "severity": 3,
+                "ssl": "0",
+                "status": "Active",
+                "times_found": 5393,
+                "type": "Confirmed",
+                "unique_vuln_id": "5555555555"
+            }
         }
     },
+    "related": {
+        "hosts": [
+            "12048633"
+        ],
+        "ip": [
+            "10.50.2.111"
+        ]
+    },
     "tags": [
+        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "qualys_vmdr-asset_host_detection",
         "provider_cloud_data"
-    ],
-    "cloud": {
-        "availability_zone": [
-            "us-central1-a"
-        ],
-        "instance": {
-            "name": "myserver",
-            "id": "1234567898765432123"
-        },
-        "provider": "gcp",
-        "service": {
-            "name": "Compute Engine"
-        },
-        "machine": {
-            "type": [
-                "e2-standard-4"
-            ]
-        },
-        "project": {
-            "name": [
-                "myproject"
-            ],
-            "id": [
-                "123456789876"
-            ]
-        }
-    },
-    "input": {
-        "type": "cel"
-    },
-    "@timestamp": "2024-09-03T07:13:51.621Z",
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "related": {
-        "hosts": [
-            "myserver.internal",
-            "myserver",
-            "123456789",
-            "20247932-9ca8-4351-80ee-3a3769b85db7"
-        ],
-        "ip": [
-            "10.0.0.1"
-        ]
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "qualys_vmdr.asset_host_detection"
-    },
-    "host": {
-        "os": {
-            "full": "Debian Linux 11.11"
-        },
-        "ip": [
-            "10.0.0.1"
-        ],
-        "id": "123456789"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2024-09-03T07:13:56Z",
-        "kind": "alert",
-        "category": [
-            "host"
-        ],
-        "type": [
-            "info"
-        ],
-        "dataset": "qualys_vmdr.asset_host_detection"
-    }
+    ]
 }
 ```
 
