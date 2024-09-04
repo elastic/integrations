@@ -503,7 +503,7 @@ prepare_stack() {
         fi
     fi
 
-    if [ "${STACK_LOGSDB_ENABLED}" == "true" ]; then
+    if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
         args="${args} -U stack.logsdb_enabled=true"
     fi
 
