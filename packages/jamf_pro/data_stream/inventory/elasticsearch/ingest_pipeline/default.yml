@@ -12,6 +12,24 @@ processors:
     target_field: jamf_pro.inventory
     
 - script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: |
+      boolean dropEmptyFields(Object object) {
+        if (object == null || object == "") {
+        return true;
+        } else if (object instanceof Map) {
+        ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+        return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+        ((List) object).removeIf(value -> dropEmptyFields(value));
+        return (((List) object).length == 0);
+        }
+        return false;
+      }
+      dropEmptyFields(ctx);
+
+- script:
     description: Convert Additional Info keys to snake case.
     tag: additional-info-keys-to-snake-case
     lang: painless
