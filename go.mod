@@ -1,6 +1,7 @@
 module github.com/elastic/integrations
 
-go 1.22.0
+go 1.22.1
+
 toolchain go1.22.5
 
 require (
