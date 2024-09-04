@@ -81,6 +81,9 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 | sysdig.content.ruleTags | Tags associated with an event rule | text |
 | sysdig.content.ruleType | Category of the rule associated with an event | text |
 | sysdig.description | Description of the event policy | text |
+| sysdig.event.category |  | text |
+| sysdig.event.description |  | text |
+| sysdig.event.type |  | text |
 | sysdig.hostMac | MAC address of the host machine | text |
 | sysdig.id | Event identifier | text |
 | sysdig.labels.azure.instanceId | Instance identifier for the azure instance | text |
@@ -111,8 +114,6 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 
 
 **Example event**
-
-An example event for `alerts` looks as following:
 
 An example event for `alerts` looks as following:
 

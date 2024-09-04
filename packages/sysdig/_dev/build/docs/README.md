@@ -35,6 +35,4 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 
 **Example event**
 
-An example event for `alerts` looks as following:
-
 {{ event "alerts" }}
