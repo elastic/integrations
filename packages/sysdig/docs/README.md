@@ -119,14 +119,9 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-03T17:49:40.818Z",
-    "SysdigEvent": {
-        "category": "runtime",
-        "description": "This policy contains rules which provide a greater insight into general activities occuring on the system. They are very noisy, but useful in threat hunting situations if you are looking for specific actions being taken during runtime. It is not recommended to use this policy for detection purposes unless tuning is enabled.  Additional manual tuning will likely be required.",
-        "type": "policy"
-    },
+    "@timestamp": "2024-09-04T13:52:52.851Z",
     "agent": {
-        "ephemeral_id": "c68fa111-c0ad-4e3f-95d5-2b4ea6d13f50",
+        "ephemeral_id": "f22a99e1-a5aa-4602-bdea-001782c2eaff",
         "id": "58014837",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -137,6 +132,13 @@ An example event for `alerts` looks as following:
             "id": "289645096542"
         },
         "availability_zone": "us-central1-c",
+        "instance": {
+            "id": "648229130641697246",
+            "name": "gke-cluster-gcp-demo-san-default-pool-66250c41-vd1o"
+        },
+        "machine": {
+            "type": "e2-standard-4"
+        },
         "project": {
             "id": "289645096542",
             "name": "alliances-chronicle"
@@ -144,22 +146,19 @@ An example event for `alerts` looks as following:
         "provider": "gcp",
         "region": "us-central1"
     },
-    "cloud.instance.id": "648229130641697246",
-    "cloud.instance.name": "gke-cluster-gcp-demo-san-default-pool-66250c41-vd1o",
-    "cloud.machine.type": "e2-standard-4",
     "container": {
         "id": "6949e5f10829"
     },
     "data_stream": {
         "dataset": "sysdig.alerts",
-        "namespace": "48937",
+        "namespace": "30433",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "a2ee4dc6-30c0-4a7d-8acd-f7789c44e3fa",
+        "id": "9ea94106-ba19-44a3-a92f-fefe0b7c552b",
         "snapshot": false,
         "version": "8.14.1"
     },
@@ -167,7 +166,7 @@ An example event for `alerts` looks as following:
         "agent_id_status": "mismatch",
         "dataset": "sysdig.alerts",
         "id": "17dec715376910362c8c3f62a4ceda2e",
-        "ingested": "2024-09-03T17:49:50Z",
+        "ingested": "2024-09-04T13:53:02Z",
         "kind": "alert",
         "provider": "syscall",
         "severity": 7,
@@ -252,6 +251,11 @@ An example event for `alerts` looks as following:
             "ruleType": "RULE_TYPE_FALCO"
         },
         "description": "This policy contains rules which provide a greater insight into general activities occuring on the system. They are very noisy, but useful in threat hunting situations if you are looking for specific actions being taken during runtime. It is not recommended to use this policy for detection purposes unless tuning is enabled.  Additional manual tuning will likely be required.",
+        "event": {
+            "category": "runtime",
+            "description": "This policy contains rules which provide a greater insight into general activities occuring on the system. They are very noisy, but useful in threat hunting situations if you are looking for specific actions being taken during runtime. It is not recommended to use this policy for detection purposes unless tuning is enabled.  Additional manual tuning will likely be required.",
+            "type": "policy"
+        },
         "hostMac": "42:01:0a:80:00:05",
         "id": "17dec715376910362c8c3f62a4ceda2e",
         "labels": {

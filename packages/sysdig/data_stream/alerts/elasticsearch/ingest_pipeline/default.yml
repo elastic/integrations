@@ -214,42 +214,36 @@ processors:
     copy_from: sysdig.labels.gcp.availabilityZone
     ignore_empty_value: true
     if: ctx?.sysdig?.labels?.cloudProvider?.name != null && ctx?.sysdig?.labels?.cloudProvider?.name == "gcp"
-- script:
-    lang: painless
-    tag: 'painless_set_cloud_instance_id'
-    if: ctx?.sysdig?.labels?.gcp?.instanceId != null || ctx?.sysdig?.labels?.azure?.instanceId != null
-    source: |
-        if (ctx?.sysdig?.labels?.gcp?.instanceId != null) {
-            ctx['cloud.instance.id'] = ctx.sysdig.labels.gcp.instanceId
-        } else if (ctx?.sysdig?.labels?.azure?.instanceId != null) {
-            ctx['cloud.instance.id'] = ctx.sysdig.labels.azure.instanceId
-        } else {
-            ctx['cloud.instance.id'] = null;
-        }
-- script:
-    lang: painless
-    tag: 'painless_set_cloud_instance_name'
-    if: ctx?.sysdig?.labels?.gcp?.instanceName != null || ctx?.sysdig?.labels?.azure?.instanceName != null
-    source: |
-        if (ctx?.sysdig?.labels?.gcp?.instanceName != null) {
-            ctx['cloud.instance.name'] = ctx.sysdig.labels.gcp.instanceName
-        } else if (ctx?.sysdig?.labels?.azure?.instanceName != null) {
-            ctx['cloud.instance.name'] = ctx.sysdig.labels.azure.instanceName
-        } else {
-            ctx['cloud.instance.name'] = null;
-        }
-- script:
-    lang: painless
-    tag: 'painless_set_cloud_machine_type'
-    if: ctx?.sysdig?.labels?.gcp?.machineType != null || ctx?.sysdig?.labels?.azure?.instanceSize != null
-    source: |
-        if (ctx?.sysdig?.labels?.gcp?.machineType != null) {
-            ctx['cloud.machine.type'] = ctx.sysdig.labels.gcp.machineType
-        } else if (ctx?.sysdig?.labels?.azure?.instanceSize != null) {
-            ctx['cloud.machine.type'] = ctx.sysdig.labels.azure.instanceSize
-        } else {
-            ctx['cloud.machine.type'] = null;
-        }
+- set:
+    field: cloud.instance.id
+    copy_from: sysdig.labels.gcp.instanceId
+    ignore_empty_value: true
+    if: ctx?.sysdig?.labels?.gcp?.instanceId != null
+- set:
+    field: cloud.instance.id
+    copy_from: sysdig.labels.azure.instanceId
+    ignore_empty_value: true
+    if: ctx?.sysdig?.labels?.azure?.instanceId != null
+- set:
+    field: cloud.instance.name
+    copy_from: sysdig.labels.gcp.instanceName
+    ignore_empty_value: true
+    if: ctx?.sysdig?.labels?.gcp?.instanceName != null
+- set:
+    field: cloud.instance.name
+    copy_from: sysdig.labels.gcp.instanceName
+    ignore_empty_value: true
+    if: ctx?.sysdig?.labels?.azure?.instanceName != null
+- set:
+    field: cloud.machine.type
+    copy_from: sysdig.labels.gcp.machineType
+    ignore_empty_value: true
+    if: ctx?.sysdig?.labels?.gcp?.machineType != null
+- set:
+    field: cloud.machine.type
+    copy_from: sysdig.labels.azure.instanceSize
+    ignore_empty_value: true
+    if: ctx?.sysdig?.labels?.azure?.instanceSize != null
 - set:
     field: cloud.project.id
     copy_from: sysdig.labels.gcp.projectId
