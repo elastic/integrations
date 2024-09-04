@@ -2508,6 +2508,7 @@ An example event for `sysmon_operational` looks as following:
 | dll.code_signature.status |  | alias |
 | dll.code_signature.subject_name |  | alias |
 | dll.code_signature.trusted |  | alias |
+| dll.hash.sha256 |  | alias |
 | dll.name |  | alias |
 | dll.path |  | alias |
 | dll.pe.original_file_name |  | alias |
