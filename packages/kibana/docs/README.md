@@ -60,6 +60,7 @@ UI in Kibana.
 | process.pid | Process id. | long |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | service.node.roles | Roles of a service node. This allows for distinction between different running roles of the same service. In the case of Kibana, the `service.node.role` could be `ui` or `background_tasks` or both. In the case of Elasticsearch, the `service.node.role` could be `master` or `data` or both. Other services could use this to distinguish between a `web` and `worker` role running as part of the service. | keyword |
+| span.id | Unique identifier of the span within the scope of its trace. A span represents an operation within a transaction, such as a request to another service, or a database query. | keyword |
 | trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 | transaction.id | Unique identifier of the transaction within the scope of its trace. A transaction is the highest level of work measured within a service, such as a request to a server. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |

@@ -497,7 +497,6 @@ An example event for `auditd` looks as following:
 | auditd.paths.item | Which item is being recorded | keyword |
 | auditd.paths.mode | Mode flags on a file | keyword |
 | auditd.paths.name | File name in avcs | keyword |
-| auditd.paths.name.text | Multi-field of `auditd.paths.name`. | match_only_text |
 | auditd.paths.nametype | Kind of file operation being referenced | keyword |
 | auditd.paths.obj_domain |  | keyword |
 | auditd.paths.obj_level |  | keyword |
@@ -517,25 +516,18 @@ An example event for `auditd` looks as following:
 | auditd.summary.object.type | A description of the what the "thing" is (e.g. file, socket, user-session). | keyword |
 | auditd.user.audit.id |  | keyword |
 | auditd.user.audit.name |  | keyword |
-| auditd.user.audit.name.text | Multi-field of `auditd.user.audit.name`. | match_only_text |
 | auditd.user.filesystem.group.id |  | keyword |
 | auditd.user.filesystem.group.name |  | keyword |
-| auditd.user.filesystem.group.name.text | Multi-field of `auditd.user.filesystem.group.name`. | match_only_text |
 | auditd.user.filesystem.id |  | keyword |
 | auditd.user.filesystem.name |  | keyword |
-| auditd.user.filesystem.name.text | Multi-field of `auditd.user.filesystem.name`. | match_only_text |
 | auditd.user.new_auid.id |  | keyword |
 | auditd.user.new_auid.name |  | keyword |
-| auditd.user.new_auid.name.text | Multi-field of `auditd.user.new_auid.name`. | match_only_text |
 | auditd.user.old_auid.id |  | keyword |
 | auditd.user.old_auid.name |  | keyword |
-| auditd.user.old_auid.name.text | Multi-field of `auditd.user.old_auid.name`. | match_only_text |
 | auditd.user.saved.group.id |  | keyword |
 | auditd.user.saved.group.name |  | keyword |
-| auditd.user.saved.group.name.text | Multi-field of `auditd.user.saved.group.name`. | match_only_text |
 | auditd.user.saved.id |  | keyword |
 | auditd.user.saved.name |  | keyword |
-| auditd.user.saved.name.text | Multi-field of `auditd.user.saved.name`. | match_only_text |
 | auditd.user.selinux.category | The actor's SELinux category or compartments. | keyword |
 | auditd.user.selinux.domain | The actor's SELinux domain or type. | keyword |
 | auditd.user.selinux.level | The actor's SELinux level. | keyword |
@@ -564,7 +556,6 @@ An example event for `auditd` looks as following:
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
-| group.name.text | Multi-field of `group.name`. | match_only_text |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
@@ -586,19 +577,16 @@ An example event for `auditd` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | user.effective.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.effective.group.name | Name of the group. | keyword |
-| user.effective.group.name.text | Multi-field of `user.effective.group.name`. | match_only_text |
 | user.effective.id | Unique identifier of the user. | keyword |
 | user.effective.name | Short name or login of the user. | keyword |
 | user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
 | user.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.group.name | Name of the group. | keyword |
-| user.group.name.text | Multi-field of `user.group.name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.target.group.name | Name of the group. | keyword |
-| user.target.group.name.text | Multi-field of `user.target.group.name`. | match_only_text |
 | user.target.id | Unique identifier of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
 | user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
