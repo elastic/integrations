@@ -45,6 +45,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "datastore"}}
 
+### Resourcepool Metrics
+Resource pools in vSphere allow for the allocation and management of CPU and memory resources across groups of virtual machines.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "resourcepool"}}
+
 ## Logs
 
 To collect logs, a syslog daemon is used. First, you must configure the listening host/IP address (default: localhost) and host port (default: 9525) in the integration. Then, configure vSphere to send logs to a remote syslog host and provide the configured hostname/IP and port of the Elastic Agent host.
