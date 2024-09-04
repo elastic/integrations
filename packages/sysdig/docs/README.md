@@ -119,9 +119,9 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-04T13:52:52.851Z",
+    "@timestamp": "2024-09-04T17:14:53.504Z",
     "agent": {
-        "ephemeral_id": "f22a99e1-a5aa-4602-bdea-001782c2eaff",
+        "ephemeral_id": "fb1cfd6b-5ed0-44e2-92d2-6e9f719ed016",
         "id": "58014837",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -151,14 +151,14 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.alerts",
-        "namespace": "30433",
+        "namespace": "89492",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9ea94106-ba19-44a3-a92f-fefe0b7c552b",
+        "id": "9d5fe91e-29be-49a8-b99d-74ddeaeaad07",
         "snapshot": false,
         "version": "8.14.1"
     },
@@ -166,7 +166,7 @@ An example event for `alerts` looks as following:
         "agent_id_status": "mismatch",
         "dataset": "sysdig.alerts",
         "id": "17dec715376910362c8c3f62a4ceda2e",
-        "ingested": "2024-09-04T13:53:02Z",
+        "ingested": "2024-09-04T17:15:03Z",
         "kind": "alert",
         "provider": "syscall",
         "severity": 7,
