@@ -8,18 +8,21 @@ processors:
 - json:
     field: message
     target_field: json
-    if: ctx.message != null
 
-- rename:
-    field: json.event.computer
-    target_field: json.event.is_computer
-    if: ctx.json.event?.computer != null && (ctx.json.event.computer === true || ctx.json.event.computer === false)
+- convert:
+    field: json.event.management_id
+    type: string
+    if: "ctx.json.event?.management_id != null && !(ctx.json.event?.management_id  instanceof String)"
 
 - rename:
     field: json
     target_field: jamf_pro.events
     if: ctx.json != null
 
+- rename:
+    field: jamf_pro.events.event.computer
+    target_field: jamf_pro.events.event.is_computer
+    if: (ctx.jamf_pro.events.event.computer === true || ctx.jamf_pro.events.event.computer === false)
 
 - script:
     description: Convert Additional Info keys to snake case.
@@ -87,15 +90,15 @@ processors:
     ignore_empty_value: true
 
 - set:
-    if: "ctx.jamf_pro.events.event?.computer != null && ctx.jamf_pro.events.event?.computer.reported_ip_address != ''"
+    if: "ctx.jamf_pro.events.event?.computer != null && ctx.jamf_pro.events.event?.computer?.reported_ip_address != null && ctx.jamf_pro.events.event?.computer?.reported_ip_address != ''"
     field: _tmp.ip
     value: '{{{jamf_pro.events.event.computer.reported_ip_address}}}'
     ignore_empty_value: true
 
 - set:
-    if: "ctx.jamf_pro.events.event?.reported_ip_address != ''"
+    if: "ctx.jamf_pro.events.event?.reported_ip_address != null && ctx.jamf_pro.events.event?.reported_ip_address != ''"
     field: _tmp.ip
-    value: '{{{jamf_pro.events.event.reported_ip_address}}}'
+    value: '{{{jamf_pro.events.event?.reported_ip_address}}}'
     ignore_empty_value: true
 ##############
 #  User src  #
