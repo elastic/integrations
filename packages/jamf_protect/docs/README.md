@@ -118,7 +118,7 @@ An example event for `alerts` looks as following:
         "id": "e176809c-0a61-421a-a0e2-e1c422c3d93f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.alerts",
@@ -131,7 +131,7 @@ An example event for `alerts` looks as following:
     "elastic_agent": {
         "id": "e176809c-0a61-421a-a0e2-e1c422c3d93f",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "event": {
         "action": "CustomURLHandlerCreation",
@@ -310,7 +310,7 @@ An example event for `telemetry` looks as following:
         "id": "e176809c-0a61-421a-a0e2-e1c422c3d93f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.telemetry",
@@ -327,7 +327,7 @@ An example event for `telemetry` looks as following:
     "elastic_agent": {
         "id": "e176809c-0a61-421a-a0e2-e1c422c3d93f",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "event": {
         "action": "exec",
@@ -605,7 +605,7 @@ An example event for `web_threat_events` looks as following:
         "id": "e176809c-0a61-421a-a0e2-e1c422c3d93f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_threat_events",
@@ -623,7 +623,7 @@ An example event for `web_threat_events` looks as following:
     "elastic_agent": {
         "id": "e176809c-0a61-421a-a0e2-e1c422c3d93f",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "event": {
         "action": "Detected",
@@ -732,7 +732,7 @@ An example event for `web_traffic_events` looks as following:
         "id": "e176809c-0a61-421a-a0e2-e1c422c3d93f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_traffic_events",
@@ -757,7 +757,7 @@ An example event for `web_traffic_events` looks as following:
     "elastic_agent": {
         "id": "e176809c-0a61-421a-a0e2-e1c422c3d93f",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "event": {
         "action": "DNS Lookup",
