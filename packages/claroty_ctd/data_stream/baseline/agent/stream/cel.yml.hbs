@@ -33,12 +33,11 @@ program: |
         "Content-Type": ["application/json"]
       },
     }).do_request().as(resp, resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(body,
-      {
-          "access_token": body.token,
-          "page" : state.page,
-          "counter": 0,
-        })
+      bytes(resp.Body).decode_json().as(body, {
+        "access_token": body.token,
+        "page" : state.page,
+        "counter": 0,
+      })
     :
       {
         "events": {
@@ -58,15 +57,14 @@ program: |
     request(
       "GET",
       state.url + "/ranger/baselines?" + {
-        ?"page" : optional.of([string(state.page)]),
-        ?"per_page" : optional.of([string(state.batch_size)]),
+        "page" : [string(state.page)],
+        "per_page" : [string(state.batch_size)],
         ?"last_updated__gt":(!state.?want_more.orValue(false) && has(state.?cursor.last_updated)) ?
-          optional.of([timestamp(state.cursor.last_updated).format(time_layout.RFC3339)])
+          optional.of([string(state.cursor.last_updated)])
+        : has(state.first_updated) ?
+          optional.of([string(state.first_updated)])
         :
-          has(state.?cursor.first_updated) ?
-            optional.of([timestamp(state.cursor.first_updated).format(time_layout.RFC3339)])
-          :
-            optional.none()
+          optional.none()
       }.format_query()
     ).with({
       "Header": {
@@ -75,40 +73,41 @@ program: |
       },
     }).do_request().as(resp, resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, {
-        "events": (has(body.objects) && body.objects != null ?
-            body.objects.map(e, { "message": e.encode_json(),})
-          :
-            [{}]),
+        "events": has(body.objects) && body.objects != null ?
+          body.objects.map(e, {
+            "message": e.encode_json(),
+          })
+        :
+          [],
         "cursor": {
           ?"last_updated": (has(body.count_in_page) && int(body.count_in_page) > 0) ?
-              optional.of(string(([?state.?cursor.last_updated] + body.objects.map(e, e.last_updated)).map(t, timestamp(t)).max()))
-            :
-              state.?cursor.last_updated,
-          ?"first_updated": (has(state.?cursor.first_updated) && has(body.objects) && body.objects.size() > 0) ?
-            (
-              has(body.count_in_page) && has(body.count_total) && int(state.counter) + int(body.count_in_page) < int(body.count_total) && state.want_more ?
-                optional.of(state.cursor.first_updated)
-              :
-                optional.of(state.cursor.last_updated)
-            )
-            :
-              optional.of(string(timestamp(0))),
+            optional.of(string(([?state.?cursor.last_updated] + body.objects.map(e, e.last_updated)).map(t, timestamp(t)).max()))
+          :
+            state.?cursor.last_updated,
         },
-          "username" : state.username,
-          "password" : state.password,
-          "batch_size" : state.batch_size,
-          "access_token": state.access_token,
-          "url" : state.url,
-          "counter": ( (int(state.counter) + int(body.count_in_page)) < int(body.count_total)  ? int(state.counter) + int(body.count_in_page) : 0),
-          "want_more" : has(body.count_in_page) && has(body.count_total) ? int(state.counter) + int(body.count_in_page) < int(body.count_total) : false,
-          "page" : string(int(
-            has(body.objects) && (int(state.counter) + int(body.count_in_page)) < int(body.count_total) ?
-              state.page
-            :
-              "0"
-          ) + 1),
-        }
-      )
+        ?"first_updated": (!has(state.first_updated) && has(body.objects) && (int(state.counter) + int(body.?count_in_page.orValue(0))) < int(body.?count_total.orValue(-1))) ?
+          optional.none()
+        : state.want_more && (int(state.counter) + int(body.?count_in_page.orValue(0))) < int(body.?count_total.orValue(-1)) ?
+          optional.of(state.first_updated)
+        :
+          optional.of(state.cursor.last_updated),
+        "username" : state.username,
+        "password" : state.password,
+        "batch_size" : state.batch_size,
+        "access_token": state.access_token,
+        "url" : state.url,
+        "counter": (int(state.counter) + int(body.?count_in_page.orValue(0))) < int(body.?count_total.orValue(-1)) ?
+          int(state.counter) + int(body.count_in_page)
+        :
+          0,
+        "want_more" : has(body.count_in_page) && has(body.count_total) && (int(state.counter) + int(body.?count_in_page.orValue(0))) < int(body.?count_total.orValue(-1)),
+        "page" : string(int(
+          has(body.objects) && (int(state.counter) + int(body.?count_in_page.orValue(0))) < int(body.?count_total.orValue(-1)) ?
+            state.page
+          :
+            "0"
+        ) + 1),
+      })
     :
       {
         "events": {

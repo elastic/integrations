@@ -106,24 +106,53 @@ processors:
       description: Map children fields.
       if: ctx.json?.children instanceof List
       params:
-        'asset_type' : 'asset_type'
-        'asset_type__' : 'asset_type__'
-        'class_type' : 'class_type'
-        'criticality' : 'criticality'
-        'criticality__' : 'criticality__'
-        'special_hint' : 'special_hint'
-        'special_hint__' : 'special_hint__'
-        'subnet_id' : 'subnet_id'
-        'edge_id' : 'edge_id'
-        'network_id' : 'network_id'
-        'network.id' : 'network.id'
-        'network.site_id' : 'network.site_id'
-        'network.resource_id' : 'network.resource_id'
-        'resource_id' : 'resource_id'
-        'id' : 'id'
-        'site_id' : 'site_id'
-        'virtual_zone_id' : 'virtual_zone_id'
-        'virtual_zone_name' : 'virtual_zone_name'
+        renamefield:
+          'asset_type' : 'asset_type'
+          'asset_type__' : 'asset_type__'
+          'class_type' : 'class_type'
+          'criticality' : 'criticality'
+          'criticality__' : 'criticality__'
+          'special_hint' : 'special_hint'
+          'special_hint__' : 'special_hint__'
+          'subnet_id' : 'subnet_id'
+          'edge_id' : 'edge_id'
+          'network_id' : 'network_id'
+          'network.id' : 'network.id'
+          'network.site_id' : 'network.site_id'
+          'network.resource_id' : 'network.resource_id'
+          'resource_id' : 'resource_id'
+          'id' : 'id'
+          'site_id' : 'site_id'
+          'virtual_zone_id' : 'virtual_zone_id'
+          'virtual_zone_name' : 'virtual_zone_name'
+        longfield:
+          - asset_type
+          - subnet_type
+          - risk_level
+          - custom_informations.category
+          - special_hint
+          - criticality
+          - custom_informations.priority
+          - custom_informations.type
+          - project_parsed.creation_time
+          - project_parsed.information_type
+          - project_parsed.modification_time
+          - project_parsed.priority
+        stringfield:
+          - subnet_id
+          - id
+          - edge_id
+          - network_id
+          - virtual_zone_id
+          - site_id
+          - network.site_id
+          - network.id
+          - network.resource_id
+          - resource_id
+        boolfield:
+          - approved
+          - ghost
+          - parsed
       tag: script_to_map_fields_under_children_object
       source: |
         def convertToLong(def value) {
@@ -144,22 +173,22 @@ processors:
             throw new Exception('Unsupported type');
           }
         }
-        def renameKeys(Map json, Map keyMap) {
+        def renameKeys(Map json, Map keyMap, List longFields, List stringFields, List boolFields) {
           def updatedJson = new HashMap();
           for (def entry: json.entrySet()) {
             def key = entry.getKey();
             def value = entry.getValue();
             if (value instanceof Map) {
               if (keyMap.containsKey(key)) {
-                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap, longFields, stringFields, boolFields);
               } else {
-                updatedJson[key] = renameKeys(value, keyMap);
+                updatedJson[key] = renameKeys(value, keyMap, longFields, stringFields, boolFields);
               }
             } else if (value instanceof List) {
               def updatedList = [];
               for (def item: value) {
                 if (item instanceof Map) {
-                  updatedList.add(renameKeys(item, keyMap));
+                  updatedList.add(renameKeys(item, keyMap, longFields, stringFields, boolFields));
                 } else {
                   updatedList.add(item);
                 }
@@ -171,11 +200,11 @@ processors:
               }
             } else {
               if (keyMap.containsKey(key)) {
-                if (['asset_type','subnet_type','risk_level','custom_informations.category','special_hint','criticality','custom_informations.priority','custom_informations.type','project_parsed.creation_time','project_parsed.information_type','project_parsed.modification_time','project_parsed.priority'].contains(keyMap[key])) {
+                if (longFields.contains(keyMap[key])) {
                   updatedJson[keyMap[key]] = convertToLong(value);
-                } else if (['subnet_id','id','edge_id','network_id','virtual_zone_id','site_id','network.site_id','network.id','network.resource_id','resource_id'].contains(keyMap[key])) {
+                } else if (stringFields.contains(keyMap[key]) && value != null) {
                   updatedJson[keyMap[key]] = value.toString();
-                } else if (['approved','ghost','parsed'].contains(keyMap[key])) {
+                } else if (boolFields.contains(keyMap[key])) {
                   updatedJson[keyMap[key]] = convertToBoolean(value);
                 } else {
                   updatedJson[keyMap[key]] = value;
@@ -188,10 +217,14 @@ processors:
           return updatedJson;
         }
         ctx.claroty_ctd.asset.put('children', new ArrayList());
+        def longFields = new ArrayList(params.longfield);
+        def stringFields = new ArrayList(params.stringfield);
+        def boolFields = new ArrayList(params.boolfield);
+        def renamefields = new HashMap(params.renamefield);
         for (child in ctx.json.children) {
-          def children = renameKeys(child, params);
+          def children = renameKeys(child, renamefields, longFields, stringFields, boolFields);
           ctx.claroty_ctd.asset.children.add(children);
-          }
+        }
       on_failure:
         - append:
             field: error.message
@@ -910,31 +943,14 @@ processors:
       tag: set_@timestamp_from_asset_last_updated
       copy_from: claroty_ctd.asset.last_updated
       ignore_empty_value: true
-  - foreach:
-      field: claroty_ctd.asset.project_parsed
-      if: ctx.claroty_ctd?.asset?.project_parsed instanceof List
-      tag: foreach_project_parsed_creation_time
-      processor:
-        convert:
-          field: _ingest._value.creation_time
-          tag: convert_project_parsed_creation_time_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-           - remove:
-               field: _ingest._value.creation_time
-               ignore_missing: true
-           - append:
-               field: error.message
-               value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.project_parsed.information_type
-      tag: convert_project_parsed_information_type_to_long
+      field: json.project_parsed.creation_time
+      tag: convert_project_parsed_creation_time_to_long
       type: long
       ignore_missing: true
       on_failure:
        - remove:
-           field: json.project_parsed.information_type
+           field: json.project_parsed.creation_time
            ignore_missing: true
        - append:
            field: error.message

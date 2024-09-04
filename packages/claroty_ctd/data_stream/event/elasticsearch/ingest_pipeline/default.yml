@@ -2063,6 +2063,37 @@ processors:
       tag: rename_CtdWrkrWebWs
       target_field: claroty_ctd.event.worker.web.ws
       ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.claroty_ctd?.event?.worker != null
+      source: |
+        void objectify(Map m) {
+          def regex = /'/;
+          for (entry in m.entrySet()) {
+            def v = entry.getValue();
+            if (!(v instanceof String)) {
+              continue
+            }
+            if (!v.startsWith('{')) {
+              continue
+            }
+            def k = entry.getKey();
+            String msg = regex.matcher(v).replaceAll('"');
+            try {
+              m[k] = Processors.json(msg);
+            }
+            catch (Exception e) {
+              m[k] = msg;
+            }
+          }
+        }
+        objectify(ctx.claroty_ctd.event.worker);
+        for (w in ctx.claroty_ctd.event.worker.entrySet()) {
+          def v = w.getValue();
+          if (v instanceof Map) {
+            objectify(w.getValue());
+          }
+        }
   - convert:
       field: cef.extensions.CtdWrkrWorkersRestart
       tag: convert_CtdWrkrWorkersRestart_to_long

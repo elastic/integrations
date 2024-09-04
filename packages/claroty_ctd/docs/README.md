@@ -99,8 +99,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2023-08-13T01:00:00.000Z",
     "agent": {
-        "ephemeral_id": "ef2e9fcb-f315-4ca9-b622-f0e1c025b476",
-        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
+        "ephemeral_id": "beba55e4-8057-4474-a572-be3e76b23c30",
+        "id": "7090d98c-c949-469c-9209-a0de3adaaa65",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -265,48 +265,144 @@ An example event for `event` looks as following:
             "version": "0",
             "worker": {
                 "active": {
-                    "executer": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                    "value": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}"
+                    "executer": {
+                        "api": "Not Available",
+                        "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                    },
+                    "value": {
+                        "api": "Not Available",
+                        "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                    }
                 },
-                "authentication": "{'api': 'Not Available', 'last_restart': '21 min, 18 sec'}",
-                "baseline_tracker": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "bridge": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "cacher": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "capsaver": "{'api': 'Not Available', 'last_restart': '19 min, 17 sec'}",
+                "authentication": {
+                    "api": "Not Available",
+                    "last_restart": "21 min, 18 sec"
+                },
+                "baseline_tracker": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "bridge": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "cacher": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "capsaver": {
+                    "api": "Not Available",
+                    "last_restart": "19 min, 17 sec"
+                },
                 "cloud": {
-                    "agent": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                    "client": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}"
+                    "agent": {
+                        "api": "Not Available",
+                        "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                    },
+                    "client": {
+                        "api": "Not Available",
+                        "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                    }
                 },
-                "concluder": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
+                "concluder": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
                 "configurator": {
-                    "nginx": "{'api': 'Not Available', 'last_restart': '19 min, 17 sec'}",
-                    "value": "{'api': 'Available', 'last_re- start': '21 min, 18 sec'}"
+                    "nginx": {
+                        "api": "Not Available",
+                        "last_restart": "19 min, 17 sec"
+                    },
+                    "value": {
+                        "api": "Available",
+                        "last_restart": "21 min, 18 sec"
+                    }
                 },
                 "dissector": {
-                    "a_value": "{'api': 'Available', 'last_re- start': '18 min, 34 sec'}",
-                    "value": "{'api': 'Available', 'last_re- start': '18 min, 34 sec'}"
+                    "a_value": {
+                        "api": "Available",
+                        "last_restart": "18 min, 34 sec"
+                    },
+                    "value": {
+                        "api": "Available",
+                        "last_restart": "18 min, 34 sec"
+                    }
                 },
-                "enricher": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
+                "enricher": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
                 "indicators": {
-                    "api": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                    "value": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}"
+                    "api": {
+                        "api": "Not Available",
+                        "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                    },
+                    "value": {
+                        "api": "Not Available",
+                        "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                    }
                 },
-                "insights": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "known_threats": "{'api': 'Available', 'last_re- start': '18 min, 58 sec'}",
-                "leecher": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "mailer": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "mitre": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "notifications": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "preprocessor": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "processor": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
-                "scheduler": "{'api': 'Available', 'last_re- start': '21 min, 19 sec'}",
-                "sensor": "{'api': 'Available', 'last_re- start': '18 min, 34 sec'}",
-                "sync_manager": "{'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'}",
+                "insights": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "known_threats": {
+                    "api": "Available",
+                    "last_restart": "18 min, 58 sec"
+                },
+                "leecher": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "mailer": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "mitre": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "notifications": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "preprocessor": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "processor": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
+                "scheduler": {
+                    "api": "Available",
+                    "last_restart": "21 min, 19 sec"
+                },
+                "sensor": {
+                    "api": "Available",
+                    "last_restart": "18 min, 34 sec"
+                },
+                "sync_manager": {
+                    "api": "Not Available",
+                    "last_restart": "19316 days, 15 hrs, 56 min, 43 sec"
+                },
                 "web": {
-                    "auth": "{'api': 'Not Available', 'last_restart': '21 min, 1 sec'}",
-                    "nginx": "{'api': 'Not Available', 'last_restart': '21 min, 1 sec'}",
-                    "ranger": "{'api': 'Not Available', 'last_restart': '21 min, 6 sec'}",
-                    "ws": "{'api': 'Not Available', 'last_restart': '21 min, 1 sec'}"
+                    "auth": {
+                        "api": "Not Available",
+                        "last_restart": "21 min, 1 sec"
+                    },
+                    "nginx": {
+                        "api": "Not Available",
+                        "last_restart": "21 min, 1 sec"
+                    },
+                    "ranger": {
+                        "api": "Not Available",
+                        "last_restart": "21 min, 6 sec"
+                    },
+                    "ws": {
+                        "api": "Not Available",
+                        "last_restart": "21 min, 1 sec"
+                    }
                 },
                 "workers": {
                     "restart": 47,
@@ -318,23 +414,23 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_ctd.event",
-        "namespace": "12569",
+        "namespace": "27185",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
+        "id": "7090d98c-c949-469c-9209-a0de3adaaa65",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "claroty_ctd.event",
-        "ingested": "2024-08-20T18:01:26Z",
+        "ingested": "2024-09-04T09:18:31Z",
         "kind": "event",
-        "original": "<134>1 2023-08-15T01:00:00Z Site syslog-HealthCheck-Default - - - CEF:0|Claroty|CTD|4.10.0|HealthCheck|Health|0|CtdRealTime=Aug 14 2023 01:00:00 CtdTimeGenerated=Aug 13 2023 01:00:00 CtdMessage=Successfully ran health monitoring CtdSite=Default CtdCpu=12.21 CtdMem=13.31 CtdUsedOptIcsranger=14.41 CtdUsedVar=15.51 CtdUsedTmp=16.61 CtdUsedEtc=17.71 CtdBusyFd=0.11 CtdBusySda=0.22 CtdBusySdaA=0.33 CtdBusySdaB=0.44 CtdBusySr=0.55 CtdBusyDm=0.66 CtdBusyDmA=0.77 CtdQuBaselineTracker=1 CtdQuBridge=2 CtdQuCentralBridge=3 CtdQuConcluding=4 CtdQuDiodeFeeder=5 CtdQuDissector=6 CtdQuDissectorA=7 CtdQuDissectorNg=8 CtdQuIndicatorService=9 CtdQuLeecher=10 CtdQuMonitor=11 CtdQuNetworkStatistics=12 CtdQuPackets=13 CtdQuPacketsErrors=14 CtdQuPreprocessing=15 CtdQuPreprocessingNg=16 CtdQuPriorityProcessing=17 CtdQuProcessing=18 CtdQuProcessingHigh=19 CtdQuStatisticsNg=20 CtdQuZordonUpdates=21 CtdQueuePurge=22 CtdQuSyslogAlerts=23 CtdQuSyslogEvents=24 CtdQuSyslogInsights=25 CtdRdDissector=26 CtdRdDissectorA=27 CtdRdDissectorNg=28 CtdRdPreprocessing=29 CtdRdPreprocessingNg=30 CtdSvcMariaDb=Down CtdSvcPostgres=Down CtdSvcRedis=Down CtdSvcRabbitMq=Down CtdSvcIcsranger=Down CtdSvcWatchdog=Down CtdSvcFirewalld=Down CtdSvcNetunnel=Down CtdSvcJwthenticator=Down CtdSvcDocker=Down CtdExceptions=31 CtdInputPacketDrops=32 CtdOutputPacketDrops=33 CtdFullOutputPacketDrops=34 CtdDissectorNgPacketDrops=35 CtdTagArtifactsDropsPreprocessor=36 CtdTagArtifactsDropsPreprocessorSum=37 CtdTagArtifactsDropsProcessor=38 CtdTagArtifactsDropsProcessorSum=39 CtdTagArtifactsDropsSniffer=40 CtdTagArtifactsDropsSnifferSum=41 CtdTagArtifactsDropsDissectorPypy=42 CtdTagArtifactsDropsDissectorPypySum=43 CtdCapsaverFolderCleanup=TRUE CtdDissectionCoverage=44 CtdCapsaverUtilzationTest=N/A CtdYaraScannerTest=45 CtdWrkrWorkersStop=46 CtdWrkrWorkersRestart=47 CtdWrkrActiveExecuter={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrSensor={'api': 'Available', 'last_re- start': '18 min, 34 sec'} CtdWrkrAuthentication={'api': 'Not Available', 'last_restart': '21 min, 18 sec'} CtdWrkrMailer={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrMitre={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrNotifications={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrProcessor={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrCloudAgent={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrCloudClient={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrScheduler={'api': 'Available', 'last_re- start': '21 min, 19 sec'} CtdWrkrknownThreats={'api': 'Available', 'last_re- start': '18 min, 58 sec'} CtdWrkrCacher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrInsights={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrActive={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrEnricher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrIndicators={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrIndicatorsApi={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrConcluder={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrPreprocessor={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrLeecher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrSyncManager={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrBridge={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrWebRanger={'api': 'Not Available', 'last_restart': '21 min, 6 sec'} CtdWrkrWebWs={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrWebAuth={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrWebNginx={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrConfigurator={'api': 'Available', 'last_re- start': '21 min, 18 sec'} CtdWrkrConfiguratorNginx={'api': 'Not Available', 'last_restart': '19 min, 17 sec'} CtdWrkrCapsaver={'api': 'Not Available', 'last_restart': '19 min, 17 sec'} CtdWrkrBaselineTracker={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrDissector={'api': 'Available', 'last_re- start': '18 min, 34 sec'} CtdWrkrDissectorA={'api': 'Available', 'last_re- start': '18 min, 34 sec'} CtdSensorName=Sensor-1 CtdCtrlSite=48 CtdLoopCallDurationBaselineTrackerWrkerHandleNetworkStatistics=1.2345 CtdDissectionEfficiencyModbus=2.2345 CtdDissectionEfficiencySmb=3.2345 CtdDissectionEfficiencyDcerpc=4.2345 CtdDissectionEfficiencyZabbix=5.2345 CtdDissectionEfficiencyFactorytalkRna=6.2345 CtdDissectionEfficiencySsl=7.2345 CtdDissectionEfficiencyVrrpProtocolMatcher=8.2345 CtdDissectionEfficiencyRdp=9.2345 CtdDissectionEfficiencySsh=10.2345 CtdDissectionEfficiencyHttp=11.2345 CtdDissectionEfficiencyTcpHttp=12.2345 CtdDissectionEfficiencyLdap=13.2345 CtdDissectionEfficiencyJrmi=14.2345 CtdDissectionEfficiencyGeIfix=15.2345 CtdDissectionEfficiencyLlc=16.2345 CtdDissectionEfficiencyMatrikonNopc=17.2345 CtdDissectionEfficiencyVnc=18.2345 CtdUnhandledEvents=49 CtdConcludeTime=50 CtdMysqlQuery=19.2345 CtdPostgresQuery=20.2345 CtdDroppedEntities=51 CtdPsqlIdleSessions=52 CtdPsqlIdleInTransactionSessions=53 CtdSnifferStatus=N/A CtdLoopCallDurationPollObjects=21.2345 CtdLoopCallDurationCloudClientWrkrBaseRunCloudConnected=22.2345 CtdSnifferStatusCentral=N/A CtdSnifferStatusSite=23.2345"
+        "original": "<134>1 2023-08-15T01:00:00Z Site syslog-HealthCheck-Default - - - CEF:0|Claroty|CTD|4.10.0|HealthCheck|Health|0|CtdRealTime=Aug 14 2023 01:00:00 CtdTimeGenerated=Aug 13 2023 01:00:00 CtdMessage=Successfully ran health monitoring CtdSite=Default CtdCpu=12.21 CtdMem=13.31 CtdUsedOptIcsranger=14.41 CtdUsedVar=15.51 CtdUsedTmp=16.61 CtdUsedEtc=17.71 CtdBusyFd=0.11 CtdBusySda=0.22 CtdBusySdaA=0.33 CtdBusySdaB=0.44 CtdBusySr=0.55 CtdBusyDm=0.66 CtdBusyDmA=0.77 CtdQuBaselineTracker=1 CtdQuBridge=2 CtdQuCentralBridge=3 CtdQuConcluding=4 CtdQuDiodeFeeder=5 CtdQuDissector=6 CtdQuDissectorA=7 CtdQuDissectorNg=8 CtdQuIndicatorService=9 CtdQuLeecher=10 CtdQuMonitor=11 CtdQuNetworkStatistics=12 CtdQuPackets=13 CtdQuPacketsErrors=14 CtdQuPreprocessing=15 CtdQuPreprocessingNg=16 CtdQuPriorityProcessing=17 CtdQuProcessing=18 CtdQuProcessingHigh=19 CtdQuStatisticsNg=20 CtdQuZordonUpdates=21 CtdQueuePurge=22 CtdQuSyslogAlerts=23 CtdQuSyslogEvents=24 CtdQuSyslogInsights=25 CtdRdDissector=26 CtdRdDissectorA=27 CtdRdDissectorNg=28 CtdRdPreprocessing=29 CtdRdPreprocessingNg=30 CtdSvcMariaDb=Down CtdSvcPostgres=Down CtdSvcRedis=Down CtdSvcRabbitMq=Down CtdSvcIcsranger=Down CtdSvcWatchdog=Down CtdSvcFirewalld=Down CtdSvcNetunnel=Down CtdSvcJwthenticator=Down CtdSvcDocker=Down CtdExceptions=31 CtdInputPacketDrops=32 CtdOutputPacketDrops=33 CtdFullOutputPacketDrops=34 CtdDissectorNgPacketDrops=35 CtdTagArtifactsDropsPreprocessor=36 CtdTagArtifactsDropsPreprocessorSum=37 CtdTagArtifactsDropsProcessor=38 CtdTagArtifactsDropsProcessorSum=39 CtdTagArtifactsDropsSniffer=40 CtdTagArtifactsDropsSnifferSum=41 CtdTagArtifactsDropsDissectorPypy=42 CtdTagArtifactsDropsDissectorPypySum=43 CtdCapsaverFolderCleanup=TRUE CtdDissectionCoverage=44 CtdCapsaverUtilzationTest=N/A CtdYaraScannerTest=45 CtdWrkrWorkersStop=46 CtdWrkrWorkersRestart=47 CtdWrkrActiveExecuter={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrSensor={'api': 'Available', 'last_restart': '18 min, 34 sec'} CtdWrkrAuthentication={'api': 'Not Available', 'last_restart': '21 min, 18 sec'} CtdWrkrMailer={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrMitre={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrNotifications={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrProcessor={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrCloudAgent={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrCloudClient={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrScheduler={'api': 'Available', 'last_restart': '21 min, 19 sec'} CtdWrkrknownThreats={'api': 'Available', 'last_restart': '18 min, 58 sec'} CtdWrkrCacher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrInsights={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrActive={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrEnricher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrIndicators={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrIndicatorsApi={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrConcluder={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrPreprocessor={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrLeecher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrSyncManager={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrBridge={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrWebRanger={'api': 'Not Available', 'last_restart': '21 min, 6 sec'} CtdWrkrWebWs={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrWebAuth={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrWebNginx={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrConfigurator={'api': 'Available', 'last_restart': '21 min, 18 sec'} CtdWrkrConfiguratorNginx={'api': 'Not Available', 'last_restart': '19 min, 17 sec'} CtdWrkrCapsaver={'api': 'Not Available', 'last_restart': '19 min, 17 sec'} CtdWrkrBaselineTracker={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrDissector={'api': 'Available', 'last_restart': '18 min, 34 sec'} CtdWrkrDissectorA={'api': 'Available', 'last_restart': '18 min, 34 sec'} CtdSensorName=Sensor-1 CtdCtrlSite=48 CtdLoopCallDurationBaselineTrackerWrkerHandleNetworkStatistics=1.2345 CtdDissectionEfficiencyModbus=2.2345 CtdDissectionEfficiencySmb=3.2345 CtdDissectionEfficiencyDcerpc=4.2345 CtdDissectionEfficiencyZabbix=5.2345 CtdDissectionEfficiencyFactorytalkRna=6.2345 CtdDissectionEfficiencySsl=7.2345 CtdDissectionEfficiencyVrrpProtocolMatcher=8.2345 CtdDissectionEfficiencyRdp=9.2345 CtdDissectionEfficiencySsh=10.2345 CtdDissectionEfficiencyHttp=11.2345 CtdDissectionEfficiencyTcpHttp=12.2345 CtdDissectionEfficiencyLdap=13.2345 CtdDissectionEfficiencyJrmi=14.2345 CtdDissectionEfficiencyGeIfix=15.2345 CtdDissectionEfficiencyLlc=16.2345 CtdDissectionEfficiencyMatrikonNopc=17.2345 CtdDissectionEfficiencyVnc=18.2345 CtdUnhandledEvents=49 CtdConcludeTime=50 CtdMysqlQuery=19.2345 CtdPostgresQuery=20.2345 CtdDroppedEntities=51 CtdPsqlIdleSessions=52 CtdPsqlIdleInTransactionSessions=53 CtdSnifferStatus=N/A CtdLoopCallDurationPollObjects=21.2345 CtdLoopCallDurationCloudClientWrkrBaseRunCloudConnected=22.2345 CtdSnifferStatusCentral=N/A CtdSnifferStatusSite=23.2345"
     },
     "host": {
         "cpu": {
@@ -346,7 +442,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.240.4:50643"
+            "address": "192.168.243.7:58026"
         }
     },
     "message": "Successfully ran health monitoring",
@@ -545,38 +641,70 @@ An example event for `event` looks as following:
 | claroty_ctd.event.used.var | The percent of disk space currently used in this particular directory. | double |
 | claroty_ctd.event.user | The User name involved in the Activity Log. | keyword |
 | claroty_ctd.event.version | CEF Event Version. | keyword |
-| claroty_ctd.event.worker.active.executer | Availability and last restart info for the Active Executer worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.active.value | Availability and last restart info for the Active worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.authentication | Availability and last restart info for the Authentication worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.baseline_tracker | Availability and last restart info for the Baseline Tracker worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.bridge | Availability and last restart info for the Bridge worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.cacher | Availability and last restart info for the Cacher worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.capsaver | Availability and last restart info for the CapSaver worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.cloud.agent | Availability and last restart info for the Cloud Agent worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.cloud.client | Availability and last restart info for the Cloud Client worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.concluder | Availability and last restart info for the Concluder worker worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.configurator.nginx | Availability and last restart info for the Configurator Nginx worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.configurator.value | Availability and last restart info for the Configurator worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.dissector.a_value | Availability and last restart info for the Dissector A worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.dissector.value | Availability and last restart info for the Dissector worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.enricher | Availability and last restart info for the Enricher worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.indicators.api | Availability and last restart info for the Indicators API worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.indicators.value | Availability and last restart info for the Indicators worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.insights | Availability and last restart info for the Insights worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.known_threats | Availability and last restart info for the Known Threats worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.leecher | Availability and last restart info for the Leecher worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.mailer | Availability and last restart info for the Mailer worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.mitre | Availability and last restart info for the MITRE worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.notifications | Availability and last restart info for the Notifications worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.preprocessor | Availability and last restart info for the Preprocessor worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.processor | Availability and last restart info for the Processor worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.scheduler |  | keyword |
-| claroty_ctd.event.worker.sensor | Availability and last restart info for the Sensor worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.sync_manager | Availability and last restart info for the Sync Manager worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.web.auth | Availability and last restart info for the Web Authentication worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.web.nginx | Availability and last restart info for the Web Nginx worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.web.ranger | Availability and last restart info for the Web Ranger worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
-| claroty_ctd.event.worker.web.ws | Availability and last restart info for the Web Web socket worker (Enabled by Feature Flag - lm set_config logging.add_workers_info_to_health_monitoring_syslog true lm rw notifications). | keyword |
+| claroty_ctd.event.worker.active.executer.api |  | keyword |
+| claroty_ctd.event.worker.active.executer.last_restart |  | keyword |
+| claroty_ctd.event.worker.active.value.api |  | keyword |
+| claroty_ctd.event.worker.active.value.last_restart |  | keyword |
+| claroty_ctd.event.worker.authentication.api |  | keyword |
+| claroty_ctd.event.worker.authentication.last_restart |  | keyword |
+| claroty_ctd.event.worker.baseline_tracker.api |  | keyword |
+| claroty_ctd.event.worker.baseline_tracker.last_restart |  | keyword |
+| claroty_ctd.event.worker.bridge.api |  | keyword |
+| claroty_ctd.event.worker.bridge.last_restart |  | keyword |
+| claroty_ctd.event.worker.cacher.api |  | keyword |
+| claroty_ctd.event.worker.cacher.last_restart |  | keyword |
+| claroty_ctd.event.worker.capsaver.api |  | keyword |
+| claroty_ctd.event.worker.capsaver.last_restart |  | keyword |
+| claroty_ctd.event.worker.cloud.agent.api |  | keyword |
+| claroty_ctd.event.worker.cloud.agent.last_restart |  | keyword |
+| claroty_ctd.event.worker.cloud.client.api |  | keyword |
+| claroty_ctd.event.worker.cloud.client.last_restart |  | keyword |
+| claroty_ctd.event.worker.concluder.api |  | keyword |
+| claroty_ctd.event.worker.concluder.last_restart |  | keyword |
+| claroty_ctd.event.worker.configurator.nginx.api |  | keyword |
+| claroty_ctd.event.worker.configurator.nginx.last_restart |  | keyword |
+| claroty_ctd.event.worker.configurator.value.api |  | keyword |
+| claroty_ctd.event.worker.configurator.value.last_restart |  | keyword |
+| claroty_ctd.event.worker.dissector.a_value.api |  | keyword |
+| claroty_ctd.event.worker.dissector.a_value.last_restart |  | keyword |
+| claroty_ctd.event.worker.dissector.value.api |  | keyword |
+| claroty_ctd.event.worker.dissector.value.last_restart |  | keyword |
+| claroty_ctd.event.worker.enricher.api |  | keyword |
+| claroty_ctd.event.worker.enricher.last_restart |  | keyword |
+| claroty_ctd.event.worker.indicators.api.api |  | keyword |
+| claroty_ctd.event.worker.indicators.api.last_restart |  | keyword |
+| claroty_ctd.event.worker.indicators.value.api |  | keyword |
+| claroty_ctd.event.worker.indicators.value.last_restart |  | keyword |
+| claroty_ctd.event.worker.insights.api |  | keyword |
+| claroty_ctd.event.worker.insights.last_restart |  | keyword |
+| claroty_ctd.event.worker.known_threats.api |  | keyword |
+| claroty_ctd.event.worker.known_threats.last_restart |  | keyword |
+| claroty_ctd.event.worker.leecher.api |  | keyword |
+| claroty_ctd.event.worker.leecher.last_restart |  | keyword |
+| claroty_ctd.event.worker.mailer.api |  | keyword |
+| claroty_ctd.event.worker.mailer.last_restart |  | keyword |
+| claroty_ctd.event.worker.mitre.api |  | keyword |
+| claroty_ctd.event.worker.mitre.last_restart |  | keyword |
+| claroty_ctd.event.worker.notifications.api |  | keyword |
+| claroty_ctd.event.worker.notifications.last_restart |  | keyword |
+| claroty_ctd.event.worker.preprocessor.api |  | keyword |
+| claroty_ctd.event.worker.preprocessor.last_restart |  | keyword |
+| claroty_ctd.event.worker.processor.api |  | keyword |
+| claroty_ctd.event.worker.processor.last_restart |  | keyword |
+| claroty_ctd.event.worker.scheduler.api |  | keyword |
+| claroty_ctd.event.worker.scheduler.last_restart |  | keyword |
+| claroty_ctd.event.worker.sensor.api |  | keyword |
+| claroty_ctd.event.worker.sensor.last_restart |  | keyword |
+| claroty_ctd.event.worker.sync_manager.api |  | keyword |
+| claroty_ctd.event.worker.sync_manager.last_restart |  | keyword |
+| claroty_ctd.event.worker.web.auth.api |  | keyword |
+| claroty_ctd.event.worker.web.auth.last_restart |  | keyword |
+| claroty_ctd.event.worker.web.nginx.api |  | keyword |
+| claroty_ctd.event.worker.web.nginx.last_restart |  | keyword |
+| claroty_ctd.event.worker.web.ranger.api |  | keyword |
+| claroty_ctd.event.worker.web.ranger.last_restart |  | keyword |
+| claroty_ctd.event.worker.web.ws.api |  | keyword |
+| claroty_ctd.event.worker.web.ws.last_restart |  | keyword |
 | claroty_ctd.event.worker.workers.restart | The total number of workers restarted. | long |
 | claroty_ctd.event.worker.workers.stop | The total number of stopped workers. | long |
 | claroty_ctd.event.yara_scanner_test |  | long |
@@ -603,8 +731,8 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2024-07-24T15:09:48.000Z",
     "agent": {
-        "ephemeral_id": "e41bc6bc-0813-48a8-947f-ad9c0530d6c8",
-        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
+        "ephemeral_id": "3240fec2-972b-4406-a71e-5743c29ba645",
+        "id": "7090d98c-c949-469c-9209-a0de3adaaa65",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -689,14 +817,14 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_ctd.asset",
-        "namespace": "45302",
+        "namespace": "52639",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
+        "id": "7090d98c-c949-469c-9209-a0de3adaaa65",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -706,7 +834,7 @@ An example event for `asset` looks as following:
             "host"
         ],
         "dataset": "claroty_ctd.asset",
-        "ingested": "2024-08-20T17:58:48Z",
+        "ingested": "2024-09-04T09:13:19Z",
         "kind": "event",
         "original": "{\"active_queries_names\":[],\"active_tasks_names\":[],\"approved\":true,\"asset_type\":1,\"asset_type__\":\"eHMI\",\"children\":[],\"class_type\":\"OT\",\"code_sections\":[],\"criticality\":0,\"criticality__\":\"eLow\",\"custom_attributes\":[{\"asset_id\":1,\"category\":{\"description\":\"sdfas\",\"id\":1,\"name\":\"Some Asset\",\"resource_id\":\"1-1\",\"site_id\":1},\"id\":1,\"resource_id\":\"1-1\",\"site_id\":1,\"value\":\"some value\"}],\"custom_informations\":[],\"default_gateway\":null,\"display_name\":null,\"domain_workgroup\":null,\"edge_id\":null,\"edge_last_run\":null,\"first_seen\":\"2023-04-17T07:30:15+00:00\",\"ghost\":false,\"id\":1,\"insight_names\":[\"Managed PLCs (by Rockwell users)\",\"Privileged Operations (Operated PLCs)\"],\"installed_antivirus\":null,\"installed_programs_count\":0,\"ipv4\":[\"1.128.0.0\"],\"last_entity_seen\":\"2023-04-17T07:36:30+00:00\",\"last_seen\":\"2023-04-17T07:36:30+00:00\",\"last_updated\":\"2024-07-24T15:09:48+00:00\",\"name\":\"1.128.0.0\",\"network\":{\"id\":1,\"name\":\"Default\",\"resource_id\":\"1-1\",\"site_id\":1},\"network_id\":1,\"num_alerts\":0,\"os_architecture\":null,\"os_build\":null,\"os_revision\":null,\"os_service_pack\":null,\"parsed\":false,\"patch_count\":0,\"project_parsed\":null,\"protocol\":[\"CIP\",\"ENIP\",\"PCCC\",\"TCP\"],\"purdue_level\":2,\"resource_id\":\"1-1\",\"risk_level\":0,\"site_id\":1,\"site_name\":\"site-10-0-11-136\",\"special_hint\":0,\"special_hint__\":\"eUnicast\",\"state\":null,\"subnet\":{\"name\":\"1.128.0.0\"},\"subnet_id\":1,\"subnet_type\":0,\"timestamp\":\"2023-04-17T07:30:15+00:00\",\"usb_devices_count\":0,\"valid\":true,\"virtual_zone_id\":2,\"virtual_zone_name\":\"HMI: Rockwell\"}",
         "severity": 0,
@@ -938,8 +1066,8 @@ An example event for `baseline` looks as following:
 {
     "@timestamp": "2024-07-09T12:03:12.000Z",
     "agent": {
-        "ephemeral_id": "777cd7da-4c22-422a-82b1-d7be5eec94e0",
-        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
+        "ephemeral_id": "dfb16f7e-7176-49b2-bc69-84cfc4300c39",
+        "id": "7090d98c-c949-469c-9209-a0de3adaaa65",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -992,7 +1120,7 @@ An example event for `baseline` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_ctd.baseline",
-        "namespace": "52357",
+        "namespace": "16774",
         "type": "logs"
     },
     "destination": {
@@ -1004,7 +1132,7 @@ An example event for `baseline` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8cca80d8-2e81-420e-a33f-676ab7fa6439",
+        "id": "7090d98c-c949-469c-9209-a0de3adaaa65",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1016,7 +1144,7 @@ An example event for `baseline` looks as following:
         "dataset": "claroty_ctd.baseline",
         "hash": "513826395598251000",
         "id": "1",
-        "ingested": "2024-08-20T17:59:38Z",
+        "ingested": "2024-09-04T09:15:11Z",
         "kind": "event",
         "original": "{\"approved\":true,\"category\":3,\"category_access\":1,\"description\":\"CIP : Read attribute 'Minor Events Reported' of object FaultLog\",\"destination_asset_id\":51,\"destination_entity\":{\"asset_name\":\"Chemical_plant\",\"id\":2,\"ipv4\":\"1.128.0.0\",\"mac\":\"00:00:BC:C7:8F:06\",\"resource_id\":\"2-1\",\"virtual_zone_id\":3,\"virtual_zone_name\":\"PLC: Rockwell\"},\"dst_port\":null,\"frequency\":0,\"has_values\":false,\"hash\":513826395598251000,\"id\":1,\"interval\":null,\"last_seen\":\"2023-04-17T07:30:09+00:00\",\"last_updated\":\"2024-07-09T12:03:12+00:00\",\"protocol\":\"CIP\",\"resource_id\":\"1-1\",\"session_state\":3,\"site_id\":1,\"source_asset_id\":1,\"source_entity\":{\"asset_name\":\"1.128.0.0\",\"id\":1,\"ipv4\":\"1.128.0.0\",\"resource_id\":\"1-1\",\"virtual_zone_id\":2,\"virtual_zone_name\":\"HMI: Rockwell\"},\"src_port\":null,\"timestamp\":\"2023-04-17T07:30:09+00:00\",\"transmission\":null,\"type\":0,\"valid\":true}",
         "type": [
