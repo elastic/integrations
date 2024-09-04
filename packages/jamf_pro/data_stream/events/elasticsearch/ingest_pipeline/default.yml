@@ -13,7 +13,7 @@ processors:
 - rename:
     field: json.event.computer
     target_field: json.event.is_computer
-    if: ctx.json.event.computer === true || ctx.json.event.computer === false
+    if: ctx.json.event?.computer != null && (ctx.json.event.computer === true || ctx.json.event.computer === false)
 
 - rename:
     field: json
@@ -62,14 +62,13 @@ processors:
 - date:
     field: jamf_pro.events.webhook.event_timestamp
     target_field: jamf_pro.events.webhook.event_timestamp
-    ignore_failure: true
     formats:
       - UNIX_MS
 
 - date:
     field: jamf_pro.events.event.last_update
     target_field: jamf_pro.events.event.last_update
-    ignore_failure: true
+    if: "ctx.jamf_pro.events?.last_update != null"
     formats:
       - UNIX_MS
       
@@ -82,21 +81,21 @@ processors:
 ##############
 
 - set:
-    if: "ctx?.jamf_pro.events.event.ip_address != ''"
+    if: "ctx.jamf_pro.events.event?.ip_address != ''"
     field: _tmp.ip
     value: '{{{jamf_pro.events.event.ip_address}}}'
     ignore_empty_value: true
 
 - set:
-    if: "ctx?.jamf_pro.events.event.computer != null && ctx?.jamf_pro.events.event.computer.reported_ip_address != ''"
+    if: "ctx.jamf_pro.events.event?.computer != null && ctx.jamf_pro.events.event?.computer.reported_ip_address != ''"
     field: _tmp.ip
-    value: '{{{jamf_pro.events?.event.computer.reported_ip_address}}}'
+    value: '{{{jamf_pro.events.event.computer.reported_ip_address}}}'
     ignore_empty_value: true
 
 - set:
     if: "ctx.jamf_pro.events.event?.reported_ip_address != ''"
     field: _tmp.ip
-    value: '{{{jamf_pro.events.event?.reported_ip_address}}}'
+    value: '{{{jamf_pro.events.event.reported_ip_address}}}'
     ignore_empty_value: true
 ##############
 #  User src  #
