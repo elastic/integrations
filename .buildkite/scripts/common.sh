@@ -510,11 +510,6 @@ prepare_stack() {
     echo ""
     ${ELASTIC_PACKAGE_BIN} stack status
     echo ""
-
-    echo ""
-    echo "Images used for Elastic Agent:"
-    docker ps --format "{{.Names}} {{.Image}}" |grep "elastic-agent"
-    echo ""
 }
 
 is_serverless() {
