@@ -96,26 +96,26 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-31T09:02:37.604Z",
+    "@timestamp": "2024-09-03T21:58:42.109Z",
     "agent": {
-        "ephemeral_id": "eecc68c0-2fc1-4b86-8af2-5e5550371ada",
-        "id": "9cd1c977-707f-42bb-894c-63b2d362bdec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "a359e9ae-1899-4fa4-9274-489732cf28b8",
+        "id": "f5bb6a54-2f0f-43e3-8016-d1510e71d83c",
+        "name": "elastic-agent-32019",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.15.0"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
-        "namespace": "88345",
+        "namespace": "34087",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9cd1c977-707f-42bb-894c-63b2d362bdec",
+        "id": "f5bb6a54-2f0f-43e3-8016-d1510e71d83c",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.15.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -123,7 +123,7 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2024-07-31T09:02:49Z",
+        "ingested": "2024-09-03T21:58:45Z",
         "kind": "alert",
         "original": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE HOST_LIST_VM_DETECTION_OUTPUT SYSTEM \"https://qualysapi.qualys.com/api/2.0/fo/asset/host/vm/detection/dtd/output.dtd\">\n<HOST_LIST_VM_DETECTION_OUTPUT>\n  <RESPONSE>\n    <DATETIME>2023-07-03T06:51:41Z</DATETIME>\n    <HOST_LIST>\n      <HOST>\n        <ID>12048633</ID>\n        <IP>10.50.2.111</IP>\n        <TRACKING_METHOD>IP</TRACKING_METHOD>\n        <OS>\n          <![CDATA[Windows 2016/2019/10]]>\n        </OS>\n        <DNS>\n          <![CDATA[adfssrvr.adfs.local]]>\n        </DNS>\n        <DNS_DATA>\n          <HOSTNAME>\n            <![CDATA[adfssrvr]]>\n          </HOSTNAME>\n          <DOMAIN>\n            <![CDATA[adfs.local]]>\n          </DOMAIN>\n          <FQDN>\n            <![CDATA[adfssrvr.adfs.local]]>\n          </FQDN>\n        </DNS_DATA>\n        <NETBIOS>\n          <![CDATA[ADFSSRVR]]>\n        </NETBIOS>\n        <LAST_SCAN_DATETIME>2023-07-03T06:25:17Z</LAST_SCAN_DATETIME>\n        <LAST_VM_SCANNED_DATE>2023-07-03T06:23:47Z</LAST_VM_SCANNED_DATE>\n        <LAST_VM_SCANNED_DURATION>1113</LAST_VM_SCANNED_DURATION>\n        <LAST_PC_SCANNED_DATE>2023-06-28T09:58:12Z</LAST_PC_SCANNED_DATE>\n        <DETECTION_LIST>\n          <DETECTION>\n            <UNIQUE_VULN_ID>5555555555</UNIQUE_VULN_ID>\n            <QID>197595</QID>\n            <TYPE>Confirmed</TYPE>\n            <SEVERITY>3</SEVERITY>\n            <SSL>0</SSL>\n            <RESULTS><![CDATA[Package Installed Version Required Version\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092]]></RESULTS>\n            <STATUS>Active</STATUS>\n            <FIRST_FOUND_DATETIME>2021-02-05T04:50:45Z</FIRST_FOUND_DATETIME>\n            <LAST_FOUND_DATETIME>2024-03-08T20:15:41Z</LAST_FOUND_DATETIME>\n            <QDS severity=\"LOW\">35</QDS>\n            <QDS_FACTORS>\n              <QDS_FACTOR name=\"CVSS\"><![CDATA[7.7]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_version\"><![CDATA[v3.x]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"epss\"><![CDATA[0.00232]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_vector\"><![CDATA[AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H]]></QDS_FACTOR>\n            </QDS_FACTORS>\n            <TIMES_FOUND>5393</TIMES_FOUND>\n            <LAST_TEST_DATETIME>2024-03-08T20:15:41Z</LAST_TEST_DATETIME>\n            <LAST_UPDATE_DATETIME>2024-03-08T20:15:41Z</LAST_UPDATE_DATETIME>\n            <LAST_FIXED_DATETIME>2022-12-14T06:52:57Z</LAST_FIXED_DATETIME>\n            <IS_IGNORED>0</IS_IGNORED>\n            <IS_DISABLED>0</IS_DISABLED>\n            <AFFECT_RUNNING_KERNEL>0</AFFECT_RUNNING_KERNEL>\n            <LAST_PROCESSED_DATETIME>2024-03-08T20:15:41Z</LAST_PROCESSED_DATETIME>\n          </DETECTION>\n          <DETECTION>\n            <UNIQUE_VULN_ID>6666666666</UNIQUE_VULN_ID>\n            <QID>197597</QID>\n            <TYPE>Confirmed</TYPE>\n            <SEVERITY>5</SEVERITY>\n            <SSL>0</SSL>\n            <RESULTS><![CDATA[Package Installed Version Required Version\nlinux-image-4.15.0  1027-aws_4.15.0-1126.135  1047\nlinux-headers-4.15.0  1027-aws_4.15.0-1126.135  1047\nlinux-modules-4.15.0  1027-aws_4.15.0-1126.135  1047\nlinux-aws-headers-4.15.0  1027_4.15.0-1126.135  1047]]></RESULTS>\n            <STATUS>Active</STATUS>\n            <FIRST_FOUND_DATETIME>2021-02-05T04:50:45Z</FIRST_FOUND_DATETIME>\n            <LAST_FOUND_DATETIME>2024-03-08T20:15:41Z</LAST_FOUND_DATETIME>\n            <QDS severity=\"CRITICAL\">95</QDS>\n            <QDS_FACTORS>\n              <QDS_FACTOR name=\"RTI\"><![CDATA[local]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"exploit_maturity\"><![CDATA[weaponized,poc]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CISA_vuln\"><![CDATA[YES]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS\"><![CDATA[7.8]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_version\"><![CDATA[v3.x]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"epss\"><![CDATA[0.00052]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"trending\"><![CDATA[02222024,02162024,02262024,02152024,02012024,02252024,02212024,02282024,02102024,02062024,02082024,02042024,02052024]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_vector\"><![CDATA[AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"mitigation_controls\"><![CDATA[18436,18437]]></QDS_FACTOR>\n            </QDS_FACTORS>\n            <TIMES_FOUND>5393</TIMES_FOUND>\n            <LAST_TEST_DATETIME>2024-03-08T20:15:41Z</LAST_TEST_DATETIME>\n            <LAST_UPDATE_DATETIME>2024-03-08T20:15:41Z</LAST_UPDATE_DATETIME>\n            <LAST_FIXED_DATETIME>2022-12-14T06:52:57Z</LAST_FIXED_DATETIME>\n            <IS_IGNORED>0</IS_IGNORED>\n            <IS_DISABLED>0</IS_DISABLED>\n            <AFFECT_RUNNING_KERNEL>0</AFFECT_RUNNING_KERNEL>\n            <LAST_PROCESSED_DATETIME>2024-03-08T20:15:41Z</LAST_PROCESSED_DATETIME>\n          </DETECTION>\n        </DETECTION_LIST>\n      </HOST>\n    </HOST_LIST>\n    <WARNING>\n      <CODE>1980</CODE>\n      <TEXT>1000 record limit exceeded. Use URL to get next batch of results.</TEXT>\n      <URL><![CDATA[http://qualys_vmdr:8090/api/2.0/fo/asset/host/vm/detection/?action=list&truncation_limit=1000&id_min=5641289]]></URL>\n      </WARNING>\n  </RESPONSE>\n</HOST_LIST_VM_DETECTION_OUTPUT>",
         "type": [
@@ -149,26 +149,18 @@ An example event for `asset_host_detection` looks as following:
             "last_vm_scanned_duration": 1113,
             "tracking_method": "IP",
             "vulnerability": {
-                "affect": {
-                    "running": {
-                        "kernel": "0"
-                    }
-                },
-                "first": {
-                    "found_datetime": "2021-02-05T04:50:45.000Z"
-                },
+                "affect_running_kernel": "0",
+                "first_found_datetime": "2021-02-05T04:50:45.000Z",
                 "is_disabled": false,
                 "is_ignored": false,
-                "last": {
-                    "fixed_datetime": "2022-12-14T06:52:57.000Z",
-                    "found_datetime": "2024-03-08T20:15:41.000Z",
-                    "processed_datetime": "2024-03-08T20:15:41.000Z",
-                    "test_datetime": "2024-03-08T20:15:41.000Z",
-                    "update_datetime": "2024-03-08T20:15:41.000Z"
-                },
+                "last_fixed_datetime": "2022-12-14T06:52:57.000Z",
+                "last_found_datetime": "2024-03-08T20:15:41.000Z",
+                "last_processed_datetime": "2024-03-08T20:15:41.000Z",
+                "last_test_datetime": "2024-03-08T20:15:41.000Z",
+                "last_update_datetime": "2024-03-08T20:15:41.000Z",
                 "qds": {
-                    "severity": "LOW",
-                    "text": "35"
+                    "score": 35,
+                    "severity": "LOW"
                 },
                 "qds_factors": [
                     {
@@ -188,14 +180,12 @@ An example event for `asset_host_detection` looks as following:
                         "text": "AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H"
                     }
                 ],
-                "qid": "197595",
+                "qid": 197595,
                 "results": "Package Installed Version Required Version\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092",
                 "severity": 3,
                 "ssl": "0",
                 "status": "Active",
-                "times": {
-                    "found": 5393
-                },
+                "times_found": 5393,
                 "type": "Confirmed",
                 "unique_vuln_id": "5555555555"
             }
@@ -231,7 +221,7 @@ An example event for `asset_host_detection` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| qualys_vmdr.asset_host_detection.asset_id |  | keyword |
+| qualys_vmdr.asset_host_detection.asset_id |  | long |
 | qualys_vmdr.asset_host_detection.cloud_provider |  | keyword |
 | qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.last_success_date |  | date |
 | qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.name |  | keyword |
@@ -280,36 +270,36 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.tags.id |  | keyword |
 | qualys_vmdr.asset_host_detection.tags.name |  | keyword |
 | qualys_vmdr.asset_host_detection.tracking_method |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.affect.exploitable_config |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.affect.running.kernel |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.affect.running.service |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.affect_exploitable_config |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.affect_running_kernel |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.affect_running_service |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.asset_cve |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.first.found_datetime |  | date |
-| qualys_vmdr.asset_host_detection.vulnerability.first.reopened_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.first_found_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.first_reopened_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.fqdn |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.instance |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.is_disabled |  | boolean |
 | qualys_vmdr.asset_host_detection.vulnerability.is_ignored |  | boolean |
-| qualys_vmdr.asset_host_detection.vulnerability.last.fixed_datetime |  | date |
-| qualys_vmdr.asset_host_detection.vulnerability.last.found_datetime |  | date |
-| qualys_vmdr.asset_host_detection.vulnerability.last.processed_datetime |  | date |
-| qualys_vmdr.asset_host_detection.vulnerability.last.reopened_datetime |  | date |
-| qualys_vmdr.asset_host_detection.vulnerability.last.test_datetime |  | date |
-| qualys_vmdr.asset_host_detection.vulnerability.last.update_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last_fixed_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last_found_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last_processed_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last_reopened_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last_test_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last_update_datetime |  | date |
 | qualys_vmdr.asset_host_detection.vulnerability.port |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.protocol |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.qds.score |  | integer |
 | qualys_vmdr.asset_host_detection.vulnerability.qds.severity |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.qds.text |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.qds_factors.name |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.qds_factors.text |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.qid |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.qid |  | integer |
 | qualys_vmdr.asset_host_detection.vulnerability.results |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.service |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.severity |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.ssl |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.status |  | keyword |
-| qualys_vmdr.asset_host_detection.vulnerability.times.found |  | long |
-| qualys_vmdr.asset_host_detection.vulnerability.times.reopened |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.times_found |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.times_reopened |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.type |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id |  | keyword |
 

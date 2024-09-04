@@ -115,7 +115,9 @@ An example event for `applocker_exe_and_dll` looks as following:
     "event": {
         "action": "None",
         "agent_id_status": "verified",
-        "category": "process",
+        "category": [
+            "process"
+        ],
         "code": "8003",
         "created": "2024-06-21T01:53:30.508Z",
         "dataset": "windows.applocker_exe_and_dll",
@@ -123,7 +125,9 @@ An example event for `applocker_exe_and_dll` looks as following:
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-AppLocker' Guid='{cbda4dbf-8d5d-4f69-9578-be14aa540d22}' /\u003e\u003cEventID\u003e8003\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e3\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2023-07-20T15:05:03.8826518Z' /\u003e\u003cEventRecordID\u003e154247\u003c/EventRecordID\u003e\u003cCorrelation /\u003e\u003cExecution ProcessID='33848' ThreadID='12040' /\u003e\u003cChannel\u003eMicrosoft-Windows-AppLocker/EXE and DLL\u003c/Channel\u003e\u003cComputer\u003eTOPSYLL.local\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-1133191089-1850170202-1535859923-200319' /\u003e\u003c/System\u003e\u003cUserData\u003e\u003cRuleAndFileData xmlns='http://schemas.microsoft.com/schemas/event/Microsoft.Windows/1.0.0.0'\u003e\u003cPolicyNameLength\u003e3\u003c/PolicyNameLength\u003e\u003cPolicyName\u003eEXE\u003c/PolicyName\u003e\u003cRuleId\u003e{00000000-0000-0000-0000-000000000000}\u003c/RuleId\u003e\u003cRuleNameLength\u003e1\u003c/RuleNameLength\u003e\u003cRuleName\u003e-\u003c/RuleName\u003e\u003cRuleSddlLength\u003e1\u003c/RuleSddlLength\u003e\u003cRuleSddl\u003e-\u003c/RuleSddl\u003e\u003cTargetUser\u003eS-1-5-21-1133191089-1850170202-1535859923-200319\u003c/TargetUser\u003e\u003cTargetProcessId\u003e27116\u003c/TargetProcessId\u003e\u003cFilePathLength\u003e101\u003c/FilePathLength\u003e\u003cFilePath\u003e%OSDRIVE%\\USERS\\TOPSY\\APPDATA\\LOCAL\\GITHUBDESKTOP\\APP-3.1.2\\RESOURCES\\APP\\GIT\\MINGW64\\BIN\\GIT.EXE\u003c/FilePath\u003e\u003cFileHashLength\u003e32\u003c/FileHashLength\u003e\u003cFileHash\u003e11D3940DE41D28E044CE45AB76A6D824E617D99B62C5FB44E37BE5CD7B0545F5\u003c/FileHash\u003e\u003cFqbnLength\u003e72\u003c/FqbnLength\u003e\u003cFqbn\u003eO=JOHANNES SCHINDELIN, S=NORDRHEIN-WESTFALEN, C=DE\\GIT\\GIT.EXE\\2.35.5.01\u003c/Fqbn\u003e\u003cTargetLogonId\u003e0x14fcb7\u003c/TargetLogonId\u003e\u003cFullFilePathLength\u003e94\u003c/FullFilePathLength\u003e\u003cFullFilePath\u003eC:\\Users\\TOPSY\\AppData\\Local\\GitHubDesktop\\app-3.1.2\\resources\\app\\git\\mingw64\\bin\\git.exe\u003c/FullFilePath\u003e\u003c/RuleAndFileData\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-AppLocker",
-        "type": "start"
+        "type": [
+            "start"
+        ]
     },
     "file": {
         "hash": {
@@ -137,9 +141,15 @@ An example event for `applocker_exe_and_dll` looks as following:
         },
         "x509": {
             "subject": {
-                "country": "DE",
-                "organization": "JOHANNES SCHINDELIN",
-                "state_or_province": "NORDRHEIN-WESTFALEN"
+                "country": [
+                    "DE"
+                ],
+                "organization": [
+                    "JOHANNES SCHINDELIN"
+                ],
+                "state_or_province": [
+                    "NORDRHEIN-WESTFALEN"
+                ]
             }
         }
     },
@@ -202,6 +212,7 @@ An example event for `applocker_exe_and_dll` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -493,7 +504,9 @@ An example event for `applocker_msi_and_script` looks as following:
     "event": {
         "action": "None",
         "agent_id_status": "verified",
-        "category": "process",
+        "category": [
+            "process"
+        ],
         "code": "8006",
         "created": "2023-08-05T12:31:30.395Z",
         "dataset": "windows.applocker_msi_and_script",
@@ -501,7 +514,9 @@ An example event for `applocker_msi_and_script` looks as following:
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-AppLocker' Guid='{cbda4dbf-8d5d-4f69-9578-be14aa540d22}' /\u003e\u003cEventID\u003e8006\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e3\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x4000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2023-08-04T21:26:32.7572144Z' /\u003e\u003cEventRecordID\u003e239\u003c/EventRecordID\u003e\u003cCorrelation ActivityID='{f64315e2-bea0-0000-6d01-d5f6a0bed901}' /\u003e\u003cExecution ProcessID='25192' ThreadID='7740' /\u003e\u003cChannel\u003eMicrosoft-Windows-AppLocker/MSI and Script\u003c/Channel\u003e\u003cComputer\u003eel33t-b00k-1\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-2707992022-4034939591-3454028951-1001' /\u003e\u003c/System\u003e\u003cUserData\u003e\u003cRuleAndFileData xmlns='http://schemas.microsoft.com/schemas/event/Microsoft.Windows/1.0.0.0'\u003e\u003cPolicyNameLength\u003e6\u003c/PolicyNameLength\u003e\u003cPolicyName\u003eSCRIPT\u003c/PolicyName\u003e\u003cRuleId\u003e{00000000-0000-0000-0000-000000000000}\u003c/RuleId\u003e\u003cRuleNameLength\u003e1\u003c/RuleNameLength\u003e\u003cRuleName\u003e-\u003c/RuleName\u003e\u003cRuleSddlLength\u003e1\u003c/RuleSddlLength\u003e\u003cRuleSddl\u003e-\u003c/RuleSddl\u003e\u003cTargetUser\u003eS-1-5-21-2707992022-4034939591-3454028951-1001\u003c/TargetUser\u003e\u003cTargetProcessId\u003e25192\u003c/TargetProcessId\u003e\u003cFilePathLength\u003e124\u003c/FilePathLength\u003e\u003cFilePath\u003e%OSDRIVE%\\USERS\\NICPE\\.VSCODE\\EXTENSIONS\\MS-VSCODE.POWERSHELL-2023.6.0\\MODULES\\PSSCRIPTANALYZER\\1.21.0\\PSSCRIPTANALYZER.PSM1\u003c/FilePath\u003e\u003cFileHashLength\u003e32\u003c/FileHashLength\u003e\u003cFileHash\u003eD2A09AC074F8D326B4DCC8B8BE5BC003C41CCB6EB5FC35E13B73F834F2946B01\u003c/FileHash\u003e\u003cFqbnLength\u003e65\u003c/FqbnLength\u003e\u003cFqbn\u003eO=MICROSOFT CORPORATION, L=REDMOND, S=WASHINGTON, C=US\\\\\\0.0.0.00\u003c/Fqbn\u003e\u003cTargetLogonId\u003e0x4c18f\u003c/TargetLogonId\u003e\u003cFullFilePathLength\u003e117\u003c/FullFilePathLength\u003e\u003cFullFilePath\u003eC:\\Users\\nicpe\\.vscode\\extensions\\ms-vscode.powershell-2023.6.0\\modules\\PSScriptAnalyzer\\1.21.0\\PSScriptAnalyzer.psm1\u003c/FullFilePath\u003e\u003c/RuleAndFileData\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-AppLocker",
-        "type": "start"
+        "type": [
+            "start"
+        ]
     },
     "file": {
         "hash": {
@@ -515,10 +530,18 @@ An example event for `applocker_msi_and_script` looks as following:
         },
         "x509": {
             "subject": {
-                "country": "US",
-                "locality": "REDMOND",
-                "organization": "MICROSOFT CORPORATION",
-                "state_or_province": "WASHINGTON"
+                "country": [
+                    "US"
+                ],
+                "locality": [
+                    "REDMOND"
+                ],
+                "organization": [
+                    "MICROSOFT CORPORATION"
+                ],
+                "state_or_province": [
+                    "WASHINGTON"
+                ]
             }
         }
     },
@@ -582,6 +605,7 @@ An example event for `applocker_msi_and_script` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -873,7 +897,9 @@ An example event for `applocker_packaged_app_deployment` looks as following:
     "event": {
         "action": "None",
         "agent_id_status": "verified",
-        "category": "process",
+        "category": [
+            "process"
+        ],
         "code": "8023",
         "created": "2023-08-15T22:51:13.753Z",
         "dataset": "windows.applocker_packaged_app_deployment",
@@ -881,7 +907,9 @@ An example event for `applocker_packaged_app_deployment` looks as following:
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-AppLocker' Guid='{cbda4dbf-8d5d-4f69-9578-be14aa540d22}'/\u003e\u003cEventID\u003e8023\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x1000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2023-08-15T14:12:32.6801945Z'/\u003e\u003cEventRecordID\u003e6269\u003c/EventRecordID\u003e\u003cCorrelation ActivityID='{eac4f4ed-cf73-0001-a741-c5ea73cfd901}'/\u003e\u003cExecution ProcessID='4584' ThreadID='26688'/\u003e\u003cChannel\u003eMicrosoft-Windows-AppLocker/Packaged app-Deployment\u003c/Channel\u003e\u003cComputer\u003eWIN1012009LL.local\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-1133191089-1850170202-1535859923-200319'/\u003e\u003c/System\u003e\u003cUserData\u003e\u003cRuleAndFileData xmlns='http://schemas.microsoft.com/schemas/event/Microsoft.Windows/1.0.0.0'\u003e\u003cPolicyNameLength\u003e4\u003c/PolicyNameLength\u003e\u003cPolicyName\u003eAPPX\u003c/PolicyName\u003e\u003cRuleId\u003e{a9e18c21-ff8f-43cf-b9fc-db40eed693ba}\u003c/RuleId\u003e\u003cRuleNameLength\u003e39\u003c/RuleNameLength\u003e\u003cRuleName\u003e(Default Rule) All signed packaged apps\u003c/RuleName\u003e\u003cRuleSddlLength\u003e81\u003c/RuleSddlLength\u003e\u003cRuleSddl\u003eyams\u003c/RuleSddl\u003e\u003cTargetUser\u003eS-1-5-21-1133191089-1850170202-1535859923-200319\u003c/TargetUser\u003e\u003cTargetProcessId\u003e4584\u003c/TargetProcessId\u003e\u003cPackageLength\u003e18\u003c/PackageLength\u003e\u003cPackage\u003eMicrosoft.BingNews\u003c/Package\u003e\u003cFqbnLength\u003e118\u003c/FqbnLength\u003e\u003cFqbn\u003eCN=MICROSOFT CORPORATION, O=MICROSOFT CORPORATION, L=REDMOND, S=WASHINGTON, C=US\\MICROSOFT.BINGNEWS\\APPX\\4.55.62231.00\u003c/Fqbn\u003e\u003c/RuleAndFileData\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-AppLocker",
-        "type": "start"
+        "type": [
+            "start"
+        ]
     },
     "file": {
         "pe": {
@@ -891,11 +919,21 @@ An example event for `applocker_packaged_app_deployment` looks as following:
         },
         "x509": {
             "subject": {
-                "common_name": "MICROSOFT CORPORATION",
-                "country": "US",
-                "locality": "REDMOND",
-                "organization": "MICROSOFT CORPORATION",
-                "state_or_province": "WASHINGTON"
+                "common_name": [
+                    "MICROSOFT CORPORATION"
+                ],
+                "country": [
+                    "US"
+                ],
+                "locality": [
+                    "REDMOND"
+                ],
+                "organization": [
+                    "MICROSOFT CORPORATION"
+                ],
+                "state_or_province": [
+                    "WASHINGTON"
+                ]
             }
         }
     },
@@ -954,6 +992,7 @@ An example event for `applocker_packaged_app_deployment` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -1248,7 +1287,9 @@ An example event for `applocker_packaged_app_execution` looks as following:
     "event": {
         "action": "None",
         "agent_id_status": "verified",
-        "category": "process",
+        "category": [
+            "process"
+        ],
         "code": "8020",
         "created": "2023-08-17T14:13:22.965Z",
         "dataset": "windows.applocker_packaged_app_execution",
@@ -1256,7 +1297,9 @@ An example event for `applocker_packaged_app_execution` looks as following:
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-AppLocker' Guid='{cbda4dbf-8d5d-4f69-9578-be14aa540d22}'/\u003e\u003cEventID\u003e8020\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x2000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2023-08-13T13:53:33.7067781Z'/\u003e\u003cEventRecordID\u003e2986\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='1672' ThreadID='8384'/\u003e\u003cChannel\u003eMicrosoft-Windows-AppLocker/Packaged app-Execution\u003c/Channel\u003e\u003cComputer\u003eel33t-b00k-1\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-2707992022-4034939591-3454028951-1001'/\u003e\u003c/System\u003e\u003cUserData\u003e\u003cRuleAndFileData xmlns='http://schemas.microsoft.com/schemas/event/Microsoft.Windows/1.0.0.0'\u003e\u003cPolicyNameLength\u003e4\u003c/PolicyNameLength\u003e\u003cPolicyName\u003eAPPX\u003c/PolicyName\u003e\u003cRuleId\u003e{a9e18c21-ff8f-43cf-b9fc-db40eed693ba}\u003c/RuleId\u003e\u003cRuleNameLength\u003e39\u003c/RuleNameLength\u003e\u003cRuleName\u003e(Default Rule) All signed packaged apps\u003c/RuleName\u003e\u003cRuleSddlLength\u003e81\u003c/RuleSddlLength\u003e\u003cRuleSddl\u003eD:(XA;;FX;;;S-1-1-0;((Exists APPID://FQBN) \u0026amp;\u0026amp; ((APPID://FQBN) \u0026gt;= ({\"*\\*\\*\",0}))))\u003c/RuleSddl\u003e\u003cTargetUser\u003eS-1-5-21-2707992022-4034939591-3454028951-1001\u003c/TargetUser\u003e\u003cTargetProcessId\u003e41864\u003c/TargetProcessId\u003e\u003cPackageLength\u003e15\u003c/PackageLength\u003e\u003cPackage\u003eMICROSOFT.TODOS\u003c/Package\u003e\u003cFqbnLength\u003e116\u003c/FqbnLength\u003e\u003cFqbn\u003eCN=MICROSOFT CORPORATION, O=MICROSOFT CORPORATION, L=REDMOND, S=WASHINGTON, C=US\\MICROSOFT.TODOS\\APPX\\2.100.61791.00\u003c/Fqbn\u003e\u003c/RuleAndFileData\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-AppLocker",
-        "type": "start"
+        "type": [
+            "start"
+        ]
     },
     "file": {
         "pe": {
@@ -1266,11 +1309,21 @@ An example event for `applocker_packaged_app_execution` looks as following:
         },
         "x509": {
             "subject": {
-                "common_name": "MICROSOFT CORPORATION",
-                "country": "US",
-                "locality": "REDMOND",
-                "organization": "MICROSOFT CORPORATION",
-                "state_or_province": "WASHINGTON"
+                "common_name": [
+                    "MICROSOFT CORPORATION"
+                ],
+                "country": [
+                    "US"
+                ],
+                "locality": [
+                    "REDMOND"
+                ],
+                "organization": [
+                    "MICROSOFT CORPORATION"
+                ],
+                "state_or_province": [
+                    "WASHINGTON"
+                ]
             }
         }
     },
@@ -1328,6 +1381,7 @@ An example event for `applocker_packaged_app_execution` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -1627,7 +1681,9 @@ An example event for `powershell` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "process",
+        "category": [
+            "process"
+        ],
         "code": "600",
         "created": "2023-08-14T00:35:36.340Z",
         "dataset": "windows.powershell",
@@ -1636,7 +1692,9 @@ An example event for `powershell` looks as following:
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:21:43.183180900Z'/\u003e\u003cEventRecordID\u003e1089\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=35\n\n\tHostName=Windows PowerShell ISE Host\n\tHostVersion=5.1.17763.1007\n\tHostId=86edc16f-6943-469e-8bd8-ef1857080206\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe C:\\Users\\vagrant\\Desktop\\lateral.ps1\n\tEngineVersion=5.1.17763.1007\n\tRunspaceId=9d21da0b-e402-40e1-92ff-98c5ab1137a9\n\tPipelineId=15\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:25:04.656426900Z'/\u003e\u003cEventRecordID\u003e1266\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eRegistry\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Registry\n\tNewProviderState=Started\n\n\tSequenceNumber=1\n\n\tHostName=ConsoleHost\n\tHostVersion=5.1.17763.1007\n\tHostId=44b8d66c-f5a2-4abb-ac7d-6db73990a6d3\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -noexit -command 'C:\\Gopath\\src\\github.com\\elastic\\beats'\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-06-04T07:25:04.857430200Z'/\u003e\u003cEventRecordID\u003e18640\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=8\n\n\tHostName=ConsoleHost\n\tHostVersion=2.0\n\tHostId=99a16837-7392-463d-afe5-5f3ed24bd358\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "PowerShell",
         "sequence": 35,
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "name": "vagrant"
@@ -1686,6 +1744,7 @@ An example event for `powershell` looks as following:
         "record_id": "1089"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1756,7 +1815,7 @@ An example event for `powershell` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
+| powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | object |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
 | powershell.command.invocation_details.related_command | The command to which the detail is related to. | keyword |
 | powershell.command.invocation_details.type | The type of detail. | keyword |
@@ -1971,7 +2030,9 @@ An example event for `powershell_operational` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "process",
+        "category": [
+            "process"
+        ],
         "code": "4105",
         "created": "2023-08-14T00:36:22.656Z",
         "dataset": "windows.powershell_operational",
@@ -1979,7 +2040,9 @@ An example event for `powershell_operational` looks as following:
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-PowerShell' Guid='{a0c1853b-5c40-4b15-8766-3cf1c58f985a}'/\u003e\u003cEventID\u003e4105\u003c/EventID\u003e\u003cVersion\u003e1\u003c/Version\u003e\u003cLevel\u003e5\u003c/Level\u003e\u003cTask\u003e102\u003c/Task\u003e\u003cOpcode\u003e15\u003c/Opcode\u003e\u003cKeywords\u003e0x0\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T09:04:04.755232500Z'/\u003e\u003cEventRecordID\u003e790\u003c/EventRecordID\u003e\u003cCorrelation ActivityID='{dd68516a-2930-0000-5962-68dd3029d601}'/\u003e\u003cExecution ProcessID='4204' ThreadID='1476'/\u003e\u003cChannel\u003eMicrosoft-Windows-PowerShell/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-1350058589-2282154016-2764056528-1000'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='ScriptBlockId'\u003ef4a378ab-b74f-41a7-a5ef-6dd55562fdb9\u003c/Data\u003e\u003cData Name='RunspaceId'\u003e9c031e5c-8d5a-4b91-a12e-b3624970b623\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-PowerShell",
-        "type": "start"
+        "type": [
+            "start"
+        ]
     },
     "host": {
         "name": "vagrant"
@@ -2023,6 +2086,7 @@ An example event for `powershell_operational` looks as following:
         "version": 1
     }
 }
+
 ```
 
 **Exported fields**
@@ -2093,7 +2157,7 @@ An example event for `powershell_operational` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
+| powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | object |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
 | powershell.command.invocation_details.related_command | The command to which the detail is related to. | keyword |
 | powershell.command.invocation_details.type | The type of detail. | keyword |
@@ -2781,7 +2845,9 @@ An example event for `windows_defender` looks as following:
     "event": {
         "action": "None",
         "agent_id_status": "verified",
-        "category": "process",
+        "category": [
+            "process"
+        ],
         "code": "1151",
         "created": "2024-06-21T21:40:16.405Z",
         "dataset": "windows.windows_defender",
@@ -2789,7 +2855,9 @@ An example event for `windows_defender` looks as following:
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Windows Defender' Guid='{11cd958a-c507-4ef3-b3f2-5fd9dfbd2c78}'/\u003e\u003cEventID\u003e1151\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2024-06-21T07:56:39.3136791Z'/\u003e\u003cEventRecordID\u003e5655\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='7676' ThreadID='15392'/\u003e\u003cChannel\u003eMicrosoft-Windows-Windows Defender/Operational\u003c/Channel\u003e\u003cComputer\u003eel33t-b00k-1\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-18'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='Product Name'\u003eMicrosoft Defender Antivirus\u003c/Data\u003e\u003cData Name='Platform version'\u003e4.18.24050.7\u003c/Data\u003e\u003cData Name='Unused'\u003e\u003c/Data\u003e\u003cData Name='Engine version'\u003e1.1.24050.5\u003c/Data\u003e\u003cData Name='NRI engine version'\u003e1.1.24050.5\u003c/Data\u003e\u003cData Name='AV security intelligence version'\u003e1.413.419.0\u003c/Data\u003e\u003cData Name='AS security intelligence version'\u003e1.413.419.0\u003c/Data\u003e\u003cData Name='NRI security intelligence version'\u003e1.413.419.0\u003c/Data\u003e\u003cData Name='RTP state'\u003eEnabled\u003c/Data\u003e\u003cData Name='OA state'\u003eEnabled\u003c/Data\u003e\u003cData Name='IOAV state'\u003eEnabled\u003c/Data\u003e\u003cData Name='BM state'\u003eEnabled\u003c/Data\u003e\u003cData Name='Last AV security intelligence age'\u003e0\u003c/Data\u003e\u003cData Name='Last AS security intelligence age'\u003e0\u003c/Data\u003e\u003cData Name='Last quick scan age'\u003e1\u003c/Data\u003e\u003cData Name='Last full scan age'\u003e4294967295\u003c/Data\u003e\u003cData Name='AV security intelligence creation time'\u003e2024-06-20T17:59:45Z\u003c/Data\u003e\u003cData Name='AS security intelligence creation time'\u003e2024-06-20T17:59:47Z\u003c/Data\u003e\u003cData Name='Last quick scan start time'\u003e2024-06-19T15:49:55Z\u003c/Data\u003e\u003cData Name='Last quick scan end time'\u003e2024-06-19T15:51:57Z\u003c/Data\u003e\u003cData Name='Last quick scan source'\u003e2\u003c/Data\u003e\u003cData Name='Last full scan start time'\u003e1601-01-01T00:00:00Z\u003c/Data\u003e\u003cData Name='Last full scan end time'\u003e1601-01-01T00:00:00Z\u003c/Data\u003e\u003cData Name='Last full scan source'\u003e0\u003c/Data\u003e\u003cData Name='Product status'\u003e0x00080000\u003c/Data\u003e\u003cData Name='Latest engine version'\u003e1.1.24050.5\u003c/Data\u003e\u003cData Name='Engine up-to-date'\u003e0\u003c/Data\u003e\u003cData Name='Latest platform version'\u003e4.18.24050.7\u003c/Data\u003e\u003cData Name='Platform up-to-date'\u003e1\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-Windows Defender",
-        "type": "start"
+        "type": [
+            "start"
+        ]
     },
     "host": {
         "name": "el33t-b00k-1"
@@ -2859,6 +2927,7 @@ An example event for `windows_defender` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -3253,6 +3322,6 @@ The Windows `perfmon` data stream provides performance counter values.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | windows.perfmon.instance | Instance value. | keyword |
-| windows.perfmon.metrics.\*.\* | Metric values returned. | object |
+| windows.perfmon.metrics.\*.\* | Metric values returned. |  |
 | windows.perfmon.object | Object value. | keyword |
 
