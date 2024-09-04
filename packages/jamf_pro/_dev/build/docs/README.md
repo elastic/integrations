@@ -1,7 +1,7 @@
                             
 # Jamf Pro integration
-The connector provides integration with Jamf Pro, it is designed to enhance the management and security of Apple devices across an organization. 
-This integration encompasses event and inventory data ingestion from Jamf Pro.
+
+Jamf Pro is a comprehensive management solution designed to help organizations deploy, configure, secure, and manage Apple devices. This integration enables organizations to seamlessly monitor and protect their Mac fleet through Elastic, providing a unified view of security events across all endpoints and facilitating a more effective response to threats. This integration encompasses both event and inventory data ingestion from Jamf Pro.
 
 
 ## Data streams
@@ -27,9 +27,9 @@ This connector utilizes Jamf Pro API, therefore active license is a requirement
 [Setting up webhooks ](https://learn.jamf.com/en-US/bundle/jamf-pro-documentation-current/page/Webhooks.html) in Jamf Pro Dashboard.
 
 
-### Setup
+## Setup
 
-#### Step 1: Create an Application in Jamf Pro:
+### Step 1: Create an Application in Jamf Pro:
 
 To create a connection to Jamf Pro, an [application must be created](https://learn.jamf.com/en-US/bundle/jamf-pro-documentation-current/page/API_Roles_and_Clients.html) first. 
 Credentials generated during this process are required for the subsequent steps.
