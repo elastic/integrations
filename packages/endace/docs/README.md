@@ -393,4 +393,3 @@ An example event for `flow` looks as following:
 ## Licensing for Windows Systems
 
 The Network Packet Capture Integration incorporates a bundled Npcap installation on Windows hosts. The installation is provided under an [OEM license](https://npcap.com/oem/redist.html) from Insecure.Com LLC ("The Nmap Project").
-
