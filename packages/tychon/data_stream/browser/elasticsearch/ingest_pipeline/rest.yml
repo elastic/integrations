@@ -57,7 +57,11 @@ processors:
       field: package.version
       copy_from: tychon.package.version
       ignore_empty_value: true
-  - set:
+
+  - dissect:
+      field: tychon.tls.version_protocol
+      pattern: "%{tls.version_protocol}v%{tls.version}"
+      ignore_missing: true
+  - lowercase:
       field: tls.version_protocol
-      copy_from: tychon.tls.version_protocol
-      ignore_empty_value: true
+      ignore_missing: true
