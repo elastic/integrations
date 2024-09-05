@@ -14,11 +14,11 @@ request.transforms:
   - set:
       # NOTE: The "Build" version must be kept in sync with this package's version.
       target: header.User-Agent
-      value: '[[userAgent "(Elastic Integration; Mandiant Advantage; Build/0.1.0)"]]'
+      value: '[[userAgent "(Elastic Integration; Mandiant Advantage; Build/1.4.0)"]]'
   - set:
       # NOTE: The version must be kept in sync with this package's version.
       target: header.X-App-Name
-      value: '[["MA-Elastic-Integration-0.1.0)"]]'
+      value: '[["MA-Elastic-Integration-1.4.0)"]]'
   - set:
       target: url.params.start_epoch
       value: '[[.cursor.lastUpdateTime]]'
@@ -35,6 +35,15 @@ request.transforms:
   - set:
       target: url.params.last_seen
       default: asc
+  - set:
+      target: url.params.include_misp
+      value: '[[ if {{include_misp}} ]]True[[ else ]]False[[ end ]]'
+  - set:
+      target: url.params.include_reports
+      value: '[[ if {{include_reports}} ]]True[[ else ]]False[[ end ]]'
+  - set:
+      target: url.params.include_campaigns
+      value: '[[ if {{include_campaigns}} ]]True[[ else ]]False[[ end ]]'
 response.request_body_on_pagination: true
 response.pagination:
   - set:
