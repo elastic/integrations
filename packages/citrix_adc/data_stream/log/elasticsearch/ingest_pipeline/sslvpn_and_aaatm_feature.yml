@@ -21,10 +21,9 @@ processors:
         - '^Session%{SPACE}id %{NUMBER:citrix_adc.log.session_id:int} - User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver_ip %{IP:citrix_adc.log.vserver.ip} - Errmsg \"%{DATA:citrix_adc.log.errmsg}\"$'
         - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Browser_type \"%{DATA:citrix_adc.log.browser_type}\" - Group\(s\) \"%{DATA:citrix_adc.log.groups}\"$'
         - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Start_time \"%{DATA:citrix_adc.log.start_time}\" - End_time \"%{DATA:citrix_adc.log.end_time}\" - Duration %{DATA:citrix_adc.log.duration} - Http_resources_accessed %{INT:citrix_adc.log.http_resources_accessed} - Total_TCP_connections %{INT:citrix_adc.log.total_tcp_connections} - Total_policies_allowed %{INT:citrix_adc.log.total_policies_allowed} - Total_policies_denied %{INT:citrix_adc.log.total_policies_denied} - Total_bytes_send %{DATA:citrix_adc.log.total_bytes_send} - Total_bytes_recv %{DATA:citrix_adc.log.total_bytes_received} - Total_compressedbytes_send %{DATA:citrix_adc.log.total_compressed_bytes_send} - Total_compressedbytes_recv %{DATA:citrix_adc.log.total_compressed_bytes_recieved} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved}% - LogoutMethod \"%{DATA:citrix_adc.log.logout_method}\" - Group\(s\) \"%{DATA:citrix_adc.log.groups}\"$'
-        - '^Context %{USERNAME:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip} - SessionId: %{NUMBER:citrix_adc.log.session_id} - %{HOSTNAME:citrix_adc.log.hostname} User %{USERNAME:citrix_adc.log.user} : Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:citrix_adc.log.timestamp} : SSO is %{WORD:citrix_adc.log.sso_status} : %{WORD:citrix_adc.log.method} %{URIPATHPARAM:citrix_adc.log.request.path} - -$'
-        - '^Context %{DATA:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip}%{SPACE}- SessionId: %{NUMBER:citrix_adc.log.session_id}%{SPACE}- %{HOSTNAME:citrix_adc.log.hostname} User %{DATA:citrix_adc.log.user} : Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:citrix_adc.log.timestamp} %{DATA:citrix_adc.log.timezone} %{WORD:citrix_adc.log.method} %{DATA:citrix_adc.log.request.path} - -$'
-        - '^%{GREEDYDATA:citrix_adc.log.message}$'
-      ignore_failure: true
+        - '^Context %{USERNAME:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip} - SessionId: %{NUMBER:citrix_adc.log.session_id} - %{HOSTNAME:citrix_adc.log.hostname} User %{USERNAME:citrix_adc.log.user}%{SPACE}?: Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:citrix_adc.log.timestamp} : SSO is %{WORD:citrix_adc.log.sso_status} : %{WORD:citrix_adc.log.method} %{URIPATHPARAM:citrix_adc.log.request.path} - -$'
+        - '^Context %{DATA:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip}%{SPACE}- SessionId: %{NUMBER:citrix_adc.log.session_id}%{SPACE}?- %{HOSTNAME:citrix_adc.log.hostname} User %{DATA:citrix_adc.log.user} : Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:citrix_adc.log.timestamp} %{DATA:citrix_adc.log.timezone} %{WORD:citrix_adc.log.method} %{DATA:citrix_adc.log.request.path} - -$'
+      ignore_failure: false
   - date:
       field: citrix_adc.log.timestamp
       tag: date_timestamp
@@ -32,7 +31,9 @@ processors:
       formats:
         - ISO8601
         - MM/dd/yyyy:HH:mm:ss
+        - MM/dd/yyyy:HH:mm:ss z
         - yyyy/MM/dd:HH:mm:ss
+        - yyyy/MM/dd:HH:mm:ss z
       if: ctx.citrix_adc?.log?.timestamp != null && ctx.citrix_adc.log.timestamp != ''
       on_failure:
         - append:

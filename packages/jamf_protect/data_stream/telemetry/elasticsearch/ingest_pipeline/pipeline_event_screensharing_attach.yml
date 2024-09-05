@@ -80,6 +80,21 @@ processors:
         value: '{{{jamf_protect.telemetry.graphical_authentication_username}}}'
         if: ctx.jamf_protect?.graphical_authentication_username != null
         allow_duplicates: false
+    - script:
+        lang: painless
+        params:
+            itemTypeMap:
+                '0': Unknown
+                '1': IPv4
+                '2': IPv6
+                '3': UNIX Socket
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.screensharing_attach?.source_address_type != null) {
+                String itemType = ctx.jamf_protect.telemetry.event.screensharing_attach.source_address_type.toString();
+                def itemTypeString = params.itemTypeMap.containsKey(itemType) ? params.itemTypeMap[itemType] : 'Unknown';
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.telemetry.source_address_type = itemTypeString;
+            }
 ##########################
 ## ECS Process ##
 ##########################

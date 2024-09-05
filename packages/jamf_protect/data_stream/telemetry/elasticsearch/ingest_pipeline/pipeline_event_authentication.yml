@@ -105,14 +105,16 @@ processors:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.start_time
         target_field: process.start
         ignore_missing: true
+        if: ctx.process?.start == null
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.start_time
         target_field: process.start
-        ignore_missing: false
+        ignore_missing: true
+        if: ctx.process?.start == null
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.auto_unlock.instigator.start_time
         target_field: process.start
-        ignore_missing: false
+        ignore_missing: true
         if: ctx.process?.start == null
 
     - convert:
@@ -404,6 +406,18 @@ processors:
         field: jamf_protect.telemetry.event.authentication.data.auto_unlock.instigator.executable.path
         target_field: process.executable
         ignore_missing: true
+
+    - script:
+        lang: painless
+        source: >
+            if (ctx.process?.executable != null) {
+                int lastSlashIndex = ctx.process.executable.lastIndexOf('/');
+                if (lastSlashIndex != -1) {
+                    ctx.process.name = ctx.process.executable.substring(lastSlashIndex + 1);
+                } else {
+                    ctx.process.name = ctx.process.executable; // Fallback if no slash is found
+                }
+            }
 
     - rename:
         field: jamf_protect.telemetry.thread.thread_id
