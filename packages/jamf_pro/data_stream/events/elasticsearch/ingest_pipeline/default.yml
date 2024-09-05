@@ -5,19 +5,15 @@ processors:
     field: ecs.version
     value: '8.11.0'
 
-- json:
-    field: message
-    target_field: json
-
-- convert:
-    field: json.event.management_id
-    type: string
-    if: "ctx.json.event?.management_id != null && !(ctx.json.event?.management_id  instanceof String)"
-
 - rename:
     field: json
     target_field: jamf_pro.events
     if: ctx.json != null
+
+- convert:
+    field: jamf_pro.events.event.management_id
+    type: string
+    if: "ctx.jamf_pro.events.event?.management_id != null && !(ctx.jamf_pro.events.event?.management_id  instanceof String)"
 
 - rename:
     field: jamf_pro.events.event.computer
@@ -75,63 +71,65 @@ processors:
     formats:
       - UNIX_MS
       
-- set:
-    field: _tmp._lck
-    value: true
-
 ##############
 #   IP src   #
 ##############
 
 - set:
-    if: "ctx.jamf_pro.events.event?.ip_address != ''"
-    field: _tmp.ip
-    value: '{{{jamf_pro.events.event.ip_address}}}'
+    if: "ctx.jamf_pro.events.event?.ip_address != null && ctx.jamf_pro.events.event?.ip_address != ''"
+    field: host.ip
+    value: 
+     - '{{{jamf_pro.events.event.ip_address}}}'
     ignore_empty_value: true
 
 - set:
     if: "ctx.jamf_pro.events.event?.computer != null && ctx.jamf_pro.events.event?.computer?.reported_ip_address != null && ctx.jamf_pro.events.event?.computer?.reported_ip_address != ''"
-    field: _tmp.ip
-    value: '{{{jamf_pro.events.event.computer.reported_ip_address}}}'
+    field: host.ip
+    value: 
+     - "{{jamf_pro.events.event.computer.reported_ip_address}}"
     ignore_empty_value: true
 
-- set:
-    if: "ctx.jamf_pro.events.event?.reported_ip_address != null && ctx.jamf_pro.events.event?.reported_ip_address != ''"
-    field: _tmp.ip
-    value: '{{{jamf_pro.events.event?.reported_ip_address}}}'
-    ignore_empty_value: true
 ##############
 #  User src  #
 ##############
 - set:
-    field: _tmp.user_name
+    field: user.name
     copy_from: jamf_pro.events.event?.username
     ignore_empty_value: true
 
 - set:
-    field: _tmp.user_name
+    field: user.name
     copy_from: jamf_pro.events.event.?computer.username
     ignore_empty_value: true
 
 - set:
-    field: _tmp.user_email
+    field: user.email
     copy_from: jamf_pro.events.event.?computer.email_address
     ignore_empty_value: true
 
 - set:
-    field: _tmp.user_email
+    field: user.email
     copy_from: jamf_pro.events.event.email_address
     ignore_empty_value: true
 
 ##############
-# ECS compat #
+#   OS src   #
 ##############
 
-- append:
-    if: "ctx?._tmp.ip != null && ctx?._tmp.ip != ''"
-    field: host.ip
-    value: '{{{_tmp.ip}}}'
-    ignore_failure: true
+- set:
+    if: ctx.jamf_pro.events.event?.os_version != null
+    field: os.version
+    copy_from: jamf_pro.events.event.os_version
+
+- set:
+    if: ctx.jamf_pro.events.event?.computer?.os_version != null
+    field: os.version
+    copy_from: jamf_pro.events.event.computer.os_version
+
+
+##############
+# ECS compat #
+##############
 
 - set:
     field: host.address
@@ -139,24 +137,16 @@ processors:
     ignore_empty_value: true
 
 - geoip:
-    if: "ctx?._tmp != null"
-    field: _tmp.ip
+    if: ctx.host?.ip != null && ctx.host?.ip != '' 
+    field: host.ip
     target_field: host.geo
     ignore_missing: true
 
 - set:
-    field: user.email
-    copy_from: _tmp.user_email
-    ignore_empty_value: true
-- set:
     field: related.user
-    copy_from: _tmp.user_name
+    copy_from: user.name
     ignore_empty_value: true
 
-- remove:
-    field: 
-     - _tmp
-    ignore_missing: true
 
 on_failure:
 - set:

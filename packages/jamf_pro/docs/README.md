@@ -17,7 +17,7 @@ Jamf Pro is a comprehensive management solution designed to help organizations d
 ### Inventory
 
 * __Jamf Pro Active License and OAuth2 Credentials:__
-This connector utilizes Jamf Pro API, therefore active license is a requirement
+This connector utilizes Jamf Pro API, therefore active license- Jamf __Business__ or __Enterprise__ is a requirement(Jamf __Now__ doesn't have access to API)
 
 ### Events
 
@@ -25,7 +25,7 @@ This connector utilizes Jamf Pro API, therefore active license is a requirement
 
 * __Jamf Pro webhooks__ 
 [Setting up webhooks ](https://learn.jamf.com/en-US/bundle/jamf-pro-documentation-current/page/Webhooks.html) in Jamf Pro Dashboard.
-
+__NOTE__: For HTTPS usage, a valid verified certificate is essential; Jamf Pro webhooks cannot accept a self-signed certificate. If necessary, the HTTP protocol may serve as a fallback option. Although Jamf Pro webhooks do not require HTTPS, its use is strongly recommended for security reasons.
 
 ## Setup
 
@@ -366,51 +366,39 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-04T07:38:56.092Z",
+    "@timestamp": "2024-09-05T08:17:41.941Z",
     "agent": {
-        "ephemeral_id": "c8c4c6f0-d170-43cc-8b2c-caa31d2da934",
-        "id": "61899e97-6b45-451b-969c-6f7eef4d8a75",
-        "name": "elastic-agent-71507",
+        "ephemeral_id": "a5e9793b-665e-4f95-bd4f-cfd90557caf5",
+        "id": "5fb1e929-4a39-47af-9d57-1ca91873837f",
+        "name": "elastic-agent-98297",
         "type": "filebeat",
         "version": "8.13.4"
     },
     "data_stream": {
         "dataset": "jamf_pro.events",
-        "namespace": "66530",
+        "namespace": "76510",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "61899e97-6b45-451b-969c-6f7eef4d8a75",
+        "id": "5fb1e929-4a39-47af-9d57-1ca91873837f",
         "snapshot": false,
         "version": "8.13.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.events",
-        "ingested": "2024-09-04T07:38:57Z",
+        "ingested": "2024-09-05T08:17:42Z",
         "original": "{\"event\":{\"alternateMacAddress\":\"string\",\"building\":\"string\",\"department\":\"string\",\"deviceName\":\"string\",\"emailAddress\":\"string\",\"ipAddress\":\"10.122.26.87\",\"jssID\":123,\"macAddress\":\"string\",\"managementId\":\"string\",\"model\":\"string\",\"osBuild\":\"string\",\"osVersion\":\"string\",\"phone\":\"string\",\"position\":\"string\",\"realName\":\"string\",\"reportedIpAddress\":\"89.160.20.156\",\"room\":\"string\",\"serialNumber\":\"string\",\"udid\":\"string\",\"userDirectoryID\":\"string\",\"username\":\"string\"},\"webhook\":{\"eventTimestamp\":1234567890123,\"id\":12334,\"name\":\"string\",\"webhookEvent\":\"ComputerAdded\"}}"
     },
     "host": {
         "address": [
-            "89.160.20.156"
+            "10.122.26.87"
         ],
-        "geo": {
-            "city_name": "Linköping",
-            "continent_name": "Europe",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
-            "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
-            },
-            "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
-        },
         "ip": [
-            "89.160.20.156"
+            "10.122.26.87"
         ]
     },
     "input": {
