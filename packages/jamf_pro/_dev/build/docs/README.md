@@ -17,7 +17,7 @@ Jamf Pro is a comprehensive management solution designed to help organizations d
 ### Inventory
 
 * __Jamf Pro Active License and OAuth2 Credentials:__
-This connector utilizes Jamf Pro API, therefore active license is a requirement
+This connector utilizes Jamf Pro API, therefore active license- Jamf __Business__ or __Enterprise__ is a requirement(Jamf __Now__ doesn't have access to API)
 
 ### Events
 
@@ -25,7 +25,7 @@ This connector utilizes Jamf Pro API, therefore active license is a requirement
 
 * __Jamf Pro webhooks__ 
 [Setting up webhooks ](https://learn.jamf.com/en-US/bundle/jamf-pro-documentation-current/page/Webhooks.html) in Jamf Pro Dashboard.
-
+__NOTE__: For HTTPS usage, a valid verified certificate is essential; Jamf Pro webhooks cannot accept a self-signed certificate. If necessary, the HTTP protocol may serve as a fallback option. Although Jamf Pro webhooks do not require HTTPS, its use is strongly recommended for security reasons.
 
 ## Setup
 
