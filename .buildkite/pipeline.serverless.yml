@@ -6,7 +6,7 @@ env:
   DOCKER_COMPOSE_VERSION: "v2.24.1"
   DOCKER_VERSION: "false" # not required to set since system tests are not running yet
   KIND_VERSION: 'v0.20.0'
-  K8S_VERSION: 'v1.30.0'
+  K8S_VERSION: 'v1.31.0'
   YQ_VERSION: 'v4.35.2'
   IMAGE_UBUNTU_X86_64: "family/core-ubuntu-2204"
   GH_CLI_VERSION: "2.29.0"
@@ -76,8 +76,10 @@ steps:
 
   - label: ":junit: Junit annotate"
     plugins:
-      - junit-annotate#v2.4.1:
+      - junit-annotate#v2.5.0:
           artifacts: "build/test-results/*.xml"
+          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
+          report-skipped: true
     agents:
       provider: "gcp"  # junit plugin requires docker
 
