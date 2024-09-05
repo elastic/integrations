@@ -15,6 +15,7 @@ type PackageError struct {
 	testCase
 	Serverless        bool
 	ServerlessProject string
+	LogsDB            bool
 	StackVersion      string
 	BuildURL          string
 	Teams             []string
@@ -27,6 +28,7 @@ type PackageError struct {
 type PackageErrorOptions struct {
 	Serverless        bool
 	ServerlessProject string
+	LogsDB            bool
 	StackVersion      string
 	BuildURL          string
 	TestCase          testCase
@@ -37,6 +39,7 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 	p := PackageError{
 		Serverless:        options.Serverless,
 		ServerlessProject: options.ServerlessProject,
+		LogsDB:            options.LogsDB,
 		StackVersion:      options.StackVersion,
 		BuildURL:          options.BuildURL,
 		testCase:          options.TestCase,
@@ -66,6 +69,9 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 func (p PackageError) String() string {
 	var sb strings.Builder
 
+	if p.LogsDB {
+		sb.WriteString("[LogsDB] ")
+	}
 	if p.Serverless {
 		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.ServerlessProject))
 	}
