@@ -85,11 +85,6 @@ processors:
       field: "@timestamp"
       copy_from: event.created
       if: ctx.event?.created != null
-  - set:
-      tag: set-timestamp-ingest
-      field: "@timestamp"
-      copy_from: _ingest.timestamp
-      if: ctx["@timestamp"] == null
   - script:
       tag: date-context-timestamp-from-nt
       if: (ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != "")
@@ -161,11 +156,48 @@ processors:
       formats:
         - UNIX
       ignore_failure: true
+  - date:
+      tag: date-scores-modified_time
+      if: ctx.crowdstrike?.scores?.modified_time != null
+      field: crowdstrike.scores.modified_time
+      target_field: crowdstrike.scores.modified_time
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - remove:
+            field: crowdstrike.scores.modified_time
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: crowdstrike.scores.modified_time
+      ignore_empty_value: true
+      if: ctx["@timestamp"] == null
+  - set:
+      tag: set-timestamp-ingest
+      field: "@timestamp"
+      copy_from: _ingest.timestamp
+      if: ctx["@timestamp"] == null
   - rename:
       tag: rename-message
       field: crowdstrike.message
       target_field: message
       ignore_missing: true
+  - rename:
+      tag: canonicalize-event_type
+      field: crowdstrike.event_type
+      target_field: crowdstrike.EventType
+      ignore_missing: true
+      if: ctx.crowdstrike?.EventType == null
+  - rename:
+      tag: canonicalize-host_hidden_status
+      field: crowdstrike.host_hidden_status
+      target_field: crowdstrike.HostHiddenStatus
+      ignore_missing: true
+      if: ctx.crowdstrike?.HostHiddenStatus == null
 
 # Handle additional added fields. 
   - convert:

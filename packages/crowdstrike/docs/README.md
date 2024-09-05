@@ -1427,15 +1427,24 @@ and/or `session_token`.
 | crowdstrike.__mv_aip |  | keyword |
 | crowdstrike.__mv_discoverer_aid |  | keyword |
 | crowdstrike.aipCount |  | integer |
+| crowdstrike.assessments.\* |  | object |
 | crowdstrike.cid |  | keyword |
 | crowdstrike.discovererCount |  | integer |
 | crowdstrike.discoverer_aid |  | keyword |
 | crowdstrike.eid |  | integer |
+| crowdstrike.hostname |  | keyword |
 | crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
 | crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
 | crowdstrike.localipCount |  | integer |
 | crowdstrike.monthsincereset |  | keyword |
 | crowdstrike.name |  | keyword |
+| crowdstrike.os_version |  | keyword |
+| crowdstrike.product_type_desc |  | keyword |
+| crowdstrike.scores.modified_time |  | date |
+| crowdstrike.scores.os |  | long |
+| crowdstrike.scores.overall |  | long |
+| crowdstrike.scores.sensor |  | long |
+| crowdstrike.scores.version |  | keyword |
 | crowdstrike.subnet |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
