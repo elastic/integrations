@@ -97,16 +97,30 @@ processors:
       tag: convert_destination_asset_id_to_keyword
       type: string
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.destination_entity.asset_name
-      tag: rename_destination_entity_asset_name
-      target_field: claroty_ctd.baseline.destination.entity.asset_name
+      tag: convert_destination_entity_asset_name
+      type: ip
       ignore_missing: true
-  - set:
-      field: destination.domain
-      tag: set_destination_domain_from_baseline_destination_entity_asset_name
-      copy_from: claroty_ctd.baseline.destination.entity.asset_name
-      ignore_empty_value: true
+      if: ctx.json?.destination_entity?.asset_name != null && ctx.json.destination_entity.asset_name != ''
+      on_failure:
+        - rename:
+            field: json.destination_entity.asset_name
+            tag: rename_destination_entity_asset_name
+            target_field: claroty_ctd.baseline.destination.entity.asset_name
+            ignore_missing: true
+  - append:
+      field: destination.ip
+      tag: append_baseline_destination_entity_asset_name_into_destination_ip
+      value: '{{{json.destination_entity.asset_name}}}'
+      allow_duplicates: false
+      if: ctx.json?.destination_entity?.asset_name != null
+  - append:
+      field: related.ip
+      tag: append_baseline_destination_entity_asset_name_into_related_ip
+      value: '{{{json.destination_entity.asset_name}}}'
+      allow_duplicates: false
+      if: ctx.json?.destination_entity?.asset_name != null
   - rename:
       field: json.destination_entity.id
       tag: rename_destination_entity_id
@@ -128,11 +142,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
+  - append:
       field: destination.ip
-      tag: set_destination_ip_from_baseline_destination_entity_ipv4
-      copy_from: claroty_ctd.baseline.destination.entity.ipv4
-      ignore_empty_value: true
+      tag: append_baseline_destination_entity_ipv4_into_destiantion_ip
+      value: '{{{claroty_ctd.baseline.destination.entity.ipv4}}}'
+      allow_duplicates: false
+      if: ctx.claroty_ctd?.baseline?.destination?.entity?.ipv4 != null
   - append:
       field: related.ip
       tag: append_baseline_destination_entity_ipv4_into_related_ip
@@ -316,11 +331,30 @@ processors:
       tag: convert_source_asset_id_to_keyword
       type: string
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.source_entity.asset_name
-      tag: rename_source_entity_asset_name
-      target_field: claroty_ctd.baseline.source.entity.asset_name
+      tag: convert_source_entity_asset_name
+      type: ip
       ignore_missing: true
+      if: ctx.json?.source_entity?.asset_name != null && ctx.json.source_entity.asset_name != ''
+      on_failure:
+        - rename:
+            field: json.source_entity.asset_name
+            tag: rename_source_entity_asset_name
+            target_field: claroty_ctd.baseline.source.entity.asset_name
+            ignore_missing: true
+  - append:
+      field: source.ip
+      tag: append_baseline_source_entity_asset_name_into_source_ip
+      value: '{{{json.source_entity.asset_name}}}'
+      allow_duplicates: false
+      if: ctx.json?.source_entity?.asset_name != null
+  - append:
+      field: related.ip
+      tag: append_baseline_source_entity_asset_name_into_related_ip
+      value: '{{{json.source_entity.asset_name}}}'
+      allow_duplicates: false
+      if: ctx.json?.source_entity?.asset_name != null
   - rename:
       field: json.source_entity.id
       tag: rename_source_entity_id
@@ -342,11 +376,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
+  - append:
       field: source.ip
-      tag: set_source_ip_from_baseline_source_entity_ipv4
-      copy_from: claroty_ctd.baseline.source.entity.ipv4
-      ignore_empty_value: true
+      tag: append_baseline_source_entity_ipv4_into_source_ip
+      value: '{{{claroty_ctd.baseline.source.entity.ipv4}}}'
+      allow_duplicates: false
+      if: ctx.claroty_ctd?.baseline?.source?.entity?.ipv4 != null
   - append:
       field: related.ip
       tag: append_baseline_source_entity_ipv4_related_ip
@@ -465,7 +500,6 @@ processors:
   - remove:
       field:
         - claroty_ctd.baseline.description
-        - claroty_ctd.baseline.destination.entity.asset_name
         - claroty_ctd.baseline.destination.entity.ipv4
         - claroty_ctd.baseline.destination.entity.mac
         - claroty_ctd.baseline.destination.port
