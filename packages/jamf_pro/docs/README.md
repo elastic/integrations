@@ -91,31 +91,31 @@ An example event for `inventory` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-04T07:41:17.824Z",
+    "@timestamp": "2024-09-05T10:54:14.022Z",
     "agent": {
-        "ephemeral_id": "f3487b0a-a6c7-4065-aad5-b7c2e7702d50",
-        "id": "ce609d08-6ebe-43e3-b98c-6de8c0dbb4d3",
-        "name": "elastic-agent-58847",
+        "ephemeral_id": "9daf2554-2469-4bb8-addb-13343e4f4237",
+        "id": "faab38e9-0038-45c7-abdd-f416151c116a",
+        "name": "elastic-agent-24372",
         "type": "filebeat",
         "version": "8.13.4"
     },
     "data_stream": {
         "dataset": "jamf_pro.inventory",
-        "namespace": "23527",
+        "namespace": "93775",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ce609d08-6ebe-43e3-b98c-6de8c0dbb4d3",
+        "id": "faab38e9-0038-45c7-abdd-f416151c116a",
         "snapshot": false,
         "version": "8.13.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.inventory",
-        "ingested": "2024-09-04T07:41:20Z"
+        "ingested": "2024-09-05T10:54:17Z"
     },
     "host": {
         "address": [
@@ -366,31 +366,31 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-05T08:17:41.941Z",
+    "@timestamp": "2024-09-05T10:51:58.457Z",
     "agent": {
-        "ephemeral_id": "a5e9793b-665e-4f95-bd4f-cfd90557caf5",
-        "id": "5fb1e929-4a39-47af-9d57-1ca91873837f",
-        "name": "elastic-agent-98297",
+        "ephemeral_id": "cca55a61-819d-42a8-b0eb-10a9985f28bc",
+        "id": "d06e3bd9-e709-43c9-b0e4-26b5a33949c9",
+        "name": "elastic-agent-22775",
         "type": "filebeat",
         "version": "8.13.4"
     },
     "data_stream": {
         "dataset": "jamf_pro.events",
-        "namespace": "76510",
+        "namespace": "99567",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5fb1e929-4a39-47af-9d57-1ca91873837f",
+        "id": "d06e3bd9-e709-43c9-b0e4-26b5a33949c9",
         "snapshot": false,
         "version": "8.13.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.events",
-        "ingested": "2024-09-05T08:17:42Z",
+        "ingested": "2024-09-05T10:51:59Z",
         "original": "{\"event\":{\"alternateMacAddress\":\"string\",\"building\":\"string\",\"department\":\"string\",\"deviceName\":\"string\",\"emailAddress\":\"string\",\"ipAddress\":\"10.122.26.87\",\"jssID\":123,\"macAddress\":\"string\",\"managementId\":\"string\",\"model\":\"string\",\"osBuild\":\"string\",\"osVersion\":\"string\",\"phone\":\"string\",\"position\":\"string\",\"realName\":\"string\",\"reportedIpAddress\":\"89.160.20.156\",\"room\":\"string\",\"serialNumber\":\"string\",\"udid\":\"string\",\"userDirectoryID\":\"string\",\"username\":\"string\"},\"webhook\":{\"eventTimestamp\":1234567890123,\"id\":12334,\"name\":\"string\",\"webhookEvent\":\"ComputerAdded\"}}"
     },
     "host": {
@@ -436,6 +436,9 @@ An example event for `events` looks as following:
                 "webhook_event": "ComputerAdded"
             }
         }
+    },
+    "os": {
+        "version": "string"
     },
     "tags": [
         "preserve_original_event",
