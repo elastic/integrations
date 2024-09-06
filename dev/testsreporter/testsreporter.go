@@ -11,6 +11,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/elastic/integrations/dev/codeowners"
 )
 
 type CheckOptions struct {
@@ -26,6 +28,12 @@ type CheckOptions struct {
 }
 
 func Check(resultsPath string, options CheckOptions) error {
+
+	if options.CodeownersPath == "" {
+		// set default value for the GitHub CODEOWNERS file
+		options.CodeownersPath = codeowners.DefaultCodeownersPath
+	}
+
 	fmt.Println("path: ", resultsPath)
 	packageErrors, err := errorsFromTests(resultsPath, options)
 	if err != nil {
