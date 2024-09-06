@@ -23,7 +23,7 @@ processors:
       tag: grok_syslog_line
       if: ctx.event?.original != null && ctx.event.original != ''
       patterns:
-        - '^<%{POSINT:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:watchguard_firebox.log.syslog_timestamp} %{SYSLOGHOST:log.syslog.hostname}(?: %{WORD:watchguard_firebox.log.serial_number})?(?: \(%{TIMESTAMP_ISO8601:watchguard_firebox.log.timestamp}\))? %{PROG:log.syslog.appname}(?:\[%{POSINT:log.syslog.procid}\])?: %{GREEDYDATA:watchguard_firebox.log.body}$'
+        - '^<%{POSINT:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:watchguard_firebox.log.syslog_timestamp} %{SYSLOGHOST:log.syslog.hostname}(?: %{WORD:watchguard_firebox.log.serial_number})?(?: %{SYSLOGHOST:watchguard_firebox.log.member_info})?(?: \(%{TIMESTAMP_ISO8601:watchguard_firebox.log.timestamp}\))? %{PROG:log.syslog.appname}(?:\[%{POSINT:log.syslog.procid}\])?: %{GREEDYDATA:watchguard_firebox.log.body}$'
   - set:
       field: observer.vendor
       tag: set_observer_vendor

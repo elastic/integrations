@@ -57,7 +57,7 @@ program: |
         "initial_interval": state.initial_interval,
         "next_url": "Next-Page" in resp.Header ? resp.Header["Next-Page"] : "",
         "cursor": {
-          ?"last_timestamp": has(body.resources) ?
+          ?"last_timestamp": has(body.resources) && body.resources.size() > 0 ?
             optional.of(([?state.?cursor.last_timestamp] + body.resources.map(e, e.last_updated)).max())
           :
             state.?cursor.last_timestamp,

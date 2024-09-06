@@ -236,6 +236,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.authentication_info.service_account_delegation_info | Identity delegation history of an authenticated service account that makes the request. It contains information on the real authorities that try to access GCP resources by delegating on a service account. When multiple authorities present, they are guaranteed to be sorted based on the original ordering of the identity delegation events. | flattened |
 | gcp.audit.authentication_info.service_account_key_name | The service account key that was used to request the OAuth 2.0 access token. This field identifies the service account key by its full resource name. | keyword |
 | gcp.audit.authentication_info.third_party_principal | The third party identification (if any) of the authenticated user making the request. When the JSON object represented here has a proto equivalent, the proto name will be indicated in the @type property. | flattened |
+| gcp.audit.authorization_info | Authorization information for the operation. | nested |
 | gcp.audit.authorization_info.granted | Whether or not authorization for resource and permission was granted. | boolean |
 | gcp.audit.authorization_info.permission | The required IAM permission. | keyword |
 | gcp.audit.authorization_info.resource | The resource being accessed, as a REST-style string. | keyword |
@@ -1141,6 +1142,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.service_id | The ID of the service that the usage is associated with. | keyword |
 | gcp.billing.sku_description | A description of the resource type used by the service. For example, a resource type for Cloud Storage is Standard Storage US. | keyword |
 | gcp.billing.sku_id | The ID of the resource used by the service. | keyword |
+| gcp.billing.tags | A collection of key-value pairs that provide additional metadata. | nested |
 | gcp.billing.tags.key |  | keyword |
 | gcp.billing.tags.value |  | keyword |
 | gcp.billing.total | Total billing amount. | float |

@@ -221,11 +221,24 @@ streams:
       - name: file_selectors
         type: yaml
         title: File Selectors
-        multi: true
+        multi: false
         required: false
         show_user: false
         description: >
           If the SQS queue will have events that correspond to files that this integration shouldn’t process file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regex syntax is the same as the Go language. Files that don’t match one of the regexes won’t be processed. content_type, parsers, include_s3_metadata,max_bytes, buffer_size, and encoding may also be set for each file selector.
+        default: |
+          #- regex: /CloudTrail/
+          #  parsers:
+          #    - multiline:
+          #        pattern: ^<Event
+          #        negate:  true
+          #        match:   after
+          #- regex: /CloudTrail-Digest/
+          #  parsers:
+          #    - multiline:
+          #        pattern: ^<Event
+          #        negate:  true
+          #        match:   after
 
       - name: fips_enabled
         type: bool
