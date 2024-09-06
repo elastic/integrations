@@ -28,7 +28,6 @@ type CheckOptions struct {
 }
 
 func Check(resultsPath string, options CheckOptions) error {
-
 	if options.CodeownersPath == "" {
 		// set default value for the GitHub CODEOWNERS file
 		options.CodeownersPath = codeowners.DefaultCodeownersPath
