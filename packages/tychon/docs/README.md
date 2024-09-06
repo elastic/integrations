@@ -107,7 +107,7 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | tychon.network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | tychon.network.interface | The interface the ARP Table has associated the destination. | keyword |
 | tychon.network.state | Current state | keyword |
-| tychon.network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value is be normalized to lowercase for querying. | keyword |
+| tychon.network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value is normalized to lowercase for querying. | keyword |
 | tychon.script.current_duration | Scanner Script Duration. | long |
 | tychon.script.current_time | Current datetime. | date |
 | tychon.script.name | Scanner Script Name. | keyword |
@@ -249,7 +249,7 @@ TYCHON checks local browser configuration settings.
 | tychon.script.start | Scanner Start datetime. | date |
 | tychon.script.type | Scanner Script Type. | keyword |
 | tychon.script.version | Scanner Script Version. | version |
-| tychon.tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
+| tychon.tls.version_protocol | Protocol name and version in the original format. | keyword |
 | tychon.tychon.data.version | Data Version. | version |
 | tychon.tychon.id | ID. | keyword |
 
@@ -1134,7 +1134,7 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | tychon.host.uptime | Seconds the host has been up. | long |
 | tychon.host.workgroup | Host Workgroup Network Name. | keyword |
 | tychon.id | TYCHON unique document identifier. | keyword |
-| tychon.network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value is be normalized to lowercase for querying. | keyword |
+| tychon.network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value is normalized to lowercase for querying. | keyword |
 | tychon.process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | tychon.process.command_line.text | Multi-field of `tychon.process.command_line`. | match_only_text |
 | tychon.process.executable | Absolute path to the process executable. | keyword |
