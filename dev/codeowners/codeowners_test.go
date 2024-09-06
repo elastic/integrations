@@ -208,7 +208,7 @@ func TestReturnPackageOwners(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			owners, err := PackageOwnersCustomCodeowners(c.packageName, c.datastream, c.codeownersPath)
+			owners, err := PackageOwners(c.packageName, c.datastream, c.codeownersPath)
 			if c.expectedError {
 				assert.Error(t, err)
 				return
