@@ -127,6 +127,24 @@ processors:
     copy_from: host.ip
     ignore_empty_value: true
 
+####################
+# Asset definition #
+####################
+
+- set:
+    field: event.kind
+    value: asset
+
+- append:
+    field: event.type
+    value: user
+    if: ctx.jamf_pro.inventory?.user_and_location != null
+
+- append:
+    field: event.type
+    value: device
+    if: ctx.jamf_pro.inventory?.hardware != null
+
 on_failure:
 - set:
     field: event.kind
