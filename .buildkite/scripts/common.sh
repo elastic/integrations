@@ -161,8 +161,7 @@ with_docker() {
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     fi
     echo "deb [arch=${architecture} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${ubuntu_codename} stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    # TODO: Remove "|| true" once errors updating are fixed
-    sudo apt-get update || true
+    sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce=${debian_version}"
     sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce-cli=${debian_version}"
     retry 3 sudo systemctl restart docker
