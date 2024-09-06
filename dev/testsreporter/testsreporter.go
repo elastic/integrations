@@ -13,24 +13,21 @@ import (
 	"strings"
 )
 
-type checkOptions struct {
-	ResultsPath       string
+type CheckOptions struct {
 	Serverless        bool
 	ServerlessProject string
+	LogsDB            bool
 	StackVersion      string
 	BuildURL          string
 	CodeownersPath    string
+
+	MaxPreviousLinks int
+	MaxTestsReported int
 }
 
-func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverlessProject string, maxPreviousLinks, maxTestsReported int) error {
+func Check(resultsPath string, options CheckOptions) error {
 	fmt.Println("path: ", resultsPath)
-	packageErrors, err := errorsFromTests(checkOptions{
-		ResultsPath:       resultsPath,
-		Serverless:        serverless,
-		ServerlessProject: serverlessProject,
-		StackVersion:      stackVersion,
-		BuildURL:          buildURL,
-	})
+	packageErrors, err := errorsFromTests(resultsPath, options)
 	if err != nil {
 		return err
 	}
@@ -40,11 +37,11 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 
 	aReporter := reporter{
 		ghCli:            ghCli,
-		maxPreviousLinks: maxPreviousLinks,
+		maxPreviousLinks: options.MaxPreviousLinks,
 	}
 
-	if len(packageErrors) > maxTestsReported {
-		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to be reported. Total failing tests: %d.\n", maxTestsReported, len(packageErrors))
+	if len(packageErrors) > options.MaxTestsReported {
+		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to be reported. Total failing tests: %d.\n", options.MaxTestsReported, len(packageErrors))
 		return nil
 	}
 
@@ -53,7 +50,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 		ctx := context.TODO()
 		r := ResultsFormatter{
 			result:           pError,
-			maxPreviousLinks: maxPreviousLinks,
+			maxPreviousLinks: options.MaxPreviousLinks,
 		}
 		fmt.Println()
 		fmt.Println("---- Issue ----")
@@ -77,9 +74,9 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 	return multiErr
 }
 
-func errorsFromTests(options checkOptions) ([]PackageError, error) {
+func errorsFromTests(resultsPath string, options CheckOptions) ([]PackageError, error) {
 	var packageErrors []PackageError
-	err := filepath.Walk(options.ResultsPath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -98,6 +95,7 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 			packageError, err := NewPackageError(PackageErrorOptions{
 				Serverless:        options.Serverless,
 				ServerlessProject: options.ServerlessProject,
+				LogsDB:            options.LogsDB,
 				StackVersion:      options.StackVersion,
 				BuildURL:          options.BuildURL,
 				TestCase:          c,
