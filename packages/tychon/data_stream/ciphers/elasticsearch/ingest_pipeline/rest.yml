@@ -22,14 +22,7 @@ processors:
       lang: painless
       description: Remove non-strings from file.attributes
       if: ctx.tychon?.file?.attributes instanceof List
-      source: |
-        def result = [];
-        for (def v : ctx.tychon.file.attributes) {
-          if (v instanceof String) {
-            result.add(v);
-          }
-        }
-        ctx.tychon.file.attributes = result;
+      source: ctx.tychon.file.attributes.removeIf(e -> !(e instanceof String));
   - convert:
       field: tychon.file.size
       type: long
