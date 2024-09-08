@@ -203,7 +203,7 @@ processors:
   - json:
       field: m365_defender.event.additional_fields.answers
       tag: json_m365_defender_event_additional_fields_answers
-      if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
+      if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.m365_defender?.event?.additional_fields?.answers != null && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
       on_failure:
         - append:
             field: error.message
@@ -217,7 +217,7 @@ processors:
   - json:
       field: m365_defender.event.additional_fields.TTLs
       tag: json_m365_defender_event_additional_fields_ttls
-      if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
+      if: ctx.m365_defender?.event?.additional_fields instanceof Map && ctx.m365_defender?.event?.additional_fields?.TTLs != null && ctx.json?.properties?.ActionType != null && ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
       on_failure:
         - append:
             field: error.message
@@ -242,6 +242,9 @@ processors:
                     flags.add(flag);
                 }
             }
+        }
+        if (!ctx.m365_defender.event.containsKey('dns')) {
+            ctx.m365_defender.event.dns = new HashMap();
         }
         ctx.m365_defender.event.dns.header_flags = flags;
 

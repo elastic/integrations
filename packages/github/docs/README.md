@@ -466,10 +466,12 @@ To use this integration, you must be an administrator for the repository or for 
 | github.dependabot.number | Identifies the alert number. | integer |
 | github.dependabot.security_advisory.classification | The classification of the advisory. | keyword |
 | github.dependabot.security_advisory.cvss.vector_string | The CVSS vector string associated with this advisory. | keyword |
+| github.dependabot.security_advisory.cwes | CWEs associated with this Advisory. | nested |
 | github.dependabot.security_advisory.cwes.cwe_id | The id of the CWE. | keyword |
 | github.dependabot.security_advisory.cwes.description | The name of this CWE. | keyword |
 | github.dependabot.security_advisory.cwes.name | A detailed description of this CWE. | keyword |
 | github.dependabot.security_advisory.ghsa_id | The GitHub Security Advisory ID. | keyword |
+| github.dependabot.security_advisory.identifiers | A list of identifiers for this advisory. | nested |
 | github.dependabot.security_advisory.identifiers.type | The identifier type, e.g. GHSA, CVE. | keyword |
 | github.dependabot.security_advisory.identifiers.value | The identifier. | keyword |
 | github.dependabot.security_advisory.origin | The organization that originated the advisory. | keyword |

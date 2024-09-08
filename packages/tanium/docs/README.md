@@ -511,6 +511,7 @@ An example event for `endpoint_config` looks as following:
 | tanium.endpoint_config.item.domain | Domain of the config item. | keyword |
 | tanium.endpoint_config.item.id | Id of the config item. | long |
 | tanium.endpoint_config.manifest.item_count | Item count of the manifest. | long |
+| tanium.endpoint_config.manifest.items |  | nested |
 | tanium.endpoint_config.manifest.items.data_category | Data category of the items of manifest. | keyword |
 | tanium.endpoint_config.manifest.items.domain | Items domain of the manifest. | keyword |
 | tanium.endpoint_config.manifest.items.ids | Item Ids of the manifest. | long |
@@ -996,6 +997,7 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.version | OS version. | version |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.platform | OS type. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.threat_id | Threat id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats |  | nested |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.artifact_hash | Artifact hash of activity. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.instance_hash | Instance hash of activity. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.is_intel_target | Intel target or not. | boolean |
@@ -1040,6 +1042,7 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.group_id | User group id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.id | User id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.name | User name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions |  | nested |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.file_create.path | Path of file. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.timestamp_ms | Timestamp in milliseconds. | date |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.file.unique_event_id | Unique event id. | keyword |
@@ -1057,9 +1060,11 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.instance_hash | Instance hash. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.timestamp | Timestamp. | date |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.verb | Verb. | long |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.intel_intra_ids |  | nested |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.intel_intra_ids.id | Array of intel intra id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.source_name | Source name. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.intel_id | Intel id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts |  | nested |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.event.file_create.path | Path of file. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.event.timestampMs | Timestamp in milliseconds. | date |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.file.unique_event_id | Unique event id of file. | keyword |
