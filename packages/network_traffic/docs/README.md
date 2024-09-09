@@ -1608,27 +1608,11 @@ Fields published for DNS packets.
 | dns.additionals.type | The type of data contained in this resource record. | keyword |
 | dns.additionals_count | The number of resource records contained in the `dns.additionals` field. The `dns.additionals` field may or may not be included depending on the configuration of Packetbeat. | long |
 | dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
-| dns.answers.algorithm |  | keyword |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
-| dns.answers.digest_type |  | keyword |
-| dns.answers.expiration |  | long |
-| dns.answers.expire |  | long |
-| dns.answers.inception |  | keyword |
-| dns.answers.key_tag |  | keyword |
-| dns.answers.labels |  | keyword |
-| dns.answers.minimum |  | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
-| dns.answers.original_ttl |  | keyword |
-| dns.answers.preference |  | keyword |
-| dns.answers.refresh |  | long |
-| dns.answers.retry |  | long |
-| dns.answers.rname |  | keyword |
-| dns.answers.serial |  | keyword |
-| dns.answers.signer_name |  | keyword |
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
-| dns.answers.type_covered |  | keyword |
 | dns.answers_count | The number of resource records contained in the `dns.answers` field. | long |
 | dns.authorities | An array containing a dictionary for each authority section from the answer. | flattened |
 | dns.authorities.class | The class of DNS data contained in this resource record. | keyword |
