@@ -196,6 +196,7 @@ processors:
 
 # Handle additional added fields. 
   - convert:
+      tag: convert_CurrentLocalIP_ip
       field: crowdstrike.CurrentLocalIP
       type: ip
       if: (ctx.crowdstrike?.CurrentLocalIP != null && ctx.crowdstrike?.CurrentLocalIP != "")
@@ -1459,13 +1460,17 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - split:
-       field: crowdstrike.aip
-       separator: "\\s+"
-       ignore_missing: true
+      field: crowdstrike.aip
+      separator: "\\s+"
+      ignore_missing: true
   - convert:
+      tag: convert_crowdstrike-aip_ip
       field: crowdstrike.aip
       type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.aip
   - rename:
       field: crowdstrike.aip
       target_field: observer.ip
@@ -1565,11 +1570,12 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_crowdstrike-info-host-aip_ip
       field: crowdstrike.info.host.aip
       target_field: _temp.aip
       type: ip
-      ignore_missing: true
       ignore_failure: true
+      if: ctx.crowdstrike?.info?.host?.aip != null && ctx.crowdstrike.info.host.aip != ""
   - remove:
       field: crowdstrike.info.host.aip
       if: ctx._temp?.aip != null
@@ -1931,8 +1937,8 @@ processors:
       separator: "\\s+"
       if: ctx.crowdstrike?.LocalAddressIP4 != null
   - convert:
+      tag: convert_LocalAddressIP4_ip
       field: crowdstrike.LocalAddressIP4
-      tag: convert-LocalAddressIP4
       type: ip
       if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
       on_failure:
@@ -1956,8 +1962,8 @@ processors:
       separator: "\\s+"
       if: ctx.crowdstrike?.LocalAddressIP6 != null
   - convert:
+      tag: convert_LocalAddressIP6_ip
       field: crowdstrike.LocalAddressIP6
-      tag: convert-LocalAddressIP6
       type: ip
       if: ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
       on_failure:
@@ -1985,6 +1991,7 @@ processors:
       target_field: source.port
       ignore_missing: true
   - convert:
+      tag: convert_RemoteAddressIP4_ip
       field: crowdstrike.RemoteAddressIP4
       type: ip
       ignore_missing: true
@@ -1997,6 +2004,7 @@ processors:
       copy_from: destination.ip
       ignore_empty_value: true
   - convert:
+      tag: convert_RemoteAddressIP6_ip
       field: crowdstrike.RemoteAddressIP6
       type: ip
       ignore_missing: true
