@@ -1564,6 +1564,7 @@ An example event for `alert` looks as following:
 | google_workspace.alert.data.rule.violation_info.suppressed.action.types | Actions suppressed due to other actions with higher priority. | keyword |
 | google_workspace.alert.data.rule.violation_info.trigger.user.email | Email of the user who caused the violation. Value could be empty if not applicable, for example, a violation found by drive continuous scan. | keyword |
 | google_workspace.alert.data.rule.violation_info.trigger.value | Trigger of the rule. | keyword |
+| google_workspace.alert.data.rule.violation_info.triggered.action.info | Metadata related to the triggered actions. | nested |
 | google_workspace.alert.data.rule.violation_info.triggered.action.info.object |  | keyword |
 | google_workspace.alert.data.rule.violation_info.triggered.action.types | Actions applied as a consequence of the rule being triggered. | keyword |
 | google_workspace.alert.data.rule_description | Description of the rule. | text |
