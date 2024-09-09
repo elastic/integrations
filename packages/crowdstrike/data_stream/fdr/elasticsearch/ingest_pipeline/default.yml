@@ -85,6 +85,11 @@ processors:
       field: "@timestamp"
       copy_from: event.created
       if: ctx.event?.created != null
+  - set:
+      tag: set-timestamp-ingest
+      field: "@timestamp"
+      copy_from: _ingest.timestamp
+      if: ctx["@timestamp"] == null
   - script:
       tag: date-context-timestamp-from-nt
       if: (ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != "")
@@ -171,16 +176,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      copy_from: crowdstrike.scores.modified_time
-      ignore_empty_value: true
-      if: ctx["@timestamp"] == null
-  - set:
-      tag: set-timestamp-ingest
-      field: "@timestamp"
-      copy_from: _ingest.timestamp
-      if: ctx["@timestamp"] == null
   - rename:
       tag: rename-message
       field: crowdstrike.message
