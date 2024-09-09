@@ -1,0 +1,128 @@
+- name: sysdig
+  type: group
+  description: Namespace for Sysdig-specific fields.
+  dynamic: false
+  fields:
+    - name: scope
+      type: group
+      fields:
+        - name: cloudProvider
+          type: group
+          fields:
+            - name: account.id
+              type: text
+            - name: region
+              type: text
+        - name: host.hostName
+          type: text
+        - name: kubernetes
+          type: group
+          fields:
+            - name: cluster.name
+              type: text
+            - name: namespace.name
+              type: text
+            - name: pod.container.name
+              type: text
+            - name: workload.name
+              type: text
+            - name: workload.type
+              type: text
+    - name: result
+      type: group
+      fields:
+        - name: packages
+          type: group
+          fields:
+            - name: vulns
+              type: group
+              fields:
+                - name: name
+                  type: text
+                - name: severity
+                  type: group
+                  fields:
+                    - name: value
+                      type: text
+                    - name: sourceName
+                      type: text
+                - name: cvssScore
+                  type: group
+                  fields:
+                    - name: value.version
+                      type: text
+                    - name: value.score
+                      type: integer
+                    - name: value.vector
+                      type: text
+                    - name: sourceName
+                      type: text
+                - name: disclosureDate
+                  type: text
+                - name: exploitable
+                  type: boolean
+                - name: fixedInVersion
+                  type: text
+            - name: type
+              type: keyword
+            - name: name
+              type: keyword
+            - name: version
+              type: keyword
+            - name: path
+              type: keyword
+        - name: metadata
+          type: group
+          fields:
+            - name: pullString
+              type: text
+            - name: imageId
+              type: text
+            - name: digest
+              type: text
+            - name: baseOs
+              type: text
+            - name: size
+              type: integer
+            - name: os
+              type: text
+            - name: architecture
+              type: text
+            - name: labels
+              type: text
+            - name: layersCount
+              type: integer
+            - name: createdAt
+              type: text
+    - name: vulnerability
+      type: group
+      fields:
+        - name: published
+          type: date
+        - name: exploitability.exploited
+          type: boolean
+        - name: patch.exists
+          type: boolean
+        - name: patch.name 
+          type: keyword
+        - name: package
+          type: group
+          fields:
+            - name: type
+              type: keyword
+            - name: name
+              type: keyword
+            - name: version
+              type: keyword
+            - name: path
+              type: keyword
+    - name: image.id
+      type: text
+    - name: digest
+      type: text
+    - name: size
+      type: integer
+    - name: layers_count
+      type: integer
+    - name: created_at
+      type: text
