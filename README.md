@@ -11,7 +11,7 @@ Elastic Packages have a certain, well-defined structure. This structure is descr
 While this repository contains _sources_ for Elastic Integrations, _built_ Elastic Integrations are published into a storage based on Google Cloud bucket (more info [here](https://github.com/elastic/elastic-package/blob/85d6fcacad736e543e459a044a5e0fa48b5d43c6/docs/howto/use_package_storage_v2.md)) and served up via the [Package Registry](#package-registry). The Fleet UI in Kibana connects to the Package Registry and allows users to discover, install, and configure Elastic Packages.
 
 ## Documentation
-Public documentation are compiled and exported to our [Elastic docs](https://www.elastic.co/docs/current/integrations).
+Public documentation is compiled and exported to our [Elastic docs](https://www.elastic.co/docs/current/integrations).
 
 ## Contributing
 
