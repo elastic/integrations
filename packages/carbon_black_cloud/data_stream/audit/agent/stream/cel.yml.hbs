@@ -23,13 +23,13 @@ program: |
       "X-Auth-Token": [state.api_key],
     },
   }).do_request().as(resp, resp.StatusCode == 200 ?
-    bytes(resp.Body).decode_json().as(body, {
+    bytes(resp.Body).decode_json().as(body, state.with({
       "events": body.notifications.map(e, {
         "message": e.encode_json(),
       }),
-    })
+    }))
   :
-    {
+    state.with({
       "events": dyn({
         "error": {
           "code": string(resp.StatusCode),
@@ -42,7 +42,7 @@ program: |
           ),
         },
       }),
-    }
+    })
   )
 tags:
 {{#if preserve_original_event}}

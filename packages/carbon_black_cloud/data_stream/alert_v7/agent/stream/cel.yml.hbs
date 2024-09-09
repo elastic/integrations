@@ -30,13 +30,13 @@ program: |
             },
             "Body":{
                 "time_range": {
-                    "start": state.?cursor.last_backend_update_timestamp.orValue(string(now - duration(state.initial_interval) + duration("-15m"))), 
+                    "start": state.?cursor.last_backend_update_timestamp.orValue(string(now - duration(state.initial_interval) + duration("-15m"))),
                     "end":   string(now + duration("-15m"))
                 },
                 "sort" : [{ "field": "backend_update_timestamp", "order": "ASC"}],
             }.encode_json(),
         }).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body, {
+            bytes(resp.Body).decode_json().as(body, state.with({
                 "events": body.results.map(e, {
                     "message": e.encode_json(),
                 }),
@@ -56,11 +56,9 @@ program: |
                     ),
                 },
                 "want_more": body.?num_found != body.?num_available,
-                "api_key": state.api_key,
-                "initial_interval": state.initial_interval,
-            })
+            }))
         :
-            {
+            state.with({
                 "events": {
                     "error": {
                         "code": string(resp.StatusCode),
@@ -74,7 +72,7 @@ program: |
                     },
                 },
                 "want_more": false,
-            }
+            })
         )
 tags:
 {{#if preserve_original_event}}
