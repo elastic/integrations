@@ -850,6 +850,12 @@ This is the `event` dataset.
 | process.Ext.api.parameters.protection | The memory protection for the region of pages. Corresponds to `MEMORY_BASIC_INFORMATION.Protect`. | keyword |
 | process.Ext.api.parameters.size | The size of parameter values passed to the API call. | long |
 | process.Ext.token.integrity_level_name | Integrity level that determine the levels of protection or access for a principal used by Mandatory Integrity Control (MIC). | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.caseless | Multi-field of `process.executable`. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.caseless | Multi-field of `process.name`. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.group_leader.name |  | keyword |
 | url.user_info |  | keyword |
 
