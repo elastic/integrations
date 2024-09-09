@@ -503,6 +503,10 @@ prepare_stack() {
         fi
     fi
 
+    if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+        args="${args} -U stack.logsdb_enabled=true"
+    fi
+
     echo "Boot up the Elastic stack"
     if ! ${ELASTIC_PACKAGE_BIN} stack up -d ${args} ; then
         return 1
@@ -692,7 +696,7 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS|README.md|docs/)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi

@@ -442,6 +442,78 @@ processors:
           ctx.aws_bedrock.invocation.input.remove("input_body_json");
           ctx.gen_ai.remove("prompt");
         }
+
+  - script: 
+      description: Convert chat completion response in map or list format to user friendly format
+      lang: painless
+      source: |
+        try {
+          def completionText = new StringBuilder();
+          if (ctx.aws_bedrock?.invocation?.output?.output_body_json != null) {
+            if (ctx.aws_bedrock.invocation.output.output_body_json instanceof List) {
+              for (def block : ctx.aws_bedrock.invocation.output.output_body_json) {
+                if (!(block instanceof Map)) continue;
+                
+                if (block.containsKey('delta') && block.delta instanceof Map && block.delta.containsKey('text')) {
+                  // Titan model response
+                  completionText.append(block.delta.text);
+                } else if (block.containsKey('outputs') && block.outputs instanceof List) {
+                  // Mistral model response
+                  for (def cont : block.outputs) {
+                    if (cont instanceof Map && cont.containsKey('text')) {
+                        completionText.append(cont.text);
+                    }
+                  }
+                } else if (block.containsKey('generation')) {
+                  // Llama3 model response
+                  completionText.append(block.generation);
+                } else if (block.containsKey('outputText')) {
+                    // Titan Text G1 - Express response
+                    completionText.append(block.outputText);
+                }
+              }
+            }else if (ctx.aws_bedrock.invocation.output.output_body_json instanceof Map) {
+              def block = ctx.aws_bedrock.invocation.output.output_body_json;
+              if (block instanceof Map) {
+                Map blockMap = (Map) block;
+                if (blockMap.containsKey('output') && blockMap.output instanceof Map) {
+                  Map outputMap = (Map) blockMap.output;
+                  if (outputMap.containsKey('message') && outputMap.message instanceof Map) {
+                    Map messageMap = (Map) outputMap.message;
+                    if (messageMap.containsKey('content') && messageMap.content instanceof List) {
+                      List contentList = (List) messageMap.content;
+                      for (def cont : contentList) {
+                        if (cont.containsKey('text')) {
+                          completionText.append(cont.text);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }else if (ctx.aws_bedrock.invocation.output.output_body_json instanceof String){
+              completionText.append(ctx.aws_bedrock.invocation.output.output_body_json)
+            }
+          }
+
+          // Ensure ctx.aws_bedrock.invocation.output is initialized
+          if (ctx.aws_bedrock?.invocation?.output == null) {
+              ctx.aws_bedrock.invocation.output = new HashMap();
+          }
+          // Trim completionText if it exceeds 32766 characters
+          if (completionText.length() > 32766) {
+            completionText.setLength(32766);
+          }
+          ctx.aws_bedrock.invocation.output.completion_text = completionText.toString();
+        }
+        catch (Exception e) {
+          if (ctx.aws_bedrock?.invocation?.output == null) {
+              ctx.aws_bedrock.invocation.output = new HashMap();
+          }
+          ctx.aws_bedrock.invocation.output.completion_text =  '';
+          ctx.error.message = e.getMessage()
+        }
+
   - script:
       description: Remove massive output bodies and keep response perf stats.
       if: ctx.gen_ai?.completion instanceof String

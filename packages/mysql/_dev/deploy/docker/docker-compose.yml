@@ -9,13 +9,32 @@ services:
       - 3306
     volumes:
       - ${SERVICE_LOGS_DIR}/mysql:/var/log/mysql
-      - mysqldata:/var/lib/mysql
     environment:
       - IMAGE=${IMAGE:-mysql:8.0.35}
   mysql_is_ready:
     image: tianon/true
     depends_on:
-      mysql:
-        condition: service_healthy
-volumes:
-  mysqldata:
+      - mysql
+  mysql_master:
+    build: ./master
+    env_file:
+      - ./master/mysql_master.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=111
+    volumes:
+      - ./master/conf/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+    ports:
+      - 3306
+  mysql_replica:
+    build: ./replica
+    env_file:
+      - ./replica/mysql_replica.env
+    environment:
+      - MYSQL_MASTER_HOST=mysql_master
+      - MYSQL_ROOT_PASSWORD=111
+    volumes:
+      - ./replica/conf/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+    ports:
+      - 3306
+    depends_on:
+      - mysql_master

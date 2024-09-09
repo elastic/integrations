@@ -18,6 +18,12 @@ processors:
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
+  - gsub:
+      field: event.original
+      tag: gsub_replace_null_unicode
+      pattern: "[\u0000]"
+      replacement: ""
+      if: ctx.event?.original != null
   - json:
       field: event.original
       tag: json_event_original

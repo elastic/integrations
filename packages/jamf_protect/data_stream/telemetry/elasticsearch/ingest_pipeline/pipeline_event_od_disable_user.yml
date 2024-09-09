@@ -114,6 +114,17 @@ processors:
         field: jamf_protect.telemetry.event.od_disable_user.instigator.executable.path
         target_field: process.executable
         ignore_missing: true
+    - script:
+        lang: painless
+        source: >
+            if (ctx.process?.executable != null) {
+                int lastSlashIndex = ctx.process.executable.lastIndexOf('/');
+                if (lastSlashIndex != -1) {
+                    ctx.process.name = ctx.process.executable.substring(lastSlashIndex + 1);
+                } else {
+                    ctx.process.name = ctx.process.executable; // Fallback if no slash is found
+                }
+            }
     - rename:
         field: jamf_protect.telemetry.thread.thread_id
         target_field: process.thread.id

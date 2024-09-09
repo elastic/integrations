@@ -33,7 +33,7 @@ The Elastic Integration for Sophos Central requires the following Authentication
   - Grant Type
   - Scope
   - Tenant ID
-  - Token URL
+  - Token URL (without the URL path)
 
 **NOTE**: Sophos central supports logs only upto last 24 hrs.
 
