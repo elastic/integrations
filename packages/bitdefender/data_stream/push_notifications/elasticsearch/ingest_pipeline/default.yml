@@ -1537,6 +1537,12 @@ processors:
         }
         return false;
       }
+      // Prevent empty fields in correlated arrays from being removed.
+      // The first two cases should never happen, but are included
+      // defensively. The remediationActions elements may be validly
+      // empty.
+      ctx.bitdefender?.event?.filePath?.replaceAll(e -> e == "" ? "-" : e);
+      ctx.bitdefender?.event?.fileSizes?.replaceAll(e -> e == "" ? "-" : e);
       ctx.bitdefender?.event?.remediationActions?.replaceAll(e -> e == "" ? "-" : e);
       dropEmptyFields(ctx);
 
