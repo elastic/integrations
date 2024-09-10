@@ -104,31 +104,31 @@ An example event for `inventory` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-06T17:11:03.384Z",
+    "@timestamp": "2024-09-10T16:38:08.084Z",
     "agent": {
-        "ephemeral_id": "606e214f-a4ba-4d60-a509-e92dce3aea7b",
-        "id": "5c020b93-46b5-432b-8bf0-e5c708b598d2",
-        "name": "elastic-agent-58789",
+        "ephemeral_id": "032b2039-1b4d-4eae-b52c-d08936b47ca5",
+        "id": "ba358bea-2bfe-4de2-9315-576d52fe94fc",
+        "name": "elastic-agent-46649",
         "type": "filebeat",
-        "version": "8.13.4"
+        "version": "8.14.3"
     },
     "data_stream": {
         "dataset": "jamf_pro.inventory",
-        "namespace": "31710",
+        "namespace": "72595",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5c020b93-46b5-432b-8bf0-e5c708b598d2",
+        "id": "ba358bea-2bfe-4de2-9315-576d52fe94fc",
         "snapshot": false,
-        "version": "8.13.4"
+        "version": "8.14.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.inventory",
-        "ingested": "2024-09-06T17:11:06Z",
+        "ingested": "2024-09-10T16:38:11Z",
         "kind": "asset"
     },
     "host": {
@@ -385,31 +385,31 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-06T17:08:38.976Z",
+    "@timestamp": "2024-09-10T16:37:20.274Z",
     "agent": {
-        "ephemeral_id": "38f21e3b-5732-4f42-ab13-98df7888bfec",
-        "id": "7aa8a892-09c3-46be-a0ae-180627b773b8",
-        "name": "elastic-agent-85919",
+        "ephemeral_id": "65fb36ce-0e96-4f1f-99fe-5a19a14acfa1",
+        "id": "920d1c20-a89f-4166-b97e-42186275db28",
+        "name": "elastic-agent-21773",
         "type": "filebeat",
-        "version": "8.13.4"
+        "version": "8.14.3"
     },
     "data_stream": {
         "dataset": "jamf_pro.events",
-        "namespace": "17929",
+        "namespace": "75060",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7aa8a892-09c3-46be-a0ae-180627b773b8",
+        "id": "920d1c20-a89f-4166-b97e-42186275db28",
         "snapshot": false,
-        "version": "8.13.4"
+        "version": "8.14.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.events",
-        "ingested": "2024-09-06T17:08:39Z",
+        "ingested": "2024-09-10T16:37:21Z",
         "kind": "event",
         "original": "{\"event\":{\"alternateMacAddress\":\"be:aa:e5:54:94:db\",\"building\":\"1S8NPV\",\"department\":\"XDO4C5\",\"deviceName\":\"VPNYC\",\"emailAddress\":\"kghrqq@email.com\",\"ipAddress\":\"89.160.20.156\",\"jssID\":\"1500747557\",\"macAddress\":\"be:aa:e5:54:94:db\",\"managementId\":\"6319330669\",\"model\":\"LJ68RT\",\"osBuild\":\"26.6913\",\"osVersion\":\"92.5786\",\"phone\":\"2183546\",\"position\":\"B64JIO\",\"realName\":\"CPK79\",\"reportedIpAddress\":\"89.160.20.156\",\"room\":\"HQC6S9\",\"serialNumber\":\"7967177\",\"udid\":\"7265694772\",\"userDirectory_id\":\"0389771137\",\"username\":\"John Doe\"},\"webhook\":{\"eventTimestamp\":1725443872001,\"id\":\"8131946016\",\"name\":\"PU17M\",\"webhookEvent\":\"ComputerAdded\"}}"
     },
@@ -472,6 +472,12 @@ An example event for `events` looks as following:
     "os": {
         "version": "92.5786"
     },
+    "related": {
+        "user": [
+            "John Doe",
+            "kghrqq@email.com"
+        ]
+    },
     "tags": [
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
@@ -479,7 +485,8 @@ An example event for `events` looks as following:
         "jamf_pro-events"
     ],
     "user": {
-        "email": "kghrqq@email.com"
+        "email": "kghrqq@email.com",
+        "name": "John Doe"
     }
 }
 ```
