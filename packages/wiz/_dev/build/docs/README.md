@@ -1,6 +1,6 @@
 # Wiz
 
-Wiz continuously prioritizes critical risks based on a deep cloud analysis across misconfigurations, network exposure, secrets, vulnerabilities, malware, and identities to build a single prioritized view of risk for your cloud. This [Wiz](https://www.wiz.io/) integration enables you to consume and analyze Wiz data within Elastic Security, including issues, vulnerability data and audit events, providing you with visibility and context for your cloud environments within Elastic Security.
+Wiz continuously prioritizes critical risks based on a deep cloud analysis across misconfigurations, network exposure, secrets, vulnerabilities, malware, and identities to build a single prioritized view of risk for your cloud. This [Wiz](https://www.wiz.io/) integration enables you to consume and analyze Wiz data within Elastic Security, including issues, vulnerability data, cloud configuration findings and audit events, providing you with visibility and context for your cloud environments within Elastic Security.
 
 ## Data streams
 
@@ -48,6 +48,7 @@ This module has been tested against the **Wiz API Version v1**.
     | Audit         | admin:audit   |
     | Issue         | read:issues   |
     | Vulnerability | read:vulnerabilities |
+    | Cloud Configuration Finding | read:cloud_configuration |
 
 ### To obtain the Wiz URL
 1. Navigate to your user profile and copy the API Endpoint URL.
@@ -85,6 +86,16 @@ This is the `Audit` dataset.
 {{event "audit"}}
 
 {{fields "audit"}}
+
+### Cloud Configuration Finding
+
+This is the `Cloud Configuration Finding` dataset.
+
+#### Example
+
+{{event "cloud_configuration_finding"}}
+
+{{fields "cloud_configuration_finding"}}
 
 ### Issue
 

@@ -791,7 +791,13 @@ This status endpoint is available in 6.0 by default and can be enabled in Kibana
 | kibana.status.metrics.requests.disconnects | Total number of disconnected connections. | long |
 | kibana.status.metrics.requests.total | Total number of connections. | long |
 | kibana.status.name | Kibana instance name. | keyword |
+| kibana.status.status.core.elasticsearch.level | Kibana Elasticsearch client's status. | keyword |
+| kibana.status.status.core.elasticsearch.summary | Kibana Elasticsearch client's status in a human-readable format. | text |
+| kibana.status.status.core.savedObjects.level | Kibana Saved Objects client's status. | keyword |
+| kibana.status.status.core.savedObjects.summary | Kibana Saved Objects client's status in a human-readable format. | text |
+| kibana.status.status.overall.level | Kibana overall level (v8 format). | keyword |
 | kibana.status.status.overall.state | Kibana overall state. | keyword |
+| kibana.status.status.overall.summary | Kibana overall state in a human-readable format. | text |
 | service.address | Address where data about this service was collected from. | keyword |
 | service.id | Unique identifier of the running service. If the service is comprised of many nodes, the `service.id` should be the same for all nodes. This id should uniquely identify the service. This makes it possible to correlate logs and metrics for one specific service, no matter which particular node emitted the event. Note that if you need to see the events from one specific host of the service, you should filter on that `host.name` or `host.id` instead. | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
@@ -864,7 +870,20 @@ An example event for `status` looks as following:
             },
             "name": "kibana",
             "status": {
-                "overall": {}
+                "overall": {
+                    "level": "available",
+                    "summary": "All services and plugins are available"
+                },
+                "core": {
+                    "elasticsearch": {
+                        "level": "available",
+                        "summary": "Elasticsearch is available"
+                    },
+                    "savedObjects": {
+                        "level": "available",
+                        "summary": "SavedObjects service has completed migrations and is available"
+                    }
+                }
             }
         }
     },
