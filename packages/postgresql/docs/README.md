@@ -60,6 +60,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Log offset. | long |
 | postgresql.log.application_name | Name of the application of this event. It is defined by the client. | keyword |
 | postgresql.log.backend_type | Type of backend of this event. Possible types are autovacuum launcher, autovacuum worker, logical replication launcher, logical replication worker, parallel worker, background writer, client backend, checkpointer, startup, walreceiver, walsender and walwriter. In addition, background workers registered by extensions may have additional types. | keyword |
 | postgresql.log.client_addr | Host where the connection originated from. | keyword |

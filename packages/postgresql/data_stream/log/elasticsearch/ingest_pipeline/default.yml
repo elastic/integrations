@@ -102,6 +102,28 @@ processors:
         - set:
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
+  - convert:
+        field: postgresql.log.client_addr
+        type: ip
+        ignore_missing: true
+        on_failure:
+            - set:
+                field: tmp_host
+                copy_from: postgresql.log.client_addr
+            - append:
+                field: related.hosts
+                value: '{{{tmp_host}}}'
+                allow_duplicates: false
+                if: "ctx.tmp_host != null"
+            - set:
+                field: tmp_host
+                value: ""
+                if: "ctx.tmp_host != null"
+  - append:
+      field: related.ip
+      value: '{{{postgresql.log.client_addr}}}'
+      allow_duplicates: false
+      if: "ctx.tmp_host == null"
   - script:
       lang: painless
       source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
