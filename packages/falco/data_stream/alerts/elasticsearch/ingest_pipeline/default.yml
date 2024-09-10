@@ -262,25 +262,23 @@ processors:
 - script:
     lang: painless
     tag: 'painless_set_event_severity'
-    if: ctx?.falco?.priority != null
+    if: ctx.falco?.priority != null
+    params:
+        emergency: 99
+        alert: 99
+        critical: 99
+        error: 73
+        warning: 47
+        notice: 47 
+        informational: 21
+        debug: 21
     source: |
-        def priority = ctx?.falco?.priority.toLowerCase();
-        if (priority == "emergency") {
-            ctx['event.severity'] = 99;
-        } else if (priority == "alert") {
-            ctx['event.severity'] = 99;
-        } else if (priority == "critical") {
-            ctx['event.severity'] = 99;
-        } else if (priority == "error") {
-            ctx['event.severity'] = 73;
-        } else if (priority == "warning") {
-            ctx['event.severity'] = 47;
-        } else if (priority == "notice") {
-            ctx['event.severity'] = 21;
-        } else if (priority == "informational") {
-            ctx['event.severity'] = 21;
-        } else if (priority == "debug") {
-            ctx['event.severity'] = 21;
+        def sev = params[ctx.falco.priority.toLowerCase()];
+        if (sev != null) {
+            if (ctx.event == null) {
+                ctx.event = new HashMap();
+            }
+            ctx.event.severity = sev;
         }
 - set:
     field: rule.name
