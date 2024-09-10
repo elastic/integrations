@@ -1,29 +1,29 @@
 ---
-description: Processing inventory data from Jamf Pro API
+description: Process inventory data from the Jamf Pro API
 processors:
-- fingerprint:
-    if: ctx.udid != null
-    fields:
-    - udid
-    target_field: "_id"
-    ignore_missing: true
+
 - rename:
     field: message
     target_field: jamf_pro.inventory
-    
+
+- fingerprint:
+    fields:
+      - jamf_pro.inventory.udid
+    target_field: "_id"
+
 - script:
     description: Drops null/empty values recursively.
     lang: painless
     source: |
       boolean dropEmptyFields(Object object) {
         if (object == null || object == "") {
-        return true;
+          return true;
         } else if (object instanceof Map) {
-        ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-        return (((Map) object).size() == 0);
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
         } else if (object instanceof List) {
-        ((List) object).removeIf(value -> dropEmptyFields(value));
-        return (((List) object).length == 0);
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
         }
         return false;
       }
@@ -58,8 +58,8 @@ processors:
         }
         return snakeCaseMap;
       }
-            
-      if(ctx.jamf_pro.inventory != null) {
+
+      if (ctx.jamf_pro.inventory != null) {
         ctx.jamf_pro.inventory = keysToSnakeCase(ctx.jamf_pro.inventory);
       }
 
@@ -76,17 +76,16 @@ processors:
 ##############
 
 - append:
-    if: "ctx?.jamf_pro.inventory.general != null && ctx?.jamf_pro.inventory.general.last_ip_address != ''"
+    if: "ctx.jamf_pro.inventory.general != null && ctx.jamf_pro.inventory.general.last_ip_address != ''"
     field: host.ip
     value: '{{{jamf_pro.inventory.general.last_ip_address}}}'
     ignore_failure: true
-
 - set:
     field: host.address
     copy_from: host.ip
     ignore_empty_value: true
 - append:
-    if: "ctx?.jamf_pro.inventory.hardware != null && ctx?.jamf_pro.inventory.hardware.mac_address != ''"
+    if: "ctx.jamf_pro.inventory.hardware != null && ctx.jamf_pro.inventory.hardware.mac_address != ''"
     field: host.mac
     value: '{{{jamf_pro.inventory.hardware.mac_address}}}'
     ignore_failure: true
@@ -138,12 +137,15 @@ processors:
 - append:
     field: event.type
     value: user
-    if: ctx.jamf_pro.inventory?.user_and_location != null
-
+    if: ctx.jamf_pro.inventory.user_and_location != null
 - append:
     field: event.type
-    value: device
-    if: ctx.jamf_pro.inventory?.hardware != null
+    value: info
+    if: ctx.jamf_pro.inventory.hardware != null
+
+##################
+# Error handling #
+##################
 
 on_failure:
 - set:
@@ -152,4 +154,3 @@ on_failure:
 - append:
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
