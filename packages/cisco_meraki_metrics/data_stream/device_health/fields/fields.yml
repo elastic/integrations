@@ -1,0 +1,112 @@
+- name: meraki
+  type: group
+  fields:
+    - name: organization_id
+      type: keyword
+      dimension: true
+    - name: device
+      type: group
+      fields:
+        - name: serial
+          type: keyword
+          dimension: true
+        - name: imei
+          type: keyword
+        - name: lan_ip
+          type: ip
+        - name: location
+          type: geo_point
+        - name: mac
+          type: keyword
+        - name: model
+          type: keyword
+        - name: name
+          type: keyword
+        - name: network_id
+          type: keyword
+        - name: notes
+          type: text
+        - name: product_type
+          type: keyword
+        - name: tags
+          type: keyword
+        - name: details.*
+          type: text
+        - name: status
+          type: group
+          fields:
+            - name: gateway
+              type: ip
+            - name: ip_status
+              type: keyword
+            - name: last_reported_at
+              type: date
+            - name: primary_dns
+              type: keyword
+            - name: secondary_dns
+              type: keyword
+            - name: public_ip
+              type: ip
+            - name: status
+              type: keyword
+        - name: uplink
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              dimension: true
+            - name: interface
+              type: keyword
+            - name: loss_percent
+              type: double
+              metric_type: gauge
+              unit: percent
+            - name: latency_ms
+              type: double
+              metric_type: gauge
+              unit: ms
+    - name: license
+      type: group
+      fields:
+        - name: device_model
+          type: keyword
+          dimension: true
+        - name: expiration_date
+          type: date
+        - name: status
+          type: keyword
+        - name: count
+          type: long
+          metric_type: gauge
+        - name: state
+          type: keyword
+          dimension: true
+        - name: expiration_state
+          type: keyword
+        - name: expiration_threshold_days
+          type: long
+        - name: soonest_activation_date
+          type: date
+        - name: soonest_activation_count
+          type: long
+        - name: oldest_activation_date
+          type: date
+        - name: oldest_activation_count
+          type: long
+        - name: type
+          type: keyword
+        - name: systems_manager
+          type: group
+          fields:
+            - name: active_seats
+              type: long
+              metric_type: gauge
+            - name: orgwide_enrolled_devices
+              type: long
+              metric_type: gauge
+            - name: total_seats
+              type: long
+              metric_type: gauge
+            - name: unassigned_seats
+              type: long
+              metric_type: gauge
