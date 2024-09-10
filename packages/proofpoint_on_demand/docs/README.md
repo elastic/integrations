@@ -226,6 +226,7 @@ An example event for `audit` looks as following:
 | proofpoint_on_demand.audit.service.customer_id | The customer id of the service. | keyword |
 | proofpoint_on_demand.audit.service.id | The IDM service id. | keyword |
 | proofpoint_on_demand.audit.service.ip_address | The IP address of the service. | ip |
+| proofpoint_on_demand.audit.tags |  | nested |
 | proofpoint_on_demand.audit.tags.name | Tag name for the particular instance of event. | keyword |
 | proofpoint_on_demand.audit.tags.value | The value associated with the tag name. | keyword |
 | proofpoint_on_demand.audit.ts | Timestamp of when the event to be audited occurred. | date |
