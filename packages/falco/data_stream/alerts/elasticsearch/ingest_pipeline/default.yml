@@ -269,7 +269,7 @@ processors:
         critical: 99
         error: 73
         warning: 47
-        notice: 47 
+        notice: 47
         informational: 21
         debug: 21
     source: |
@@ -338,9 +338,18 @@ processors:
     field: event.provider
     copy_from: falco.source
     ignore_empty_value: true
+- set:
+    field: user.name
+    copy_from: falco.user.name
+    ignore_empty_value: true
+
 # Process and observer fields
 - set:
     field: observer.hostname
+    copy_from: falco.hostname
+    ignore_empty_value: true
+- set:
+    field: host.name
     copy_from: falco.hostname
     ignore_empty_value: true
 - append:
@@ -695,10 +704,12 @@ processors:
     field: ['falco.rule','falco.output_fields.evt.num','falco.output_fields.evt.time','falco.output_fields.proc.exepath','falco.output_fields.proc.pexepath','falco.output_fields.proc.name','falco.output_fields.proc.pname','falco.output_fields.proc.cmdline','falco.output_fields.proc.pcmdline','falco.output_fields.proc.cmdnargs','falco.output_fields.proc.env','falco.output_fields.proc.cwd','falco.output_fields.proc.vpid','falco.output_fields.proc.pvpid','falco.output_fields.proc.sname','falco.output_fields.proc.sid.exepath','falco.output_fields.proc.vpgid','falco.output_fields.proc.vpgid.name','falco.output_fields.proc.vpgid.exepath','falco.output_fields.proc.duration','falco.output_fields.proc.ppid.duration','falco.output_fields.proc.pid.ts','falco.output_fields.proc.ppid.ts','falco.output_fields.proc.is_sid_leader','falco.output_fields.proc.is_vpgid_leader','falco.output_fields.thread.cap_permitted','falco.output_fields.thread.cap_effective','falco.output_fields.thread.tid','falco.output_fields.user.uid','falco.output_fields.user.name','falco.output_fields.group.gid','falco.output_fields.group.name','falco.output_fields.container.id','falco.output_fields.container.name','falco.output_fields.container.type','falco.output_fields.container.privileged','falco.output_fields.container.image.digest','falco.output_fields.container.ip','falco.output_fields.fd.directory','falco.output_fields.fd.filename','falco.output_fields.fd.cport','falco.output_fields.fd.sport','falco.output_fields.fd.lport','falco.output_fields.fd.rport','falco.output_fields.fd.cip.name','falco.output_fields.fd.sip.name','falco.output_fields.fd.lip','falco.output_fields.fd.lip.name','falco.output_fields.fd.rip.name','falco.output_fields.fd.ino','falco.output_fields.k8s.ns.name','falco.output_fields.k8s.pod.name','falco.output_fields.k8s.pod.uid','falco.output_fields.k8s.pod.labels','falco.output_fields.k8s.pod.ip']
     if: ctx['tags'] == null || !(ctx['tags'].contains('preserve_falco_fields'))
     ignore_missing: true
+
 # message is set to rule name in order to work with the default "external alerts" SIEM rule
 - set:
     field: message
     copy_from: rule.name
+    ignore_empty_value: true
 
 on_failure:
 - append:
