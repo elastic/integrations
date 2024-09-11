@@ -50,8 +50,10 @@ for package in ${PACKAGE_LIST}; do
     - label: "Check integrations ${package}"
       key: "test-integrations-${package}"
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
+      timeout_in_minutes: 240
       agents:
         provider: gcp
+        image: ${IMAGE_UBUNTU_X86_64}
       env:
         STACK_VERSION: "${STACK_VERSION}"
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
@@ -59,6 +61,7 @@ for package in ${PACKAGE_LIST}; do
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
       artifact_paths:
         - build/test-results/*.xml
+        - build/test-coverage/*.xml
         - build/benchmark-results/*.json
         - build/elastic-stack-dump/*/logs/*.log
         - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
