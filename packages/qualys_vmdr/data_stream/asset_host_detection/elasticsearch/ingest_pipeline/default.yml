@@ -1341,6 +1341,35 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_assign_vulnerability_severity
+      if: ctx.vulnerability?.score?.base != null
+      description: Assign vulnerbaility.severity from field vulnerability.score.base
+      source: |-
+        def severity;
+        if (ctx.vulnerability.score.base >= 9.0) {
+          severity = "critical";
+        }
+        else if (ctx.vulnerability.score.base < 9.0 && ctx.vulnerability.score.base >= 7.0) {
+          severity = "high";
+        }
+        else if (ctx.vulnerability.score.base < 7.0 && ctx.vulnerability.score.base >= 4.0) {
+          severity = "medium";
+        }
+        else if (ctx.vulnerability.score.base < 4.0 && ctx.vulnerability.score.base >= 0.1) {
+          severity = "low";
+        }
+        else if (ctx.vulnerability.score.base == 0) {
+          severity = "none";
+        }
+        if (severity != null) {
+          ctx.vulnerability.severity = severity;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.QDS != null
       field: qualys_vmdr.asset_host_detection.vulnerability.QDS
