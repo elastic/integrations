@@ -1,6 +1,6 @@
-# Custom STIX Integration
+# Custom Threat Intelligence integration
 
-The Custom STIX package is an integration designed to ingest threat intelligence IoC's in the [STIX 2.1](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html) format and convert them into the Elastic Common Schema (ECS) for seamless ingestion into Elasticsearch. It has been delivered to ingest threat intelligence data for those APIs that do not currently have an existing integration.
+The Custom Threat Intelligence package is an integration designed to ingest threat intelligence IOCs in the [STIX 2.1](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html) format and convert them into the Elastic Common Schema (ECS) for seamless ingestion into Elasticsearch. It has been delivered to ingest threat intelligence data for those APIs that do not currently have an existing integration.
 
 The integration comes with a default pipeline that automatically maps standard STIX 2.1 data into ECS fields. However, it also offers the flexibility to handle custom STIX data by allowing users to add custom pipelines accordingly.
 
@@ -48,7 +48,7 @@ By default the integration only supports STIX 2.1 indicators. This means that to
 
 ### Expiration of Indicators of Compromise (IOCs)
 
-The Custom STIX integration supports IOC expiration. The ingested IOCs expire after certain duration. Based on the [STIX 2.1 reference](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html), the following options are available to determine the expiration of indicators:
+The Custom Threat Intelligence integration supports IOC expiration. The ingested IOCs expire after certain duration. Based on the [STIX 2.1 reference](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html), the following options are available to determine the expiration of indicators:
 - The `valid_until` field that indicates the time at which this Indicator should no longer be considered a valid indicator
 - The `revoked` field that means that the indicator is no longer considered valid by the object creator.
 - When missing `valid_until` and `revoked`, the indicator expires according to the default expiration set by `IOC Expiration Duration` configuration parameter. For more details, see [Handling Orphaned IOCs](#handling-orphaned-iocs).
