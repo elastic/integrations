@@ -79,6 +79,24 @@ For more information on configuring Jamf Protect, see
 - [Enabling Data Forwarding to AWS S3](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Data_Forwarding_to_a_Third_Party_Storage_Solution.html#ariaid-title2)
 - [Configure Threat Event Stream](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Configuring_the_Threat_Events_Stream_to_Send_Events_to_AWS_S3.html)
 
+### To collect data from AWS SQS, follow the below steps:
+1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
+2. Follow the steps below for each data stream that has been enabled:
+     1. Create an SQS queue
+         - To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Amazon documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+         - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+     2. Setup event notification from the S3 bucket using the instructions [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the following settings:
+        - Event type: `All object create events` (`s3:ObjectCreated:*`)
+         - Destination: SQS Queue
+         - Prefix (filter): enter the prefix for this data stream, e.g. `protect-/alerts/`
+         - Select the SQS queue that has been created for this data stream
+
+ **Note**:
+  - A separate SQS queue and S3 bucket notification is required for each enabled data stream.
+  - Permissions for the above AWS S3 bucket and SQS queues should be configured according to the [Filebeat S3 input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2)
+  - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
+  - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
+
 
 **Copyright (c) 2024, Jamf Software, LLC.  All rights reserved.**
 
@@ -94,26 +112,26 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-12T21:15:48.751Z",
+    "@timestamp": "2024-09-04T07:30:39.656Z",
     "agent": {
-        "ephemeral_id": "f61f65a0-cfe1-43bc-8b7e-b2bec2ad3fe1",
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "75181666-4505-45af-90dd-156c8f2e1306",
+        "id": "81686acf-dfab-47d7-9dbe-c5e404724032",
+        "name": "elastic-agent-92357",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.alerts",
-        "namespace": "ep",
+        "namespace": "22598",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
+        "id": "81686acf-dfab-47d7-9dbe-c5e404724032",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "event": {
         "action": "CustomURLHandlerCreation",
@@ -124,7 +142,7 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2024-06-12T21:15:58Z",
+        "ingested": "2024-09-04T07:30:49Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
@@ -162,10 +180,6 @@ An example event for `alerts` looks as following:
     },
     "input": {
         "type": "http_endpoint"
-    },
-    "observer": {
-        "product": "Jamf Protect",
-        "vendor": "Jamf"
     },
     "process": {
         "args": [
@@ -238,6 +252,10 @@ An example event for `alerts` looks as following:
             "root"
         ]
     },
+    "rule": {
+        "description": "Application that uses custom url handler created",
+        "name": "CustomURLHandlerCreation"
+    },
     "tags": [
         "Visibility"
     ]
@@ -261,6 +279,8 @@ An example event for `alerts` looks as following:
 | input.type | Input type | keyword |
 | jamf_protect.alerts.timestamp_nanoseconds | The timestamp in Epoch nanoseconds. | date |
 | log.offset | Log offset | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | volume.bus_type |  | keyword |
 | volume.file_system_type |  | keyword |
 | volume.nt_name |  | keyword |
@@ -284,23 +304,18 @@ An example event for `telemetry` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-12T21:17:49.148Z",
+    "@timestamp": "2024-09-04T07:32:31.324Z",
     "agent": {
-        "ephemeral_id": "693d67f8-0ad2-49d0-898d-eab743600cca",
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b8187d5d-0325-40c6-ade8-0779fa3be88a",
+        "id": "be948a10-ee85-46d4-a496-ca5c5117936d",
+        "name": "elastic-agent-10576",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.telemetry",
-        "namespace": "ep",
+        "namespace": "51899",
         "type": "logs"
-    },
-    "elastic_agent": {
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
-        "snapshot": false,
-        "version": "8.13.2"
     },
     "device": {
         "id": "123ABC456DJ",
@@ -309,13 +324,21 @@ An example event for `telemetry` looks as following:
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "be948a10-ee85-46d4-a496-ca5c5117936d",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
         "action": "exec",
+        "agent_id_status": "verified",
         "category": [
             "process"
         ],
         "code": "9",
+        "dataset": "jamf_protect.telemetry",
         "id": "CDB31202-8CB4-4C72-A9C6-7F494CD5F598",
+        "ingested": "2024-09-04T07:32:41Z",
         "kind": "event",
         "provider": "Jamf Protect",
         "reason": "A new process has been executed",
@@ -334,6 +357,7 @@ An example event for `telemetry` looks as following:
             "192.168.64.1",
             "192.168.11.232"
         ],
+        "name": "macbookpro",
         "os": {
             "family": "macos",
             "full": "14.5 (Build 23F79)",
@@ -341,6 +365,9 @@ An example event for `telemetry` looks as following:
             "type": "macos",
             "version": "14.5"
         }
+    },
+    "input": {
+        "type": "http_endpoint"
     },
     "jamf_protect": {
         "telemetry": {
@@ -396,6 +423,7 @@ An example event for `telemetry` looks as following:
             }
         },
         "interactive": false,
+        "name": "zsh",
         "parent": {
             "entity_id": "A7EDC884-C034-50E7-A3AA-2E281B3E0777",
             "pid": 64632,
@@ -417,9 +445,6 @@ An example event for `telemetry` looks as following:
         "working_directory": "/"
     },
     "related": {
-        "hash": [
-            "23c70bd9b41017f9878af49bc2c46f7c8a70680b"
-        ],
         "hosts": [
             "MacBookPro"
         ],
@@ -429,6 +454,10 @@ An example event for `telemetry` looks as following:
             "192.168.11.232"
         ]
     },
+    "tags": [
+        "forwarded",
+        "jamf_protect-telemetry"
+    ],
     "user": {
         "effective": {
             "id": [
@@ -541,6 +570,7 @@ An example event for `telemetry` looks as following:
 | jamf_protect.telemetry.system_performance.qos_utility_ms_per_s | QoS utility time in milliseconds per second for the task | double |
 | jamf_protect.telemetry.system_performance.qos_utility_ns | QoS utility time in nanoseconds for the task | long |
 | jamf_protect.telemetry.system_performance.started_abstime_ns | Absolute start time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.timer_wakeups | Timer wakeups for the task | nested |
 | jamf_protect.telemetry.system_performance.timer_wakeups.wakeups | Number of wakeups | long |
 | jamf_protect.telemetry.to_username | Username to which an action is directed | keyword |
 | jamf_protect.telemetry.tty | Software terminal device file that the process is associated with | keyword |
@@ -570,17 +600,17 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-12T21:21:39.714Z",
+    "@timestamp": "2024-09-04T07:36:11.911Z",
     "agent": {
-        "ephemeral_id": "c0c550fc-7c58-4392-9ea9-b49f7a181825",
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b7f943fb-c06d-4222-93bd-358288578b26",
+        "id": "4470df0e-f5ad-4b31-9480-44c2ad6ae7b3",
+        "name": "elastic-agent-80181",
         "type": "filebeat",
         "version": "8.13.2"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_threat_events",
-        "namespace": "ep",
+        "namespace": "37455",
         "type": "logs"
     },
     "destination": {
@@ -592,7 +622,7 @@ An example event for `web_threat_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
+        "id": "4470df0e-f5ad-4b31-9480-44c2ad6ae7b3",
         "snapshot": false,
         "version": "8.13.2"
     },
@@ -604,7 +634,7 @@ An example event for `web_threat_events` looks as following:
         ],
         "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
-        "ingested": "2024-06-12T21:21:49Z",
+        "ingested": "2024-09-04T07:36:21Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
@@ -697,17 +727,17 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-12T21:23:32.864Z",
+    "@timestamp": "2024-09-04T07:38:01.195Z",
     "agent": {
-        "ephemeral_id": "82b058ea-7609-4a92-9ec4-8a9d84c83c69",
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "77808a3e-9a5a-4ce3-a074-f2cdaa7d0a03",
+        "id": "94e5efaa-97be-4d20-9330-c38adb3f3ebd",
+        "name": "elastic-agent-25706",
         "type": "filebeat",
         "version": "8.13.2"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_traffic_events",
-        "namespace": "ep",
+        "namespace": "39208",
         "type": "logs"
     },
     "dns": {
@@ -726,7 +756,7 @@ An example event for `web_traffic_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8e815812-b6dc-4364-9622-da2462209a37",
+        "id": "94e5efaa-97be-4d20-9330-c38adb3f3ebd",
         "snapshot": false,
         "version": "8.13.2"
     },
@@ -738,7 +768,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "dataset": "jamf_protect.web_traffic_events",
-        "ingested": "2024-06-12T21:23:42Z",
+        "ingested": "2024-09-04T07:38:11Z",
         "kind": "event",
         "outcome": [
             "success"

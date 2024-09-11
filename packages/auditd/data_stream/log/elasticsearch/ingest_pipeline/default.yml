@@ -2265,10 +2265,10 @@ processors:
         - append:
             field: error.message
             value: "failed extracting process arguments: {{{ _ingest.on_failure_message }}}"
-  - rename:
-      ignore_failure: true
-      field: auditd.log.record_type
-      target_field: event.action
+  - set:
+      field: event.action
+      copy_from: auditd.log.record_type
+      override: false
   - lowercase:
       ignore_failure: true
       field: event.action
@@ -2318,11 +2318,6 @@ processors:
         - auditd.log.copy
         - auditd.log.arch
         - auditd.log.res
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

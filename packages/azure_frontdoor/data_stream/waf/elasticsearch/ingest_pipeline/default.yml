@@ -80,6 +80,151 @@ processors:
       field: azure.frontdoor.waf.properties.requestUri
       target_field: url.original
       ignore_missing: true
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.full
+      copy_from: url.original
+      ignore_empty_value: true
+  # handle identity field
+  - rename:
+      field: azure.frontdoor.waf.identity
+      if: ctx.azure?.frontdoor?.waf?.identity instanceof String
+      target_field: azure.frontdoor.waf.identity_name
+      ignore_missing: true
+  - json:
+      field: azure.frontdoor.waf.identity
+      tag: json_identity
+      if: ctx.azure?.frontdoor?.waf?.identity instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.roleAssignmentScope
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.role_assignment_scope
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.roleDefinitionId
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.role_definition_id
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.roleAssignmentId
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.role_assignment_id
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.principalId
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.principal_id
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.waf.identity.authorization.evidence.principalType
+      target_field: azure.frontdoor.waf.identity.authorization.evidence.principal_type
+      ignore_missing: true
+  - script:
+      tag: script_claims_cleanup
+      lang: painless
+      if: ctx.azure?.frontdoor?.waf?.identity?.claims != null
+      source: |
+        Map convertDotsToUnderscore(Map m) {
+          def out = new HashMap();
+          for (entry in m.entrySet()) {
+            def k = entry.getKey().replace('.', '_');
+            def v = entry.getValue();
+            out.put(k, v);
+          }
+          return out;
+        }
+        ctx.azure.frontdoor.waf.identity.claims = convertDotsToUnderscore(ctx.azure.frontdoor.waf.identity.claims);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Extract user fields into claims_initiated_by_user object from claims object
+      tag: script_claims_user
+      if: ctx.azure?.frontdoor?.waf?.identity?.claims instanceof Map
+      lang: painless
+      params:
+        surname: "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/surname"
+        name: "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/name"
+        givenname: "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/givenname"
+        objectidentifier: "http://schemas_microsoft_com/identity/claims/objectidentifier"
+        tenantid: "http://schemas_microsoft_com/identity/claims/tenantid"
+      source: |-
+        def claims = ctx.azure.frontdoor.waf.identity.claims;
+        def claims_initiated_by_user = new HashMap();
+        if (claims.name != null) {
+            claims_initiated_by_user.fullname = claims.name;
+        }
+        for (entry in params.entrySet()) {
+            if (claims[entry.getValue()] != null) {
+                claims_initiated_by_user[entry.getKey()] = claims[entry.getValue()];
+            }
+        }
+        if (claims_initiated_by_user.size() > 0) {
+            claims_initiated_by_user.schema = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims";
+            ctx.azure.frontdoor.waf.identity.claims_initiated_by_user = claims_initiated_by_user;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - grok:
+      field: azure.frontdoor.waf.identity.claims_initiated_by_user.name
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+      ignore_missing: true
+      ignore_failure: true
+  # set user.email to the original name if the above grok succeeded.
+  - set:
+      field: user.email
+      value: '{{azure.frontdoor.waf.identity.claims_initiated_by_user.name}}'
+      ignore_empty_value: true
+      if: 'ctx.user?.name != null'
+  # set user.name to the original name if the above grok failed (name format is not an email).
+  - set:
+      field: user.name
+      value: '{{azure.frontdoor.waf.identity.claims_initiated_by_user.name}}'
+      ignore_empty_value: true
+      if: 'ctx.user?.name == null'
+  - rename:
+      field: azure.frontdoor.waf.identity.claims_initiated_by_user.fullname
+      target_field: user.full_name
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.waf.identity.claims_initiated_by_user.objectidentifier
+      target_field: user.id
+      ignore_missing: true
+  - append:
+      field: user.roles
+      value: '{{azure.frontdoor.waf.identity.authorization.evidence.role}}'
+      allow_duplicates: false
+      if: ctx.azure?.frontdoor?.waf?.identity?.authorization?.evidence?.role != null
+  - append:
+      field: related.user
+      value: '{{user.name}}'
+      allow_duplicates: false
+      if: 'ctx.user?.name != null'
+  - append:
+      field: related.user
+      value: '{{user.full_name}}'
+      allow_duplicates: false
+      if: 'ctx.user?.name != null'
+  - append:
+      field: related.user
+      value: '{{user.id}}'
+      allow_duplicates: false
+      if: 'ctx.user?.name != null'
+  - rename:
+      field: azure.frontdoor.waf.identity.claims_initiated_by_user.tenantid
+      target_field: cloud.account.id
+      ignore_missing: true
   - convert:
       field: client.port
       type: long
