@@ -1311,6 +1311,34 @@ processors:
           tag: rename_qualys_vmdr_asset_host_detection_vulnerability_qds_factors_#text_4
           target_field: _ingest._value.text
           ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_to_assign_vulnerability_score_base
+      description: Assign vulnerbaility.score.base from array field qualys_vmdr.asset_host_detection.vulnerability.qds_factors
+      source: |-
+        def cvss_score;
+        for (def attr: ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors) {
+          if (attr.text == null && attr.value == "") {
+            continue;
+          }
+          if (attr.name == "CVSS") {
+            cvss_score = attr.text;
+          }
+        }
+        if (cvss_score != null) {
+          if (ctx.vulnerability == null) {
+            ctx.vulnerability = new HashMap();
+          }
+          if (ctx.vulnerability.score == null) {
+            ctx.vulnerability.score = new HashMap();
+            
+          }
+          ctx.vulnerability.score.base = Float.parseFloat(cvss_score);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.QDS != null
       field: qualys_vmdr.asset_host_detection.vulnerability.QDS
