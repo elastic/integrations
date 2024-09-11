@@ -2,14 +2,27 @@
 import argparse
 import requests
 import sys
-import yaml
 import unittest
+import yaml
 
-VERSION_URL = "https://artifacts-api.elastic.co/v1/versions?x-elastic-no-kpi=true"
+from requests.adapters import HTTPAdapter, Retry
+
+ARTIFACTS_URL = "https://artifacts-api.elastic.co"
+VERSION_URL = ARTIFACTS_URL + "/v1/versions?x-elastic-no-kpi=true"
 
 
 def fetch_version():
-    return requests.get(VERSION_URL).json()
+    # Retry forever on connection or 500 errors, assume the artifacts API
+    # will come back. If it doesn't come back we cannot continue executing
+    # jobs in any case.
+    retries = Retry(
+        total=None,
+        backoff_factor=0.5,
+        status_forcelist=[500, 502, 503, 504],
+    )
+    session = requests.Session()
+    session.mount(ARTIFACTS_URL, HTTPAdapter(max_retries=retries))
+    return session.get(VERSION_URL).json()
 
 
 def find_oldest_supported_version(kibana_version_condition: str) -> str:
@@ -18,7 +31,9 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
     if "||" in kibana_version_condition and kibana_version_condition.index("||") >= 0:
         return handle_or(kibana_version_condition)
 
-    available_versions = fetch_version()
+    artifacts_versions = fetch_version()
+    available_versions = artifacts_versions.get("versions", [])
+    available_aliases = artifacts_versions.get("aliases", [])
     version = remove_operator(kibana_version_condition)
     parts = version.split(".")
 
@@ -32,22 +47,22 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
     # Use the snapshot if this is the last patch version.
     next_patch = ".".join((major, minor, str(int(patch)+1)))
     next_patch_exists = (
-        next_patch in available_versions.get("versions", []) or
-        f"{next_patch}-SNAPSHOT" in available_versions.get("versions", [])
+        next_patch in available_versions or
+        f"{next_patch}-SNAPSHOT" in available_versions
     )
 
     snapshot_version = f"{version}-SNAPSHOT"
-    if not next_patch_exists and (snapshot_version in available_versions.get("versions", [])):
+    if not next_patch_exists and (snapshot_version in available_versions):
         return snapshot_version
 
     # Use the version as is if it exists.
-    if version in available_versions.get("version", []):
+    if version in available_versions:
         return version
 
     # Old minors may not be available in artifacts-api, if it is older
     # than the others in the same major, return the version as is.
     older = True
-    for available_version in available_versions.get("versions", []):
+    for available_version in available_versions:
         available_parts = available_version.split(".")
         if len(available_parts) < 2:
             continue
@@ -63,7 +78,7 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
     # If no version has been found so far, try with the snapshot of the next version
     # in the current major.
     major_snapshot = f"{major}.x-SNAPSHOT"
-    if major_snapshot in available_versions.get("aliases", []):
+    if major_snapshot in available_aliases:
         return major_snapshot
 
     # Otherwise, return it, whatever this is.
