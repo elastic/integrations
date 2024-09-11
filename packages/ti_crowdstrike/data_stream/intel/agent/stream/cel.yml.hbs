@@ -39,7 +39,7 @@ program: |
         "/intel/combined/indicators/v1?" + {
           "sort": ["_marker.asc"],
           "offset": ["0"],
-          "limit": [string(int(state.batch_size))],
+          "limit": [string(state.batch_size)],
           "filter": [
             '_marker:>"' + string(int(state.?cursor.last_timestamp.orValue(now - duration(state.initial_interval)))) + '"'
           ],
@@ -67,13 +67,13 @@ program: |
       {
         "events": {
           "error": {
-            "code": string(int(resp.StatusCode)),
+            "code": string(resp.StatusCode),
             "id": string(resp.Status),
             "message": "GET:"+(
               size(resp.Body) != 0 ?
                 string(resp.Body)
               :
-                string(resp.Status) + ' (' + string(int(resp.StatusCode)) + ')'
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
             ),
           },
         },
