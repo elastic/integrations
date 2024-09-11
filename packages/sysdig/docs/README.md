@@ -36,9 +36,6 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp with nanos. | date |
-| SysdigEvent.category |  | text |
-| SysdigEvent.description |  | text |
-| SysdigEvent.type |  | text |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -119,9 +116,9 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-04T17:14:53.504Z",
+    "@timestamp": "2024-09-11T13:24:51.899Z",
     "agent": {
-        "ephemeral_id": "fb1cfd6b-5ed0-44e2-92d2-6e9f719ed016",
+        "ephemeral_id": "3ea412fe-8a94-4ec2-8f5e-8b39c02039b7",
         "id": "58014837",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -151,14 +148,14 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.alerts",
-        "namespace": "89492",
+        "namespace": "45873",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9d5fe91e-29be-49a8-b99d-74ddeaeaad07",
+        "id": "a56407e4-75d0-43a7-abd2-d6a7411bc006",
         "snapshot": false,
         "version": "8.14.1"
     },
@@ -166,7 +163,7 @@ An example event for `alerts` looks as following:
         "agent_id_status": "mismatch",
         "dataset": "sysdig.alerts",
         "id": "17dec715376910362c8c3f62a4ceda2e",
-        "ingested": "2024-09-04T17:15:03Z",
+        "ingested": "2024-09-11T13:25:01Z",
         "kind": "alert",
         "provider": "syscall",
         "severity": 7,
