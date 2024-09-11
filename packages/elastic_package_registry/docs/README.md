@@ -1,5 +1,7 @@
 # Elastic Package Registry
 
+
+
 This Elastic Package Registry integration collects metrics from your [Elastic Package Registry](https://github.com/elastic/package-registry) service.
 
 For example, you could use the data from this integration to know the status of your services. For instance, how many packages are indexed, what version
