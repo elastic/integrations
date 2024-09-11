@@ -25,7 +25,6 @@ An example event for `interfaces` looks as following:
         "version": "8.16.0"
     },
     "data_stream": {
-        "dataset": "panw.interfaces",
         "namespace": "default",
         "type": "metrics"
     },
@@ -39,8 +38,6 @@ An example event for `interfaces` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "module": "panw",
-        "dataset": "panw.vpn",
         "duration": 1250000,
         "ingested": "2024-02-08T10:15:32Z"
     },
@@ -122,96 +119,96 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| panw.interfaces.ha.enabled | HA enabled | boolean |  |
-| panw.interfaces.ha.link_monitoring.enabled | Indicates if link monitoring is enabled | boolean |  |
-| panw.interfaces.ha.link_monitoring.failure_condition | Condition that triggers a link monitoring failure, e.g., "any" | keyword |  |
-| panw.interfaces.ha.link_monitoring.group.enabled | Indicates if the link monitoring group is enabled | boolean |  |
-| panw.interfaces.ha.link_monitoring.group.failure_condition | Condition that triggers a failure in the link monitoring group | keyword |  |
-| panw.interfaces.ha.link_monitoring.group.interface.name | Name of the interface in the link monitoring group | keyword |  |
-| panw.interfaces.ha.link_monitoring.group.interface.status | Status of the interface in the link monitoring group | keyword |  |
-| panw.interfaces.ha.link_monitoring.group.name | Name of the link monitoring group | keyword |  |
-| panw.interfaces.ha.local_info.app_version | The version of the application database | keyword |  |
-| panw.interfaces.ha.local_info.av_version | The version of the antivirus database | keyword |  |
-| panw.interfaces.ha.local_info.build_rel | The PAN-OS software version running on the firewall | keyword |  |
-| panw.interfaces.ha.local_info.gp_client_version | Version of the GlobalProtect client software | keyword |  |
-| panw.interfaces.ha.local_info.ha1_backup_gateway | Default gateway for the backup HA1 interface | ip |  |
-| panw.interfaces.ha.local_info.ha1_backup_ipaddr | The backup IP address for the HA1 interface | ip |  |
-| panw.interfaces.ha.local_info.ha1_backup_macaddr | HA local info HA1 backup MAC address | keyword |  |
-| panw.interfaces.ha.local_info.ha1_backup_port | HA local info HA1 backup port, e.g. "management" | keyword |  |
-| panw.interfaces.ha.local_info.ha1_ipaddr | IP Address of HA1 interface, used for heartbeat and management synchronization | ip |  |
-| panw.interfaces.ha.local_info.ha1_macaddr | HA local info HA1 MAC address | keyword |  |
-| panw.interfaces.ha.local_info.ha1_port | Indicates which interface is used for HA1 traffic, e.g., "dedicated-ha1" | keyword |  |
-| panw.interfaces.ha.local_info.ha2_ipaddr | HA local info HA2 IP address | ip |  |
-| panw.interfaces.ha.local_info.ha2_macaddr | HA local info HA2 MAC address | keyword |  |
-| panw.interfaces.ha.local_info.ha2_port | Indicates which interface is used for HA1 traffic, e.g., "dedicated-ha2" | keyword |  |
-| panw.interfaces.ha.local_info.iot_version | HA local info IoT database version | keyword |  |
-| panw.interfaces.ha.local_info.mgmt_ip | HA local info management IP | ip |  |
-| panw.interfaces.ha.local_info.mode | HA mode, e.g., "active-active" or "active-passive" | keyword |  |
-| panw.interfaces.ha.local_info.platform_model | Platform model of the local device | keyword |  |
-| panw.interfaces.ha.local_info.preemptive | Indicates whether the firewall is configured to preemptively take over as the active unit in an HA setup | boolean |  |
-| panw.interfaces.ha.local_info.state | HA state of the local device, e.g., "active" or "passive" | keyword |  |
-| panw.interfaces.ha.local_info.state_duration | Duration in milliseconds of the current state | long | ms |
-| panw.interfaces.ha.local_info.state_sync | Status of HA synchronization, e.g., "complete" | keyword |  |
-| panw.interfaces.ha.local_info.state_sync_type | Type of interface used for HA synchronization | keyword |  |
-| panw.interfaces.ha.local_info.threat_version | HA local info threat version | keyword |  |
-| panw.interfaces.ha.local_info.url_version | The version of the URL filtering database | keyword |  |
-| panw.interfaces.ha.local_info.version | HA configuration info version | long |  |
-| panw.interfaces.ha.local_info.vpn_client_version | Version of the VPN client (if installed) | keyword |  |
-| panw.interfaces.ha.mode | HA mode, e.g., "active-active" or "active-passive" | keyword |  |
-| panw.interfaces.ha.peer_info.conn_ha1.description | Description of the connection type ,e.g., "heartbeat status" | keyword |  |
-| panw.interfaces.ha.peer_info.conn_ha1.primary | Specifies if the HA1 connection is primary | boolean |  |
-| panw.interfaces.ha.peer_info.conn_ha1.status | Peer HA1 connection status, e.g., "up" | keyword |  |
-| panw.interfaces.ha.peer_info.conn_ha1_backup.description | HA peer info connection HA1 backup description | keyword |  |
-| panw.interfaces.ha.peer_info.conn_ha1_backup.status | HA peer info connection HA1 backup status, e.g., "up" means it is operational | keyword |  |
-| panw.interfaces.ha.peer_info.conn_ha2.description | HA peer info connection HA2 description | keyword |  |
-| panw.interfaces.ha.peer_info.conn_ha2.primary | Specifies if the HA2 connection is primary | boolean |  |
-| panw.interfaces.ha.peer_info.conn_ha2.status | HA peer info connection HA2 status | keyword |  |
-| panw.interfaces.ha.peer_info.conn_status | Overall status of the HA connections ("up" means all connections are operational) | keyword |  |
-| panw.interfaces.ha.peer_info.ha1_backup_ipaddr | HA peer info HA1 backup IP address | ip |  |
-| panw.interfaces.ha.peer_info.ha1_backup_macaddr | HA peer info HA1 backup MAC address | keyword |  |
-| panw.interfaces.ha.peer_info.ha1_ipaddr | IP address of the HA1 interface on the peer | ip |  |
-| panw.interfaces.ha.peer_info.ha1_macaddr | HA1 MAC address of the peer | keyword |  |
-| panw.interfaces.ha.peer_info.ha2_ipaddr | HA peer info HA2 IP address | ip |  |
-| panw.interfaces.ha.peer_info.ha2_macaddr | HA peer info HA2 MAC address | keyword |  |
-| panw.interfaces.ha.peer_info.mgmt_ip | Management IP address of the peer firewall | ip |  |
-| panw.interfaces.ha.peer_info.mode | HA mode configured on the peer firewall, e.g. "Active-Passive" | keyword |  |
-| panw.interfaces.ha.peer_info.platform_model | Model of the peer firewall | keyword |  |
-| panw.interfaces.ha.peer_info.preemptive | Indicates if preemption is enabled on the peer firewall | boolean |  |
-| panw.interfaces.ha.peer_info.priority | HA priority value of the peer firewall | long |  |
-| panw.interfaces.ha.peer_info.state | Current operational state of the peer firewall (passive means it is in standby mode and not handling traffic) | keyword |  |
-| panw.interfaces.ha.peer_info.state_duration | How long the peer has been in the current state | long | ms |
-| panw.interfaces.ha.running_sync | Indicates the sychronization status of the HA pair, e.g., "synchronized","not-synchronized","synchronizing" | keyword |  |
-| panw.interfaces.ha.running_sync_enabled | Indicates if running configuration synchronization is enabled | boolean |  |
-| panw.interfaces.logical.addr | Used to store aditional static IP addresses | keyword |  |
-| panw.interfaces.logical.addr6 | Logical IPv6 address | keyword |  |
-| panw.interfaces.logical.dyn_addr | Dynamic addresses, e.g., generated by DHCP | keyword |  |
-| panw.interfaces.logical.fwd | Indicates if the interface is used for forwarding | keyword |  |
-| panw.interfaces.logical.id | Logical interface ID | keyword |  |
-| panw.interfaces.logical.ip | Logical IP Address with subnet mask, e.g., 111.222.333.10/29 | ip |  |
-| panw.interfaces.logical.name | Logical interface name | keyword |  |
-| panw.interfaces.logical.tag | VLAN tag associated with this interface | integer |  |
-| panw.interfaces.logical.vsys | Virtual system to which this interface belongs | integer |  |
-| panw.interfaces.logical.zone | Logical zone, e.g., "inside" or "outside" | keyword |  |
-| panw.interfaces.physical.ae_member | For aggregate interfaces, the array of member interfaces | keyword |  |
-| panw.interfaces.physical.duplex | Duplex configuration, e.g., "full" or "half" | keyword |  |
-| panw.interfaces.physical.full_state | Physical full state, speed/duplex/state, e.g., "1000/full/up" | keyword |  |
-| panw.interfaces.physical.id | Physical interface ID | keyword |  |
-| panw.interfaces.physical.mac | Physical MAC address | keyword |  |
-| panw.interfaces.physical.mode | Physical interface mode, e.g., autoneg | keyword |  |
-| panw.interfaces.physical.name | Physical interface name | keyword |  |
-| panw.interfaces.physical.speed | Physical interface speed | keyword |  |
-| panw.interfaces.physical.state | Physical interface state: up/down | keyword |  |
-| panw.interfaces.physical.type | Physical interface type (numeric value in source XML, string value sent to elasticsearch):   0:  "Ethernet interface",   1:  "Aggregate Ethernet (AE) interface",   2:  "High Availability (HA) interface",   3:  "VLAN interface",   5:  "Loopback interface",   6:  "Tunnel interface",   10: "SD-WAN interface", | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| panw.interfaces.ha.enabled | HA enabled | boolean |  |  |
+| panw.interfaces.ha.link_monitoring.enabled | Indicates if link monitoring is enabled | boolean |  |  |
+| panw.interfaces.ha.link_monitoring.failure_condition | Condition that triggers a link monitoring failure, e.g., "any" | keyword |  |  |
+| panw.interfaces.ha.link_monitoring.group.enabled | Indicates if the link monitoring group is enabled | boolean |  |  |
+| panw.interfaces.ha.link_monitoring.group.failure_condition | Condition that triggers a failure in the link monitoring group | keyword |  |  |
+| panw.interfaces.ha.link_monitoring.group.interface.name | Name of the interface in the link monitoring group | keyword |  |  |
+| panw.interfaces.ha.link_monitoring.group.interface.status | Status of the interface in the link monitoring group | keyword |  |  |
+| panw.interfaces.ha.link_monitoring.group.name | Name of the link monitoring group | keyword |  |  |
+| panw.interfaces.ha.local_info.app_version | The version of the application database | keyword |  |  |
+| panw.interfaces.ha.local_info.av_version | The version of the antivirus database | keyword |  |  |
+| panw.interfaces.ha.local_info.build_rel | The PAN-OS software version running on the firewall | keyword |  |  |
+| panw.interfaces.ha.local_info.gp_client_version | Version of the GlobalProtect client software | keyword |  |  |
+| panw.interfaces.ha.local_info.ha1_backup_gateway | Default gateway for the backup HA1 interface | ip |  |  |
+| panw.interfaces.ha.local_info.ha1_backup_ipaddr | The backup IP address for the HA1 interface | ip |  |  |
+| panw.interfaces.ha.local_info.ha1_backup_macaddr | HA local info HA1 backup MAC address | keyword |  |  |
+| panw.interfaces.ha.local_info.ha1_backup_port | HA local info HA1 backup port, e.g. "management" | keyword |  |  |
+| panw.interfaces.ha.local_info.ha1_ipaddr | IP Address of HA1 interface, used for heartbeat and management synchronization | ip |  |  |
+| panw.interfaces.ha.local_info.ha1_macaddr | HA local info HA1 MAC address | keyword |  |  |
+| panw.interfaces.ha.local_info.ha1_port | Indicates which interface is used for HA1 traffic, e.g., "dedicated-ha1" | keyword |  |  |
+| panw.interfaces.ha.local_info.ha2_ipaddr | HA local info HA2 IP address | ip |  |  |
+| panw.interfaces.ha.local_info.ha2_macaddr | HA local info HA2 MAC address | keyword |  |  |
+| panw.interfaces.ha.local_info.ha2_port | Indicates which interface is used for HA1 traffic, e.g., "dedicated-ha2" | keyword |  |  |
+| panw.interfaces.ha.local_info.iot_version | HA local info IoT database version | keyword |  |  |
+| panw.interfaces.ha.local_info.mgmt_ip | HA local info management IP | ip |  |  |
+| panw.interfaces.ha.local_info.mode | HA mode, e.g., "active-active" or "active-passive" | keyword |  |  |
+| panw.interfaces.ha.local_info.platform_model | Platform model of the local device | keyword |  |  |
+| panw.interfaces.ha.local_info.preemptive | Indicates whether the firewall is configured to preemptively take over as the active unit in an HA setup | boolean |  |  |
+| panw.interfaces.ha.local_info.state | HA state of the local device, e.g., "active" or "passive" | keyword |  |  |
+| panw.interfaces.ha.local_info.state_duration | Duration in milliseconds of the current state | long | ms |  |
+| panw.interfaces.ha.local_info.state_sync | Status of HA synchronization, e.g., "complete" | keyword |  |  |
+| panw.interfaces.ha.local_info.state_sync_type | Type of interface used for HA synchronization | keyword |  |  |
+| panw.interfaces.ha.local_info.threat_version | HA local info threat version | keyword |  |  |
+| panw.interfaces.ha.local_info.url_version | The version of the URL filtering database | keyword |  |  |
+| panw.interfaces.ha.local_info.version | HA configuration info version | long |  |  |
+| panw.interfaces.ha.local_info.vpn_client_version | Version of the VPN client (if installed) | keyword |  |  |
+| panw.interfaces.ha.mode | HA mode, e.g., "active-active" or "active-passive" | keyword |  |  |
+| panw.interfaces.ha.peer_info.conn_ha1.description | Description of the connection type ,e.g., "heartbeat status" | keyword |  |  |
+| panw.interfaces.ha.peer_info.conn_ha1.primary | Specifies if the HA1 connection is primary | boolean |  |  |
+| panw.interfaces.ha.peer_info.conn_ha1.status | Peer HA1 connection status, e.g., "up" | keyword |  |  |
+| panw.interfaces.ha.peer_info.conn_ha1_backup.description | HA peer info connection HA1 backup description | keyword |  |  |
+| panw.interfaces.ha.peer_info.conn_ha1_backup.status | HA peer info connection HA1 backup status, e.g., "up" means it is operational | keyword |  |  |
+| panw.interfaces.ha.peer_info.conn_ha2.description | HA peer info connection HA2 description | keyword |  |  |
+| panw.interfaces.ha.peer_info.conn_ha2.primary | Specifies if the HA2 connection is primary | boolean |  |  |
+| panw.interfaces.ha.peer_info.conn_ha2.status | HA peer info connection HA2 status | keyword |  |  |
+| panw.interfaces.ha.peer_info.conn_status | Overall status of the HA connections ("up" means all connections are operational) | keyword |  |  |
+| panw.interfaces.ha.peer_info.ha1_backup_ipaddr | HA peer info HA1 backup IP address | ip |  |  |
+| panw.interfaces.ha.peer_info.ha1_backup_macaddr | HA peer info HA1 backup MAC address | keyword |  |  |
+| panw.interfaces.ha.peer_info.ha1_ipaddr | IP address of the HA1 interface on the peer | ip |  |  |
+| panw.interfaces.ha.peer_info.ha1_macaddr | HA1 MAC address of the peer | keyword |  |  |
+| panw.interfaces.ha.peer_info.ha2_ipaddr | HA peer info HA2 IP address | ip |  |  |
+| panw.interfaces.ha.peer_info.ha2_macaddr | HA peer info HA2 MAC address | keyword |  |  |
+| panw.interfaces.ha.peer_info.mgmt_ip | Management IP address of the peer firewall | ip |  |  |
+| panw.interfaces.ha.peer_info.mode | HA mode configured on the peer firewall, e.g. "Active-Passive" | keyword |  |  |
+| panw.interfaces.ha.peer_info.platform_model | Model of the peer firewall | keyword |  |  |
+| panw.interfaces.ha.peer_info.preemptive | Indicates if preemption is enabled on the peer firewall | boolean |  |  |
+| panw.interfaces.ha.peer_info.priority | HA priority value of the peer firewall | long |  |  |
+| panw.interfaces.ha.peer_info.state | Current operational state of the peer firewall (passive means it is in standby mode and not handling traffic) | keyword |  |  |
+| panw.interfaces.ha.peer_info.state_duration | How long the peer has been in the current state | long | ms | gauge |
+| panw.interfaces.ha.running_sync | Indicates the sychronization status of the HA pair, e.g., "synchronized","not-synchronized","synchronizing" | keyword |  |  |
+| panw.interfaces.ha.running_sync_enabled | Indicates if running configuration synchronization is enabled | boolean |  |  |
+| panw.interfaces.logical.addr | Used to store aditional static IP addresses | keyword |  |  |
+| panw.interfaces.logical.addr6 | Logical IPv6 address | keyword |  |  |
+| panw.interfaces.logical.dyn_addr | Dynamic addresses, e.g., generated by DHCP | keyword |  |  |
+| panw.interfaces.logical.fwd | Indicates if the interface is used for forwarding | keyword |  |  |
+| panw.interfaces.logical.id | Logical interface ID | keyword |  |  |
+| panw.interfaces.logical.ip | Logical IP Address with subnet mask, e.g., 111.222.333.10/29 | ip |  |  |
+| panw.interfaces.logical.name | Logical interface name | keyword |  |  |
+| panw.interfaces.logical.tag | VLAN tag associated with this interface | integer |  |  |
+| panw.interfaces.logical.vsys | Virtual system to which this interface belongs | integer |  |  |
+| panw.interfaces.logical.zone | Logical zone, e.g., "inside" or "outside" | keyword |  |  |
+| panw.interfaces.physical.ae_member | For aggregate interfaces, the array of member interfaces | keyword |  |  |
+| panw.interfaces.physical.duplex | Duplex configuration, e.g., "full" or "half" | keyword |  |  |
+| panw.interfaces.physical.full_state | Physical full state, speed/duplex/state, e.g., "1000/full/up" | keyword |  |  |
+| panw.interfaces.physical.id | Physical interface ID | keyword |  |  |
+| panw.interfaces.physical.mac | Physical MAC address | keyword |  |  |
+| panw.interfaces.physical.mode | Physical interface mode, e.g., autoneg | keyword |  |  |
+| panw.interfaces.physical.name | Physical interface name | keyword |  |  |
+| panw.interfaces.physical.speed | Physical interface speed | keyword |  |  |
+| panw.interfaces.physical.state | Physical interface state, up or down | keyword |  |  |
+| panw.interfaces.physical.type | Physical interface type | keyword |  |  |
 
 
 ### routing
@@ -231,7 +228,6 @@ An example event for `routing` looks as following:
         "version": "8.16.0"
     },
     "data_stream": {
-        "dataset": "panw.routing",
         "namespace": "default",
         "type": "metrics"
     },
@@ -245,8 +241,6 @@ An example event for `routing` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "module": "panw",
-        "dataset": "panw.vpn",
         "duration": 1250000,
         "ingested": "2024-02-08T10:15:32Z"
     },
@@ -345,7 +339,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.routing.bgp.nexthop_thirdparty | Third-party next-hop feature is enabled | boolean |  |  |
 | panw.routing.bgp.open_delay | Delay before sending an Open message (in seconds) | long | s |  |
 | panw.routing.bgp.orf_entry_received | Number of ORF (Outbound Route Filtering) entries received from the peer | long |  | gauge |
-| panw.routing.bgp.passive | Indicates if the BGP peer is in passive mode: if yes then router will not initiate a connection to the peer | boolean |  |  |
+| panw.routing.bgp.passive | Indicates if the BGP peer is in passive mode, if yes then router will not initiate a connection to the peer | boolean |  |  |
 | panw.routing.bgp.password_set | Indicates whether a password is set for the BGP peer | boolean |  |  |
 | panw.routing.bgp.peer_address | IP address and port of the peer | keyword |  |  |
 | panw.routing.bgp.peer_group | The name of the BGP peer group this peer belongs to | keyword |  |  |
@@ -379,7 +373,6 @@ An example event for `system` looks as following:
         "version": "8.16.0"
     },
     "data_stream": {
-        "dataset": "panw.system",
         "namespace": "default",
         "type": "metrics"
     },
@@ -393,8 +386,6 @@ An example event for `system` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "module": "panw",
-        "dataset": "panw.vpn",
         "duration": 1250000,
         "ingested": "2024-02-08T10:15:32Z"
     },
@@ -483,7 +474,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
-| panw.system.certificate.db_exp_date | Expiration date, format: 310329235959Z(Mar 29 23:59:59 2031 GMT) | keyword |  |  |
+| panw.system.certificate.db_exp_date | Expiration date, format, 310329235959Z(Mar 29 23:59:59 2031 GMT) | keyword |  |  |
 | panw.system.certificate.db_file | File name of the certificate database | keyword |  |  |
 | panw.system.certificate.db_name | Name of the certificate database | keyword |  |  |
 | panw.system.certificate.db_rev_date | Revision date of the certificate database | keyword |  |  |
@@ -503,7 +494,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.system.cpu.wait | CPU wait time | float | percent | gauge |
 | panw.system.fan.alarm | Is there an alarm status of the fan | boolean |  |  |
 | panw.system.fan.description | The description of the fan | keyword |  |  |
-| panw.system.fan.min_rpm | The minimum speed of the fan in RPM | integer |  |  |
+| panw.system.fan.min_rpm | The minimum speed of the fan in RPM | integer |  | gauge |
 | panw.system.fan.rpm | The speed of the fan in RPM | integer |  | gauge |
 | panw.system.fan.slot_number | The number of the hardware slot | integer |  |  |
 | panw.system.filesystem.available | Disk space available on the filesystem | float | byte | gauge |
@@ -544,8 +535,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.system.thermal.alarm | Alarm field | boolean |  |  |
 | panw.system.thermal.degrees_celsius | Degrees Celsius field | float |  | gauge |
 | panw.system.thermal.description | Description field | text |  |  |
-| panw.system.thermal.maximum_temp | Maximum temperature field | float |  |  |
-| panw.system.thermal.minimum_temp | Minimum temperature field | float |  |  |
+| panw.system.thermal.maximum_temp | Maximum temperature field | float |  | gauge |
+| panw.system.thermal.minimum_temp | Minimum temperature field | float |  | gauge |
 | panw.system.thermal.slot_number | Slot number field | integer |  |  |
 | panw.system.uptime.days | Uptime in days | integer | d | gauge |
 | panw.system.uptime.hours | Hours component of uptime | integer | h | gauge |
@@ -570,7 +561,6 @@ An example event for `vpn` looks as following:
         "version": "8.16.0"
     },
     "data_stream": {
-        "dataset": "panw.vpn",
         "namespace": "default",
         "type": "metrics"
     },
@@ -584,8 +574,6 @@ An example event for `vpn` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "module": "panw",
-        "dataset": "panw.vpn",
         "duration": 1250000,
         "ingested": "2024-02-08T10:15:32Z"
     },
