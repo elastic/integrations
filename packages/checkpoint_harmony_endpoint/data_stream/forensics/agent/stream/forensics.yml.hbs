@@ -1,9 +1,10 @@
 config_version: 3
+{{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-request.tracer.maxbackups: 5
+resource.tracer.maxbackups: 5
+{{/if}}
 resource.url: {{base_url}}
 interval: {{interval}}
-prefix: json
 state:
   auth_client_id: {{client_id}}
   auth_access_key: {{access_key}}
@@ -199,7 +200,7 @@ program: |
             body.data.nextPageToken == "NULL"
             ?
             {
-              "events": body.data.records,
+              "events": body.data.records.map(e, { "message": e.encode_json(), }),
               "want_more": false,
               "cursor": {
                 "auth_token": null,
@@ -218,7 +219,7 @@ program: |
             }
             :
             {
-              "events": body.data.records,
+              "events": body.data.records.map(e, { "message": e.encode_json(), }),
               "want_more": true,
               "cursor": {
                 "auth_token": state.cursor.auth_token,
@@ -240,3 +241,20 @@ program: |
       )
     )
   )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
