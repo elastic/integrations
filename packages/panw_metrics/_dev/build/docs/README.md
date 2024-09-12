@@ -6,6 +6,8 @@ This integration periodically fetches metrics from [Palo Alto Networks](https://
 
 The integration uses the [Pango](https://github.com/PaloAltoNetworks/pango) library to collect metrics from Palo Alto Networks firewalls.
 
+## Configuration
+
 ## Metrics
 
 ### interfaces
