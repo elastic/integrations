@@ -37,18 +37,19 @@ processors:
       tag: remove_message
       if: ctx.event?.original != null
       ignore_missing: true
+
   - json:
       field: event.original
       target_field: stix
       tag: stix_event_original
   - drop:
       if: >-
-        ctx.stix?.type != 'indicator' &&
+        ctx.stix.type != 'indicator' &&
         ctx._conf?.restrict_stix == true
       tag: drop_no_indicator
   - drop:
       if: >-
-        ctx.stix?.spec_version != '2.1' &&
+        ctx.stix.spec_version != '2.1' &&
         ctx._conf?.restrict_stix == true
       tag: drop_no_stix_2_1
   - date:
@@ -56,14 +57,14 @@ processors:
       target_field: "@timestamp"
       formats:
         - "ISO8601"
-      if: ctx.stix?.created != null
+      if: ctx.stix.created != null
       tag: date_created
   - date:
       field: stix.modified
       target_field: threat.indicator.last_seen
       formats:
         - ISO8601
-      if: ctx.stix?.modified != null
+      if: ctx.stix.modified != null
       tag: date_modified
   - set:
       field: threat.indicator.modified_at
@@ -75,7 +76,7 @@ processors:
       target_field: threat.indicator.first_seen
       formats:
         - "ISO8601"
-      if: ctx.stix?.valid_from != null
+      if: ctx.stix.valid_from != null
       tag: date_valid_from
   - rename:
       field: stix.name
@@ -89,7 +90,7 @@ processors:
       tag: rename_description
   - script:
       lang: painless
-      if: ctx.stix?.confidence != null
+      if: ctx.stix.confidence != null
       description: Normalize confidence level.
       tag: script_normalize_confidence
       source: >
@@ -107,7 +108,7 @@ processors:
         }
   - foreach:
       field: stix.labels
-      if: ctx.stix?.labels != null
+      if: ctx.stix.labels != null
       processor:
         append:
           field: tags
@@ -118,6 +119,11 @@ processors:
   - remove:
       field: stix.labels
       ignore_missing: true
+  - gsub:
+      field: tags
+      pattern: '\\\"'
+      replacement: '\"'
+      ignore_missing: true
 
   ## IOC expiration
   - date:
@@ -125,14 +131,14 @@ processors:
       target_field: stix.ioc_expiration_date
       formats:
         - ISO8601
-      if: ctx.stix?.valid_until != null
+      if: ctx.stix.valid_until != null
       tag: date_ioc_expiration_valid_until
   - set:
       field: stix.ioc_expiration_date
       copy_from: threat.indicator.modified_at
       if: >-
-        ctx.stix?.ioc_expiration_date == null &&
-        ctx.stix?.revoked != null &&
+        ctx.stix.ioc_expiration_date == null &&
+        ctx.stix.revoked != null &&
         ctx.stix.revoked == true
       tag: set_ioc_expiration_revoked
 
@@ -186,7 +192,7 @@ processors:
   - script:
       lang: painless
       tag: script_set_ioc_expiration_reason
-      if: ctx.stix?.ioc_expiration_date != null
+      if: ctx.stix.ioc_expiration_date != null
       params:
         valid_until: "Expiration set from valid_until field"
         revoked: "Expiration set from revoked field"
@@ -223,50 +229,50 @@ processors:
   - set:
       field: threat.indicator.type
       value: autonomous-system
-      if: ctx.stix?.pattern != null && ctx.stix.pattern.startsWith('[autonomous-system')
+      if: ctx.stix.pattern?.startsWith('[autonomous-system') == true
   - set:
       field: threat.indicator.type
       value: domain-name
-      if: ctx.stix?.pattern != null && ctx.stix.pattern.startsWith('[domain-name')
+      if: ctx.stix.pattern?.startsWith('[domain-name') == true
   - set:
       field: threat.indicator.type
       value: email-addr
-      if: ctx.stix?.pattern != null && ctx.stix.pattern.startsWith('[email')
+      if: ctx.stix.pattern?.startsWith('[email') == true
   - set:
       field: threat.indicator.type
       value: file
-      if: ctx.stix?.pattern != null && ctx.stix.pattern.startsWith('[file')
+      if: ctx.stix.pattern?.startsWith('[file') == true
   - set:
       field: threat.indicator.type
       value: ipv4-addr
-      if: ctx.stix?.pattern != null && ctx.stix.pattern.startsWith('[ipv4-addr')
+      if: ctx.stix.pattern?.startsWith('[ipv4-addr') == true
   - set:
       field: threat.indicator.type
       value: ipv6-addr
-      if: ctx.stix?.pattern != null && ctx.stix.pattern.startsWith('[ipv6-addr')
+      if: ctx.stix.pattern?.startsWith('[ipv6-addr') == true
   - set:
       field: threat.indicator.type
       value: url
-      if: ctx.stix?.pattern != null && ctx.stix.pattern.startsWith('[url')
+      if: ctx.stix.pattern?.startsWith('[url') == true
   - set:
       field: threat.indicator.type
       value: windows-registry-key
-      if: ctx.stix?.pattern != null && ctx.stix.pattern.startsWith('[windows-registry-key')
+      if: ctx.stix.pattern?.startsWith('[windows-registry-key') == true
   - set:
       field: threat.indicator.type
       value: x509-certificate
-      if: ctx.stix?.pattern != null && ctx.stix.pattern.startsWith('[x509')
+      if: ctx.stix.pattern?.startsWith('[x509') == true
 
   - split:
       field: stix.pattern
       target_field: stix._patterns
       separator: '\s+AND\s+|\s+OR\s+'
-      if: ctx.threat?.indicator?.type != null && ctx.stix?.pattern != null
+      if: ctx.threat?.indicator?.type != null && ctx.stix.pattern != null
       tag: split_pattern
 
   - foreach:
       field: stix._patterns
-      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.type == 'autonomous-system'
+      if: ctx.threat?.indicator?.type == 'autonomous-system'
       ignore_missing: true
       processor:
         pipeline:
@@ -282,7 +288,7 @@ processors:
 
   - foreach:
       field: stix._patterns
-      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.type == 'domain-name'
+      if: ctx.threat?.indicator?.type == 'domain-name'
       ignore_missing: true
       processor:
         pipeline:
@@ -290,7 +296,7 @@ processors:
 
   - foreach:
       field: stix._patterns
-      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.type == 'email-addr'
+      if: ctx.threat?.indicator?.type == 'email-addr'
       ignore_missing: true
       processor:
         pipeline:
@@ -298,7 +304,7 @@ processors:
 
   - foreach:
       field: stix._patterns
-      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.type == 'file'
+      if: ctx.threat?.indicator?.type == 'file'
       ignore_missing: true
       processor:
         pipeline:
@@ -306,7 +312,7 @@ processors:
   
   - foreach:
       field: stix._patterns
-      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.type.startsWith('ip')
+      if: ctx.threat?.indicator?.type?.startsWith('ip') == true
       ignore_missing: true
       processor:
         pipeline:
@@ -314,7 +320,7 @@ processors:
 
   - foreach:
       field: stix._patterns
-      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.type == 'url'
+      if: ctx.threat?.indicator?.type == 'url'
       ignore_missing: true
       processor:
         pipeline:
@@ -322,7 +328,7 @@ processors:
   
   - foreach:
       field: stix._patterns
-      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.type == 'windows-registry-key'
+      if: ctx.threat?.indicator?.type == 'windows-registry-key'
       ignore_missing: true
       processor:
         pipeline:
@@ -330,7 +336,7 @@ processors:
   
   - foreach:
       field: stix._patterns
-      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.type == 'x509-certificate'
+      if: ctx.threat?.indicator?.type == 'x509-certificate'
       ignore_missing: true
       processor:
         pipeline:
@@ -341,6 +347,33 @@ processors:
         - _conf
         - stix._patterns
       ignore_missing: true
+
+  - script:
+      lang: painless
+      description: Unscape values recursively.
+      tag: script_unscape_values
+      source: >
+        void unescape(Object obj) {
+          if (obj instanceof Map) {
+            for (entry in ((Map)obj).entrySet()) {
+              Object value = entry.getValue();
+              unescape(value);
+              if (value instanceof String) {
+                entry.setValue(((String)value).replace('\\\\', '\\'));
+              }
+            }
+          } else if (obj instanceof List) {
+            for (int i = 0; i < ((List)obj).size(); i++) {
+              Object value = ((List)obj).get(i);
+              unescape(value);
+              if (value instanceof String) {
+                ((List)obj).set(i, ((String)value).replace('\\\\', '\\'));
+              }
+            }
+          }
+        }
+        unescape(ctx);
+
   - script:
       lang: painless
       description: Drops null/empty values recursively.
