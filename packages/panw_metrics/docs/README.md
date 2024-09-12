@@ -12,7 +12,7 @@ The integration uses the [Pango](https://github.com/PaloAltoNetworks/pango) libr
 
 ### interfaces
 
-The `interfaces` dataset collects detailed network interface statistics from Palo Alto Networks firewalls. It provides information about interface status, traffic throughput, packet counts, error rates, and configuration details for physical, logical, and high-availability (HA) interfaces.
+The `interfaces` dataset collects detailed network interface statistics from Palo Alto Networks firewalls. It provides information about interface status, traffic throughput, packet counts, error rates, and configuration details, including physical, logical, and high-availability (HA) interfaces.
 
 An example event for `interfaces` looks as following:
 
