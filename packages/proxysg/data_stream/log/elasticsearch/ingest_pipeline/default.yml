@@ -60,9 +60,14 @@ processors:
       type: long
       ignore_missing: true
   - convert:
-      tag: proxysg.server_to_client.status
+      tag: proxysg_server_to_client_status
       field: proxysg.server_to_client.status
       target_field: http.response.status_code
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: proxysg_time_taken
+      field: proxysg.time_taken
       type: long
       ignore_missing: true
 
@@ -111,6 +116,12 @@ processors:
       field: url.domain
       copy_from: proxysg.client_to_server.host
       ignore_failure: true
+  - script:
+      lang: painless
+      if: 'ctx.proxysg.time_taken != null'
+      # proxysg.time_taken is ms, event.duration is ns
+      source: |
+        ctx.event.duration = ctx.proxysg.time_taken * 1000000
 
   # Enrichment
   - registered_domain:
