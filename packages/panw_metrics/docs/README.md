@@ -296,6 +296,26 @@ An example event for `routing` looks as following:
                 "last_update_age": 300,
                 "status_flap_counts": 2,
                 "established_counts": 10
+            },
+            "ipsec_tunnel": {
+                "id": "tunnel-001",
+                "name": "Site-A-to-Site-B",
+                "gw": "203.0.113.1",
+                "TSi_ip": "10.0.0.0",
+                "TSi_prefix": "24",
+                "TSi_proto": "any",
+                "TSi_port": 0,
+                "TSr_ip": "192.168.0.0",
+                "TSr_prefix": "24",
+                "TSr_proto": "any",
+                "TSr_port": 0,
+                "proto": "ESP",
+                "mode": "tunnel",
+                "dh": "group14",
+                "enc": "aes-256-cbc",
+                "hash": "sha256",
+                "life": 28800,
+                "kb": 102400
             }
         }
     }
@@ -649,26 +669,6 @@ An example event for `vpn` looks as following:
                 },
                 "total_current_users": 500,
                 "total_previous_users": 480
-            },
-            "ipsec_tunnel": {
-                "id": "tunnel-001",
-                "name": "Site-A-to-Site-B",
-                "gw": "203.0.113.1",
-                "TSi_ip": "10.0.0.0",
-                "TSi_prefix": "24",
-                "TSi_proto": "any",
-                "TSi_port": 0,
-                "TSr_ip": "192.168.0.0",
-                "TSr_prefix": "24",
-                "TSr_proto": "any",
-                "TSr_port": 0,
-                "proto": "ESP",
-                "mode": "tunnel",
-                "dh": "group14",
-                "enc": "aes-256-cbc",
-                "hash": "sha256",
-                "life": 28800,
-                "kb": 102400
             }
         }
     }
