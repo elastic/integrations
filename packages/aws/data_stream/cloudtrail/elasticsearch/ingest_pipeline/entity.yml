@@ -1,0 +1,489 @@
+---
+description: Pipeline for parsing CloudTrail entities
+processors:
+  - append:
+      description: Appends any relevant entity to `related.entity` for all events
+      field: related.entity
+      allow_duplicates: false
+      value:
+        - '{{json.userIdentity.arn}}'
+        - '{{json.userIdentity.identityProvider}}'
+        - '{{json.userIdentity.principalId}}'
+        - '{{json.userIdentity.sessionContext.sessionIssuer.arn}}'
+        - '{{json.userIdentity.sessionContext.sessionIssuer.userName}}'
+        - '{{json.userIdentity.sessionContext.webIdFederationData.federatedProvider}}'
+        - '{{json.userIdentity.userName}}'
+        - '{{json.resources.ARN}}'
+
+
+  # source group signin.amazonaws.com ---------------------------------------------------------------------
+  - append:
+      description: Appends any relevant entity to `related.entity` for ConsoleLogin
+      field: related.entity
+      if: ctx.json?.eventName == "ConsoleLogin"
+      allow_duplicates: false
+      value:        
+        - '{{json.additionalEventData.MFAIdentifier}}'
+  
+  # source group sts.amazonaws.com -------------------------------------------------------------------------
+  - append:
+      description: Appends any relevant entity to `related.entity` for AssumeRole
+      field: related.entity
+      if: ctx.json?.eventName == "AssumeRole"
+      allow_duplicates: false
+      value:        
+        - '{{json.additionalEventData.MFAIdentifier}}'
+        - '{{json.requestParameters.roleArn}}'
+        - '{{json.responseElements.assumedRoleUser.arn}}'
+        - '{{json.requestParameters.roleSessionName}}'
+        - '{{json.sourceIdentity}}'
+  - append:
+    field: related.entity
+    description: Appends any relevant entity to `related.entity` for GetSessionToken
+    if: ctx.json?.eventName == "GetSessionToken"
+    allow_duplicates: false
+    value:        
+      - '{{json.responseElements.accessKeyId}}'
+
+  # source group iam.amazonaws.com -------------------------------------------------------------------------
+  - append:
+      description: Appends any relevant entity to `related.entity` for CreateAccessKey
+      field: related.entity
+      if: ctx.json?.eventName == "CreateAccessKey"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.userName}}'
+        - '{{json.responseElements.accessKey.userName}}'
+        - '{{json.responseElements.accessKey.accessKeyId}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for DeleteAccessKey
+      field: related.entity
+      if: ctx.json?.eventName == "DeleteAccessKey"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.userName}}'
+        - '{{json.requestParameters.accessKeyId}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for CreateUser
+      field: related.entity
+      if: ctx.json?.eventName == "CreateUser"
+      allow_duplicates: false
+      value:        
+        - '{{json.responseElements.user.arn}}'
+        - '{{json.responseElements.user.userName}}'
+        - '{{json.responseElements.userId}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for DeleteUser
+      field: related.entity
+      if: ctx.json?.eventName == "DeleteUser"
+      allow_duplicates: false
+      value:    
+        - '{{json.requestParameters.userName}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for AttachRolePolicy
+      field: related.entity
+      if: ctx.json?.eventName == "AttachRolePolicy"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.policyArn}}'  
+        - '{{json.requestParameters.roleName}}' 
+  - append:
+      description: Appends any relevant entity to `related.entity` for DetachRolePolicy
+      field: related.entity
+      if: ctx.json?.eventName == "DetachRolePolicy"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.policyArn}}'  
+        - '{{json.requestParameters.roleName}}'  
+  - append:
+      description: Appends any relevant entity to `related.entity` for PutUserPolicy
+      field: related.entity
+      if: ctx.json?.eventName == "PutUserPolicy"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.userName}}'  
+        - '{{json.requestParameters.policyName}}'  
+  - append:
+      description: Appends any relevant entity to `related.entity` for DeleteUserPolicy
+      field: related.entity
+      if: ctx.json?.eventName == "DeleteUserPolicy"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.userName}}'  
+        - '{{json.requestParameters.policyName}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for CreateRole
+      if: ctx.json?.eventName == "CreateRole"
+      allow_duplicates: false
+      value:        
+        - '{{json.responseElements.role.arn}}'
+        - '{{json.requestParameters.roleName}}'  
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for UpdateAccessKey
+      if: ctx.json?.eventName == "UpdateAccessKey"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.userName}}'
+        - '{{json.requestParameters.accessKeyId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DeleteRole
+      if: ctx.json?.eventName == "DeleteRole"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.roleName}}'
+
+  # source group ec2.amazonaws.com -------------------------------------------------------------------------
+  - append:
+      description: Appends any relevant entity to `related.entity` for AuthorizeSecurityGroupIngress
+      field: related.entity
+      if: ctx.json?.eventName == "AuthorizeSecurityGroupIngress"
+      allow_duplicates: false
+      value:  
+        - '{{json.responseElements.securityGroupRuleSet.items.groupId}}'
+        - '{{json.responseElements.securityGroupRuleSet.items.referencedGroupInfo.groupId}}'
+        - '{{json.responseElements.securityGroupRuleSet.items.securityGroupRuleId}}'
+        - '{{json.requestParameters.groupId}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for CreateSecurityGroup
+      field: related.entity
+      if: ctx.json?.eventName == "CreateSecurityGroup"
+      allow_duplicates: false
+      value:  
+        - '{{json.responseElements.groupId}}'
+        - '{{json.requestParameters.groupName}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for RunInstances
+      if: ctx.json?.eventName == "RunInstances"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.instancesSet.items.imageId}}'
+        - '{{json.requestParameters.networkInterfaceSet.items.groupSet.items.groupId}}'
+        - '{{json.responseElements.instancesSet.items.networkInterfaceSet.items.networkInterfaceId}}'
+        - '{{json.responseElements.instancesSet.items.networkInterfaceSet.items.vpcId}}'
+        - '{{json.responseElements.instancesSet.items.subnetId}}'
+        - '{{json.responseElements.instancesSet.items.groupSet.items.groupId}}'
+        - '{{json.responseElements.instancesSet.items.networkInterfaceSet.items.subnetId}}'
+        - '{{json.responseElements.reservationId}}'
+        - '{{json.responseElements.instancesSet.items.vpcId}}'
+        - '{{json.responseElements.instancesSet.items.instanceId}}'
+        - '{{json.responseElements.instancesSet.items.imageId}}'
+        - '{{json.responseElements.instancesSet.items.networkInterfaceSet.items.groupSet.items.groupId}}'
+        - '{{json.responseElements.instancesSet.items.iamInstanceProfile.arn}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for RevokeSecurityGroupIngress
+      if: ctx.json?.eventName == "RevokeSecurityGroupIngress"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.roleName}}'
+        - '{{json.requestParameters.groupId}}'
+        - '{{json.responseElements.revokedSecurityGroupRuleSet.items.securityGroupRuleId}}'
+        - '{{json.responseElements.revokedSecurityGroupRuleSet.items.groupId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for CreateVpc
+      if: ctx.json?.eventName == "CreateVpc"
+      allow_duplicates: false
+      value:        
+        - '{{json.responseElements.vpc.vpcId}}'
+        - '{{json.responseElements.vpc.dhcpOptionsId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DeleteVpc
+      if: ctx.json?.eventName == "DeleteVpc"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.vpcId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for CreateSubnet
+      if: ctx.json?.eventName == "CreateSubnet"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.subnetId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DeleteSubnet
+      if: ctx.json?.eventName == "DeleteSubnet"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.subnetId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for TerminateInstances
+      if: ctx.json?.eventName == "TerminateInstances"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.instancesSet.items.instanceId}}'
+        - '{{json.responseElements.instancesSet.items.instanceId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for StopInstances
+      if: ctx.json?.eventName == "StopInstances"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.instancesSet.items.instanceId}}'
+        - '{{json.responseElements.instancesSet.items.instanceId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DescribeInstances
+      if: ctx.json?.eventName == "DescribeInstances"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.instancesSet.items.instanceId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for CreateSnapshot
+      if: ctx.json?.eventName == "CreateSnapshot"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.volumeId}}'
+        - '{{json.responseElements.snapshotId}}'
+        - '{{json.responseElements.volumeId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DeleteSnapshot
+      if: ctx.json?.eventName == "DeleteSnapshot"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.snapshotId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for CreateNetworkInterface
+      if: ctx.json?.eventName == "CreateNetworkInterface"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.groupSet.items.groupId}}'
+        - '{{json.requestParameters.subnetId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DeleteNetworkInterface
+      if: ctx.json?.eventName == "DeleteNetworkInterface"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.networkInterfaceId}}'
+
+  # source group s3.amazonaws.com --------------------------------------------------------------------------
+  - append:
+      description: Appends any relevant entity to `related.entity` for PutBucketPolicy
+      field: related.entity
+      if: ctx.json?.eventName == "PutBucketPolicy"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.bucketName}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for DeleteBucketPublicAccessBlock
+      field: related.entity
+      if: ctx.json?.eventName == "DeleteBucketPublicAccessBlock"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.bucketName}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for CreateBucket
+      field: related.entity
+      if: ctx.json?.eventName == "CreateBucket"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.bucketName}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for DeleteBucketPolicy
+      field: related.entity
+      if: ctx.json?.eventName == "DeleteBucketPolicy"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.bucketName}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for PutBucketLogging
+      if: ctx.json?.eventName == "PutBucketLogging"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.bucketName}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DeleteBucketLifecycle
+      if: ctx.json?.eventName == "DeleteBucketLifecycle"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.bucketName}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for PutBucketAcl
+      if: ctx.json?.eventName == "PutBucketAcl"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.bucketName}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for PutBucketVersioning
+      if: ctx.json?.eventName == "PutBucketVersioning"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.bucketName}}'
+
+  # source group cloudtrail.amazonaws.com --------------------------------------------------------------------------
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for CreateTrail
+      if: ctx.json?.eventName == "CreateTrail"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestElements.name}}'
+        - '{{json.requestElements.s3BucketName}}'
+        - '{{json.responseElements.cloudWatchLogsLogGroupArn}}'
+        - '{{json.responseElements.cloudWatchLogsRoleArn}}'
+        - '{{json.responseElements.kmsKeyId}}'
+        - '{{json.responseElements.snsTopicARN}}'
+        - '{{json.responseElements.trailARN}}'
+        - '{{json.responseElements.name}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for StopLogging
+      field: related.entity
+      if: ctx.json?.eventName == "StopLogging"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.name}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for DeleteTrail
+      field: related.entity
+      if: ctx.json?.eventName == "DeleteTrail"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.name}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DescribeTrails
+      if: ctx.json?.eventName == "DescribeTrails"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.instancesSet.items.instanceId}}'
+
+  # source group kms.amazonaws.com --------------------------------------------------------------------------
+  - append:
+      description: Appends any relevant entity to `related.entity` for DisableKey
+      field: related.entity
+      if: ctx.json?.eventName == "DisableKey"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.keyId}}'
+        - '{{json.responseElements.keyId}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for EnableKey
+      field: related.entity
+      if: ctx.json?.eventName == "EnableKey"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.keyId}}'
+        - '{{json.responseElements.keyId}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for ScheduleKeyDeletion
+      field: related.entity
+      if: ctx.json?.eventName == "ScheduleKeyDeletion"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.keyId}}'
+        - '{{json.responseElements.keyId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for CreateKey
+      if: ctx.json?.eventName == "CreateKey"
+      allow_duplicates: false
+      value:        
+        - '{{json.responseElements.keyMetadata.arn}}'
+        - '{{json.responseElements.keyMetadata.keyId}}'
+
+  # source group config.amazonaws.com --------------------------------------------------------------------------
+  - append:
+      description: Appends any relevant entity to `related.entity` for StartConfigurationRecorder
+      field: related.entity
+      if: ctx.json?.eventName == "StartConfigurationRecorder"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.configurationRecorderName}}'
+  - append:
+      description: Appends any relevant entity to `related.entity` for StopConfigurationRecorder
+      field: related.entity
+      if: ctx.json?.eventName == "StopConfigurationRecorder"
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.configurationRecorderName}}'
+  
+  # source group lambda.amazonaws.com --------------------------------------------------------------------------
+  - append:
+      description: Appends any relevant entity to `related.entity` for UpdateFunctionCode
+      field: related.entity
+      if: ctx.json?.eventName.startsWith("UpdateFunctionCode") # there is versioning on UpdateFunctionCode event name
+      allow_duplicates: false
+      value:  
+        - '{{json.requestParameters.functionName}}'
+        - '{{json.responseElements.functionArn}}'
+        - '{{json.responseElements.functionName}}'
+        - '{{json.responseElements.role}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for CreateFunction
+      if: ctx.json?.eventName.startsWith("CreateFunction") # there is versioning on CreateFunction event name
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.functionName}}'
+        - '{{json.responseElements.functionName}}'
+        - '{{json.responseElements.kmsKeyArn}}'
+        - '{{json.responseElements.role}}'
+        - '{{json.responseElements.vpcConfig.securityGroupIds}}'
+        - '{{json.responseElements.vpcConfig.subnetIds}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DeleteFunction
+      if: ctx.json?.eventName.startsWith("DeleteFunction") # there is versioning on DeleteFunction event name
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.functionName}}'
+
+  # source group rds.amazonaws.com --------------------------------------------------------------------------
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for ModifyDBInstance
+      if: ctx.json?.eventName == "ModifyDBInstance"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.dBInstanceArn}}'
+        - '{{json.requestParameters.dBInstanceIdentifier}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for CreateDBInstance
+      if: ctx.json?.eventName == "CreateDBInstance"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.dBInstanceIdentifier}}'
+        - '{{json.responseElements.dBInstanceIdentifier}}'
+        - '{{json.responseElements.dbInstanceArn}}'
+        - '{{json.responseElements.dBSubnetGroup.subnets.subnetIdentifier}}'
+        - '{{json.responseElements.dBSubnetGroup.vpcId}}'
+        - '{{json.responseElements.vpcSecurityGroups.vpcSecurityGroupId}}'
+  - append:
+      field: related.entity
+      description: Appends any relevant entity to `related.entity` for DeleteDBInstance
+      if: ctx.json?.eventName == "DeleteDBInstance"
+      allow_duplicates: false
+      value:        
+        - '{{json.requestParameters.dBInstanceIdentifier}}'
+        - '{{json.responseElements.dBInstanceIdentifier}}'
+        - '{{json.responseElements.dbInstanceArn}}'
+        - '{{json.responseElements.dBSubnetGroup.subnets.subnetIdentifier}}'
+        - '{{json.responseElements.dBSubnetGroup.vpcId}}'
+        - '{{json.responseElements.vpcSecurityGroups.vpcSecurityGroupId}}'
+
+
+
+
+  - script:
+      description: Remove empty/null related entities and remove duplicates
+      lang: painless
+      source: |
+        ctx.related.entity.removeIf(v -> v == null || v == "");
+        ctx.related.entity = new ArrayList(new HashSet(ctx.related.entity));
+        Collections.sort(ctx.related.entity)
