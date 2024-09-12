@@ -1324,7 +1324,7 @@ processors:
         def cvss_score;
         if (ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors instanceof List) {
           for (def attr: ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors) {
-            if (attr.text == null && attr.value == "") {
+            if (attr.text == null && attr.text == "") {
               continue;
             }
             if (attr.name == "CVSS") {
@@ -1353,7 +1353,7 @@ processors:
       description: Assign vulnerbaility.score.version from array field qualys_vmdr.asset_host_detection.vulnerability.qds_factors
       source: |-
         def cvss_version;
-        def pattern = /CVSS:([234]\.\d{1})/;
+        def pattern = /CVSS:([234]\.\d)/;
         
         if (ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors instanceof List) {
           for (def attr: ctx.qualys_vmdr.asset_host_detection.vulnerability.qds_factors) {
@@ -1389,24 +1389,24 @@ processors:
       if: ctx.vulnerability?.score?.base != null
       description: Assign vulnerbaility.severity from field vulnerability.score.base
       source: |-
-        def severity;
-        if (ctx.vulnerability.score.base >= 9.0) {
-          severity = "critical";
+        // CVSS score between 9.0 and 10.0)
+        if (9.0 <= ctx.vulnerability.score.base) {
+          ctx.vulnerability.severity = "critical";
         }
-        else if (ctx.vulnerability.score.base < 9.0 && ctx.vulnerability.score.base >= 7.0) {
-          severity = "high";
+        // CVSS score between 7.0 and 8.9
+        else if (7.0 <= ctx.vulnerability.score.base) {
+          ctx.vulnerability.severity = "high";
         }
-        else if (ctx.vulnerability.score.base < 7.0 && ctx.vulnerability.score.base >= 4.0) {
-          severity = "medium";
+        // CVSS score between 4.0 and 6.9
+        else if (4.0 <= ctx.vulnerability.score.base) {
+          ctx.vulnerability.severity = "medium";
         }
-        else if (ctx.vulnerability.score.base < 4.0 && ctx.vulnerability.score.base >= 0.1) {
-          severity = "low";
+        // CVSS score between 0.1 and 3.9
+        else if (0.1 <= ctx.vulnerability.score.base) {
+          ctx.vulnerability.severity = "low";
         }
         else if (ctx.vulnerability.score.base == 0) {
-          severity = "none";
-        }
-        if (severity != null) {
-          ctx.vulnerability.severity = severity;
+          ctx.vulnerability.severity = "none";
         }
       on_failure:
         - append:
