@@ -29,7 +29,7 @@ program: |
     request("GET", state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/?" +
       state.?params.orValue("").parse_query().with({
         "action": ["list"],
-        "last_modified_after": [state.?cursor.last_modified.orValue(string(now - duration(state.initial_interval)))],
+        "last_modified_after": [state.?cursor.last_modified.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))],
       }).format_query()
     ).with({
       "Header":{

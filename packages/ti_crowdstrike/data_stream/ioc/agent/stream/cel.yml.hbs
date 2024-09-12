@@ -37,7 +37,7 @@ program: |
       state.want_more ?
         {
           "sort": ["modified_on"],
-          "offset": [string(state.offset)],
+          "offset": [string(int(state.offset))],
           "limit": [string(state.batch_size)],
           "filter": ['modified_on:>"' + state.?cursor.first_timestamp.orValue("") + '"'],
         }
@@ -66,7 +66,7 @@ program: |
         "batch_size": state.batch_size,
         "initial_interval": state.initial_interval,
         "cursor": {
-          ?"last_timestamp": has(body.resources) ?
+          ?"last_timestamp": has(body.resources) && body.resources.size() > 0 ?
             optional.of(([?state.?cursor.last_timestamp] + body.resources.map(e, e.modified_on)).map(t, timestamp(t)).max())
           :
             state.?cursor.last_timestamp,

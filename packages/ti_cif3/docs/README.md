@@ -79,6 +79,9 @@ CIFv3 `confidence` field values (0..10) are converted to ECS confidence (None, L
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 | threat.indicator.tls.client.ja3 | An md5 hash that identifies clients based on their TLS handshake. | keyword |
 
 
@@ -86,13 +89,13 @@ An example event for `feed` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-10T04:46:58.281Z",
+    "@timestamp": "2024-08-01T08:05:14.040Z",
     "agent": {
-        "ephemeral_id": "94c530db-5c8f-407c-939b-cd1d21d547fc",
-        "id": "28f0e936-c71c-4f75-8919-506fed4d20e7",
+        "ephemeral_id": "b351d699-2fd0-49f7-99e1-a7a471a29a62",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "cif3": {
         "deleted_at": "2022-09-03T20:25:53.000Z",
@@ -104,25 +107,25 @@ An example event for `feed` looks as following:
     },
     "data_stream": {
         "dataset": "ti_cif3.feed",
-        "namespace": "ep",
+        "namespace": "26457",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "28f0e936-c71c-4f75-8919-506fed4d20e7",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2024-04-10T04:46:58.281Z",
+        "created": "2024-08-01T08:05:14.040Z",
         "dataset": "ti_cif3.feed",
-        "ingested": "2024-04-10T04:47:10Z",
+        "ingested": "2024-08-01T08:05:26Z",
         "kind": "enrichment",
         "original": "{\"application\":\"https\",\"asn\":8075,\"asn_desc\":\"microsoft-corp-msn-as-block\",\"cc\":\"br\",\"city\":\"campinas\",\"confidence\":10,\"count\":1,\"firsttime\":\"2022-07-20T20:25:53.000000Z\",\"group\":[\"everyone\"],\"indicator\":\"20.206.75.106\",\"indicator_ipv4\":\"20.206.75.106\",\"itype\":\"ipv4\",\"lasttime\":\"2022-07-20T20:25:53.000000Z\",\"latitude\":-22.9035,\"location\":[-47.0565,-22.9035],\"longitude\":-47.0565,\"portlist\":\"443\",\"protocol\":\"tcp\",\"provider\":\"sslbl.abuse.ch\",\"reference\":\"https://sslbl.abuse.ch/blacklist/sslipblacklist.csv\",\"region\":\"sao paulo\",\"reporttime\":\"2022-07-21T20:33:26.585967Z\",\"tags\":[\"botnet\"],\"timezone\":\"america/sao_paulo\",\"tlp\":\"white\",\"uuid\":\"ac240898-1443-4d7e-a98a-1daed220c162\"}",
         "type": [

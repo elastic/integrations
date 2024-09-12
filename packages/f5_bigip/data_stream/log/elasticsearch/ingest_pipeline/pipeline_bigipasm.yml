@@ -290,22 +290,29 @@ processors:
   - script:
       lang: "painless"
       description: "Extract sAMAccountName, userPrincipleName, userName from log"
+      tag: script_extract_sAMAccountName_userPrincipleName_userName
       source: >
-        def log = ctx.event.original;
-
-        def sAMAccountNameMatch = /sAMAccountName=([^\\)]+)/.matcher(log);
-        if (sAMAccountNameMatch.find()) {
-          ctx.f5_bigip.log.sam_account_name = sAMAccountNameMatch.group(1);
+        def log;
+        if (ctx.event?.original != null) {
+          log = ctx.event.original;
+        } else if (ctx.json?.originalRawData != null) {
+          log = ctx.json.originalRawData;
         }
+        if (log != null) {
+          def sAMAccountNameMatch = /sAMAccountName=([^\\)]+)/.matcher(log);
+          if (sAMAccountNameMatch.find()) {
+            ctx.f5_bigip.log.sam_account_name = sAMAccountNameMatch.group(1);
+          }
 
-        def userPrincipleNameMatch = /UserPrincipleName=([^\\)]+)/.matcher(log);
-        if (userPrincipleNameMatch.find()) {
-          ctx.f5_bigip.log.user_principle_name = userPrincipleNameMatch.group(1);
-        }
+          def userPrincipleNameMatch = /UserPrincipleName=([^\\)]+)/.matcher(log);
+          if (userPrincipleNameMatch.find()) {
+            ctx.f5_bigip.log.user_principle_name = userPrincipleNameMatch.group(1);
+          }
 
-        def userNameMatch = /User_Name=([^\\)]+)/.matcher(log);
-        if (userNameMatch.find()) {
-          ctx.f5_bigip.log.user_name = userNameMatch.group(1);
+          def userNameMatch = /User_Name=([^\\)]+)/.matcher(log);
+          if (userNameMatch.find()) {
+            ctx.f5_bigip.log.user_name = userNameMatch.group(1);
+          }
         }
   - rename:
       field: json.query_string
@@ -521,6 +528,10 @@ processors:
       tag: rename_websocket_message_type
       target_field: f5_bigip.log.websocket.message_type
       ignore_missing: true
+  - split:
+      field: json.x_forwarded_for_header_value
+      separator: ',\s*'
+      ignore_missing: true
   - convert:
       field: json.x_forwarded_for_header_value
       tag: convert_x_forwarded_for_header_value_to_ip
@@ -532,12 +543,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      tag: append_related_ip
-      value: '{{{f5_bigip.log.x_forwarded_for_header_value}}}'
-      allow_duplicates: false
-      ignore_failure: true
+  - foreach:
+      field: f5_bigip.log.x_forwarded_for_header_value
+      if: ctx.f5_bigip?.log?.x_forwarded_for_header_value instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
   - rename:
       field: json.geo_info
       tag: rename_geo_info
