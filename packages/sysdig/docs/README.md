@@ -36,28 +36,12 @@ Sysdig alerts can contain a multitude of various fields pertaining to the type o
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp with nanos. | date |
-| SysdigEvent.category |  | text |
-| SysdigEvent.description |  | text |
-| SysdigEvent.type |  | text |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Data stream / event dataset. | constant_keyword |
 | event.module | The module the event belongs to. | constant_keyword |
-| host.name |  | keyword |
 | input.type |  | constant_keyword |
-| log.syslog.severity.code |  | integer |
-| log.syslog.severity.name |  | keyword |
-| orchestrator.cluster.name |  | text |
-| orchestrator.namespace |  | text |
-| orchestrator.resource.name |  | keyword |
-| orchestrator.resource.parent.type |  | text |
-| orchestrator.type |  | text |
-| rule.authority |  | text |
-| rule.category |  | text |
-| rule.name |  | keyword |
-| rule.ruleset |  | text |
-| rule.version |  | text |
 | sysdig.actions |  | flattened |
 | sysdig.agentId | Agent identifier | integer |
 | sysdig.category | Event category from Sysdig | keyword |
@@ -119,9 +103,9 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-04T17:14:53.504Z",
+    "@timestamp": "2024-09-12T13:06:12.675Z",
     "agent": {
-        "ephemeral_id": "fb1cfd6b-5ed0-44e2-92d2-6e9f719ed016",
+        "ephemeral_id": "fe172d2f-7b14-4b87-bc5a-acc14684e4c5",
         "id": "58014837",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -151,14 +135,14 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.alerts",
-        "namespace": "89492",
+        "namespace": "15372",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9d5fe91e-29be-49a8-b99d-74ddeaeaad07",
+        "id": "a2d71da8-f67f-43fa-a895-0251c4a68bb0",
         "snapshot": false,
         "version": "8.14.1"
     },
@@ -166,7 +150,7 @@ An example event for `alerts` looks as following:
         "agent_id_status": "mismatch",
         "dataset": "sysdig.alerts",
         "id": "17dec715376910362c8c3f62a4ceda2e",
-        "ingested": "2024-09-04T17:15:03Z",
+        "ingested": "2024-09-12T13:06:22Z",
         "kind": "alert",
         "provider": "syscall",
         "severity": 7,

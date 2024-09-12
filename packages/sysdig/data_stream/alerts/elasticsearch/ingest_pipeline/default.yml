@@ -7,7 +7,7 @@ processors:
 - json:
     field: message
     target_field: json
-    if: ctx?.message != null
+    if: ctx.message != null
 - rename:
     field: json
     target_field: sysdig
@@ -118,7 +118,7 @@ processors:
 - append:
     field: host.mac
     value: "{{{sysdig.hostMac}}}"
-    if: ctx?.sysdig?.hostMac != null
+    if: ctx.sysdig?.hostMac != null
 - gsub:
     field: host.mac
     pattern: '[-:.]'
@@ -194,7 +194,7 @@ processors:
 - script:
     lang: painless
     tag: 'painless_set_threat_technique_id'
-    if: ctx?.sysdig?.content?.ruleTags != null
+    if: ctx.sysdig?.content?.ruleTags != null
     source: |
         def mitreRegex = /T\d{4}/;
         for (int i = 0; i < ctx.sysdig.content.ruleTags.length; i++) {
@@ -213,37 +213,37 @@ processors:
     field: cloud.availability_zone
     copy_from: sysdig.labels.gcp.availabilityZone
     ignore_empty_value: true
-    if: ctx?.sysdig?.labels?.cloudProvider?.name != null && ctx?.sysdig?.labels?.cloudProvider?.name == "gcp"
+    if: ctx.sysdig?.labels?.cloudProvider?.name != null && ctx.sysdig?.labels?.cloudProvider?.name == "gcp"
 - set:
     field: cloud.instance.id
     copy_from: sysdig.labels.gcp.instanceId
     ignore_empty_value: true
-    if: ctx?.sysdig?.labels?.gcp?.instanceId != null
+    if: ctx.sysdig?.labels?.gcp?.instanceId != null
 - set:
     field: cloud.instance.id
     copy_from: sysdig.labels.azure.instanceId
     ignore_empty_value: true
-    if: ctx?.sysdig?.labels?.azure?.instanceId != null
+    if: ctx.sysdig?.labels?.azure?.instanceId != null
 - set:
     field: cloud.instance.name
     copy_from: sysdig.labels.gcp.instanceName
     ignore_empty_value: true
-    if: ctx?.sysdig?.labels?.gcp?.instanceName != null
+    if: ctx.sysdig?.labels?.gcp?.instanceName != null
 - set:
     field: cloud.instance.name
     copy_from: sysdig.labels.gcp.instanceName
     ignore_empty_value: true
-    if: ctx?.sysdig?.labels?.azure?.instanceName != null
+    if: ctx.sysdig?.labels?.azure?.instanceName != null
 - set:
     field: cloud.machine.type
     copy_from: sysdig.labels.gcp.machineType
     ignore_empty_value: true
-    if: ctx?.sysdig?.labels?.gcp?.machineType != null
+    if: ctx.sysdig?.labels?.gcp?.machineType != null
 - set:
     field: cloud.machine.type
     copy_from: sysdig.labels.azure.instanceSize
     ignore_empty_value: true
-    if: ctx?.sysdig?.labels?.azure?.instanceSize != null
+    if: ctx.sysdig?.labels?.azure?.instanceSize != null
 - set:
     field: cloud.project.id
     copy_from: sysdig.labels.gcp.projectId
@@ -279,7 +279,11 @@ processors:
 - set:
     field: orchestrator.type
     value: kubernetes
-    if: ctx?.sysdig?.labels?.kubernetes?.cluster?.name != null || ctx?.sysdig?.labels?.kubernetes?.namespace?.name != null || ctx?.sysdig?.labels?.kubernetes?.pod?.name != null || ctx?.sysdig?.labels?.kubernetes?.workload?.type != null
+    if: >-
+        ctx.sysdig?.labels?.kubernetes?.cluster?.name != null ||
+        ctx.sysdig?.labels?.kubernetes?.namespace?.name != null ||
+        ctx.sysdig?.labels?.kubernetes?.pod?.name != null ||
+        ctx.sysdig?.labels?.kubernetes?.workload?.type != null
 on_failure:
 - append:
     field: error.message
