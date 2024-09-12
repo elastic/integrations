@@ -85,7 +85,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "sslvpn_and_aaatm_feature" }}'
       tag: pipeline_sslvpn_and_aaatm_feature
-      if: ctx.citrix?.device_event_class_id != null && ((ctx.citrix.device_event_class_id == "SSLVPN" && ctx.citrix.name.toUpperCase() != "MESSAGE") || ctx.citrix.device_event_class_id == "AAATM")
+      if: ctx.citrix?.device_event_class_id != null && ((ctx.citrix.device_event_class_id == "SSLVPN" && !ctx.citrix?.name?.equalsIgnoreCase("MESSAGE")) || ctx.citrix.device_event_class_id == "AAATM")
   - pipeline:
       name: '{{ IngestPipeline "ci_feature" }}'
       tag: pipeline_ci_feature
