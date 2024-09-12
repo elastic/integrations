@@ -1,9 +1,5 @@
 title: "Sysdig"
 type: logs
-elasticsearch:
-  index_template:
-    mappings:
-      dynamic: false
 streams:
   - input: http_endpoint
     enabled: false
@@ -33,29 +29,17 @@ streams:
         description: This options specific which URL path to accept requests on. Defaults to /.
         required: false
         show_user: true
-      - name: preserve_original_event
-        type: bool
-        title: Preserve Original Event
-        description: This option copies the raw unmodified body of the incoming request to the event.original field as a string before sending the event to Elasticsearch.
-        required: false
-        show_user: true
-        default: false
-      - name: basic_auth
-        type: bool
-        title: Basic Auth
-        description: Enables or disables HTTP basic auth for each incoming request. If enabled then username and password will also need to be configured.
-        required: false
-        show_user: false
-      - name: username
+      - name: secret_header
         type: text
-        title: Username
-        description: If basic_auth is enabled, this is the username used for authentication against the HTTP listener. Requires password to also be set.
+        title: Secret Header
+        description: The header to check for a specific value specified by `secret.value`.
         required: false
         show_user: false
-      - name: password
+        secret: false
+      - name: secret_value
         type: password
-        title: Password
-        description: If basic_auth is enabled, this is the password used for authentication against the HTTP listener. Requires username to also be set.
+        title: Secret Value
+        description: The secret stored in the header name specified by `secret.header`.
         required: false
         show_user: false
         secret: true
@@ -70,6 +54,13 @@ streams:
           # enabled: false
           # certificate: "/etc/pki/client/cert.pem"
           # key: "/etc/pki/client/cert.key"
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: This option copies the raw unmodified body of the incoming request to the event.original field as a string before sending the event to Elasticsearch.
+        required: false
+        show_user: true
+        default: false
       - name: processors
         type: yaml
         title: Processors
@@ -94,6 +85,5 @@ streams:
         multi: false
         required: false
         show_user: false
-        description: >
+        description: >-
           The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
-
