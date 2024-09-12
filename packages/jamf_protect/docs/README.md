@@ -570,6 +570,7 @@ An example event for `telemetry` looks as following:
 | jamf_protect.telemetry.system_performance.qos_utility_ms_per_s | QoS utility time in milliseconds per second for the task | double |
 | jamf_protect.telemetry.system_performance.qos_utility_ns | QoS utility time in nanoseconds for the task | long |
 | jamf_protect.telemetry.system_performance.started_abstime_ns | Absolute start time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.timer_wakeups | Timer wakeups for the task | nested |
 | jamf_protect.telemetry.system_performance.timer_wakeups.wakeups | Number of wakeups | long |
 | jamf_protect.telemetry.to_username | Username to which an action is directed | keyword |
 | jamf_protect.telemetry.tty | Software terminal device file that the process is associated with | keyword |
