@@ -12,5 +12,8 @@ processors:
       ignore_empty_value: true
 on_failure:
   - set:
-      field: 'error.message'
-      value: '{{ _ingest.on_failure_message }}'
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
