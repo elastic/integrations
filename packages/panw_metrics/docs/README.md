@@ -354,6 +354,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.routing.bgp.status_duration | Time in seconds since the current status was set | long | s |  |
 | panw.routing.bgp.status_flap_counts | Indicates the number of times the BGP session has "flapped" or transitioned between up and down states | long |  | counter |
 | panw.routing.bgp.virtual_router | The virtual router with which the BGP peer is associated | keyword |  |  |
+| panw.routing.ipsec_tunnel.TSi_ip | Traffic Selector Initiator IP. This is the local IP (0.0.0.0 means any IP address) | ip |  |  |
+| panw.routing.ipsec_tunnel.TSi_port | Port number associated with TSi (0 means any port) | long |  |  |
+| panw.routing.ipsec_tunnel.TSi_prefix | Network prefix for the TSi IP, 0 means no specific network is defined. | keyword |  |  |
+| panw.routing.ipsec_tunnel.TSi_proto | Protocol associated with the TSi (0 means any protocol) | keyword |  |  |
+| panw.routing.ipsec_tunnel.TSr_ip | Traffic Selector Responder IP. | ip |  |  |
+| panw.routing.ipsec_tunnel.TSr_port | TSr port of the IPsec tunnel | long |  |  |
+| panw.routing.ipsec_tunnel.TSr_prefix | Network prefix for the TSr IP. Similar to TSi_prefix | keyword |  |  |
+| panw.routing.ipsec_tunnel.TSr_proto | TSr protocol of the IPsec tunnel | keyword |  |  |
+| panw.routing.ipsec_tunnel.dh | Diffie-Hellman group of the IPsec tunnel | keyword |  |  |
+| panw.routing.ipsec_tunnel.enc | Encryption algorithm of the IPsec tunnel | keyword |  |  |
+| panw.routing.ipsec_tunnel.gw | Gateway of the IPsec tunnel | keyword |  |  |
+| panw.routing.ipsec_tunnel.hash | Hash algorithm of the IPsec tunnel | keyword |  |  |
+| panw.routing.ipsec_tunnel.id | ID of the IPsec tunnel | keyword |  |  |
+| panw.routing.ipsec_tunnel.kb | Traffic volume limit for SA rekeying | long | byte |  |
+| panw.routing.ipsec_tunnel.life | The lifetime of the IPsec Security Association (SA) in seconds | long | s |  |
+| panw.routing.ipsec_tunnel.mode | This specifies the IPsec mode. e.g., 'tunl' | keyword |  |  |
+| panw.routing.ipsec_tunnel.name | Name of the IPsec tunnel | keyword |  |  |
+| panw.routing.ipsec_tunnel.proto | Protocol of the IPsec tunnel | keyword |  |  |
 
 
 ### system
@@ -702,21 +720,3 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.vpn.globalprotect.session.vpn_type | Type of VPN used in the session | keyword |  |  |
 | panw.vpn.globalprotect.total_current_users | Total current number of users connected to GlobalProtect | long |  | gauge |
 | panw.vpn.globalprotect.total_previous_users | Total previous number of users connected to GlobalProtect | long |  | gauge |
-| panw.vpn.ipsec_tunnel.TSi_ip | Traffic Selector Initiator IP. This is the local IP (0.0.0.0 means any IP address) | ip |  |  |
-| panw.vpn.ipsec_tunnel.TSi_port | Port number associated with TSi (0 means any port) | long |  |  |
-| panw.vpn.ipsec_tunnel.TSi_prefix | Network prefix for the TSi IP, 0 means no specific network is defined. | keyword |  |  |
-| panw.vpn.ipsec_tunnel.TSi_proto | Protocol associated with the TSi (0 means any protocol) | keyword |  |  |
-| panw.vpn.ipsec_tunnel.TSr_ip | Traffic Selector Responder IP. | ip |  |  |
-| panw.vpn.ipsec_tunnel.TSr_port | TSr port of the IPsec tunnel | long |  |  |
-| panw.vpn.ipsec_tunnel.TSr_prefix | Network prefix for the TSr IP. Similar to TSi_prefix | keyword |  |  |
-| panw.vpn.ipsec_tunnel.TSr_proto | TSr protocol of the IPsec tunnel | keyword |  |  |
-| panw.vpn.ipsec_tunnel.dh | Diffie-Hellman group of the IPsec tunnel | keyword |  |  |
-| panw.vpn.ipsec_tunnel.enc | Encryption algorithm of the IPsec tunnel | keyword |  |  |
-| panw.vpn.ipsec_tunnel.gw | Gateway of the IPsec tunnel | keyword |  |  |
-| panw.vpn.ipsec_tunnel.hash | Hash algorithm of the IPsec tunnel | keyword |  |  |
-| panw.vpn.ipsec_tunnel.id | ID of the IPsec tunnel | keyword |  |  |
-| panw.vpn.ipsec_tunnel.kb | Traffic volume limit for SA rekeying | long | byte |  |
-| panw.vpn.ipsec_tunnel.life | The lifetime of the IPsec Security Association (SA) in seconds | long | s |  |
-| panw.vpn.ipsec_tunnel.mode | This specifies the IPsec mode. e.g., 'tunl' | keyword |  |  |
-| panw.vpn.ipsec_tunnel.name | Name of the IPsec tunnel | keyword |  |  |
-| panw.vpn.ipsec_tunnel.proto | Protocol of the IPsec tunnel | keyword |  |  |
