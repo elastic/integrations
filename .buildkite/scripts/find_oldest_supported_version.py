@@ -69,14 +69,9 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
 
         available_major = int(available_parts[0])
         available_minor = int(available_parts[1])
-        if int(major) == available_major and int(minor)>available_minor:
+        if int(major) == available_major and int(minor) > available_minor:
             older = False
             break
-        # available_major = available_parts[0]
-        # available_minor = available_parts[1]
-        # if major == available_major and minor>available_minor:
-        #     older = False
-        #     break
     if older:
         return version
 
