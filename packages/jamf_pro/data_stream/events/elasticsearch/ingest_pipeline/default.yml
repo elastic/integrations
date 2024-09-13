@@ -9,19 +9,19 @@ processors:
 - rename:
     field: json
     target_field: jamf_pro.events
-    if: ctx.json != null
+    # all valid events will now have jamf_pro.events.{event,webhook}
 
 - convert:
     field: jamf_pro.events.event.management_id
     type: string
-    if: |
+    if: >
       ctx.jamf_pro.events.event?.management_id != null &&
       !(ctx.jamf_pro.events.event.management_id instanceof String)
 
 - rename:
     field: jamf_pro.events.event.computer
     target_field: jamf_pro.events.event.is_computer
-    if: "[true, false].contains(ctx.jamf_pro.events.event.computer)"
+    if: ctx.jamf_pro.events.event.computer instanceof boolean
 
 - script:
     description: Convert Additional Info keys to snake case.
@@ -70,7 +70,7 @@ processors:
 - date:
     field: jamf_pro.events.event.last_update
     target_field: jamf_pro.events.event.last_update
-    if: "ctx.jamf_pro.events.event.last_update != null"
+    if: ctx.jamf_pro.events.event.last_update != null
     formats:
       - UNIX_MS
 
@@ -86,7 +86,7 @@ processors:
     ignore_empty_value: true
 
 - set:
-    if: |
+    if: >
       ctx.jamf_pro.events.event.computer?.reported_ip_address != null &&
       ctx.jamf_pro.events.event.computer.reported_ip_address != ''
     field: host.ip
@@ -143,7 +143,7 @@ processors:
     ignore_empty_value: true
 
 - geoip:
-    if: ctx.host?.ip != null && ctx.host?.ip != ''
+    if: ctx.host?.ip != null && ctx.host.ip != ''
     field: host.ip
     target_field: host.geo
     ignore_missing: true
@@ -151,12 +151,12 @@ processors:
 - append:
     field: related.user
     value: "{{{user.name}}}"
-    if: ctx.user?.name != null && ctx.user?.name != ""
+    if: ctx.user?.name != null && ctx.user.name != ""
 
 - append:
     field: related.user
     value: "{{{user.email}}}"
-    if: ctx.user?.email != null && ctx.user?.email != ""
+    if: ctx.user?.email != null && ctx.user.email != ""
 
 - set:
     field: event.kind
