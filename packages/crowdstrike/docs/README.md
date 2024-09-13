@@ -1057,6 +1057,8 @@ and/or `session_token`.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | crowdstrike.AccountType |  | keyword |
+| crowdstrike.ActiveDirectoryAuthenticationMethod |  | keyword |
+| crowdstrike.ActivityId |  | keyword |
 | crowdstrike.AgentIdString |  | keyword |
 | crowdstrike.AgentLoadFlags |  | keyword |
 | crowdstrike.AgentLocalTime |  | date |
@@ -1068,6 +1070,7 @@ and/or `session_token`.
 | crowdstrike.AsepWrittenCount |  | long |
 | crowdstrike.AssociatedFile |  | keyword |
 | crowdstrike.AttemptNumber |  | long |
+| crowdstrike.AuthenticationActivityId |  | keyword |
 | crowdstrike.AuthenticationId |  | keyword |
 | crowdstrike.AuthenticationPackage |  | keyword |
 | crowdstrike.AuthenticationUuid |  | keyword |
@@ -1340,6 +1343,16 @@ and/or `session_token`.
 | crowdstrike.SiteName |  | keyword |
 | crowdstrike.Size |  | long |
 | crowdstrike.SnapshotFileOpenCount |  | long |
+| crowdstrike.SourceAccountDomain |  | keyword |
+| crowdstrike.SourceAccountObjectGuid |  | keyword |
+| crowdstrike.SourceAccountObjectSid |  | keyword |
+| crowdstrike.SourceAccountSamAccountName |  | keyword |
+| crowdstrike.SourceEndpointAccountObjectGuid |  | keyword |
+| crowdstrike.SourceEndpointAccountObjectSid |  | keyword |
+| crowdstrike.SourceEndpointAddressIP4 |  | keyword |
+| crowdstrike.SourceEndpointHostName |  | keyword |
+| crowdstrike.SourceEndpointNetworkTag |  | keyword |
+| crowdstrike.SourceEndpointNetworkType |  | keyword |
 | crowdstrike.SourceFileName |  | keyword |
 | crowdstrike.SourceProcessId |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
@@ -1360,6 +1373,8 @@ and/or `session_token`.
 | crowdstrike.SystemTableIndex |  | long |
 | crowdstrike.Tactic |  | keyword |
 | crowdstrike.Tags |  | keyword |
+| crowdstrike.TargetDomainControllerObjectGuid |  | keyword |
+| crowdstrike.TargetDomainControllerObjectSid |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
 | crowdstrike.Technique |  | keyword |
@@ -1427,15 +1442,24 @@ and/or `session_token`.
 | crowdstrike.__mv_aip |  | keyword |
 | crowdstrike.__mv_discoverer_aid |  | keyword |
 | crowdstrike.aipCount |  | integer |
+| crowdstrike.assessments.\* |  | flattened |
 | crowdstrike.cid |  | keyword |
 | crowdstrike.discovererCount |  | integer |
 | crowdstrike.discoverer_aid |  | keyword |
 | crowdstrike.eid |  | integer |
+| crowdstrike.hostname |  | keyword |
 | crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
 | crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
 | crowdstrike.localipCount |  | integer |
 | crowdstrike.monthsincereset |  | keyword |
 | crowdstrike.name |  | keyword |
+| crowdstrike.os_version |  | keyword |
+| crowdstrike.product_type_desc |  | keyword |
+| crowdstrike.scores.modified_time |  | date |
+| crowdstrike.scores.os |  | long |
+| crowdstrike.scores.overall |  | long |
+| crowdstrike.scores.sensor |  | long |
+| crowdstrike.scores.version |  | keyword |
 | crowdstrike.subnet |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
