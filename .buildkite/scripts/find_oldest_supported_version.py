@@ -72,6 +72,11 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
         if int(major) == available_major and int(minor)>available_minor:
             older = False
             break
+        # available_major = available_parts[0]
+        # available_minor = available_parts[1]
+        # if major == available_major and minor>available_minor:
+        #     older = False
+        #     break
     if older:
         return version
 
@@ -231,6 +236,9 @@ class TestFindOldestSupportVersion(unittest.TestCase):
     def test_no_version_available_no_next_minor_in_current_major(self):
         # returns the version as in the manifest
         self.assertEqual(find_oldest_supported_version("8.11.3"), "8.11.3")
+
+    def test_available_next_minor_in_current_major(self):
+        self.assertEqual(find_oldest_supported_version("7.19.0"), "7.x-SNAPSHOT")
 
     def test_or(self):
         self.assertEqual(find_oldest_supported_version("8.6.0||8.7.0"), "8.6.0")
