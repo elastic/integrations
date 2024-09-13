@@ -96,7 +96,7 @@ program: |
         }
       }.encode_json()
     ).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body, has(body.?data.configurationFindings.nodes) ?
+        bytes(resp.Body).decode_json().as(body, body.?data.configurationFindings.nodes.orValue(null) != null ?
           {
             "events": body.data.configurationFindings.nodes.map(e, {
               "message": e.encode_json(),
