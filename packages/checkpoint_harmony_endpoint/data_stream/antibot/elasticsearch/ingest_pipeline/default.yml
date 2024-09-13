@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Harmony Endpoint Forensics logs
+description: Pipeline for processing Harmony Endpoint Anti-Bot logs
 processors:
   - set:
       field: ecs.version
@@ -37,7 +37,7 @@ processors:
       ignore_failure: true
   - set:
       field: event.dataset
-      value: harmony_endpoint.forensics
+      value: harmony_endpoint.antibot
   - set:
       field: event.module
       value: harmony_endpoint
@@ -57,10 +57,27 @@ processors:
       target_field: host.ip
       override: true
       ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: host.ip
   - rename:
       field: json.src_machine_name
       target_field: host.hostname
       override: true
+      ignore_missing: true
+  - rename:
+      field: json.dst
+      target_field: destination.ip
+      ignore_missing: true
+  - join:
+      field: json.dst_country
+      target_field: destination.geo.country_name
+      separator: ','
+      if: ctx.json?.dst_country != null
+      ignore_failure: true
+  - rename:
+      field: json.process_username
+      target_field: process.user.name
       ignore_missing: true
   - set:
       field: host.name
@@ -81,19 +98,23 @@ processors:
       field: json.domain
       target_field: user.domain
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.src_user_name
       target_field: user.name
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.user_sid
       target_field: user.id
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.file_type
       target_field: file.type
       if: ctx.json?.file_type != null
       ignore_missing: true
+      ignore_failure: true
   - join:
       field: json.file_name
       target_field: file.name
@@ -103,6 +124,7 @@ processors:
   - remove:
       field: file.name
       ignore_missing: true
+      ignore_failure: true
       if: ctx.file.name == " "
   - rename:
       field: json.file_size
@@ -123,7 +145,7 @@ processors:
       ignore_failure: true
   - uri_parts:
       field: url.original
-      tag: uri_parts_harmony_endpoint_forensics
+      tag: uri_parts_harmony_endpoint_antibot
       ignore_missing: true
       on_failure:
         - append:
@@ -134,85 +156,76 @@ processors:
       target_field: file.hash.md5
       if: ctx.json?.file_md5 != null
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.file_sha1
       target_field: file.hash.sha1
       if: ctx.json?.file_sha1 != null
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.protection_name
       target_field: rule.name
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.protection_type
-      target_field: harmony_endpoint.forensics.protection_type
-  - rename:
-      field: json.attack_status
-      target_field: harmony_endpoint.forensics.attack_status
-      ignore_missing: true
-  - rename:
-      field: json.detected_by
-      target_field: harmony_endpoint.forensics.detected_by
+      target_field: harmony_endpoint.antibot.protection_type
       ignore_missing: true
   - rename:
       field: json.confidence_level
-      target_field: harmony_endpoint.forensics.confidence_level
+      target_field: harmony_endpoint.antibot.confidence_level
       ignore_missing: true
   - rename:
       field: json.description
-      target_field: harmony_endpoint.forensics.description
+      target_field: harmony_endpoint.antibot.description
       ignore_missing: true
   - rename:
       field: json.policy_date
-      target_field: harmony_endpoint.forensics.policy.date
+      target_field: harmony_endpoint.antibot.policy.date
       ignore_missing: true
   - rename:
       field: json.policy_name
-      target_field: harmony_endpoint.forensics.policy.name
+      target_field: harmony_endpoint.antibot.policy.name
       ignore_missing: true
   - rename:
       field: json.policy_number
-      target_field: harmony_endpoint.forensics.policy.number
+      target_field: harmony_endpoint.antibot.policy.number
       ignore_missing: true
   - rename:
       field: json.severity
-      target_field: harmony_endpoint.forensics.severity
-      ignore_missing: true
-  - rename:
-      field: json.service_domain
-      target_field: harmony_endpoint.forensics.service_domain
+      target_field: harmony_endpoint.antibot.severity
       ignore_missing: true
   - rename:
       field: json.packet_capture_unique_id
-      target_field: harmony_endpoint.forensics.packet_capture_unique_id
+      target_field: harmony_endpoint.antibot.packet_capture_unique_id
       ignore_missing: true
-  - rename:
-      field: json.suspicious_events
-      target_field: harmony_endpoint.forensics.suspicious_events
-      ignore_missing: true
-      if: ctx.json?.suspicious_events != null
   - rename:
       field: json.tenant_id
-      target_field: harmony_endpoint.forensics.tenant_id
+      target_field: harmony_endpoint.antibot.tenant_id
+      ignore_missing: true
+  - rename:
+      field: json.proxy_src_ip
+      target_field: harmony_endpoint.antibot.proxy_src_ip
       ignore_missing: true
   - rename:
       field: json.client_name
-      target_field: harmony_endpoint.forensics.client.name
+      target_field: harmony_endpoint.antibot.client.name
       ignore_missing: true
   - join:
       field: json.malware_action
-      target_field: harmony_endpoint.forensics.malware.action
+      target_field: harmony_endpoint.antibot.malware.action
       separator: ','
       ignore_failure: true
       if: ctx.json?.malware_action != null
   - remove:
-      field: harmony_endpoint.forensics.malware.action
+      field: harmony_endpoint.antibot.malware.action
       ignore_missing: true
       ignore_failure: true
-      if: ctx.harmony_endpoint?.forensics?.malware?.action == " "
+      if: ctx.harmony_endpoint?.antibot?.malware?.action == " "
   - join:
       field: json.client_version
-      target_field: harmony_endpoint.forensics.client.version
+      target_field: harmony_endpoint.antibot.client.version
       separator: ','
       ignore_failure: true
       if: ctx.json?.client_version != null
