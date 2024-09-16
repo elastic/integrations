@@ -1,0 +1,45 @@
+PUT kbn:/api/alerting/rule/6286a32c-4c6b-48a7-aaed-81ca4e9b97dd
+{
+  "name": "Pod Status",
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Pod"
+  ],
+  "schedule": {
+    "interval": "5m"
+  },
+  "params": {
+    "criteria": [
+      {
+        "comparator": ">",
+        "metrics": [
+          {
+            "name": "A",
+            "filter": "metrics.k8s.pod.phase : 1 or metrics.k8s.pod.phase : 4 or metrics.k8s.pod.phase : 5",
+            "aggType": "count"
+          }
+        ],
+        "threshold": [
+          20
+        ],
+        "timeSize": 5,
+        "timeUnit": "m",
+        "label": "Pod Not Running"
+      }
+    ],
+    "alertOnNoData": false,
+    "alertOnGroupDisappear": false,
+    "searchConfiguration": {
+      "query": {
+        "query": "metrics.k8s.pod.phase : *",
+        "language": "kuery"
+      },
+      "index": "metrics-*"
+    },
+    "groupBy": [
+      "resource.attributes.k8s.pod.name"
+    ]
+  },
+  "actions": []
+}

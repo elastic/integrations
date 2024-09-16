@@ -1,0 +1,48 @@
+POST kbn:/api/alerting/rule
+{
+  "params": {
+    "criteria": [
+      {
+        "comparator": "between",
+        "metrics": [
+          {
+            "name": "A",
+            "field": "metrics.k8s.node.cpu.utilization",
+            "aggType": "avg"
+          }
+        ],
+        "threshold": [
+          0.8,
+          1
+        ],
+        "timeSize": 1,
+        "timeUnit": "m"
+      }
+    ],
+    "alertOnNoData": false,
+    "alertOnGroupDisappear": false,
+    "searchConfiguration": {
+      "query": {
+        "query": "metrics.k8s.node.cpu.utilization : * ",
+        "language": "kuery"
+      },
+      "index": "metrics-*"
+    },
+    "groupBy": [
+      "resource.attributes.k8s.node.name"
+    ]
+  },
+  "consumer": "logs",
+  "schedule": {
+    "interval": "5m"
+  },
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Node",
+    "CPU"
+  ],
+  "name": "CPU Utilisation",
+  "rule_type_id": "observability.rules.custom_threshold",
+  "actions": []
+}

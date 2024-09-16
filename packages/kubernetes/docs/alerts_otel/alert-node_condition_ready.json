@@ -1,0 +1,43 @@
+POST kbn:/api/alerting/rule
+{
+  "params": {
+    "criteria": [
+      {
+        "comparator": ">",
+        "metrics": [
+          {
+            "name": "A",
+            "filter": "metrics.k8s.node.condition_ready ",
+            "aggType": "count"
+          }
+        ],
+        "threshold": [
+          1
+        ],
+        "timeSize": 1,
+        "timeUnit": "m",
+        "label": "Node Condition Ready "
+      }
+    ],
+    "alertOnNoData": false,
+    "alertOnGroupDisappear": true,
+    "searchConfiguration": {
+      "query": {
+        "query": "resource.attributes.k8s.node.name : * and metrics.k8s.node.condition_ready < 1",
+        "language": "kuery"
+      },
+      "index": "metrics-*"
+    },
+    "groupBy": [
+      "resource.attributes.k8s.node.name"
+    ]
+  },
+  "consumer": "stackAlerts",
+  "schedule": {
+    "interval": "1m"
+  },
+  "tags": [],
+  "name": "Not Ready Nodes",
+  "rule_type_id": "observability.rules.custom_threshold",
+  "actions": []
+}

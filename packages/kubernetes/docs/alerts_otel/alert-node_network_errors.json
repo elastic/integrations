@@ -1,0 +1,45 @@
+PUT kbn:/api/alerting/rule/
+{
+  "name": "Network Traffic Errors",
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Network"
+  ],
+  "schedule": {
+    "interval": "5m"
+  },
+  "params": {
+    "criteria": [
+      {
+        "comparator": ">",
+        "metrics": [
+          {
+            "name": "A",
+            "filter": "metrics.k8s.node.network.errors > 0",
+            "aggType": "count"
+          }
+        ],
+        "threshold": [
+          20
+        ],
+        "timeSize": 5,
+        "timeUnit": "m",
+        "label": "Network Errors"
+      }
+    ],
+    "alertOnNoData": false,
+    "alertOnGroupDisappear": false,
+    "searchConfiguration": {
+      "query": {
+        "query": "metrics.k8s.node.network.errors : * ",
+        "language": "kuery"
+      },
+      "index": "metrics-*"
+    },
+    "groupBy": [
+      "resource.attributes.k8s.node.name"
+    ]
+  },
+  "actions": []
+}
