@@ -5,9 +5,6 @@ processors:
       field: ecs.version
       value: "8.11.0"
   - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-  - set:
       field: event.kind
       value: alert
   - rename:
@@ -21,7 +18,7 @@ processors:
       ignore_failure: true
   - date:
       field: json.time
-      target_field: event.created  # Issue: When set to "@timestamp", event creation fails.
+      target_field: "@timestamp"
       formats:
         - strict_date_optional_time_nanos
       ignore_failure: true
@@ -37,26 +34,29 @@ processors:
       ignore_failure: true
   - set:
       field: event.dataset
-      value: harmony_endpoint.forensics
+      value: checkpoint_harmony_endpoint.forensics
   - set:
       field: event.module
-      value: harmony_endpoint
-  - set:
+      value: checkpoint_harmony_endpoint
+  - append:
       field: event.category
       value: malware
-  - set:
+      allow_duplicates: false
+  - append:
       field: event.type
       value: info
+      allow_duplicates: false
   - rename:
       field: json.host_type
       target_field: host.type
       ignore_missing: true
       ignore_failure: true
-  - rename:
-      field: json.src
-      target_field: host.ip
-      override: true
-      ignore_missing: true
+  - append:
+      field: host.ip
+      value: '{{{json.src}}}'
+      if: ctx.json?.src != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.src_machine_name
       target_field: host.hostname
@@ -65,6 +65,7 @@ processors:
   - set:
       field: host.name
       copy_from: host.hostname
+      ignore_failure: true
   - join:
       field: json.os_name
       target_field: host.os.name
@@ -103,7 +104,7 @@ processors:
   - remove:
       field: file.name
       ignore_missing: true
-      if: ctx.file.name == " "
+      if: ctx.file?.name == " "
   - rename:
       field: json.file_size
       target_field: file.size
@@ -113,22 +114,14 @@ processors:
       field: json.resource
       target_field: file.path
       separator: ','
-      if: ctx.json?.resource != null && !["http emulation", "url reputation"].contains(ctx.json?.protection_type?.toLowerCase())
+      if: ctx.json?.resource != null && !["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
       ignore_failure: true
   - join:
       field: json.resource
       target_field: url.original
       separator: ','
-      if: ctx.json?.resource != null && ["http emulation", "url reputation"].contains(ctx.json?.protection_type?.toLowerCase())
+      if: ctx.json?.resource != null && ["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
       ignore_failure: true
-  - uri_parts:
-      field: url.original
-      tag: uri_parts_harmony_endpoint_forensics
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.file_md5
       target_field: file.hash.md5
@@ -145,74 +138,74 @@ processors:
       ignore_missing: true
   - rename:
       field: json.protection_type
-      target_field: harmony_endpoint.forensics.protection_type
+      target_field: checkpoint_harmony_endpoint.forensics.protection_type
   - rename:
       field: json.attack_status
-      target_field: harmony_endpoint.forensics.attack_status
+      target_field: checkpoint_harmony_endpoint.forensics.attack_status
       ignore_missing: true
   - rename:
       field: json.detected_by
-      target_field: harmony_endpoint.forensics.detected_by
+      target_field: checkpoint_harmony_endpoint.forensics.detected_by
       ignore_missing: true
   - rename:
       field: json.confidence_level
-      target_field: harmony_endpoint.forensics.confidence_level
+      target_field: checkpoint_harmony_endpoint.forensics.confidence_level
       ignore_missing: true
   - rename:
       field: json.description
-      target_field: harmony_endpoint.forensics.description
+      target_field: checkpoint_harmony_endpoint.forensics.description
       ignore_missing: true
   - rename:
       field: json.policy_date
-      target_field: harmony_endpoint.forensics.policy.date
+      target_field: checkpoint_harmony_endpoint.forensics.policy.date
       ignore_missing: true
   - rename:
       field: json.policy_name
-      target_field: harmony_endpoint.forensics.policy.name
+      target_field: checkpoint_harmony_endpoint.forensics.policy.name
       ignore_missing: true
   - rename:
       field: json.policy_number
-      target_field: harmony_endpoint.forensics.policy.number
+      target_field: checkpoint_harmony_endpoint.forensics.policy.number
       ignore_missing: true
   - rename:
       field: json.severity
-      target_field: harmony_endpoint.forensics.severity
+      target_field: checkpoint_harmony_endpoint.forensics.severity
       ignore_missing: true
   - rename:
       field: json.service_domain
-      target_field: harmony_endpoint.forensics.service_domain
+      target_field: checkpoint_harmony_endpoint.forensics.service_domain
       ignore_missing: true
   - rename:
       field: json.packet_capture_unique_id
-      target_field: harmony_endpoint.forensics.packet_capture_unique_id
+      target_field: checkpoint_harmony_endpoint.forensics.packet_capture_unique_id
       ignore_missing: true
   - rename:
       field: json.suspicious_events
-      target_field: harmony_endpoint.forensics.suspicious_events
+      target_field: checkpoint_harmony_endpoint.forensics.suspicious_events
       ignore_missing: true
       if: ctx.json?.suspicious_events != null
   - rename:
       field: json.tenant_id
-      target_field: harmony_endpoint.forensics.tenant_id
+      target_field: checkpoint_harmony_endpoint.forensics.tenant_id
       ignore_missing: true
   - rename:
       field: json.client_name
-      target_field: harmony_endpoint.forensics.client.name
+      target_field: checkpoint_harmony_endpoint.forensics.client.name
       ignore_missing: true
   - join:
       field: json.malware_action
-      target_field: harmony_endpoint.forensics.malware.action
+      target_field: checkpoint_harmony_endpoint.forensics.malware.action
       separator: ','
       ignore_failure: true
       if: ctx.json?.malware_action != null
   - remove:
-      field: harmony_endpoint.forensics.malware.action
+      field: checkpoint_harmony_endpoint.forensics.malware.action
       ignore_missing: true
       ignore_failure: true
-      if: ctx.harmony_endpoint?.forensics?.malware?.action == " "
+      if: ctx.checkpoint_harmony_endpoint?.forensics?.malware?.action == " "
   - join:
       field: json.client_version
-      target_field: harmony_endpoint.forensics.client.version
+      target_field: checkpoint_harmony_endpoint.forensics.client.version
       separator: ','
       ignore_failure: true
       if: ctx.json?.client_version != null
@@ -229,3 +222,6 @@ on_failure:
   - set:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: error.additional_info
+      value: message

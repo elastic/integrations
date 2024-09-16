@@ -1,10 +1,229 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Harmony Endpoint URL Filtering logs
 processors:
-- set:
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - set:
+      field: event.kind
+      value: alert
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - date:
+      field: json.time
+      target_field: "@timestamp"
+      formats:
+        - strict_date_optional_time_nanos
+      ignore_failure: true
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: checkpoint_harmony_endpoint.urlfiltering
+  - set:
+      field: event.module
+      value: checkpoint_harmony_endpoint
+  - append:
+      field: event.category
+      value: malware
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - rename:
+      field: json.host_type
+      target_field: host.type
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: host.ip
+      value: '{{{json.src}}}'
+      if: ctx.json?.src != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.src_machine_name
+      target_field: host.hostname
+      override: true
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: host.hostname
+      ignore_failure: true
+  - join:
+      field: json.os_name
+      target_field: host.os.name
+      separator: ','
+      if: ctx.json?.os_name != null
+      ignore_failure: true
+  - join:
+      field: json.os_version
+      target_field: host.os.version
+      separator: ','
+      if: ctx.json?.os_version != null
+      ignore_failure: true
+  - rename:
+      field: json.domain
+      target_field: user.domain
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.src_user_name
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.user_sid
+      target_field: user.id
+      ignore_missing: true
+      ignore_failure: true
+  - join:
+      field: json.resource
+      target_field: url.original
+      separator: ','
+      if: ctx.json?.resource != null && ["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
+      ignore_failure: true
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_harmony_endpoint_urlfiltering
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.protection_name
+      target_field: rule.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.protection_type
+      target_field: checkpoint_harmony_endpoint.urlfiltering.protection_type
+      ignore_missing: true
+  - rename:
+      field: json.confidence_level
+      target_field: checkpoint_harmony_endpoint.urlfiltering.confidence_level
+      ignore_missing: true
+  - rename:
+      field: json.description
+      target_field: checkpoint_harmony_endpoint.urlfiltering.description
+      ignore_missing: true
+  - rename:
+      field: json.policy_date
+      target_field: checkpoint_harmony_endpoint.urlfiltering.policy.date
+      ignore_missing: true
+  - rename:
+      field: json.policy_name
+      target_field: checkpoint_harmony_endpoint.urlfiltering.policy.name
+      ignore_missing: true
+  - rename:
+      field: json.policy_number
+      target_field: checkpoint_harmony_endpoint.urlfiltering.policy.number
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      target_field: checkpoint_harmony_endpoint.urlfiltering.severity
+      ignore_missing: true
+  - rename:
+      field: json.tenant_id
+      target_field: checkpoint_harmony_endpoint.urlfiltering.tenant_id
+      ignore_missing: true
+  - rename:
+      field: json.client_name
+      target_field: checkpoint_harmony_endpoint.urlfiltering.client.name
+      ignore_missing: true
+  - join:
+      field: json.client_version
+      target_field: checkpoint_harmony_endpoint.urlfiltering.client.version
+      separator: ','
+      ignore_failure: true
+      if: ctx.json?.client_version != null
+  - rename:
+      field: json.advanced_info
+      target_field: checkpoint_harmony_endpoint.urlfiltering.advanced_info
+      ignore_missing: true
+  - rename:
+      field: json.analyzed_on
+      target_field: checkpoint_harmony_endpoint.urlfiltering.analyzed_on
+      ignore_missing: true
+  - rename:
+      field: json.usercheck_incident_uid
+      target_field: checkpoint_harmony_endpoint.urlfiltering.usercheck_incident_uid
+      ignore_missing: true
+  - join:
+      field: json.web_client_type
+      target_field: checkpoint_harmony_endpoint.urlfiltering.web_client_type
+      separator: ','
+      if: ctx.json?.web_client_type != null
+      ignore_failure: true
+  - remove:
+      field: checkpoint_harmony_endpoint.urlfiltering.web_client_type
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.web_client_type == " "
+  - rename:
+      field: json.event_type
+      target_field: checkpoint_harmony_endpoint.urlfiltering.event_type
+      ignore_missing: true
+  - rename:
+      field: json.app_id
+      target_field: checkpoint_harmony_endpoint.urlfiltering.app.id
+      ignore_missing: true
+  - join:
+      field: json.app_properties
+      target_field: checkpoint_harmony_endpoint.urlfiltering.app.properties
+      separator: ','
+      if: ctx.json.app_properties != null
+      ignore_failure: true
+  - remove:
+      field: checkpoint_harmony_endpoint.urlfiltering.app.properties
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.app.properties == " "
+
+  - rename:
+      field: json.appi_name
+      target_field: checkpoint_harmony_endpoint.urlfiltering.appi_name
+      ignore_missing: true
+  - rename:
+      field: json.matched_category
+      target_field: checkpoint_harmony_endpoint.urlfiltering.matched_category
+      ignore_missing: true
+  - rename:
+      field: json.process_exe_path
+      target_field: checkpoint_harmony_endpoint.urlfiltering.process_exe_path
+      ignore_missing: true
+  - rename:
+      field: json.dst
+      target_field: destination.ip
+      ignore_missing: true
+      if: ctx.json.dst != null
+  - remove:
+      field: json
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      ignore_failure: true
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

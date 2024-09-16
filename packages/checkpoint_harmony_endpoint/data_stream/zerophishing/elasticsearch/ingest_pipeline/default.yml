@@ -1,10 +1,203 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Harmony Endpoint Zero Phishing logs
 processors:
-- set:
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - set:
+      field: event.kind
+      value: alert
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - date:
+      field: json.time
+      target_field: "@timestamp"
+      formats:
+        - strict_date_optional_time_nanos
+      ignore_failure: true
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: checkpoint_harmony_endpoint.zerophishing
+  - set:
+      field: event.module
+      value: checkpoint_harmony_endpoint
+  - append:
+      field: event.category
+      value: malware
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - rename:
+      field: json.host_type
+      target_field: host.type
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: host.ip
+      value: '{{{json.src}}}'
+      if: ctx.json?.src != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.src_machine_name
+      target_field: host.hostname
+      override: true
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: host.hostname
+      ignore_failure: true
+  - join:
+      field: json.os_name
+      target_field: host.os.name
+      separator: ','
+      if: ctx.json?.os_name != null
+      ignore_failure: true
+  - join:
+      field: json.os_version
+      target_field: host.os.version
+      separator: ','
+      if: ctx.json?.os_version != null
+      ignore_failure: true
+  - rename:
+      field: json.domain
+      target_field: user.domain
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.src_user_name
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.user_sid
+      target_field: user.id
+      ignore_missing: true
+      ignore_failure: true
+  - join:
+      field: json.resource
+      target_field: url.original
+      separator: ','
+      if: ctx.json?.resource != null && ["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
+      ignore_failure: true
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_harmony_endpoint_zerophishing
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.protection_name
+      target_field: rule.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.protection_type
+      target_field: checkpoint_harmony_endpoint.zerophishing.protection_type
+      ignore_missing: true
+  - rename:
+      field: json.confidence_level
+      target_field: checkpoint_harmony_endpoint.zerophishing.confidence_level
+      ignore_missing: true
+  - rename:
+      field: json.description
+      target_field: checkpoint_harmony_endpoint.zerophishing.description
+      ignore_missing: true
+  - rename:
+      field: json.policy_date
+      target_field: checkpoint_harmony_endpoint.zerophishing.policy.date
+      ignore_missing: true
+  - rename:
+      field: json.policy_name
+      target_field: checkpoint_harmony_endpoint.zerophishing.policy.name
+      ignore_missing: true
+  - rename:
+      field: json.policy_number
+      target_field: checkpoint_harmony_endpoint.zerophishing.policy.number
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      target_field: checkpoint_harmony_endpoint.zerophishing.severity
+      ignore_missing: true
+  - rename:
+      field: json.tenant_id
+      target_field: checkpoint_harmony_endpoint.zerophishing.tenant_id
+      ignore_missing: true
+  - rename:
+      field: json.client_name
+      target_field: checkpoint_harmony_endpoint.zerophishing.client.name
+      ignore_missing: true
+  - join:
+      field: json.client_version
+      target_field: checkpoint_harmony_endpoint.zerophishing.client.version
+      separator: ','
+      ignore_failure: true
+      if: ctx.json?.client_version != null
+  - rename:
+      field: json.advanced_info
+      target_field: checkpoint_harmony_endpoint.zerophishing.advanced_info
+      ignore_missing: true
+  - join:
+      field: json.web_client_type
+      target_field: checkpoint_harmony_endpoint.zerophishing.web_client_type
+      separator: ','
+      if: ctx.json?.web_client_type != null
+      ignore_failure: true
+  - remove:
+      field: checkpoint_harmony_endpoint.zerophishing.web_client_type
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.web_client_type == " "
+  - rename:
+      field: json.event_type
+      target_field: checkpoint_harmony_endpoint.zerophishing.event_type
+      ignore_missing: true
+  - rename:
+      field: json.extension_version
+      target_field: checkpoint_harmony_endpoint.zerophishing.extension_version
+      ignore_missing: true
+  - join:
+      field: json.malware_action
+      target_field: checkpoint_harmony_endpoint.zerophishing.malware.action
+      separator: ','
+      ignore_failure: true
+      if: ctx.json?.malware_action != null
+  - remove:
+      field: checkpoint_harmony_endpoint.zerophishing.malware.action
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.malware?.action == " "
+  - remove:
+      field: json
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      ignore_failure: true
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
