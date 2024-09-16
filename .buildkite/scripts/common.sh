@@ -471,8 +471,8 @@ is_supported_stack() {
         return 1
     fi
 
-    // TODO: Allowed temporarily to test packages with stack version 9.0 if they have as constraint ^8.0 defined too.
-    // This workaround should be removed once packages have been updated their constraints for 9.0 stack.
+    # TODO: Allowed temporarily to test packages with stack version 9.0 if they have as constraint ^8.0 defined too.
+    # This workaround should be removed once packages have been updated their constraints for 9.0 stack.
     if [[ ( ! ( "${kibana_version}" =~ \^9\. || "${kibana_version}" =~ \^8\. ) ) && "${STACK_VERSION}" =~ ^9\. ]]; then
         return 1
     fi
