@@ -7,20 +7,18 @@ POST kbn:/api/alerting/rule
         "metrics": [
           {
             "name": "A",
-            "filter": "metrics.k8s.node.condition_ready ",
             "aggType": "count"
           }
         ],
         "threshold": [
           1
         ],
-        "timeSize": 1,
-        "timeUnit": "m",
-        "label": "Node Condition Ready "
+        "timeSize": 5,
+        "timeUnit": "m"
       }
     ],
     "alertOnNoData": false,
-    "alertOnGroupDisappear": true,
+    "alertOnGroupDisappear": false,
     "searchConfiguration": {
       "query": {
         "query": "resource.attributes.k8s.node.name : * and metrics.k8s.node.condition_ready < 1",
@@ -32,12 +30,16 @@ POST kbn:/api/alerting/rule
       "resource.attributes.k8s.node.name"
     ]
   },
-  "consumer": "stackAlerts",
+  "consumer": "infrastructure",
   "schedule": {
-    "interval": "1m"
+    "interval": "5m"
   },
-  "tags": [],
-  "name": "Not Ready Nodes",
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Node"
+  ],
+  "name": "Node Condition Ready",
   "rule_type_id": "observability.rules.custom_threshold",
   "actions": []
 }
