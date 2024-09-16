@@ -92,6 +92,24 @@ From stack v8.13.0, Fleet will [include](https://github.com/elastic/kibana/issue
 - ecs@mappings from Elasticsearch are the single source of truth for ECS mappings.
 - ECS mappings are available and out-of-the-box; there is no need to import or reference external mapping.
 
+## Caveats
+
+Here are a few aspects to consider when migrating an existing integration package to `ecs@mappings`.
+
+### No type coercion
+
+The `ecs@mappings` component mapping expects the field value to be aligned with the target mapping since `ecs@mappings` does not perform type coercion.
+
+For example, ECS defines the [faas.coldstart](https://www.elastic.co/guide/en/ecs/current/ecs-faas.html#field-faas-coldstart) field as a boolean. Integrations must emit the `faas.coldstart` values as `boolean`.
+
+If the integration emits the `faas.coldstart` as a string (for example, `{ "faas.coldstart": "true" }`) then Elasticsearch will not map the value correctly.
+
+### Fieldless Searches
+
+If your integration leverages the fieldless search (when no field is specified for a query), consider that on stack 8.13.x Field will not include the ECS field in the `index.query.default_field`.
+
+On 8.14.x `index.query.default_field` is set to `*`, so Elasticsearch will consider all fields—including the ECS field—in fieldless queries.
+
 ## How to start using ecs@mappings
 
 ### Requirements
