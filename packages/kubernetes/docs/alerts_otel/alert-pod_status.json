@@ -1,14 +1,5 @@
-PUT kbn:/api/alerting/rule/6286a32c-4c6b-48a7-aaed-81ca4e9b97dd
+POST kbn:/api/alerting/rule
 {
-  "name": "Pod Status",
-  "tags": [
-    "Metrics",
-    "OTEL",
-    "Pod"
-  ],
-  "schedule": {
-    "interval": "5m"
-  },
   "params": {
     "criteria": [
       {
@@ -32,7 +23,7 @@ PUT kbn:/api/alerting/rule/6286a32c-4c6b-48a7-aaed-81ca4e9b97dd
     "alertOnGroupDisappear": false,
     "searchConfiguration": {
       "query": {
-        "query": "metrics.k8s.pod.phase : *",
+        "query": "",
         "language": "kuery"
       },
       "index": "metrics-*"
@@ -41,5 +32,16 @@ PUT kbn:/api/alerting/rule/6286a32c-4c6b-48a7-aaed-81ca4e9b97dd
       "resource.attributes.k8s.pod.name"
     ]
   },
+  "consumer": "infrastructure",
+  "schedule": {
+    "interval": "5m"
+  },
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Pod"
+  ],
+  "name": "Pod Status",
+  "rule_type_id": "observability.rules.custom_threshold",
   "actions": []
 }

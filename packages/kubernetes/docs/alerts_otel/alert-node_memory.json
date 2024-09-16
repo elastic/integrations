@@ -1,10 +1,5 @@
-PUT kbn:/api/alerting/rule/195c5517-35be-4cd7-a0c2-81afed57365e
+POST kbn:/api/alerting/rule
 {
-  "name": "Node Memory Utilisation",
-  "tags": [],
-  "schedule": {
-    "interval": "5m"
-  },
   "params": {
     "searchType": "esqlQuery",
     "timeWindowSize": 5,
@@ -15,14 +10,25 @@ PUT kbn:/api/alerting/rule/195c5517-35be-4cd7-a0c2-81afed57365e
     "thresholdComparator": ">",
     "size": 100,
     "esqlQuery": {
-      "esql": "FROM metrics-* | WHERE metrics.k8s.node.memory.available > 0 | EVAL MEMORY_UTILISATION = CASE(metrics.k8s.node.memory.usage/metrics.k8s.node.memory.available :: DOUBLE >= 0.8, \"true\",\"false\")  | keep resource.attributes.k8s.node.name, MEMORY_UTILISATION"
+      "esql": "FROM metrics-* | WHERE metrics.k8s.node.memory.available > 0 | EVAL MEMORY_UTILISATION = CASE(metrics.k8s.node.memory.usage/metrics.k8s.node.memory.available :: DOUBLE >= 0.8, \"true\",\"false\") | LIMIT 10 | keep resource.attributes.k8s.node.name, MEMORY_UTILISATION"
     },
     "aggType": "count",
     "groupBy": "all",
     "termSize": 5,
     "sourceFields": [],
-    "timeField": "@timestamp",
-    "excludeHitsFromPreviousRun": true
+    "timeField": "@timestamp"
   },
+  "consumer": "infrastructure",
+  "schedule": {
+    "interval": "5m"
+  },
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Node",
+    "Memory"
+  ],
+  "name": "Node Memory Utilisation",
+  "rule_type_id": ".es-query",
   "actions": []
 }
