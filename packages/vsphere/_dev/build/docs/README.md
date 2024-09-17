@@ -48,6 +48,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ### Cluster Metrics
 Clusters in vSphere represent a group of ESXi hosts working together to optimize resource allocation, ensure high availability, and manage workloads efficiently.
 
+{{event "cluster"}}
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.

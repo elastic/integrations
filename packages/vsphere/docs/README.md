@@ -415,41 +415,135 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ### Cluster Metrics
 Clusters in vSphere represent a group of ESXi hosts working together to optimize resource allocation, ensure high availability, and manage workloads efficiently.
 
+An example event for `cluster` looks as following:
+
+```json
+{
+    "@timestamp": "2024-09-12T06:18:43.419Z",
+    "agent": {
+        "ephemeral_id": "235f5b62-669d-4d24-8b22-4b9eba3a63c3",
+        "id": "96c09e1b-272e-4fa5-ab9a-4eea26d082b7",
+        "name": "elastic-agent-78705",
+        "type": "metricbeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "vsphere.cluster",
+        "namespace": "70506",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "96c09e1b-272e-4fa5-ab9a-4eea26d082b7",
+        "snapshot": true,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "vsphere.cluster",
+        "duration": 46217160,
+        "ingested": "2024-09-12T06:18:46Z",
+        "module": "vsphere"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-78705",
+        "ip": [
+            "192.168.249.8",
+            "192.168.255.2"
+        ],
+        "mac": [
+            "02-42-C0-A8-F9-08",
+            "02-42-C0-A8-FF-02"
+        ],
+        "name": "elastic-agent-78705",
+        "os": {
+            "family": "",
+            "kernel": "4.18.0-348.7.1.el8_5.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "metricset": {
+        "name": "cluster",
+        "period": 10000
+    },
+    "service": {
+        "address": "https://svc-vsphere-metrics:8989/sdk",
+        "type": "vsphere"
+    },
+    "tags": [
+        "vsphere-cluster"
+    ],
+    "vsphere": {
+        "cluster": {
+            "datastore": {
+                "count": 1,
+                "names": "LocalDS_0"
+            },
+            "host": {
+                "count": 3,
+                "names": [
+                    "DC0_C0_H0",
+                    "DC0_C0_H1",
+                    "DC0_C0_H2"
+                ]
+            },
+            "name": "DC0_C0",
+            "network": {
+                "count": 3,
+                "names": [
+                    "DC0_DVPG0",
+                    "DVS0-DVUplinks-9",
+                    "VM Network"
+                ]
+            }
+        }
+    }
+}
+```
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id |  | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| vsphere.cluster.das_config.admission.control.enabled | Indicates whether strict admission control is enabled. | boolean |
-| vsphere.cluster.das_config.enabled | Indicates whether vSphere HA feature is enabled. | boolean |
-| vsphere.cluster.datastore.count | Number of Datastores associated with the cluster. | long |
-| vsphere.cluster.datastore.names | List of all the Datastore names associated with the cluster. | keyword |
-| vsphere.cluster.host.count | Number of Hosts associated with the cluster. | long |
-| vsphere.cluster.host.names | List of all the Host names associated with the cluster. | keyword |
-| vsphere.cluster.name | Cluster name. | keyword |
-| vsphere.cluster.network.count | Number of Networks associated with the cluster. | long |
-| vsphere.cluster.network.names | List of all the Network names associated with the cluster. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| vsphere.cluster.das_config.admission.control.enabled | Indicates whether strict admission control is enabled. | boolean |  |
+| vsphere.cluster.das_config.enabled | Indicates whether vSphere HA feature is enabled. | boolean |  |
+| vsphere.cluster.datastore.count | Number of Datastores associated with the cluster. | long | gauge |
+| vsphere.cluster.datastore.names | List of all the Datastore names associated with the cluster. | keyword |  |
+| vsphere.cluster.host.count | Number of Hosts associated with the cluster. | long | gauge |
+| vsphere.cluster.host.names | List of all the Host names associated with the cluster. | keyword |  |
+| vsphere.cluster.name | Cluster name. | keyword |  |
+| vsphere.cluster.network.count | Number of Networks associated with the cluster. | long | gauge |
+| vsphere.cluster.network.names | List of all the Network names associated with the cluster. | keyword |  |
+| vsphere.cluster.triggered_alarms.description | Description of the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.name | Name of the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.status | Status of the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |
 
 
 ## Logs

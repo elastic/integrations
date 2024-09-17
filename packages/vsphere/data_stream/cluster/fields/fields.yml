@@ -1,6 +1,6 @@
 - name: vsphere.cluster
   type: group
-  description: cluster
+  description: Cluster information.
   fields:
     - name: datastore
       type: group
@@ -11,6 +11,7 @@
             List of all the Datastore names associated with the cluster.
         - name: count
           type: long
+          metric_type: gauge
           description: >
             Number of Datastores associated with the cluster.
     - name: das_config
@@ -29,6 +30,7 @@
       fields:
         - name: count
           type: long
+          metric_type: gauge
           description: >
             Number of Hosts associated with the cluster.
         - name: names
@@ -37,17 +39,42 @@
             List of all the Host names associated with the cluster.
     - name: name
       type: keyword
-      dimension: true
       description: >
         Cluster name.
+      # Reason to add as a dimension field: to uniquely identify the cluster
+      dimension: true
     - name: network
       type: group
       fields:
         - name: count
           type: long
+          metric_type: gauge
           description: >
             Number of Networks associated with the cluster.
         - name: names
           type: keyword
           description: >
             List of all the Network names associated with the cluster.
+    - name: triggered_alarms
+      type: group
+      description: >
+        List of all the triggered alarms.
+      fields:
+        - name: status
+          type: keyword
+          description: Status of the alarm.
+        - name: triggered_time
+          type: date
+          description: Time when the alarm was triggered.
+        - name: description
+          type: keyword
+          description: Description of the alarm.
+        - name: entity_name
+          type: keyword
+          description: Name of the entity associated with the alarm.
+        - name: name
+          type: keyword
+          description: Name of the alarm.
+        - name: id
+          type: keyword
+          description: Unique identifier for the alarm.
