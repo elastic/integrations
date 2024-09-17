@@ -30,15 +30,16 @@ program: |-
   				"X-Auth-Token": [state.api_key],
   			},
   			"Body": {
-          // The alert data stream has a 15-minute delay to ensure that no
-          // occurrences are missed. It is possible that we may have received
-          // an event that is after this delay for the next evaluation. This
-          // would result in an inverted time range. So clamp the range start
-          // to the last event we received.
-  				"time_range": (now - duration("15m")).as(delayed, {
-            "start": state.?cursor.last_backend_update_timestamp.orValue(delayed - duration(state.initial_interval)),
-            "end": delayed,
-          }).as(range, {
+  				// The alert data stream has a 60 second delay to ensure that no
+  				// occurrences are missed. It is possible that we may have received
+  				// an event that is after this delay for the next evaluation. This
+  				// would result in an inverted time range. So clamp the range start
+  				// to the last event we received.
+  				// See https://developer.carbonblack.com/reference/carbon-black-cloud/guides/alert-bulk-export/
+  				"time_range": (now - duration("60s")).as(delayed, {
+  					"start": state.?cursor.last_backend_update_timestamp.orValue(delayed - duration(state.initial_interval)),
+  					"end": delayed,
+  				}).as(range, {
   					"start": string(range.start < range.end ? range.start : range.end),
   					"end": string(range.end),
   				}),
