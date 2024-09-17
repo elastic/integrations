@@ -67,9 +67,9 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
         if len(available_parts) < 2:
             continue
 
-        available_major = available_parts[0]
-        available_minor = available_parts[1]
-        if major == available_major and minor > available_minor:
+        available_major = int(available_parts[0])
+        available_minor = int(available_parts[1])
+        if int(major) == available_major and int(minor) > available_minor:
             older = False
             break
     if older:
@@ -181,6 +181,7 @@ class TestFindOldestSupportVersion(unittest.TestCase):
             "8.11.0-SNAPSHOT"
         ],
         "aliases": [
+            "7.x-SNAPSHOT",
             "7.17-SNAPSHOT",
             "7.17",
             "8.7",
@@ -225,6 +226,14 @@ class TestFindOldestSupportVersion(unittest.TestCase):
     def test_too_old_to_be_in_api(self):
         self.assertEqual(find_oldest_supported_version("7.16.0"), "7.16.0")
         self.assertEqual(find_oldest_supported_version("8.6.0"), "8.6.0")
+        self.assertEqual(find_oldest_supported_version("7.6.0"), "7.6.0")
+
+    def test_no_version_available_no_next_minor_in_current_major(self):
+        # returns the version as in the manifest
+        self.assertEqual(find_oldest_supported_version("8.11.3"), "8.11.3")
+
+    def test_available_next_minor_in_current_major(self):
+        self.assertEqual(find_oldest_supported_version("7.19.0"), "7.x-SNAPSHOT")
 
     def test_or(self):
         self.assertEqual(find_oldest_supported_version("8.6.0||8.7.0"), "8.6.0")
