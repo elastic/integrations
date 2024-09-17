@@ -26,15 +26,23 @@ Data streams:
 
 Note:
 - Users can monitor and see the log inside the ingested documents for vSphere in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
-- The vSphere performance API allows for collecting host and datastore metrics at various intervals, including real-time (every 20 seconds), 5-minutes, and longer durations. To get accurate results, it is important to configure the data collection period carefully for accurate results.
-- To optimize data collection and maintain system performance, refer to the [Data Collection Intervals](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-247646EA-A04B-411A-8DD4-62A3DCFCF49B.html) and [Data Collection Levels](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-25800DE4-68E5-41CC-82D9-8811E27924BC.html) documentation.
+- Real-time data collection – An ESXi Server collects data for each performance counter every 20 seconds by default.
+- Supported Periods:
+- The Datastore and Host metricsets support performance data collection using the vSphere performance API.
+- Since the performance API has usage restrictions based on data collection intervals,
+- users should ensure that the period is configured optimally to receive real-time data.
+- users can still collect summary metrics if performance metrics are not supported for the configured instance.
+- This configuration can be determined based on the Data Collection Intervals and Data Collection Levels.
+- Reference Links:
+    - Data Collection Intervals: https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-247646EA-A04B-411A-8DD4-62A3DCFCF49B.html
+    - Data Collection Levels: https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-25800DE4-68E5-41CC-82D9-8811E27924BC.html
 
 ## Prerequisites
 
 You can store and search your data using Elasticsearch and visualize and manage it with Kibana. We recommend using our hosted Elasticsearch Service on Elastic Cloud or self-managing the Elastic Stack on your own hardware.
 
 ## Compatibility
-The integration uses the [Govmomi](https://github.com/vmware/govmomi) library to collect metrics and logs from any Vmware SDK URL (ESXi/VCenter). This library is built for and tested against ESXi and vCenter 6.5, 6.7 and 7.0.
+This integration supports VMware ESXi and vCenter versions 6.5, 6.7, and 7.0. It has been tested and verified to work with these versions.
 
 ## Setup
 
@@ -60,7 +68,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ## Metrics reference
 
 Note:
-- To access the metrics, provide the URL <https://host:port(8989)/sdk> in the "Add Integration" page of the vSphere package.
+- To access the metrics, provide the URL <https://host:port/sdk> in the "Add Integration" page of the vSphere package.
 
 ### Datastore
 

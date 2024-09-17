@@ -26,15 +26,23 @@ Data streams:
 
 Note:
 - Users can monitor and see the log inside the ingested documents for vSphere in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
-- The vSphere performance API allows for collecting host and datastore metrics at various intervals, including real-time (every 20 seconds), 5-minutes, and longer durations. To get accurate results, it is important to configure the data collection period carefully for accurate results.
-- To optimize data collection and maintain system performance, refer to the [Data Collection Intervals](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-247646EA-A04B-411A-8DD4-62A3DCFCF49B.html) and [Data Collection Levels](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-25800DE4-68E5-41CC-82D9-8811E27924BC.html) documentation.
+- Real-time data collection – An ESXi Server collects data for each performance counter every 20 seconds by default.
+- Supported Periods:
+- The Datastore and Host metricsets support performance data collection using the vSphere performance API.
+- Since the performance API has usage restrictions based on data collection intervals,
+- users should ensure that the period is configured optimally to receive real-time data.
+- users can still collect summary metrics if performance metrics are not supported for the configured instance.
+- This configuration can be determined based on the Data Collection Intervals and Data Collection Levels.
+- Reference Links:
+    - Data Collection Intervals: https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-247646EA-A04B-411A-8DD4-62A3DCFCF49B.html
+    - Data Collection Levels: https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-25800DE4-68E5-41CC-82D9-8811E27924BC.html
 
 ## Prerequisites
 
 You can store and search your data using Elasticsearch and visualize and manage it with Kibana. We recommend using our hosted Elasticsearch Service on Elastic Cloud or self-managing the Elastic Stack on your own hardware.
 
 ## Compatibility
-The integration uses the [Govmomi](https://github.com/vmware/govmomi) library to collect metrics and logs from any Vmware SDK URL (ESXi/VCenter). This library is built for and tested against ESXi and vCenter 6.5, 6.7 and 7.0.
+This integration supports VMware ESXi and vCenter versions 6.5, 6.7, and 7.0. It has been tested and verified to work with these versions.
 
 ## Setup
 
@@ -155,7 +163,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ## Metrics reference
 
 Note:
-- To access the metrics, provide the URL <https://host:port(8989)/sdk> in the "Add Integration" page of the vSphere package.
+- To access the metrics, provide the URL <https://host:port/sdk> in the "Add Integration" page of the vSphere package.
 
 ### Datastore
 
@@ -400,14 +408,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| vsphere.host.cpu.free.mhz | Free CPU of host in Mhz. | long |  | gauge |
-| vsphere.host.cpu.total.mhz | Total CPU of host in Mhz. | long |  | counter |
-| vsphere.host.cpu.used.mhz | Used CPU of host in Mhz. | long |  | gauge |
+| vsphere.host.cpu.free.mhz | Free CPU in MHz. | long |  | gauge |
+| vsphere.host.cpu.total.mhz | Total CPU in MHz. | long |  | counter |
+| vsphere.host.cpu.used.mhz | Used CPU in MHz. | long |  | gauge |
 | vsphere.host.cpu.used.pct | CPU Utilization % of the host | scaled_float | percent | gauge |
 | vsphere.host.datastore.count | Number of datastores on the host. | long |  | gauge |
 | vsphere.host.datastore.names | List of all the datastore names. | keyword |  |  |
@@ -415,15 +420,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.host.disk.devicelatency.average.ms | Average amount of time it takes to complete an SCSI command from physical device in milliseconds. | long |  | gauge |
 | vsphere.host.disk.latency.total.ms | Highest latency value across all disks used by the host in milliseconds. | long |  | gauge |
 | vsphere.host.disk.read.bytes | Average number of bytes read from the disk each second. | long | byte | gauge |
-| vsphere.host.disk.total.bytes | Aggregated disk I/O rate. | long | byte | gauge |
+| vsphere.host.disk.total.bytes | Sum of disk read and write rates each second in bytes. | long | byte | gauge |
 | vsphere.host.disk.write.bytes | Average number of bytes written to the disk each second. | long | byte | gauge |
-| vsphere.host.memory.free.bytes | Free Memory of host in bytes. | long | byte | gauge |
-| vsphere.host.memory.total.bytes | Total Memory of host in bytes. | long | byte | gauge |
-| vsphere.host.memory.used.bytes | Used Memory of host in bytes. | long | byte | gauge |
+| vsphere.host.memory.free.bytes | Free Memory in bytes. | long | byte | gauge |
+| vsphere.host.memory.total.bytes | Total Memory in bytes. | long | byte | gauge |
+| vsphere.host.memory.used.bytes | Used Memory in bytes. | long | byte | gauge |
 | vsphere.host.memory.used.pct | Memory utilization % of the host | scaled_float | percent | gauge |
 | vsphere.host.name | Host name. | keyword |  |  |
 | vsphere.host.network.bandwidth.received.bytes | Average rate at which data was received during the interval. This represents the bandwidth of the network. | long | byte | gauge |
-| vsphere.host.network.bandwidth.total.bytes | Network utilization (combined transmit-rates and receive-rates). | long | byte | gauge |
+| vsphere.host.network.bandwidth.total.bytes | Sum of network transmitted and received rates in bytes during the interval. | long | byte | gauge |
 | vsphere.host.network.bandwidth.transmitted.bytes | Average rate at which data was transmitted during the interval. This represents the bandwidth of the network. | long | byte | gauge |
 | vsphere.host.network.count | Number of networks on the host. | long |  | gauge |
 | vsphere.host.network.names | List of all the network names. | keyword |  |  |
@@ -440,6 +445,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.host.network.packets.transmitted.count | Number of packets transmitted. | long |  | gauge |
 | vsphere.host.network_names | Network names. | keyword |  |  |
 | vsphere.host.status | The overall health status of a host in the vSphere environment. | keyword |  |  |
+| vsphere.host.triggerd_alarms.description | Description of the alarm. | keyword |  |  |
+| vsphere.host.triggerd_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |  |
+| vsphere.host.triggerd_alarms.id | Unique identifier for the alarm. | keyword |  |  |
+| vsphere.host.triggerd_alarms.name | Name of the alarm. | keyword |  |  |
+| vsphere.host.triggerd_alarms.status | Status of the alarm. | keyword |  |  |
+| vsphere.host.triggerd_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
 | vsphere.host.uptime | The total uptime of a host in seconds within the vSphere environment. | long |  |  |
 | vsphere.host.vm.count | Number of virtual machines on the host. | long |  | gauge |
 | vsphere.host.vm.names | List of all the VM names. | keyword |  |  |

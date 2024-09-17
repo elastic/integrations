@@ -1,8 +1,7 @@
 - name: vsphere.host
   type: group
   description: >
-    host
-
+    Host information from vSphere environment.
   fields:
     - name: name
       type: keyword
@@ -12,15 +11,15 @@
     - name: cpu.used.mhz
       type: long
       metric_type: gauge
-      description: Used CPU of host in Mhz.
+      description: Used CPU in MHz.
     - name: cpu.total.mhz
       type: long
       metric_type: counter
-      description: Total CPU of host in Mhz.
+      description: Total CPU in MHz.
     - name: cpu.free.mhz
       type: long
       metric_type: gauge
-      description: Free CPU of host in Mhz.
+      description: Free CPU in MHz.
     - name: datastore.names
       type: keyword
       description: List of all the datastore names.
@@ -58,24 +57,24 @@
       type: long
       metric_type: gauge
       unit: byte
-      description: Aggregated disk I/O rate.
+      description: Sum of disk read and write rates each second in bytes.
     - name: memory.used.bytes
       type: long
       metric_type: gauge
       unit: byte
-      description: Used Memory of host in bytes.
+      description: Used Memory in bytes.
       format: bytes
     - name: memory.total.bytes
       type: long
       metric_type: gauge
       unit: byte
-      description: Total Memory of host in bytes.
+      description: Total Memory in bytes.
       format: bytes
     - name: memory.free.bytes
       type: long
       metric_type: gauge
       unit: byte
-      description: Free Memory of host in bytes.
+      description: Free Memory in bytes.
       format: bytes
     - name: memory.used.pct
       type: scaled_float
@@ -115,7 +114,7 @@
       type: long
       metric_type: gauge
       unit: byte
-      description: Network utilization (combined transmit-rates and receive-rates).
+      description: Sum of network transmitted and received rates in bytes during the interval.
       format: bytes
     - name: network.packets.transmitted.count
       type: long
@@ -164,6 +163,29 @@
     - name: status
       type: keyword
       description: The overall health status of a host in the vSphere environment.
+    - name: triggerd_alarms
+      type: group
+      description: >
+        List of all the triggered alarms.
+      fields:
+        - name: status
+          type: keyword
+          description: Status of the alarm.
+        - name: triggered_time
+          type: date
+          description: Time when the alarm was triggered.
+        - name: description
+          type: keyword
+          description: Description of the alarm.
+        - name: entity_name
+          type: keyword
+          description: Name of the entity associated with the alarm.
+        - name: name
+          type: keyword
+          description: Name of the alarm.
+        - name: id
+          type: keyword
+          description: Unique identifier for the alarm.
     - name: uptime
       type: long
       description: The total uptime of a host in seconds within the vSphere environment.
