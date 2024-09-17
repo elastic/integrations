@@ -9,7 +9,7 @@ processors:
   - set:
       field: tychon.host.security.antivirus.exists
       value: 'false'
-      if: ctx.tychon.host.security.antivirus.exists == ''
+      if: ctx.tychon.host?.security?.antivirus?.exists == null
   - lowercase:
       field: tychon.host.security.antivirus.exists
   - split:
@@ -21,12 +21,6 @@ processors:
       value: '{{_tmp_av.0}}'
   - remove:
       field: _tmp_av
-  - remove:
-      field: tychon.tychon.definition.oval
-      if: ctx.tychon.tychon.definition.oval == ''
-  - remove:
-      field: tychon.tychon.definition.stig
-      if: ctx.tychon.tychon.definition.stig == ''
   - convert:
       field: tychon.host.memory.size
       type: long
@@ -43,17 +37,17 @@ processors:
   - append:
       field: related.hash
       value: "{{{tychon.host.risk.count.signature_hash}}}"
-      if: ctx.tychon?.host?.risk?.count?.signature_hash != null && ctx.tychon.host.risk.count.signature_hash != ""
+      if: ctx.tychon?.host?.risk?.count?.signature_hash != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{{tychon.host.risk.score.signature_hash}}}"
-      if: ctx.tychon?.host?.risk?.score?.signature_hash != null && ctx.tychon.host.risk.score.signature_hash != ""
+      if: ctx.tychon?.host?.risk?.score?.signature_hash != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{{tychon.host.risk.weight.signature_hash}}}"
-      if: ctx.tychon?.host?.risk?.weight?.signature_hash != null && ctx.tychon.host.risk.weight.signature_hash != ""
+      if: ctx.tychon?.host?.risk?.weight?.signature_hash != null
       allow_duplicates: false
 
   - set:

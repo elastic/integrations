@@ -11,10 +11,10 @@ processors:
       target_field: tychon.package.description
       ignore_missing: true
   - script:
-      description: Covnert tychon.package.installed from boolean to date
+      description: Convert tychon.package.installed from boolean to date
       lang: painless
       source: |
-        if (['installed', 'true', ''].contains(ctx.tychon.package.installed)) {
+        if (['installed', 'true'].contains(ctx.tychon.package.installed)) {
           ctx.tychon.package.installed = '1970-01-01T00:00:01Z';
         } else {
           ctx.tychon.package.remove('installed');
@@ -27,7 +27,7 @@ processors:
   - set:
       field: tychon.package.size
       value: 0
-      if: ctx.tychon?.package?.size == ''
+      if: ctx.tychon?.package?.size == null
   - convert:
       field: tychon.package.size
       type: long
@@ -55,7 +55,7 @@ processors:
   - set:
       field: tychon.package.type
       value: rpm
-      if: ctx.tychon.package.type == ''
+      if: ctx.tychon.package.type == null
   - script:
       source: ctx.tychon.package.cpe = "cpe:/a:" + ctx.tychon.package.name + ":" + ctx.tychon.package.version
       if: ctx.tychon?.package?.cpe == '' && ctx.tychon?.package?.name != null && ctx.tychon?.package?.version != null

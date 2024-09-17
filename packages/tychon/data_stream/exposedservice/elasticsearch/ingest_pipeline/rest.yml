@@ -13,7 +13,7 @@ processors:
   - set:
       field: tychon.source.ip
       value: '0.0.0.0'
-      if: ctx.tychon.source?.ip == ''
+      if: ctx.tychon.source?.ip == null
   - set:
       field: tychon.service.name
       value: '{{tychon.process.name}}'
@@ -30,17 +30,17 @@ processors:
   - append:
       field: related.hash
       value: "{{{tychon.process.hash.sha1}}}"
-      if: ctx.tychon?.process?.hash?.sha1 != null && ctx.tychon.process.hash.sha1 != ""
+      if: ctx.tychon?.process?.hash?.sha1 != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: "{{{tychon.source.ip}}}"
-      if: ctx.tychon?.source?.ip != null && ctx.tychon.source.ip != ""
+      if: ctx.tychon?.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.user
       value: "{{{tychon.process.user.name}}}"
-      if: ctx.tychon?.process?.user?.name != null && ctx.tychon?.process.user.name != ""
+      if: ctx.tychon?.process?.user?.name != null
       allow_duplicates: false
 
   - set:

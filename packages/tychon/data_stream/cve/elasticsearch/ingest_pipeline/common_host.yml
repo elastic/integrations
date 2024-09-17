@@ -10,22 +10,22 @@ processors:
   - split:
       field: tychon.host.mac
       separator: ','
-      if: ctx.tychon?.host?.mac instanceof String && ctx.tychon.host.mac != ""
+      if: ctx.tychon?.host?.mac instanceof String
       ignore_missing: true
   - split:
       field: tychon.host.ip
       separator: ','
-      if: ctx.tychon?.host?.ip instanceof String && ctx.tychon.host.ip != ""
+      if: ctx.tychon?.host?.ip instanceof String
       ignore_missing: true
   - split:
       field: tychon.host.ipv4
       separator: ','
-      if: ctx.tychon?.host?.ipv4 instanceof String && ctx.tychon.host.ipv4 != ""
+      if: ctx.tychon?.host?.ipv4 instanceof String
       ignore_missing: true
   - split:
       field: tychon.host.ipv6
       separator: ','
-      if: ctx.tychon?.host?.ipv6 instanceof String && ctx.tychon.host.ipv6 != ""
+      if: ctx.tychon?.host?.ipv6 instanceof String
       ignore_missing: true
 
   - convert:
@@ -41,24 +41,6 @@ processors:
   - convert:
       field: tychon.host.uptime
       type: long
-      ignore_missing: true
-
-  - set:
-      field: tychon.host.domain
-      value: ""
-      if: ctx.tychon?.host?.domain == null
-  - set:
-      field: tychon.host.oem.model
-      value: ""
-      if: ctx.tychon?.host?.oem?.model == null
-  - set:
-      field: tychon.host.oem.manufacturer
-      value: ""
-      if: ctx.tychon?.host?.oem?.manufacturer == null
-
-  - remove: 
-      field: tychon.host.os.extended_support_license_expiration
-      if: ctx.tychon?.host?.os?.extended_support_license_expiration == ''
       ignore_missing: true
 
   - remove:
@@ -95,17 +77,17 @@ processors:
   - append:
       field: related.hosts
       value: "{{{tychon.host.domain}}}"
-      if: ctx.tychon?.host?.domain != null && ctx.tychon.host.domain != ""
+      if: ctx.tychon?.host?.domain != null
       allow_duplicates: false
   - append:
       field: related.hosts
       value: "{{{tychon.host.hostname}}}"
-      if: ctx.tychon?.host?.hostname != null && ctx.tychon.host.hostname != ""
+      if: ctx.tychon?.host?.hostname != null
       allow_duplicates: false
   - append:
       field: related.hosts
       value: "{{{tychon.host.id}}}"
-      if: ctx.tychon?.host?.id != null && ctx.tychon.host.id != ""
+      if: ctx.tychon?.host?.id != null
       allow_duplicates: false
 
   - set:

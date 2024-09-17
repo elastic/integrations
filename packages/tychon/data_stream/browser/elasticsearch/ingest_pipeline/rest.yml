@@ -3,7 +3,7 @@ description: Pipeline for TYCHON Browser Tables
 processors:
 
   - script:
-      description: Covnert tychon.package.installed from boolean to date
+      description: Convert tychon.package.installed from boolean to date
       lang: painless
       source: |
         if (['installed', 'true'].contains(ctx.tychon.package.installed)) {
@@ -12,10 +12,6 @@ processors:
           ctx.tychon.package.remove('installed');
         }
       if: ctx.tychon.package?.installed != null
-  - remove:
-      field: tychon.package.size
-      if: ctx.tychon.package.size == ""
-      ignore_missing: true
   - convert:
       field: tychon.package.size
       type: long

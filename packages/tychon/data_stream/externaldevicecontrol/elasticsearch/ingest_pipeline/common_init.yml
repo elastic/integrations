@@ -7,6 +7,16 @@ processors:
   - json:
       field: message
       target_field: tychon
+  - script:
+      description: Drop blanks before dot expansion
+      lang: painless
+      source: |
+        def keys = new ArrayList(ctx.tychon.keySet());
+        for (key in keys) {
+          if (ctx.tychon[key] == "" || ctx.tychon[key] == null) {
+            ctx.tychon.remove(key);
+          }
+        }
   - dot_expander:
       field: '*'
       path: tychon
@@ -22,8 +32,7 @@ processors:
       description: Convert to long, truncating fractional part
       lang: painless
       source: |
-        if (ctx.tychon?.script?.current_duration != null &&
-            ctx.tychon.script.current_duration != "")
+        if (ctx.tychon?.script?.current_duration != null)
         {
           ctx.tychon.script.current_duration =
             (long) Double.parseDouble(ctx.tychon.script.current_duration.toString());

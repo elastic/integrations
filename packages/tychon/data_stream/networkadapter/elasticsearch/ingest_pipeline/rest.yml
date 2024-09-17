@@ -2,28 +2,6 @@
 description: Pipeline for parsing TYCHON Network Adapters
 processors:
 
-  - remove:
-      field: tychon.host.adapter.ip
-      if: ctx.tychon.host.adapter.ip == ''
-  - remove:
-      field: tychon.host.adapter.gateway
-      if: ctx.tychon.host.adapter.gateway == ''
-  - remove:
-      field: tychon.host.adapter.dhcp.server
-      if: ctx.tychon.host.adapter.dhcp.server == ''
-  - remove:
-      field: tychon.host.adapter.dhcp.lease_obtained
-      if: ctx.tychon.host.adapter.dhcp.lease_obtained == ''
-  - remove:
-      field: tychon.host.adapter.dhcp.lease_expires
-      if: ctx.tychon.host.adapter.dhcp.lease_expires == ''
-  - remove:
-      field: tychon.host.adapter.driver.date
-      if: ctx.tychon.host.adapter.driver.date == ''
-  - remove:
-      field: tychon.host.adapter.wins_server
-      if: ctx.tychon.host.adapter.wins_server == ''
-
   - script:
       source: |
         if (ctx.tychon?.host?.adapter?.link_speed?.contains(' ') == true) {
@@ -52,17 +30,17 @@ processors:
   - append:
       field: related.hosts
       value: "{{{tychon.host.adapter.domain}}}"
-      if: ctx.tychon?.host?.adapter?.domain != null && ctx.tychon.host.adapter.domain != ""
+      if: ctx.tychon?.host?.adapter?.domain != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: "{{{tychon.host.adapter.ip}}}"
-      if: ctx.tychon?.host?.adapter?.ip != null && ctx.tychon.host.adapter.ip != ""
+      if: ctx.tychon?.host?.adapter?.ip != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: "{{{tychon.host.adapter.gateway}}}"
-      if: ctx.tychon?.host?.adapter?.gateway != null && ctx.tychon.host.adapter.gateway != ""
+      if: ctx.tychon?.host?.adapter?.gateway != null
       allow_duplicates: false
 
   - set:
