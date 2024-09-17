@@ -26,37 +26,33 @@ state:
 redact:
   fields: ~
 program: |
-  state.with(
-    (
-      !state.want_more ?
-        request(
-          "GET",
-          state.url.trim_right("/") + "/devices/queries/devices/v1?" + {
-            "sort": ["modified_timestamp.asc"],
-            "offset": ["0"],
-            "limit": [string(state.batch_size)],
-            "filter": ['modified_timestamp:>"'+state.?cursor.last_timestamp.orValue(string(now - duration(state.initial_interval)))+'"'],
-          }.format_query()
-        )
-      :
-        request(
-          "GET",
-          state.url.trim_right("/") + "/devices/queries/devices/v1?" + {
-            "sort": ["modified_timestamp.asc"],
-            "offset": [string(state.offset)],
-            "limit": [string(state.batch_size)],
-            ?"filter": has(state.?cursor.first_timestamp) ? optional.of(['modified_timestamp:>"'+state.cursor.first_timestamp+'"']) : optional.none(),
-          }.format_query()
-        )
-    ).do_request().as(get_resp, get_resp.StatusCode == 200 ?
-      bytes(get_resp.Body).decode_json().as(body, {
-        ?"resources": has(body.resources) && body.resources.size() > 0 ? optional.of(body.resources) : optional.none(),
-        "want_more": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total),
-        "offset": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
-          int(state.offset) + body.resources.size()
+  (
+    state.want_more ?
+      state.?page.start
+    :
+      optional.of(state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)))
+  ).as(filter, state.with(
+    get_request(
+      state.url.trim_right("/") + "/devices/queries/devices/v1?" + {
+        "sort": ["modified_timestamp.asc"],
+        "offset": [string(state.offset)],
+        "limit": [string(state.batch_size)],
+        ?"filter": filter.hasValue() ?
+          optional.of(['modified_timestamp:>"'+filter.value()+'"'])
         :
-          0,
-      })
+          optional.none(),
+      }.format_query()
+    ).do_request().as(get_resp, get_resp.StatusCode == 200 ?
+      bytes(get_resp.Body).decode_json().as(body,
+        (
+          (int(state.offset) + body.resources.size()) < body.meta.pagination.total
+        ).as(want_more, {
+          ?"resources": body.resources.size() > 0 ? optional.of(body.resources) : optional.none(),
+          "events": [],
+          "offset": want_more ? int(state.offset) + body.resources.size() : 0,
+          "want_more": want_more,
+        })
+      )
     :
       {
         "events": {
@@ -86,18 +82,16 @@ program: |
             "message": e.encode_json(),
           }),
           "cursor": {
-            ?"last_timestamp": (
-              has(inner_body.resources) && inner_body.resources.size() > 0 ?
-                optional.of(inner_body.resources.map(e, e.modified_timestamp).max())
-              :
-                state.?cursor.last_timestamp
-            ),
-            "first_timestamp": (
-              state.?cursor.first_timestamp.orValue(null) != null ?
-                (state.want_more ? state.cursor.first_timestamp : state.cursor.last_timestamp)
-              :
-                string(now - duration(state.initial_interval))
-            ),
+            ?"last_timestamp": has(inner_body.resources) && inner_body.resources.size() > 0 ?
+              optional.of(inner_body.resources.map(e, timestamp(e.modified_timestamp)).max().format(time_layout.RFC3339))
+            :
+              state.?cursor.last_timestamp
+          },
+          "page": {
+            "start": has(state.?page.start) ?
+              (state.want_more ? state.page.start : state.cursor.last_timestamp)
+            :
+              now.format(time_layout.RFC3339)
           },
         })
       :
@@ -118,7 +112,7 @@ program: |
         }
       )
     )
-  )
+  ))
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
