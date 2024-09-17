@@ -1,0 +1,35 @@
+{
+    "attributes":{
+        "name": "PostgreSQL query cancellation rate",
+        "description": "This SLO monitors the rate of query cancellations due to conflicts in PostgreSQL databases. ",
+        "indicator": {
+            "type": "sli.kql.custom",
+            "params": {
+                "index": "metrics-*",
+                "filter": "data_stream.dataset : \"postgresql.database\" ",
+                "good": "postgresql.database.conflicts : 0",
+                "total": "postgresql.database.conflicts : * ",
+                "timestampField": "@timestamp",
+                "dataViewId": "metrics-*"
+            }
+        },
+        "budgetingMethod": "occurrences",
+        "timeWindow": {
+            "duration": "7d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.99
+        },
+        "tags": [],
+        "groupBy": [
+            "*"
+        ],
+        "settings": {
+            "preventInitialBackfill": false
+        }
+    },
+    "id": "postgresql-93b709d7-b932-4432-9614-4b7671d88c85",
+    "references": [],
+    "type": "slo"
+}
