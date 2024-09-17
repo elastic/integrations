@@ -122,7 +122,7 @@ This environment variable can be defined at:
 
 Every night it is configured to run a daily job that will be in charge of testing all packages with different scenarios: https://buildkite.com/elastic/integrations-schedule-daily/
 
-The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/2e72e8524728daca2d47c814d8042031b8f5804f/catalog-info.yaml#L145).
+The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/5714f5665bbe3bc29b9e2444c6a94dbc2d5eebe9/catalog-info.yaml#L93).
 
 The scenarios that are tested in this daily job are:
 
@@ -153,7 +153,7 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 
 Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly/
 
-The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/5714f5665bbe3bc29b9e2444c6a94dbc2d5eebe9/catalog-info.yaml#L93).
+The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/2e72e8524728daca2d47c814d8042031b8f5804f/catalog-info.yaml#L145).
 
 The scenarios that are tested in this weekly job are:
 
