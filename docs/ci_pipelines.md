@@ -126,11 +126,11 @@ The schedule of this job can be checked [here](https://github.com/elastic/integr
 
 The scenarios that are tested in this daily job are:
 
-- Test packages with a local Elastic stack running the previous major version of the stack (7.17.X SNAPSHOT).
+- Test packages with a local Elastic stack running the latest 7.x version of the stack (7.17.X SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest 8.x major version of the stack (currently 8.X.Y-SNAPSHOT).
+- Test packages with a local Elastic stack running the latest 8.x version of the stack (8.X.Y-SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest 8.x major version of the stack with LogsDB enabled (currently 8.X.Y-SNAPSHOT).
+- Test packages with a local Elastic stack running the latest 8.x version of the stack with LogsDB enabled (8.X.Y-SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
 - Test packages with a local Elastic stack running the latest major version of the stack (currently 9.X.Y-SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
@@ -157,9 +157,9 @@ The schedule of this job can be checked [here](https://github.com/elastic/integr
 
 The scenarios that are tested in this weekly job are:
 
-- Test packages with a local Elastic stack running the latest 8.x major version of the stack with Elastic Agent images based on Ubuntu iamges (currently 8.X.Y-SNAPSHOT).
+- Test packages with a local Elastic stack running the latest 8.x version of the stack with Elastic Agent images based on Ubuntu iamges (8.X.Y-SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest 9.x major version of the stack with Elastic Agent images based on non-wolfi images (currently 9.X.Y-SNAPSHOT).
+- Test packages with a local Elastic stack running the latest major version of the stack with Elastic Agent images based on non-wolfi images (currently 9.X.Y-SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
 
 Each step triggering a new pipeline can be customized through environment variables. Environment variables that can
