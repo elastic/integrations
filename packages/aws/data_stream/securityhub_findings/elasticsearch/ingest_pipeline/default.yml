@@ -6,10 +6,14 @@ processors:
       value: '8.11.0'
   - set:
       field: event.kind
-      value: event
-  - set:
+      value: state
+  - append:
       field: event.type
-      value: [info]
+      value: info
+  - append:
+      field: event.category
+      value: configuration
+      tag: append_event_category
   - rename:
       field: message
       target_field: event.original
@@ -26,6 +30,14 @@ processors:
         - json.CreatedAt
       target_field: _id
       ignore_missing: true
+  - set:
+      field: observer.vendor
+      value: AWS Security Hub
+      tag: set_observer_vendor
+  - set:
+      field: cloud.provider
+      value: aws
+      tag: set_cloud_provider
   - rename:
       field: json.Action.ActionType
       target_field: aws.securityhub_findings.action.type
@@ -463,10 +475,56 @@ processors:
       field: json.Compliance.RelatedRequirements
       target_field: aws.securityhub_findings.compliance.related_requirements
       ignore_missing: true
+  - foreach:
+      field: aws.securityhub_findings.compliance.related_requirements
+      if: ctx.aws?.securityhub_findings?.compliance?.related_requirements instanceof List
+      tag: foreach_compliance_related_requirements
+      processor:
+        append:
+          field: rule.ruleset
+          value: '{{{_ingest._value}}}'
+          tag: append_related_requirements_rule_ruleset
+          allow_duplicates: false
   - rename:
       field: json.Compliance.Status
       target_field: aws.securityhub_findings.compliance.status
       ignore_missing: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_passed
+      value: passed
+      if: ctx.aws?.securityhub_findings?.compliance?.status == 'PASSED'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_failed
+      value: failed
+      if: ctx.aws?.securityhub_findings?.compliance?.status == 'FAILED'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_unknown
+      value: unknown
+      if: ctx.result?.evaluation == null
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.aws?.securityhub_findings?.compliance?.status == 'PASSED'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.aws?.securityhub_findings?.compliance?.status == 'FAILED'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_unknown
+      value: unknown
+      if: ctx.event?.outcome == null
+      ignore_empty_value: true
   - foreach:
       field: json.Compliance.StatusReasons
       processor:
@@ -510,10 +568,22 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.UpdatedAt
+      if: ctx.json?.UpdatedAt != null && ctx.json?.UpdatedAt != ''
+      target_field: aws.securityhub_findings.updated_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      copy_from : aws.securityhub_findings.created_at
-      ignore_failure: true
+      copy_from : aws.securityhub_findings.updated_at
+      tag: set_timestamp
+      ignore_empty_value: true
   - convert:
       field: json.Criticality
       target_field: aws.securityhub_findings.criticality
@@ -528,6 +598,11 @@ processors:
       field: json.Description
       target_field: aws.securityhub_findings.description
       ignore_missing: true
+  - set:
+      field: rule.description
+      tag: set_rule_description
+      copy_from: aws.securityhub_findings.description
+      ignore_empty_value: true
   - convert:
       field: json.FindingProviderFields.Confidence
       target_field: aws.securityhub_findings.provider_fields.confidence
@@ -636,6 +711,23 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.ProcessedAt
+      if: ctx.json?.ProcessedAt != null && ctx.json?.ProcessedAt != ''
+      target_field: aws.securityhub_findings.processed_at
+      tag: date_processed_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: aws.securityhub_findings.processed_at
+      ignore_empty_value: true
   - foreach:
       field: json.Malware
       processor:
@@ -1375,6 +1467,11 @@ processors:
       field: json.Region
       target_field: aws.securityhub_findings.region
       ignore_missing: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region
+      copy_from: aws.securityhub_findings.region
+      ignore_empty_value: true
   - foreach:
       field: json.RelatedFindings
       processor:
@@ -1405,10 +1502,179 @@ processors:
       field: json.Remediation.Recommendation.Url
       target_field: aws.securityhub_findings.remediation.recommendation.url
       ignore_missing: true
+  - set:
+      field: rule.reference
+      tag: set_rule_reference
+      copy_from: aws.securityhub_findings.remediation.recommendation.url
+      ignore_empty_value: true
+  - set:
+      field: rule.references
+      tag: set_rule_references
+      copy_from: aws.securityhub_findings.remediation.recommendation.url
+      ignore_empty_value: true
   - rename:
       field: json.Resources
       target_field: aws.securityhub_findings.resources
       ignore_missing: true
+  - script:
+      description: Extract ECS fields from aws.securityhub_findings.resources.
+      lang: painless
+      if: ctx.aws?.securityhub_findings?.resources instanceof List && ctx.aws.securityhub_findings.resources.size() > 0
+      source: |-
+        def resources = ctx.aws.securityhub_findings.resources;
+        for (resource in resources) {
+          // Extract ECS user field
+          if (ctx.user == null) {
+            ctx.user = new HashMap();
+          }
+          if (ctx.user.name == null) {
+            ctx.user.name = new ArrayList();
+          }
+          if (ctx.user.id == null) {
+            ctx.user.id = new ArrayList();
+          }
+          if (resource.Type == 'AwsIamUser' && resource.Details?.AwsIamUser?.UserName != null) {
+            ctx.user.name.add(resource.Details.AwsIamUser.UserName);
+          }
+          if (resource.Type == 'AwsIamAccessKey' && resource.Details?.AwsIamAccessKey?.UserName != null) {
+            ctx.user.name.add(resource.Details.AwsIamAccessKey.UserName);
+          }
+          if (resource.Type == 'AwsS3Bucket' && resource.Details?.AwsS3Bucket?.OwnerName != null) {
+            ctx.user.name.add(resource.Details.AwsS3Bucket.OwnerName);
+          } 
+          if (resource.Type == 'AwsIamUser' && resource.Details?.AwsIamUser?.UserId != null) {
+            ctx.user.id.add(resource.Details.AwsIamUser.UserId);
+          } 
+          if (resource.Type == 'AwsS3Bucket' && resource.Details?.AwsS3Bucket?.OwnerId != null) {
+            ctx.user.id.add(resource.Details.AwsS3Bucket.OwnerId);
+          } 
+
+          // Extract ECS host field
+          if (ctx.host == null) {
+            ctx.host = new HashMap();
+          }
+          if (ctx.host.id == null) {
+            ctx.host.id = new ArrayList();
+          }
+          if (resource.Type == 'AwsEc2Instance' && resource.Id != null) {
+            ctx.host.id.add(resource.Id);
+          }
+
+          // Extract ECS orchestrator field
+          if (ctx.orchestrator == null) {
+            ctx.orchestrator = new HashMap();
+          }
+          if (ctx.orchestrator.cluster == null) {
+            ctx.orchestrator.cluster = new HashMap();
+          }
+          if (ctx.orchestrator.cluster.id == null) {
+            ctx.orchestrator.cluster.id = new ArrayList();
+          }
+          if (ctx.orchestrator.cluster.name == null) {
+            ctx.orchestrator.cluster.name = new ArrayList();
+          }
+          if (['AwsEcsCluster', 'AwsEcsTask'].contains(resource.Type) && resource.Details?.AwsEcsCluster?.ClusterArn != null) {
+            ctx.orchestrator.cluster.id.add(resource.Details.AwsEcsCluster.ClusterArn);
+          }
+          if (resource.Type == 'AwsEksCluster' && resource.Details?.AwsEksCluster?.Arn != null) {
+            ctx.orchestrator.cluster.id.add(resource.Details.AwsEksCluster.Arn);
+          }
+          if (resource.Type == 'AwsEcsCluster' && resource.Details?.AwsEcsCluster?.ClusterName != null) {
+            ctx.orchestrator.cluster.name.add(resource.Details.AwsEcsCluster.ClusterName);
+          }
+          if (resource.Type == 'AwsEksCluster' && resource.Details?.AwsEksCluster?.Name != null) {
+            ctx.orchestrator.cluster.name.add(resource.Details.AwsEksCluster.Name);
+          }
+        }
+
+  # - foreach:
+  #     field: aws.securityhub_findings.resources
+  #     if: ctx.aws?.securityhub_findings?.resources instanceof List
+  #     tag: foreach_resources_details_awsiamuser_username
+  #     processor:
+  #       append:
+  #         field: user.name
+  #         value: '{{{_ingest._value.Details.AwsIamUser.UserName}}}'
+  #         if: _ingest._value.Type == 'AwsIamUser' && _ingest._value.Details?.AwsIamUser?.UserName != null
+  #         tag: append_details_awsiamuser_username
+  #         allow_duplicates: false
+  # - foreach:
+  #     field: aws.securityhub_findings.resources
+  #     if: ctx.aws?.securityhub_findings?.resources instanceof List
+  #     tag: foreach_resources_awsiamaccesskey_username
+  #     processor:
+  #       append:
+  #         field: user.name
+  #         value: '{{{_ingest._value.Details.AwsIamAccessKey.UserName}}}'
+  #         if: _ingest._value.Type == 'AwsIamAccessKey' && _ingest._value.Details?.AwsIamAccessKey?.UserName != null
+  #         tag: append_details_awsiamaccesskey_username
+  #         allow_duplicates: false
+  # - foreach:
+  #     field: aws.securityhub_findings.resources
+  #     if: ctx.aws?.securityhub_findings?.resources instanceof List
+  #     tag: foreach_resources_awsiamuser_userid
+  #     processor:
+  #       append:
+  #         field: user.id
+  #         value: '{{{_ingest._value.Details.AwsIamUser.UserId}}}'
+  #         if: _ingest._value.Type == 'AwsIamUser' && _ingest._value.Details?.AwsIamUser?.UserId != null
+  #         tag: append_details_awsiamuser_userid
+  #         allow_duplicates: false
+  # - foreach:
+  #     field: aws.securityhub_findings.resources
+  #     if: ctx.aws?.securityhub_findings?.resources instanceof List
+  #     tag: foreach_resources_awsec2instance_hostid
+  #     processor:
+  #       append:
+  #         field: host.id
+  #         value: '{{{_ingest._value.Id}}}'
+  #         if: _ingest._value.Type == 'AwsEc2Instance'
+  #         tag: append_details_awsec2instance_hostid
+  #         allow_duplicates: false
+  # - foreach:
+  #     field: aws.securityhub_findings.resources
+  #     if: ctx.aws?.securityhub_findings?.resources instanceof List
+  #     tag: foreach_resources_awsecs_clusterid
+  #     processor:
+  #       append:
+  #         field: orchestrator.cluster.id
+  #         value: '{{{_ingest._value.ClusterArn}}}'
+  #         if: (_ingest._value.Type == 'AwsEcsCluster' || _ingest._value.Type == 'AwsEcsTask') && _ingest._value.ClusterArn != null
+  #         tag: append_details_awsecs_clusterid
+  #         allow_duplicates: false
+  # - foreach:
+  #     field: aws.securityhub_findings.resources
+  #     if: ctx.aws?.securityhub_findings?.resources instanceof List
+  #     tag: foreach_resources_awseks_clusterid
+  #     processor:
+  #       append:
+  #         field: orchestrator.cluster.id
+  #         value: '{{{_ingest._value.Arn}}}'
+  #         if: _ingest._value.Type == 'AwsEksCluster' && _ingest._value.Arn != null
+  #         tag: append_details_awseks_clusterid
+  #         allow_duplicates: false
+  # - foreach:
+  #     field: aws.securityhub_findings.resources
+  #     if: ctx.aws?.securityhub_findings?.resources instanceof List
+  #     tag: foreach_resources_awsecs_clustername
+  #     processor:
+  #       append:
+  #         field: orchestrator.cluster.name
+  #         value: '{{{_ingest._value.ClusterName}}}'
+  #         if: _ingest._value.Type == 'AwsEcsCluster' && _ingest._value.ClusterName != null
+  #         tag: append_details_awsecs_clustername
+  #         allow_duplicates: false
+  # - foreach:
+  #     field: aws.securityhub_findings.resources
+  #     if: ctx.aws?.securityhub_findings?.resources instanceof List
+  #     tag: foreach_resources_awseks_clustername
+  #     processor:
+  #       append:
+  #         field: orchestrator.cluster.name
+  #         value: '{{{_ingest._value.Name}}}'
+  #         if: _ingest._value.Type == 'AwsEksCluster' && _ingest._value.Name != null
+  #         tag: append_details_awseks_clustername
+  #         allow_duplicates: false
   - convert:
       field: json.Sample
       target_field: aws.securityhub_findings.sample
@@ -1437,6 +1703,16 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws.securityhub_findings.severity.normalized
+      tag: convert_severity_normalized
+      target_field: event.severity
+      if: ctx.aws?.securityhub_findings?.severity?.normalized != null
+      type: long
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Severity.Original
       target_field: aws.securityhub_findings.severity.original
@@ -1592,21 +1868,15 @@ processors:
       field: json.Title
       target_field: aws.securityhub_findings.title
       ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: aws.securityhub_findings.title
+      ignore_empty_value: true
   - rename:
       field: json.Types
       target_field: aws.securityhub_findings.types
       ignore_missing: true
-  - date:
-      field: json.UpdatedAt
-      if: ctx.json?.UpdatedAt != null && ctx.json?.UpdatedAt != ''
-      target_field: aws.securityhub_findings.updated_at
-      formats:
-        - ISO8601
-        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.UserDefinedFields
       target_field: aws.securityhub_findings.user_defined_fields
