@@ -4,6 +4,12 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
+  # Temporary bugfix to avoid future breaking changes to integration.
+  - rename:
+      field: vsphere.host.triggerd_alarms
+      target_field: vsphere.host.triggered_alarms
+      ignore_missing: true
+      if: ctx.vsphere?.host?.triggerd_alarms != null
   - script: 
       if: ctx.vsphere?.host?.memory?.used.bytes != null && ctx.vsphere?.host?.memory?.total.bytes != null
       lang: painless
