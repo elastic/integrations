@@ -80,84 +80,85 @@ An example event for `virtualmachine` looks as following:
         "type": "vsphere"
     },
     "vsphere": {
-        "virtualmachine": {
-            "name": "xt0nmfpv9",
-            "uptime": 5348978,
-            "status": "green",
-            "host": {
-                "id": "host-32",
-                "hostname": "phx-w1c1-esxi04.com"
-            },
-            "cpu": {
-                "free": {
-                    "mhz": 0
+        "vsphere": {
+            "virtualmachine": {
+                "name": "xt0nmfpv9",
+                "uptime": 5348978,
+                "status": "green",
+                "host": {
+                    "id": "host-32",
+                    "hostname": "phx-w1c1-esxi04.com"
                 },
-                "used": {
-                    "mhz": 161
+                "cpu": {
+                    "free": {
+                        "mhz": 0
+                    },
+                    "used": {
+                        "mhz": 161
+                    },
+                    "total": {
+                        "mhz": 0
+                    }
                 },
-                "total": {
-                    "mhz": 0
-                }
-            },
-            "network": {
-                "names": [
+                "network": {
+                    "names": [
+                        "PROD_VCF_VMS"
+                    ],
+                    "count": 1
+                },
+                "memory": {
+                    "used": {
+                        "guest": {
+                            "bytes": 686817280
+                        },
+                        "host": {
+                            "bytes": 29027729408
+                        }
+                    },
+                    "total": {
+                        "guest": {
+                            "bytes": 68719476736
+                        }
+                    },
+                    "free": {
+                        "guest": {
+                            "bytes": 68032659456
+                        }
+                    }
+                },
+                "network_names": [
                     "PROD_VCF_VMS"
                 ],
-                "count": 1
-            },
-            "memory": {
-                "used": {
-                    "guest": {
-                        "bytes": 686817280
-                    },
-                    "host": {
-                        "bytes": 29027729408
-                    }
+                "datastore": {
+                    "count": 1,
+                    "names": [
+                        "VxRailtoup-Virtual-Datastore-bc1d-5aa310fb"
+                    ]
                 },
-                "total": {
-                    "guest": {
-                        "bytes": 68719476736
-                    }
-                },
-                "free": {
-                    "guest": {
-                        "bytes": 68032659456
-                    }
+                "os": "CentOS 4/5/6/7 (64-bit)",
+                "snapshot": {
+                    "info": [
+                        {
+                            "id": 1,
+                            "name": "VM Snapshot 7%2f3%2f2024, 4:01:21 PM",
+                            "description": "Created to demo",
+                            "createtime": "2024-07-03T20:01:34.329Z",
+                            "state": "poweredOn"
+                        },
+                        {
+                            "createtime": "2024-07-05T23:35:40.859Z",
+                            "state": "poweredOn",
+                            "id": 2,
+                            "name": "VM Snapshot 7%2f5%2f2024, 7:35:37 PM",
+                            "description": "backup"
+                        }
+                    ],
+                    "count": 2
                 }
-            },
-            "network_names": [
-                "PROD_VCF_VMS"
-            ],
-            "datastore": {
-                "count": 1,
-                "names": [
-                    "VxRailtoup-Virtual-Datastore-bc1d-5aa310fb"
-                ]
-            },
-            "os": "CentOS 4/5/6/7 (64-bit)",
-            "snapshot": {
-                "info": [
-                    {
-                        "id": 1,
-                        "name": "VM Snapshot 7%2f3%2f2024, 4:01:21 PM",
-                        "description": "Created to demo",
-                        "createtime": "2024-07-03T20:01:34.329Z",
-                        "state": "poweredOn"
-                    },
-                    {
-                        "createtime": "2024-07-05T23:35:40.859Z",
-                        "state": "poweredOn",
-                        "id": 2,
-                        "name": "VM Snapshot 7%2f5%2f2024, 7:35:37 PM",
-                        "description": "backup"
-                    }
-                ],
-                "count": 2
             }
         }
     }
 }
-
 ```
 
 **ECS Field Reference**
@@ -204,7 +205,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.network_names | Network names. | keyword |  |  |
 | vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |  |  |
 | vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  | gauge |
-| vsphere.virtualmachine.snapshot.info.\* | Details of the snapshots of this virtualmachine. | object |  |  |
+| vsphere.virtualmachine.snapshot.info.createtime | Snapshot creation time. | date |  |  |
+| vsphere.virtualmachine.snapshot.info.description | Snapshot description. | text |  |  |
+| vsphere.virtualmachine.snapshot.info.id | Snapshot ID. | long |  |  |
+| vsphere.virtualmachine.snapshot.info.name | Snapshot name. | keyword |  |  |
+| vsphere.virtualmachine.snapshot.info.state | Snapshot state (e.g., poweredOn). | keyword |  |  |
 | vsphere.virtualmachine.status | Overall health and status of a virtual machine. | keyword |  |  |
 | vsphere.virtualmachine.triggerd_alarms.\* | List of all the triggerd alarms. | object |  |  |
 | vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  | counter |
