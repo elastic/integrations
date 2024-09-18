@@ -80,85 +80,84 @@ An example event for `virtualmachine` looks as following:
         "type": "vsphere"
     },
     "vsphere": {
-        "vsphere": {
-            "virtualmachine": {
-                "name": "xt0nmfpv9",
-                "uptime": 5348978,
-                "status": "green",
-                "host": {
-                    "id": "host-32",
-                    "hostname": "phx-w1c1-esxi04.com"
+        "virtualmachine": {
+            "name": "xt0nmfpv9",
+            "uptime": 5348978,
+            "status": "green",
+            "host": {
+                "id": "host-32",
+                "hostname": "phx-w1c1-esxi04.com"
+            },
+            "cpu": {
+                "free": {
+                    "mhz": 0
                 },
-                "cpu": {
-                    "free": {
-                        "mhz": 0
-                    },
-                    "used": {
-                        "mhz": 161
-                    },
-                    "total": {
-                        "mhz": 0
-                    }
+                "used": {
+                    "mhz": 161
                 },
-                "network": {
-                    "names": [
-                        "PROD_VCF_VMS"
-                    ],
-                    "count": 1
-                },
-                "memory": {
-                    "used": {
-                        "guest": {
-                            "bytes": 686817280
-                        },
-                        "host": {
-                            "bytes": 29027729408
-                        }
-                    },
-                    "total": {
-                        "guest": {
-                            "bytes": 68719476736
-                        }
-                    },
-                    "free": {
-                        "guest": {
-                            "bytes": 68032659456
-                        }
-                    }
-                },
-                "network_names": [
+                "total": {
+                    "mhz": 0
+                }
+            },
+            "network": {
+                "names": [
                     "PROD_VCF_VMS"
                 ],
-                "datastore": {
-                    "count": 1,
-                    "names": [
-                        "VxRailtoup-Virtual-Datastore-bc1d-5aa310fb"
-                    ]
+                "count": 1
+            },
+            "memory": {
+                "used": {
+                    "guest": {
+                        "bytes": 686817280
+                    },
+                    "host": {
+                        "bytes": 29027729408
+                    }
                 },
-                "os": "CentOS 4/5/6/7 (64-bit)",
-                "snapshot": {
-                    "info": [
-                        {
-                            "id": 1,
-                            "name": "VM Snapshot 7%2f3%2f2024, 4:01:21 PM",
-                            "description": "Created to demo",
-                            "createtime": "2024-07-03T20:01:34.329Z",
-                            "state": "poweredOn"
-                        },
-                        {
-                            "createtime": "2024-07-05T23:35:40.859Z",
-                            "state": "poweredOn",
-                            "id": 2,
-                            "name": "VM Snapshot 7%2f5%2f2024, 7:35:37 PM",
-                            "description": "backup"
-                        }
-                    ],
-                    "count": 2
+                "total": {
+                    "guest": {
+                        "bytes": 68719476736
+                    }
+                },
+                "free": {
+                    "guest": {
+                        "bytes": 68032659456
+                    }
                 }
+            },
+            "network_names": [
+                "PROD_VCF_VMS"
+            ],
+            "datastore": {
+                "count": 1,
+                "names": [
+                    "VxRailtoup-Virtual-Datastore-bc1d-5aa310fb"
+                ]
+            },
+            "os": "CentOS 4/5/6/7 (64-bit)",
+            "snapshot": {
+                "info": [
+                    {
+                        "id": 1,
+                        "name": "VM Snapshot 7%2f3%2f2024, 4:01:21 PM",
+                        "description": "Created to demo",
+                        "createtime": "2024-07-03T20:01:34.329Z",
+                        "state": "poweredOn"
+                    },
+                    {
+                        "createtime": "2024-07-05T23:35:40.859Z",
+                        "state": "poweredOn",
+                        "id": 2,
+                        "name": "VM Snapshot 7%2f5%2f2024, 7:35:37 PM",
+                        "description": "backup"
+                    }
+                ],
+                "count": 2
             }
         }
     }
 }
+
 ```
 
 **ECS Field Reference**
