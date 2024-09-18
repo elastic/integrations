@@ -205,7 +205,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |  |  |
 | vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  | gauge |
 | vsphere.virtualmachine.snapshot.info.createtime | Snapshot creation time. | date |  |  |
-| vsphere.virtualmachine.snapshot.info.description | Snapshot description. | text |  |  |
+| vsphere.virtualmachine.snapshot.info.description | Snapshot description. | keyword |  |  |
 | vsphere.virtualmachine.snapshot.info.id | Snapshot ID. | long |  |  |
 | vsphere.virtualmachine.snapshot.info.name | Snapshot name. | keyword |  |  |
 | vsphere.virtualmachine.snapshot.info.state | Snapshot state (e.g., poweredOn). | keyword |  |  |
