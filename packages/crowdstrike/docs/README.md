@@ -1199,6 +1199,8 @@ and/or `session_token`.
 | crowdstrike.ChasisManufacturer |  | keyword |
 | crowdstrike.ChassisType |  | keyword |
 | crowdstrike.ClientComputerName |  | keyword |
+| crowdstrike.CommandHistory |  | keyword |
+| crowdstrike.CommandHistory.text | Multi-field of `crowdstrike.CommandHistory`. | match_only_text |
 | crowdstrike.CompletionEventId |  | keyword |
 | crowdstrike.ConHostId |  | keyword |
 | crowdstrike.ConHostProcessId |  | keyword |
@@ -1273,6 +1275,7 @@ and/or `session_token`.
 | crowdstrike.GenericFileWrittenCount |  | long |
 | crowdstrike.GrandParentBaseFileName |  | keyword |
 | crowdstrike.GrandparentCommandLine |  | keyword |
+| crowdstrike.GrandparentCommandLine.text | Multi-field of `crowdstrike.GrandparentCommandLine`. | match_only_text |
 | crowdstrike.GrandparentImageFileName |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
@@ -1369,6 +1372,7 @@ and/or `session_token`.
 | crowdstrike.Parameter3 |  | keyword |
 | crowdstrike.ParentAuthenticationId |  | keyword |
 | crowdstrike.ParentCommandLine |  | keyword |
+| crowdstrike.ParentCommandLine.text | Multi-field of `crowdstrike.ParentCommandLine`. | match_only_text |
 | crowdstrike.ParentImageFileName |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PatternDispositionDescription |  | keyword |
