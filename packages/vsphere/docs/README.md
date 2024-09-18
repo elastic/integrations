@@ -138,18 +138,18 @@ An example event for `virtualmachine` looks as following:
             "snapshot": {
                 "info": [
                     {
-                        "id": 123,
-                        "name": "Snapshot_1",
-                        "description": "Test snapshot 1",
-                        "createtime": "2024-09-01T12:34:56Z",
-                        "state": "PoweredOff"
+                        "id": 1,
+                        "name": "VM Snapshot 7%2f3%2f2024, 4:01:21 PM",
+                        "description": "Created to demo",
+                        "createtime": "2024-07-03T20:01:34.329Z",
+                        "state": "poweredOn"
                     },
                     {
-                        "id": 745,
-                        "name": "Snapshot_2",
-                        "description": "Test snapshot 2",
-                        "createtime": "2024-09-03T2:34:56Z",
-                        "state": "PoweredOn"
+                        "createtime": "2024-07-05T23:35:40.859Z",
+                        "state": "poweredOn",
+                        "id": 2,
+                        "name": "VM Snapshot 7%2f5%2f2024, 7:35:37 PM",
+                        "description": "backup"
                     }
                 ],
                 "count": 2
@@ -206,6 +206,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  |  |
 | vsphere.virtualmachine.snapshot.info.\* | Details of the snapshots of this virtualmachine. | object |  |  |
 | vsphere.virtualmachine.status | Overall health and status of a virtual machine. | keyword |  |  |
+| vsphere.virtualmachine.triggerd_alarms.\* | List of all the triggerd alarms. | object |  |  |
 | vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  |  |
 
 
