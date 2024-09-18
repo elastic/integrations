@@ -265,6 +265,10 @@ processors:
       field: json.Source
       target_field: cloudflare_logpush.firewall_event.source
       ignore_missing: true
+  - rename:
+      field: json.ZoneName
+      target_field: cloudflare_logpush.firewall_event.zone.name
+      ignore_missing: true
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
@@ -297,11 +301,6 @@ processors:
         - cloudflare_logpush.firewall_event.client.country
         - cloudflare_logpush.firewall_event.client.ip
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
   - script:
