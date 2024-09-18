@@ -128,7 +128,20 @@ An example event for `virtualmachine` looks as following:
             "network_names": "DC0_DVPG0",
             "os": "otherGuest",
             "status": "green",
-            "uptime": 0
+            "uptime": 0,
+            "snapshot.info": [
+                {
+                    "Name": "Snapshot_1",
+                    "Description": "Test snapshot 1",
+                    "CreateTime": "2024-09-01T12:34:56Z"
+                },
+                {
+                    "Name": "Snapshot_2",
+                    "Description": "Test snapshot 2",
+                    "CreateTime": "2024-09-03T2:34:56Z"
+                }
+            ],
+            "snapshot.count": 2
         }
     }
 }
@@ -161,7 +174,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz. | long |  | gauge |
-| vsphere.virtualmachine.cpu.total.mhz | Total CPU in Mhz. | long |  | counter |
+| vsphere.virtualmachine.cpu.total.mhz | Total Reserved CPU in Mhz. | long |  | counter |
 | vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz. | long |  | gauge |
 | vsphere.virtualmachine.custom_fields | Custom fields. | object |  |  |
 | vsphere.virtualmachine.datastore.count | Number of datastores associated to this virtualmachine. | long |  |  |
@@ -177,6 +190,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.network.names | Names of the networks associated to this virtualmachine. | keyword |  |  |
 | vsphere.virtualmachine.network_names | Network names. | keyword |  |  |
 | vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |  |  |
+| vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  |  |
 | vsphere.virtualmachine.status | Overall health and status of a virtual machine. | keyword |  |  |
 | vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  |  |
 
