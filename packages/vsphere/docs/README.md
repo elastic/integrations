@@ -441,9 +441,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.capacity.total.bytes | Total bytes of the datastore. | long | byte | gauge |
 | vsphere.datastore.capacity.used.bytes | Used bytes of the datastore. | long | byte | gauge |
 | vsphere.datastore.capacity.used.pct | Percentage of datastore capacity used. | scaled_float | percent | gauge |
-| vsphere.datastore.disk.capacity.bytes | Configured size of the datastore. | long |  |  |
-| vsphere.datastore.disk.capacity.usage.bytes | The amount of storage capacity currently being consumed by datastore. | long |  |  |
-| vsphere.datastore.disk.provisioned.bytes | Amount of storage set aside for use by a datastore. | long |  |  |
+| vsphere.datastore.disk.capacity.bytes | Configured size of the datastore. | long |  | gauge |
+| vsphere.datastore.disk.capacity.usage.bytes | The amount of storage capacity currently being consumed by datastore. | long |  | gauge |
+| vsphere.datastore.disk.provisioned.bytes | Amount of storage set aside for use by a datastore. | long |  | gauge |
 | vsphere.datastore.fstype | Filesystem type. | keyword |  |  |
 | vsphere.datastore.host.count | Number of hosts associated with the datastore. | long |  | gauge |
 | vsphere.datastore.host.names | List of all the host names associated with the datastore. | keyword |  |  |
