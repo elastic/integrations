@@ -1,10 +1,11 @@
----
 description: Pipeline for TYCHON CMRS Data
 processors:
 
   - pipeline:
+      tag: pipeline
       name: '{{ IngestPipeline "common_init" }}'
   - pipeline:
+      tag: pipeline_2
       name: '{{ IngestPipeline "rest" }}'
 
 ###################
@@ -13,6 +14,7 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"
@@ -20,5 +22,6 @@ on_failure:
         in pipeline "{{{ _ingest.on_failure_pipeline }}}"
         failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error

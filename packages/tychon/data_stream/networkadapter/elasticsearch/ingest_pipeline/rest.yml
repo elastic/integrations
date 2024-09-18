@@ -1,8 +1,8 @@
----
 description: Pipeline for parsing TYCHON Network Adapters
 processors:
 
   - script:
+      tag: script
       source: |
         if (ctx.tychon?.host?.adapter?.link_speed?.contains(' ') == true) {
           String[] parts = ctx.tychon.host.adapter.link_speed.splitOnToken(' ');
@@ -28,21 +28,25 @@ processors:
   # ECS fields
 
   - append:
+      tag: append_related_hosts
       field: related.hosts
       value: "{{{tychon.host.adapter.domain}}}"
       if: ctx.tychon?.host?.adapter?.domain != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip
       field: related.ip
       value: "{{{tychon.host.adapter.ip}}}"
       if: ctx.tychon?.host?.adapter?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_2
       field: related.ip
       value: "{{{tychon.host.adapter.gateway}}}"
       if: ctx.tychon?.host?.adapter?.gateway != null
       allow_duplicates: false
 
   - set:
+      tag: set_event_category
       field: event.category
       value: [configuration]

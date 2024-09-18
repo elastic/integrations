@@ -1,24 +1,28 @@
----
 description: Pipeline for TYCHON STIG Response Data
 processors:
 
   - set:
+      tag: set_tychon_rule_result
       if: "ctx.tychon?.rule?.test_result != null"
       field: tychon.rule.result
       value: '{{tychon.rule.test_result}}'
   - remove:
+      tag: remove_tychon_rule_test_result
       field: tychon.rule.test_result
       ignore_missing: true
   - convert:
+      tag: convert_tychon_rule_weight
       field: tychon.rule.weight
       type: float
       ignore_missing: true
 
   # rule.result.score was previously a runtime field
   - set:
+      tag: set_tychon_rule_result_score
       field: tychon.rule.result_score
       value: 0
   - set:
+      tag: set_tychon_rule_result_score_2
       field: tychon.rule.result_score
       value: 10
       if: "ctx.tychon?.rule?.result == 'fail'"
@@ -26,22 +30,26 @@ processors:
   # ECS fields
 
   - set:
+      tag: set_event_category
       field: event.category
       value: [vulnerability, configuration]
 
   # ECS fields from the tychon fieldset
 
   - append:
+      tag: append_related_hash
       field: related.hash
       value: "{{{tychon.benchmark.hash}}}"
       if: ctx.tychon?.benchmark?.hash != null
       allow_duplicates: false
 
   - set:
+      tag: set_rule_id
       field: rule.id
       copy_from: tychon.rule.id
       ignore_empty_value: true
   - set:
+      tag: set_rule_name
       field: rule.name
       copy_from: tychon.rule.name
       ignore_empty_value: true
