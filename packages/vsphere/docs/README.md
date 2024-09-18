@@ -361,16 +361,27 @@ An example event for `datastore` looks as following:
     },
     "vsphere": {
         "datastore": {
+            "disk": {
+                "capacity": {
+                    "usage": {
+                        "bytes": 520505786368
+                    },
+                    "bytes": 1610344300544
+                },
+                "provisioned": {
+                    "bytes": 520505786368
+                }
+            },
             "capacity": {
                 "free": {
-                    "bytes": 10952166604800
+                    "bytes": 37120094208
                 },
                 "total": {
-                    "bytes": 10995116277760
+                    "bytes": 74686664704
                 },
                 "used": {
-                    "bytes": 42949672960,
-                    "pct": 0.004
+                    "bytes": 37566570496,
+                    "pct": 0.502988996026061
                 }
             },
             "fstype": "OTHER",
@@ -430,6 +441,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.capacity.total.bytes | Total bytes of the datastore. | long | byte | gauge |
 | vsphere.datastore.capacity.used.bytes | Used bytes of the datastore. | long | byte | gauge |
 | vsphere.datastore.capacity.used.pct | Percentage of datastore capacity used. | scaled_float | percent | gauge |
+| vsphere.datastore.disk.capacity.bytes | Configured size of the datastore. | long |  |  |
+| vsphere.datastore.disk.capacity.usage.bytes | The amount of storage capacity currently being consumed by datastore. | long |  |  |
+| vsphere.datastore.disk.provisioned.bytes | Amount of storage set aside for use by a datastore. | long |  |  |
 | vsphere.datastore.fstype | Filesystem type. | keyword |  |  |
 | vsphere.datastore.host.count | Number of hosts associated with the datastore. | long |  | gauge |
 | vsphere.datastore.host.names | List of all the host names associated with the datastore. | keyword |  |  |
