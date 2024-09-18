@@ -190,7 +190,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.cpu.total.mhz | Total Reserved CPU in Mhz. | long |  | counter |
 | vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz. | long |  | gauge |
 | vsphere.virtualmachine.custom_fields | Custom fields. | object |  |  |
-| vsphere.virtualmachine.datastore.count | Number of datastores associated to this virtualmachine. | long |  |  |
+| vsphere.virtualmachine.datastore.count | Number of datastores associated to this virtualmachine. | long |  | gauge |
 | vsphere.virtualmachine.datastore.names | Names of the datastore associated to this virtualmachine. | keyword |  |  |
 | vsphere.virtualmachine.host.hostname | Hostname of the host. | keyword |  |  |
 | vsphere.virtualmachine.host.id | Host id. | keyword |  |  |
@@ -199,15 +199,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes. | long | byte | gauge |
 | vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes. | long | byte | gauge |
 | vsphere.virtualmachine.name | Virtual Machine name. | keyword |  |  |
-| vsphere.virtualmachine.network.count | Number of networks associated to this virtualmachine. | long |  |  |
+| vsphere.virtualmachine.network.count | Number of networks associated to this virtualmachine. | long |  | gauge |
 | vsphere.virtualmachine.network.names | Names of the networks associated to this virtualmachine. | keyword |  |  |
 | vsphere.virtualmachine.network_names | Network names. | keyword |  |  |
 | vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |  |  |
-| vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  |  |
+| vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  | gauge |
 | vsphere.virtualmachine.snapshot.info.\* | Details of the snapshots of this virtualmachine. | object |  |  |
 | vsphere.virtualmachine.status | Overall health and status of a virtual machine. | keyword |  |  |
 | vsphere.virtualmachine.triggerd_alarms.\* | List of all the triggerd alarms. | object |  |  |
-| vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  |  |
+| vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  | counter |
 
 
 ### Host Metrics
