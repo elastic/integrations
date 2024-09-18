@@ -204,6 +204,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.network_names | Network names. | keyword |  |  |
 | vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |  |  |
 | vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  |  |
+| vsphere.virtualmachine.snapshot.info.\* | Details of the snapshots of this virtualmachine. | object |  |  |
 | vsphere.virtualmachine.status | Overall health and status of a virtual machine. | keyword |  |  |
 | vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  |  |
 
