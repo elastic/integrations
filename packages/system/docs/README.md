@@ -1399,6 +1399,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
 | process.cpu.pct | The percentage of CPU time spent by the process since the last event. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |  |  |
 | process.cpu.start_time | The time when the process was started. | date |  |  |
 | process.memory.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float |  |  |
