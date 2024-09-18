@@ -81,70 +81,83 @@ An example event for `virtualmachine` looks as following:
     },
     "vsphere": {
         "virtualmachine": {
+            "name": "xt0nmfpv9",
+            "uptime": 5348978,
+            "status": "green",
+            "host": {
+                "id": "host-32",
+                "hostname": "phx-w1c1-esxi04.com"
+            },
             "cpu": {
                 "free": {
                     "mhz": 0
                 },
-                "total": {
-                    "mhz": 0
-                },
                 "used": {
+                    "mhz": 161
+                },
+                "total": {
                     "mhz": 0
                 }
             },
-            "datastore": {
-                "count": 1,
-                "names": "LocalDS_0"
-            },
-            "host": {
-                "hostname": "DC0_H0",
-                "id": "host-21"
+            "network": {
+                "names": [
+                    "PROD_VCF_VMS"
+                ],
+                "count": 1
             },
             "memory": {
-                "free": {
+                "used": {
                     "guest": {
-                        "bytes": 33554432
+                        "bytes": 686817280
+                    },
+                    "host": {
+                        "bytes": 29027729408
                     }
                 },
                 "total": {
                     "guest": {
-                        "bytes": 33554432
+                        "bytes": 68719476736
                     }
                 },
-                "used": {
+                "free": {
                     "guest": {
-                        "bytes": 0
-                    },
-                    "host": {
-                        "bytes": 0
+                        "bytes": 68032659456
                     }
                 }
             },
-            "name": "DC0_H0_VM0",
-            "network": {
-                "count": 1,
-                "names": "DC0_DVPG0"
-            },
-            "network_names": "DC0_DVPG0",
-            "os": "otherGuest",
-            "status": "green",
-            "uptime": 0,
-            "snapshot.info": [
-                {
-                    "Name": "Snapshot_1",
-                    "Description": "Test snapshot 1",
-                    "CreateTime": "2024-09-01T12:34:56Z"
-                },
-                {
-                    "Name": "Snapshot_2",
-                    "Description": "Test snapshot 2",
-                    "CreateTime": "2024-09-03T2:34:56Z"
-                }
+            "network_names": [
+                "PROD_VCF_VMS"
             ],
-            "snapshot.count": 2
+            "datastore": {
+                "count": 1,
+                "names": [
+                    "VxRailtoup-Virtual-Datastore-bc1d-5aa310fb"
+                ]
+            },
+            "os": "CentOS 4/5/6/7 (64-bit)",
+            "snapshot": {
+                "info": [
+                    {
+                        "id": 123,
+                        "name": "Snapshot_1",
+                        "description": "Test snapshot 1",
+                        "createtime": "2024-09-01T12:34:56Z",
+                        "state": "PoweredOff"
+                    },
+                    {
+                        "id": 745,
+                        "name": "Snapshot_2",
+                        "description": "Test snapshot 2",
+                        "createtime": "2024-09-03T2:34:56Z",
+                        "state": "PoweredOn"
+                    }
+                ],
+                "count": 2
+            }
         }
     }
 }
+
 ```
 
 **ECS Field Reference**
