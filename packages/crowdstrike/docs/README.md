@@ -550,6 +550,10 @@ An example event for `alert` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 
 
 ### Falcon
@@ -2247,4 +2251,5 @@ An example event for `host` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| tags | List of keywords used to tag each event. | keyword |
 
