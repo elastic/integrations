@@ -15,12 +15,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const (
-	codeownersPath = ".github/CODEOWNERS"
-)
+const DefaultCodeownersPath = ".github/CODEOWNERS"
 
 func Check() error {
-	codeowners, err := readGithubOwners(codeownersPath)
+	codeowners, err := readGithubOwners(DefaultCodeownersPath)
 	if err != nil {
 		return err
 	}
@@ -32,11 +30,7 @@ func Check() error {
 	return nil
 }
 
-func PackageOwners(packageName, dataStream string) ([]string, error) {
-	return PackageOwnersCustomCodeowners(packageName, dataStream, codeownersPath)
-}
-
-func PackageOwnersCustomCodeowners(packageName, dataStream, codeownersPath string) ([]string, error) {
+func PackageOwners(packageName, dataStream, codeownersPath string) ([]string, error) {
 	owners, err := readGithubOwners(codeownersPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read CODEOWNERS file: %w", err)

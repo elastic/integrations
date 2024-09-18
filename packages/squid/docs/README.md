@@ -31,7 +31,6 @@ The `log` dataset collects Squid logs.
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | squid.content_type | The content type as seen in the HTTP reply header. | keyword |
-| squid.peer_host | Hostname or IP address where, in the event of a cache miss, the request was forwarded. | keyword |
 | squid.peer_status | A code explaining how the request was handled, by forwarding it to a peer or going straight to the source. | keyword |
 | squid.result_code | The outcome of the request. | keyword |
 | squid.status_code | The status of the result. | long |
