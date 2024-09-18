@@ -825,7 +825,6 @@ An example event for `endpoint_event` looks as following:
         "carbon_black_cloud-endpoint-event"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1041,7 +1040,6 @@ An example event for `watchlist_hit` looks as following:
         "carbon_black_cloud-watchlist-hit"
     ]
 }
-
 ```
 
 **Exported fields**

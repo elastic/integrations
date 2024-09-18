@@ -150,7 +150,6 @@ An example event for `log` looks as following:
         "dataset": "stormshield.log"
     }
 }
-
 ```
 
 **Exported fields**
