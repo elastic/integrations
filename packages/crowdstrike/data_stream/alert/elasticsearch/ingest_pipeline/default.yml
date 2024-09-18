@@ -412,6 +412,12 @@ processors:
       value: '{{{crowdstrike.alert.device.local_ip}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.device?.local_ip != null
+  - append:
+      field: host.ip
+      tag: append_crowdstrike_alert_device_local_ip_into_host_ip
+      value: '{{{crowdstrike.alert.device.local_ip}}}'
+      allow_duplicates: false
+      if: ctx.crowdstrike?.alert?.device?.local_ip != null
   - gsub:
       field: json.device.mac_address
       tag: gsub_device_mac_address
@@ -499,6 +505,10 @@ processors:
       tag: set_host_os_platform_from_alert_device_platform_name
       copy_from: crowdstrike.alert.device.platform_name
       ignore_empty_value: true
+  - lowercase:
+      field: crowdstrike.alert.device.platform_name
+      target_field: host.os.type
+      ignore_failure: true
   - rename:
       field: json.device.pod_labels
       tag: rename_device_pod_labels
@@ -529,16 +539,31 @@ processors:
       tag: rename_device_system_manufacturer
       target_field: crowdstrike.alert.device.system_manufacturer
       ignore_missing: true
+  - set:
+      field: device.manufacturer
+      tag: set_device_manufacturer
+      copy_from: crowdstrike.alert.device.system_manufacturer
+      ignore_empty_value: true
   - rename:
       field: json.device.system_product_name
       tag: rename_device_system_product_name
       target_field: crowdstrike.alert.device.system_product_name
       ignore_missing: true
+  - set:
+      field: device.model.name
+      tag: set_device_model_name
+      copy_from: crowdstrike.alert.device.system_product_name
+      ignore_empty_value: true
   - rename:
       field: json.device.tags
       tag: rename_device_tags
       target_field: crowdstrike.alert.device.tags
       ignore_missing: true
+  - append:
+      field: tags
+      value: '{{{crowdstrike.alert.device.tags}}}'
+      allow_duplicates: false
+      if: ctx.crowdstrike?.alert?.device?.tags != null
   - rename:
       field: json.display_name
       tag: rename_display_name
@@ -631,6 +656,11 @@ processors:
       tag: set_file_name_from_alert_filename
       copy_from: crowdstrike.alert.filename
       ignore_empty_value: true
+  - set:
+      field: process.name
+      tag: set_process_name
+      copy_from: crowdstrike.alert.filename
+      ignore_empty_value: true
   - rename:
       field: json.filepath
       tag: rename_filepath
@@ -639,6 +669,11 @@ processors:
   - set:
       field: file.path
       tag: set_file_path_from_alert_filepath
+      copy_from: crowdstrike.alert.filepath
+      ignore_empty_value: true
+  - set:
+      field: process.executable
+      tag: set_process_executable
       copy_from: crowdstrike.alert.filepath
       ignore_empty_value: true
   - foreach:
@@ -1085,6 +1120,11 @@ processors:
       tag: rename_md5
       target_field: crowdstrike.alert.md5
       ignore_missing: true
+  - set:
+      field: process.hash.md5
+      tag: set_process_hash_md5
+      copy_from: crowdstrike.alert.md5
+      ignore_empty_value: true
   - append:
       field: related.hash
       value: '{{{crowdstrike.alert.md5}}}'
@@ -1264,11 +1304,21 @@ processors:
       tag: rename_parent_details_filename
       target_field: crowdstrike.alert.parent_details.filename
       ignore_missing: true
+  - set:
+      field: process.parent.name
+      tag: set_process_parent_name
+      copy_from: crowdstrike.alert.parent_details.filename
+      ignore_empty_value: true
   - rename:
       field: json.parent_details.filepath
       tag: rename_parent_details_filepath
       target_field: crowdstrike.alert.parent_details.filepath
       ignore_missing: true
+  - set:
+      field: process.parent.executable
+      tag: set_process_parent_executable
+      copy_from: crowdstrike.alert.parent_details.filepath
+      ignore_empty_value: true
   - rename:
       field: json.parent_details.local_process_id
       tag: rename_parent_details_local_process_id
@@ -1762,7 +1812,6 @@ processors:
       tag: date_process_start_time
       target_field: crowdstrike.alert.process_start_time
       formats:
-        - ISO8601
         - UNIX
         - UNIX_MS
       if: ctx.json?.process_start_time != null && ctx.json.process_start_time != ''
@@ -1880,6 +1929,16 @@ processors:
       tag: rename_sha256
       target_field: crowdstrike.alert.sha256
       ignore_missing: true
+  - set:
+      field: process.hash.sha1
+      tag: set_process_hash_sha1
+      copy_from: crowdstrike.alert.sha1
+      ignore_empty_value: true
+  - set:
+      field: process.hash.sha256
+      tag: set_process_hash_sha256
+      copy_from: crowdstrike.alert.sha256
+      ignore_empty_value: true
   - append:
       field: related.hash
       value: '{{{crowdstrike.alert.sha1}}}'
@@ -1906,6 +1965,11 @@ processors:
       tag: rename_source_account_azure_id
       target_field: crowdstrike.alert.source.account_azure_id
       ignore_missing: true
+  - set:
+      field: cloud.account.id
+      tag: set_cloud_account_id
+      copy_from: crowdstrike.alert.source.account_azure_id
+      ignore_empty_value: true
   - rename:
       field: json.source_account_domain
       tag: rename_source_account_domain
@@ -2119,6 +2183,11 @@ processors:
       tag: rename_tags
       target_field: crowdstrike.alert.tags
       ignore_missing: true
+  - append:
+      field: tags
+      value: '{{{crowdstrike.alert.tags}}}'
+      allow_duplicates: false
+      if: ctx.crowdstrike?.alert?.tags != null
   - rename:
       field: json.target_endpoint_host_name
       tag: rename_target_endpoint_host_name
@@ -2343,9 +2412,13 @@ processors:
         - crowdstrike.alert.device.external_ip
         - crowdstrike.alert.device.hostinfo.domain
         - crowdstrike.alert.device.hostname
+        - crowdstrike.alert.device.local_ip
         - crowdstrike.alert.device.mac_address
         - crowdstrike.alert.device.os_version
         - crowdstrike.alert.device.platform_name
+        - crowdstrike.alert.device.system_manufacturer
+        - crowdstrike.alert.device.system_product_name
+        - crowdstrike.alert.device.tags
         - crowdstrike.alert.end_time
         - crowdstrike.alert.filename
         - crowdstrike.alert.filepath
@@ -2353,8 +2426,11 @@ processors:
         - crowdstrike.alert.idp_policy_rule.id
         - crowdstrike.alert.idp_policy_rule.name
         - crowdstrike.alert.location_country_code
+        - crowdstrike.alert.md5
         - crowdstrike.alert.os_name
         - crowdstrike.alert.parent_details.cmdline
+        - crowdstrike.alert.parent_details.filename
+        - crowdstrike.alert.parent_details.filepath
         - crowdstrike.alert.parent_details.md5
         - crowdstrike.alert.parent_details.sha256
         - crowdstrike.alert.parent_details.user_id
@@ -2364,11 +2440,15 @@ processors:
         - crowdstrike.alert.process_id
         - crowdstrike.alert.process_start_time
         - crowdstrike.alert.severity
+        - crowdstrike.alert.sha1
+        - crowdstrike.alert.sha256
+        - crowdstrike.alert.source.account_azure_id
         - crowdstrike.alert.source.account_domain
         - crowdstrike.alert.source.account_name
         - crowdstrike.alert.source.endpoint_host_name
         - crowdstrike.alert.source.endpoint_ip_address
         - crowdstrike.alert.start_time
+        - crowdstrike.alert.tags
         - crowdstrike.alert.tactic
         - crowdstrike.alert.target.account_name
         - crowdstrike.alert.target.domain_controller_host_name
