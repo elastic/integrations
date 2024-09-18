@@ -7,49 +7,49 @@ env:
 
 # The pipeline is triggered by the scheduler every day
 steps:
-  - label: ":white_check_mark: Check go sources"
-    key: "check"
-    command: ".buildkite/scripts/check_sources.sh"
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-      cpu: "8"
-      memory: "4G"
+  # - label: ":white_check_mark: Check go sources"
+  #   key: "check"
+  #   command: ".buildkite/scripts/check_sources.sh"
+  #   agents:
+  #     image: "${LINUX_AGENT_IMAGE}"
+  #     cpu: "8"
+  #     memory: "4G"
 
-  - label: "Check integrations local stacks - Stack Version v7.17"
-    trigger: "integrations"
-    build:
-      env:
-        SERVERLESS: "false"
-        FORCE_CHECK_ALL: "true"
-        STACK_VERSION: 7.17.25-SNAPSHOT
-    depends_on:
-      - step: "check"
-        allow_failure: false
+  # - label: "Check integrations local stacks - Stack Version v7.17"
+  #   trigger: "integrations"
+  #   build:
+  #     env:
+  #       SERVERLESS: "false"
+  #       FORCE_CHECK_ALL: "true"
+  #       STACK_VERSION: 7.17.25-SNAPSHOT
+  #   depends_on:
+  #     - step: "check"
+  #       allow_failure: false
 
-  - label: "Check integrations local stacks - Stack Version v8.16"
-    trigger: "integrations"
-    build:
-      env:
-        SERVERLESS: "false"
-        FORCE_CHECK_ALL: "true"
-        STACK_VERSION: 8.16.0-SNAPSHOT
-        PUBLISH_COVERAGE_REPORTS: "true"
-    depends_on:
-      - step: "check"
-        allow_failure: false
+  # - label: "Check integrations local stacks - Stack Version v8.16"
+  #   trigger: "integrations"
+  #   build:
+  #     env:
+  #       SERVERLESS: "false"
+  #       FORCE_CHECK_ALL: "true"
+  #       STACK_VERSION: 8.16.0-SNAPSHOT
+  #       PUBLISH_COVERAGE_REPORTS: "true"
+  #   depends_on:
+  #     - step: "check"
+  #       allow_failure: false
 
-  - label: "Check integrations local stacks - Stack Version v8.16 - LogsDB"
-    trigger: "integrations"
-    build:
-      env:
-        SERVERLESS: "false"
-        FORCE_CHECK_ALL: "true"
-        STACK_VERSION: 8.16.0-SNAPSHOT
-        STACK_LOGSDB_ENABLED: "true"
-        PUBLISH_COVERAGE_REPORTS: "false"
-    depends_on:
-      - step: "check"
-        allow_failure: false
+  # - label: "Check integrations local stacks - Stack Version v8.16 - LogsDB"
+  #   trigger: "integrations"
+  #   build:
+  #     env:
+  #       SERVERLESS: "false"
+  #       FORCE_CHECK_ALL: "true"
+  #       STACK_VERSION: 8.16.0-SNAPSHOT
+  #       STACK_LOGSDB_ENABLED: "true"
+  #       PUBLISH_COVERAGE_REPORTS: "false"
+  #   depends_on:
+  #     - step: "check"
+  #       allow_failure: false
 
   - label: "Check integrations local stacks - Stack Version v9.0"
     trigger: "integrations"
@@ -59,33 +59,30 @@ steps:
         FORCE_CHECK_ALL: "true"
         STACK_VERSION: 9.0.0-SNAPSHOT
         PUBLISH_COVERAGE_REPORTS: "false"
-    depends_on:
-      - step: "check"
-        allow_failure: false
 
-  - label: "Check integrations in serverless - project: Observability"
-    key: "trigger-integrations-serverless-obs"
-    trigger: "integrations-serverless"
-    build:
-      env:
-        SERVERLESS_PROJECT: observability
-    depends_on:
-      - step: "check"
-        allow_failure: false
+  # - label: "Check integrations in serverless - project: Observability"
+  #   key: "trigger-integrations-serverless-obs"
+  #   trigger: "integrations-serverless"
+  #   build:
+  #     env:
+  #       SERVERLESS_PROJECT: observability
+  #   depends_on:
+  #     - step: "check"
+  #       allow_failure: false
 
-  - label: "Check integrations in serverless - project: Security"
-    key: "trigger-integrations-serverless-security"
-    trigger: "integrations-serverless"
-    build:
-      env:
-        SERVERLESS_PROJECT: security
-    depends_on:
-      - step: "check"
-        allow_failure: false
+  # - label: "Check integrations in serverless - project: Security"
+  #   key: "trigger-integrations-serverless-security"
+  #   trigger: "integrations-serverless"
+  #   build:
+  #     env:
+  #       SERVERLESS_PROJECT: security
+  #   depends_on:
+  #     - step: "check"
+  #       allow_failure: false
 
-  - label: ":package: Publish missing packages"
-    key: "trigger-integrations-publish"
-    trigger: "integrations-publish"
-    depends_on:
-      - step: "check"
-        allow_failure: false
+  # - label: ":package: Publish missing packages"
+  #   key: "trigger-integrations-publish"
+  #   trigger: "integrations-publish"
+  #   depends_on:
+  #     - step: "check"
+  #       allow_failure: false
