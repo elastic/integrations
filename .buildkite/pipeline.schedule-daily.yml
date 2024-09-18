@@ -15,7 +15,9 @@ steps:
       cpu: "8"
       memory: "4G"
 
+  # TODO: Once removing this step, review depends_on configuration in 9.x step
   - label: "Check integrations local stacks - Stack Version v7.17"
+    key: "local-7-stack"
     trigger: "integrations"
     build:
       env:
@@ -27,6 +29,7 @@ steps:
         allow_failure: false
 
   - label: "Check integrations local stacks - Stack Version v8.16"
+    key: "local-8-stack"
     trigger: "integrations"
     build:
       env:
@@ -39,6 +42,7 @@ steps:
         allow_failure: false
 
   - label: "Check integrations local stacks - Stack Version v8.16 - LogsDB"
+    key: "local-8-stack-logsdb"
     trigger: "integrations"
     build:
       env:
@@ -52,6 +56,7 @@ steps:
         allow_failure: false
 
   - label: "Check integrations local stacks - Stack Version v9.0"
+    key: "local-9-stack-logsdb"
     trigger: "integrations"
     build:
       env:
@@ -59,9 +64,9 @@ steps:
         FORCE_CHECK_ALL: "true"
         STACK_VERSION: 9.0.0-SNAPSHOT
         PUBLISH_COVERAGE_REPORTS: "false"
-    depends_on:
-      - step: "check"
-        allow_failure: false
+    depends_on: # TODO: once removed 7.x step , update depends_on.step value to "check" and allow_failure to false
+      - step: "local-8-stack"
+        allow_failure: true
 
   - label: "Check integrations in serverless - project: Observability"
     key: "trigger-integrations-serverless-obs"
