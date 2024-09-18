@@ -1295,6 +1295,7 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.rule.id | The Cloudflare security product-specific RuleID triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.source | The Cloudflare security product triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.timestamp | The date and time the event occurred at the edge. | date |
+| cloudflare_logpush.firewall_event.zone.name | The human-readable name of the zone. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -2405,6 +2406,8 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.firewall.matches.rule_id | Array of RuleIDs of the firewall product that has matched the request. | keyword |
 | cloudflare_logpush.http_request.firewall.matches.sources | The firewall products that matched the request. | keyword |
 | cloudflare_logpush.http_request.ja3_hash | The MD5 hash of the JA3 fingerprint used to profile SSL/TLS clients. | keyword |
+| cloudflare_logpush.http_request.ja4 | The JA4 fingerprint used to profile SSL/TLS clients. Available only for Bot Management customers. | keyword |
+| cloudflare_logpush.http_request.ja4_signals | Inter-request statistics computed for this JA4 fingerprint. JA4Signals field is organized in key:value pairs, where values are numbers. Available only for Bot Management customers. | flattened |
 | cloudflare_logpush.http_request.origin.dns_response_time.ms | Time taken to receive a DNS response for an origin name. | long |
 | cloudflare_logpush.http_request.origin.ip | IP of the origin server. | ip |
 | cloudflare_logpush.http_request.origin.request_header_send_duration.ms | Time taken to send request headers to origin after establishing a connection. | long |

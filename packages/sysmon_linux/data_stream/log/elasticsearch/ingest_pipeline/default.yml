@@ -802,7 +802,6 @@ processors:
             ]);
             relatedHosts.add(parts[2]);
           } else {
-            answer = answer.replace("::ffff:", "");
             ips.add(answer);
           }
         }
@@ -819,6 +818,24 @@ processors:
           }
           ctx.related.hosts = relatedHosts;
         }
+  - foreach:
+      field: dns.answers
+      if: ctx.dns?.answers instanceof List
+      ignore_failure: true
+      processor:
+        gsub:
+          field: _ingest._value
+          pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)' 
+          replacement: '$1'
+  - foreach:
+      field: dns.resolved_ip
+      if: ctx.dns?.resolved_ip instanceof List
+      ignore_failure: true
+      processor:
+        gsub:
+          field: _ingest._value
+          pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)' 
+          replacement: '$1'
   - foreach:
       field: dns.resolved_ip
       ignore_missing: true

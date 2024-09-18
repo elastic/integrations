@@ -110,6 +110,24 @@ func TestSummary(t *testing.T) {
     - team2
 `,
 		},
+		{
+			title: "summary logsdb",
+			packageError: PackageError{
+				LogsDB:      true,
+				PackageName: "foo",
+				testCase: testCase{
+					Name: "mytest",
+				},
+				Teams: []string{"team1", "team2"},
+			},
+			expected: `- LogsDB: enabled
+- Package: foo
+- Failing test: mytest
+- Owners:
+    - team1
+    - team2
+`,
+		},
 	}
 
 	for _, c := range cases {
