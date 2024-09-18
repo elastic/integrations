@@ -33,15 +33,14 @@ Note:
 - users should ensure that the period is configured optimally to receive real-time data.
 - users can still collect summary metrics if performance metrics are not supported for the configured instance.
 - This configuration can be determined based on the Data Collection Intervals and Data Collection Levels.
-- Reference Links:
-    - Data Collection Intervals: https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-247646EA-A04B-411A-8DD4-62A3DCFCF49B.html
-    - Data Collection Levels: https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-25800DE4-68E5-41CC-82D9-8811E27924BC.html
+- Reference for [Data Collection Intervals](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-247646EA-A04B-411A-8DD4-62A3DCFCF49B.html) and [Data Collection Levels](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-25800DE4-68E5-41CC-82D9-8811E27924BC.html)
 
 ## Prerequisites
 
 You can store and search your data using Elasticsearch and visualize and manage it with Kibana. We recommend using our hosted Elasticsearch Service on Elastic Cloud or self-managing the Elastic Stack on your own hardware.
 
 ## Compatibility
+
 This integration supports VMware ESXi and vCenter versions 6.5, 6.7, and 7.0. It has been tested and verified to work with these versions.
 
 ## Setup
@@ -86,8 +85,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 This is the `host` data stream. This data stream collects host metrics from VMware vSphere, including performance statistics such as CPU usage, memory usage, disk I/O, and network activity.
 
-Note: vSphere Integration currently supports network names of VMs connected only to vSS (vSphere Standard Switch) and not vDS (vSphere Distributed Switches).
-
 {{event "host"}}
 
 **ECS Field Reference**
@@ -99,8 +96,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ### Virtual Machine
 
 This is the `virtualmachine` data stream. This data stream collects virtual machine metrics from VMware vSphere, including performance statistics such as status, uptime, CPU usage, memory usage, and network activity.
-
- Note: vSphere Integration currently supports network names of VMs connected only to vSS (vSphere Standard Switch) and not vDS (vSphere Distributed Switches).
 
 {{event "virtualmachine"}}
 
