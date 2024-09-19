@@ -527,6 +527,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.resourcepool.memory.usage.host.bytes | Host memory utilization statistics, in bytes. | long | gauge |
 | vsphere.resourcepool.name | The name of the resource pool. | keyword |  |
 | vsphere.resourcepool.status | The overall health status of a host in the vSphere environment. | keyword |  |
+| vsphere.resourcepool.triggered_alarms.description | Description of the alarm. | keyword |  |
+| vsphere.resourcepool.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
+| vsphere.resourcepool.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |
+| vsphere.resourcepool.triggered_alarms.name | Name of the alarm. | keyword |  |
+| vsphere.resourcepool.triggered_alarms.status | Status of the alarm. | keyword |  |
+| vsphere.resourcepool.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |
 | vsphere.resourcepool.vm.count | Number of virtual machines on the resource pool. | long | gauge |
 | vsphere.resourcepool.vm.names | Names of virtual machines on the resource pool. | keyword |  |
 
