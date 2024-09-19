@@ -23,7 +23,7 @@ Data streams:
 - `cluster`: This data stream collects metrics from VMware vSphere, such as lists of datastores, hosts and networks associated with cluster.
 - `datastore`: This data stream collects datastore metrics from VMware vSphere, including performance statistics such as capacity, usage, read/write operations, latency, and throughput. These metrics are available in this data stream.
 - `host`: This data stream collects host metrics from VMware vSphere, including performance statistics such as CPU usage, memory usage, disk I/O, and network activity. These metrics are available in this data stream.
-- `resourcepool`: This data stream collects metrics from VMware vSphere, such as performance statistics such as CPU and memory usage, CPU and memory reservation, and CPU and memory limit. These metrics are available in this data stream.
+- `resourcepool`: This data stream collects metrics from VMware vSphere, such as CPU and memory usage, CPU and memory reservation, and CPU and memory limit. These metrics are available in this data stream.
 - `virtualmachine`: This data stream collects virtual machine metrics from VMware vSphere, including performance statistics such as status, uptime, CPU usage, memory usage, and network activity. These metrics are available in this data stream.
 
 
