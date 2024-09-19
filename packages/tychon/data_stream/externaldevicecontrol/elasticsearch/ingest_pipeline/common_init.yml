@@ -28,6 +28,12 @@ processors:
       tag: rename_message
       field: message
       target_field: event.original
+      if: ctx.event?.original == null
+      ignore_missing: true
+  - remove:
+      tag: remove_message
+      field: message
+      if: ctx.event?.original != null
       ignore_missing: true
 
   # tychon.script.*
