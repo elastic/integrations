@@ -6,11 +6,6 @@
     - name: cpu
       type: group
       fields:
-        - name: usage.mhz
-          type: long
-          metric_type: gauge
-          description: >
-            Basic CPU performance statistics, in MHz.
         - name: demand.mhz
           type: long
           metric_type: gauge
@@ -29,84 +24,100 @@
               type: long
               description: >
                 The static CPU resource entitlement for a virtual machine.
+        - name: usage.mhz
+          type: long
+          metric_type: gauge
+          description: >
+            Basic CPU performance statistics, in MHz.
     - name: memory
       type: group
       fields:
-        - name: usage
-          type: group
-          fields:
-            - name: guest.bytes
-              type: long
-              metric_type: gauge
-              description: >
-                Guest memory utilization statistics, in bytes.
-              format: bytes
-            - name: host.bytes
-              type: long
-              metric_type: gauge
-              description: >
-                Host memory utilization statistics, in bytes.
-              format: bytes
+        - name: ballooned.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: >
+            The size of the balloon driver in a virtual machine, in bytes.
+          format: bytes     
+        - name: compressed.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: >
+            The amount of compressed memory currently consumed by VM, in bytes.
+          format: bytes
         - name: entitlement
           type: group
           fields:
             - name: bytes
               type: long
               metric_type: gauge
+              unit: byte
               description: >
                 The amount of memory, in bytes, that this VM is entitled to, as calculated by DRS.
               format: bytes
             - name: static.bytes
               type: long
               metric_type: gauge
+              unit: byte
               description: >
                 The static memory resource entitlement for a virtual machine, in bytes.
-              format: bytes
-        - name: private.bytes
-          type: long
-          metric_type: gauge
-          description: >
-            The portion of memory, in bytes, that is granted to a virtual machine from non-shared host memory.
-          format: bytes
-        - name: shared.bytes
-          type: long
-          metric_type: gauge
-          description: >
-            The portion of memory, in bytes, that is granted to a virtual machine from host memory that is shared between VMs.
-          format: bytes
-        - name: swapped.bytes
-          type: long
-          metric_type: gauge
-          description: >
-            The portion of memory, in bytes, that is granted to a virtual machine from the host's swap space.
-          format: bytes
-        - name: ballooned.bytes
-          type: long
-          metric_type: gauge
-          description: >
-            The size of the balloon driver in a virtual machine, in bytes.
-          format: bytes
+              format: bytes    
         - name: overhead
           type: group
           fields:
             - name: bytes
               type: long
               metric_type: gauge
+              unit: byte
               description: >
                 The amount of memory resource (in bytes) that will be used by a virtual machine above its guest memory requirements.
               format: bytes
             - name: consumed.bytes
               type: long
               metric_type: gauge
+              unit: byte
               description: >
                 The amount of overhead memory, in bytes, currently being consumed to run a VM.
-              format: bytes
-        - name: compressed.bytes
+              format: bytes       
+        - name: private.bytes
           type: long
           metric_type: gauge
+          unit: byte
           description: >
-            The amount of compressed memory currently consumed by VM, in bytes.
+            The portion of memory, in bytes, that is granted to a virtual machine from non-shared host memory.
           format: bytes
+        - name: shared.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: >
+            The portion of memory, in bytes, that is granted to a virtual machine from host memory that is shared between VMs.
+          format: bytes
+        - name: swapped.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: >
+            The portion of memory, in bytes, that is granted to a virtual machine from the host's swap space.
+          format: bytes
+        - name: usage
+          type: group
+          fields:
+            - name: guest.bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: >
+                Guest memory utilization statistics, in bytes.
+              format: bytes
+            - name: host.bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: >
+                Host memory utilization statistics, in bytes.
+              format: bytes
     - name: name
       type: keyword
       description: >
@@ -134,21 +145,21 @@
       description: >
         List of all the triggered alarms.
       fields:
-        - name: status
-          type: keyword
-          description: Status of the alarm.
-        - name: triggered_time
-          type: date
-          description: Time when the alarm was triggered.
         - name: description
           type: keyword
           description: Description of the alarm.
         - name: entity_name
           type: keyword
           description: Name of the entity associated with the alarm.
-        - name: name
-          type: keyword
-          description: Name of the alarm.
         - name: id
           type: keyword
           description: Unique identifier for the alarm.
+        - name: name
+          type: keyword
+          description: Name of the alarm.
+        - name: status
+          type: keyword
+          description: Status of the alarm.
+        - name: triggered_time
+          type: date
+          description: Time when the alarm was triggered.

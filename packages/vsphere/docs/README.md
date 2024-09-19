@@ -495,46 +495,46 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
-| container.id | Unique container id. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| vsphere.resourcepool.cpu.demand.mhz | Basic CPU performance statistics, in MHz. | long | gauge |
-| vsphere.resourcepool.cpu.entitlement.mhz | The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS. | long | gauge |
-| vsphere.resourcepool.cpu.entitlement.static.mhz | The static CPU resource entitlement for a virtual machine. | long | gauge |
-| vsphere.resourcepool.cpu.usage.mhz | Basic CPU performance statistics, in MHz. | long | gauge |
-| vsphere.resourcepool.memory.ballooned.bytes | The size of the balloon driver in a virtual machine, in bytes. | long | gauge |
-| vsphere.resourcepool.memory.compressed.bytes | The amount of compressed memory currently consumed by VM, in bytes. | long | gauge |
-| vsphere.resourcepool.memory.entitlement.bytes | The amount of memory, in bytes, that this VM is entitled to, as calculated by DRS. | long | gauge |
-| vsphere.resourcepool.memory.entitlement.static.bytes | The static memory resource entitlement for a virtual machine, in bytes. | long | gauge |
-| vsphere.resourcepool.memory.overhead.bytes | The amount of memory resource (in bytes) that will be used by a virtual machine above its guest memory requirements. | long | gauge |
-| vsphere.resourcepool.memory.overhead.consumed.bytes | The amount of overhead memory, in bytes, currently being consumed to run a VM. | long | gauge |
-| vsphere.resourcepool.memory.private.bytes | The portion of memory, in bytes, that is granted to a virtual machine from non-shared host memory. | long | gauge |
-| vsphere.resourcepool.memory.shared.bytes | The portion of memory, in bytes, that is granted to a virtual machine from host memory that is shared between VMs. | long | gauge |
-| vsphere.resourcepool.memory.swapped.bytes | The portion of memory, in bytes, that is granted to a virtual machine from the host's swap space. | long | gauge |
-| vsphere.resourcepool.memory.usage.guest.bytes | Guest memory utilization statistics, in bytes. | long | gauge |
-| vsphere.resourcepool.memory.usage.host.bytes | Host memory utilization statistics, in bytes. | long | gauge |
-| vsphere.resourcepool.name | The name of the resource pool. | keyword |  |
-| vsphere.resourcepool.status | The overall health status of a host in the vSphere environment. | keyword |  |
-| vsphere.resourcepool.triggered_alarms.description | Description of the alarm. | keyword |  |
-| vsphere.resourcepool.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
-| vsphere.resourcepool.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |
-| vsphere.resourcepool.triggered_alarms.name | Name of the alarm. | keyword |  |
-| vsphere.resourcepool.triggered_alarms.status | Status of the alarm. | keyword |  |
-| vsphere.resourcepool.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |
-| vsphere.resourcepool.vm.count | Number of virtual machines on the resource pool. | long | gauge |
-| vsphere.resourcepool.vm.names | Names of virtual machines on the resource pool. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| vsphere.resourcepool.cpu.demand.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
+| vsphere.resourcepool.cpu.entitlement.mhz | The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS. | long |  | gauge |
+| vsphere.resourcepool.cpu.entitlement.static.mhz | The static CPU resource entitlement for a virtual machine. | long |  | gauge |
+| vsphere.resourcepool.cpu.usage.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
+| vsphere.resourcepool.memory.ballooned.bytes | The size of the balloon driver in a virtual machine, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.memory.compressed.bytes | The amount of compressed memory currently consumed by VM, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.memory.entitlement.bytes | The amount of memory, in bytes, that this VM is entitled to, as calculated by DRS. | long | byte | gauge |
+| vsphere.resourcepool.memory.entitlement.static.bytes | The static memory resource entitlement for a virtual machine, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.memory.overhead.bytes | The amount of memory resource (in bytes) that will be used by a virtual machine above its guest memory requirements. | long | byte | gauge |
+| vsphere.resourcepool.memory.overhead.consumed.bytes | The amount of overhead memory, in bytes, currently being consumed to run a VM. | long | byte | gauge |
+| vsphere.resourcepool.memory.private.bytes | The portion of memory, in bytes, that is granted to a virtual machine from non-shared host memory. | long | byte | gauge |
+| vsphere.resourcepool.memory.shared.bytes | The portion of memory, in bytes, that is granted to a virtual machine from host memory that is shared between VMs. | long | byte | gauge |
+| vsphere.resourcepool.memory.swapped.bytes | The portion of memory, in bytes, that is granted to a virtual machine from the host's swap space. | long | byte | gauge |
+| vsphere.resourcepool.memory.usage.guest.bytes | Guest memory utilization statistics, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.memory.usage.host.bytes | Host memory utilization statistics, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.name | The name of the resource pool. | keyword |  |  |
+| vsphere.resourcepool.status | The overall health status of a host in the vSphere environment. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.description | Description of the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.name | Name of the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.status | Status of the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
+| vsphere.resourcepool.vm.count | Number of virtual machines on the resource pool. | long |  | gauge |
+| vsphere.resourcepool.vm.names | Names of virtual machines on the resource pool. | keyword |  |  |
 
 
 ## Logs
