@@ -2,14 +2,10 @@
 description: Pipeline for TYCHON STIG Response Data
 processors:
 
-  - set:
-      tag: set_tychon_rule_result
-      if: "ctx.tychon?.rule?.test_result != null"
-      field: tychon.rule.result
-      value: '{{tychon.rule.test_result}}'
-  - remove:
-      tag: remove_tychon_rule_test_result
+  - rename:
+      tag: rename_tychon_rule_test_result
       field: tychon.rule.test_result
+      target_field: tychon.rule.result
       ignore_missing: true
   - convert:
       tag: convert_tychon_rule_weight
