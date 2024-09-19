@@ -41,7 +41,7 @@ You can store and search your data using Elasticsearch and visualize and manage 
 
 ## Compatibility
 
-This integration supports VMware ESXi and vCenter versions 6.5, 6.7, and 7.0. It has been tested and verified to work with these versions.
+This integration supports VMware ESXi and vCenter versions 6.5, 6.7, 7.0, and 7.0.3. It has been tested and verified to work with these versions.
 
 ## Setup
 
