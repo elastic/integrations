@@ -138,6 +138,21 @@ processors:
       field: host.os.family
       copy_from: tychon.host.os.family
       ignore_empty_value: true
+  - script:
+      tag: script_host_os_type
+      description: host.os.type
+      lang: painless
+      source: |
+        def value = ctx.tychon.host?.os?.family?.toLowerCase();
+        if (['linux', 'macos', 'unix', 'windows', 'ios', 'android'].contains(value)) {
+          if (ctx.host == null) {
+            ctx.host = [:];
+          }
+          if (ctx.host.os == null) {
+            ctx.host.os = [:];
+          }
+          ctx.host.os.type = value;
+        }
   - set:
       tag: set_host_os_name
       field: host.os.name
