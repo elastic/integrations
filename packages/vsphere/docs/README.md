@@ -450,7 +450,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.name | Datastore name. | keyword |  |  |
 | vsphere.datastore.read.bytes | Rate of reading data from the datastore. | long | byte | gauge |
 | vsphere.datastore.status | Status of the datastore. | keyword |  |  |
-| vsphere.datastore.triggered_alarms.\* | List of all the triggerd alarms. | object |  |  |
+| vsphere.datastore.triggered_alarms.description | Description of the alarm. | keyword |  |  |
+| vsphere.datastore.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |  |
+| vsphere.datastore.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |  |
+| vsphere.datastore.triggered_alarms.name | Name of the alarm. | keyword |  |  |
+| vsphere.datastore.triggered_alarms.status | Status of the alarm. | keyword |  |  |
+| vsphere.datastore.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
 | vsphere.datastore.vm.count | Number of VMs associated with the datastore. | long |  | gauge |
 | vsphere.datastore.vm.names | List of all the VM names associated with the datastore. | keyword |  |  |
 | vsphere.datastore.write.bytes | Rate of writing data to the datastore. | long | byte | gauge |
