@@ -6,7 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/cli/go-gh/v2 v2.9.0
+	github.com/cli/go-gh/v2 v2.10.0
 	github.com/elastic/elastic-package v0.104.0
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/package-registry v1.25.0
