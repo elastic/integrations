@@ -462,7 +462,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.host.triggered_alarms.name | Name of the alarm. | keyword |  |  |
 | vsphere.host.triggered_alarms.status | Status of the alarm. | keyword |  |  |
 | vsphere.host.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
-| vsphere.host.uptime | The total uptime of a host in seconds within the vSphere environment. | long |  |  |
+| vsphere.host.uptime | The total uptime of a host in seconds within the vSphere environment. | long |  | gauge |
 | vsphere.host.vm.count | Number of virtual machines on the host. | long |  | gauge |
 | vsphere.host.vm.names | List of all the VM names. | keyword |  |  |
 
