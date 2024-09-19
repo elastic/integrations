@@ -75,7 +75,7 @@ program: |
         }
       }.encode_json()
     ).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body, has(body.?data.auditLogEntries.nodes) ?
+        bytes(resp.Body).decode_json().as(body, body.?data.auditLogEntries.nodes.orValue(null) != null ?
           {
             "events": body.data.auditLogEntries.nodes.map(e, {
               "message": e.encode_json(),
