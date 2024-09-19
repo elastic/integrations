@@ -277,12 +277,26 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| vsphere.datastore.capacity.free.bytes | Free bytes of the datastore | long | byte | gauge |
-| vsphere.datastore.capacity.total.bytes | Total bytes of the datastore | long | byte | gauge |
-| vsphere.datastore.capacity.used.bytes | Used bytes of the datastore | long | byte | gauge |
-| vsphere.datastore.capacity.used.pct | Used percent of the datastore | scaled_float | percent | gauge |
-| vsphere.datastore.fstype | Filesystem type | keyword |  |  |
-| vsphere.datastore.name | Datastore name | keyword |  |  |
+| vsphere.datastore.capacity.free.bytes | Free bytes of the datastore. | long | byte | gauge |
+| vsphere.datastore.capacity.total.bytes | Total bytes of the datastore. | long | byte | gauge |
+| vsphere.datastore.capacity.used.bytes | Used bytes of the datastore. | long | byte | gauge |
+| vsphere.datastore.capacity.used.pct | Percentage of datastore capacity used. | scaled_float | percent | gauge |
+| vsphere.datastore.disk.capacity.bytes | Configured size of the datastore. | long |  | gauge |
+| vsphere.datastore.disk.capacity.usage.bytes | The amount of storage capacity currently being consumed by datastore. | long |  | gauge |
+| vsphere.datastore.disk.provisioned.bytes | Amount of storage set aside for use by a datastore. | long |  | gauge |
+| vsphere.datastore.fstype | Filesystem type. | keyword |  |  |
+| vsphere.datastore.host.count | Number of hosts associated with the datastore. | long |  | gauge |
+| vsphere.datastore.host.names | List of all the host names associated with the datastore. | keyword |  |  |
+| vsphere.datastore.iops | Storage I/O Control aggregated Input/Output Operations Per Second. | long |  | gauge |
+| vsphere.datastore.name | Datastore name. | keyword |  |  |
+| vsphere.datastore.read.bytes | Rate of reading data from the datastore. | long | byte | gauge |
+| vsphere.datastore.read.latency.total.ms | Average amount of time for a read operation from the datastore in milliseconds. | long | ms | gauge |
+| vsphere.datastore.status | Status of the datastore. | keyword |  |  |
+| vsphere.datastore.triggerd_alarms.\* | List of all the triggerd alarms. | object |  |  |
+| vsphere.datastore.vm.count | Number of VMs associated with the datastore. | long |  | gauge |
+| vsphere.datastore.vm.names | List of all the VM names associated with the datastore. | keyword |  |  |
+| vsphere.datastore.write.bytes | Rate of writing data to the datastore. | long | byte | gauge |
+| vsphere.datastore.write.latency.total.ms | Average amount of time for a write operation from the datastore in milliseconds. | long | ms | gauge |
 
 
 ### Host
@@ -578,16 +592,29 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| vsphere.virtualmachine.cpu.free.mhz | Available CPU of virtualmachine in Mhz | long |  | gauge |
-| vsphere.virtualmachine.cpu.total.mhz | Total CPU of virtualmachine in Mhz | long |  | counter |
-| vsphere.virtualmachine.cpu.used.mhz | Used CPU of virtualmachine in Mhz | long |  | gauge |
-| vsphere.virtualmachine.custom_fields | Custom fields | object |  |  |
-| vsphere.virtualmachine.host.hostname | Name of the host hosting the virtualmachine | keyword |  |  |
-| vsphere.virtualmachine.host.id | Id of the host hosting the virtualmachine | keyword |  |  |
-| vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes | long | byte | gauge |
-| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes | long | byte | gauge |
-| vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes | long | byte | gauge |
-| vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes | long | byte | gauge |
-| vsphere.virtualmachine.name | Virtual Machine name | keyword |  |  |
-| vsphere.virtualmachine.network_names | Network names | keyword |  |  |
-| vsphere.virtualmachine.os | Virtual Machine Operating System name | keyword |  |  |
+| vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz. | long |  | gauge |
+| vsphere.virtualmachine.cpu.total.mhz | Total Reserved CPU in Mhz. | long |  | counter |
+| vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz. | long |  | gauge |
+| vsphere.virtualmachine.custom_fields | Custom fields. | object |  |  |
+| vsphere.virtualmachine.datastore.count | Number of datastores associated to this virtualmachine. | long |  | gauge |
+| vsphere.virtualmachine.datastore.names | Names of the datastore associated to this virtualmachine. | keyword |  |  |
+| vsphere.virtualmachine.host.hostname | Hostname of the host. | keyword |  |  |
+| vsphere.virtualmachine.host.id | Host id. | keyword |  |  |
+| vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.name | Virtual Machine name. | keyword |  |  |
+| vsphere.virtualmachine.network.count | Number of networks associated to this virtualmachine. | long |  | gauge |
+| vsphere.virtualmachine.network.names | Names of the networks associated to this virtualmachine. | keyword |  |  |
+| vsphere.virtualmachine.network_names | Network names. | keyword |  |  |
+| vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |  |  |
+| vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  | gauge |
+| vsphere.virtualmachine.snapshot.info.createtime | Snapshot creation time. | date |  |  |
+| vsphere.virtualmachine.snapshot.info.description | Snapshot description. | keyword |  |  |
+| vsphere.virtualmachine.snapshot.info.id | Snapshot ID. | long |  |  |
+| vsphere.virtualmachine.snapshot.info.name | Snapshot name. | keyword |  |  |
+| vsphere.virtualmachine.snapshot.info.state | Snapshot state (e.g., poweredOn). | keyword |  |  |
+| vsphere.virtualmachine.status | Overall health and status of a virtual machine. | keyword |  |  |
+| vsphere.virtualmachine.triggerd_alarms.\* | List of all the triggerd alarms. | object |  |  |
+| vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  | counter |
