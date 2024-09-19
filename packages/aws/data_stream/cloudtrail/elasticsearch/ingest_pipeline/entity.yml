@@ -6,14 +6,14 @@ processors:
       field: related.entity
       allow_duplicates: false
       value:
-        - '{{json.userIdentity.arn}}'
-        - '{{json.userIdentity.identityProvider}}'
-        - '{{json.userIdentity.principalId}}'
-        - '{{json.userIdentity.sessionContext.sessionIssuer.arn}}'
-        - '{{json.userIdentity.sessionContext.sessionIssuer.userName}}'
-        - '{{json.userIdentity.sessionContext.webIdFederationData.federatedProvider}}'
-        - '{{json.userIdentity.userName}}'
-        - '{{json.resources.ARN}}'
+        - '{{{json.userIdentity.arn}}}'
+        - '{{{json.userIdentity.identityProvider}}}'
+        - '{{{json.userIdentity.principalId}}}'
+        - '{{{json.userIdentity.sessionContext.sessionIssuer.arn}}}'
+        - '{{{json.userIdentity.sessionContext.sessionIssuer.userName}}}'
+        - '{{{json.userIdentity.sessionContext.webIdFederationData.federatedProvider}}}'
+        - '{{{json.userIdentity.userName}}}'
+        - '{{{json.resources.ARN}}}'
   - foreach:
       description: Appends any resource.ARN to `related.entity` for all events
       field: "json.resources"
@@ -23,7 +23,7 @@ processors:
           field: related.entity
           allow_duplicates: false
           value:        
-            - '{{_ingest._value.ARN}}'
+            - '{{{_ingest._value.ARN}}}'
 
   # source group signin.amazonaws.com ---------------------------------------------------------------------
   - append:
@@ -32,7 +32,7 @@ processors:
       if: ctx.json?.eventSource == "signin.amazonaws.com"
       allow_duplicates: false
       value:        
-        - '{{json.additionalEventData.MFAIdentifier}}'
+        - '{{{json.additionalEventData.MFAIdentifier}}}'
   
   # source group sts.amazonaws.com -------------------------------------------------------------------------
   - append:
@@ -41,12 +41,12 @@ processors:
       if: ctx.json?.eventSource == "sts.amazonaws.com"
       allow_duplicates: false
       value:        
-        - '{{json.requestParameters.roleArn}}'
-        - '{{json.sourceIdentity}}'
-        - '{{json.additionalEventData.MFAIdentifier}}'
-        - '{{json.responseElements.assumedRoleUser.arn}}'
-        - '{{json.requestParameters.roleSessionName}}'
-        - '{{json.responseElements.accessKeyId}}'
+        - '{{{json.requestParameters.roleArn}}}'
+        - '{{{json.sourceIdentity}}}'
+        - '{{{json.additionalEventData.MFAIdentifier}}}'
+        - '{{{json.responseElements.assumedRoleUser.arn}}}'
+        - '{{{json.requestParameters.roleSessionName}}}'
+        - '{{{json.responseElements.accessKeyId}}}'
 
   # source group iam.amazonaws.com -------------------------------------------------------------------------
   - append:
@@ -55,17 +55,17 @@ processors:
       if: ctx.json?.eventSource == "iam.amazonaws.com"
       allow_duplicates: false
       value:        
-        - '{{json.requestParameters.userName}}'
-        - '{{json.requestParameters.accessKeyId}}'
-        - '{{json.requestParameters.policyArn}}'  
-        - '{{json.requestParameters.roleName}}'  
-        - '{{json.requestParameters.policyName}}'  
-        - '{{json.responseElements.accessKey.userName}}'
-        - '{{json.responseElements.accessKey.accessKeyId}}'
-        - '{{json.responseElements.user.arn}}'
-        - '{{json.responseElements.user.userName}}'
-        - '{{json.responseElements.userId}}'
-        - '{{json.responseElements.role.arn}}'
+        - '{{{json.requestParameters.userName}}}'
+        - '{{{json.requestParameters.accessKeyId}}}'
+        - '{{{json.requestParameters.policyArn}}}'  
+        - '{{{json.requestParameters.roleName}}}'  
+        - '{{{json.requestParameters.policyName}}}'  
+        - '{{{json.responseElements.accessKey.userName}}}'
+        - '{{{json.responseElements.accessKey.accessKeyId}}}'
+        - '{{{json.responseElements.user.arn}}}'
+        - '{{{json.responseElements.user.userName}}}'
+        - '{{{json.responseElements.userId}}}'
+        - '{{{json.responseElements.role.arn}}}'
 
   # source group ec2.amazonaws.com -------------------------------------------------------------------------
   - append:
@@ -74,20 +74,20 @@ processors:
       if: ctx.json?.eventSource == "ec2.amazonaws.com"
       allow_duplicates: false
       value:  
-        - '{{json.requestParameters.groupId}}'
-        - '{{json.requestParameters.groupName}}'
-        - '{{json.requestParameters.roleName}}'
-        - '{{json.requestParameters.subnetId}}'
-        - '{{json.requestParameters.volumeId}}'
-        - '{{json.requestParameters.networkInterfaceId}}'
-        - '{{json.requestParameters.vpcId}}'
-        - '{{json.requestParameters.snapshotId}}'
-        - '{{json.responseElements.groupId}}'
-        - '{{json.responseElements.reservationId}}'
-        - '{{json.responseElements.vpc.vpcId}}'
-        - '{{json.responseElements.vpc.dhcpOptionsId}}'
-        - '{{json.responseElements.snapshotId}}'
-        - '{{json.responseElements.volumeId}}'
+        - '{{{json.requestParameters.groupId}}}'
+        - '{{{json.requestParameters.groupName}}}'
+        - '{{{json.requestParameters.roleName}}}'
+        - '{{{json.requestParameters.subnetId}}}'
+        - '{{{json.requestParameters.volumeId}}}'
+        - '{{{json.requestParameters.networkInterfaceId}}}'
+        - '{{{json.requestParameters.vpcId}}}'
+        - '{{{json.requestParameters.snapshotId}}}'
+        - '{{{json.responseElements.groupId}}}'
+        - '{{{json.responseElements.reservationId}}}'
+        - '{{{json.responseElements.vpc.vpcId}}}'
+        - '{{{json.responseElements.vpc.dhcpOptionsId}}}'
+        - '{{{json.responseElements.snapshotId}}}'
+        - '{{{json.responseElements.volumeId}}}'
   - foreach:
       description: Appends any responseElements.securityGroupRuleSet.items to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "ec2.amazonaws.com"
@@ -98,9 +98,9 @@ processors:
           field: related.entity
           allow_duplicates: false
           value:
-            - '{{_ingest._value.groupId}}'
-            - '{{_ingest._value.referencedGroupInfo.groupId}}'
-            - '{{_ingest._value.securityGroupRuleId}}'            
+            - '{{{_ingest._value.groupId}}}'
+            - '{{{_ingest._value.referencedGroupInfo.groupId}}}'
+            - '{{{_ingest._value.securityGroupRuleId}}}'            
   - foreach:
       description: Appends any responseElements.groupSet.items to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "ec2.amazonaws.com"
@@ -111,7 +111,7 @@ processors:
           field: related.entity
           allow_duplicates: false
           value:
-            - '{{_ingest._value.groupId}}'
+            - '{{{_ingest._value.groupId}}}'
   - foreach:
       description: Appends any requestParameters.groupSet.items to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "ec2.amazonaws.com"
@@ -122,7 +122,7 @@ processors:
           field: related.entity
           allow_duplicates: false
           value:
-            - '{{_ingest._value.groupId}}'  
+            - '{{{_ingest._value.groupId}}}'  
   - foreach:
       description: Appends any requestParameters.instancesSet.items to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "ec2.amazonaws.com"
@@ -133,7 +133,7 @@ processors:
           field: related.entity
           allow_duplicates: false
           value:
-            - '{{_ingest._value.instanceId}}'
+            - '{{{_ingest._value.instanceId}}}'
   - foreach:
       description: Appends any responseElements.instancesSet.items to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "ec2.amazonaws.com"
@@ -144,11 +144,11 @@ processors:
           field: related.entity
           allow_duplicates: false
           value:
-            - '{{_ingest._value.subnetId}}'
-            - '{{_ingest._value.vpcId}}'
-            - '{{_ingest._value.instanceId}}'
-            - '{{_ingest._value.imageId}}'
-            - '{{_ingest._value.iamInstanceProfile.arn}}'
+            - '{{{_ingest._value.subnetId}}}'
+            - '{{{_ingest._value.vpcId}}}'
+            - '{{{_ingest._value.instanceId}}}'
+            - '{{{_ingest._value.imageId}}}'
+            - '{{{_ingest._value.iamInstanceProfile.arn}}}'
   - foreach:
       description: Appends any responseElements.instancesSet.items.networkInterfaceSet.items to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "ec2.amazonaws.com"
@@ -163,9 +163,9 @@ processors:
               field: related.entity
               allow_duplicates: false
               value:
-                - '{{_ingest._value.networkInterfaceId}}'
-                - '{{_ingest._value.vpcId}}'
-                - '{{_ingest._value.subnetId}}'
+                - '{{{_ingest._value.networkInterfaceId}}}'
+                - '{{{_ingest._value.vpcId}}}'
+                - '{{{_ingest._value.subnetId}}}'
   - foreach:
       description: Appends any responseElements.instancesSet.items.networkInterfaceSet.items.groupSet.items to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "ec2.amazonaws.com"
@@ -184,7 +184,7 @@ processors:
                   field: related.entity
                   allow_duplicates: false
                   value:
-                    - '{{_ingest._value.groupId}}'
+                    - '{{{_ingest._value.groupId}}}'
   - foreach:
       description: Appends any responseElements.revokedSecurityGroupRuleSet.items to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "ec2.amazonaws.com"
@@ -195,8 +195,8 @@ processors:
           field: related.entity
           allow_duplicates: false
           value:
-            - '{{_ingest._value.securityGroupRuleId}}'
-            - '{{_ingest._value.groupId}}'       
+            - '{{{_ingest._value.securityGroupRuleId}}}'
+            - '{{{_ingest._value.groupId}}}'       
         
   # source group s3.amazonaws.com --------------------------------------------------------------------------
   - append:
@@ -205,7 +205,7 @@ processors:
       if: ctx.json?.eventSource == "s3.amazonaws.com"
       allow_duplicates: false
       value:  
-        - '{{json.requestParameters.bucketName}}'
+        - '{{{json.requestParameters.bucketName}}}'
 
   # source group cloudtrail.amazonaws.com --------------------------------------------------------------------------
   - append:
@@ -214,14 +214,14 @@ processors:
       if: ctx.json?.eventSource == "cloudtrail.amazonaws.com"
       allow_duplicates: false
       value:        
-        - '{{json.requestParameters.name}}'
-        - '{{json.requestParameters.s3BucketName}}'
-        - '{{json.responseElements.cloudWatchLogsLogGroupArn}}'
-        - '{{json.responseElements.cloudWatchLogsRoleArn}}'
-        - '{{json.responseElements.kmsKeyId}}'
-        - '{{json.responseElements.snsTopicARN}}'
-        - '{{json.responseElements.trailARN}}'
-        - '{{json.responseElements.name}}'
+        - '{{{json.requestParameters.name}}}'
+        - '{{{json.requestParameters.s3BucketName}}}'
+        - '{{{json.responseElements.cloudWatchLogsLogGroupArn}}}'
+        - '{{{json.responseElements.cloudWatchLogsRoleArn}}}'
+        - '{{{json.responseElements.kmsKeyId}}}'
+        - '{{{json.responseElements.snsTopicARN}}}'
+        - '{{{json.responseElements.trailARN}}}'
+        - '{{{json.responseElements.name}}}'
 
   # source group kms.amazonaws.com --------------------------------------------------------------------------
   - append:
@@ -230,10 +230,10 @@ processors:
       if: ctx.json?.eventSource == "kms.amazonaws.com"
       allow_duplicates: false
       value:  
-        - '{{json.requestParameters.keyId}}'
-        - '{{json.responseElements.keyId}}'
-        - '{{json.responseElements.keyMetadata.arn}}'
-        - '{{json.responseElements.keyMetadata.keyId}}'
+        - '{{{json.requestParameters.keyId}}}'
+        - '{{{json.responseElements.keyId}}}'
+        - '{{{json.responseElements.keyMetadata.arn}}}'
+        - '{{{json.responseElements.keyMetadata.keyId}}}'
 
   # source group config.amazonaws.com --------------------------------------------------------------------------
   - append:
@@ -242,7 +242,7 @@ processors:
       if: ctx.json?.eventSource == "config.amazonaws.com"
       allow_duplicates: false
       value:  
-        - '{{json.requestParameters.configurationRecorderName}}'
+        - '{{{json.requestParameters.configurationRecorderName}}}'
   
   # source group lambda.amazonaws.com --------------------------------------------------------------------------
   - append:
@@ -251,12 +251,12 @@ processors:
       if: ctx.json?.eventSource == "lambda.amazonaws.com"
       allow_duplicates: false
       value:  
-        - '{{json.requestParameters.functionName}}'
-        - '{{json.responseElements.functionArn}}'
-        - '{{json.responseElements.functionName}}'
-        - '{{json.responseElements.role}}'
-        - '{{json.responseElements.vpcConfig.securityGroupIds}}'
-        - '{{json.responseElements.vpcConfig.subnetIds}}'
+        - '{{{json.requestParameters.functionName}}}'
+        - '{{{json.responseElements.functionArn}}}'
+        - '{{{json.responseElements.functionName}}}'
+        - '{{{json.responseElements.role}}}'
+        - '{{{json.responseElements.vpcConfig.securityGroupIds}}}'
+        - '{{{json.responseElements.vpcConfig.subnetIds}}}'
 
   # source group rds.amazonaws.com --------------------------------------------------------------------------
   - append:
@@ -265,12 +265,12 @@ processors:
       if: ctx.json?.eventSource == "rds.amazonaws.com"
       allow_duplicates: false
       value:        
-        - '{{json.requestParameters.dBInstanceArn}}'
-        - '{{json.requestParameters.dBInstanceIdentifier}}'
-        - '{{json.responseElements.dBInstanceIdentifier}}'
-        - '{{json.responseElements.dbInstanceArn}}'
-        - '{{json.responseElements.dBSubnetGroup.vpcId}}'
-        - '{{json.responseElements.vpcSecurityGroups.vpcSecurityGroupId}}'
+        - '{{{json.requestParameters.dBInstanceArn}}}'
+        - '{{{json.requestParameters.dBInstanceIdentifier}}}'
+        - '{{{json.responseElements.dBInstanceIdentifier}}}'
+        - '{{{json.responseElements.dbInstanceArn}}}'
+        - '{{{json.responseElements.dBSubnetGroup.vpcId}}}'
+        - '{{{json.responseElements.vpcSecurityGroups.vpcSecurityGroupId}}}'
   - foreach:
       description: Appends any responseElements.dBSubnetGroup.subnets to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "rds.amazonaws.com"
@@ -281,7 +281,7 @@ processors:
           field: related.entity
           allow_duplicates: false
           value:
-            - '{{_ingest._value.subnetIdentifier}}'
+            - '{{{_ingest._value.subnetIdentifier}}}'
   - foreach:
       description: Appends any responseElements.vpcSecurityGroups to `related.entity` for ec2.amazonaws.com events
       if: ctx.json?.eventSource == "rds.amazonaws.com"
@@ -292,7 +292,7 @@ processors:
           field: related.entity
           allow_duplicates: false
           value:
-            - '{{_ingest._value.vpcSecurityGroupId}}'
+            - '{{{_ingest._value.vpcSecurityGroupId}}}'
 
   - script:
       description: Remove empty/null related entities and remove duplicates
