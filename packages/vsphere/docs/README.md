@@ -838,6 +838,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.snapshot.info.name | Snapshot name. | keyword |  |  |
 | vsphere.virtualmachine.snapshot.info.state | Snapshot state (e.g., poweredOn). | keyword |  |  |
 | vsphere.virtualmachine.status | Overall health and status of a virtual machine. | keyword |  |  |
-| vsphere.virtualmachine.triggerd_alarms.\* | List of all the triggerd alarms. | object |  |  |
+| vsphere.virtualmachine.triggered_alarms.description | Description of the alarm. | keyword |  |  |
+| vsphere.virtualmachine.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |  |
+| vsphere.virtualmachine.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |  |
+| vsphere.virtualmachine.triggered_alarms.name | Name of the alarm. | keyword |  |  |
+| vsphere.virtualmachine.triggered_alarms.status | Status of the alarm. | keyword |  |  |
+| vsphere.virtualmachine.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
 | vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  | counter |
 
