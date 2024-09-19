@@ -126,8 +126,6 @@ with_mage() {
 
     local install_packages=(
             "github.com/magefile/mage"
-            "github.com/elastic/go-licenser"
-            "golang.org/x/tools/cmd/goimports"
             "github.com/jstemmer/go-junit-report"
             "gotest.tools/gotestsum"
     )
@@ -501,6 +499,10 @@ prepare_stack() {
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
         fi
+    fi
+
+    if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+        args="${args} -U stack.logsdb_enabled=true"
     fi
 
     echo "Boot up the Elastic stack"
