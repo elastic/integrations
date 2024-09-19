@@ -16,7 +16,7 @@ The vSphere integration collects logs and metrics.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by vSphere as integration is `log`.
 
-Metrics give you insight into the statistics of the vSphere. The `Metric` data stream collected by the vSphere integration are `cluster`, `datastore`, `datastorecluster`, `host` and `virtualmachine` so that the user can monitor and troubleshoot the performance of the vSphere instance.
+Metrics give you insight into the statistics of the vSphere. The `Metric` data stream collected by the vSphere integration are `cluster`, `datastore`, `datastorecluster`, `host`, `resourcepool` and `virtualmachine` so that the user can monitor and troubleshoot the performance of the vSphere instance.
 
 Data Streams:
 
@@ -25,6 +25,7 @@ Data Streams:
 - **`datastore`**: This data stream gathers datastore metrics from VMware vSphere, including performance statistics such as capacity, usage, read/write operations, latency, and throughput.
 - **`datastorecluster`**: This data stream gathers metrics for datastore clusters from VMware vSphere, including statistics like cluster capacity and available free space. Additionally, it provides information about the individual datastores that comprise the cluster.
 - **`host`**: This data stream collects host metrics from VMware vSphere, including performance statistics such as CPU usage, memory usage, disk I/O, and network activity.
+- **`resourcepool`**: This data stream collects metrics from VMware vSphere, such as CPU and memory usage, CPU and memory reservation, and CPU and memory limit.
 - **`virtualmachine`**: This data stream gathers virtual machine metrics from VMware vSphere, including performance statistics such as status, uptime, CPU usage, memory usage, and network activity.
 
 Note:
@@ -166,6 +167,142 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 Note:
 - To access the metrics, provide the URL <https://host:port/sdk> in the "Add Integration" page of the vSphere package.
+
+### Cluster Metrics
+Clusters in vSphere represent a group of ESXi hosts working together to optimize resource allocation, ensure high availability, and manage workloads efficiently.
+
+An example event for `cluster` looks as following:
+
+```json
+{
+    "@timestamp": "2024-09-19T05:44:00.800Z",
+    "agent": {
+        "ephemeral_id": "676a770b-a207-4fec-99d4-e82377578711",
+        "id": "6b430ae3-0bdb-4d5c-b60d-a02f54e770e5",
+        "name": "elastic-agent-47605",
+        "type": "metricbeat",
+        "version": "8.15.2"
+    },
+    "data_stream": {
+        "dataset": "vsphere.cluster",
+        "namespace": "93141",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "6b430ae3-0bdb-4d5c-b60d-a02f54e770e5",
+        "snapshot": true,
+        "version": "8.15.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "vsphere.cluster",
+        "duration": 17059144,
+        "ingested": "2024-09-19T05:44:03Z",
+        "module": "vsphere"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-47605",
+        "id": "57723763cd1b4ff48e54a505de4ebe6c",
+        "ip": [
+            "192.168.244.4",
+            "192.168.245.2"
+        ],
+        "mac": [
+            "02-42-C0-A8-F4-04",
+            "02-42-C0-A8-F5-02"
+        ],
+        "name": "elastic-agent-47605",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "4.18.0-348.7.1.el8_5.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "cluster",
+        "period": 20000
+    },
+    "service": {
+        "address": "https://svc-vsphere-metrics:8989/sdk",
+        "type": "vsphere"
+    },
+    "tags": [
+        "vsphere-cluster"
+    ],
+    "vsphere": {
+        "cluster": {
+            "datastore": {
+                "count": 1,
+                "names": "LocalDS_0"
+            },
+            "host": {
+                "count": 3,
+                "names": [
+                    "DC0_C0_H0",
+                    "DC0_C0_H1",
+                    "DC0_C0_H2"
+                ]
+            },
+            "name": "DC0_C0",
+            "network": {
+                "count": 3,
+                "names": [
+                    "DC0_DVPG0",
+                    "DVS0-DVUplinks-9",
+                    "VM Network"
+                ]
+            }
+        }
+    }
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| vsphere.cluster.das_config.admission.control.enabled | Indicates whether strict admission control is enabled. | boolean |  |
+| vsphere.cluster.das_config.enabled | Indicates whether vSphere HA feature is enabled. | boolean |  |
+| vsphere.cluster.datastore.count | Number of Datastores associated with the cluster. | long | gauge |
+| vsphere.cluster.datastore.names | List of all the Datastore names associated with the cluster. | keyword |  |
+| vsphere.cluster.host.count | Number of Hosts associated with the cluster. | long | gauge |
+| vsphere.cluster.host.names | List of all the Host names associated with the cluster. | keyword |  |
+| vsphere.cluster.name | Cluster name. | keyword |  |
+| vsphere.cluster.network.count | Number of Networks associated with the cluster. | long | gauge |
+| vsphere.cluster.network.names | List of all the Network names associated with the cluster. | keyword |  |
+| vsphere.cluster.triggered_alarms.description | Description of the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.name | Name of the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.status | Status of the alarm. | keyword |  |
+| vsphere.cluster.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |
+
 
 ### Datastore
 
@@ -545,99 +682,78 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.host.vm.names | List of all the VM names. | keyword |  |  |
 
 
-### Cluster Metrics
-Clusters in vSphere represent a group of ESXi hosts working together to optimize resource allocation, ensure high availability, and manage workloads efficiently.
+### Resourcepool Metrics
+Resource pools in vSphere allow for the allocation and management of CPU and memory resources across groups of virtual machines.
 
-An example event for `cluster` looks as following:
+An example event for `resourcepool` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-19T05:44:00.800Z",
+    "@timestamp": "2024-09-12T05:55:54.148Z",
     "agent": {
-        "ephemeral_id": "676a770b-a207-4fec-99d4-e82377578711",
-        "id": "6b430ae3-0bdb-4d5c-b60d-a02f54e770e5",
-        "name": "elastic-agent-47605",
+        "ephemeral_id": "54ea1b28-d61c-4277-b98b-e33e38c7f1b5",
+        "id": "36c6eb08-679d-4a9f-b436-fe550cb77ad2",
+        "name": "elastic-agent-85448",
         "type": "metricbeat",
-        "version": "8.15.2"
+        "version": "8.16.0"
     },
     "data_stream": {
-        "dataset": "vsphere.cluster",
-        "namespace": "93141",
+        "dataset": "vsphere.resourcepool",
+        "namespace": "63631",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6b430ae3-0bdb-4d5c-b60d-a02f54e770e5",
+        "id": "36c6eb08-679d-4a9f-b436-fe550cb77ad2",
         "snapshot": true,
-        "version": "8.15.2"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "vsphere.cluster",
-        "duration": 17059144,
-        "ingested": "2024-09-19T05:44:03Z",
+        "dataset": "vsphere.resourcepool",
+        "duration": 21732347,
+        "ingested": "2024-09-12T05:55:57Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-47605",
-        "id": "57723763cd1b4ff48e54a505de4ebe6c",
+        "hostname": "elastic-agent-85448",
         "ip": [
-            "192.168.244.4",
-            "192.168.245.2"
+            "192.168.249.6",
+            "192.168.251.2"
         ],
         "mac": [
-            "02-42-C0-A8-F4-04",
-            "02-42-C0-A8-F5-02"
+            "02-42-C0-A8-F9-06",
+            "02-42-C0-A8-FB-02"
         ],
-        "name": "elastic-agent-47605",
+        "name": "elastic-agent-85448",
         "os": {
-            "codename": "focal",
-            "family": "debian",
+            "family": "",
             "kernel": "4.18.0-348.7.1.el8_5.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
-        "name": "cluster",
-        "period": 20000
+        "name": "resourcepool",
+        "period": 10000
     },
     "service": {
         "address": "https://svc-vsphere-metrics:8989/sdk",
         "type": "vsphere"
     },
     "tags": [
-        "vsphere-cluster"
+        "vsphere-resourcepool"
     ],
     "vsphere": {
-        "cluster": {
-            "datastore": {
-                "count": 1,
-                "names": "LocalDS_0"
-            },
-            "host": {
-                "count": 3,
-                "names": [
-                    "DC0_C0_H0",
-                    "DC0_C0_H1",
-                    "DC0_C0_H2"
-                ]
-            },
-            "name": "DC0_C0",
-            "network": {
-                "count": 3,
-                "names": [
-                    "DC0_DVPG0",
-                    "DVS0-DVUplinks-9",
-                    "VM Network"
-                ]
-            }
+        "resourcepool": {
+            "name": "Resources",
+            "status": "green"
         }
     }
 }
@@ -649,36 +765,46 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
-| container.id | Unique container id. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| vsphere.cluster.das_config.admission.control.enabled | Indicates whether strict admission control is enabled. | boolean |  |
-| vsphere.cluster.das_config.enabled | Indicates whether vSphere HA feature is enabled. | boolean |  |
-| vsphere.cluster.datastore.count | Number of Datastores associated with the cluster. | long | gauge |
-| vsphere.cluster.datastore.names | List of all the Datastore names associated with the cluster. | keyword |  |
-| vsphere.cluster.host.count | Number of Hosts associated with the cluster. | long | gauge |
-| vsphere.cluster.host.names | List of all the Host names associated with the cluster. | keyword |  |
-| vsphere.cluster.name | Cluster name. | keyword |  |
-| vsphere.cluster.network.count | Number of Networks associated with the cluster. | long | gauge |
-| vsphere.cluster.network.names | List of all the Network names associated with the cluster. | keyword |  |
-| vsphere.cluster.triggered_alarms.description | Description of the alarm. | keyword |  |
-| vsphere.cluster.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
-| vsphere.cluster.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |
-| vsphere.cluster.triggered_alarms.name | Name of the alarm. | keyword |  |
-| vsphere.cluster.triggered_alarms.status | Status of the alarm. | keyword |  |
-| vsphere.cluster.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| vsphere.resourcepool.cpu.demand.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
+| vsphere.resourcepool.cpu.entitlement.mhz | The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS. | long |  | gauge |
+| vsphere.resourcepool.cpu.entitlement.static.mhz | The static CPU resource entitlement for a virtual machine. | long |  | gauge |
+| vsphere.resourcepool.cpu.usage.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
+| vsphere.resourcepool.memory.ballooned.bytes | The size of the balloon driver in a virtual machine, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.memory.compressed.bytes | The amount of compressed memory currently consumed by VM, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.memory.entitlement.bytes | The amount of memory, in bytes, that this VM is entitled to, as calculated by DRS. | long | byte | gauge |
+| vsphere.resourcepool.memory.entitlement.static.bytes | The static memory resource entitlement for a virtual machine, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.memory.overhead.bytes | The amount of memory resource (in bytes) that will be used by a virtual machine above its guest memory requirements. | long | byte | gauge |
+| vsphere.resourcepool.memory.overhead.consumed.bytes | The amount of overhead memory, in bytes, currently being consumed to run a VM. | long | byte | gauge |
+| vsphere.resourcepool.memory.private.bytes | The portion of memory, in bytes, that is granted to a virtual machine from non-shared host memory. | long | byte | gauge |
+| vsphere.resourcepool.memory.shared.bytes | The portion of memory, in bytes, that is granted to a virtual machine from host memory that is shared between VMs. | long | byte | gauge |
+| vsphere.resourcepool.memory.swapped.bytes | The portion of memory, in bytes, that is granted to a virtual machine from the host's swap space. | long | byte | gauge |
+| vsphere.resourcepool.memory.usage.guest.bytes | Guest memory utilization statistics, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.memory.usage.host.bytes | Host memory utilization statistics, in bytes. | long | byte | gauge |
+| vsphere.resourcepool.name | The name of the resource pool. | keyword |  |  |
+| vsphere.resourcepool.status | The overall health status of a host in the vSphere environment. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.description | Description of the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.name | Name of the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.status | Status of the alarm. | keyword |  |  |
+| vsphere.resourcepool.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
+| vsphere.resourcepool.vm.count | Number of virtual machines on the resource pool. | long |  | gauge |
+| vsphere.resourcepool.vm.names | Names of virtual machines on the resource pool. | keyword |  |  |
 
 
 ### Virtual Machine

@@ -16,7 +16,7 @@ The vSphere integration collects logs and metrics.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by vSphere as integration is `log`.
 
-Metrics give you insight into the statistics of the vSphere. The `Metric` data stream collected by the vSphere integration are `cluster`, `datastore`, `datastorecluster`, `host` and `virtualmachine` so that the user can monitor and troubleshoot the performance of the vSphere instance.
+Metrics give you insight into the statistics of the vSphere. The `Metric` data stream collected by the vSphere integration are `cluster`, `datastore`, `datastorecluster`, `host`, `resourcepool` and `virtualmachine` so that the user can monitor and troubleshoot the performance of the vSphere instance.
 
 Data Streams:
 
@@ -25,6 +25,7 @@ Data Streams:
 - **`datastore`**: This data stream gathers datastore metrics from VMware vSphere, including performance statistics such as capacity, usage, read/write operations, latency, and throughput.
 - **`datastorecluster`**: This data stream gathers metrics for datastore clusters from VMware vSphere, including statistics like cluster capacity and available free space. Additionally, it provides information about the individual datastores that comprise the cluster.
 - **`host`**: This data stream collects host metrics from VMware vSphere, including performance statistics such as CPU usage, memory usage, disk I/O, and network activity.
+- **`resourcepool`**: This data stream collects metrics from VMware vSphere, such as CPU and memory usage, CPU and memory reservation, and CPU and memory limit.
 - **`virtualmachine`**: This data stream gathers virtual machine metrics from VMware vSphere, including performance statistics such as status, uptime, CPU usage, memory usage, and network activity.
 
 Note:
@@ -72,6 +73,17 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 Note:
 - To access the metrics, provide the URL <https://host:port/sdk> in the "Add Integration" page of the vSphere package.
 
+### Cluster Metrics
+Clusters in vSphere represent a group of ESXi hosts working together to optimize resource allocation, ensure high availability, and manage workloads efficiently.
+
+{{event "cluster"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "cluster"}}
+
 ### Datastore
 
 This is `datastore` data stream. This data stream collects datastore metrics from VMware vSphere, including performance statistics such as capacity, usage, read/write operations, latency, and throughput.
@@ -106,16 +118,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "host"}}
 
-### Cluster Metrics
-Clusters in vSphere represent a group of ESXi hosts working together to optimize resource allocation, ensure high availability, and manage workloads efficiently.
+### Resourcepool Metrics
+Resource pools in vSphere allow for the allocation and management of CPU and memory resources across groups of virtual machines.
 
-{{event "cluster"}}
+{{event "resourcepool"}}
 
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
-{{fields "cluster"}}
+{{fields "resourcepool"}}
 
 ### Virtual Machine
 
