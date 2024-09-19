@@ -6,14 +6,14 @@ toolchain go1.22.5
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/cli/go-gh/v2 v2.9.0
-	github.com/elastic/elastic-package v0.103.0
+	github.com/cli/go-gh/v2 v2.10.0
+	github.com/elastic/elastic-package v0.104.0
 	github.com/elastic/go-licenser v0.4.2
-	github.com/elastic/package-registry v1.24.1
+	github.com/elastic/package-registry v1.25.0
 	github.com/magefile/mage v1.15.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/tools v0.24.0
+	golang.org/x/tools v0.25.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -142,7 +142,7 @@ require (
 	github.com/pkg/xattr v0.4.10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
-	github.com/prometheus/client_golang v1.20.2 // indirect
+	github.com/prometheus/client_golang v1.20.3 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
@@ -181,9 +181,9 @@ require (
 	go.starlark.net v0.0.0-20240725214946-42030a7cedce // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.26.0 // indirect
+	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
