@@ -221,11 +221,24 @@ streams:
       - name: file_selectors
         type: yaml
         title: File Selectors
-        multi: true
+        multi: false
         required: false
         show_user: false
         description: >
           If the SQS queue will have events that correspond to files that this integration shouldn’t process file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regex syntax is the same as the Go language. Files that don’t match one of the regexes won’t be processed. content_type, parsers, include_s3_metadata,max_bytes, buffer_size, and encoding may also be set for each file selector.
+        default: |
+          #- regex: /CloudTrail/
+          #  parsers:
+          #    - multiline:
+          #        pattern: ^<Event
+          #        negate:  true
+          #        match:   after
+          #- regex: /CloudTrail-Digest/
+          #  parsers:
+          #    - multiline:
+          #        pattern: ^<Event
+          #        negate:  true
+          #        match:   after
 
       - name: fips_enabled
         type: bool
@@ -255,7 +268,13 @@ streams:
       - name: max_number_of_messages
         type: integer
         title: Maximum Concurrent SQS Messages
-        description: The maximum number of SQS messages that can be inflight at any time.
+        description: >
+          The maximum number of SQS messages that can be inflight at any time. Defaults to 5. When processing large 
+          amount of large size S3 objects and each object has large amount of events, if this parameter sets too high,
+          it can cause the input to process too many messages concurrently, overload the agent and cause ingest failure.
+          We recommend to keep the default value 5 and use the [preset](https://www.elastic.co/guide/en/fleet/current/es-output-settings.html#es-output-settings-performance-tuning-settings)
+          option to tune your Elastic Agent performance. You can optimize for throughput, scale, latency, or you can
+          choose a balanced (the default) set of performance specifications.
         default: 5
         required: false
         show_user: false

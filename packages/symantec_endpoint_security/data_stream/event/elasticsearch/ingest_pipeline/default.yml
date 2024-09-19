@@ -1105,6 +1105,25 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Move raw_data to raw_data.value if the value is not compatible with flattened.
+      lang: painless
+      if: ctx.ses?.raw_data != null && !(ctx.ses.raw_data instanceof Map)
+      source: |-
+        if (ctx.ses.raw_data instanceof List) {
+          for (def e: ctx.ses.raw_data) {
+            if (!(e instanceof Map)) {
+              def m = new HashMap();
+              m["value"] = ctx.ses.raw_data;
+              ctx.ses.raw_data = m;
+              break;
+            }
+          }
+          return;
+        }
+        def m = new HashMap();
+        m["value"] = ctx.ses.raw_data;
+        ctx.ses.raw_data = m;
   - remove:
       field:
         - ses.collector_device_ip

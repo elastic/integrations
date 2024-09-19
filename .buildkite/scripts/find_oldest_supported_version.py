@@ -2,14 +2,27 @@
 import argparse
 import requests
 import sys
-import yaml
 import unittest
+import yaml
 
-VERSION_URL = "https://artifacts-api.elastic.co/v1/versions?x-elastic-no-kpi=true"
+from requests.adapters import HTTPAdapter, Retry
+
+ARTIFACTS_URL = "https://artifacts-api.elastic.co"
+VERSION_URL = ARTIFACTS_URL + "/v1/versions?x-elastic-no-kpi=true"
 
 
 def fetch_version():
-    return requests.get(VERSION_URL).json()
+    # Retry forever on connection or 500 errors, assume the artifacts API
+    # will come back. If it doesn't come back we cannot continue executing
+    # jobs in any case.
+    retries = Retry(
+        total=None,
+        backoff_factor=0.5,
+        status_forcelist=[500, 502, 503, 504],
+    )
+    session = requests.Session()
+    session.mount(ARTIFACTS_URL, HTTPAdapter(max_retries=retries))
+    return session.get(VERSION_URL).json()
 
 
 def find_oldest_supported_version(kibana_version_condition: str) -> str:
@@ -54,9 +67,9 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
         if len(available_parts) < 2:
             continue
 
-        available_major = available_parts[0]
-        available_minor = available_parts[1]
-        if major == available_major and minor > available_minor:
+        available_major = int(available_parts[0])
+        available_minor = int(available_parts[1])
+        if int(major) == available_major and int(minor) > available_minor:
             older = False
             break
     if older:
@@ -168,6 +181,7 @@ class TestFindOldestSupportVersion(unittest.TestCase):
             "8.11.0-SNAPSHOT"
         ],
         "aliases": [
+            "7.x-SNAPSHOT",
             "7.17-SNAPSHOT",
             "7.17",
             "8.7",
@@ -212,6 +226,14 @@ class TestFindOldestSupportVersion(unittest.TestCase):
     def test_too_old_to_be_in_api(self):
         self.assertEqual(find_oldest_supported_version("7.16.0"), "7.16.0")
         self.assertEqual(find_oldest_supported_version("8.6.0"), "8.6.0")
+        self.assertEqual(find_oldest_supported_version("7.6.0"), "7.6.0")
+
+    def test_no_version_available_no_next_minor_in_current_major(self):
+        # returns the version as in the manifest
+        self.assertEqual(find_oldest_supported_version("8.11.3"), "8.11.3")
+
+    def test_available_next_minor_in_current_major(self):
+        self.assertEqual(find_oldest_supported_version("7.19.0"), "7.x-SNAPSHOT")
 
     def test_or(self):
         self.assertEqual(find_oldest_supported_version("8.6.0||8.7.0"), "8.6.0")

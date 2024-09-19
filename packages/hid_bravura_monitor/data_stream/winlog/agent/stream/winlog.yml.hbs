@@ -3,14 +3,31 @@ condition: ${host.platform} == 'windows'
 {{#if event_id}}
 event_id: {{event_id}}
 {{/if}}
-{{#if processors}}
-processors:
-{{processors}}
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
 {{/if}}
+{{#if language}}
+language: {{language}}
+{{/if}}
+{{#if tags.length}}
 tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag i|}}
-  - {{tag}}
-{{/each}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{/if}}
+{{/if}}
+{{#if preserve_original_event}}
+include_xml: true
+{{/if}}
+{{#if processors.length}}
+processors:
+{{processors}}
+{{/if}}
+{{custom}}
