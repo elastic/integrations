@@ -1,8 +1,8 @@
-# AWS Bedrock
+# Amazon Bedrock
 
 ## Overview
 
-[AWS Bedrock](https://docs.aws.amazon.com/bedrock/index.html) is a fully managed
+[Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html) is a fully managed
 service that makes high-performing foundation models (FMs) from leading AI
 startups and Amazon available for your use through a unified API. You can choose
 from a wide range of foundation models to find the model that is best suited for
@@ -13,7 +13,7 @@ models for your use cases, privately customize them with your data using
 techniques such as fine-tuning and Retrieval Augmented Generation (RAG), and
 build agents that execute tasks using your enterprise systems and data sources.
 
-The AWS Bedrock integration allows you to easily connect your Bedrock model
+The Amazon Bedrock integration allows you to easily connect your Amazon Bedrock model
 invocation logging and runtime metrics to Elastic for seamless collection of
 invocation logs and runtime metrics to monitor usage. 
 
@@ -27,18 +27,18 @@ integration. Please refer to the AWS integration for more details.**
 
 ## Compatibility
 
-This integration is compatible with the AWS Bedrock ModelInvocationLog schema,
+This integration is compatible with the Amazon Bedrock ModelInvocationLog schema,
 version 1.0.
 
 
 ## Data streams
 
-The AWS Bedrock integration collects model invocation logs and runtime metrics.
+The Amazon Bedrock integration collects model invocation logs and runtime metrics.
 
 Data streams:
  - `invocation`: Collects invocation logs, model input data, and model output
    data for all invocations in your AWS account used in Amazon Bedrock.
- - `runtime`: Collects AWS Bedrock runtime metrics such as model invocation
+ - `runtime`: Collects Amazon Bedrock runtime metrics such as model invocation
    count, invocation latency, input token count, output token count and many
    more.   
 
@@ -49,7 +49,7 @@ visualizing and managing it. You can use our hosted Elasticsearch Service on
 Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your
 own hardware.
 
-Before using any AWS Bedrock integration you will need:
+Before using any Amazon Bedrock integration you will need:
 
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has
@@ -92,22 +92,22 @@ running on Kubernetes.
 There are some minimum requirements for running Elastic Agent and for more
 information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.12.0**.
+The minimum **Elastic stack** required is **8.13.0**.
 
 
 ### Setup
 
-In order to use the AWS Bedrock model invocation logs, logging model
+In order to use the Amazon Bedrock model invocation logs, logging model
 invocation logging must be enabled and be sent to a log store destination,
 either S3 or CloudWatch. The full details of this are available from the
-[AWS Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html),
+[Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html),
 but outlined here.
 
 1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) Logs destination.
-2. Enable logging. This can be done either through the [AWS Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the AWS Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
+2. Enable logging. This can be done either through the [Amazon Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the Amazon Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
 
 
-## Collecting Bedrock model invocation logs from S3 bucket
+## Collecting Amazon Bedrock model invocation logs from S3 bucket
 
 When collecting logs from S3 bucket is enabled, users can retrieve logs from S3
 objects that are pointed to by S3 notification events read from an SQS queue or
@@ -123,7 +123,7 @@ bucket list polling method is enabled setting `bucket_arn` configuration value
 and `number_of_workers` value. Both `queue_url` and `bucket_arn` cannot be set 
 at the same time and at least one of the two value must be set.
 
-## Collecting Bedrock model invocation logs from CloudWatch
+## Collecting Amazon Bedrock model invocation logs from CloudWatch
 
 When collecting logs from CloudWatch is enabled, users can retrieve logs from 
 all log streams in a specific log group. `filterLogEvents` AWS API is used to 
@@ -135,7 +135,7 @@ list log events from the specified log group.
 
 ### Runtime Metrics
 
-AWS Bedrock runtime metrics include `Invocations`, `InvocationLatency`,
+Amazon Bedrock runtime metrics include `Invocations`, `InvocationLatency`,
 `InvocationClientErrors`, `InvocationServerErrors`, `OutputTokenCount`,
 `OutputImageCount`, `InvocationThrottles`. These metrics can be used for variety of use cases including 
  - Comparing model latency. 
