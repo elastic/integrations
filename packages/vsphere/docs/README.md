@@ -419,59 +419,61 @@ An example event for `cluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-12T06:18:43.419Z",
+    "@timestamp": "2024-09-19T05:44:00.800Z",
     "agent": {
-        "ephemeral_id": "235f5b62-669d-4d24-8b22-4b9eba3a63c3",
-        "id": "96c09e1b-272e-4fa5-ab9a-4eea26d082b7",
-        "name": "elastic-agent-78705",
+        "ephemeral_id": "676a770b-a207-4fec-99d4-e82377578711",
+        "id": "6b430ae3-0bdb-4d5c-b60d-a02f54e770e5",
+        "name": "elastic-agent-47605",
         "type": "metricbeat",
-        "version": "8.16.0"
+        "version": "8.15.2"
     },
     "data_stream": {
         "dataset": "vsphere.cluster",
-        "namespace": "70506",
+        "namespace": "93141",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "96c09e1b-272e-4fa5-ab9a-4eea26d082b7",
+        "id": "6b430ae3-0bdb-4d5c-b60d-a02f54e770e5",
         "snapshot": true,
-        "version": "8.16.0"
+        "version": "8.15.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.cluster",
-        "duration": 46217160,
-        "ingested": "2024-09-12T06:18:46Z",
+        "duration": 17059144,
+        "ingested": "2024-09-19T05:44:03Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-78705",
+        "hostname": "elastic-agent-47605",
+        "id": "57723763cd1b4ff48e54a505de4ebe6c",
         "ip": [
-            "192.168.249.8",
-            "192.168.255.2"
+            "192.168.244.4",
+            "192.168.245.2"
         ],
         "mac": [
-            "02-42-C0-A8-F9-08",
-            "02-42-C0-A8-FF-02"
+            "02-42-C0-A8-F4-04",
+            "02-42-C0-A8-F5-02"
         ],
-        "name": "elastic-agent-78705",
+        "name": "elastic-agent-47605",
         "os": {
-            "family": "",
+            "codename": "focal",
+            "family": "debian",
             "kernel": "4.18.0-348.7.1.el8_5.x86_64",
-            "name": "Wolfi",
-            "platform": "wolfi",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "20230201"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
         "name": "cluster",
-        "period": 10000
+        "period": 20000
     },
     "service": {
         "address": "https://svc-vsphere-metrics:8989/sdk",
