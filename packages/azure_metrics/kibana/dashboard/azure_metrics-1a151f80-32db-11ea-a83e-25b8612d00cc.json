@@ -9,7 +9,30 @@
         "description": "This dashboard shows metrics for different storage types in Azure.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "storage_account",
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "azure.storage_account"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "azure.storage_account"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -1785,6 +1808,11 @@
         "dashboard": "8.7.0"
     },
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },        
         {
             "id": "metrics-*",
             "name": "controlGroup_4d6088e2-f470-4c13-b08f-cf6b06b13c6a:optionsListDataView",
