@@ -149,7 +149,7 @@ TYCHON checks local browser configuration settings.
 | tychon.host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | tychon.host.uptime | Seconds the host has been up. | long |
 | tychon.host.workgroup | Host Workgroup Network Name. | keyword |
-| tychon.id | TYCHON unique host identifier. | keyword |
+| tychon.id | TYCHON unique document identifier. | keyword |
 | tychon.package.architecture | Package architecture. | keyword |
 | tychon.package.cpe | The cpe value for this application | keyword |
 | tychon.package.edition | The edition of this application | keyword |
@@ -173,7 +173,7 @@ TYCHON checks local browser configuration settings.
 | tychon.script.version | Scanner Script Version. | version |
 | tychon.tls.version_protocol | Protocol name and version in the original format. | keyword |
 | tychon.tychon.data.version | Data Version. | version |
-| tychon.tychon.id | ID. | keyword |
+| tychon.tychon.id | TYCHON unique host identifier. | keyword |
 
 
 ### Listening Certificate Ciphers
@@ -877,7 +877,7 @@ TYCHON will ensure external devices like usb hard drives and cdrom drives cannot
 | tychon.script.type | Scanner Script Type. | keyword |
 | tychon.script.version | Scanner Script Version. | version |
 | tychon.tychon.data.version | Tychon data version | keyword |
-| tychon.tychon.id | TYCHON Unique ID for upserts | keyword |
+| tychon.tychon.id | TYCHON unique host identifier. | keyword |
 | tychon.type | The type of event being sent for device control, policy change type (policy) or device event (device) from the event log | keyword |
 
 
