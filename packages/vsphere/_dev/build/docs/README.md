@@ -128,7 +128,3 @@ This is the `virtualmachine` data stream. This data stream collects virtual mach
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "virtualmachine"}}
-<<<<<<< HEAD
-
-=======
->>>>>>> bde6b5118be928daf948a9cdfa1eadb0a857a852

@@ -838,7 +838,3 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.triggerd_alarms.\* | List of all the triggerd alarms. | object |  |  |
 | vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  | counter |
 
-<<<<<<< HEAD
-
-=======
->>>>>>> bde6b5118be928daf948a9cdfa1eadb0a857a852
