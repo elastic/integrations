@@ -52,6 +52,7 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | data_stream.type | Data stream type. | constant_keyword |  |
 | event.dataset | Data stream / event dataset. | constant_keyword |  |
 | event.module | The module the event belongs to. | constant_keyword |  |
+| falco.container.mounts | List of mount information. | nested |  |
 | falco.container.mounts.dest |  | keyword |  |
 | falco.container.mounts.mode |  | keyword |  |
 | falco.container.mounts.propagation |  | keyword |  |
