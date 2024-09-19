@@ -48,6 +48,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ### Resourcepool Metrics
 Resource pools in vSphere allow for the allocation and management of CPU and memory resources across groups of virtual machines.
 
+{{event "resourcepool"}}
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
