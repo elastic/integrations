@@ -447,16 +447,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.fstype | Filesystem type. | keyword |  |  |
 | vsphere.datastore.host.count | Number of hosts associated with the datastore. | long |  | gauge |
 | vsphere.datastore.host.names | List of all the host names associated with the datastore. | keyword |  |  |
-| vsphere.datastore.iops | Storage I/O Control aggregated Input/Output Operations Per Second. | long |  | gauge |
 | vsphere.datastore.name | Datastore name. | keyword |  |  |
 | vsphere.datastore.read.bytes | Rate of reading data from the datastore. | long | byte | gauge |
-| vsphere.datastore.read.latency.total.ms | Average amount of time for a read operation from the datastore in milliseconds. | long | ms | gauge |
 | vsphere.datastore.status | Status of the datastore. | keyword |  |  |
-| vsphere.datastore.triggerd_alarms.\* | List of all the triggerd alarms. | object |  |  |
+| vsphere.datastore.triggered_alarms.\* | List of all the triggerd alarms. | object |  |  |
 | vsphere.datastore.vm.count | Number of VMs associated with the datastore. | long |  | gauge |
 | vsphere.datastore.vm.names | List of all the VM names associated with the datastore. | keyword |  |  |
 | vsphere.datastore.write.bytes | Rate of writing data to the datastore. | long | byte | gauge |
-| vsphere.datastore.write.latency.total.ms | Average amount of time for a write operation from the datastore in milliseconds. | long | ms | gauge |
 
 
 ## Logs
