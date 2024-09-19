@@ -1,6 +1,6 @@
-# Kubernetes OTEL Integration
+# Kubernetes OpenTelemetry Assets
 
-Use the Kubernetes OTEL integration to install needed assets to monitor [Kubernetes clusters](https://kubernetes.io/).
+Kubernetes OpenTelemetry Assets must be used with OpenTelemetry data. With this package will be installed assets to monitor [Kubernetes clusters](https://kubernetes.io/).
 
 ## Requirements
 
