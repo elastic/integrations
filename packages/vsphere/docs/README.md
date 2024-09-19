@@ -664,35 +664,3 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastorecluster.triggered_alarms.status | Status of the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
 
-
-## Logs
-
-To collect logs, a syslog daemon is used. First, you must configure the listening host/IP address (default: localhost) and host port (default: 9525) in the integration. Then, configure vSphere to send logs to a remote syslog host and provide the configured hostname/IP and port of the Elastic Agent host.
-
-### vSphere Logs
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| hostname | Hostname from syslog header. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| log.source.address | Source address of the syslog message. | keyword |
-| process.program | Process from syslog header. | keyword |
-| vsphere.log.api.invocations |  | long |
-| vsphere.log.datacenter |  | keyword |
-| vsphere.log.file.path |  | keyword |
-
