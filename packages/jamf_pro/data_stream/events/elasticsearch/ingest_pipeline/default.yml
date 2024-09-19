@@ -1,6 +1,7 @@
 ---
 description: Pipeline for processing sample logs
 processors:
+
 - set:
     field: ecs.version
     value: '8.11.0'
@@ -8,17 +9,19 @@ processors:
 - rename:
     field: json
     target_field: jamf_pro.events
-    if: ctx.json != null
+    # all valid events will now have jamf_pro.events.{event,webhook}
 
 - convert:
     field: jamf_pro.events.event.management_id
     type: string
-    if: "ctx.jamf_pro.events.event?.management_id != null && !(ctx.jamf_pro.events.event?.management_id  instanceof String)"
+    if: >
+      ctx.jamf_pro.events.event?.management_id != null &&
+      !(ctx.jamf_pro.events.event.management_id instanceof String)
 
 - rename:
     field: jamf_pro.events.event.computer
     target_field: jamf_pro.events.event.is_computer
-    if: (ctx.jamf_pro.events.event.computer === true || ctx.jamf_pro.events.event.computer === false)
+    if: ctx.jamf_pro.events.event.computer instanceof boolean
 
 - script:
     description: Convert Additional Info keys to snake case.
@@ -49,15 +52,15 @@ processors:
         }
         return snakeCaseMap;
       }
-            
+
       if(ctx.jamf_pro.events != null) {
         ctx.jamf_pro.events = keysToSnakeCase(ctx.jamf_pro.events);
       }
 
-
 ##############
 # Timestamps #
 ##############
+
 - date:
     field: jamf_pro.events.webhook.event_timestamp
     target_field: jamf_pro.events.webhook.event_timestamp
@@ -67,44 +70,47 @@ processors:
 - date:
     field: jamf_pro.events.event.last_update
     target_field: jamf_pro.events.event.last_update
-    if: "ctx.jamf_pro.events?.last_update != null"
+    if: ctx.jamf_pro.events.event.last_update != null
     formats:
       - UNIX_MS
-      
+
 ##############
 #   IP src   #
 ##############
 
 - set:
-    if: "ctx.jamf_pro.events.event?.ip_address != null && ctx.jamf_pro.events.event?.ip_address != ''"
+    if: "ctx.jamf_pro.events.event.ip_address != null && ctx.jamf_pro.events.event.ip_address != ''"
     field: host.ip
     value: 
      - '{{{jamf_pro.events.event.ip_address}}}'
     ignore_empty_value: true
 
 - set:
-    if: "ctx.jamf_pro.events.event?.computer != null && ctx.jamf_pro.events.event?.computer?.reported_ip_address != null && ctx.jamf_pro.events.event?.computer?.reported_ip_address != ''"
+    if: >
+      ctx.jamf_pro.events.event.computer?.reported_ip_address != null &&
+      ctx.jamf_pro.events.event.computer.reported_ip_address != ''
     field: host.ip
     value: 
-     - "{{jamf_pro.events.event.computer.reported_ip_address}}"
+     - "{{{jamf_pro.events.event.computer.reported_ip_address}}}"
     ignore_empty_value: true
 
 ##############
 #  User src  #
 ##############
+
 - set:
     field: user.name
-    copy_from: jamf_pro.events.event?.username
+    copy_from: jamf_pro.events.event.username
     ignore_empty_value: true
 
 - set:
     field: user.name
-    copy_from: jamf_pro.events.event.?computer.username
+    copy_from: jamf_pro.events.event.computer.username
     ignore_empty_value: true
 
 - set:
     field: user.email
-    copy_from: jamf_pro.events.event.?computer.email_address
+    copy_from: jamf_pro.events.event.computer.email_address
     ignore_empty_value: true
 
 - set:
@@ -117,12 +123,12 @@ processors:
 ##############
 
 - set:
-    if: ctx.jamf_pro.events.event?.os_version != null
+    if: ctx.jamf_pro.events.event.os_version != null
     field: os.version
     copy_from: jamf_pro.events.event.os_version
 
 - set:
-    if: ctx.jamf_pro.events.event?.computer?.os_version != null
+    if: ctx.jamf_pro.events.event.computer?.os_version != null
     field: os.version
     copy_from: jamf_pro.events.event.computer.os_version
 
@@ -137,20 +143,28 @@ processors:
     ignore_empty_value: true
 
 - geoip:
-    if: ctx.host?.ip != null && ctx.host?.ip != '' 
+    if: ctx.host?.ip != null && ctx.host.ip != ''
     field: host.ip
     target_field: host.geo
     ignore_missing: true
 
-- set:
+- append:
     field: related.user
-    copy_from: user.name
-    ignore_empty_value: true
+    value: "{{{user.name}}}"
+    if: ctx.user?.name != null && ctx.user.name != ""
+
+- append:
+    field: related.user
+    value: "{{{user.email}}}"
+    if: ctx.user?.email != null && ctx.user.email != ""
 
 - set:
     field: event.kind
     value: event
 
+##################
+# Error handling #
+##################
 
 on_failure:
 - set:
@@ -159,4 +173,3 @@ on_failure:
 - append:
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
