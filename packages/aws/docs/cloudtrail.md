@@ -133,7 +133,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| related.entity |  | keyword |
+| related.entity | All the entity identifiers related to the document. If the document  contains multiple entities, identifiers belonging to different entities  will be present. Example identifiers include cloud resource IDs, ARNs,  email addresses, or hostnames. | keyword |
 
 
 An example event for `cloudtrail` looks as following:
