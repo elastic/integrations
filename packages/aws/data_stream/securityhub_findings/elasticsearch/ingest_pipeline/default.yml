@@ -1543,21 +1543,33 @@ processors:
       if: ctx.aws?.securityhub_findings?.resources instanceof List && ctx.aws.securityhub_findings.resources.size() > 0
       source: |-
         def resources = ctx.aws.securityhub_findings.resources;
-        
-        // Extract resource field
-        if (ctx.resource == null) {
-          ctx.resource = new HashMap();
-        }
-        ctx.resource.type = resources[0].Type;
-        ctx.resource.id = resources[0].Id;
-        if (resources[0].Details != null && resources[0].Details[ctx.resource.type]?.Name != null) {
-          ctx.resource.name = resources[0].Details[ctx.resource.type].Name;
-        } else {
-          String[] tokenList = ctx.resource.id.splitOnToken("/");
-          ctx.resource.name = tokenList[tokenList.length - 1];
-        }
 
         for (res in resources) {
+          // Extract resource field
+          if (ctx.resource == null) {
+            ctx.resource = new HashMap();
+          }
+          if (ctx.resource.type == null) {
+            ctx.resource.type = new ArrayList();
+          }
+          if (ctx.resource.id == null) {
+            ctx.resource.id = new ArrayList();
+          }
+          if (ctx.resource.name == null) {
+            ctx.resource.name = new ArrayList();
+          }
+          ctx.resource.type.add(res.Type);
+          ctx.resource.id.add(res.Id);
+          def res_name;
+          if (res.Details != null && res.Details[res.Type]?.Name != null) {
+            res_name = res.Details[res.Type].Name;
+          } else {
+            String[] tokenList = res.Id.splitOnToken("/");
+            res_name = tokenList[tokenList.length - 1];
+          }
+          ctx.resource.name.add(res_name);
+
+
           // Extract ECS user field
           if (ctx.user == null) {
             ctx.user = new HashMap();
@@ -1645,9 +1657,9 @@ processors:
             ctx.orchestrator.cluster.url.add(res.Details.AwsEksCluster.Endpoint);
           }
           if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
-            ctx.orchestrator.resource.id.add(ctx.resource.id);
-            ctx.orchestrator.resource.name.add(ctx.resource.name);
-            ctx.orchestrator.resource.type.add(ctx.resource.type);
+            ctx.orchestrator.resource.id.add(res.Id);
+            ctx.orchestrator.resource.name.add(res_name);
+            ctx.orchestrator.resource.type.add(res.Type);
             if (res.Type.startsWith('AwsEks')) {
               ctx.orchestrator.type.add('kubernetes');
             } else {
@@ -1662,19 +1674,28 @@ processors:
           if (ctx.cloud.instance == null) {
             ctx.cloud.instance = new HashMap();
           }
+          if (ctx.cloud.instance.id == null) {
+            ctx.cloud.instance.id = new ArrayList();
+          }
+          if (ctx.cloud.instance.name == null) {
+            ctx.cloud.instance.name = new ArrayList();
+          }
           if (ctx.cloud.service == null) {
             ctx.cloud.service = new HashMap();
           }
-          if (res.Type == 'AwsEc2Instance') {
-            ctx.cloud.instance.id = ctx.resource.id;
-            ctx.cloud.instance.name = ctx.resource.name;
-          }
-          String[] cloud_service = ctx.resource.id.splitOnToken(":");
-          if (cloud_service.length > 2) {
-            ctx.cloud.service.name = cloud_service[2];
+          if (ctx.cloud.service.name == null) {
+            ctx.cloud.service.name = new ArrayList();
           }
           if (ctx.cloud.availability_zone == null) {
             ctx.cloud.availability_zone = new ArrayList();
+          }
+          if (res.Type == 'AwsEc2Instance') {
+            ctx.cloud.instance.id.add(res.Id);
+            ctx.cloud.instance.name.add(res_name);
+          }
+          String[] cloud_service = res.Id.splitOnToken(":");
+          if (cloud_service.length > 2) {
+            ctx.cloud.service.name.add(cloud_service[2]);
           }
           if (['AwsEc2Subnet', 'AwsRedshiftCluster', 'AwsDmsReplicationInstance'].contains(res.Type) && res.Details != null && res.Details[res.Type]?.AvailabilityZone != null) {
             ctx.cloud.availability_zone.add(res.Details[res.Type].AvailabilityZone);
