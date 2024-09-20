@@ -681,8 +681,8 @@ An example event for `virtualmachine` looks as following:
         "hostname": "elastic-agent-55444",
         "id": "e744630f9d4f43dc818e497d221bd0b2",
         "ip": [
-            "172.18.0.4",
-            "172.20.0.2"
+            "127.28.12.4",
+            "127.28.12.2"
         ],
         "mac": [
             "02-42-AC-12-00-04",
@@ -692,7 +692,7 @@ An example event for `virtualmachine` looks as following:
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "kernel": "127.15.128.1-microsoft-standard-WSL2",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -704,7 +704,7 @@ An example event for `virtualmachine` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "https://svc-vsphere-metrics:8989/sdk",
+        "address": "https://localhost:8989/sdk",
         "type": "vsphere"
     },
     "vsphere": {
@@ -714,7 +714,7 @@ An example event for `virtualmachine` looks as following:
             "status": "green",
             "host": {
                 "id": "host-32",
-                "hostname": "phx-w1c1-esxi04.com"
+                "hostname": "localhost.com"
             },
             "cpu": {
                 "free": {
