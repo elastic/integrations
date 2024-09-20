@@ -692,6 +692,21 @@ processors:
       field: json.GeneratorId
       target_field: aws.securityhub_findings.generator.id
       ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_generator_id
+      copy_from: aws.securityhub_findings.generator.id
+      ignore_failure: true
+  - rename:
+      field: json.Compliance.SecurityControlId
+      target_field: aws.securityhub_findings.compliance.security_control_id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_security_control_id
+      copy_from: aws.securityhub_findings.compliance.security_control_id
+      if: ctx.rule?.id == null
+      ignore_failure: true
   - rename:
       field: json.Id
       target_field: aws.securityhub_findings.id
@@ -1512,17 +1527,37 @@ processors:
       tag: set_rule_references
       copy_from: aws.securityhub_findings.remediation.recommendation.url
       ignore_empty_value: true
+  - set:
+      field: rule.remediation
+      tag: set_rule_remediation
+      value: '{{{aws.securityhub_findings.remediation.recommendation.text}}} \n {{{aws.securityhub_findings.remediation.recommendation.url}}}'
+      if: ctx.aws?.securityhub_findings?.remediation?.recommendation?.url != null && ctx.aws.securityhub_findings.remediation.recommendation.text != null
+      ignore_empty_value: true
   - rename:
       field: json.Resources
       target_field: aws.securityhub_findings.resources
       ignore_missing: true
   - script:
-      description: Extract ECS fields from aws.securityhub_findings.resources.
+      description: Extract fields from aws.securityhub_findings.resources.
       lang: painless
       if: ctx.aws?.securityhub_findings?.resources instanceof List && ctx.aws.securityhub_findings.resources.size() > 0
       source: |-
         def resources = ctx.aws.securityhub_findings.resources;
-        for (resource in resources) {
+        
+        // Extract resource field
+        if (ctx.resource == null) {
+          ctx.resource = new HashMap();
+        }
+        ctx.resource.type = resources[0].Type;
+        ctx.resource.id = resources[0].Id;
+        if (resources[0].Details != null && resources[0].Details[ctx.resource.type]?.Name != null) {
+          ctx.resource.name = resources[0].Details[ctx.resource.type].Name;
+        } else {
+          String[] tokenList = ctx.resource.id.splitOnToken("/");
+          ctx.resource.name = tokenList[tokenList.length - 1];
+        }
+
+        for (res in resources) {
           // Extract ECS user field
           if (ctx.user == null) {
             ctx.user = new HashMap();
@@ -1533,20 +1568,20 @@ processors:
           if (ctx.user.id == null) {
             ctx.user.id = new ArrayList();
           }
-          if (resource.Type == 'AwsIamUser' && resource.Details?.AwsIamUser?.UserName != null) {
-            ctx.user.name.add(resource.Details.AwsIamUser.UserName);
+          if (res.Type == 'AwsIamUser' && res.Details?.AwsIamUser?.UserName != null) {
+            ctx.user.name.add(res.Details.AwsIamUser.UserName);
           }
-          if (resource.Type == 'AwsIamAccessKey' && resource.Details?.AwsIamAccessKey?.UserName != null) {
-            ctx.user.name.add(resource.Details.AwsIamAccessKey.UserName);
+          if (res.Type == 'AwsIamAccessKey' && res.Details?.AwsIamAccessKey?.UserName != null) {
+            ctx.user.name.add(res.Details.AwsIamAccessKey.UserName);
           }
-          if (resource.Type == 'AwsS3Bucket' && resource.Details?.AwsS3Bucket?.OwnerName != null) {
-            ctx.user.name.add(resource.Details.AwsS3Bucket.OwnerName);
+          if (res.Type == 'AwsS3Bucket' && res.Details?.AwsS3Bucket?.OwnerName != null) {
+            ctx.user.name.add(res.Details.AwsS3Bucket.OwnerName);
           } 
-          if (resource.Type == 'AwsIamUser' && resource.Details?.AwsIamUser?.UserId != null) {
-            ctx.user.id.add(resource.Details.AwsIamUser.UserId);
+          if (res.Type == 'AwsIamUser' && res.Details?.AwsIamUser?.UserId != null) {
+            ctx.user.id.add(res.Details.AwsIamUser.UserId);
           } 
-          if (resource.Type == 'AwsS3Bucket' && resource.Details?.AwsS3Bucket?.OwnerId != null) {
-            ctx.user.id.add(resource.Details.AwsS3Bucket.OwnerId);
+          if (res.Type == 'AwsS3Bucket' && res.Details?.AwsS3Bucket?.OwnerId != null) {
+            ctx.user.id.add(res.Details.AwsS3Bucket.OwnerId);
           } 
 
           // Extract ECS host field
@@ -1556,13 +1591,16 @@ processors:
           if (ctx.host.id == null) {
             ctx.host.id = new ArrayList();
           }
-          if (resource.Type == 'AwsEc2Instance' && resource.Id != null) {
-            ctx.host.id.add(resource.Id);
+          if (res.Type == 'AwsEc2Instance' && res.Id != null) {
+            ctx.host.id.add(res.Id);
           }
 
           // Extract ECS orchestrator field
           if (ctx.orchestrator == null) {
             ctx.orchestrator = new HashMap();
+          }
+          if (ctx.orchestrator.type == null) {
+            ctx.orchestrator.type = new ArrayList();
           }
           if (ctx.orchestrator.cluster == null) {
             ctx.orchestrator.cluster = new HashMap();
@@ -1573,17 +1611,91 @@ processors:
           if (ctx.orchestrator.cluster.name == null) {
             ctx.orchestrator.cluster.name = new ArrayList();
           }
-          if (['AwsEcsCluster', 'AwsEcsTask'].contains(resource.Type) && resource.Details?.AwsEcsCluster?.ClusterArn != null) {
-            ctx.orchestrator.cluster.id.add(resource.Details.AwsEcsCluster.ClusterArn);
+          if (ctx.orchestrator.cluster.version == null) {
+            ctx.orchestrator.cluster.version = new ArrayList();
           }
-          if (resource.Type == 'AwsEksCluster' && resource.Details?.AwsEksCluster?.Arn != null) {
-            ctx.orchestrator.cluster.id.add(resource.Details.AwsEksCluster.Arn);
+          if (ctx.orchestrator.resource == null) {
+            ctx.orchestrator.resource = new HashMap();
           }
-          if (resource.Type == 'AwsEcsCluster' && resource.Details?.AwsEcsCluster?.ClusterName != null) {
-            ctx.orchestrator.cluster.name.add(resource.Details.AwsEcsCluster.ClusterName);
+          if (ctx.orchestrator.resource.id == null) {
+            ctx.orchestrator.resource.id = new ArrayList();
           }
-          if (resource.Type == 'AwsEksCluster' && resource.Details?.AwsEksCluster?.Name != null) {
-            ctx.orchestrator.cluster.name.add(resource.Details.AwsEksCluster.Name);
+          if (ctx.orchestrator.resource.name == null) {
+            ctx.orchestrator.resource.name = new ArrayList();
+          }
+          if (ctx.orchestrator.resource.type == null) {
+            ctx.orchestrator.resource.type = new ArrayList();
+          }
+          if (['AwsEcsCluster', 'AwsEcsTask'].contains(res.Type) && res.Details?.AwsEcsCluster?.ClusterArn != null) {
+            ctx.orchestrator.cluster.id.add(res.Details.AwsEcsCluster.ClusterArn);
+          }
+          if (res.Type == 'AwsEksCluster' && res.Details?.AwsEksCluster?.Arn != null) {
+            ctx.orchestrator.cluster.id.add(res.Details.AwsEksCluster.Arn);
+          }
+          if (res.Type == 'AwsEcsCluster' && res.Details?.AwsEcsCluster?.ClusterName != null) {
+            ctx.orchestrator.cluster.name.add(res.Details.AwsEcsCluster.ClusterName);
+          }
+          if (res.Type == 'AwsEksCluster' && res.Details?.AwsEksCluster?.Name != null) {
+            ctx.orchestrator.cluster.name.add(res.Details.AwsEksCluster.Name);
+          }
+          if (res.Type == 'AwsEksCluster' && res.Details?.AwsEksCluster?.Version != null) {
+            ctx.orchestrator.cluster.version.add(res.Details.AwsEksCluster.Version);
+          }
+          if (res.Type == 'AwsEksCluster' && res.Details?.AwsEksCluster?.Endpoint != null) {
+            ctx.orchestrator.cluster.url.add(res.Details.AwsEksCluster.Endpoint);
+          }
+          if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
+            ctx.orchestrator.resource.id.add(ctx.resource.id);
+            ctx.orchestrator.resource.name.add(ctx.resource.name);
+            ctx.orchestrator.resource.type.add(ctx.resource.type);
+            if (res.Type.startsWith('AwsEks')) {
+              ctx.orchestrator.type.add('kubernetes');
+            } else {
+              ctx.orchestrator.type.add('ecs');
+            }
+          }
+          
+          // Extract ECS cloud field
+          if (ctx.cloud == null) {
+            ctx.cloud = new HashMap();
+          }
+          if (ctx.cloud.instance == null) {
+            ctx.cloud.instance = new HashMap();
+          }
+          if (ctx.cloud.service == null) {
+            ctx.cloud.service = new HashMap();
+          }
+          if (res.Type == 'AwsEc2Instance') {
+            ctx.cloud.instance.id = ctx.resource.id;
+            ctx.cloud.instance.name = ctx.resource.name;
+          }
+          String[] cloud_service = ctx.resource.id.splitOnToken(":");
+          if (cloud_service.length > 2) {
+            ctx.cloud.service.name = cloud_service[2];
+          }
+          if (ctx.cloud.availability_zone == null) {
+            ctx.cloud.availability_zone = new ArrayList();
+          }
+          if (['AwsEc2Subnet', 'AwsRedshiftCluster', 'AwsDmsReplicationInstance'].contains(res.Type) && res.Details != null && res.Details[res.Type]?.AvailabilityZone != null) {
+            ctx.cloud.availability_zone.add(res.Details[res.Type].AvailabilityZone);
+          }
+          if ((['AwsEc2VpcEndpointService', 'AwsElbLoadBalancer', 'AwsRdsDbCluster'].contains(res.Type)) && res.Details != null && res.Details[res.Type]?.AvailabilityZones != null) {
+            for (def az: res.Details[res.Type].AvailabilityZones){
+              ctx.cloud.availability_zone.add(az);
+            }
+          }
+          if (res.Type == 'AwsAutoScalingAutoScalingGroup' && res.Details?.AwsAutoScalingAutoScalingGroup?.AvailabilityZones != null) {
+            for (def az: res.Details.AwsAutoScalingAutoScalingGroup.AvailabilityZones){
+              ctx.cloud.availability_zone.add(az.Value);
+            }
+          }
+          if (res.Type == 'AwsEc2LaunchTemplate' && res.Details?.AwsEc2LaunchTemplate?.LaunchTemplateData?.Placement?.AvailabilityZone != null) {
+            ctx.cloud.availability_zone.add(res.Details.AwsEc2LaunchTemplate.LaunchTemplateData.Placement.AvailabilityZone);
+          }
+          if (res.Type == 'AwsElbv2LoadBalancer' && res.Details?.AwsElbv2LoadBalancer?.AvailabilityZones != null) {
+            for (def az: res.Details.AwsElbv2LoadBalancer.AvailabilityZones){
+              ctx.cloud.availability_zone.add(az.ZoneName);
+            }
           }
         }
   - convert:

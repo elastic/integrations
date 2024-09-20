@@ -526,6 +526,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.securityhub_findings.aws_account_id | The Amazon Web Services account ID that a finding is generated in. | keyword |
 | aws.securityhub_findings.company.name | The name of the company for the product that generated the finding. | keyword |
 | aws.securityhub_findings.compliance.related_requirements | For a control, the industry or regulatory framework requirements that are related to the control. | keyword |
+| aws.securityhub_findings.compliance.security_control_id | Unique identifier of a control across standards. | keyword |
 | aws.securityhub_findings.compliance.status | The result of a standards check. | keyword |
 | aws.securityhub_findings.compliance.status_reasons.description | The corresponding description for the status reason code. | keyword |
 | aws.securityhub_findings.compliance.status_reasons.reason_code | A code that represents a reason for the control status. | keyword |
