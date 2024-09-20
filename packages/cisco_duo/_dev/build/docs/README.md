@@ -1,6 +1,6 @@
 # Cisco Duo
 
-The Cisco Duo integration collects and parses data from the [Cisco Duo Admin APIs](https://duo.com/docs/adminapi).
+The Cisco Duo integration collects and parses data from the [Cisco Duo Admin APIs](https://duo.com/docs/adminapi). The Duo Admin API provides programmatic access to the administrative functionality of Duo Security's two-factor authentication platform.
 
 ## Compatibility
 
@@ -16,11 +16,33 @@ In order to ingest data from the Cisco Duo Admin API you must:
 - For this integration you will require **Grant read information** and **Grant read log** permissions.
 - Make sure you have whitelisted your IP Address.
 
-## Note
+More details for each step can be found at [First steps](https://duo.com/docs/adminapi#first-steps).
 
-While setting up the interval take care of following.
-- `Interval has to be greater than 1m.`
-- `Larger values of interval might cause delay in data ingestion.`
+## Data streams
+
+The Cisco Duo integration collects logs for the following types of events.
+
+- [**Administrator Logs**](https://duo.com/docs/adminapi#administrator-logs)
+- [**Authentication Logs**](https://duo.com/docs/adminapi#authentication-logs)
+- [**Offline Enrollment Logs**](https://duo.com/docs/adminapi#offline-enrollment-logs)
+- [**Summary**](https://duo.com/docs/adminapi#retrieve-summary)
+- [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
+- [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
+
+## HTTPJSON vs CEL
+
+Cisco Duo has started implementing v2 handlers for endpoints. In these cases, the API v1 handler remains supported, but will be limited or deprecated in the future. We encourage use of the v2 endpoints where available and recommend migrating existing API implementations to the v2 handlers.
+
+From data streams listed above, v2 handlers are supported for Authentication and Telephony Logs at the moment. For these data streams, version 2.0.0 introduces the use of the CEL input in favor of HTTPJSON, which is marked as [Legacy] and will not receive enhancement changes.
+
+## Configuration
+
+The following considerations should be taken into account when configuring the integration.
+
+- Interval has to be greater or equal than `1m`.
+- The Duo Admin API retrieves records from the last 180 days up to as recently as two minutes before the API request. Consider this when configuring the `Initial interval` parameter for the v2 API endpoints, as it doesn't support `d` as a suffix, its maximum value is `4320h` which corresponds to that 180 days.
+- For v2 API endpoints, a new parameter `limit` has been added to control the number of records per response. Default value is 100 and can be incresead until 1000.
+- Larger values of interval might cause delay in data ingestion.
 
 ## Logs
 
@@ -63,3 +85,11 @@ This is the `telephony` dataset.
 {{event "telephony"}}
 
 {{fields "telephony"}}
+
+### Telephony v2
+
+This is the `telephony_v2` dataset.
+
+{{event "telephony_v2"}}
+
+{{fields "telephony_v2"}}
