@@ -377,12 +377,12 @@ processors:
   - rename:
       field: json.device.device_id
       tag: rename_device_device_id
-      target_field: crowdstrike.alert.device.device_id
+      target_field: crowdstrike.alert.device.id
       ignore_missing: true
   - set:
       field: device.id
-      tag: set_device_id_from_alert_device_device_id
-      copy_from: crowdstrike.alert.device.device_id
+      tag: set_device_id_from_alert_device_id
+      copy_from: crowdstrike.alert.device.id
       ignore_empty_value: true
   - date:
       field: json.device.last_seen
@@ -559,11 +559,15 @@ processors:
       tag: rename_device_tags
       target_field: crowdstrike.alert.device.tags
       ignore_missing: true
-  - append:
-      field: tags
-      value: '{{{crowdstrike.alert.device.tags}}}'
-      allow_duplicates: false
-      if: ctx.crowdstrike?.alert?.device?.tags != null
+  - foreach:
+      field: crowdstrike.alert.device.tags
+      if: ctx.crowdstrike?.alert?.device?.tags instanceof List
+      processor:
+        append:
+          field: tags
+          tag: append_device_tags_into_tags
+          value: '{{{crowdstrike.alert.device.tags}}}'
+          allow_duplicates: false
   - rename:
       field: json.display_name
       tag: rename_display_name
@@ -2183,11 +2187,15 @@ processors:
       tag: rename_tags
       target_field: crowdstrike.alert.tags
       ignore_missing: true
-  - append:
-      field: tags
-      value: '{{{crowdstrike.alert.tags}}}'
-      allow_duplicates: false
-      if: ctx.crowdstrike?.alert?.tags != null
+  - foreach:
+      field: crowdstrike.alert.tags
+      if: ctx.crowdstrike?.alert?.tags instanceof List
+      processor:
+        append:
+          field: tags
+          tag: append_alert_tags_into_tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
       field: json.target_endpoint_host_name
       tag: rename_target_endpoint_host_name
