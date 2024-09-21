@@ -78,10 +78,6 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
 | Asset Vulnerability Summary | Custom vulnerabilityAssessment.data (Read) |
 
 
-## Note
-
-- The alert data stream has a 15-minute delay to ensure that no occurrences are missed.
-
 ## Logs
 
 ### Audit
