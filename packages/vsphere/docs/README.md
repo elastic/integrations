@@ -583,10 +583,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | vsphere.datastorecluster.capacity.bytes | Total capacity of this storage pod, in bytes. | long | byte | gauge |
 | vsphere.datastorecluster.datastore.count | Number of datastores in the Datastore Cluster. | long |  | gauge |
