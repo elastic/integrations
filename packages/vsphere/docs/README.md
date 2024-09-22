@@ -16,7 +16,7 @@ The vSphere integration collects logs and metrics.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by vSphere as integration is `log`.
 
-Metrics give you insight into the statistics of the vSphere. The `Metric` data stream collected by the vSphere integration are `cluster`, `datastore`, `datastorecluster`, `host`, `resourcepool` and `virtualmachine` so that the user can monitor and troubleshoot the performance of the vSphere instance.
+Metrics give you insight into the statistics of the vSphere. The `Metric` data stream collected by the vSphere integration are `cluster`, `datastore`, `datastorecluster`, `host`, `network`, `resourcepool` and `virtualmachine` so that the user can monitor and troubleshoot the performance of the vSphere instance.
 
 Data Streams:
 
@@ -27,6 +27,7 @@ Data Streams:
 - **`host`**: This data stream collects host metrics from VMware vSphere, including performance statistics such as CPU usage, memory usage, disk I/O, and network activity.
 - **`resourcepool`**: This data stream collects metrics from VMware vSphere, such as CPU and memory usage, CPU and memory reservation, and CPU and memory limit.
 - **`virtualmachine`**: This data stream gathers virtual machine metrics from VMware vSphere, including performance statistics such as status, uptime, CPU usage, memory usage, and network activity.
+- **`network`**: This data stream gathers metrics and status information related to VMware vSphere networks, including network accessibility, connected hosts and virtual machines, configuration health, and network type.
 
 Note:
 - Users can monitor and see the log inside the ingested documents for vSphere in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
@@ -764,6 +765,145 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.host.uptime | The total uptime of a host in seconds within the vSphere environment. | long |  | gauge |
 | vsphere.host.vm.count | Number of virtual machines on the host. | long |  | gauge |
 | vsphere.host.vm.names | List of all the VM names. | keyword |  |  |
+
+
+### Network
+
+This is the `network` data stream. This data stream gathers metrics and status information related to VMware vSphere networks, including network accessibility, connected hosts and virtual machines, configuration health, and network type.
+
+An example event for `network` looks as following:
+
+```json
+{
+    "@timestamp": "2024-09-06T10:03:41.269Z",
+    "agent": {
+        "ephemeral_id": "fd7ea14a-021f-4123-9207-a59d04079518",
+        "id": "cf956e52-a7c8-4b59-9164-71708a4a03ef",
+        "name": "elastic-agent-62551",
+        "type": "metricbeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "vsphere.network",
+        "namespace": "80513",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "cf956e52-a7c8-4b59-9164-71708a4a03ef",
+        "snapshot": true,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "vsphere.network",
+        "duration": 22006510,
+        "ingested": "2024-09-06T10:03:44Z",
+        "module": "vsphere"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-62551",
+        "id": "34cecc0439df428fa0321764ae68921c",
+        "ip": [
+            "172.19.0.2",
+            "172.18.0.8"
+        ],
+        "mac": [
+            "02-42-AC-12-00-08",
+            "02-42-AC-13-00-02"
+        ],
+        "name": "elastic-agent-62551",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "network",
+        "period": 10000
+    },
+    "service": {
+        "address": "https://svc-vsphere-metrics:8989/sdk",
+        "type": "vsphere"
+    },
+    "vsphere": {
+        "network": {
+            "vm": {
+                "names": [
+                    "DC0_H0_VM0",
+                    "DC0_H0_VM1"
+                ],
+                "count": 2
+            },
+            "name": "VM Network",
+            "status": "green",
+            "accessible": true,
+            "config": {
+                "status": "green"
+            },
+            "type": "Network",
+            "host": {
+                "names": [
+                    "DC0_H0"
+                ],
+                "count": 1
+            }
+        }
+    }
+}
+
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| vsphere.network.accessible | Indicates whether at least one host is configured to provide this network. | boolean |  |
+| vsphere.network.config.status | Indicates whether the system has detected a configuration issue. | keyword |  |
+| vsphere.network.host.count | Number of hosts connected to this network. | long | gauge |
+| vsphere.network.host.names | Names of the hosts connected to this network. | keyword |  |
+| vsphere.network.name | Name of the network. | keyword |  |
+| vsphere.network.status | General health of the network. | keyword |  |
+| vsphere.network.triggered_alarms.description | Description of the alarm. | keyword |  |
+| vsphere.network.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
+| vsphere.network.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |
+| vsphere.network.triggered_alarms.name | Name of the alarm. | keyword |  |
+| vsphere.network.triggered_alarms.status | Status of the alarm. | keyword |  |
+| vsphere.network.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |
+| vsphere.network.type | Type of the network (e.g., Network(Standard), DistributedVirtualport). | keyword |  |
+| vsphere.network.vm.count | Number of virtual machines connected to this network. | long | gauge |
+| vsphere.network.vm.names | Names of the virtual machines connected to this network. | keyword |  |
 
 
 ### Resourcepool Metrics
