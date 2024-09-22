@@ -41,6 +41,36 @@ processors:
       field: resp
       tag: remove_resp
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_finish_urlencoding
+      if: ctx.json != null
+      params:
+        fields:
+          - apprulelabel
+          - devicename
+          - filename
+          - host
+          - location
+          - login
+          - mobappname
+          - refererhost
+          - rulelabel
+          - upload_filename
+          - urlfilterrulelabel
+          - useragent
+          - userlocationname
+      source: |-
+        // Zscaler hex-encoded data is similar to URL encoded data, but it doesn't encode `%`.
+        // This pre-processing allows the URL decode processor's strict logic to run successfully.
+        def pattern = /(%)(?![0-9A-Fa-f]{2})/;
+        for (String k: params.fields) {
+            String v = ctx.json[k];
+            if (v == null) {
+                continue;
+            }
+            ctx.json[k] = pattern.matcher(v).replaceAll('%25');
+        }
   - append:
       field: event.category
       tag: append_event_category
@@ -675,9 +705,11 @@ processors:
       ignore_missing: true
       if: ctx.user?.email != null
       on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - set:
+            field: user.name
+            copy_from: user.email
+        - remove:
+            field: user.email
   - append:
       field: related.user
       tag: set_related_user_from_user_name

@@ -69,34 +69,24 @@ processors:
       allow_duplicates: false
       if: ctx.source?.user?.name != null
 
+  - rename:
+      tag: move_source_address
+      field: _tmp.source_ip
+      target_field: source.address
+      ignore_missing: true
   - convert:
       tag: convert_source_ip
-      field: _tmp.source_ip
-      type: ip
-      target_field: source.ip
-      ignore_missing: true
-  - set:
-      tag: set_source_address
       field: source.address
-      copy_from: source.ip
-      ignore_empty_value: true
-  - append:
-      tag: append_related_source_ip
-      field: related.ip
-      value: '{{{source.ip}}}'
-      allow_duplicates: false
-      if: ctx.source?.ip != null
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
 
   - rename:
       tag: move_destination_bytes
       field: _tmp.destination_bytes
       target_field: destination.bytes
       ignore_missing: true
-  - set:
-      tag: set_http_request_body_bytes
-      field: http.request.body.bytes
-      copy_from: destination.bytes
-      ignore_empty_value: true
 
   - rename:
       tag: move_http_method
@@ -113,11 +103,6 @@ processors:
       field: _tmp.url
       target_field: url.original
       if: ctx._tmp?.url != null && ctx.http?.request?.method == 'CONNECT'
-  - set:
-      tag: set_destination_address
-      field: destination.address
-      copy_from: url.domain
-      ignore_empty_value: true
 
   - set:
       tag: set_event_outcome_success
@@ -150,13 +135,102 @@ processors:
       field: _tmp.content_type
       target_field: squid.content_type
       ignore_missing: true
+
   - rename:
       tag: move_peer_host
       field: _tmp.peer_host
-      target_field: squid.peer_host
+      target_field: destination.address
+      ignore_missing: true
+  - set:
+      tag: set_url_destination_address
+      field: destination.address
+      copy_from: url.domain
+      ignore_empty_value: true
+      if: ctx.destination?.address == null
+  - convert:
+      tag: convert_destination_ip
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
       ignore_missing: true
 
+  - geoip:
+      tag: geoip_source_ip
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      tag: geoip_destination_ip
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      tag: geoip_source_as
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      tag: geoip_destination_as
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_asn
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_organization_name
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      tag: rename_destination_as_asn
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_destination_as_organization_name
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  - registered_domain:
+      tag: url_registered_domain
+      field: url.domain
+      target_field: url
+      ignore_missing: true
+
+  - append:
+      tag: append_related_url_host
+      field: related.hosts
+      value: '{{{url.domain}}}'
+      allow_duplicates: false
+      if: ctx.url?.domain != null
+  - append:
+      tag: append_related_source_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      tag: append_related_destination_ip
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+
   - remove:
+      tag: remove_fields
       field:
         - _tmp
       ignore_missing: true

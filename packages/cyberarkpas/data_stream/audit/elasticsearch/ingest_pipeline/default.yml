@@ -978,9 +978,10 @@ processors:
       source: >
         long parse_hms(String s) {
             long cur = 0, total = 0;
-            for (char c: s.toCharArray()) {
+            for (int i = 0, n = s.length(); i < n; i++) {
+                char c = s.charAt(i);
                 if (c >= (char)'0' && c <= (char)'9') {
-                    cur = (cur*10) + (long)c - (char)'0';
+                    cur = (cur*10) + (long)(c - (char)'0');
                 } else if (c == (char)':') {
                     total = (total + cur) * 60;
                     cur = 0;
@@ -1173,11 +1174,6 @@ processors:
   #
   - remove:
       field: _tmp
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags?.contains('preserve_original_event') != true
-      ignore_failure: true
       ignore_missing: true
 on_failure:
   - append:
