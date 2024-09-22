@@ -775,48 +775,42 @@ An example event for `network` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-06T10:03:41.269Z",
+    "@timestamp": "2024-09-22T21:01:42.635Z",
     "agent": {
-        "ephemeral_id": "fd7ea14a-021f-4123-9207-a59d04079518",
-        "id": "cf956e52-a7c8-4b59-9164-71708a4a03ef",
-        "name": "elastic-agent-62551",
+        "ephemeral_id": "b4116483-d4c6-4860-b93d-f0d8091cc838",
+        "id": "ff0ab35a-1abe-47a1-aee7-6d70362e4335",
+        "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.16.0"
+        "version": "8.15.2"
     },
     "data_stream": {
         "dataset": "vsphere.network",
-        "namespace": "80513",
+        "namespace": "default",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cf956e52-a7c8-4b59-9164-71708a4a03ef",
+        "id": "ff0ab35a-1abe-47a1-aee7-6d70362e4335",
         "snapshot": true,
-        "version": "8.16.0"
+        "version": "8.15.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.network",
-        "duration": 22006510,
-        "ingested": "2024-09-06T10:03:44Z",
+        "duration": 10826519,
+        "ingested": "2024-09-22T21:01:43Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-62551",
-        "id": "34cecc0439df428fa0321764ae68921c",
-        "ip": [
-            "172.19.0.2",
-            "172.18.0.8"
-        ],
-        "mac": [
-            "02-42-AC-12-00-08",
-            "02-42-AC-13-00-02"
-        ],
-        "name": "elastic-agent-62551",
+        "hostname": "docker-fleet-agent",
+        "id": "911fc69dd6b04b7fbc3d2087208d11e0",
+        "ip": "172.18.0.7",
+        "mac": "02-42-AC-12-00-07",
+        "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
@@ -829,38 +823,25 @@ An example event for `network` looks as following:
     },
     "metricset": {
         "name": "network",
-        "period": 10000
+        "period": 20000
     },
     "service": {
-        "address": "https://svc-vsphere-metrics:8989/sdk",
+        "address": "https://172.18.0.4:8989/sdk",
         "type": "vsphere"
     },
+    "tags": "vsphere-network",
     "vsphere": {
         "network": {
-            "vm": {
-                "names": [
-                    "DC0_H0_VM0",
-                    "DC0_H0_VM1"
-                ],
-                "count": 2
-            },
-            "name": "VM Network",
-            "status": "green",
             "accessible": true,
             "config": {
                 "status": "green"
             },
-            "type": "Network",
-            "host": {
-                "names": [
-                    "DC0_H0"
-                ],
-                "count": 1
-            }
+            "name": "VM Network",
+            "status": "green",
+            "type": "Network"
         }
     }
 }
-
 ```
 
 **ECS Field Reference**
