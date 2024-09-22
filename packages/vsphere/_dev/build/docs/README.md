@@ -100,6 +100,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 Datastore clusters in vSphere group multiple datastores for optimized management and automated load balancing, ensuring efficient storage utilization and simplified administration.
 
+{{event "datastorecluster"}}
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
