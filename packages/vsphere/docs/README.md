@@ -806,15 +806,21 @@ An example event for `network` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "911fc69dd6b04b7fbc3d2087208d11e0",
-        "ip": "172.18.0.7",
-        "mac": "02-42-AC-12-00-07",
-        "name": "docker-fleet-agent",
+        "hostname": "elastic-agent-23128",
+        "id": "57723763cd1b4ff48e54a505de4ebe6c",
+        "ip": [
+            "192.168.240.2",
+            "192.168.255.5"
+        ],
+        "mac": [
+            "02-42-C0-A8-F0-02",
+            "02-42-C0-A8-FF-05"
+        ],
+        "name": "elastic-agent-23128",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -829,7 +835,9 @@ An example event for `network` looks as following:
         "address": "https://172.18.0.4:8989/sdk",
         "type": "vsphere"
     },
-    "tags": "vsphere-network",
+    "tags": [
+        "vsphere-network"
+    ],
     "vsphere": {
         "network": {
             "accessible": true,
