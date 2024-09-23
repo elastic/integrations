@@ -34,15 +34,11 @@ stats_sinks:
 
 ## Logs reference
 
-An example event for `log` looks as following:
-
 {{event "log"}}
 
 {{fields "log"}}
 
 ## Stats reference
-
-An example event for `stats` looks as following:
 
 {{event "stats"}}
 
