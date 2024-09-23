@@ -875,8 +875,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | event.module | Event module | constant_keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | vsphere.network.accessible | Indicates whether at least one host is configured to provide this network. | boolean |  |
 | vsphere.network.config.status | Indicates whether the system has detected a configuration issue. | keyword |  |
