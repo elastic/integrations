@@ -269,5 +269,4 @@ An example event for `siem` looks as following:
         "query": "a=../../../etc/passwd"
     }
 }
-
 ```

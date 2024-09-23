@@ -223,7 +223,6 @@ An example event for `log` looks as following:
         "name": "psxvne"
     }
 }
-
 ```
 
 **Exported fields**

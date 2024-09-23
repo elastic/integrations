@@ -100,7 +100,6 @@ An example event for `log` looks as following:
         "microsoft_dhcp"
     ]
 }
-
 ```
 
 **Exported fields**

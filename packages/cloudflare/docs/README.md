@@ -174,7 +174,6 @@ An example event for `audit` looks as following:
         "id": "enl3j9du8rnx2swwd9l32qots7l54t9s"
     }
 }
-
 ```
 
 ### Logpull
@@ -444,5 +443,4 @@ An example event for `logpull` looks as following:
         "version": "5.2.2"
     }
 }
-
 ```
