@@ -200,5 +200,4 @@ An example event for `audit` looks as following:
         "version": "23.0."
     }
 }
-
 ```
