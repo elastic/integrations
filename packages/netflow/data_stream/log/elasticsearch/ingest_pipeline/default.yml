@@ -24,6 +24,11 @@ processors:
         - network
         - session
       if: ctx.event?.category != null && ctx.event?.category == "network_session"
+  - append:
+      field: related.ip
+      value: '{{_tmp_.observer.ip}}'
+      allow_duplicates: false
+      if: (ctx._tmp_?.observer?.ip != null)
   - script:
       description: Collect all related ip addresses
       tag: script_collect_related_ip
