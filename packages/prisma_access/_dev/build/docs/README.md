@@ -50,13 +50,11 @@ The Palo Alto Prisma Access integration collects 16 types of event types:
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the Syslog server and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
-You have a few options for installing and managing an Elastic Agent:
+There are several options for installing and managing Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
@@ -70,7 +68,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#_minimum_requirements).
 
 ## Setup
 
@@ -79,10 +77,10 @@ For step-by-step instructions on how to forward logs to syslog server from your 
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type Palo Alto Prisma Access.
-3. Click on the "Palo Alto Prisma Access" integration from the search results.
-4. Click on the "Add Palo Alto Prisma Access" button to add the integration.
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `Palo Alto Prisma Access`.
+3. Select the "Palo Alto Prisma Access" integration from the search results.
+4. Select "Add Palo Alto Prisma Access" to add the integration.
 5. Add all the required integration configuration parameters according to the enabled input type.
 6. Click on "Save and continue" to save the integration.
 

@@ -20,11 +20,11 @@ The Sublime Security integration collects three types of logs:
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
-You have a few options for installing and managing an Elastic Agent:
+There are several options for installing and managing Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
@@ -38,7 +38,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#_minimum_requirements).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#_minimum_requirements).
 
 ## Setup
 
@@ -74,10 +74,10 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type Sublime Security.
-3. Click on the "Sublime Security" integration from the search results.
-4. Click on the "Add Sublime Security" button to add the integration.
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `Sublime Security`.
+3. Select the "Sublime Security" integration from the search results.
+4. Select "Add Sublime Security" to add the integration.
 5. Enable the Integration to collect logs via AWS S3 or API input.
 6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
 7. Add all the required integration configuration parameters, including API Key, Interval, Initial Interval and Page Size for API input and Access Key, Secret Key and Session Token for AWS input type to enable data collection.

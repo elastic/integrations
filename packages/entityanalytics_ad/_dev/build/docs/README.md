@@ -40,10 +40,10 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana, go to Management > Integrations.
-2. In the "Search for integrations" search bar, type Active Directory Entity Analytics.
-3. Click on the "Active Directory Entity Analytics" integration from the search results.
-4. Click on the Add Active Directory Entity Analytics Integration button to add the integration.
+1. In Kibana, navigate to Management > Integrations.
+2. In the "Search for integrations" top bar, search for `Active Directory Entity Analytics`.
+3. Select the "Active Directory Entity Analytics" integration from the search results.
+4. Select "Add Active Directory Entity Analytics Integration" to add the integration.
 5. While adding the integration, add the user, host and base DN details obtained above.
 6. Save the integration by adding other necessary parameters.
 
