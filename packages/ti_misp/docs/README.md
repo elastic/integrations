@@ -217,7 +217,6 @@ An example event for `threat` looks as following:
         }
     }
 }
-
 ```
 
 ### Threat Attributes
