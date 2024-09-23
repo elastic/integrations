@@ -18,7 +18,7 @@ The Abnormal Security integration collects four types of logs:
 
 ## Requirements
 
-You must install Elastic Agent to proceed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
@@ -57,7 +57,7 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 2. In "Search for integrations" top bar, search for `Abnormal Security`.
 3. Select the "Abnormal Security" integration from the search results.
 4. Select "Add Abnormal Security" to add the integration.
-5. Add all the required integration configuration parameters, including API Token, Interval and Page Size to enable data collection.
+5. Add all the required integration configuration parameters, including Access Token, Interval, Initial Interval and Page Size to enable data collection.
 6. Select "Save and continue" to save the integration.
 
 **Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal Security Base URL changes based on location so find your own base URL.

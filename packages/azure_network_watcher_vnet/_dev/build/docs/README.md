@@ -10,7 +10,7 @@ This integration supports ingestion of logs from Azure Network Watcher VNet, via
 
 ## Requirements
 
-You must install Elastic Agent to proceed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
