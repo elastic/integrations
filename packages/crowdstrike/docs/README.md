@@ -21,8 +21,6 @@ The [CrowdStrike](https://www.crowdstrike.com/) Falcon integration allows you to
 This integration is compatible with both CrowdStrike Falcon SIEM-Connector-v2.0 and REST API.
 For Rest API support, this module has been tested against the **CrowdStrike API Version v1/v2**.
 
-The minimum **kibana.version** required is **8.12.0**.
-
 ## Setup
 ### To collect data from CrowdStrike REST API, the following parameters from your CrowdStrike instance are required:
 
@@ -51,8 +49,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-11-03T18:00:22.328Z",
     "agent": {
-        "ephemeral_id": "704de05c-668d-431b-8483-ed43ec6a5942",
-        "id": "8f7b87ad-2943-4c25-88be-4eaac013beb6",
+        "ephemeral_id": "9179d476-73ca-41c0-8cbb-125d6c7b4639",
+        "id": "39fe953d-d473-4bcc-9bf9-38d74c965bfa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -270,17 +268,21 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.alert",
-        "namespace": "15119",
+        "namespace": "38540",
         "type": "logs"
     },
     "device": {
-        "id": "2ce412d17b334ad4adc8c1c54dbfec4b"
+        "id": "2ce412d17b334ad4adc8c1c54dbfec4b",
+        "manufacturer": "LENOVO",
+        "model": {
+            "name": "20VE"
+        }
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8f7b87ad-2943-4c25-88be-4eaac013beb6",
+        "id": "39fe953d-d473-4bcc-9bf9-38d74c965bfa",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -288,7 +290,7 @@ An example event for `alert` looks as following:
         "agent_id_status": "verified",
         "dataset": "crowdstrike.alert",
         "id": "ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600",
-        "ingested": "2024-08-08T07:13:48Z",
+        "ingested": "2024-09-20T09:13:42Z",
         "kind": "alert",
         "original": "{\"agent_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"aggregate_id\":\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"alleged_filetype\":\"exe\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"cloud_indicator\":\"false\",\"cmdline\":\"\\\"C:\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\\\"\",\"composite_id\":\"92012896127c4a8236ba7601b886b0:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"confidence\":10,\"context_timestamp\":\"2023-11-03T18:00:31Z\",\"control_graph_id\":\"ctg:2ce4127b334ad4adc8c1c54dbfec4b:163208931778\",\"crawl_edge_ids\":{\"Sensor\":[\"KZcZ=__;K\\u0026cmqQ]Z=W,QK4W.9(rBfs\\\\gfmjTblqI^F-_oNnAWQ\\u0026-o0:dR/\\u003e\\u003e2J\\u003cd2T/ji6R\\u0026RIHe-tZSkP*q?HW;:leq.:kk)\\u003eIVMD36[+=kiQDRm.bB?;d\\\"V0JaQlaltC59Iq6nM?6`\\u003eZAs+LbOJ9p9A;9'WV9^H3XEMs8N\",\"KZcZA__;?\\\"cmott@m_k)MSZ^+C?.cg\\u003cLga#0@71X07*LY2teE56*16pL[=!bjF7g@0jOQE'jT6RX_F@sr#RP-U/d[#nm9A,A,W%cl/T@\\u003cW`alY1K_h%QDBBF;_e7S!!*'!\",\"KZd)iK2;s\\\\ckQl_P*d=Mo?^a7/JKc\\\\*L48169!7I5;0\\\\\\u003cH^hNG\\\"ZQ3#U3\\\"eo\\u003c\\u003e92t[f!\\u003e*b9WLY@H!V0N,BJsNSTD:?/+fY';e\\u003cOHh9AmlT?5\\u003cgGqK:*L99kat+P)eZ$HR\\\"Ql@Q!!!$!rr\",\"N6=Ks_B9Bncmur)?\\\\[fV$k/N5;:6@aB$P;R$2XAaPJ?E\\u003cG5,UfaP')8#2AY4ff+q?T?b0/RBi-YAeGmb\\u003c6Bqp[DZh#I(jObGkjJJaMf\\\\:#mb;BM\\\\L[g!\\\\F*M!!*'!\",\"N6B%O`'=_7d#%u\\u0026d[+LTNDs\\u003c3307?8n=GrFI:4YYGCL,cIt-Tuj!\\u0026\\u003c6:3RbC`uNjL#gW\\u0026=)E`4^/'fp*.bFX@p_$,R6.\\\"=lV*T*5Vf`c.:nkd$+YD:DJ,Ls0[sArC')K%YTc$:@kUQW5s8N\",\"N6B%s!\\\\k)ed$F6\\u003ea%iM\\\"\\u003cFTSe/eH8M:\\u003c9gf;$$.b??kpC*99aX!Lq:g6:Q3@Ga4Zrb@MaMa]L'YAt$IFBu])\\\"H^sF$r7gDPf6\\u0026CHpVKO3\\u003cDgK9,Y/e@V\\\"b\\u0026m!\\u003c\\u003c'\",\"N6CU\\u0026`%VT\\\"d$=67=h\\\\I)/BJH:8-lS!.%\\\\-!$1@bAhtVO?q4]9'9'haE4N0*-0Uh'-'f',YW3]T=jL3D#N=fJi]Pp-bWej+R9q[%h[p]p26NK8q3b50k9G:.\\u0026eM\\u003cQer\\u003e__\\\"59K'R?_=`'`rK/'hA\\\"r+L5i-*Ut5PI!!*'!\",\"N6CUF__;K!d$:[C93.?=/5(`5KnM]!L#UbnSY5HOHc#[6A\\u0026FE;(naXB4h/OG\\\"%MDAR=fo41Z]rXc\\\"J-\\\\\\u0026\\u0026V8UW.?I6V*G+,))Ztu_IuCMV#ZJ:QDJ_EjQmjiX#HENY'WD0rVAV$Gl6_+0e:2$8D)):.LUs+8-S$L!!!$!rr\",\"N6CUF__;K!d$:\\\\N43JV0AO56@6D0$!na(s)d.dQ'iI1*uiKt#j?r\\\"X'\\\\AtNML2_C__7ic6,8Dc[F\\u003c0NTUGtl%HD#?/Y)t8!1X.;G!*FQ9GP-ukQn`6I##\\u0026$^81(P+hN*-#rf/cUs)Wb\\\"\\u003c_/?I'[##WMh'H[Rcl+!!\\u003c\\u003c'\",\"N6L[G__;K!d\\\"qhT7k?[D\\\"Bk:5s%+=\\u003e#DM0j$_\\u003cr/JG0TCEQ!Ug(be3)\\u0026R2JnX+RSqorgC-NCjf6XATBWX(5\\u003cL1J1DV\\u003e44ZjO9q*d!YLuHhkq!3\\u003e3tpi\\u003eOPYZp9]5f1#/AlRZL06`/I6cl\\\"d.\\u0026=To@9kS!prs8N\"]},\"crawl_vertex_ids\":{\"Sensor\":[\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ctg:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ind:2ce412d17b34ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"mod:2ce412d17b334ad4adc8c1c54dbfec4b:caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"pid:2ce412d17b33d4adc8c1c54dbfec4b:392734873135\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993\",\"quf:2ce412d17b334ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\"]},\"crawled_timestamp\":\"2023-11-03T19:00:23.985020992Z\",\"created_timestamp\":\"2023-11-03T18:01:23.995794943Z\",\"data_domains\":[\"Endpoint\"],\"description\":\"ThisfilemeetstheAdware/PUPAnti-malwareMLalgorithm'slowest-confidencethreshold.\",\"device\":{\"agent_load_flags\":\"0\",\"agent_local_time\":\"2023-10-12T03:45:57.753Z\",\"agent_version\":\"7.04.17605.0\",\"bios_manufacturer\":\"ABC\",\"bios_version\":\"F8CN42WW(V2.05)\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"config_id_base\":\"65994763\",\"config_id_build\":\"17605\",\"config_id_platform\":\"3\",\"device_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"external_ip\":\"81.2.69.142\",\"first_seen\":\"2023-04-07T09:36:36Z\",\"groups\":[\"18704e21288243b58e4c76266d38caaf\"],\"hostinfo\":{\"active_directory_dn_display\":[\"WinComputers\",\"WinComputers\\\\ABC\"],\"domain\":\"ABC.LOCAL\"},\"hostname\":\"ABC709-1175\",\"last_seen\":\"2023-11-03T17:51:42Z\",\"local_ip\":\"81.2.69.142\",\"mac_address\":\"ab-21-48-61-05-b2\",\"machine_domain\":\"ABC.LOCAL\",\"major_version\":\"10\",\"minor_version\":\"0\",\"modified_timestamp\":\"2023-11-03T17:53:43Z\",\"os_version\":\"Windows11\",\"ou\":[\"ABC\",\"WinComputers\"],\"platform_id\":\"0\",\"platform_name\":\"Windows\",\"pod_labels\":null,\"product_type\":\"1\",\"product_type_desc\":\"Workstation\",\"site_name\":\"Default-First-Site-Name\",\"status\":\"normal\",\"system_manufacturer\":\"LENOVO\",\"system_product_name\":\"20VE\"},\"falcon_host_link\":\"https://falcon.us-2.crowdstrike.com/activity-v2/detections/dhjffg:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"filename\":\"openvpn-abc-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"grandparent_details\":{\"cmdline\":\"C:\\\\Windows\\\\system32\\\\userinit.exe\",\"filename\":\"userinit.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\userinit.exe\",\"local_process_id\":\"4328\",\"md5\":\"b07f77fd3f9828b2c9d61f8a36609741\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392734873135\",\"process_id\":\"392734873135\",\"sha256\":\"caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"timestamp\":\"2023-10-30T16:49:19Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"yuvraj.mahajan\"},\"has_script_or_module_ioc\":\"true\",\"id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"indicator_id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"ioc_context\":[{\"ioc_description\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"ioc_source\":\"library_load\",\"ioc_type\":\"hash_sha256\",\"ioc_value\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"type\":\"module\"}],\"ioc_values\":[],\"is_synthetic_quarantine_disposition\":true,\"local_process_id\":\"17076\",\"logon_domain\":\"ABSYS\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"name\":\"PrewittPupAdwareSensorDetect-Lowest\",\"objective\":\"FalconDetectionMethod\",\"parent_details\":{\"cmdline\":\"C:\\\\WINDOWS\\\\Explorer.EXE\",\"filename\":\"explorer.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\explorer.exe\",\"local_process_id\":\"1040\",\"md5\":\"8cc3fcdd7d52d2d5221303c213e044ae\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"process_id\":\"392736520876\",\"sha256\":\"0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"timestamp\":\"2023-11-03T18:00:32Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"},\"parent_process_id\":\"392736520876\",\"pattern_disposition\":2176,\"pattern_disposition_description\":\"Prevention/Quarantine,processwasblockedfromexecutionandquarantinewasattempted.\",\"pattern_disposition_details\":{\"blocking_unsupported_or_disabled\":false,\"bootup_safeguard_enabled\":false,\"critical_process_disabled\":false,\"detect\":false,\"fs_operation_blocked\":false,\"handle_operation_downgraded\":false,\"inddet_mask\":false,\"indicator\":false,\"kill_action_failed\":false,\"kill_parent\":false,\"kill_process\":false,\"kill_subprocess\":false,\"operation_blocked\":false,\"policy_disabled\":false,\"process_blocked\":true,\"quarantine_file\":true,\"quarantine_machine\":false,\"registry_operation_blocked\":false,\"rooting\":false,\"sensor_only\":false,\"suspend_parent\":false,\"suspend_process\":false},\"pattern_id\":5761,\"platform\":\"Windows\",\"poly_id\":\"AACSASiWEnxKlIIaw8LWC-8XINBatE2uYZaWqRAAATiEEfPFwhoY4opnh1CQjm0tvUQp4Lu5eOAx29ZVj-qrGrA==\",\"process_end_time\":\"1699034421\",\"process_id\":\"399748687993\",\"process_start_time\":\"1699034413\",\"product\":\"epp\",\"quarantined_files\":[{\"filename\":\"\\\\Device\\\\Volume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"id\":\"2ce412d17b334ad4adc8c1c54dbfec4b_b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"state\":\"quarantined\"}],\"scenario\":\"NGAV\",\"severity\":30,\"sha1\":\"0000000000000000000000000000000000000000\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"show_in_ui\":true,\"source_products\":[\"FalconInsight\"],\"source_vendors\":[\"CrowdStrike\"],\"status\":\"new\",\"tactic\":\"MachineLearning\",\"tactic_id\":\"CSTA0004\",\"technique\":\"Adware/PUP\",\"technique_id\":\"CST0000\",\"timestamp\":\"2023-11-03T18:00:22.328Z\",\"tree_id\":\"1931778\",\"tree_root\":\"38687993\",\"triggering_process_graph_id\":\"pid:2ce4124ad4adc8c1c54dbfec4b:399748687993\",\"type\":\"ldt\",\"updated_timestamp\":\"2023-11-03T19:00:23.985007341Z\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"}",
         "severity": 30
@@ -308,7 +310,8 @@ An example event for `alert` looks as following:
         ],
         "os": {
             "full": "Windows11",
-            "platform": "Windows"
+            "platform": "Windows",
+            "type": "windows"
         }
     },
     "input": {
@@ -317,12 +320,21 @@ An example event for `alert` looks as following:
     "message": "ThisfilemeetstheAdware/PUPAnti-malwareMLalgorithm'slowest-confidencethreshold.",
     "process": {
         "end": "2023-11-03T18:00:21.000Z",
+        "executable": "\\Device\\HarddiskVolume3\\Users\\yuvraj.mahajan\\AppData\\Local\\Temp\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\pfSenseFirewallOpenVPNClients\\Windows\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe",
+        "hash": {
+            "md5": "cdf9cfebb400ce89d5b6032bfcdc693b",
+            "sha1": "0000000000000000000000000000000000000000",
+            "sha256": "b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd"
+        },
+        "name": "openvpn-abc-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe",
         "parent": {
             "command_line": "C:\\WINDOWS\\Explorer.EXE",
+            "executable": "\\Device\\HarddiskVolume3\\Windows\\explorer.exe",
             "hash": {
                 "md5": "8cc3fcdd7d52d2d5221303c213e044ae",
                 "sha256": "0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4"
             },
+            "name": "explorer.exe",
             "pid": 392736520876
         },
         "pid": 399748687993,
@@ -392,157 +404,264 @@ An example event for `alert` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| crowdstrike.alert.agent_id | Unique identifier for the CrowdStrike agent. | keyword |
-| crowdstrike.alert.aggregate_id | An aggregate identifier associated with the agent. | keyword |
-| crowdstrike.alert.alleged_filetype | The alleged file type of the detected file. | keyword |
-| crowdstrike.alert.cid | CrowdStrike identifier associated with the device. | keyword |
-| crowdstrike.alert.cloud_indicator | Indicates whether the activity is related to the cloud. | boolean |
-| crowdstrike.alert.cmdline | The command line used to execute the file. | keyword |
-| crowdstrike.alert.composite_id | A composite identifier associated with the device. | keyword |
-| crowdstrike.alert.confidence | Confidence level associated with the detection. | long |
-| crowdstrike.alert.context_timestamp | Timestamp when the alert was generated. | date |
-| crowdstrike.alert.control_graph_id | Identifier associated with the control graph. | keyword |
-| crowdstrike.alert.crawl_edge_ids.Sensor | Edge identifiers associated with crawling. | keyword |
-| crowdstrike.alert.crawl_vertex_ids.Sensor | Vertex identifiers associated with crawling. | keyword |
-| crowdstrike.alert.crawled_timestamp | Timestamp indicating when crawling occurred. | date |
-| crowdstrike.alert.created_timestamp | Timestamp indicating when the alert was created. | date |
-| crowdstrike.alert.data_domains | Data domains associated with the alert. | keyword |
-| crowdstrike.alert.description | Description of the detected file or activity. | keyword |
-| crowdstrike.alert.device.agent_load_flags | Flags indicating the load status of the agent. | long |
-| crowdstrike.alert.device.agent_local_time | Local time of the agent. | date |
-| crowdstrike.alert.device.agent_version | Version of the CrowdStrike agent. | keyword |
-| crowdstrike.alert.device.bios_manufacturer | Manufacturer of the BIOS. | keyword |
-| crowdstrike.alert.device.bios_version | Version of the BIOS. | keyword |
-| crowdstrike.alert.device.cid | CrowdStrike identifier associated with the device. | keyword |
-| crowdstrike.alert.device.config_id_base | Base configuration identifier. | keyword |
-| crowdstrike.alert.device.config_id_build | Build configuration identifier. | keyword |
-| crowdstrike.alert.device.config_id_platform | Platform configuration identifier. | long |
-| crowdstrike.alert.device.external_ip | External IP address of the device. | ip |
-| crowdstrike.alert.device.first_seen | Timestamp indicating when the device was first seen. | date |
-| crowdstrike.alert.device.groups | Groups associated with the device. | keyword |
-| crowdstrike.alert.device.hostinfo.active_directory_dn_display | Display name for Active Directory. | keyword |
-| crowdstrike.alert.device.hostinfo.domain | Domain of the device. | keyword |
-| crowdstrike.alert.device.hostname | Hostname of the device. | keyword |
-| crowdstrike.alert.device.id | Unique identifier for the device. | keyword |
-| crowdstrike.alert.device.last_seen | Timestamp indicating when the device was last seen. | date |
-| crowdstrike.alert.device.local_ip | Local IP address of the device. | ip |
-| crowdstrike.alert.device.mac_address | MAC address of the device. | keyword |
-| crowdstrike.alert.device.machine_domain | Domain of the machine. | keyword |
-| crowdstrike.alert.device.major_version | Major version of the device. | keyword |
-| crowdstrike.alert.device.minor_version | Minor version of the device. | keyword |
-| crowdstrike.alert.device.modified_timestamp | Timestamp indicating when the device was last modified. | date |
-| crowdstrike.alert.device.os_version | Operating system version. | keyword |
-| crowdstrike.alert.device.ou | Organizational unit information. | keyword |
-| crowdstrike.alert.device.platform_id | Platform identifier. | keyword |
-| crowdstrike.alert.device.platform_name | Name of the platform. | keyword |
-| crowdstrike.alert.device.pod_labels | Labels associated with the device. | keyword |
-| crowdstrike.alert.device.product_type | Type of product associated with the device. | keyword |
-| crowdstrike.alert.device.product_type_desc | Description of the product type. | keyword |
-| crowdstrike.alert.device.site_name | Name of the site associated with the device. | keyword |
-| crowdstrike.alert.device.status | Status of the device. | keyword |
-| crowdstrike.alert.device.system_manufacturer | System manufacturer of the device. | keyword |
-| crowdstrike.alert.device.system_product_name | System product name. | keyword |
-| crowdstrike.alert.falcon_host_link | Link to CrowdStrike Falcon host activity. | keyword |
-| crowdstrike.alert.filename | Name of the detected file. | keyword |
-| crowdstrike.alert.filepath | Path to the detected file. | keyword |
-| crowdstrike.alert.grandparent_details.cmdline | Command line of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.filename | Filename of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.filepath | Filepath of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.local_process_id | Local process ID of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.md5 | grandparent_details.md5 MD5 hash of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.process_graph_id | Graph ID of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.process_id | Process ID of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.sha256 | grandparent_details.sha256 SHA256 hash of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.timestamp | Timestamp of the grandparent process. | date |
-| crowdstrike.alert.grandparent_details.user_graph_id | Graph ID of the grandparent process user. | keyword |
-| crowdstrike.alert.grandparent_details.user_id | User ID of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.user_name | Username of the grandparent process. | keyword |
-| crowdstrike.alert.has_script_or_module_ioc | Indicates if there is a script or module IOC (Indicator of Compromise). | boolean |
-| crowdstrike.alert.id | Identifier associated with the alert. | keyword |
-| crowdstrike.alert.indicator_id | Identifier of the detected indicator. | keyword |
-| crowdstrike.alert.ioc_context.cmdline | Command Line of the IOC context. | keyword |
-| crowdstrike.alert.ioc_context.ioc_description | Description of the IOC context. | keyword |
-| crowdstrike.alert.ioc_context.ioc_source | Source of the IOC. | keyword |
-| crowdstrike.alert.ioc_context.ioc_type | Type of IOC. | keyword |
-| crowdstrike.alert.ioc_context.ioc_value | Value of the IOC. | keyword |
-| crowdstrike.alert.ioc_context.md5 | ioc_context.md5 MD5 hash associated with the IOC. | keyword |
-| crowdstrike.alert.ioc_context.sha256 | ioc_context.sha256 SHA256 hash associated with the IOC. | keyword |
-| crowdstrike.alert.ioc_context.type | Type of IOC context. | keyword |
-| crowdstrike.alert.ioc_values | Values associated with the IOC. | keyword |
-| crowdstrike.alert.is_synthetic_quarantine_disposition | Indicates if the quarantine disposition is synthetic. | boolean |
-| crowdstrike.alert.local_process_id | Local process ID associated with the alert. | keyword |
-| crowdstrike.alert.logon_domain | Domain associated with the logon. | keyword |
-| crowdstrike.alert.md5 | md5 MD5 hash associated with the detected file. | keyword |
-| crowdstrike.alert.name | Name of the detection. | keyword |
-| crowdstrike.alert.objective | Objective of the detection. | keyword |
-| crowdstrike.alert.parent_details.cmdline | Command line of the parent process. | keyword |
-| crowdstrike.alert.parent_details.filename | Filename of the parent process. | keyword |
-| crowdstrike.alert.parent_details.filepath | Filepath of the parent process. | keyword |
-| crowdstrike.alert.parent_details.local_process_id | Local process ID of the parent process. | keyword |
-| crowdstrike.alert.parent_details.md5 | parent_details.md5 MD5 hash of the parent process. | keyword |
-| crowdstrike.alert.parent_details.process_graph_id | Graph ID of the parent process. | keyword |
-| crowdstrike.alert.parent_details.process_id | Process ID of the parent process. | keyword |
-| crowdstrike.alert.parent_details.sha256 | parent_details.sha256 SHA256 hash of the parent process. | keyword |
-| crowdstrike.alert.parent_details.timestamp | Timestamp of the parent process. | date |
-| crowdstrike.alert.parent_details.user_graph_id | Graph ID of the parent process user. | keyword |
-| crowdstrike.alert.parent_details.user_id | User ID of the parent process. | keyword |
-| crowdstrike.alert.parent_details.user_name | Username of the parent process. | keyword |
-| crowdstrike.alert.parent_process_id | Process ID of the parent process. | keyword |
-| crowdstrike.alert.pattern_disposition | Disposition of the pattern. | long |
-| crowdstrike.alert.pattern_disposition_description | Description of the pattern disposition. | keyword |
-| crowdstrike.alert.pattern_disposition_details.blocking_unsupported_or_disabled | Indicates if blocking is unsupported or disabled. | boolean |
-| crowdstrike.alert.pattern_disposition_details.bootup_safeguard_enabled | Indicates if the bootup safeguard is enabled. | boolean |
-| crowdstrike.alert.pattern_disposition_details.critical_process_disabled | Indicates if the critical process is disabled. | boolean |
-| crowdstrike.alert.pattern_disposition_details.detect | Indicates if the pattern detected the threat. | boolean |
-| crowdstrike.alert.pattern_disposition_details.fs_operation_blocked | Indicates if file system operation is blocked. | boolean |
-| crowdstrike.alert.pattern_disposition_details.handle_operation_downgraded | Indicates if handle operation is downgraded. | boolean |
-| crowdstrike.alert.pattern_disposition_details.inddet_mask | Indicates if the indicator detection mask is true. | boolean |
-| crowdstrike.alert.pattern_disposition_details.indicator | Indicates if the pattern detected an indicator. | boolean |
-| crowdstrike.alert.pattern_disposition_details.kill_action_failed | Indicates if the kill action failed. | boolean |
-| crowdstrike.alert.pattern_disposition_details.kill_parent | Indicates if the parent process was killed. | boolean |
-| crowdstrike.alert.pattern_disposition_details.kill_process | Indicates if the process was killed. | boolean |
-| crowdstrike.alert.pattern_disposition_details.kill_subprocess | Indicates if the subprocess was killed. | boolean |
-| crowdstrike.alert.pattern_disposition_details.operation_blocked | Indicates if the operation is blocked. | boolean |
-| crowdstrike.alert.pattern_disposition_details.policy_disabled | Indicates if the policy is disabled. | boolean |
-| crowdstrike.alert.pattern_disposition_details.process_blocked | Indicates if the process is blocked. | boolean |
-| crowdstrike.alert.pattern_disposition_details.quarantine_file | Indicates if the file is quarantined. | boolean |
-| crowdstrike.alert.pattern_disposition_details.quarantine_machine | Indicates if the machine is quarantined. | boolean |
-| crowdstrike.alert.pattern_disposition_details.registry_operation_blocked | Indicates if registry operation is blocked. | boolean |
-| crowdstrike.alert.pattern_disposition_details.rooting | Indicates if rooting is detected. | boolean |
-| crowdstrike.alert.pattern_disposition_details.sensor_only | Indicates if the detection is based on the sensor only. | boolean |
-| crowdstrike.alert.pattern_disposition_details.suspend_parent | Indicates if the parent process was suspended. | boolean |
-| crowdstrike.alert.pattern_disposition_details.suspend_process | Indicates if the process was suspended. | boolean |
-| crowdstrike.alert.pattern_id | Identifier associated with the pattern. | keyword |
-| crowdstrike.alert.platform | Platform associated with the alert. | keyword |
-| crowdstrike.alert.poly_id | Identifier associated with polymorphic behavior. | keyword |
-| crowdstrike.alert.process_end_time | Timestamp indicating when the process ended. | date |
-| crowdstrike.alert.process_id | Identifier associated with the process. | keyword |
-| crowdstrike.alert.process_start_time | Timestamp indicating when the process started. | date |
-| crowdstrike.alert.product | Product associated with the detection. | keyword |
-| crowdstrike.alert.quarantined_files.filename | Filename of quarantined files. | keyword |
-| crowdstrike.alert.quarantined_files.id | Identifier of quarantined files. | keyword |
-| crowdstrike.alert.quarantined_files.sha256 | quarantined_files.sha256 SHA256 hash of quarantined files. | keyword |
-| crowdstrike.alert.quarantined_files.state | State of quarantined files. | keyword |
-| crowdstrike.alert.scenario | Scenario associated with the detection. | keyword |
-| crowdstrike.alert.severity | Severity level associated with the detection. | long |
-| crowdstrike.alert.sha1 | sha1 SHA1 hash associated with the detected file. | keyword |
-| crowdstrike.alert.sha256 | sha256 SHA256 hash associated with the detected file. | keyword |
-| crowdstrike.alert.show_in_ui | Indicates if the alert should be displayed in the user interface. | boolean |
-| crowdstrike.alert.source_products | Products associated with the data source. | keyword |
-| crowdstrike.alert.source_vendors | Vendors associated with the data source. | keyword |
-| crowdstrike.alert.status | Status of the alert. | keyword |
-| crowdstrike.alert.tactic | Tactic associated with the detection. | keyword |
-| crowdstrike.alert.tactic_id | Identifier associated with the tactic. | keyword |
-| crowdstrike.alert.technique | Technique associated with the detection. | keyword |
-| crowdstrike.alert.technique_id | Identifier associated with the technique. | keyword |
-| crowdstrike.alert.timestamp | Timestamp associated with the alert. | date |
-| crowdstrike.alert.tree_id | Identifier associated with the tree. | keyword |
-| crowdstrike.alert.tree_root | Root identifier associated with the tree. | keyword |
-| crowdstrike.alert.triggering_process_graph_id | Graph ID of the triggering process. | keyword |
-| crowdstrike.alert.type | Type associated with the alert. | keyword |
-| crowdstrike.alert.updated_timestamp | Timestamp indicating when the alert was last updated. | date |
-| crowdstrike.alert.user_id | User ID associated with the alert. | keyword |
-| crowdstrike.alert.user_name | Username associated with the alert. | keyword |
+| crowdstrike.alert.active_directory_authentication_method |  | long |
+| crowdstrike.alert.activity.browser |  | keyword |
+| crowdstrike.alert.activity.device |  | keyword |
+| crowdstrike.alert.activity.id |  | keyword |
+| crowdstrike.alert.activity.os |  | keyword |
+| crowdstrike.alert.agent_id |  | keyword |
+| crowdstrike.alert.agent_scan_id |  | keyword |
+| crowdstrike.alert.aggregate_id |  | keyword |
+| crowdstrike.alert.alert_attributes |  | long |
+| crowdstrike.alert.alleged_filetype |  | keyword |
+| crowdstrike.alert.assigned_to.name |  | keyword |
+| crowdstrike.alert.assigned_to.uid |  | keyword |
+| crowdstrike.alert.assigned_to.uuid |  | keyword |
+| crowdstrike.alert.associated_files.filepath |  | keyword |
+| crowdstrike.alert.associated_files.sha256 |  | keyword |
+| crowdstrike.alert.child_process_ids |  | keyword |
+| crowdstrike.alert.cid |  | keyword |
+| crowdstrike.alert.cloud_indicator |  | boolean |
+| crowdstrike.alert.cmdline |  | keyword |
+| crowdstrike.alert.comment |  | keyword |
+| crowdstrike.alert.composite_id |  | keyword |
+| crowdstrike.alert.confidence |  | long |
+| crowdstrike.alert.context_timestamp |  | date |
+| crowdstrike.alert.control_graph_id |  | keyword |
+| crowdstrike.alert.crawl_edge_ids.Sensor |  | keyword |
+| crowdstrike.alert.crawl_vertex_ids.Sensor |  | keyword |
+| crowdstrike.alert.crawled_timestamp |  | date |
+| crowdstrike.alert.created_timestamp |  | date |
+| crowdstrike.alert.data_domains |  | keyword |
+| crowdstrike.alert.description |  | keyword |
+| crowdstrike.alert.device.agent_load_flags |  | long |
+| crowdstrike.alert.device.agent_local_time |  | date |
+| crowdstrike.alert.device.agent_version |  | keyword |
+| crowdstrike.alert.device.bios_manufacturer |  | keyword |
+| crowdstrike.alert.device.bios_version |  | keyword |
+| crowdstrike.alert.device.cid |  | keyword |
+| crowdstrike.alert.device.config_id_base |  | keyword |
+| crowdstrike.alert.device.config_id_build |  | keyword |
+| crowdstrike.alert.device.config_id_platform |  | long |
+| crowdstrike.alert.device.external_ip |  | ip |
+| crowdstrike.alert.device.first_seen |  | date |
+| crowdstrike.alert.device.groups |  | keyword |
+| crowdstrike.alert.device.hostinfo.active_directory_dn_display |  | keyword |
+| crowdstrike.alert.device.hostinfo.domain |  | keyword |
+| crowdstrike.alert.device.hostname |  | keyword |
+| crowdstrike.alert.device.id |  | keyword |
+| crowdstrike.alert.device.last_seen |  | date |
+| crowdstrike.alert.device.local_ip |  | ip |
+| crowdstrike.alert.device.mac_address |  | keyword |
+| crowdstrike.alert.device.machine_domain |  | keyword |
+| crowdstrike.alert.device.major_version |  | keyword |
+| crowdstrike.alert.device.minor_version |  | keyword |
+| crowdstrike.alert.device.modified_timestamp |  | date |
+| crowdstrike.alert.device.os_version |  | keyword |
+| crowdstrike.alert.device.ou |  | keyword |
+| crowdstrike.alert.device.platform_id |  | keyword |
+| crowdstrike.alert.device.platform_name |  | keyword |
+| crowdstrike.alert.device.pod_labels |  | keyword |
+| crowdstrike.alert.device.product_type |  | keyword |
+| crowdstrike.alert.device.product_type_desc |  | keyword |
+| crowdstrike.alert.device.site_name |  | keyword |
+| crowdstrike.alert.device.status |  | keyword |
+| crowdstrike.alert.device.system_manufacturer |  | keyword |
+| crowdstrike.alert.device.system_product_name |  | keyword |
+| crowdstrike.alert.device.tags |  | keyword |
+| crowdstrike.alert.display_name |  | keyword |
+| crowdstrike.alert.documents_accessed.filename |  | keyword |
+| crowdstrike.alert.documents_accessed.filepath |  | keyword |
+| crowdstrike.alert.documents_accessed.timestamp |  | date |
+| crowdstrike.alert.email_sent |  | boolean |
+| crowdstrike.alert.end_time |  | date |
+| crowdstrike.alert.event_id |  | keyword |
+| crowdstrike.alert.executables_written.filename |  | keyword |
+| crowdstrike.alert.executables_written.filepath |  | keyword |
+| crowdstrike.alert.executables_written.timestamp |  | date |
+| crowdstrike.alert.falcon_host_link |  | keyword |
+| crowdstrike.alert.file_writes.name |  | keyword |
+| crowdstrike.alert.file_writes.sha256 |  | keyword |
+| crowdstrike.alert.filename |  | keyword |
+| crowdstrike.alert.filepath |  | keyword |
+| crowdstrike.alert.files_accessed.filename |  | keyword |
+| crowdstrike.alert.files_accessed.filepath |  | keyword |
+| crowdstrike.alert.files_accessed.timestamp |  | date |
+| crowdstrike.alert.files_written.filename |  | keyword |
+| crowdstrike.alert.files_written.filepath |  | keyword |
+| crowdstrike.alert.files_written.timestamp |  | date |
+| crowdstrike.alert.global_prevalence |  | keyword |
+| crowdstrike.alert.grandparent_details.cmdline |  | keyword |
+| crowdstrike.alert.grandparent_details.filename |  | keyword |
+| crowdstrike.alert.grandparent_details.filepath |  | keyword |
+| crowdstrike.alert.grandparent_details.local_process_id |  | keyword |
+| crowdstrike.alert.grandparent_details.md5 |  | keyword |
+| crowdstrike.alert.grandparent_details.process_graph_id |  | keyword |
+| crowdstrike.alert.grandparent_details.process_id |  | keyword |
+| crowdstrike.alert.grandparent_details.sha256 |  | keyword |
+| crowdstrike.alert.grandparent_details.timestamp |  | date |
+| crowdstrike.alert.grandparent_details.user_graph_id |  | keyword |
+| crowdstrike.alert.grandparent_details.user_id |  | keyword |
+| crowdstrike.alert.grandparent_details.user_name |  | keyword |
+| crowdstrike.alert.has_script_or_module_ioc |  | boolean |
+| crowdstrike.alert.id |  | keyword |
+| crowdstrike.alert.idp_policy.enforced_externally |  | long |
+| crowdstrike.alert.idp_policy.mfa_factor_type |  | long |
+| crowdstrike.alert.idp_policy.mfa_provider |  | long |
+| crowdstrike.alert.idp_policy.rule_action |  | long |
+| crowdstrike.alert.idp_policy.rule_id |  | keyword |
+| crowdstrike.alert.idp_policy.rule_name |  | keyword |
+| crowdstrike.alert.idp_policy.rule_trigger |  | long |
+| crowdstrike.alert.incident.created |  | date |
+| crowdstrike.alert.incident.end |  | date |
+| crowdstrike.alert.incident.id |  | keyword |
+| crowdstrike.alert.incident.score |  | double |
+| crowdstrike.alert.incident.start |  | date |
+| crowdstrike.alert.indicator_id |  | keyword |
+| crowdstrike.alert.ioc_context.cmdline |  | keyword |
+| crowdstrike.alert.ioc_context.ioc_description |  | keyword |
+| crowdstrike.alert.ioc_context.ioc_source |  | keyword |
+| crowdstrike.alert.ioc_context.ioc_type |  | keyword |
+| crowdstrike.alert.ioc_context.ioc_value |  | keyword |
+| crowdstrike.alert.ioc_context.md5 |  | keyword |
+| crowdstrike.alert.ioc_context.sha256 |  | keyword |
+| crowdstrike.alert.ioc_context.type |  | keyword |
+| crowdstrike.alert.ioc_description |  | keyword |
+| crowdstrike.alert.ioc_source |  | keyword |
+| crowdstrike.alert.ioc_type |  | keyword |
+| crowdstrike.alert.ioc_value |  | keyword |
+| crowdstrike.alert.ioc_values |  | keyword |
+| crowdstrike.alert.is_synthetic_quarantine_disposition |  | boolean |
+| crowdstrike.alert.ldap_search_query_attack |  | long |
+| crowdstrike.alert.local_prevalence |  | keyword |
+| crowdstrike.alert.local_process_id |  | keyword |
+| crowdstrike.alert.location_country_code |  | keyword |
+| crowdstrike.alert.location_latitude_as_int |  | long |
+| crowdstrike.alert.location_longitude_as_int |  | long |
+| crowdstrike.alert.logon_domain |  | keyword |
+| crowdstrike.alert.md5 |  | keyword |
+| crowdstrike.alert.model_anomaly_indicators |  | keyword |
+| crowdstrike.alert.name |  | keyword |
+| crowdstrike.alert.network_accesses.access_timestamp |  | date |
+| crowdstrike.alert.network_accesses.access_type |  | long |
+| crowdstrike.alert.network_accesses.connection_direction |  | keyword |
+| crowdstrike.alert.network_accesses.isIPV6 |  | boolean |
+| crowdstrike.alert.network_accesses.local_address |  | ip |
+| crowdstrike.alert.network_accesses.local_port |  | long |
+| crowdstrike.alert.network_accesses.protocol |  | keyword |
+| crowdstrike.alert.network_accesses.remote_address |  | ip |
+| crowdstrike.alert.network_accesses.remote_port |  | long |
+| crowdstrike.alert.objective |  | keyword |
+| crowdstrike.alert.os_name |  | keyword |
+| crowdstrike.alert.parent_details.cmdline |  | keyword |
+| crowdstrike.alert.parent_details.filename |  | keyword |
+| crowdstrike.alert.parent_details.filepath |  | keyword |
+| crowdstrike.alert.parent_details.local_process_id |  | keyword |
+| crowdstrike.alert.parent_details.md5 |  | keyword |
+| crowdstrike.alert.parent_details.process_graph_id |  | keyword |
+| crowdstrike.alert.parent_details.process_id |  | keyword |
+| crowdstrike.alert.parent_details.sha256 |  | keyword |
+| crowdstrike.alert.parent_details.timestamp |  | date |
+| crowdstrike.alert.parent_details.user_graph_id |  | keyword |
+| crowdstrike.alert.parent_details.user_id |  | keyword |
+| crowdstrike.alert.parent_details.user_name |  | keyword |
+| crowdstrike.alert.parent_process_id |  | keyword |
+| crowdstrike.alert.pattern_disposition |  | long |
+| crowdstrike.alert.pattern_disposition_description |  | keyword |
+| crowdstrike.alert.pattern_disposition_details.blocking_unsupported_or_disabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.bootup_safeguard_enabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.containment_file_system |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.critical_process_disabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.detect |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.fs_operation_blocked |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.handle_operation_downgraded |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.inddet_mask |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.indicator |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.kill_action_failed |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.kill_parent |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.kill_process |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.kill_subprocess |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.mfa_required |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.operation_blocked |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.policy_disabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.prevention_provisioning_enabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.process_blocked |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.quarantine_file |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.quarantine_machine |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.registry_operation_blocked |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.response_action_already_applied |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.response_action_failed |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.response_action_triggered |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.rooting |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.sensor_only |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.suspend_parent |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.suspend_process |  | boolean |
+| crowdstrike.alert.pattern_id |  | keyword |
+| crowdstrike.alert.platform |  | keyword |
+| crowdstrike.alert.poly_id |  | keyword |
+| crowdstrike.alert.process_end_time |  | date |
+| crowdstrike.alert.process_id |  | keyword |
+| crowdstrike.alert.process_start_time |  | date |
+| crowdstrike.alert.product |  | keyword |
+| crowdstrike.alert.protocol_anomaly_classification |  | long |
+| crowdstrike.alert.quarantined |  | boolean |
+| crowdstrike.alert.quarantined_files.filename |  | keyword |
+| crowdstrike.alert.quarantined_files.id |  | keyword |
+| crowdstrike.alert.quarantined_files.sha256 |  | keyword |
+| crowdstrike.alert.quarantined_files.state |  | keyword |
+| crowdstrike.alert.scan_id |  | keyword |
+| crowdstrike.alert.scenario |  | keyword |
+| crowdstrike.alert.seconds_to_resolved |  | long |
+| crowdstrike.alert.seconds_to_triaged |  | long |
+| crowdstrike.alert.severity |  | long |
+| crowdstrike.alert.severity_name |  | keyword |
+| crowdstrike.alert.sha1 |  | keyword |
+| crowdstrike.alert.sha256 |  | keyword |
+| crowdstrike.alert.show_in_ui |  | boolean |
+| crowdstrike.alert.source.account_azure_id |  | keyword |
+| crowdstrike.alert.source.account_domain |  | keyword |
+| crowdstrike.alert.source.account_name |  | keyword |
+| crowdstrike.alert.source.account_object_guid |  | keyword |
+| crowdstrike.alert.source.account_object_sid |  | keyword |
+| crowdstrike.alert.source.account_sam_account_name |  | keyword |
+| crowdstrike.alert.source.account_upn |  | keyword |
+| crowdstrike.alert.source.endpoint_account_object_guid |  | keyword |
+| crowdstrike.alert.source.endpoint_account_object_sid |  | keyword |
+| crowdstrike.alert.source.endpoint_address_ip4 |  | ip |
+| crowdstrike.alert.source.endpoint_host_name |  | keyword |
+| crowdstrike.alert.source.endpoint_ip_address |  | ip |
+| crowdstrike.alert.source.endpoint_ip_reputation |  | long |
+| crowdstrike.alert.source.endpoint_sensor_id |  | keyword |
+| crowdstrike.alert.source.ip_isp_classification |  | long |
+| crowdstrike.alert.source.ip_isp_domain |  | keyword |
+| crowdstrike.alert.source_products |  | keyword |
+| crowdstrike.alert.source_vendors |  | keyword |
+| crowdstrike.alert.start_time |  | date |
+| crowdstrike.alert.status |  | keyword |
+| crowdstrike.alert.tactic |  | keyword |
+| crowdstrike.alert.tactic_id |  | keyword |
+| crowdstrike.alert.tags |  | keyword |
+| crowdstrike.alert.target.account_name |  | keyword |
+| crowdstrike.alert.target.domain_controller_host_name |  | keyword |
+| crowdstrike.alert.target.domain_controller_object_guid |  | keyword |
+| crowdstrike.alert.target.domain_controller_object_sid |  | keyword |
+| crowdstrike.alert.target.endpoint_account_object_guid |  | keyword |
+| crowdstrike.alert.target.endpoint_account_object_sid |  | keyword |
+| crowdstrike.alert.target.endpoint_host_name |  | keyword |
+| crowdstrike.alert.target.endpoint_sensor_id |  | keyword |
+| crowdstrike.alert.target.service_access_identifier |  | keyword |
+| crowdstrike.alert.technique |  | keyword |
+| crowdstrike.alert.technique_id |  | keyword |
+| crowdstrike.alert.template_instance_id |  | keyword |
+| crowdstrike.alert.timestamp |  | date |
+| crowdstrike.alert.tree_id |  | keyword |
+| crowdstrike.alert.tree_root |  | keyword |
+| crowdstrike.alert.triggering_process_graph_id |  | keyword |
+| crowdstrike.alert.type |  | keyword |
+| crowdstrike.alert.updated_timestamp |  | date |
+| crowdstrike.alert.user_id |  | keyword |
+| crowdstrike.alert.user_name |  | keyword |
+| crowdstrike.alert.user_principal |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
