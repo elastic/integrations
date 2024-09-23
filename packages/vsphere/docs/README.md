@@ -879,7 +879,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.network.accessible | Indicates whether at least one host is configured to provide this network. | boolean |  |
 | vsphere.network.config.status | Indicates whether the system has detected a configuration issue. | keyword |  |
 | vsphere.network.host.count | Number of hosts connected to this network. | long | gauge |
-| vsphere.network.host.names | Names of the hosts connected to this network. | keyword |  |
+| vsphere.network.host.names | List of all the hosts connected to this network. | keyword |  |
 | vsphere.network.name | Name of the network. | keyword |  |
 | vsphere.network.status | General health of the network. | keyword |  |
 | vsphere.network.triggered_alarms.description | Description of the alarm. | keyword |  |
@@ -890,7 +890,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.network.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |
 | vsphere.network.type | Type of the network (e.g., Network(Standard), DistributedVirtualport). | keyword |  |
 | vsphere.network.vm.count | Number of virtual machines connected to this network. | long | gauge |
-| vsphere.network.vm.names | Names of the virtual machines connected to this network. | keyword |  |
+| vsphere.network.vm.names | List of all the virtual machines connected to this network. | keyword |  |
 
 
 ### Resourcepool Metrics
