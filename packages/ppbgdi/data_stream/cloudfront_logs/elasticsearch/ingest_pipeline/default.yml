@@ -17,6 +17,9 @@ processors:
   - set:
       field: cloud.provider
       value: aws
+  - dot_expander:
+      description: Expand all dotted fields, like aws firehose, kinesis etc.
+      field: '*'
   - rename:
       field: message
       target_field: event.original
@@ -29,10 +32,19 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - drop:
-      if: ctx.event?.original?.startsWith('#')
+      if: ctx.event?.original != null && ctx.event.original.startsWith('#')
       description: "Drop if logline contains header(s), which startswith `#`"
+  - trim:
+      description: Remove newline character from realtime-logs.
+      field: event.original
+  - json:
+      description: Parse cloudfront realtime-log message (csv parsing done by firehose lambda processor).
+      field: event.original
+      target_field: _tmp
+      if: ctx.event?.original != null && ctx.event.original.startsWith('{')
   - csv:
-      description: Parse cloudfront csv row
+      description: Parse cloudfront standard-log csv message.
+      if: ctx._tmp == null
       field: event.original
       separator: "\t"
       target_fields:
@@ -44,7 +56,7 @@ processors:
       - _tmp.cs_method                              # cs-method
       - _tmp.cs_host                                # cs(Host)
       - _tmp.cs_uri_stem                            # cs-uri-stem
-      - _tmp.cs_status                              # cs-status
+      - _tmp.sc_status                              # sc-status
       - _tmp.cs_referer                             # cs(Referer)
       - _tmp.cs_user_agent                          # cs(User-Agent)
       - _tmp.cs_uri_query                           # cs-uri-query
@@ -70,25 +82,15 @@ processors:
       - _tmp.sc_range_start                         # sc-range-start
       - _tmp.sc_range_end                           # sc-range-end
 
-  ### CSV fields ###################################################################################
-
-  # date
-  # time
+  ### Remove empty ('-') fields ####################################################################
   - script:
-      description: timestamp composed of date and time. Script processor performs better than equivalent set processor.
       lang: painless
-      source: >-
-        ctx._tmp.timestamp = ctx._tmp.date + 'T' + ctx._tmp.time;
-      if: ctx._tmp?.date != null && ctx._tmp?.time != null
+      description: This script processor iterates over the whole document to remove fields with '-' (empty) values.
+      if: 'ctx._tmp != null'
+      source: 'ctx._tmp.values().removeIf(v -> v == "-");'
 
-  - date:
-      field: _tmp.timestamp
-      target_field: '@timestamp'
-      ignore_failure: true
-      formats:
-        - ISO8601
-        - yyyy-MM-dd HH:mm:ss
-      if: ctx._tmp?.timestamp != null
+  ### Cloudfront common fields (standard- and realtime logs) #######################################
+
   # x-edge-location
   - rename:
       field: _tmp.x_edge_location
@@ -99,6 +101,9 @@ processors:
       field: _tmp.sc_bytes
       target_field: http.response.bytes
       type: long
+      ignore_missing: true
+  - remove:
+      field: _tmp.sc_bytes
       ignore_missing: true
   # c-ip
   - rename:
@@ -111,6 +116,9 @@ processors:
       type: ip
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      field: _tmp.c_ip
+      ignore_missing: true
   - append:
       field: related.ip
       value: "{{{ source.ip }}}"
@@ -130,23 +138,32 @@ processors:
       value: "{{{ aws.cloudfront.domain }}}"
       allow_duplicates: false
       if: ctx.aws?.cloudfront?.domain != null
-  # cs-uri-stem
-  - rename:
+  - grok:
       field: _tmp.cs_uri_stem
-      target_field: url.path
+      patterns:
+        - '%{URIPATH:url.path}(\?%{GREEDYDATA:url.query})?'
       ignore_missing: true
-  # cs-status
+      ecs_compatibility: "v1"
+  - remove:
+      field: _tmp.cs_uri_stem
+      ignore_missing: true
+  # sc-status
   - convert:
-      field: _tmp.cs_status
+      field: _tmp.sc_status
       target_field: http.response.status_code
       type: long
+      ignore_missing: true
+  - remove:
+      field: _tmp.sc_status
       ignore_missing: true
   # cs-referer
   - rename:
       field: _tmp.cs_referer
       target_field: http.request.referrer
       ignore_missing: true
-      if: ctx._tmp?.cs_referer != null && ctx._tmp.cs_referer != '-'
+  - remove:
+      field: _tmp.cs_referer
+      ignore_missing: true
   # cs(User-Agent)
   - urldecode:
       field: _tmp.cs_user_agent
@@ -155,16 +172,24 @@ processors:
       field: _tmp.cs_user_agent
       target_field: user_agent
       ignore_missing: true
+  - remove:
+      field: _tmp.cs_user_agent
+      ignore_missing: true
   # cs-uri-query
-  - rename:
+  - set:
+      description: Set url.query. Overwrite already parsed query from cs_uri_stem (realtime-logs).
+      field: url.query
+      copy_from: _tmp.cs_uri_query
+      ignore_empty_value: true
+  - remove:
       field: _tmp.cs_uri_query
-      target_field: url.query
-      if: ctx._tmp?.cs_uri_query != null && ctx._tmp.cs_uri_query != '-'
+      ignore_missing: true
   # cs(Cookie)
   - rename:
       field: _tmp.cs_cookie
+      description: Cookie. Truncated to 800 Bytes.
       target_field: aws.cloudfront.cookies
-      if: ctx._tmp?.cs_cookies != null && ctx._tmp.cs_cookies != '-'
+      ignore_missing: true
   # x-edge-result-type
   - rename:
       field: _tmp.x_edge_result_type
@@ -200,6 +225,9 @@ processors:
       target_field: http.request.bytes
       type: long
       ignore_missing: true
+  - remove:
+      field: _tmp.cs_bytes
+      ignore_missing: true
   # time-taken
   - script:
       lang: painless
@@ -208,6 +236,9 @@ processors:
         S_TO_NS: 1000000000
       source: >-
         ctx.event.duration = (Long)(Float.parseFloat(ctx._tmp.time_taken) * params.S_TO_NS);
+  - remove:
+      field: _tmp.time_taken
+      ignore_missing: true
   # x-forwarded-for
   - script:
       lang: painless
@@ -247,10 +278,16 @@ processors:
         if (bad_ips.length > 0 ) {
           ctx['_tmp']['error_message'] = "Invalid ip addresses: " + bad_ips.join(',');
         }
+  - remove:
+      field: _tmp.x_forwarded_for
+      ignore_missing: true
   - append:
       field: error.message
       value: "{{{ _tmp.error_message }}}"
       if: ctx._tmp?.error_message != null
+  - remove:
+      field: _tmp.error_message
+      ignore_missing: true
   - foreach:
       field: network.forwarded_ip
       processor:
@@ -266,6 +303,10 @@ processors:
       pattern_definitions:
         TLS: '(TLS|SSL)'
       ignore_missing: true
+      ecs_compatibility: "v1"
+  - remove:
+      field: _tmp.ssl_protocol
+      ignore_missing: true
   - lowercase:
       field: tls.version_protocol
       ignore_missing: true
@@ -274,7 +315,6 @@ processors:
       field: _tmp.ssl_cipher
       target_field: tls.cipher
       ignore_missing: true
-      if: ctx._tmp?.ssl_cipher != null && ctx._tmp?.ssl_cipher != '-'
   # x-edge-response-result-type
   - rename:
       field: _tmp.x_edge_response_result_type
@@ -291,33 +331,42 @@ processors:
       pattern: "%{}/%{http.version}"
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      field: _tmp.cs_protocol_version
+      ignore_missing: true
   # fle-status
   - rename:
       field: _tmp.fle_status
       target_field: aws.cloudfront.fle_status
-      if: ctx._tmp?.fle_status != null && ctx._tmp.fle_status != '-'
+      ignore_missing: true
   # fle-encrypted-fields
   - rename:
       field: _tmp.fle_encrypted_fields
       target_field: aws.cloudfront.fle_encrypted_fields
-      if: ctx._tmp?.encrypted_fields != null && ctx._tmp.encrypted_fields != '-'
+      ignore_missing: true
   # c-port
   - convert:
       field: _tmp.c_port
       target_field: source.port
       type: long
-      if: ctx._tmp?.c_port != null && ctx._tmp.c_port != '-'
+      ignore_missing: true
+  - remove:
+      field: _tmp.c_port
+      ignore_missing: true
   # time-to-first-byte
   - convert:
       field: _tmp.time_to_first_byte
       target_field: aws.cloudfront.time_to_first_byte
       type: float
-      if: ctx._tmp?.time_to_first_byte != null && ctx._tmp.time_to_first_byte != '-'
+      ignore_missing: true
+  - remove:
+      field: _tmp.time_to_first_byte
+      ignore_missing: true
   # x-edge-detailed-result-type
   - rename:
       field: _tmp.x_edge_detailed_result_type
       target_field: aws.cloudfront.edge_detailed_result_type
-      if: ctx._tmp?.x_edge_detailed_result_type != null && ctx._tmp.x_edge_detailed_result_type != '-'
+      ignore_missing: true
   # sc-content-type
   - rename:
       field: _tmp.sc_content_type
@@ -329,24 +378,197 @@ processors:
       target_field: http.response.body.bytes
       type: long
       ignore_missing: true
-      if: ctx._tmp?.sc_content_len != null && ctx._tmp.sc_content_len != '-'
+  - remove:
+      field: _tmp.sc_content_len
+      ignore_missing: true
   # sc-range-start
   - convert:
       field: _tmp.sc_range_start
       target_field: aws.cloudfront.range_start
       type: long
       ignore_missing: true
-      if: ctx._tmp?.sc_range_start != null && ctx._tmp.sc_range_start != '-'
+  - remove:
+      field: _tmp.sc_range_start
+      ignore_missing: true
   # sc-range-end
   - convert:
       field: _tmp.sc_range_end
       target_field: aws.cloudfront.range_end
       type: long
       ignore_missing: true
-      if: ctx._tmp?.sc_range_end != null && ctx._tmp.sc_range_end != '-'
+  - remove:
+      field: _tmp.sc_range_end
+      ignore_missing: true
 
 
-### Additional fields ##############################################################################
+  ### Cloudfront standard-log fields ###########################################
+
+  # date
+  # time
+  - script:
+      description: timestamp composed of date and time. Script processor performs better than equivalent set processor.
+      lang: painless
+      source: >-
+        ctx._tmp.timestamp = ctx._tmp.date + 'T' + ctx._tmp.time;
+      if: ctx._tmp?.date != null && ctx._tmp?.time != null
+  - remove:
+      field: _tmp.date
+      ignore_missing: true
+  - remove:
+      field: _tmp.time
+      ignore_missing: true
+  # timestamp (Available in realtime logs instead of date and time fields)
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx._tmp.timestamp != null
+  - remove:
+      field: _tmp.timestamp
+      ignore_missing: true
+
+
+  ### Cloudfront realtime-log fields ###########################################
+
+  # timestamp
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats:
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx._tmp?.timestamp != null
+  - remove:
+      field: _tmp.timestamp
+      ignore_missing: true
+  # c_ip_version
+  - rename:
+      field: _tmp.c_ip_version
+      target_field: aws.cloudfront.client.ip.version
+      ignore_missing: true
+  # c_country
+  - rename:
+      field: _tmp.c_country
+      target_field: aws.cloudfront.client.country
+      ignore_missing: true
+  # cs_accept_encoding
+  - rename:
+      field: _tmp.cs_accept_encoding
+      target_field: http.request.headers.Accept-Encoding
+      ignore_missing: true
+  # cs_accept
+  - rename:
+      field: _tmp.cs_accept
+      target_field: http.request.headers.Accept
+      ignore_missing: true
+  # cache_behavior_path_pattern
+  - rename:
+      description: Cloudfront realtime-logs field
+      field: _tmp.cache_behavior_path_pattern
+      target_field: aws.cloudfront.cache_behavior.path_pattern
+      ignore_missing: true
+  # cs_headers
+  - urldecode:
+      field: _tmp.cs_headers
+      ignore_missing: true
+  - kv:
+      field: _tmp.cs_headers
+      description: Parse request headers string into individual header fields.
+      target_field: http.request.headers
+      field_split: '\n'
+      value_split: ':'
+      ignore_missing: true
+  - remove:
+      field: _tmp.cs_headers
+      ignore_missing: true
+  - split:
+      field: http.request.headers.accept
+      separator: ','
+      ignore_missing: true
+  - split:
+      field: http.request.headers.accept-encodings
+      separator: ','
+      ignore_missing: true
+  - split:
+      field: http.request.headers.accept-languages
+      separator: ','
+      ignore_missing: true
+  # cs_header_names
+  - urldecode:
+      field: _tmp.cs_header_names
+      ignore_missing: true
+  - split:
+      description: List of cs header names. Truncated to 800 Bytes.
+      field: _tmp.cs_header_names
+      target_field: aws.cloudfront.cs_header_names
+      separator: '\n'
+      ignore_missing: true
+  - remove:
+      field: _tmp.cs_header_names
+      ignore_missing: true
+  # cs_header_count
+  - convert:
+      field: _tmp.cs_headers_count
+      description: Number of cs header names.
+      target_field: aws.cloudfront.cs_headers_count
+      type: integer
+      ignore_missing: true
+  - remove:
+      field: _tmp.cs_headers_count
+      ignore_missing: true
+
+
+  ### Cloudfront custom fields #####################################################################
+  - script:
+      lang: painless
+      description: This script adds some debug information on truncated headers.
+      source: |
+        def headers = ctx.http?.request?.headers;
+        def header_names = ctx.aws.cloudfront?.cs_header_names;
+        def headers_count = ctx.aws.cloudfront?.cs_headers_count;
+        def truncated_headers = 0;
+        def truncated_header_names = 0;
+
+        // Get tags
+        def tags = ctx.tags;
+        if (tags == null) {
+          tags = new ArrayList();
+        }
+
+        def tag_values = new ArrayList();
+
+        if (headers_count != null && header_names != null) {
+          if ( headers_count > header_names.length ) {
+            tags.add('cs_header_names_truncated')
+          }
+        }
+
+        if(headers_count != null && headers != null) {
+          if (headers_count > headers.size()) {
+            tags.add('cs_headers_truncated')
+          }
+        }
+
+        else if(header_names != null && headers != null) {
+          if (header_names.length > headers.size()) {
+            if (!tags.contains('cs_headers_truncated')) {
+              tags.add('cs_headers_truncated')
+            }
+          }
+        }
+
+        if (tags.length > 0) {
+          // Get tags
+          ctx.tags = tags;
+        }
+
+
+
+### Process additional fields ######################################################################
   # url
   - script:
       lang: painless
@@ -377,6 +599,9 @@ processors:
       field: _tmp.url_full
       target_field: url.full
       ignore_missing: true
+  - remove:
+      field: _tmp.url_full
+      ignore_missing: true
   - registered_domain:
       field: url.domain
       target_field: url
@@ -385,11 +610,11 @@ processors:
   - set:
       field: network.type
       value: ipv4
-      if: ctx.source?.ip != null && ctx.source?.ip.contains('.')
+      if: ctx.source?.ip != null && ctx.source.ip.contains('.')
   - set:
       field: network.type
       value: ipv6
-      if: ctx.source?.ip != null && ctx.source?.ip.contains(':')
+      if: ctx.source?.ip != null && ctx.source.ip.contains(':')
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
@@ -430,20 +655,12 @@ processors:
       field: event.outcome
       value: failure
       if: ctx.http?.response?.status_code == 000
-  # cleanup
-  - remove:
-      field: _tmp
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
 
-  # ppbgdi processors
-  - pipeline:
-      name: '{{ IngestPipeline "ppbgdi" }}'
 
+### Cleanup ########################################################################################
+#   - remove:
+#       field: _tmp
+#       ignore_missing: true
 
 on_failure:
   - set:
