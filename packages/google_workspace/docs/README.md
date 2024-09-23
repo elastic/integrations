@@ -2,7 +2,7 @@
 
 The Google Workspace integration collects and parses data from the different [Google Workspace audit reports APIs](https://developers.google.com/admin-sdk/reports).
 
-These blogs from our Security Labs will help you to know more about the Google Workspace and how to it setup:
+These blogs from our Security Labs will help you know more about the Google Workspace and how to it setup:
 
 1. To understand what Google Workspace is in [Part One - Surveying the Land](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one)
 2. To set it up, step by step, in [Part Two - Setup Threat Detection with Elastic](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two)
