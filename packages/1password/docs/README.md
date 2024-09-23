@@ -129,7 +129,6 @@ An example event for `signin_attempts` looks as following:
         "id": "OJQGU46KAPROEJLCK674RHSAY5"
     }
 }
-
 ```
 
 ### Item Usages
@@ -242,7 +241,6 @@ An example event for `item_usages` looks as following:
         "id": "OJQGU46KAPROEJLCK674RHSAY5"
     }
 }
-
 ```
 
 
@@ -374,5 +372,4 @@ An example event for `audit_events` looks as following:
         "id": "GLF6WUEKS5CSNDJ2OG6TCZD3M4"
     }
 }
-
 ```
