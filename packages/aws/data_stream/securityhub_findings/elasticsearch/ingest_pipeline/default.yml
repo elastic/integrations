@@ -10,10 +10,13 @@ processors:
   - append:
       field: event.type
       value: info
+      tag: set_event_tiype
+      allow_duplicates: false
   - append:
       field: event.category
       value: configuration
       tag: append_event_category
+      allow_duplicates: false
   - rename:
       field: message
       target_field: event.original
@@ -696,7 +699,7 @@ processors:
       field: rule.id
       tag: set_rule_id_from_generator_id
       copy_from: aws.securityhub_findings.generator.id
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.Compliance.SecurityControlId
       target_field: aws.securityhub_findings.compliance.security_control_id
@@ -706,7 +709,7 @@ processors:
       tag: set_rule_id_from_security_control_id
       copy_from: aws.securityhub_findings.compliance.security_control_id
       if: ctx.rule?.id == null
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.Id
       target_field: aws.securityhub_findings.id
@@ -1547,7 +1550,6 @@ processors:
         // When a finding has single-resource, we extract fields as single-value so that the Findings UI behaves as expected for almost all cases.
         // But in the rare multi-resource case, we extract fields into an array to not miss any affected resources for a finding. 
         // This trade-off is okay as not many findings will be affected. When our UI natively supports multi-resources, the single-value resource extraction must be removed.
-        // This script is only for single resource case. Multiple resources are extracted inside script - script_extract_fields_from_multiple_resources.
         
         def resources = ctx.aws.securityhub_findings.resources;
 
@@ -1580,6 +1582,7 @@ processors:
           ctx.cloud.service = new HashMap();
         }
 
+        // This extraction logic is only for single resource case. Multiple resources are extracted inside script - script_extract_fields_from_multiple_resources.
         if (resources.size() == 1){
           def res = resources[0];
 
