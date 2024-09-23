@@ -16,7 +16,7 @@ The vSphere integration collects logs and metrics.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by vSphere as integration is `log`.
 
-Metrics give you insight into the statistics of the vSphere. The `Metric` data stream collected by the vSphere integration are `cluster`, `datastore`, `datastorecluster`, `host`, `resourcepool` and `virtualmachine` so that the user can monitor and troubleshoot the performance of the vSphere instance.
+Metrics give you insight into the statistics of the vSphere. The `Metric` data stream collected by the vSphere integration are `cluster`, `datastore`, `datastorecluster`, `host`, `network`, `resourcepool` and `virtualmachine` so that the user can monitor and troubleshoot the performance of the vSphere instance.
 
 Data Streams:
 
@@ -27,6 +27,7 @@ Data Streams:
 - **`host`**: This data stream collects host metrics from VMware vSphere, including performance statistics such as CPU usage, memory usage, disk I/O, and network activity.
 - **`resourcepool`**: This data stream collects metrics from VMware vSphere, such as CPU and memory usage, CPU and memory reservation, and CPU and memory limit.
 - **`virtualmachine`**: This data stream gathers virtual machine metrics from VMware vSphere, including performance statistics such as status, uptime, CPU usage, memory usage, and network activity.
+- **`network`**: This data stream gathers metrics and status information related to VMware vSphere networks, including network accessibility, connected hosts and virtual machines, configuration health, and network type.
 
 Note:
 - Users can monitor and see the log inside the ingested documents for vSphere in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
@@ -119,6 +120,18 @@ This is the `host` data stream. This data stream collects host metrics from VMwa
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "host"}}
+
+### Network
+
+This is the `network` data stream. This data stream gathers metrics and status information related to VMware vSphere networks, including network accessibility, connected hosts and virtual machines, configuration health, and network type.
+
+{{event "network"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "network"}}
 
 ### Resourcepool Metrics
 Resource pools in vSphere allow for the allocation and management of CPU and memory resources across groups of virtual machines.
