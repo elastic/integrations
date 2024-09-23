@@ -252,7 +252,6 @@ An example event for `user` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
