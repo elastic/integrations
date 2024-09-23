@@ -36,8 +36,6 @@ stats_sinks:
 
 An example event for `log` looks as following:
 
-An example event for `log` looks as following:
-
 ```json
 {
     "@timestamp": "2019-04-06T06:20:05.972Z",
@@ -167,8 +165,6 @@ An example event for `log` looks as following:
 
 
 ## Stats reference
-
-An example event for `stats` looks as following:
 
 An example event for `stats` looks as following:
 
