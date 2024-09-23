@@ -1,0 +1,85 @@
+---
+description: Pipeline for processing envoyproxy metrics
+processors:
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - rename:
+      field: statsd
+      target_field: envoyproxy
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove few fields.
+      source: |
+        for (entry in ctx.envoyproxy.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (!(v instanceof String)) {
+                v.keySet().stream().filter(s -> s.startsWith('1m_rate') || s.startsWith('5m_rate') ||s.startsWith('15m_rate') ||
+                s.startsWith('p99_9') || s.startsWith('p75') || s.startsWith('p99') || s.startsWith('p95'))
+                .collect(Collectors.toList()).forEach(m -> v.remove(m))
+            }
+        }
+  - dot_expander:
+      field: "*"
+      path: labels
+  - rename:
+      field: labels.envoy.ssl_version
+      target_field: envoyproxy.ssl_version
+      ignore_missing: true
+  - rename:
+      field: labels.envoy.ssl_cipher
+      target_field: envoyproxy.ssl_cipher
+      ignore_missing: true
+  - rename:
+      field: labels.envoy.ssl_curve
+      target_field: envoyproxy.ssl_curve
+      ignore_missing: true
+  - rename:
+      field: labels.envoy.http_conn_manager_prefix
+      target_field: envoyproxy.http_conn_manager_prefix
+      ignore_missing: true
+  - rename:
+      field: labels.envoy.worker_id
+      target_field: envoyproxy.worker_id
+      ignore_missing: true
+  - rename:
+      field: labels.envoy.listener_address
+      target_field: envoyproxy.listener_address
+      ignore_missing: true
+  - rename:
+      field: labels.envoy.response_code
+      target_field: envoyproxy.response_code
+      ignore_missing: true
+  - rename:
+      field: labels.envoy.response_code_class
+      target_field: envoyproxy.response_code_class
+      ignore_missing: true
+  - rename:
+      field: labels.envoy.cluster_name
+      target_field: envoyproxy.cluster_name
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
