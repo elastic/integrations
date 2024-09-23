@@ -174,53 +174,52 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-20T20:12:22.667Z",
+    "@timestamp": "2024-09-23T12:56:14.185Z",
     "agent": {
-        "ephemeral_id": "141756b0-7ce3-42e3-9284-81676bf3233d",
-        "id": "64928116-98ae-4d97-90fe-1c4122ee4847",
-        "name": "elastic-agent-26679",
+        "ephemeral_id": "d6051a84-0b6b-4b75-90c0-a9829b962356",
+        "id": "2db5f46e-9af5-4ed2-abbe-269b591acb3d",
+        "name": "elastic-agent-91812",
         "type": "metricbeat",
         "version": "8.15.0"
     },
     "data_stream": {
         "dataset": "envoyproxy.stats",
-        "namespace": "35924",
+        "namespace": "50634",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "64928116-98ae-4d97-90fe-1c4122ee4847",
+        "id": "2db5f46e-9af5-4ed2-abbe-269b591acb3d",
         "snapshot": false,
         "version": "8.15.0"
     },
     "envoyproxy": {
-        "cluster_name": "service_prisma",
-        "envoy_cluster_membership_degraded": {
-            "value": 0
+        "envoy_server_concurrency": {
+            "value": 2
         }
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "envoyproxy.stats",
-        "ingested": "2024-09-20T20:12:22Z",
+        "ingested": "2024-09-23T12:56:14Z",
         "module": "statsd"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-26679",
+        "hostname": "elastic-agent-91812",
         "id": "5c3f9f83eeec4f92817d995fce90f92f",
         "ip": [
-            "172.29.0.2",
+            "192.168.80.2",
             "172.20.0.4"
         ],
         "mac": [
             "02-42-AC-14-00-04",
-            "02-42-AC-1D-00-02"
+            "02-42-C0-A8-50-02"
         ],
-        "name": "elastic-agent-26679",
+        "name": "elastic-agent-91812",
         "os": {
             "codename": "focal",
             "family": "debian",
@@ -259,6 +258,8 @@ An example event for `stats` looks as following:
 | envoyproxy.cluster_name |  | keyword |  |
 | envoyproxy.http_conn_manager_prefix |  | keyword |  |
 | envoyproxy.listener_address |  | keyword |  |
+| envoyproxy.response_code |  | keyword |  |
+| envoyproxy.response_code_class |  | keyword |  |
 | envoyproxy.ssl_cipher |  | keyword |  |
 | envoyproxy.ssl_curve |  | keyword |  |
 | envoyproxy.ssl_version |  | keyword |  |
