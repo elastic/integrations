@@ -79,7 +79,7 @@ Elastic handles authentication by creating or renewing the authentication token.
 Metric queries are charged based on the number of standard API calls. 
 Check [Azure Monitor pricing](https://azure.microsoft.com/en-gb/pricing/details/monitor/) for more detailsgit.
 
-## Generic vs specialized integrations
+## Generic and specialized integrations
 
 A generic integration is fully customizable and can support any Azure service. There are no out-of-the-box dashboards for visualizing data, giving users complete control over the process. You must install the integration and customize the configuration before sending metrics to the data stream. You have the maximum flexibility to customize the configuration, custom pipelines, and mappings fully.
 
