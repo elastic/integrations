@@ -140,7 +140,6 @@ An example event for `log` looks as following:
         "name": "system"
     }
 }
-
 ```
 
 **Exported fields**
