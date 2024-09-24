@@ -61,6 +61,25 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
 
     # Old minors may not be available in artifacts-api, if it is older
     # than the others in the same major, return the version as is.
+    older = is_older_version(available_versions, major, minor)
+
+    # Check if there could be some version removed or missing from the
+    # artifacts-api response. If it is missing, return the version as is
+    newerPatch = exists_newer_patch(available_versions, major, minor, patch)
+
+    if older or newerPatch:
+        return version
+
+    # If no version has been found so far, try with the snapshot of the next version
+    # in the current major.
+    major_snapshot = f"{major}.x-SNAPSHOT"
+    if major_snapshot in available_aliases:
+        return major_snapshot
+
+    # Otherwise, return it, whatever this is.
+    return version
+
+def is_older_version(available_versions: list[str], major: str, minor: str) -> bool:
     older = True
     for available_version in available_versions:
         available_parts = available_version.split(".")
@@ -72,17 +91,28 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
         if int(major) == available_major and int(minor) > available_minor:
             older = False
             break
-    if older:
-        return version
 
-    # If no version has been found so far, try with the snapshot of the next version
-    # in the current major.
-    major_snapshot = f"{major}.x-SNAPSHOT"
-    if major_snapshot in available_aliases:
-        return major_snapshot
+    return older
 
-    # Otherwise, return it, whatever this is.
-    return version
+def exists_newer_patch(available_versions: list[str], major: str, minor: str, patch: str) -> bool:
+    newer_patch = False
+    for available_version in available_versions:
+        available_parts = available_version.split(".")
+        if len(available_parts) < 2:
+            continue
+
+        available_major = int(available_parts[0])
+        available_minor = int(available_parts[1])
+        if int(major) == available_major and int(minor) == available_minor:
+            available_patch = available_parts[2]
+            # skip prerelease tags?
+            if "+" in available_patch or '-' in available_patch:
+                continue
+
+            if int(patch) < int(available_patch):
+                newer_patch = True
+                break
+    return newer_patch
 
 
 def remove_operator(kibana_version_condition: str) -> str:
@@ -175,6 +205,7 @@ class TestFindOldestSupportVersion(unittest.TestCase):
             "8.9.1",
             "8.9.2-SNAPSHOT",
             "8.9.2",
+            "8.9.4",
             "8.10.0-SNAPSHOT",
             "8.10.0",
             "8.10.1-SNAPSHOT",
@@ -234,6 +265,10 @@ class TestFindOldestSupportVersion(unittest.TestCase):
 
     def test_available_next_minor_in_current_major(self):
         self.assertEqual(find_oldest_supported_version("7.19.0"), "7.x-SNAPSHOT")
+
+    def test_available_version_in_current_major_but_missing_minor(self):
+        # 8.9.2 and 8.9.4 versions exist, but not 8.9.3 version
+        self.assertEqual(find_oldest_supported_version("8.9.3"), "8.9.3")
 
     def test_or(self):
         self.assertEqual(find_oldest_supported_version("8.6.0||8.7.0"), "8.6.0")
