@@ -2,7 +2,7 @@
 
 Harmony Endpoint EPMaaS (Endpoint Management as a Service) is the cloud service to manage policies and deployments for Endpoint Security. It provides advanced threat prevention and detection capabilities to safeguard endpoints from malware, ransomware, and other sophisticated attacks. The solution offers real-time protection through behavioral analysis, machine learning, and threat intelligence.
 
-Refer to Admin guide for details on Harmony Endpoint: https://sc1.checkpoint.com/documents/Infinity_Portal/WebAdminGuides/EN/Harmony-Endpoint-Admin-Guide/Topics-HEP/Introduction.htm
+For details please refer to the [Harmony Endpoint Admin guide](https://sc1.checkpoint.com/documents/Infinity_Portal/WebAdminGuides/EN/Harmony-Endpoint-Admin-Guide/Topics-HEP/Introduction.htm)
 
 ## Setup
 
@@ -14,12 +14,12 @@ Refer to Admin guide for details on Harmony Endpoint: https://sc1.checkpoint.com
 
 To use this integration generate an API Key. API key consists of Client ID and Secret Key. Users can create API Keys by browsing to Infinity Portal at GLOBAL SETTINGS > API Keys. When creating an API Key, make sure that Service is set to Logs as a Service.
 
-Refer to Check Point's Infinity API Guide to create an API key: https://app.swaggerhub.com/apis-docs/Check-Point/infinity-events-api/1.0.0#/Authentication/getAuthToken
+To create an API key please refer to Check Point's [Infinity API Guide](https://app.swaggerhub.com/apis-docs/Check-Point/infinity-events-api/1.0.0#/Authentication/getAuthToken)
 
 ### Following are optional parameters which are used for fine-tuning:
 
-1. Initial Interval: Initial interval at which the logs will be pulled.
-2. Interval: Interval at which the logs will be pulled.
+1. Initial Interval: Initial interval for which existing logs will be pulled.
+2. Interval: Interval at which new logs will be pulled.
 3. Limit: Sets the number of results to return per API search query.
 4. Page Limit: Sets the number of results to return per page, in API search query.
 
