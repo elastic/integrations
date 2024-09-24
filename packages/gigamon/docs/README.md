@@ -114,6 +114,7 @@ An example event for `ami` looks as following:
         "version": "8.15.0"
     },
     "event": {
+        "kind": "event",
         "agent_id_status": "verified",
         "dataset": "gigamon.ami",
         "ingested": "2024-08-23T10:00:41Z",
