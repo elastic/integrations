@@ -1,0 +1,33 @@
+POST kbn:/api/alerting/rule
+{
+  "params": {
+    "searchType": "esqlQuery",
+    "timeWindowSize": 5,
+    "timeWindowUnit": "m",
+    "threshold": [
+      0
+    ],
+    "thresholdComparator": ">",
+    "size": 100,
+    "esqlQuery": {
+      "esql": "FROM metrics-* | WHERE metrics.k8s.container.ready == 0 | KEEP resource.attributes.k8s.container.name, kubernetes.container.status.last_terminated_reason | STATS COUNT(resource.attributes.k8s.container.name) BY resource.attributes.k8s.container.name \n"
+    },
+    "aggType": "count",
+    "groupBy": "all",
+    "termSize": 5,
+    "sourceFields": [],
+    "timeField": "@timestamp"
+  },
+  "consumer": "infrastructure",
+  "schedule": {
+    "interval": "5m"
+  },
+  "tags": [
+    "Otel",
+    "Metrics",
+    "Container"
+  ],
+  "name": "Container Status",
+  "rule_type_id": ".es-query",
+  "actions": []
+}
