@@ -5,6 +5,30 @@ processors:
       field: ecs.version
       value: '8.11.0'
   - script: 
+      if: ctx.vsphere?.host?.triggered_alarms != null
+      lang: painless
+      source: >
+          def alerts = [];
+          def warnings = [];
+          for (alarm in ctx.vsphere.host.triggered_alarms) {
+              if (alarm.status == 'red') {
+              alerts.add(alarm.name);
+              }
+              if (alarm.status == 'yellow') {
+              warnings.add(alarm.name);
+              }
+          }
+          ctx.alerts = alerts;
+          ctx.warnings = warnings
+  - rename:
+      field: alerts
+      target_field: vsphere.host.alert.names
+      ignore_missing: true
+  - rename:
+      field: warnings
+      target_field: vsphere.host.warning.names
+      ignore_missing: true
+  - script: 
       if: ctx.vsphere?.host?.memory?.used.bytes != null && ctx.vsphere?.host?.memory?.total.bytes != null
       lang: painless
       source: >
