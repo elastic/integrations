@@ -573,7 +573,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.UpdatedAt
-      if: ctx.json?.UpdatedAt != null && ctx.json?.UpdatedAt != ''
+      if: ctx.json?.UpdatedAt != null && ctx.json.UpdatedAt != ''
       target_field: aws.securityhub_findings.updated_at
       formats:
         - ISO8601
@@ -731,7 +731,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.ProcessedAt
-      if: ctx.json?.ProcessedAt != null && ctx.json?.ProcessedAt != ''
+      if: ctx.json?.ProcessedAt != null && ctx.json.ProcessedAt != ''
       target_field: aws.securityhub_findings.processed_at
       tag: date_processed_at
       formats:
@@ -1533,7 +1533,7 @@ processors:
   - set:
       field: rule.remediation
       tag: set_rule_remediation
-      value: '{{{aws.securityhub_findings.remediation.recommendation.text}}} \n {{{aws.securityhub_findings.remediation.recommendation.url}}}'
+      value: "{{{aws.securityhub_findings.remediation.recommendation.text}}} \r\n {{{aws.securityhub_findings.remediation.recommendation.url}}}"
       if: ctx.aws?.securityhub_findings?.remediation?.recommendation?.url != null && ctx.aws.securityhub_findings.remediation.recommendation.text != null
       ignore_empty_value: true
   - rename:
