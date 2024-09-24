@@ -313,6 +313,20 @@ processors:
   - set:
       field: event.kind
       value: event
+  - append:
+      description: Append principal id to `related.entity`
+      field: related.entity
+      value: "{{{ azure.activitylogs.identity.authorization.evidence.principal_id }}}"
+      if: "ctx?.azure?.activitylogs?.identity?.authorization?.evidence?.principal_id != null"
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      description: Append resource id to `related.entity`
+      field: related.entity
+      value: "{{{ azure.resource_id }}}"
+      if: "ctx.azure.resource_id != null"
+      allow_duplicates: false
+      ignore_failure: true
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
