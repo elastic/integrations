@@ -1,0 +1,45 @@
+POST kbn:/api/alerting/rule
+{
+  "params": {
+    "criteria": [
+      {
+        "comparator": ">",
+        "metrics": [
+          {
+            "name": "A",
+            "aggType": "count"
+          }
+        ],
+        "threshold": [
+          1
+        ],
+        "timeSize": 5,
+        "timeUnit": "m"
+      }
+    ],
+    "alertOnNoData": false,
+    "alertOnGroupDisappear": false,
+    "searchConfiguration": {
+      "query": {
+        "query": "resource.attributes.k8s.node.name : * and metrics.k8s.node.condition_ready < 1",
+        "language": "kuery"
+      },
+      "index": "metrics-*"
+    },
+    "groupBy": [
+      "resource.attributes.k8s.node.name"
+    ]
+  },
+  "consumer": "infrastructure",
+  "schedule": {
+    "interval": "5m"
+  },
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Node"
+  ],
+  "name": "Node Condition Ready",
+  "rule_type_id": "observability.rules.custom_threshold",
+  "actions": []
+}

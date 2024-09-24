@@ -1,0 +1,47 @@
+POST kbn:/api/alerting/rule
+{
+  "params": {
+    "criteria": [
+      {
+        "comparator": ">",
+        "metrics": [
+          {
+            "name": "A",
+            "filter": "metrics.k8s.pod.phase : 1 or metrics.k8s.pod.phase : 4 or metrics.k8s.pod.phase : 5",
+            "aggType": "count"
+          }
+        ],
+        "threshold": [
+          20
+        ],
+        "timeSize": 5,
+        "timeUnit": "m",
+        "label": "Pod Not Running"
+      }
+    ],
+    "alertOnNoData": false,
+    "alertOnGroupDisappear": false,
+    "searchConfiguration": {
+      "query": {
+        "query": "",
+        "language": "kuery"
+      },
+      "index": "metrics-*"
+    },
+    "groupBy": [
+      "resource.attributes.k8s.pod.name"
+    ]
+  },
+  "consumer": "infrastructure",
+  "schedule": {
+    "interval": "5m"
+  },
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Pod"
+  ],
+  "name": "Pod Status",
+  "rule_type_id": "observability.rules.custom_threshold",
+  "actions": []
+}

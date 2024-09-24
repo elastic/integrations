@@ -1,0 +1,43 @@
+POST kbn:/api/alerting/rule
+{
+  "params": {
+    "criteria": [
+      {
+        "comparator": ">",
+        "metrics": [
+          {
+            "name": "A",
+            "filter": "metrics.k8s.node.network.errors > 0",
+            "aggType": "count"
+          }
+        ],
+        "threshold": [
+          20
+        ],
+        "timeSize": 5,
+        "timeUnit": "m"
+      }
+    ],
+    "alertOnNoData": false,
+    "alertOnGroupDisappear": false,
+    "searchConfiguration": {
+      "query": {
+        "query": "",
+        "language": "kuery"
+      },
+      "index": "metrics-*"
+    }
+  },
+  "consumer": "infrastructure",
+  "schedule": {
+    "interval": "1m"
+  },
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Network"
+  ],
+  "name": "Network Traffic Errors",
+  "rule_type_id": "observability.rules.custom_threshold",
+  "actions": []
+}

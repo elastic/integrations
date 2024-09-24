@@ -1,0 +1,33 @@
+POST kbn:/api/alerting/rule
+{
+  "name": "Node Memory Utilisation",
+  "tags": [
+    "Metrics",
+    "OTEL",
+    "Node",
+    "Memory"
+  ],
+  "schedule": {
+    "interval": "5m"
+  },
+  "params": {
+    "searchType": "esqlQuery",
+    "timeWindowSize": 5,
+    "timeWindowUnit": "m",
+    "threshold": [
+      0
+    ],
+    "thresholdComparator": ">",
+    "size": 100,
+    "esqlQuery": {
+      "esql": "FROM metrics-* | WHERE metrics.k8s.node.memory.usage/metrics.k8s.node.memory.available :: DOUBLE >= 0.8  | LIMIT 10 | keep resource.attributes.k8s.node.name"
+    },
+    "aggType": "count",
+    "groupBy": "all",
+    "termSize": 5,
+    "sourceFields": [],
+    "timeField": "@timestamp",
+    "excludeHitsFromPreviousRun": true
+  },
+  "actions": []
+}
