@@ -208,6 +208,27 @@ processors:
       tag: rename_user_type
       ignore_missing: true
   - rename:
+      field: groups
+      target_field: entityanalytics_okta.groups
+      tag: rename_user_groups
+      ignore_missing: true
+  - foreach:
+      field: entityanalytics_okta.groups
+      if: ctx.entityanalytics_okta?.groups != null
+      processor:
+        append:
+          field: user.group.id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: entityanalytics_okta.groups
+      if: ctx.entityanalytics_okta?.groups != null
+      processor:
+        append:
+          field: user.group.name
+          value: '{{{_ingest._value.profile.name}}}'
+          allow_duplicates: false
+  - rename:
       field: okta.transitioningToStatus
       target_field: entityanalytics_okta.user.transitioning_to_status
       tag: user_transitioning_to_status

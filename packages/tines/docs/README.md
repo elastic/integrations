@@ -268,7 +268,6 @@ An example event for `audit` looks as following:
         "version": "109.0.0.0"
     }
 }
-
 ```
 
 ### time_saved
@@ -339,5 +338,4 @@ An example event for `time_saved` looks as following:
         }
     }
 }
-
 ```
