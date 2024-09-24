@@ -1,0 +1,103 @@
+processors:
+  resourcedetection/system:
+     detectors: ["system"]
+extensions:
+  file_storage:
+    directory: ./data
+receivers:
+  nginx:  
+    endpoint: "http://localhost:8088/nginx-status"
+    collection_interval: 10s
+  filelog/access:
+    include_file_path: true
+    include:
+      - ${env:NGINX_LOGS_DIR}/access.log
+    start_at: beginning
+    storage: file_storage
+    operators:
+      - type: regex_parser
+        regex: "(?P<remote>[^ ]*) - - \\[(?P<time>[^\\]]*)\\] \"(?P<method>\\S+)(?: +(?P<path>[^ ]*) +\\S*)?\" (?P<status>\\d+) (?P<size>\\d+) \"(?P<referer>[^\"]*)\" \"(?P<agent>[^\"]*)\""
+        timestamp:
+          parse_from: attributes.time
+          layout: "%d/%b/%Y:%H:%M:%S %z"
+  filelog/error:
+    include_file_path: true
+    include:
+      - ${env:NGINX_LOGS_DIR}/error.log
+    start_at: beginning
+    # storage: file_storage
+    operators:
+      - type: regex_parser
+        # to be checked errormessage values
+        regex: "(?P<datetime>[\\d+/ :]+) \\[(?P<errortype>.+)\\] (?P<process_pid>\\d+)#(?P<process_thread_id>\\d+): ((?P<errormsg>.+), client: (?P<client>.+), server: (?P<server>.+), request: (?P<request>.+), host: (?P<request_host>.+)|(?P<errormessage>.+))"
+        timestamp:
+          layout: "%Y/%m/%d %H:%M:%S"
+          parse_from: attributes.datetime
+          location: GMT 
+      - type: move
+        from: attributes.process_pid
+        to: resource["process.pid"]
+      - type: move
+        from: attributes.process_thread_id
+        to: resource["process.thread.id"]
+      - type: move
+        from: attributes.errormsg
+        to: resource["error.message"]
+      - type: move
+        from: attributes.errormessage
+        to: resource["error.message"]
+        if: resource["error.message"] == ""
+      - type: remove
+        field: attributes.errormessage
+        if: attributes.errormessage == ""
+
+
+exporters:
+  debug:
+    # verbosity: detailed
+    verbosity: normal
+    use_internal_logger: false
+  logging:
+    # verbosity: detailed
+    verbosity: normal
+    sampling_initial: 5
+    sampling_thereafter: 200
+  elasticsearch:
+    endpoint: http://localhost:9200
+    flush:
+      interval: 100ms
+    mapping:
+      mode: ecs
+    password: changeme
+    user: elastic
+service:
+  extensions:
+    - file_storage
+  pipelines:
+    metrics:
+      receivers:
+        - nginx
+      exporters:
+        - debug
+        - logging
+        - elasticsearch
+      processors:
+        - resourcedetection/system
+    logs/access:
+      receivers:
+        - filelog/access
+      exporters:
+        - debug
+        - logging
+        - elasticsearch
+      processors:
+        - resourcedetection/system
+    logs/error:
+      receivers:
+        - filelog/error
+      exporters:
+        - debug
+        - logging
+        - elasticsearch
+      processors:
+        - resourcedetection/system
