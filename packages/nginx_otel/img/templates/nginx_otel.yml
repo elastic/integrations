@@ -16,6 +16,12 @@ processors:
           - set(resource.attributes["data_stream.dataset"], "nginx_otel.status")
           # - set(attributes["data_stream.namespace"], "ep")
           - set(resource.attributes["data_stream.type"], "metrics")
+
+      - context: metric
+        statements:
+          - set(resource.attributes["os.name"], resource.attributes["os.description"])
+          - replace_pattern(resource.attributes["os.name"], "^(.*?)\\ \\(.*$", "$$1" )
+
   transform/parse_access_nginx/log:
     log_statements:
       - context: log
@@ -36,6 +42,11 @@ processors:
           - set(attributes["data_stream.dataset"], "nginx_otel.access")
           # - set(attributes["data_stream.namespace"], "ep")
           - set(attributes["data_stream.type"], "logs")
+
+      - context: log
+        statements:
+          - set(resource.attributes["os.name"], resource.attributes["os.description"])
+          - replace_pattern(resource.attributes["os.name"], "^(.*?)\\ \\(.*$", "$$1" )
   transform/parse_error_nginx/log:
     log_statements:
       - context: log
@@ -66,42 +77,40 @@ processors:
           - set(attributes["data_stream.dataset"], "nginx_otel.error")
           # - set(attributes["data_stream.namespace"], "ep")
           - set(attributes["data_stream.type"], "logs")
+      - context: log
+        statements:
+          - set(resource.attributes["os.name"], resource.attributes["os.description"])
+          - replace_pattern(resource.attributes["os.name"], "^(.*?)\\ \\(.*$", "$$1" )
 
-extensions:
-  file_storage:
-    directory: ${var.log_storage}
 receivers:
   nginx:  
-    endpoint: "http://localhost:8088/nginx-status"
+    endpoint: ${var:endpoint}
     collection_interval: 10s
-  filelog/access:
-    include_file_path: true
-    include: ${var.access_paths}
-    start_at: beginning
-    storage: file_storage
-  filelog/error:
-    include_file_path: true
-    include: ${var.error_paths}
-    start_at: beginning
-    storage: file_storage
+  # filelog/access:
+  #   include_file_path: true
+  #   include: ${var:access_paths}
+  #   start_at: beginning
+  #   storage: ${var:storage_resource}
+  # filelog/error:
+  #   include_file_path: true
+  #   include: ${var:error_paths}
+  #   start_at: beginning
+  #   storage: ${var:storage_resource}
 
 pipelines:
   metrics:
-    receivers:
-      - nginx
+    receiver: nginx
     processors:
       - resourcedetection/system
       - transform/parse_status_nginx/metrics
-  logs/access:
-    receivers:
-      - filelog/access
-    processors:
-      - resourcedetection/system
-      - transform/parse_access_nginx/log
-  logs/error:
-    receivers:
-      - filelog/error
-    processors:
-      - resourcedetection/system
-      - transform/parse_error_nginx/log
+  # logs/access:
+  #   receiver: filelog/access
+  #   processors:
+  #     - resourcedetection/system
+  #     - transform/parse_access_nginx/log
+  # logs/error:
+  #   receiver: filelog/error
+  #   processors:
+  #     - resourcedetection/system
+  #     - transform/parse_error_nginx/log
 

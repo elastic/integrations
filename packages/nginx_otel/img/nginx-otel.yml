@@ -16,6 +16,10 @@ processors:
           - set(resource.attributes["data_stream.dataset"], "nginx_otel.status")
           # - set(attributes["data_stream.namespace"], "ep")
           - set(resource.attributes["data_stream.type"], "metrics")
+      - context: metric
+        statements:
+          - set(resource.attributes["os.name"], resource.attributes["os.description"])
+          - replace_pattern(resource.attributes["os.name"], "^(.*?)\\ \\(.*$", "$$1" )
   transform/parse_access_nginx/log:
     log_statements:
       - context: log
@@ -36,6 +40,10 @@ processors:
           - set(attributes["data_stream.dataset"], "nginx_otel.access")
           # - set(attributes["data_stream.namespace"], "ep")
           - set(attributes["data_stream.type"], "logs")
+      - context: log
+        statements:
+          - set(resource.attributes["os.name"], resource.attributes["os.description"])
+          - replace_pattern(resource.attributes["os.name"], "^(.*?)\\ \\(.*$", "$$1" )
   transform/parse_error_nginx/log:
     log_statements:
       - context: log
@@ -66,6 +74,10 @@ processors:
           - set(attributes["data_stream.dataset"], "nginx_otel.error")
           # - set(attributes["data_stream.namespace"], "ep")
           - set(attributes["data_stream.type"], "logs")
+      - context: log
+        statements:
+          - set(resource.attributes["os.name"], resource.attributes["os.description"])
+          - replace_pattern(resource.attributes["os.name"], "^(.*?)\\ \\(.*$", "$$1" )
 
 extensions:
   file_storage:
@@ -109,6 +121,7 @@ exporters:
       enabled: true
     metrics_dynamic_index:
       enabled: true
+
 service:
   extensions:
     - file_storage

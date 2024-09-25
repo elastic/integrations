@@ -1,11 +1,14 @@
 extensions:
   file_integrations:
-    path: "./integrations"
+    path: "./templates"
+  file_storage:
+    directory: "./data"
 
 receivers:
   integration/nginx_otel:
     name: "nginx_otel"
-    pipelines: ["metrics", "logs/access", "logs/error"]
+    # pipelines: ["metrics", "logs/access", "logs/error"]
+    pipelines: ["metrics"]
     parameters:
       endpoint: http://localhost:8088/nginx-status
       access_paths:
@@ -13,10 +16,7 @@ receivers:
       error_paths:
         - ${env:NGINX_LOGS_DIR}/error.log
       log_storage: "./data"
-
-processors:
-  integration/nginx_otel:
-    name: "nginx_otel"
+      storage_resource: file_storage
 
 exporters:
   debug:
@@ -24,8 +24,8 @@ exporters:
     # verbosity: normal
     use_internal_logger: false
   logging:
-    # verbosity: detailed
-    verbosity: normal
+    # verbosity: normal
+    verbosity: detailed
     sampling_initial: 5
     sampling_thereafter: 200
   elasticsearch:
@@ -47,32 +47,25 @@ service:
     - file_integrations
   pipelines:
     metrics:
-      receivers:
-        - nginx
-      exporters:
-        - debug
-        - logging
-        - elasticsearch
-      processors:
-        - resourcedetection/system
-        - transform/parse_status_nginx/metrics
-    logs/access:
-      receivers:
-        - filelog/access
-      exporters:
-        - debug
-        - logging
-        - elasticsearch
-      processors:
-        - resourcedetection/system
-        - transform/parse_access_nginx/log
-    logs/error:
-      receivers:
-        - filelog/error
-      exporters:
-        - debug
-        - logging
-        - elasticsearch
-      processors:
-        - resourcedetection/system
-        - transform/parse_error_nginx/log
+      receivers: [integration/nginx_otel]
+      exporters: [logging, elasticsearch]
+    # logs/access:
+    #   receivers:
+    #     - filelog/access
+    #   exporters:
+    #     - debug
+    #     - logging
+    #     - elasticsearch
+    #   processors:
+    #     - resourcedetection/system
+    #     - transform/parse_access_nginx/log
+    # logs/error:
+    #   receivers:
+    #     - filelog/error
+    #   exporters:
+    #     - debug
+    #     - logging
+    #     - elasticsearch
+    #   processors:
+    #     - resourcedetection/system
+    #     - transform/parse_error_nginx/log
