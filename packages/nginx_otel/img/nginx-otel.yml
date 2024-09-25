@@ -1,6 +1,66 @@
 processors:
   resourcedetection/system:
-     detectors: ["system"]
+    detectors: ["system"]
+  transform/parse_status_nginx/metrics:
+    metric_statements:
+      - context: metric
+        statements:
+          # set nginx_otel.data_stream.*
+          - set(resource.attributes["data_stream.dataset"], "nginx_otel.status")
+          # - set(attributes["data_stream.namespace"], "ep")
+          - set(resource.attributes["data_stream.type"], "metrics")
+  transform/parse_access_nginx/log:
+    log_statements:
+      - context: log
+        conditions:
+          - IsMatch(body, "^([0-9a-fA-F:.]+) - .*")
+        statements:
+          # capturing all the nginx attributes with a single regex
+          - merge_maps(attributes, ExtractPatterns(body, "^(?P<source__address>[0-9a-fA-F:.]+) - (?P<remote__user>[^ ]*) \\[(?P<time__local>[^\\]]+)\\] \\\"(?P<http__request__method>[^ ]+) (?P<url__original>[^ ]+) HTTP/(?P<http__version>[^\\\"]+)\\\" (?P<http__response__status_code>\\d+) (?P<http__response__body__bytes>\\d+) \\\"(?P<http_referer>[^\\\"]*)\\\" \\\"(?P<user_agent__name>[^/]+)/(?P<user_agent__version>[^\\\"]+)\\\" \\\"(?P<http__x_forwarded_for>[^\\\"]*)\\\"$"), "upsert")
+
+          # replace all "__" for "." (intermediate step as regular expressions do not allow capture variable names with dots)
+          - replace_all_patterns(attributes, "key", "__", ".")
+
+          # attributes type conversions
+          - set(attributes["http.response.status_code"], Int(attributes["http.response.status_code"]))
+          - set(attributes["http.response.body.bytes"], Int(attributes["http.response.body.bytes"]))
+
+          # set nginx_otel.data_stream.*
+          - set(attributes["data_stream.dataset"], "nginx_otel.access")
+          # - set(attributes["data_stream.namespace"], "ep")
+          - set(attributes["data_stream.type"], "logs")
+  transform/parse_error_nginx/log:
+    log_statements:
+      - context: log
+        conditions:
+          - IsMatch(body, "[\\d+/ :]+ \\[.+\\] \\d+#\\d+:\\ .+") and (not IsMatch(body, ", client:\\ (.+), server:\\ (.+), request:\\ (.+), host:\\ (.+)$"))
+        statements:
+          # capturing all the nginx attributes with a single regex
+          - merge_maps(attributes, ExtractPatterns(body, "(?P<time__local>[\\d+/ :]+) \\[(?P<severity>.+)\\] (?P<process__pid>\\d+)#(?P<process__thread_id>\\d+):\\ (?P<error__message>.+)$"), "upsert")
+          # - merge_maps(attributes, ExtractPatterns(body, "(?P<time__local>[\\d+/ :]+) "), "upsert")
+
+          # replace all "__" for "." (intermediate step as regular expressions do not allow capture variable names with dots)
+          - replace_all_patterns(attributes, "key", "__", ".")
+
+          # set nginx_otel.data_stream.*
+          - set(attributes["data_stream.dataset"], "nginx_otel.error")
+          # - set(attributes["data_stream.namespace"], "ep")
+          - set(attributes["data_stream.type"], "logs")
+      - context: log
+        conditions:
+          - IsMatch(body, "[\\d+/ :]+ \\[.+\\] \\d+#\\d+:\\ .+") and IsMatch(body, ", client:\\ (.+), server:\\ (.+), request:\\ (.+), host:\\ (.+)$")
+        statements:
+          # capturing all the nginx attributes with a single regex
+          - merge_maps(attributes, ExtractPatterns(body, "(?P<time__local>[\\d+/ :]+) \\[(?P<severity>.+)\\] (?P<process__pid>\\d+)#(?P<process__thread_id>\\d+):\\ (?P<error__message>.+), client:\\ (?P<client>.+), server:\\ (?P<server>.+), request:\\ \\\"(?P<http__request__method>[^ ]+) (?P<url__original>[^ ]+) HTTP/(?P<http__version>[^\\\"]+)\\\", host:\\ \\\"(?P<source__address>.+)\\\"$"), "upsert")
+
+          # replace all "__" for "." (intermediate step as regular expressions do not allow capture variable names with dots)
+          - replace_all_patterns(attributes, "key", "__", ".")
+          #
+          # set nginx_otel.data_stream.*
+          - set(attributes["data_stream.dataset"], "nginx_otel.error")
+          # - set(attributes["data_stream.namespace"], "ep")
+          - set(attributes["data_stream.type"], "logs")
+
 extensions:
   file_storage:
     directory: ./data
@@ -14,48 +74,17 @@ receivers:
       - ${env:NGINX_LOGS_DIR}/access.log
     start_at: beginning
     storage: file_storage
-    operators:
-      - type: regex_parser
-        regex: "(?P<remote>[^ ]*) - - \\[(?P<time>[^\\]]*)\\] \"(?P<method>\\S+)(?: +(?P<path>[^ ]*) +\\S*)?\" (?P<status>\\d+) (?P<size>\\d+) \"(?P<referer>[^\"]*)\" \"(?P<agent>[^\"]*)\""
-        timestamp:
-          parse_from: attributes.time
-          layout: "%d/%b/%Y:%H:%M:%S %z"
   filelog/error:
     include_file_path: true
     include:
       - ${env:NGINX_LOGS_DIR}/error.log
     start_at: beginning
-    # storage: file_storage
-    operators:
-      - type: regex_parser
-        # to be checked errormessage values
-        regex: "(?P<datetime>[\\d+/ :]+) \\[(?P<errortype>.+)\\] (?P<process_pid>\\d+)#(?P<process_thread_id>\\d+): ((?P<errormsg>.+), client: (?P<client>.+), server: (?P<server>.+), request: (?P<request>.+), host: (?P<request_host>.+)|(?P<errormessage>.+))"
-        timestamp:
-          layout: "%Y/%m/%d %H:%M:%S"
-          parse_from: attributes.datetime
-          location: GMT 
-      - type: move
-        from: attributes.process_pid
-        to: resource["process.pid"]
-      - type: move
-        from: attributes.process_thread_id
-        to: resource["process.thread.id"]
-      - type: move
-        from: attributes.errormsg
-        to: resource["error.message"]
-      - type: move
-        from: attributes.errormessage
-        to: resource["error.message"]
-        if: resource["error.message"] == ""
-      - type: remove
-        field: attributes.errormessage
-        if: attributes.errormessage == ""
-
+    storage: file_storage
 
 exporters:
   debug:
-    # verbosity: detailed
-    verbosity: normal
+    verbosity: detailed
+    # verbosity: normal
     use_internal_logger: false
   logging:
     # verbosity: detailed
@@ -83,6 +112,7 @@ service:
         - elasticsearch
       processors:
         - resourcedetection/system
+        - transform/parse_status_nginx/metrics
     logs/access:
       receivers:
         - filelog/access
@@ -92,12 +122,14 @@ service:
         - elasticsearch
       processors:
         - resourcedetection/system
-    logs/error:
-      receivers:
-        - filelog/error
-      exporters:
-        - debug
-        - logging
-        - elasticsearch
-      processors:
-        - resourcedetection/system
+        - transform/parse_access_nginx/log
+    # logs/error:
+    #   receivers:
+    #     - filelog/error
+    #   exporters:
+    #     - debug
+    #     - logging
+    #     - elasticsearch
+    #   processors:
+    #     - resourcedetection/system
+    #     - transform/parse_error_nginx/log
