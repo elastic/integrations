@@ -222,7 +222,6 @@ An example event for `asset` looks as following:
         "google_scc-asset"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -586,7 +585,6 @@ An example event for `finding` looks as following:
         "scheme": "http"
     }
 }
-
 ```
 
 **Exported fields**
@@ -845,7 +843,6 @@ An example event for `source` looks as following:
         "google_scc-source"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -958,7 +955,6 @@ An example event for `audit` looks as following:
         "google_scc-audit"
     ]
 }
-
 ```
 
 **Exported fields**
