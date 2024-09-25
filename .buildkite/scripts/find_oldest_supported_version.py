@@ -271,6 +271,7 @@ class TestFindOldestSupportVersion(unittest.TestCase):
         # not sure if this test case should return 8.x-SNAPSHOT stack version,
         # that would test with probably a newer stack (8.11.0-SNAPSHOT).
         self.assertEqual(find_oldest_supported_version("8.8.3"), "8.x-SNAPSHOT")
+        self.assertEqual(find_oldest_supported_version("8.12.0"), "8.x-SNAPSHOT")
 
     def test_available_version_in_current_major_but_missing_minor(self):
         # 8.9.2 and 8.9.4 versions exist in the artifacts-api response and the alias
