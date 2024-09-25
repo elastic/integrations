@@ -27,7 +27,7 @@ integration. Please refer to the AWS integration for more details.**
 
 ## Compatibility
 
-This integration is compatible with the Amazon Bedrock Model Invocation Log schema,
+This integration is compatible with the Amazon Bedrock model invocation log schema,
 version 1.0.
 
 
