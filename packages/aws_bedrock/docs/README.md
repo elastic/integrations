@@ -91,8 +91,6 @@ running on Kubernetes.
 
 To run Elastic Agent, check these [requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **Elastic Stack** version required is **8.13.0**.
-
 ## Setup
 
 To use the Amazon Bedrock model invocation logs, the logging model
@@ -100,7 +98,7 @@ invocation logging must be enabled and be sent to a log store destination,
 either S3 or CloudWatch. For more details check the
 [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html).
 
-1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) Logs destination.
+1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch Logs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) destination.
 2. Enable logging. You can do it either through the [Amazon Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the Amazon Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
 
 
