@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: '8.12.0'
+      value: '8.11.0'
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -95,6 +95,7 @@ processors:
       formats:
         - MM/dd/yyyy:HH:mm:ss
         - yyyy/MM/dd:HH:mm:ss
+        - dd/MM/yyyy:HH:mm:ss
       timezone: '{{{event.timezone}}}'
   - remove:
       field: citrix.event_year
@@ -172,11 +173,6 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_missing: true
   - remove:
       field:
         - _tmp

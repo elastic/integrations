@@ -35,7 +35,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.11.0**.
 This module has been tested against the **CrowdStrike Falcon Intelligence API Version v1**.
 
 ## Setup

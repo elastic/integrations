@@ -336,12 +336,13 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
+# If `device.id`` is not already mapped inside respective pipelines using SensorId, use `event.DeviceId` to map it.
+  - set:
+      field: device.id
+      copy_from: crowdstrike.event.DeviceId
+      ignore_empty_value: true
+      tag: rename_event_deviceid
+      if: ctx.device?.id == null
   # This removes any fields that are mapped to ECS, but have not been renamed.
   # This is to prevent the fields from being duplicated in the event.
   - remove:

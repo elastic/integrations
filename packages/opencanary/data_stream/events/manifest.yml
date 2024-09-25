@@ -1,0 +1,48 @@
+title: "OpenCanary HoneyPot Events"
+type: logs
+streams:
+  - input: logfile
+    title: OpenCanary Events
+    description: Collect OpenCanary events from logs.
+    enabled: true
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        default:
+          - /var/tmp/opencanary.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - opencanary-logs
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: redact_passwords
+        required: true
+        show_user: true
+        title: Redact passwords
+        description: Some events may contain plain-text passwords in the `event.original` field. Enabling this option will redact those passwords.
+        type: bool
+        multi: false
+        default: true
+        secret: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+

@@ -67,6 +67,70 @@ processors:
       field: json.agentDetectionInfo.version
       target_field: observer.version
       ignore_missing: true
+  - rename:
+      field: json.agentRealtimeInfo.id
+      target_field: sentinel_one.alert.agent.id
+      ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: sentinel_one.alert.agent.id
+      if: ctx.sentinel_one?.alert?.agent?.id != null
+  - convert:
+      field: json.agentRealtimeInfo.infected
+      target_field: sentinel_one.alert.agent.infected
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentRealtimeInfo.infected
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.agentRealtimeInfo.isActive
+      target_field: sentinel_one.alert.agent.is_active
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentRealtimeInfo.isActive
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.agentRealtimeInfo.isDecommissioned
+      target_field: sentinel_one.alert.agent.is_decommissioned
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentRealtimeInfo.isDecommissioned
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.agentRealtimeInfo.machineType
+      target_field: sentinel_one.alert.agent.machine_type
+      ignore_missing: true
+  - rename:
+      field: json.agentRealtimeInfo.name
+      target_field: sentinel_one.alert.agent.computer_name
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: sentinel_one.alert.agent.computer_name
+      if: ctx.sentinel_one?.alert?.agent?.computer_name != null
+  - rename:
+      field: json.agentRealtimeInfo.os
+      target_field: sentinel_one.alert.agent.os.type
+      ignore_missing: true
+  - set:
+      field: host.os.type
+      copy_from: sentinel_one.alert.agent.os.type
+      if: ctx.sentinel_one?.alert?.agent?.os?.type != null
   - date:
       field: json.alertInfo.createdAt
       if: ctx.json?.alertInfo?.createdAt != null
@@ -202,7 +266,6 @@ processors:
       ignore_missing: true
   - convert:
       field: json.alertInfo.srcMachineIp
-      target_field: host.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -213,9 +276,15 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      field: host.ip
+      value: '{{{json.alertInfo.srcMachineIp}}}'
+      if: ctx.json?.alertInfo?.srcMachineIp != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
       field: related.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
+      value: '{{{json.alertInfo.srcMachineIp}}}'
+      if: ctx.json?.alertInfo?.srcMachineIp != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -322,10 +391,14 @@ processors:
       field: json.containerInfo.name
       target_field: container.name
       ignore_missing: true
+      ignore_failure: true
+      if: ctx.container?.name == null
   - rename:
       field: json.kubernetesInfo.cluster
       target_field: orchestrator.cluster.name
       ignore_missing: true
+      ignore_failure: true
+      if: ctx.orchestrator?.cluster?.name == null
   - rename:
       field: json.kubernetesInfo.controllerKind
       target_field: sentinel_one.alert.kubernetes.controller.kind
@@ -342,6 +415,8 @@ processors:
       field: json.kubernetesInfo.namespace
       target_field: orchestrator.namespace
       ignore_missing: true
+      ignore_failure: true
+      if: ctx.orchestrator?.namespace == null
   - rename:
       field: json.kubernetesInfo.namespaceLabels
       target_field: sentinel_one.alert.kubernetes.namespace.labels

@@ -3,7 +3,7 @@ description: Pipeline for processing Azure firewall logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.11.0'
   - set:
       field: event.kind
       value: event
@@ -287,11 +287,6 @@ processors:
       field: observer.name
       copy_from: azure.resource.name
       ignore_empty_value: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless

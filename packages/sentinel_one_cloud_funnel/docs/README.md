@@ -57,8 +57,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.11.0**.
-
 ## Setup
 
 ### To collect data from an AWS S3 bucket, follow the below steps:
@@ -448,6 +446,13 @@ An example event for `event` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | powershell.file.script_block_text | Text of the executed script block. | text |
+| process.Ext.token.integrity_level_name |  | alias |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.caseless | Multi-field of `process.executable`. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.caseless | Multi-field of `process.name`. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | sentinel_one_cloud_funnel.event.account_id | SentinelOne Account ID. | keyword |
 | sentinel_one_cloud_funnel.event.agent.uuid | Agent Unique ID. | keyword |
 | sentinel_one_cloud_funnel.event.agent.version | Version of SentinelOne Agent. | keyword |
@@ -654,6 +659,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.registry.value.is_complete | Is the registry value full size or is it truncated. | boolean |
 | sentinel_one_cloud_funnel.event.registry.value.type | Type of registry value. | keyword |
 | sentinel_one_cloud_funnel.event.repetition_count | Count of Concurrent Identical Events. | long |
+| sentinel_one_cloud_funnel.event.rerouted | The event was rerouted from the event data stream. | boolean |
 | sentinel_one_cloud_funnel.event.sca.atlantis_ingest_time |  | date |
 | sentinel_one_cloud_funnel.event.sca.ingest_time |  | date |
 | sentinel_one_cloud_funnel.event.site.id | SentinelOne Site ID. | keyword |
@@ -887,6 +893,5 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.url.action | URL action of process. | keyword |
 | sentinel_one_cloud_funnel.event.url.address | Complete URL. | keyword |
 | sentinel_one_cloud_funnel.event.url.source |  | keyword |
-| tags | User defined tags. | keyword |
 
 

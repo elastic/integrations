@@ -28,7 +28,7 @@ program: |
           bytes(resp.Body).decode_json().as(pipes,
             has(pipes.pipeline) ?
               pipes.pipelines.map(pipeline_name,
-                has(pipes.pipelines) && pipes.pipelines != null && pipes.pipelines[pipeline_name].graph.graph.vertices != null,
+                has(pipes.pipelines) && has(pipes.pipelines[pipeline_name].graph) && pipes.pipelines != null && pipes.pipelines[pipeline_name].graph.graph.vertices != null,
                 pipes.pipelines[pipeline_name].graph.graph.vertices.map(vertex, vertex.type == "plugin", {
                   "plugin_id": vertex.id,
                   "source": vertex.meta.source,
@@ -74,7 +74,7 @@ program: |
         "plugin": {
           "type": "input",
           "input": {
-            "source": event.pipeline_source_map.map(tuple, tuple.plugin_id == input.id, tuple.source)[0],
+            "source":event.pipeline_source_map.map(tuple, (tuple.plugin_id == input.id), tuple.source).flatten().as(source, (source.size() != 0) ? source[0] : ""),
             "elasticsearch.cluster.id": event.es_cluster_id_map.map(tuple, tuple.plugin_id == input.id, tuple.cluster_id),
             "metrics": {
               input.name: event.counter_map.flatten().filter(tuple, tuple.plugin_id == input.id).as(counter_map, zip(
@@ -134,7 +134,7 @@ program: |
         "plugin": {
           "type": "filter",
           "filter": {
-            "source": event.pipeline_source_map.map(tuple, tuple.plugin_id == filter.id, tuple.source).flatten()[0],
+            "source":event.pipeline_source_map.map(tuple, (tuple.plugin_id == filter.id), tuple.source).flatten().as(source, (source.size() != 0) ? source[0] : ""),
             "id": filter.id,
             "name": filter.name,
             "elasticsearch.cluster.id": event.es_cluster_id_map.map(tuple, tuple.plugin_id == filter.id, tuple.cluster_id),
@@ -170,7 +170,7 @@ program: |
           "output": {
             "id": output.id,
             "name": output.name,
-            "source": event.pipeline_source_map.map(tuple, tuple.plugin_id == output.id, tuple.source).flatten()[0],
+            "source":event.pipeline_source_map.map(tuple, (tuple.plugin_id == output.id), tuple.source).flatten().as(source, (source.size() != 0) ? source[0] : ""),
             "elasticsearch.cluster.id": event.es_cluster_id_map.map(tuple, tuple.plugin_id == output.id, tuple.cluster_id),
             "metrics": {
               output.name: event.counter_map.flatten().filter(tuple, tuple.plugin_id == output.id).as(counter_map, zip(

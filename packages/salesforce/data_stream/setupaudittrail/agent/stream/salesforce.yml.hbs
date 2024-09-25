@@ -1,0 +1,46 @@
+version: {{api_version}}
+auth.oauth2:
+{{#if jwt_enabled }}
+  jwt_bearer_flow:
+    enabled: true
+    client.id: {{client_id}}
+    client.username: {{username}}
+    client.key_path: {{client_key_path}}
+    url: {{jwt_url}}
+{{else}}
+  user_password_flow:
+    enabled: true
+    client.id: {{client_id}}
+    client.secret: {{client_secret}}
+    token_url: {{token_url}}
+    username: {{username}}
+    password: {{password}}
+{{/if}}
+url: {{instance_url}}
+event_monitoring_method:
+  object:
+    enabled: true
+    interval: {{period}}
+    query:
+      default: SELECT FIELDS(STANDARD) FROM SetupAuditTrail{{#if initial_interval}} WHERE CreatedDate > [[ (formatTime (now.Add (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z0700") ]]{{/if}} ORDER BY CreatedDate ASC NULLS FIRST
+      value: SELECT FIELDS(STANDARD) FROM SetupAuditTrail WHERE CreatedDate > [[ .cursor.object.last_event_time ]] ORDER BY CreatedDate ASC NULLS FIRST
+    cursor:
+      field: "EventDate"
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_fields:
+    target: salesforce
+    fields:
+      instance_url: {{instance_url}}
+{{#if processors}}
+{{processors}}
+{{/if}}

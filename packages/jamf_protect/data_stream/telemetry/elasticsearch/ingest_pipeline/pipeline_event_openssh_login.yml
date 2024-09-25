@@ -1,0 +1,87 @@
+---
+description: Pipeline for parsing specific fields related to openssh login events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user has logged into the system via OpenSSH
+    - append:
+        field: event.type
+        value: start
+    - append:
+        field: event.category
+        value: authentication  
+    - append:
+        field: event.category
+        value: session 
+    - script:
+        lang: painless
+        source: |
+            ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.success instanceof boolean) {
+              if (ctx.jamf_protect.telemetry.event.openssh_login.success) {
+                ctx.event.outcome = 'success';
+              } else {
+                ctx.event.outcome = 'failure';
+              }
+            }
+            if (ctx.event.outcome == null) {
+              ctx.event.outcome = 'unknown';
+            }
+    - convert:
+        field: jamf_protect.telemetry.event.openssh_login.graphical_session_id
+        target_field: jamf_protect.telemetry.graphical_authentication_username
+        type: string
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.openssh_login.source_address
+        target_field: source.ip
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.openssh_login.username
+        target_field: user.name
+        ignore_missing: true
+    - script:
+        lang: painless
+        params:
+            itemTypeMap:
+                '0': Unknown
+                '1': IPv4
+                '2': IPv6
+                '3': UNIX Socket
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.source_address_type != null) {
+                String itemType = ctx.jamf_protect.telemetry.event.openssh_login.source_address_type.toString();
+                def itemTypeString = params.itemTypeMap.containsKey(itemType) ? params.itemTypeMap[itemType] : 'Unknown';
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.telemetry.source_address_type = itemTypeString;
+            }
+    - script:
+        lang: painless
+        params:
+            itemTypeMap:
+                '0': Exceeded maximum attempts
+                '1': Denied by root
+                '2': Success
+                '3': no reason
+                '4': Password
+                '5': kbdint
+                '6': public key
+                '7': Host based
+                '8': gss api
+                '9': invalid user
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.result_type != null) {
+                String itemType = ctx.jamf_protect.telemetry.event.openssh_login.result_type.toString();
+                def itemTypeString = params.itemTypeMap.containsKey(itemType) ? params.itemTypeMap[itemType] : 'Unknown';
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.telemetry.authentication_result_type = itemTypeString;
+            }
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

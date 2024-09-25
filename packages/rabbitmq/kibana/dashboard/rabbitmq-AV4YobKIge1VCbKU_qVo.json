@@ -1,20 +1,69 @@
 {
     "attributes": {
         "description": "Overview of RabbitMQ status",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
-                "highlightAll": true,
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "rabbitmq.connection",
+                                "rabbitmq.exchange",
+                                "rabbitmq.node",
+                                "rabbitmq.queue"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "rabbitmq.connection"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "rabbitmq.exchange"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "rabbitmq.node"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "rabbitmq.queue"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
         },
         "panelsJSON": [
             {
@@ -23,18 +72,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-b8d5be18-c592-43d3-8334-a190b4c492de",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "b8d5be18-c592-43d3-8334-a190b4c492de": {
                                             "columnOrder": [
@@ -77,6 +122,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "30s"
                                                     },
                                                     "scale": "interval",
@@ -89,9 +135,10 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:rabbitmq.connection OR data_stream.dataset:rabbitmq.exchange OR data_stream.dataset:rabbitmq.node OR data_stream.dataset:rabbitmq.queue)"
+                                "query": ""
                             },
                             "visualization": {
                                 "fittingFunction": "Linear",
@@ -122,6 +169,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "top",
                                     "showSingleSeries": true
                                 },
@@ -151,8 +199,7 @@
                 },
                 "panelIndex": "b13d9cb9-a871-4c03-be12-167816b62bc3",
                 "title": "Memory Usage [Metrics RabbitMQ]",
-                "type": "lens",
-                "version": "8.0.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -160,18 +207,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-d3eb48e3-617c-4ed1-b74c-71152d8605e0",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "d3eb48e3-617c-4ed1-b74c-71152d8605e0": {
                                             "columnOrder": [
@@ -194,19 +237,23 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:rabbitmq.connection OR data_stream.dataset:rabbitmq.exchange OR data_stream.dataset:rabbitmq.node OR data_stream.dataset:rabbitmq.queue)"
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "dfd7c051-aea6-4e36-81eb-8750d4829c78",
                                 "layerId": "d3eb48e3-617c-4ed1-b74c-71152d8605e0",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {}
                 },
@@ -219,8 +266,7 @@
                 },
                 "panelIndex": "57f3b2bb-89e3-4b8b-8c60-b83f8141fe4b",
                 "title": "Number of Nodes [Metrics RabbitMQ]",
-                "type": "lens",
-                "version": "8.0.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -228,18 +274,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-a81422c0-c892-48b0-957f-cf0846da93cc",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "a81422c0-c892-48b0-957f-cf0846da93cc": {
                                             "columnOrder": [
@@ -254,6 +296,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "30s"
                                                     },
                                                     "scale": "interval",
@@ -294,9 +337,10 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:rabbitmq.connection OR data_stream.dataset:rabbitmq.exchange OR data_stream.dataset:rabbitmq.node OR data_stream.dataset:rabbitmq.queue)"
+                                "query": ""
                             },
                             "visualization": {
                                 "fittingFunction": "Linear",
@@ -327,6 +371,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "top",
                                     "showSingleSeries": true
                                 },
@@ -356,8 +401,7 @@
                 },
                 "panelIndex": "878c5f3b-dbd2-4b42-9d83-235a436765e3",
                 "title": "Erlang Process Usage [Metrics RabbitMQ]",
-                "type": "lens",
-                "version": "8.0.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -365,18 +409,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-37fa6aec-3586-4997-afcc-4252c61e20a4",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "37fa6aec-3586-4997-afcc-4252c61e20a4": {
                                             "columnOrder": [
@@ -410,6 +450,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "30s"
                                                     },
                                                     "scale": "interval",
@@ -431,9 +472,10 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:rabbitmq.connection OR data_stream.dataset:rabbitmq.exchange OR data_stream.dataset:rabbitmq.node OR data_stream.dataset:rabbitmq.queue)"
+                                "query": ""
                             },
                             "visualization": {
                                 "fittingFunction": "Linear",
@@ -476,6 +518,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "top",
                                     "showSingleSeries": true
                                 },
@@ -506,23 +549,21 @@
                 },
                 "panelIndex": "429e86d2-512c-4893-8f77-ee7768daa0b0",
                 "title": "Queue Index Operations [Metrics RabbitMQ]",
-                "type": "lens",
-                "version": "8.0.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics RabbitMQ] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.0.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-19T05:22:06.967Z",
     "id": "rabbitmq-AV4YobKIge1VCbKU_qVo",
-    "migrationVersion": {
-        "dashboard": "8.0.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "metrics-*",
-            "name": "b13d9cb9-a871-4c03-be12-167816b62bc3:indexpattern-datasource-current-indexpattern",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
@@ -532,17 +573,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "57f3b2bb-89e3-4b8b-8c60-b83f8141fe4b:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "57f3b2bb-89e3-4b8b-8c60-b83f8141fe4b:indexpattern-datasource-layer-d3eb48e3-617c-4ed1-b74c-71152d8605e0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "878c5f3b-dbd2-4b42-9d83-235a436765e3:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -552,14 +583,10 @@
         },
         {
             "id": "metrics-*",
-            "name": "429e86d2-512c-4893-8f77-ee7768daa0b0:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "429e86d2-512c-4893-8f77-ee7768daa0b0:indexpattern-datasource-layer-37fa6aec-3586-4997-afcc-4252c61e20a4",
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

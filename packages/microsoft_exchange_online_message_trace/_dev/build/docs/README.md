@@ -21,17 +21,12 @@ The `log` dataset collects the Microsoft Exchange Online Message Trace logs. To 
 ## Configuring with OAuth2
 In order to continue using the Microsoft Exchange Online Message Trace you will need to enable and configure OAuth2 authentication via your service app.
 - ### Service App Configuration  
-    1) In the [Azure portal](https://portal.azure.com/), create a Microsoft Entra App(service app) Registration. For details please refer to the official [Microsoft Documentation](https://learn.microsoft.com/en-us/entra/identity-platform/howto-create-service-principal-portal).
+    1) In the [Azure portal](https://portal.azure.com/), create a Microsoft Entra App (service app) Registration. For details please refer to the official [Microsoft Documentation](https://learn.microsoft.com/en-us/entra/identity-platform/howto-create-service-principal-portal).
     2) In most cases under the `Redirect URI` section, you would want to configure the value `Web` for the `app type` and `http://localhost` for the `Redirect URI`, unless there are some specific requirements on your end.
-    3) Assign the application at least one Microsoft Entra(Azure AD) role that will enable it to access the Reporting Web Service:
-
+    3) Assign the application at least one Microsoft Entra (Azure AD) role that will enable it to access the Reporting Web Service:
         - Security Reader
         - Global Reader
-        - Global Administrator
-        - Exchange Administrator
-    
-    
-    NOTE: Make sure that at least one role includes the `ReportingWebService.Read.All` permission. For detailed steps, see [Microsoft's Assign Azure AD Roles to Users](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal) topic.
+    4) The App Registration should contain the following API permissions: Office 365 Exchange Online > `ReportingWebService.Read.All` (application). See [Specify the permissions your app requires to access the Reporting Web Service](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#specify-the-permissions-your-app-requires-to-access-the-reporting-web-service).
 
 - ### Configuring OAuth2 Credentials
   Once you have your service app registered and configured, you can now configure your OAuth2 credentials as follows:- 

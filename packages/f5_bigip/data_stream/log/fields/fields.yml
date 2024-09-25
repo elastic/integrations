@@ -35,13 +35,31 @@
       type: keyword
     - name: active_conns
       type: double
+    - name: actual_mitigation_action
+      type: group
+      fields:
+        - name: reason
+          type: keyword
+        - name: value
+    - name: additional_bot_signatures
+      type: keyword
+    - name: afm_state
+      type: keyword
     - name: aggr_interval
       type: long
+    - name: anomalies
+      type: keyword
+    - name: anomaly_categories
+      type: keyword
+    - name: apm_state
+      type: keyword
     - name: application_name
       type: keyword
     - name: application
       type: group
       fields:
+        - name: display_name
+          type: keyword
         - name: name
           type: keyword
         - name: response
@@ -53,6 +71,19 @@
               type: long
             - name: time
               type: long
+    - name: asm_attack_signatures.*
+      type: group
+      fields:
+        - name: filename
+          type: object
+          object_type: keyword
+          object_type_mapping_type: "*"
+        - name: create_date_time
+          type: object
+          object_type: keyword
+          object_type_mapping_type: "*"
+    - name: asm_state
+      type: keyword
     - name: attack
       type: group
       fields:
@@ -68,6 +99,8 @@
           type: keyword
         - name: vector_name
           type: keyword
+    - name: base_mac
+      type: keyword
     - name: bad_actor
       type: group
       fields:
@@ -87,9 +120,38 @@
               type: long
             - name: min
               type: long
+    - name: bigip_management
+      type: group
+      fields:
+        - name: ip
+          type: ip
+        - name: ip2
+          type: ip
+        - name: ip_2
+          type: ip
     - name: blocking_exception_reason
       type: keyword
+    - name: bot_name
+      type: keyword
+    - name: bot_signature
+      type: group
+      fields:
+        - name: category
+          type: keyword
+        - name: value
+          type: keyword
+    - name: browser_actual_verification_action
+      type: group
+      fields:
+        - name: reason
+          type: keyword
+        - name: value
+          type: keyword
+    - name: browser_configured_verification_action
+      type: keyword
     - name: browser_name
+      type: keyword
+    - name: browser_verification_status
       type: keyword
     - name: bytes
       type: group
@@ -100,8 +162,42 @@
           type: long
         - name: total
           type: long
+    - name: callback_url
+      type: keyword
     - name: captcha_result
       type: keyword
+    - name: captcha_status
+      type: keyword
+    - name: chassis_id
+      type: keyword
+    - name: class
+      type: keyword
+    - name: classification_reason
+      type: keyword
+    - name: client
+      type: group
+      fields:
+        - name: ip
+          type: ip
+        - name: ip_geo_location
+          type: keyword
+        - name: ip_route_domain
+          type: keyword
+        - name: latency
+          type: group
+          fields:
+            - name: hit_count
+              type: long
+            - name: max
+              type: long
+            - name: total
+              type: long
+        - name: port
+          type: long
+        - name: request_uri
+          type: keyword
+        - name: type
+          type: keyword
     - name: client_side
       type: group
       fields:
@@ -125,24 +221,6 @@
           type: long
         - name: value
           type: long
-    - name: client
-      type: group
-      fields:
-        - name: ip
-          type: ip
-        - name: ip_route_domain
-          type: keyword
-        - name: latency
-          type: group
-          fields:
-            - name: hit_count
-              type: long
-            - name: max
-              type: long
-            - name: total
-              type: long
-        - name: type
-          type: keyword
     - name: compression_method
       type: keyword
     - name: concurrent
@@ -162,6 +240,34 @@
           fields:
             - name: max
               type: long
+    - name: configuration_date_time
+      type: date
+    - name: configured_mitigation_action
+      type: group
+      fields:
+        - name: reason
+          type: keyword
+        - name: value
+          type: keyword
+    - name: config_ready
+      type: keyword
+    - name: config_sync_succeeded
+      type: boolean
+    - name: connections_performance.*
+      type: group
+      fields:
+        - name: average
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+        - name: current
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+        - name: max
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
     - name: context
       type: group
       fields:
@@ -201,10 +307,14 @@
               type: long
         - name: health
           type: long
+    - name: cpu_value
+      type: long
     - name: credential_stuffing_lookup_result
       type: keyword
     - name: date_time
       type: date
+    - name: description
+      type: keyword
     - name: dest
       type: group
       fields:
@@ -220,6 +330,13 @@
           type: keyword
         - name: zone
           type: keyword
+    - name: destination
+      type: group
+      fields:
+        - name: ip
+          type: ip
+        - name: port
+          type: long
     - name: detection
       type: group
       fields:
@@ -228,6 +345,8 @@
     - name: device
       type: group
       fields:
+        - name: blade
+          type: keyword
         - name: id
           type: keyword
         - name: product
@@ -236,9 +355,107 @@
           type: keyword
         - name: version
           type: keyword
+    - name: device_id
+      type: group
+      fields:
+        - name: action
+          type: keyword
+        - name: status
+          type: keyword
+    - name: diagnostics
+      type: group
+      fields:
+        - name: action
+          type: keyword
+        - name: cve_ids
+          type: keyword
+        - name: header
+          type: keyword
+        - name: importance
+          type: keyword
+        - name: name
+          type: keyword
+        - name: solution
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: value
+              type: keyword
+        - name: summary
+          type: keyword
+        - name: version
+          type: group
+          fields:
+            - name: maintenance
+              type: keyword
+            - name: major
+              type: keyword
+            - name: minor
+              type: keyword
+            - name: point
+              type: keyword
+            - name: fix
+              type: keyword
+    - name: disk_storage.*
+      type: group
+      fields:
+        - name: 1024_blocks
+          type: object
+          object_type: long
+          object_type_mapping_type: "*"
+        - name: capacity_float
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+    - name: disk_latency.*
+      type: group
+      fields:
+        - name: per_util
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+        - name: "r/s"
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+        - name: "w/s"
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
     - name: dos
       type: group
       fields:
+        - name: attack
+          type: group
+          fields:
+            - name: detection_mode
+              type: keyword
+            - name: event
+              type: keyword
+            - name: id
+              type: keyword
+            - name: latency
+              type: keyword
+            - name: name
+              type: keyword
+            - name: tps
+              type: keyword
+        - name: baseline
+          type: group
+          fields:
+            - name: latency
+              type: keyword
+            - name: tps
+              type: keyword
+            - name: traffic_percent
+              type: keyword
+        - name: current_traffic_percent
+          type: keyword
+        - name: dropped_requests_count
+          type: long
+        - name: incoming_requests_count
+          type: long
         - name: mobile_app
           type: group
           fields:
@@ -250,6 +467,24 @@
               type: keyword
         - name: profile_name
           type: keyword
+    - name: dos_detection
+      type: group
+      fields:
+        - name: condition
+          type: keyword
+        - name: threshold
+          type: keyword
+    - name: dos_mitigate_to_threshold
+      type: keyword
+    - name: dos_mitigation
+      type: group
+      fields:
+        - name: action
+          type: keyword
+        - name: reason
+          type: keyword
+        - name: threshold
+          type: long
     - name: drop_reason
       type: keyword
     - name: dst
@@ -280,6 +515,8 @@
     - name: event
       type: group
       fields:
+        - name: id
+          type: keyword
         - name: source
           type: keyword
         - name: timestamp
@@ -293,6 +530,10 @@
       type: long
     - name: failed_conns
       type: long
+    - name: failover_color
+      type: keyword
+    - name: failover_status
+      type: keyword
     - name: flow
       type: group
       fields:
@@ -313,6 +554,8 @@
           type: keyword
     - name: global_bigiq_conf
       type: keyword
+    - name: gtm_config_time
+      type: date
     - name: hardware_drops
       type: long
     - name: headers
@@ -324,7 +567,11 @@
     - name: http
       type: group
       fields:
+        - name: cache_control
+          type: keyword
         - name: class_name
+          type: keyword
+        - name: connection
           type: keyword
         - name: content_type
           type: keyword
@@ -332,8 +579,20 @@
           type: keyword
         - name: method
           type: keyword
+        - name: other_headers
+          type: keyword
+        - name: path
+          type: keyword
+        - name: pragma
+          type: keyword
+        - name: protocol_indication
+          type: keyword
         - name: referrer
           type: keyword
+        - name: request
+          type: keyword
+        - name: request_host
+          type: ip
         - name: status
           type: keyword
         - name: uri
@@ -344,11 +603,15 @@
           type: keyword
         - name: version
           type: keyword
+    - name: human_behaviour
+      type: keyword
     - name: hw
       type: group
       fields:
         - name: cookie_valid
           type: long
+    - name: imei
+      type: keyword
     - name: ip_address_intelligence
       type: keyword
     - name: ip_protocol
@@ -369,13 +632,27 @@
       type: keyword
     - name: is_trunct
       type: keyword
+    - name: jailbroken_or_rooted_device
+      type: keyword
+    - name: last_afm_deploy
+      type: date
+    - name: last_asm_change
+      type: date
     - name: latency_histogram
+      type: keyword
+    - name: license_ready
       type: keyword
     - name: likely_false_positive_sig_ids
       type: keyword
     - name: listener
       type: keyword
+    - name: location
+      type: keyword
     - name: login_result
+      type: keyword
+    - name: ltm_config_time
+      type: date
+    - name: machine_id
       type: keyword
     - name: management
       type: group
@@ -384,6 +661,8 @@
           type: ip
         - name: ip_address_2
           type: ip
+    - name: marketing_name
+      type: keyword
     - name: max_active_conns
       type: long
     - name: memory
@@ -393,12 +672,25 @@
           type: long
         - name: health
           type: long
+    - name: memory_value
+      type: long
     - name: method
       type: keyword
     - name: mgmt_ip
       type: ip
     - name: microservice
       type: keyword
+    - name: micro_service
+      type: group
+      fields:
+        - name: hostname
+          type: keyword
+        - name: matched_wildcard_url
+          type: keyword
+        - name: name
+          type: keyword
+        - name: type
+          type: keyword
     - name: mitigation
       type: group
       fields:
@@ -413,6 +705,10 @@
           type: keyword
         - name: version
           type: keyword
+    - name: mobile_in_emulation_mode
+      type: keyword
+    - name: mobile_is_app
+      type: keyword
     - name: module
       type: keyword
     - name: network
@@ -420,8 +716,12 @@
       fields:
         - name: protocol
           type: keyword
+    - name: network_interfaces
+      type: flattened
     - name: new_conns
       type: long
+    - name: new_request_status
+      type: keyword
     - name: node
       type: ip
     - name: node_port
@@ -441,6 +741,8 @@
       type: keyword
     - name: password_hash_prefix
       type: keyword
+    - name: platform_id
+      type: keyword
     - name: policy
       type: group
       fields:
@@ -457,24 +759,70 @@
           type: keyword
         - name: port
           type: long
+    - name: previous
+      type: group
+      fields:
+        - name: action
+          type: keyword
+        - name: initiated_action
+          type: group
+          fields:
+            - name: status
+              type: keyword
+            - name: value
+              type: keyword
+        - name: request_date_time
+          type: date
+        - name: requests_status
+          type: date
+        - name: support_id
+          type: keyword
     - name: profile
       type: group
       fields:
         - name: name
           type: keyword
+    - name: profile_name
+      type: keyword
     - name: protocol
       type: keyword
     - name: protocol_info
       type: keyword
+    - name: provisioning
+      type: flattened
+    - name: provision_ready
+      type: keyword
+    - name: swap
+      type: long
+    - name: sync_color
+      type: keyword
+    - name: sync_mode
+      type: keyword
+    - name: sync_status
+      type: keyword
+    - name: sync_summary
+      type: keyword
+    - name: system_timestamp
+      type: date
     - name: query
       type: group
       fields:
         - name: name
           type: keyword
+        - name: sam_account_name
+          type: keyword
         - name: string
           type: keyword
         - name: type
           type: keyword
+        - name: user_name
+          type: keyword
+        - name: user_principle_name
+          type: keyword
+    - name: reason
+      type: keyword
+    - name: reported_entity_type
+      type: keyword
     - name: reputation
       type: keyword
     - name: req
@@ -487,18 +835,42 @@
     - name: request
       type: group
       fields:
+        - name: accept
+          type: keyword
+        - name: cache_control
+          type: keyword
+        - name: connection
+          type: keyword
+        - name: date_time
+          type: date
         - name: detail
           type: keyword
         - name: duration
           type: long
         - name: duration_hit_count
           type: long
+        - name: host
+          type: keyword
         - name: max_duration
           type: long
+        - name: method
+          type: keyword
         - name: min_duration
           type: long
+        - name: path
+          type: keyword
+        - name: protocol
+          type: keyword
         - name: status
           type: keyword
+        - name: user_agent
+          type: keyword
+        - name: x_forwarded_for
+          type: keyword
+    - name: request_date_time
+      type: date
+    - name: request_status
+      type: keyword
     - name: res
       type: group
       fields:
@@ -687,6 +1059,15 @@
           type: keyword
     - name: syncacheover
       type: long
+    - name: system
+      type: group
+      fields:
+        - name: hostname
+          type: keyword
+        - name: ihealth_link
+          type: keyword
+        - name: qkview_number
+          type: keyword
     - name: tap
       type: group
       fields:
@@ -712,6 +1093,15 @@
               type: keyword
         - name: timestamp
           type: date
+    - name: telemetry_service_info
+      type: group
+      fields:
+        - name: cycle_start
+          type: date
+        - name: cycle_end
+          type: date
+        - name: polling_interval
+          type: long
     - name: tenant
       type: keyword
     - name: threat_campaign_names
@@ -743,11 +1133,49 @@
           fields:
             - name: max
               type: long
+    - name: throughput_performance.*
+      type: group
+      fields:
+        - name: average
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+        - name: current
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+        - name: max
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+    - name: tmm_cpu
+      type: long
+    - name: tmm_memory
+      type: long
+    - name: tmm_traffic
+      type: group
+      fields:
+        - name: client_side_traffic
+          type: group
+          fields:
+            - name: bits_in
+              type: long
+            - name: bits_out
+              type: long
+        - name: server_side_traffic
+          type: group
+          fields:
+            - name: bits_in
+              type: long
+            - name: bits_out
+              type: long
+    - name: timestamp
+      type: date
     - name: tps
       type: group
       fields:
         - name: max
-          type: long
+          type: double
     - name: transaction_outcome
       type: keyword
     - name: translated
@@ -797,6 +1225,10 @@
               type: long
     - name: username
       type: keyword
+    - name: version
+      type: keyword
+    - name: version_build
+      type: keyword
     - name: violate_details
       type: keyword
     - name: violation
@@ -820,6 +1252,8 @@
         - name: server
           type: keyword
     - name: virus_name
+      type: keyword
+    - name: virtual_server_name
       type: keyword
     - name: vlan
       type: keyword

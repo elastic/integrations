@@ -6,5 +6,9 @@ The `cloudrun` dataset fetches metrics from [Cloud Run](https://cloud.google.com
 
 {{event "cloudrun_metrics"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "cloudrun_metrics"}}
 

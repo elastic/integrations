@@ -1,83 +1,50 @@
 {
     "attributes": {
         "description": "Logs MongoDB integration overview",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
-                "highlightAll": true,
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "mongodb.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "mongodb.log"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "columns": [
-                        "log.level",
-                        "mongodb.log.component",
-                        "mongodb.log.context",
-                        "message"
-                    ],
-                    "enhancements": {},
-                    "sort": [
-                        "@timestamp",
-                        "desc"
-                    ]
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "2",
-                    "w": 32,
-                    "x": 16,
-                    "y": 0
-                },
-                "panelIndex": "2",
-                "panelRefName": "panel_2",
-                "type": "search",
-                "version": "8.1.0"
-            },
-            {
-                "embeddableConfig": {
-                    "columns": [
-                        "log.level",
-                        "mongodb.log.component",
-                        "mongodb.log.context",
-                        "message"
-                    ],
-                    "enhancements": {},
-                    "sort": [
-                        "@timestamp",
-                        "asc"
-                    ]
-                },
-                "gridData": {
-                    "h": 24,
-                    "i": "3",
-                    "w": 48,
-                    "x": 0,
-                    "y": 12
-                },
-                "panelIndex": "3",
-                "panelRefName": "panel_3",
-                "type": "search",
-                "version": "8.1.0"
-            },
-            {
-                "embeddableConfig": {
                     "attributes": {
                         "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-1b24032e-d5d1-486a-9722-73ee57f1af16",
@@ -85,8 +52,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "1b24032e-d5d1-486a-9722-73ee57f1af16": {
                                             "columnOrder": [
@@ -129,23 +97,27 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"mongodb.log\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "a9b00096-3941-408c-86f1-d7f7aeaea864"
-                                        ],
                                         "layerId": "1b24032e-d5d1-486a-9722-73ee57f1af16",
                                         "layerType": "data",
                                         "legendDisplay": "show",
-                                        "metric": "d9fa1057-5a6f-4b9e-a169-c1f15e4a2e1a",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "d9fa1057-5a6f-4b9e-a169-c1f15e4a2e1a"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "a9b00096-3941-408c-86f1-d7f7aeaea864"
+                                        ]
                                     }
                                 ],
                                 "palette": {
@@ -170,40 +142,161 @@
                 },
                 "panelIndex": "c04eb490-6120-49a7-a289-4c330689eb64",
                 "title": "Logs Severity",
-                "type": "lens",
-                "version": "8.1.0"
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "log.level",
+                            "mongodb.log.component",
+                            "mongodb.log.context",
+                            "message"
+                        ],
+                        "grid": {},
+                        "hideChart": false,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"filter\":[],\"highlightAll\":true,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"query\":{\"language\":\"kuery\",\"query\":\"data_stream.dataset: \\\"mongodb.log\\\" and (log.level: E or log.level: F or log.level: W)\"},\"version\":true}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-mongodb-default",
+                                "name": "tag-ref-fleet-pkg-mongodb-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ]
+                    },
+                    "columns": [
+                        "log.level",
+                        "mongodb.log.component",
+                        "mongodb.log.context",
+                        "message"
+                    ],
+                    "enhancements": {},
+                    "sort": [
+                        "@timestamp",
+                        "desc"
+                    ]
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "90c008d4-38c2-43ec-aa93-3c9a83a1b375",
+                    "w": 32,
+                    "x": 16,
+                    "y": 0
+                },
+                "panelIndex": "90c008d4-38c2-43ec-aa93-3c9a83a1b375",
+                "title": "Error logs",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "log.level",
+                            "mongodb.log.component",
+                            "mongodb.log.context",
+                            "message"
+                        ],
+                        "grid": {},
+                        "hideChart": false,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"filter\":[],\"highlightAll\":true,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"query\":{\"language\":\"kuery\",\"query\":\"data_stream.dataset:mongodb.log\"},\"version\":true}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-mongodb-default",
+                                "name": "tag-ref-fleet-pkg-mongodb-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "asc"
+                            ]
+                        ]
+                    },
+                    "columns": [
+                        "log.level",
+                        "mongodb.log.component",
+                        "mongodb.log.context",
+                        "message"
+                    ],
+                    "enhancements": {},
+                    "sort": [
+                        "@timestamp",
+                        "asc"
+                    ]
+                },
+                "gridData": {
+                    "h": 24,
+                    "i": "11c27bd6-8e81-4f3b-b868-2e2fd4c20076",
+                    "w": 48,
+                    "x": 0,
+                    "y": 12
+                },
+                "panelIndex": "11c27bd6-8e81-4f3b-b868-2e2fd4c20076",
+                "title": "Logs MongoDB",
+                "type": "search"
             }
         ],
         "timeRestore": false,
         "title": "[Logs MongoDB] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.1.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-19T10:15:07.688Z",
     "id": "mongodb-abcf35b0-0a82-11e8-bffe-ff7d4f68cf94",
-    "migrationVersion": {
-        "dashboard": "8.1.0"
-    },
+    "managed": false,
     "references": [
         {
-            "id": "mongodb-e49fe000-0a7e-11e8-bffe-ff7d4f68cf94",
-            "name": "2:panel_2",
-            "type": "search"
-        },
-        {
-            "id": "mongodb-bfc96a60-0a80-11e8-bffe-ff7d4f68cf94",
-            "name": "3:panel_3",
-            "type": "search"
-        },
-        {
             "id": "logs-*",
-            "name": "c04eb490-6120-49a7-a289-4c330689eb64:indexpattern-datasource-current-indexpattern",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "c04eb490-6120-49a7-a289-4c330689eb64:indexpattern-datasource-layer-1b24032e-d5d1-486a-9722-73ee57f1af16",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "90c008d4-38c2-43ec-aa93-3c9a83a1b375:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "11c27bd6-8e81-4f3b-b868-2e2fd4c20076:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

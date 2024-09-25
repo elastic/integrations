@@ -881,6 +881,10 @@ This is the `pipeline` dataset, which drives the Pipeline dashboard pages.
 | logstash.pipeline.elasticsearch.cluster.id | Elasticsearch clusters this Logstash pipeline is attached to | keyword |  |  |
 | logstash.pipeline.host.address | address hosting this instance of logstash | keyword |  |  |
 | logstash.pipeline.host.name | Host name of the node running logstash | keyword |  |  |
+| logstash.pipeline.info.batch_delay | Batch delay for the running pipeline | long |  |  |
+| logstash.pipeline.info.batch_size | Batch size for the running pipeline | long |  |  |
+| logstash.pipeline.info.ephemeral_id | Ephemeral Id for the running pipeline | keyword |  |  |
+| logstash.pipeline.info.workers | Number of workers for the running pipeline | long |  |  |
 | logstash.pipeline.name | Logstash Pipeline id/name | keyword |  |  |
 | logstash.pipeline.total.events.filtered | Number of events filtered by the pipeline | long |  | counter |
 | logstash.pipeline.total.events.in | Number of events received by the pipeline | long |  | counter |
@@ -897,8 +901,10 @@ This is the `pipeline` dataset, which drives the Pipeline dashboard pages.
 | logstash.pipeline.total.flow.queue_persisted_growth_bytes.last_1_minute | current value of the queue persisted growth bytes flow metric | scaled_float |  | gauge |
 | logstash.pipeline.total.flow.queue_persisted_growth_events.current | current value of the queue persisted growth events flow metric | scaled_float |  | gauge |
 | logstash.pipeline.total.flow.queue_persisted_growth_events.last_1_minute | current value of the queue persisted growth events flow metric | scaled_float |  | gauge |
-| logstash.pipeline.total.flow.worker_concurrency.current | current value of the worker concurrency flow metric | scaled_float |  | gauge |
+| logstash.pipeline.total.flow.worker_concurrency.current | last 1 minute value of the worker utilization flow metric | scaled_float |  | gauge |
 | logstash.pipeline.total.flow.worker_concurrency.last_1_minute | current value of the worker concurrency flow metric | scaled_float |  | gauge |
+| logstash.pipeline.total.flow.worker_utilization.current | last 1 minute value of the worker concurrency flow metric | scaled_float |  | gauge |
+| logstash.pipeline.total.flow.worker_utilization.last_1_minute | current value of the worker concurrency flow metric | scaled_float |  | gauge |
 | logstash.pipeline.total.queues.current_size.bytes | Current size of the PQ | long | byte | gauge |
 | logstash.pipeline.total.queues.events | Number of events in the PQ for this pipeline | long |  | counter |
 | logstash.pipeline.total.queues.max_size.bytes | Maximum possible size of the PQ | long |  | gauge |

@@ -1,0 +1,102 @@
+---
+description: Pipeline for parsing specific fields related to screenscharing attached events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A screen sharing session has attached to a graphical session
+    - append:
+        field: event.type
+        value: start
+    - append:
+        field: event.category
+        value: session  
+    - script:
+        lang: painless
+        source: |
+            ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            if (ctx.jamf_protect?.telemetry?.event?.screensharing_attach?.success instanceof boolean) {
+              if (ctx.jamf_protect.telemetry.event.screensharing_attach.success) {
+                ctx.event.outcome = 'success';
+              } else {
+                ctx.event.outcome = 'failure';
+              }
+            }
+            if (ctx.event.outcome == null) {
+              ctx.event.outcome = 'unknown';
+            }
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.existing_session
+        target_field: jamf_protect.telemetry.existing_session
+        type: boolean
+        ignore_missing: true
+        ignore_failure: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.graphical_session_id
+        target_field: jamf_protect.telemetry.graphical_authentication_username
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.authentication_username
+        target_field: jamf_protect.telemetry.graphical_authentication_username
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.session_username
+        target_field: jamf_protect.telemetry.session_username
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.viewer_appleid
+        target_field: jamf_protect.viewer_appleid
+        type: string
+        if: ctx.jamf_protect.telemetry?.event?.screensharing_attach?.viewer_appleid != null
+        ignore_missing: true
+        ignore_failure: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.authentication_type
+        target_field: jamf_protect.telemetry.authentication_type
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.authentication_type
+        target_field: jamf_protect.telemetry.authentication_type
+        type: string
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.screensharing_attach.source_address
+        target_field: source.ip
+        ignore_missing: true
+    - append:
+        field: related.user
+        value: '{{{jamf_protect.telemetry.session_username}}}'
+        if: ctx.jamf_protect?.session_username != null
+        allow_duplicates: false
+    - append:
+        field: related.user
+        value: '{{{jamf_protect.telemetry.graphical_authentication_username}}}'
+        if: ctx.jamf_protect?.graphical_authentication_username != null
+        allow_duplicates: false
+    - script:
+        lang: painless
+        params:
+            itemTypeMap:
+                '0': Unknown
+                '1': IPv4
+                '2': IPv6
+                '3': UNIX Socket
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.screensharing_attach?.source_address_type != null) {
+                String itemType = ctx.jamf_protect.telemetry.event.screensharing_attach.source_address_type.toString();
+                def itemTypeString = params.itemTypeMap.containsKey(itemType) ? params.itemTypeMap[itemType] : 'Unknown';
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.telemetry.source_address_type = itemTypeString;
+            }
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

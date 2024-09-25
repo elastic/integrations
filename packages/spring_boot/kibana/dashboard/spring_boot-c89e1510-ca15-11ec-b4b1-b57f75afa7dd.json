@@ -1,1304 +1,1184 @@
 {
-  "id": "spring_boot-c89e1510-ca15-11ec-b4b1-b57f75afa7dd",
-  "type": "dashboard",
-  "namespaces": [
-    "default"
-  ],
-  "migrationVersion": {
-    "dashboard": "8.7.0"
-  },
-  "coreMigrationVersion": "8.8.0",
-  "typeMigrationVersion": "8.7.0",
-  "updated_at": "2024-01-03T20:12:28.833Z",
-  "created_at": "2024-01-03T20:12:28.833Z",
-  "version": "WzEwMSwxXQ==",
-  "attributes": {
-    "description": "Metrics related to threads, heap and non heap memory.",
-    "hits": 0,
-    "kibanaSavedObjectMeta": {
-      "searchSourceJSON": {
-        "filter": [],
-        "query": {
-          "language": "kuery",
-          "query": ""
+    "attributes": {
+        "description": "Metrics related to threads, heap and non heap memory.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "spring_boot.gc",
+                                "spring_boot.memory",
+                                "spring_boot.threading"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "spring_boot.gc"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "spring_boot.memory"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "spring_boot.threading"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-31ad067d-6820-43dc-a6fd-7a32a6a121f5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "31ad067d-6820-43dc-a6fd-7a32a6a121f5": {
+                                            "columnOrder": [
+                                                "ce51dd8d-7fd5-4ebf-a835-9ffe83125746",
+                                                "07747e2a-9e75-47d8-b1d4-87c0340cf60d",
+                                                "9b2297d6-8625-44a3-a7ba-633da40efcfb"
+                                            ],
+                                            "columns": {
+                                                "07747e2a-9e75-47d8-b1d4-87c0340cf60d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Heap Used",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.memory.heap.used"
+                                                },
+                                                "9b2297d6-8625-44a3-a7ba-633da40efcfb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Non Heap Used",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.memory.non_heap.used"
+                                                },
+                                                "ce51dd8d-7fd5-4ebf-a835-9ffe83125746": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "07747e2a-9e75-47d8-b1d4-87c0340cf60d",
+                                            "9b2297d6-8625-44a3-a7ba-633da40efcfb"
+                                        ],
+                                        "layerId": "31ad067d-6820-43dc-a6fd-7a32a6a121f5",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "ce51dd8d-7fd5-4ebf-a835-9ffe83125746"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "Memory"
+                            }
+                        },
+                        "title": "Heap and non-heap memory [Metrics Spring Boot]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "12e70c57-6059-400c-974f-b69423d435e9",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "12e70c57-6059-400c-974f-b69423d435e9",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "760bf001-a3ae-46e6-a366-ab2c9c777cfc": {
+                                            "columnOrder": [
+                                                "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39",
+                                                "bd774bf7-35bf-4dd7-a647-897d8b5945df"
+                                            ],
+                                            "columns": {
+                                                "bd774bf7-35bf-4dd7-a647-897d8b5945df": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Threads",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.threading.threads.started"
+                                                },
+                                                "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bd774bf7-35bf-4dd7-a647-897d8b5945df"
+                                        ],
+                                        "layerId": "760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39"
+                                    }
+                                ],
+                                "legend": {
+                                    "isInside": false,
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "Total Threads"
+                            }
+                        },
+                        "title": "Threads [Metrics Spring Boot]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee",
+                "title": "Total threads [Metrics Spring Boot]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-e937f0c4-f880-4837-9315-69d043a3f6b1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e937f0c4-f880-4837-9315-69d043a3f6b1": {
+                                            "columnOrder": [
+                                                "94f7e582-69e9-4fe4-9111-75aaa6a3d470",
+                                                "01e713a3-bda9-4e10-b460-988900367abf",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8",
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X9",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X1",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X2",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X3",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X4",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X5",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X6",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X7",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X8",
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X9"
+                                            ],
+                                            "columns": {
+                                                "01e713a3-bda9-4e10-b460-988900367abf": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Before",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "formula": "sum(spring_boot.gc.last_info.memory_usage.before.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_survivor_space.used)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X9"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.code_cache.used"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.metaspace.used"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.g1_eden_space.used"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.g1_old_gen.used"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.before.g1_survivor_space.used"
+                                                },
+                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Before",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        {
+                                                                                                            "args": [
+                                                                                                                {
+                                                                                                                    "args": [
+                                                                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0",
+                                                                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1"
+                                                                                                                    ],
+                                                                                                                    "name": "add",
+                                                                                                                    "type": "function"
+                                                                                                                },
+                                                                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2"
+                                                                                                            ],
+                                                                                                            "name": "add",
+                                                                                                            "type": "function"
+                                                                                                        },
+                                                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3"
+                                                                                                    ],
+                                                                                                    "name": "add",
+                                                                                                    "type": "function"
+                                                                                                },
+                                                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4"
+                                                                                            ],
+                                                                                            "name": "add",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5"
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6"
+                                                                            ],
+                                                                            "name": "add",
+                                                                            "type": "function"
+                                                                        },
+                                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7"
+                                                                    ],
+                                                                    "name": "add",
+                                                                    "type": "function"
+                                                                },
+                                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8"
+                                                            ],
+                                                            "location": {
+                                                                "max": 624,
+                                                                "min": 0
+                                                            },
+                                                            "name": "add",
+                                                            "text": "sum(spring_boot.gc.last_info.memory_usage.before.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_survivor_space.used)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0",
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1",
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2",
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3",
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4",
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5",
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6",
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7",
+                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "94f7e582-69e9-4fe4-9111-75aaa6a3d470": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of spring_boot.gc.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "spring_boot.gc.name"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "After",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "formula": "sum(spring_boot.gc.last_info.memory_usage.after.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_survivor_space.used)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X9"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.code_cache.used"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.metaspace.used"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.g1_eden_space.used"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.g1_old_gen.used"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.gc.last_info.memory_usage.after.g1_survivor_space.used"
+                                                },
+                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of After",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                {
+                                                                    "args": [
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        {
+                                                                                                            "args": [
+                                                                                                                {
+                                                                                                                    "args": [
+                                                                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
+                                                                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X1"
+                                                                                                                    ],
+                                                                                                                    "name": "add",
+                                                                                                                    "type": "function"
+                                                                                                                },
+                                                                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X2"
+                                                                                                            ],
+                                                                                                            "name": "add",
+                                                                                                            "type": "function"
+                                                                                                        },
+                                                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X3"
+                                                                                                    ],
+                                                                                                    "name": "add",
+                                                                                                    "type": "function"
+                                                                                                },
+                                                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X4"
+                                                                                            ],
+                                                                                            "name": "add",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X5"
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X6"
+                                                                            ],
+                                                                            "name": "add",
+                                                                            "type": "function"
+                                                                        },
+                                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X7"
+                                                                    ],
+                                                                    "name": "add",
+                                                                    "type": "function"
+                                                                },
+                                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X8"
+                                                            ],
+                                                            "location": {
+                                                                "max": 615,
+                                                                "min": 0
+                                                            },
+                                                            "name": "add",
+                                                            "text": "sum(spring_boot.gc.last_info.memory_usage.after.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_survivor_space.used)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X1",
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X2",
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X3",
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X4",
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X5",
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X6",
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X7",
+                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X8"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "df8aa04a-8859-48a8-8624-e204eb09ad23",
+                                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7"
+                                        ],
+                                        "layerId": "e937f0c4-f880-4837-9315-69d043a3f6b1",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "94f7e582-69e9-4fe4-9111-75aaa6a3d470",
+                                        "xAccessor": "01e713a3-bda9-4e10-b460-988900367abf"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "xlarge",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "GC Memory Usage"
+                            }
+                        },
+                        "title": "Memory usage after and before GC [Metrics Spring Boot]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "f3782cac-5b20-413c-a88d-cb01ebee5772",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "f3782cac-5b20-413c-a88d-cb01ebee5772",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "760bf001-a3ae-46e6-a366-ab2c9c777cfc": {
+                                            "columnOrder": [
+                                                "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39",
+                                                "522f8dd4-2bc7-4665-9b33-83609e4f3125"
+                                            ],
+                                            "columns": {
+                                                "522f8dd4-2bc7-4665-9b33-83609e4f3125": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Current Threads",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.threading.threads.count"
+                                                },
+                                                "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "522f8dd4-2bc7-4665-9b33-83609e4f3125"
+                                        ],
+                                        "layerId": "760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "Current Threads"
+                            }
+                        },
+                        "title": "Current threads [Metrics Spring Boot]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "b55b6992-8179-4bf9-8e79-8354509a956e",
+                    "w": 24,
+                    "x": 24,
+                    "y": 10
+                },
+                "panelIndex": "b55b6992-8179-4bf9-8e79-8354509a956e",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "760bf001-a3ae-46e6-a366-ab2c9c777cfc": {
+                                            "columnOrder": [
+                                                "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39",
+                                                "c5fd0b8a-f8ac-4e5d-95ed-5ca552417e5c"
+                                            ],
+                                            "columns": {
+                                                "c5fd0b8a-f8ac-4e5d-95ed-5ca552417e5c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Daemon Threads",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "spring_boot.threading.threads.daemon"
+                                                },
+                                                "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c5fd0b8a-f8ac-4e5d-95ed-5ca552417e5c"
+                                        ],
+                                        "layerId": "760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "Daemon Threads"
+                            }
+                        },
+                        "title": "Daemon threads [Metrics Spring Boot]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508",
+                    "w": 24,
+                    "x": 24,
+                    "y": 20
+                },
+                "panelIndex": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Spring Boot] Memory and Threads",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-19T06:26:43.135Z",
+    "id": "spring_boot-c89e1510-ca15-11ec-b4b1-b57f75afa7dd",
+    "managed": false,
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "12e70c57-6059-400c-974f-b69423d435e9:indexpattern-datasource-layer-31ad067d-6820-43dc-a6fd-7a32a6a121f5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee:indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f3782cac-5b20-413c-a88d-cb01ebee5772:indexpattern-datasource-layer-e937f0c4-f880-4837-9315-69d043a3f6b1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "b55b6992-8179-4bf9-8e79-8354509a956e:indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508:indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+            "type": "index-pattern"
         }
-      }
-    },
-    "optionsJSON": {
-      "hidePanelTitles": false,
-      "syncColors": false,
-      "useMargins": true
-    },
-    "panelsJSON": [
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "hidePanelTitles": false,
-          "attributes": {
-            "state": {
-              "adHocDataViews": {},
-              "datasourceStates": {
-                "formBased": {
-                  "layers": {
-                    "31ad067d-6820-43dc-a6fd-7a32a6a121f5": {
-                      "columnOrder": [
-                        "ce51dd8d-7fd5-4ebf-a835-9ffe83125746",
-                        "07747e2a-9e75-47d8-b1d4-87c0340cf60d",
-                        "9b2297d6-8625-44a3-a7ba-633da40efcfb"
-                      ],
-                      "columns": {
-                        "07747e2a-9e75-47d8-b1d4-87c0340cf60d": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Heap Used",
-                          "operationType": "last_value",
-                          "params": {
-                            "format": {
-                              "id": "bytes",
-                              "params": {
-                                "decimals": 0
-                              }
-                            },
-                            "showArrayValues": true,
-                            "sortField": "@timestamp"
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.memory.heap.used"
-                        },
-                        "9b2297d6-8625-44a3-a7ba-633da40efcfb": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Non Heap Used",
-                          "operationType": "last_value",
-                          "params": {
-                            "format": {
-                              "id": "bytes",
-                              "params": {
-                                "decimals": 0
-                              }
-                            },
-                            "showArrayValues": true,
-                            "sortField": "@timestamp"
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.memory.non_heap.used"
-                        },
-                        "ce51dd8d-7fd5-4ebf-a835-9ffe83125746": {
-                          "dataType": "date",
-                          "isBucketed": true,
-                          "label": "@timestamp",
-                          "operationType": "date_histogram",
-                          "params": {
-                            "dropPartials": true,
-                            "includeEmptyRows": false,
-                            "interval": "auto"
-                          },
-                          "scale": "interval",
-                          "sourceField": "@timestamp"
-                        }
-                      },
-                      "incompleteColumns": {}
-                    }
-                  }
-                }
-              },
-              "filters": [
-                {
-                  "$state": {
-                    "store": "appState"
-                  },
-                  "meta": {
-                    "alias": null,
-                    "disabled": false,
-                    "index": "8a86b358-6960-40ef-91ed-05c2c2e7c40f",
-                    "key": "event.dataset",
-                    "negate": false,
-                    "params": {
-                      "query": "spring_boot.memory"
-                    },
-                    "type": "phrase"
-                  },
-                  "query": {
-                    "match_phrase": {
-                      "event.dataset": "spring_boot.memory"
-                    }
-                  }
-                }
-              ],
-              "internalReferences": [],
-              "query": {
-                "language": "kuery",
-                "query": ""
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "accessors": [
-                      "07747e2a-9e75-47d8-b1d4-87c0340cf60d",
-                      "9b2297d6-8625-44a3-a7ba-633da40efcfb"
-                    ],
-                    "layerId": "31ad067d-6820-43dc-a6fd-7a32a6a121f5",
-                    "layerType": "data",
-                    "position": "top",
-                    "seriesType": "line",
-                    "showGridlines": false,
-                    "xAccessor": "ce51dd8d-7fd5-4ebf-a835-9ffe83125746"
-                  }
-                ],
-                "legend": {
-                  "isVisible": true,
-                  "legendSize": "auto",
-                  "position": "right",
-                  "showSingleSeries": true
-                },
-                "preferredSeriesType": "line",
-                "title": "Empty XY chart",
-                "valueLabels": "hide",
-                "valuesInLegend": true,
-                "yLeftExtent": {
-                  "mode": "full"
-                },
-                "yRightExtent": {
-                  "mode": "full"
-                },
-                "yTitle": "Memory"
-              }
-            },
-            "title": "Heap and non-heap memory [Metrics Spring Boot]",
-            "visualizationType": "lnsXY",
-            "references": [
-              {
-                "id": "metrics-*",
-                "name": "indexpattern-datasource-layer-31ad067d-6820-43dc-a6fd-7a32a6a121f5",
-                "type": "index-pattern"
-              },
-              {
-                "id": "metrics-*",
-                "name": "8a86b358-6960-40ef-91ed-05c2c2e7c40f",
-                "type": "index-pattern"
-              }
-            ]
-          }
-        },
-        "gridData": {
-          "h": 15,
-          "i": "12e70c57-6059-400c-974f-b69423d435e9",
-          "w": 24,
-          "x": 0,
-          "y": 0
-        },
-        "panelIndex": "12e70c57-6059-400c-974f-b69423d435e9",
-        "type": "lens",
-        "version": "8.6.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "hidePanelTitles": false,
-          "attributes": {
-            "state": {
-              "adHocDataViews": {},
-              "datasourceStates": {
-                "formBased": {
-                  "layers": {
-                    "760bf001-a3ae-46e6-a366-ab2c9c777cfc": {
-                      "columnOrder": [
-                        "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39",
-                        "bd774bf7-35bf-4dd7-a647-897d8b5945df"
-                      ],
-                      "columns": {
-                        "bd774bf7-35bf-4dd7-a647-897d8b5945df": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Total Threads",
-                          "operationType": "last_value",
-                          "params": {
-                            "format": {
-                              "id": "number",
-                              "params": {
-                                "decimals": 0
-                              }
-                            },
-                            "showArrayValues": true,
-                            "sortField": "@timestamp"
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.threading.threads.started"
-                        },
-                        "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39": {
-                          "dataType": "date",
-                          "isBucketed": true,
-                          "label": "@timestamp",
-                          "operationType": "date_histogram",
-                          "params": {
-                            "dropPartials": true,
-                            "includeEmptyRows": false,
-                            "interval": "auto"
-                          },
-                          "scale": "interval",
-                          "sourceField": "@timestamp"
-                        }
-                      },
-                      "incompleteColumns": {}
-                    }
-                  }
-                }
-              },
-              "filters": [
-                {
-                  "$state": {
-                    "store": "appState"
-                  },
-                  "meta": {
-                    "alias": null,
-                    "disabled": false,
-                    "index": "61418bc6-4106-4f91-81ea-1e1071b7c9bb",
-                    "key": "event.dataset",
-                    "negate": false,
-                    "params": {
-                      "query": "spring_boot.threading"
-                    },
-                    "type": "phrase"
-                  },
-                  "query": {
-                    "match_phrase": {
-                      "event.dataset": "spring_boot.threading"
-                    }
-                  }
-                }
-              ],
-              "internalReferences": [],
-              "query": {
-                "language": "kuery",
-                "query": ""
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "accessors": [
-                      "bd774bf7-35bf-4dd7-a647-897d8b5945df"
-                    ],
-                    "layerId": "760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-                    "layerType": "data",
-                    "position": "top",
-                    "seriesType": "line",
-                    "showGridlines": false,
-                    "xAccessor": "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39"
-                  }
-                ],
-                "legend": {
-                  "isInside": false,
-                  "isVisible": true,
-                  "legendSize": "auto",
-                  "maxLines": 1,
-                  "position": "right",
-                  "showSingleSeries": true
-                },
-                "preferredSeriesType": "line",
-                "tickLabelsVisibilitySettings": {
-                  "x": true,
-                  "yLeft": true,
-                  "yRight": true
-                },
-                "title": "Empty XY chart",
-                "valueLabels": "hide",
-                "valuesInLegend": true,
-                "yLeftExtent": {
-                  "mode": "full"
-                },
-                "yRightExtent": {
-                  "mode": "full"
-                },
-                "yTitle": "Total Threads"
-              }
-            },
-            "title": "Threads [Metrics Spring Boot]",
-            "visualizationType": "lnsXY",
-            "references": [
-              {
-                "id": "metrics-*",
-                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-                "type": "index-pattern"
-              },
-              {
-                "id": "metrics-*",
-                "name": "61418bc6-4106-4f91-81ea-1e1071b7c9bb",
-                "type": "index-pattern"
-              }
-            ]
-          }
-        },
-        "gridData": {
-          "h": 10,
-          "i": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee",
-          "w": 24,
-          "x": 24,
-          "y": 0
-        },
-        "panelIndex": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee",
-        "title": "Total threads [Metrics Spring Boot]",
-        "type": "lens",
-        "version": "8.6.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "hidePanelTitles": false,
-          "attributes": {
-            "state": {
-              "adHocDataViews": {},
-              "datasourceStates": {
-                "formBased": {
-                  "layers": {
-                    "e937f0c4-f880-4837-9315-69d043a3f6b1": {
-                      "columnOrder": [
-                        "94f7e582-69e9-4fe4-9111-75aaa6a3d470",
-                        "01e713a3-bda9-4e10-b460-988900367abf",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8",
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X9",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X1",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X2",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X3",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X4",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X5",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X6",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X7",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X8",
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X9"
-                      ],
-                      "columns": {
-                        "01e713a3-bda9-4e10-b460-988900367abf": {
-                          "dataType": "date",
-                          "isBucketed": true,
-                          "label": "@timestamp",
-                          "operationType": "date_histogram",
-                          "params": {
-                            "dropPartials": true,
-                            "includeEmptyRows": false,
-                            "interval": "auto"
-                          },
-                          "scale": "interval",
-                          "sourceField": "@timestamp"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Before",
-                          "operationType": "formula",
-                          "params": {
-                            "format": {
-                              "id": "bytes",
-                              "params": {
-                                "decimals": 0
-                              }
-                            },
-                            "formula": "sum(spring_boot.gc.last_info.memory_usage.before.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_survivor_space.used)",
-                            "isFormulaBroken": false
-                          },
-                          "references": [
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X9"
-                          ],
-                          "scale": "ratio"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.before.code_cache.used"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.before.metaspace.used"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.before.g1_eden_space.used"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.before.g1_old_gen.used"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.before.g1_survivor_space.used"
-                        },
-                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X9": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of Before",
-                          "operationType": "math",
-                          "params": {
-                            "tinymathAst": {
-                              "args": [
-                                {
-                                  "args": [
-                                    {
-                                      "args": [
-                                        {
-                                          "args": [
-                                            {
-                                              "args": [
-                                                {
-                                                  "args": [
-                                                    {
-                                                      "args": [
-                                                        {
-                                                          "args": [
-                                                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0",
-                                                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1"
-                                                          ],
-                                                          "name": "add",
-                                                          "type": "function"
-                                                        },
-                                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2"
-                                                      ],
-                                                      "name": "add",
-                                                      "type": "function"
-                                                    },
-                                                    "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3"
-                                                  ],
-                                                  "name": "add",
-                                                  "type": "function"
-                                                },
-                                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4"
-                                              ],
-                                              "name": "add",
-                                              "type": "function"
-                                            },
-                                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5"
-                                          ],
-                                          "name": "add",
-                                          "type": "function"
-                                        },
-                                        "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6"
-                                      ],
-                                      "name": "add",
-                                      "type": "function"
-                                    },
-                                    "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7"
-                                  ],
-                                  "name": "add",
-                                  "type": "function"
-                                },
-                                "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8"
-                              ],
-                              "location": {
-                                "max": 624,
-                                "min": 0
-                              },
-                              "name": "add",
-                              "text": "sum(spring_boot.gc.last_info.memory_usage.before.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.before.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.before.g1_survivor_space.used)",
-                              "type": "function"
-                            }
-                          },
-                          "references": [
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X0",
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X1",
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X2",
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X3",
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X4",
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X5",
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X6",
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X7",
-                            "79ffbc3e-e907-45d9-b727-6710ca8b19c7X8"
-                          ],
-                          "scale": "ratio"
-                        },
-                        "94f7e582-69e9-4fe4-9111-75aaa6a3d470": {
-                          "dataType": "string",
-                          "isBucketed": true,
-                          "label": "Top 5 values of spring_boot.gc.name",
-                          "operationType": "terms",
-                          "params": {
-                            "exclude": [],
-                            "excludeIsRegex": false,
-                            "include": [],
-                            "includeIsRegex": false,
-                            "missingBucket": false,
-                            "orderBy": {
-                              "fallback": true,
-                              "type": "alphabetical"
-                            },
-                            "orderDirection": "asc",
-                            "otherBucket": false,
-                            "parentFormat": {
-                              "id": "terms"
-                            },
-                            "size": 5
-                          },
-                          "scale": "ordinal",
-                          "sourceField": "spring_boot.gc.name"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "After",
-                          "operationType": "formula",
-                          "params": {
-                            "format": {
-                              "id": "bytes",
-                              "params": {
-                                "decimals": 0
-                              }
-                            },
-                            "formula": "sum(spring_boot.gc.last_info.memory_usage.after.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_survivor_space.used)",
-                            "isFormulaBroken": false
-                          },
-                          "references": [
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X9"
-                          ],
-                          "scale": "ratio"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X0": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.after.code_cache.used"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X1": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X2": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.after.metaspace.used"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X3": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X4": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X5": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X6": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.after.g1_eden_space.used"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X7": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.after.g1_old_gen.used"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X8": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "sum",
-                          "params": {
-                            "emptyAsNull": false
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.gc.last_info.memory_usage.after.g1_survivor_space.used"
-                        },
-                        "df8aa04a-8859-48a8-8624-e204eb09ad23X9": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Part of After",
-                          "operationType": "math",
-                          "params": {
-                            "tinymathAst": {
-                              "args": [
-                                {
-                                  "args": [
-                                    {
-                                      "args": [
-                                        {
-                                          "args": [
-                                            {
-                                              "args": [
-                                                {
-                                                  "args": [
-                                                    {
-                                                      "args": [
-                                                        {
-                                                          "args": [
-                                                            "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
-                                                            "df8aa04a-8859-48a8-8624-e204eb09ad23X1"
-                                                          ],
-                                                          "name": "add",
-                                                          "type": "function"
-                                                        },
-                                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X2"
-                                                      ],
-                                                      "name": "add",
-                                                      "type": "function"
-                                                    },
-                                                    "df8aa04a-8859-48a8-8624-e204eb09ad23X3"
-                                                  ],
-                                                  "name": "add",
-                                                  "type": "function"
-                                                },
-                                                "df8aa04a-8859-48a8-8624-e204eb09ad23X4"
-                                              ],
-                                              "name": "add",
-                                              "type": "function"
-                                            },
-                                            "df8aa04a-8859-48a8-8624-e204eb09ad23X5"
-                                          ],
-                                          "name": "add",
-                                          "type": "function"
-                                        },
-                                        "df8aa04a-8859-48a8-8624-e204eb09ad23X6"
-                                      ],
-                                      "name": "add",
-                                      "type": "function"
-                                    },
-                                    "df8aa04a-8859-48a8-8624-e204eb09ad23X7"
-                                  ],
-                                  "name": "add",
-                                  "type": "function"
-                                },
-                                "df8aa04a-8859-48a8-8624-e204eb09ad23X8"
-                              ],
-                              "location": {
-                                "max": 615,
-                                "min": 0
-                              },
-                              "name": "add",
-                              "text": "sum(spring_boot.gc.last_info.memory_usage.after.code_cache.used)+sum(spring_boot.gc.last_info.memory_usage.after.compressed_class_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.metaspace.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.ps_survivor_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_eden_space.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_old_gen.used)+sum(spring_boot.gc.last_info.memory_usage.after.g1_survivor_space.used)",
-                              "type": "function"
-                            }
-                          },
-                          "references": [
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X0",
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X1",
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X2",
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X3",
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X4",
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X5",
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X6",
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X7",
-                            "df8aa04a-8859-48a8-8624-e204eb09ad23X8"
-                          ],
-                          "scale": "ratio"
-                        }
-                      },
-                      "incompleteColumns": {}
-                    }
-                  }
-                }
-              },
-              "filters": [
-                {
-                  "$state": {
-                    "store": "appState"
-                  },
-                  "meta": {
-                    "alias": null,
-                    "disabled": false,
-                    "index": "8aabc9bc-b40b-4f3c-b077-c4d19cd6b477",
-                    "key": "event.dataset",
-                    "negate": false,
-                    "params": {
-                      "query": "spring_boot.gc"
-                    },
-                    "type": "phrase"
-                  },
-                  "query": {
-                    "match_phrase": {
-                      "event.dataset": "spring_boot.gc"
-                    }
-                  }
-                }
-              ],
-              "internalReferences": [],
-              "query": {
-                "language": "kuery",
-                "query": ""
-              },
-              "visualization": {
-                "axisTitlesVisibilitySettings": {
-                  "x": true,
-                  "yLeft": true,
-                  "yRight": true
-                },
-                "fittingFunction": "None",
-                "gridlinesVisibilitySettings": {
-                  "x": true,
-                  "yLeft": true,
-                  "yRight": true
-                },
-                "labelsOrientation": {
-                  "x": 0,
-                  "yLeft": 0,
-                  "yRight": 0
-                },
-                "layers": [
-                  {
-                    "accessors": [
-                      "df8aa04a-8859-48a8-8624-e204eb09ad23",
-                      "79ffbc3e-e907-45d9-b727-6710ca8b19c7"
-                    ],
-                    "layerId": "e937f0c4-f880-4837-9315-69d043a3f6b1",
-                    "layerType": "data",
-                    "position": "top",
-                    "seriesType": "line",
-                    "showGridlines": false,
-                    "splitAccessor": "94f7e582-69e9-4fe4-9111-75aaa6a3d470",
-                    "xAccessor": "01e713a3-bda9-4e10-b460-988900367abf"
-                  }
-                ],
-                "legend": {
-                  "isVisible": true,
-                  "legendSize": "xlarge",
-                  "position": "right",
-                  "showSingleSeries": true
-                },
-                "preferredSeriesType": "line",
-                "tickLabelsVisibilitySettings": {
-                  "x": true,
-                  "yLeft": true,
-                  "yRight": true
-                },
-                "valueLabels": "hide",
-                "valuesInLegend": true,
-                "yLeftExtent": {
-                  "mode": "full"
-                },
-                "yRightExtent": {
-                  "mode": "full"
-                },
-                "yTitle": "GC Memory Usage"
-              }
-            },
-            "title": "Memory usage after and before GC [Metrics Spring Boot]",
-            "visualizationType": "lnsXY",
-            "references": [
-              {
-                "id": "metrics-*",
-                "name": "indexpattern-datasource-layer-e937f0c4-f880-4837-9315-69d043a3f6b1",
-                "type": "index-pattern"
-              },
-              {
-                "id": "metrics-*",
-                "name": "8aabc9bc-b40b-4f3c-b077-c4d19cd6b477",
-                "type": "index-pattern"
-              }
-            ]
-          }
-        },
-        "gridData": {
-          "h": 15,
-          "i": "f3782cac-5b20-413c-a88d-cb01ebee5772",
-          "w": 24,
-          "x": 0,
-          "y": 15
-        },
-        "panelIndex": "f3782cac-5b20-413c-a88d-cb01ebee5772",
-        "type": "lens",
-        "version": "8.6.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "hidePanelTitles": false,
-          "attributes": {
-            "state": {
-              "adHocDataViews": {},
-              "datasourceStates": {
-                "formBased": {
-                  "layers": {
-                    "760bf001-a3ae-46e6-a366-ab2c9c777cfc": {
-                      "columnOrder": [
-                        "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39",
-                        "522f8dd4-2bc7-4665-9b33-83609e4f3125"
-                      ],
-                      "columns": {
-                        "522f8dd4-2bc7-4665-9b33-83609e4f3125": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Current Threads",
-                          "operationType": "last_value",
-                          "params": {
-                            "format": {
-                              "id": "number",
-                              "params": {
-                                "decimals": 0
-                              }
-                            },
-                            "showArrayValues": true,
-                            "sortField": "@timestamp"
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.threading.threads.count"
-                        },
-                        "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39": {
-                          "dataType": "date",
-                          "isBucketed": true,
-                          "label": "@timestamp",
-                          "operationType": "date_histogram",
-                          "params": {
-                            "dropPartials": true,
-                            "includeEmptyRows": false,
-                            "interval": "auto"
-                          },
-                          "scale": "interval",
-                          "sourceField": "@timestamp"
-                        }
-                      },
-                      "incompleteColumns": {}
-                    }
-                  }
-                }
-              },
-              "filters": [
-                {
-                  "$state": {
-                    "store": "appState"
-                  },
-                  "meta": {
-                    "alias": null,
-                    "disabled": false,
-                    "index": "6502fda4-d554-4b5d-8e8b-e6d3c873901b",
-                    "key": "event.dataset",
-                    "negate": false,
-                    "params": {
-                      "query": "spring_boot.threading"
-                    },
-                    "type": "phrase"
-                  },
-                  "query": {
-                    "match_phrase": {
-                      "event.dataset": "spring_boot.threading"
-                    }
-                  }
-                }
-              ],
-              "internalReferences": [],
-              "query": {
-                "language": "kuery",
-                "query": ""
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "accessors": [
-                      "522f8dd4-2bc7-4665-9b33-83609e4f3125"
-                    ],
-                    "layerId": "760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-                    "layerType": "data",
-                    "position": "top",
-                    "seriesType": "line",
-                    "showGridlines": false,
-                    "xAccessor": "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39"
-                  }
-                ],
-                "legend": {
-                  "isVisible": true,
-                  "legendSize": "auto",
-                  "position": "right",
-                  "showSingleSeries": true
-                },
-                "preferredSeriesType": "line",
-                "title": "Empty XY chart",
-                "valueLabels": "hide",
-                "valuesInLegend": true,
-                "yLeftExtent": {
-                  "mode": "full"
-                },
-                "yRightExtent": {
-                  "mode": "full"
-                },
-                "yTitle": "Current Threads"
-              }
-            },
-            "title": "Current threads [Metrics Spring Boot]",
-            "visualizationType": "lnsXY",
-            "references": [
-              {
-                "id": "metrics-*",
-                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-                "type": "index-pattern"
-              },
-              {
-                "id": "metrics-*",
-                "name": "6502fda4-d554-4b5d-8e8b-e6d3c873901b",
-                "type": "index-pattern"
-              }
-            ]
-          }
-        },
-        "gridData": {
-          "h": 10,
-          "i": "b55b6992-8179-4bf9-8e79-8354509a956e",
-          "w": 24,
-          "x": 24,
-          "y": 10
-        },
-        "panelIndex": "b55b6992-8179-4bf9-8e79-8354509a956e",
-        "type": "lens",
-        "version": "8.6.0"
-      },
-      {
-        "embeddableConfig": {
-          "enhancements": {},
-          "hidePanelTitles": false,
-          "attributes": {
-            "state": {
-              "adHocDataViews": {},
-              "datasourceStates": {
-                "formBased": {
-                  "layers": {
-                    "760bf001-a3ae-46e6-a366-ab2c9c777cfc": {
-                      "columnOrder": [
-                        "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39",
-                        "c5fd0b8a-f8ac-4e5d-95ed-5ca552417e5c"
-                      ],
-                      "columns": {
-                        "c5fd0b8a-f8ac-4e5d-95ed-5ca552417e5c": {
-                          "customLabel": true,
-                          "dataType": "number",
-                          "isBucketed": false,
-                          "label": "Daemon Threads",
-                          "operationType": "last_value",
-                          "params": {
-                            "format": {
-                              "id": "number",
-                              "params": {
-                                "decimals": 0
-                              }
-                            },
-                            "showArrayValues": true,
-                            "sortField": "@timestamp"
-                          },
-                          "scale": "ratio",
-                          "sourceField": "spring_boot.threading.threads.daemon"
-                        },
-                        "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39": {
-                          "dataType": "date",
-                          "isBucketed": true,
-                          "label": "@timestamp",
-                          "operationType": "date_histogram",
-                          "params": {
-                            "dropPartials": true,
-                            "includeEmptyRows": false,
-                            "interval": "auto"
-                          },
-                          "scale": "interval",
-                          "sourceField": "@timestamp"
-                        }
-                      },
-                      "incompleteColumns": {}
-                    }
-                  }
-                }
-              },
-              "filters": [
-                {
-                  "$state": {
-                    "store": "appState"
-                  },
-                  "meta": {
-                    "alias": null,
-                    "disabled": false,
-                    "index": "702499ca-434e-41d4-b9a1-1d0bb27b244a",
-                    "key": "event.dataset",
-                    "negate": false,
-                    "params": {
-                      "query": "spring_boot.threading"
-                    },
-                    "type": "phrase"
-                  },
-                  "query": {
-                    "match_phrase": {
-                      "event.dataset": "spring_boot.threading"
-                    }
-                  }
-                }
-              ],
-              "internalReferences": [],
-              "query": {
-                "language": "kuery",
-                "query": ""
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "accessors": [
-                      "c5fd0b8a-f8ac-4e5d-95ed-5ca552417e5c"
-                    ],
-                    "layerId": "760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-                    "layerType": "data",
-                    "position": "top",
-                    "seriesType": "line",
-                    "showGridlines": false,
-                    "xAccessor": "e89bff02-e4b8-48aa-96e1-ae2ae6c28e39"
-                  }
-                ],
-                "legend": {
-                  "isVisible": true,
-                  "legendSize": "auto",
-                  "position": "right",
-                  "showSingleSeries": true
-                },
-                "preferredSeriesType": "line",
-                "title": "Empty XY chart",
-                "valueLabels": "hide",
-                "valuesInLegend": true,
-                "yLeftExtent": {
-                  "mode": "full"
-                },
-                "yRightExtent": {
-                  "mode": "full"
-                },
-                "yTitle": "Daemon Threads"
-              }
-            },
-            "title": "Daemon threads [Metrics Spring Boot]",
-            "visualizationType": "lnsXY",
-            "references": [
-              {
-                "id": "metrics-*",
-                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-                "type": "index-pattern"
-              },
-              {
-                "id": "metrics-*",
-                "name": "702499ca-434e-41d4-b9a1-1d0bb27b244a",
-                "type": "index-pattern"
-              }
-            ]
-          }
-        },
-        "gridData": {
-          "h": 10,
-          "i": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508",
-          "w": 24,
-          "x": 24,
-          "y": 20
-        },
-        "panelIndex": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508",
-        "type": "lens",
-        "version": "8.6.0"
-      }
     ],
-    "timeRestore": false,
-    "title": "[Spring Boot] Memory and Threads",
-    "version": 1
-  },
-  "references": [
-    {
-      "type": "index-pattern",
-      "name": "12e70c57-6059-400c-974f-b69423d435e9:indexpattern-datasource-layer-31ad067d-6820-43dc-a6fd-7a32a6a121f5",
-      "id": "metrics-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "12e70c57-6059-400c-974f-b69423d435e9:8a86b358-6960-40ef-91ed-05c2c2e7c40f",
-      "id": "metrics-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee:indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-      "id": "metrics-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee:61418bc6-4106-4f91-81ea-1e1071b7c9bb",
-      "id": "metrics-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "f3782cac-5b20-413c-a88d-cb01ebee5772:indexpattern-datasource-layer-e937f0c4-f880-4837-9315-69d043a3f6b1",
-      "id": "metrics-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "f3782cac-5b20-413c-a88d-cb01ebee5772:8aabc9bc-b40b-4f3c-b077-c4d19cd6b477",
-      "id": "metrics-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "b55b6992-8179-4bf9-8e79-8354509a956e:indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-      "id": "metrics-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "b55b6992-8179-4bf9-8e79-8354509a956e:6502fda4-d554-4b5d-8e8b-e6d3c873901b",
-      "id": "metrics-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508:indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-      "id": "metrics-*"
-    },
-    {
-      "type": "index-pattern",
-      "name": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508:702499ca-434e-41d4-b9a1-1d0bb27b244a",
-      "id": "metrics-*"
-    }
-  ],
-  "managed": false
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

@@ -54,7 +54,7 @@ Set up a new app registration in Azure.
 To create the app registration:
 
 1. Sign in to the [Azure Portal](https://portal.azure.com/).
-2. Search for and select **Azure Active Directory**.
+2. Search for and select **Microsoft Entra ID**.
 3. Under **Manage**, select **App registrations** > **New registration**.
 4. Enter a display _Name_ for your application (for example, "elastic-agent").
 5. Specify who can use the application.
@@ -215,5 +215,9 @@ The Azure Billing Metrics data stream provides events from Consumption and Cost 
 #### Example
 
 {{event "billing"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "billing"}}

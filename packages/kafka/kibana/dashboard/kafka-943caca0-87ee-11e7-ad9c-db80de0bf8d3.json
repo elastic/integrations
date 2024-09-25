@@ -3,7 +3,30 @@
         "description": "Logs Kafka integration dashboard",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "kafka.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "kafka.log"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -192,58 +215,7 @@
                 },
                 "panelIndex": "1",
                 "title": "Number of stracktraces by class [Logs Kafka]",
-                "type": "lens",
-                "version": "8.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "columns": [
-                        "kafka.log.class",
-                        "kafka.log.trace.class",
-                        "kafka.log.trace.full"
-                    ],
-                    "enhancements": {},
-                    "sort": [
-                        "@timestamp",
-                        "desc"
-                    ]
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "2",
-                    "w": 24,
-                    "x": 24,
-                    "y": 0
-                },
-                "panelIndex": "2",
-                "panelRefName": "panel_2",
-                "type": "search",
-                "version": "8.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "columns": [
-                        "log.level",
-                        "kafka.log.component",
-                        "message"
-                    ],
-                    "enhancements": {},
-                    "sort": [
-                        "@timestamp",
-                        "desc"
-                    ]
-                },
-                "gridData": {
-                    "h": 20,
-                    "i": "3",
-                    "w": 48,
-                    "x": 0,
-                    "y": 20
-                },
-                "panelIndex": "3",
-                "panelRefName": "panel_3",
-                "type": "search",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -252,11 +224,6 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-9f47bfb1-37f3-43f2-bee8-765df082d9e2",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "0d3f3d8b-6a25-4de7-9fc3-2640ac541625",
                                 "type": "index-pattern"
                             }
                         ],
@@ -333,31 +300,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "0d3f3d8b-6a25-4de7-9fc3-2640ac541625",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "kafka.log"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": {
-                                                "query": "kafka.log"
-                                            }
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -447,35 +390,140 @@
                 },
                 "panelIndex": "4",
                 "title": "Log levels over time [Logs Kafka]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "kafka.log.class",
+                            "kafka.log.trace.class",
+                            "kafka.log.trace.full"
+                        ],
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"filter\":[],\"highlightAll\":true,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"query\":{\"language\":\"kuery\",\"query\":\"kafka.log.trace.class:*\"},\"version\":true}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ]
+                    },
+                    "columns": [
+                        "kafka.log.class",
+                        "kafka.log.trace.class",
+                        "kafka.log.trace.full"
+                    ],
+                    "enhancements": {},
+                    "sort": [
+                        "@timestamp",
+                        "desc"
+                    ]
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "bf5f8731-180f-4b73-8c32-67610e4cb6c5",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "bf5f8731-180f-4b73-8c32-67610e4cb6c5",
+                "title": "Stacktraces [Logs Kafka]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "log.level",
+                            "kafka.log.component",
+                            "message"
+                        ],
+                        "grid": {
+                            "columns": {
+                                "kafka.log.component": {
+                                    "width": 195
+                                },
+                                "log.level": {
+                                    "width": 109
+                                }
+                            }
+                        },
+                        "hideChart": false,
+                        "isTextBasedQuery": false,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"filter\":[{\"$state\":{\"store\":\"appState\"},\"meta\":{\"alias\":null,\"disabled\":false,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\",\"key\":\"data_stream.dataset\",\"negate\":false,\"params\":{\"query\":\"kafka.log\"},\"type\":\"phrase\"},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"kafka.log\"}}}],\"highlightAll\":true,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"version\":true}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "timeRestore": false,
+                        "usesAdHocDataView": false
+                    },
+                    "columns": [
+                        "log.level",
+                        "kafka.log.component",
+                        "message"
+                    ],
+                    "enhancements": {},
+                    "sort": [
+                        "@timestamp",
+                        "desc"
+                    ]
+                },
+                "gridData": {
+                    "h": 20,
+                    "i": "8a7f140b-ae2b-4b8f-95a3-3a8dfc74d8b1",
+                    "w": 48,
+                    "x": 0,
+                    "y": 20
+                },
+                "panelIndex": "8a7f140b-ae2b-4b8f-95a3-3a8dfc74d8b1",
+                "title": "All logs [Logs Kafka]",
+                "type": "search"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Kafka] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-07-26T07:00:13.043Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-22T06:53:10.744Z",
     "id": "kafka-943caca0-87ee-11e7-ad9c-db80de0bf8d3",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "1:indexpattern-datasource-layer-d74d8027-0eee-45ec-941d-5e9e0b4e4ee9",
             "type": "index-pattern"
-        },
-        {
-            "id": "kafka-stacktraces",
-            "name": "2:panel_2",
-            "type": "search"
-        },
-        {
-            "id": "kafka-all-kafka-logs",
-            "name": "3:panel_3",
-            "type": "search"
         },
         {
             "id": "logs-*",
@@ -484,9 +532,20 @@
         },
         {
             "id": "logs-*",
-            "name": "4:0d3f3d8b-6a25-4de7-9fc3-2640ac541625",
+            "name": "bf5f8731-180f-4b73-8c32-67610e4cb6c5:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8a7f140b-ae2b-4b8f-95a3-3a8dfc74d8b1:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8a7f140b-ae2b-4b8f-95a3-3a8dfc74d8b1:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

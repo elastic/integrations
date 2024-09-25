@@ -1,0 +1,4711 @@
+---
+description: Pipeline for processing WatchGuard Firebox logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - grok:
+      field: event.original
+      tag: grok_syslog_line
+      if: ctx.event?.original != null && ctx.event.original != ''
+      patterns:
+        - '^<%{POSINT:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:watchguard_firebox.log.syslog_timestamp} %{SYSLOGHOST:log.syslog.hostname}(?: %{WORD:watchguard_firebox.log.serial_number})?(?: %{SYSLOGHOST:watchguard_firebox.log.member_info})?(?: \(%{TIMESTAMP_ISO8601:watchguard_firebox.log.timestamp}\))? %{PROG:log.syslog.appname}(?:\[%{POSINT:log.syslog.procid}\])?: %{GREEDYDATA:watchguard_firebox.log.body}$'
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: WatchGuard
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Firebox
+  - set:
+      field: observer.type
+      tag: set_observer_type
+      value: firewall
+  - set:
+      field: observer.serial_number
+      tag: set_observer_serial_number
+      copy_from: watchguard_firebox.log.serial_number
+      ignore_empty_value: true
+  - set:
+      field: observer.hostname
+      tag: set_observer_hostname
+      copy_from: log.syslog.hostname
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_log_syslog_hostname_into_related_hosts
+      value: '{{{log.syslog.hostname}}}'
+      allow_duplicates: false
+      if: ctx.log?.syslog?.hostname != null
+  - rename:
+      field: _conf.tz_offset
+      tag: rename_tz_offset
+      target_field: event.timezone
+      ignore_missing: true
+  - set:
+      field: event.timezone
+      tag: set_timezone_to_UTC
+      value: UTC
+      if: ctx.event?.timezone == null
+  - date:
+      field: watchguard_firebox.log.syslog_timestamp
+      target_field: watchguard_firebox.log.syslog_timestamp
+      timezone: '{{{event.timezone}}}'
+      tag: date_set_syslog_time
+      if: ctx.watchguard_firebox?.log?.syslog_timestamp != null && ctx.watchguard_firebox.log.syslog_timestamp != ''
+      formats:
+        - MMM d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM  d HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp
+      copy_from: watchguard_firebox.log.syslog_timestamp
+      ignore_empty_value: true
+  - date:
+      field: watchguard_firebox.log.timestamp
+      target_field: watchguard_firebox.log.timestamp
+      tag: date_set_timestamp
+      if: ctx.watchguard_firebox?.log?.timestamp != null && ctx.watchguard_firebox.log.timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dissect:
+      field: watchguard_firebox.log.body
+      tag: dissect_msg_id
+      if: ctx.watchguard_firebox?.log?.body != null && ctx.watchguard_firebox?.log?.body != ''
+      pattern: 'msg_id="%{watchguard_firebox.log.msg_id}" %{watchguard_firebox.log.body}'
+      ignore_failure: true
+  - set:
+      field: message
+      if: ctx.watchguard_firebox?.log?.msg_id == null
+      copy_from: watchguard_firebox.log.body
+  - script:
+      description: Set ECS categorization fields
+      tag: set_ecs_categorization_fields
+      lang: painless
+      ignore_failure: true
+      params:
+        '3000-0148':
+          category:
+            - network
+          type:
+            - connection
+          outcome: success
+          log_type: traffic
+        '3000-0149':
+          category:
+            - network
+          type:
+            - connection
+          outcome: success
+          log_type: traffic
+        '3000-0150':
+          category:
+            - intrusion_detection
+          type:
+            - denied
+          outcome: failure
+          log_type: traffic
+        '3000-0151':
+          category:
+            - network
+          type:
+            - end
+          outcome: success
+          log_type: traffic
+        '3000-0173':
+          category:
+            - network
+            - intrusion_detection
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '3000-0175':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '3000-0176':
+          category:
+            - web
+          type:
+            - access
+          outcome: success
+          log_type: traffic
+        '1AFF-0001':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0002':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0003':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0004':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0005':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0006':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0007':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0008':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0009':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-000A':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-000B':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-000C':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-000D':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-000E':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-000F':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0010':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0011':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0012':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0013':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0016':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0018':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0019':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-001A':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-001B':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-001C':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-001D':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-001E':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-001F':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0020':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0021':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0022':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0023':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0024':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0025':
+          category:
+            - web
+            - intrusion_detection
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1AFF-0026':
+          category:
+            - web
+            - intrusion_detection
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1AFF-0028':
+          category:
+            - web
+            - malware
+          type:
+            - info
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-0029':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-002B':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-002C':
+          category:
+            - web
+          type:
+            - error
+          outcome: failure
+          log_type: traffic
+        '1AFF-002D':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-002E':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-002F':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0030':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0031':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0032':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0033':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0034':
+          category:
+            - threat
+            - intrusion_detection
+          type:
+            - indicator
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1AFF-0036':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0037':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0038':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0039':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-003A':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-003B':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0040':
+          category:
+            - web
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1AFF-0041':
+          category:
+            - web
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0000':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0001':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0002':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0003':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0004':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0005':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0006':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0007':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-000A':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-000C':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-000E':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-000F':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0010':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0011':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0013':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0014':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0015':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0016':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0017':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0018':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0019':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-001A':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-001B':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-001C':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-001D':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-001E':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-001F':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0021':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0022':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0023':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-0024':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0025':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0026':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0027':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0028':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-002A':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-002B':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-002C':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1BFF-002D':
+          category:
+            - email
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '1BFF-0032':
+          category:
+            - email
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '1CFF-0000':
+          category:
+            - web
+            - authentication
+            - network
+          type:
+            - error
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1CFF-0001':
+          category:
+            - web
+            - authentication
+            - network
+          type:
+            - error
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1CFF-0002':
+          category:
+            - web
+            - file
+            - network
+          type:
+            - error
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1CFF-0003':
+          category:
+            - web
+            - network
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1CFF-0004':
+          category:
+            - web
+            - authentication
+            - network
+          type:
+            - error
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1CFF-0005':
+          category:
+            - web
+            - network
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1CFF-0006':
+          category:
+            - web
+            - file
+            - network
+          type:
+            - error
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1CFF-0007':
+          category:
+            - web
+            - file
+            - network
+          type:
+            - error
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1CFF-0008':
+          category:
+            - web
+            - network
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1CFF-0009':
+          category:
+            - web
+            - network
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1CFF-000C':
+          category:
+            - web
+            - network
+          type:
+            - allowed
+            - info
+          outcome: success
+          log_type: traffic
+        '1CFF-000D':
+          category:
+            - web
+            - intrusion_detection
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1CFF-000E':
+          category:
+            - web
+            - malware
+            - network
+          type:
+            - error
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1CFF-000F':
+          category:
+            - web
+            - network
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1CFF-0010':
+          category:
+            - web
+            - network
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1CFF-0011':
+          category:
+            - web
+            - network
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1CFF-0012':
+          category:
+            - web
+            - network
+          type:
+            - allowed
+            - info
+          outcome: success
+          log_type: traffic
+        '1CFF-0013':
+          category:
+            - web
+            - network
+          type:
+            - allowed
+            - info
+          outcome: success
+          log_type: traffic
+        '1CFF-0014':
+          category:
+            - web
+            - network
+          type:
+            - allowed
+            - info
+          outcome: success
+          log_type: traffic
+        '1CFF-0015':
+          category:
+            - web
+            - malware
+            - network
+          type:
+            - error
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1CFF-0017':
+          category:
+            - web
+            - network
+          type:
+            - allowed
+            - info
+          outcome: success
+          log_type: traffic
+        '1CFF-0018':
+          category:
+            - web
+            - network
+          type:
+            - allowed
+            - info
+          outcome: success
+          log_type: traffic
+        '1CFF-0019':
+          category:
+            - web
+            - intrusion_detection
+          type:
+            - error
+            - denied
+          outcome: failure
+          log_type: traffic
+        '1DFF-0000':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0001':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0002':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0003':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0004':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0005':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0006':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0007':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0008':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0009':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-000A':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-000C':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-000E':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-000F':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '1DFF-0010':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '1DFF-0012':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-0000':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '21FF-0001':
+          category:
+            - network
+            - authentication
+          type:
+            - denied
+            - start
+            - info
+          outcome: failure
+          log_type: traffic
+        '21FF-0002':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '21FF-0005':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-0006':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-0007':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-0009':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '21FF-000A':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '21FF-000C':
+          category:
+            - network
+            - intrusion_detection
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '21FF-000F':
+          category:
+            - network
+            - malware
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '21FF-0010':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '21FF-0012':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '21FF-0014':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-0015':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-0016':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-0017':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-0018':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-001A':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-001B':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-001C':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-001D':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-001E':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '21FF-001F':
+          category:
+            - network
+            - malware
+          type:
+            - info
+          outcome: failure
+          log_type: traffic
+        '21FF-0021':
+          category:
+            - network
+            - file
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '21FF-0022':
+          category:
+            - network
+            - file
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '22FF-0000':
+          category:
+            - network
+          type:
+            - start
+            - connection
+          outcome: success
+          log_type: traffic
+        '22FF-0001':
+          category:
+            - network
+          type:
+            - end
+            - connection
+          outcome: failure
+          log_type: traffic
+        '22FF-0005':
+          category:
+            - file
+          type:
+            - access
+          outcome: success
+          log_type: traffic
+        '22FF-0006':
+          category:
+            - file
+          type:
+            - access
+          outcome: success
+          log_type: traffic
+        '22FF-0008':
+          category:
+            - malware
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '22FF-0009':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '22FF-000A':
+          category:
+            - malware
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '22FF-000C':
+          category:
+            - file
+          type:
+            - info
+            - access
+          outcome: success
+          log_type: traffic
+        '22FF-000D':
+          category:
+            - file
+          type:
+            - info
+            - access
+          outcome: success
+          log_type: traffic
+        '22FF-000E':
+          category:
+            - email
+            - threat
+          type:
+            - info
+            - indicator
+          outcome: success
+          log_type: traffic
+        '22FF-000F':
+          category:
+            - email
+            - threat
+          type:
+            - info
+            - indicator
+          outcome: success
+          log_type: traffic
+        '22FF-0010':
+          category:
+            - email
+            - threat
+          type:
+            - info
+            - indicator
+          outcome: success
+          log_type: traffic
+        '22FF-0012':
+          category:
+            - email
+            - threat
+          type:
+            - info
+            - indicator
+          outcome: success
+          log_type: traffic
+        '22FF-0013':
+          category:
+            - email
+            - threat
+          type:
+            - info
+            - indicator
+          outcome: success
+          log_type: traffic
+        '22FF-0014':
+          category:
+            - email
+            - threat
+          type:
+            - info
+            - indicator
+          outcome: success
+          log_type: traffic
+        '22FF-0015':
+          category:
+            - file
+          type:
+            - info
+            - access
+          outcome: success
+          log_type: traffic
+        '22FF-0016':
+          category:
+            - file
+          type:
+            - info
+            - access
+          outcome: success
+          log_type: traffic
+        '22FF-0017':
+          category:
+            - network
+          type:
+            - denied
+            - protocol
+          outcome: failure
+          log_type: traffic
+        '22FF-0018':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '22FF-001B':
+          category:
+            - email
+            - threat
+          type:
+            - info
+            - indicator
+          outcome: success
+          log_type: traffic
+        '28FF-0000':
+          category:
+            - network
+          type:
+            - end
+            - connection
+          outcome: failure
+          log_type: traffic
+        '28FF-0004':
+          category:
+            - network
+          type:
+            - start
+            - connection
+          outcome: success
+          log_type: traffic
+        '28FF-0005':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '28FF-0006':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '28FF-0008':
+          category:
+            - intrusion_detection
+            - network
+          type:
+            - info
+            - denied
+          outcome: failure
+          log_type: traffic
+        '28FF-0009':
+          category:
+            - intrusion_detection
+            - network
+          type:
+            - info
+            - denied
+          outcome: failure
+          log_type: traffic
+        '2AFF-0000':
+          category:
+            - network
+          type:
+            - end
+            - connection
+          outcome: failure
+          log_type: traffic
+        '2AFF-0001':
+          category:
+            - network
+          type:
+            - start
+            - connection
+          outcome: success
+          log_type: traffic
+        '2AFF-0002':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '2AFF-0003':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '2AFF-0006':
+          category:
+            - intrusion_detection
+            - network
+          type:
+            - info
+            - denied
+          outcome: failure
+          log_type: traffic
+        '2AFF-0007':
+          category:
+            - intrusion_detection
+            - network
+          type:
+            - info
+            - denied
+          outcome: failure
+          log_type: traffic
+        '2CFF-0000':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '2CFF-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '2CFF-0002':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '2CFF-0003':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '2CFF-0005':
+          category:
+            - intrusion_detection
+            - network
+          type:
+            - info
+            - denied
+          outcome: failure
+          log_type: traffic
+        '2CFF-0006':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '2CFF-0007':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '2CFF-0008':
+          category:
+            - network
+          type:
+            - end
+            - connection
+          outcome: failure
+          log_type: traffic
+        '2CFF-0009':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '2CFF-000A':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '2DFF-0000':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '2DFF-0001':
+          category:
+            - intrusion_detection
+            - network
+          type:
+            - info
+            - denied
+          outcome: failure
+          log_type: traffic
+        '2DFF-0004':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: traffic
+        '2DFF-0005':
+          category:
+            - network
+          type:
+            - allowed
+            - info
+          outcome: success
+          log_type: traffic
+        '2DFF-0006':
+          category:
+            - network
+          type:
+            - info
+            - allowed
+          outcome: success
+          log_type: traffic
+        '2DFF-0007':
+          category:
+            - network
+          type:
+            - denied
+            - info
+          outcome: failure
+          log_type: traffic
+        '3000-0006':
+          category:
+            - configuration
+          type:
+            - change
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-0007':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-0027':
+          category:
+            - network
+          type:
+            - start
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-0028':
+          category:
+            - network
+          type:
+            - end
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-0029':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-002A':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-003A':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '3000-003C':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '3000-0040':
+          category:
+            - network
+          type:
+            - end
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-0065':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-012D':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-012E':
+          category:
+            - intrusion_detection
+            - threat
+          type:
+            - indicator
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0900-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0900-0002':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0900-0006':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: diagnostic
+        '0900-0007':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '1600-0005':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3100-0003':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: diagnostic
+        '3100-0004':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: diagnostic
+        '3100-000F':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3100-0030':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3100-0031':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3100-0034':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-0035':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '3100-0036':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3100-0037':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3100-0038':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3100-003D':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-004F':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-0050':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: diagnostic
+        '3100-0051':
+          category:
+            - network
+          type:
+            - end
+          outcome: success
+          log_type: diagnostic
+        '3100-0057':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3100-0058':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-0059':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-005A':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-005B':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-005C':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-005D':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-005E':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '3100-0070':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3100-0075':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '3113-0001':
+          category:
+            - network
+          type:
+            - end
+          outcome: failure
+          log_type: diagnostic
+        '4500-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5A00-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5A00-0002':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5A00-0003':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5A00-0004':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: diagnostic
+        '5A00-0005':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5A00-0006':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5A00-0007':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5A00-0008':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5A00-0009':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5A00-000A':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5A00-000B':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5A00-000C':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5A00-000D':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5501-000C':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5501-000D':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5501-0010':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: diagnostic
+        '5501-0014':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5501-0015':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5501-0017':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5501-0018':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5501-001B':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '5501-001C':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '3A00-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3A00-0004':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3A00-0005':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3A00-0006':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3A00-0007':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3A00-0008':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3A00-000A':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3A00-000B':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3A00-000C':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '3800-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '3800-0003':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3800-0004':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3800-025C':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3800-0264':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '3B00-0001':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3B00-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '0200-0001':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0200-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0202-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0002':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0003':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0004':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0005':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0006':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0007':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0008':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0009':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-000A':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-000B':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-000C':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-000D':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-000E':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-000F':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0010':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0011':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0012':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0013':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0014':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: success
+          log_type: diagnostic
+        '0203-0015':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0016':
+          category:
+            - network
+            - session
+          type:
+            - end
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0017':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0018':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0019':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0020':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0021':
+          category:
+            - network
+            - session
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '0203-0022':
+          category:
+            - network
+            - session
+          type:
+            - end
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0023':
+          category:
+            - network
+            - session
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '0203-0024':
+          category:
+            - network
+            - session
+          type:
+            - end
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0025':
+          category:
+            - network
+            - session
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '0203-0026':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0027':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-0028':
+          category:
+            - network
+            - session
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '0203-0029':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-002A':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0203-002B':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-0002':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-0003':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-0004':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-0005':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-0006':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-0007':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-0008':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-000A':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-000B':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-000C':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-000D':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-000E':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-000F':
+          category:
+            - network
+            - session
+          type:
+            - start
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-0010':
+          category:
+            - network
+            - intrusion_detection
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0205-0011':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0206-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0206-0002':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0206-0003':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0206-0004':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0206-0005':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '0206-0006':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '0206-0007':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '0208-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '021A-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0002':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0003':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0004':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0005':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0006':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0007':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0008':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0009':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-000A':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-000B':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-000C':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-000D':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-000E':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-000F':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0010':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0011':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0012':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0013':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0014':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0015':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0016':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0017':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '021A-0018':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0019':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-001A':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-001B':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-001C':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-001D':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-001E':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-001F':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '021A-0020':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: diagnostic
+        '2500-0000':
+          category:
+            - authentication
+          type:
+            - start
+          outcome: success
+          log_type: diagnostic
+        '2500-0001':
+          category:
+            - authentication
+          type:
+            - end
+          outcome: success
+          log_type: diagnostic
+        '5B01-0004':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '5B01-0005':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: diagnostic
+        '3000-0004':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3000-0005':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3000-002F':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3000-00C9':
+          category:
+            - network
+          type:
+            - info
+            - connection
+          outcome: failure
+          log_type: event
+        '3000-00CB':
+          category:
+            - network
+          type:
+            - info
+            - connection
+          outcome: failure
+          log_type: event
+        '3000-012C':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3000-0174':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3001-1001':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3001-1002':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '0F00-0001':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '0F01-0015':
+          category:
+            - threat
+          type:
+            - indicator
+          outcome: success
+          log_type: event
+        '0F01-0016':
+          category:
+            - threat
+          type:
+            - indicator
+          outcome: success
+          log_type: event
+        '1B04-00CE':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1C02-00CD':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1F00-0001':
+          category:
+            - process
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1F01-0015':
+          category:
+            - process
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '2300-0001':
+          category:
+            - process
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '2300-0002':
+          category:
+            - process
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '2E00-0005':
+          category:
+            - process
+          type:
+            - end
+          outcome: failure
+          log_type: event
+        '2E00-0006':
+          category:
+            - process
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '2E01-0017':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '2E01-0018':
+          category:
+            - package
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '2E01-0019':
+          category:
+            - package
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '2E01-001A':
+          category:
+            - package
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '2E01-001B':
+          category:
+            - package
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '2E02-0065':
+          category:
+            - package
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '2E02-0066':
+          category:
+            - package
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '2E02-0067':
+          category:
+            - package
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '2E02-0069':
+          category:
+            - package
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '0900-0004':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '0900-0005':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '0900-0008':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '0900-0009':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '0900-000A':
+          category:
+            - network
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '1600-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1600-0002':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '1600-0003':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '1600-0004':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3100-0009':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-000A':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-000B':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-000D':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3100-0010':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3100-0029':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3100-002B':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3100-002C':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-0039':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-003A':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-003B':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '3100-003E':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '3100-003F':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '3100-0046':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '3100-0047':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '3100-0052':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '3100-0054':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-0055':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-0056':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '3100-0069':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '3100-006A':
+          category:
+            - network
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '3100-006C':
+          category:
+            - network
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '3100-006D':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '3100-0071':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-0072':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-0073':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3100-0074':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '4500-0003':
+          category:
+            - network
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '4500-0004':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4900-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4900-0002':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4900-0003':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4900-0004':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '6800-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '6800-0002':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '6800-0003':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3A00-000E':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3A00-000F':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3800-0278':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3800-0279':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3800-0280':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3800-0282':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3800-025A':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3800-025B':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3800-027A':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3800-027E':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3900-0003':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3900-0005':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3900-0007':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3900-0010':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3900-0011':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3900-0012':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3900-0015':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3900-0016':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3900-0019':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3900-0058':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3900-000C':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3900-000D':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3900-000E':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3900-000F':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '0101-0001':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '0101-0002':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '0102-0001':
+          category:
+            - configuration
+          type:
+            - creation
+          outcome: success
+          log_type: event
+        '0102-0002':
+          category:
+            - configuration
+          type:
+            - deletion
+          outcome: success
+          log_type: event
+        '0102-0003':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '0102-0005':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '0104-0001':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '0105-0001':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '1100-0003':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-0004':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '1100-0005':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-0006':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '1100-0007':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-0008':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-000C':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-000D':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-000E':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-000F':
+          category:
+            - iam
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-0010':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '1100-0011':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '1100-0012':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-0013':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '1100-0014':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '1100-0015':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '1500-0000':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '1500-0001':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '1501-0000':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '1501-0001':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3D04-0001':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3D04-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3D04-0003':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '3E00-0002':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3E00-0003':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '3E00-0004':
+          category:
+            - authentication
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '3E00-0005':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '4001-0001':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '4001-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4001-0003':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4001-0004':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4001-0005':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4001-0006':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '4100-0001':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '4100-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4100-0003':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '4100-0004':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4100-0005':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '4100-0006':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4100-0007':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '4100-0008':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '4101-0001':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '4101-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '5000-0001':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '5501-0000':
+          category:
+            - host
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '5501-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '5501-0003':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '5501-0004':
+          category:
+            - host
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '5501-0005':
+          category:
+            - host
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0006':
+          category:
+            - host
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0007':
+          category:
+            - host
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0008':
+          category:
+            - host
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '5501-000B':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0013':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0016':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0019':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '5501-001A':
+          category:
+            - host
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '5501-001D':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '5501-0020':
+          category:
+            - host
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0021':
+          category:
+            - host
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0022':
+          category:
+            - host
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0023':
+          category:
+            - host
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0024':
+          category:
+            - host
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5501-0025':
+          category:
+            - host
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '5501-0026':
+          category:
+            - host
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '0201-0001':
+          category:
+            - process
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '0201-0002':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: unknown
+          log_type: event
+        '0201-0003':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '0201-0004':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '0207-0001':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '0209-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '0209-0002':
+          category:
+            - network
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '5B01-0001':
+          category:
+            - process
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '5B01-0002':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          log_type: event
+        '5B01-0003':
+          category:
+            - process
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '7800-0000':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '7800-0001':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '7000-0001':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: failure
+          log_type: event
+        '7000-0002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '7001-0000':
+          category:
+            - network
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '7001-0001':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '7001-0002':
+          category:
+            - authentication
+          type:
+            - start
+          outcome: success
+          log_type: event
+        '7001-0003':
+          category:
+            - authentication
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '7001-0004':
+          category:
+            - network
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '7001-0005':
+          category:
+            - network
+          type:
+            - end
+          outcome: success
+          log_type: event
+        '7001-0006':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '7001-0007':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '7001-0008':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '7001-0009':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '7002-0000':
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+          log_type: event
+        '3000-0152':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0153':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0154':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0155':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0156':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0157':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0158':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0159':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0160':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0161':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0162':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0163':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0164':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0165':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0166':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0167':
+          category:
+            - network
+          type:
+            - allowed
+          outcome: unknown
+          log_type: alarm
+        '3000-0168':
+          category:
+            - network
+          type:
+            - denied
+          outcome: unknown
+          log_type: alarm
+        '3000-0169':
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0170':
+          category:
+            - network
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0171':
+          category:
+            - network
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+        '3000-0172':
+          category:
+            - network
+          type:
+            - denied
+          outcome: unknown
+          log_type: alarm
+        '020B-0001':
+          category:
+            - network
+          type:
+            - info
+          outcome: unknown
+          log_type: alarm
+      source: |-
+        if (ctx.watchguard_firebox?.log?.msg_id == null || params.get(ctx.watchguard_firebox.log.msg_id) == null) {
+          return;
+        }
+        params.get(ctx.watchguard_firebox.log.msg_id).forEach((k, v) -> {
+          if (k.equals("log_type")) {
+            ctx.watchguard_firebox.log[k] = v;
+          } else {
+            ctx.event[k] = v
+          }
+        });
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_alert
+      value: alert
+      if: (ctx.watchguard_firebox?.log?.log_type != null && ctx.watchguard_firebox.log.log_type == 'alarm') || (ctx.watchguard_firebox?.log?.msg_id != null && ['3000-012C', '0F01-0015', '3000-012E', '3000-0150', '3000-0173'].contains(ctx.watchguard_firebox.log.msg_id))
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_alarm" }}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ctx.watchguard_firebox?.log?.log_type != null && ctx.watchguard_firebox.log.log_type == 'alarm'
+      tag: pipeline_alarm
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_event" }}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ctx.watchguard_firebox?.log?.log_type != null && ctx.watchguard_firebox.log.log_type == 'event'
+      tag: pipeline_event
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_diagnostic" }}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ctx.watchguard_firebox?.log?.log_type != null && ctx.watchguard_firebox.log.log_type == 'diagnostic'
+      tag: pipeline_diagnostic
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_traffic" }}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ctx.watchguard_firebox?.log?.log_type != null && ctx.watchguard_firebox.log.log_type == 'traffic'
+      tag: pipeline_traffic
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - watchguard_firebox.log.body
+        - _conf
+      tag: remove_fields
+      ignore_missing: true
+  - remove:
+      field:
+        - watchguard_firebox.log.serial_number
+        - watchguard_firebox.log.syslog_timestamp
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

@@ -34,7 +34,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **Kibana version** required is **8.12.0**.
 This module has been tested against the **ESET PROTECT (version: 5.0.9.1)**.
 
 ## Setup
@@ -252,7 +251,6 @@ An example event for `detection` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Device Task
@@ -386,7 +384,6 @@ An example event for `device_task` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Event
@@ -626,5 +623,4 @@ An example event for `event` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 

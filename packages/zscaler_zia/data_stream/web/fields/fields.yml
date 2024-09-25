@@ -1,126 +1,615 @@
-- name: zscaler_zia.web
+- name: zscaler_zia
   type: group
   fields:
-    - name: app
+    - name: web
       type: group
       fields:
-        - name: class
+        - name: action
           type: keyword
-          description: |
-            The web application class of the application that was accessed. Equivalent to module.
-        - name: name
+          description: The action that the service took on the transaction.
+        - name: alpn_protocol
           type: keyword
-          description: |
-            Cloud application name.
-    - name: bandwidth_throttle
-      type: keyword
-      description: |
-        Indicates whether the transaction was throttled due to a configured bandwidth policy.
-    - name: ctime
-      type: long
-      description: |
-        The time from when the first byte of the request hits the ZEN to the time in which the last byte of the response is sent from the ZEN back to the browser.
-    - name: department
-      type: keyword
-      description: |
-        Department of the user.
-    - name: device.hostname
-      type: keyword
-      description: |
-        The obfuscated version of the device owner. This field must be changed manually.
-    - name: dpl
-      type: group
-      fields:
-        - name: dictionaries
+          description: The Application-Layer Protocol Negotiation (ALPN) protocol.
+        - name: app
+          type: group
+          fields:
+            - name: class
+              type: keyword
+              description: The web application class of the application that was accessed.
+            - name: name
+              type: keyword
+              description: The name of the cloud application.
+            - name: risk_score
+              type: keyword
+              description: The computed or assigned risk index for the cloud application.
+            - name: rule_label
+              type: keyword
+              description: The name of the rule that was applied to the application.
+        - name: bandwidth_class_name
           type: keyword
-          description: |
-            The DLP dictionaries that were matched, if any.
-        - name: engine
+          description: The name of the bandwidth class.
+        - name: bandwidth_rule_name
           type: keyword
-          description: |
-            The DLP engine that was matched, if any.
-    - name: encoded_host
-      type: keyword
-      description: |
-        Encoded version of the destination host name.
-    - name: file
-      type: group
-      fields:
-        - name: class
+          description: The name of the bandwidth rule.
+        - name: bandwidth_throttle
           type: keyword
-          description: |
-            Type of file associated with the transaction.
-        - name: type
+          description: Indicates whether the transaction was throttled due to a configured bandwidth policy.
+        - name: bypassed
+          type: group
+          fields:
+            - name: time
+              type: date
+              description: The date and time when the traffic bypassed the Zscaler Client Connector.
+            - name: traffic
+              type: keyword
+              description: Indicates whether the traffic bypassed the Zscaler Client Connector or not.
+        - name: client
+          type: group
+          fields:
+            - name: cipher
+              type: keyword
+              description: The negotiated cipher suite for communication between the client and Zscaler.
+            - name: cipher_reuse
+              type: keyword
+              description: Client cipher reuse information.
+            - name: internet
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The client's Internet (NATed Public) IP address.
+            - name: ip
+              type: ip
+              description: The IP address of the user.
+            - name: public_ip
+              type: ip
+              description: The client public IP address.
+            - name: source_port
+              type: long
+              description: The client source port.
+            - name: ssl
+              type: group
+              fields:
+                - name: fail_count
+                  type: long
+                  description: The number of failed client SSL handshake attempts.
+                - name: fail_reason
+                  type: keyword
+                  description: The reason for the client SSL handshake failure.
+            - name: tls_version
+              type: keyword
+              description: The TLS version used for communication between the client and Zscaler.
+        - name: cloud_name
           type: keyword
-          description: |
-            Type of file associated with the transaction.
-    - name: location
-      type: keyword
-      description: |
-        Gateway location or sub-location of the source.
-    - name: malware
-      type: group
-      fields:
-        - name: category
+          description: The name of the Zscaler cloud.
+        - name: company
           type: keyword
-          description: |
-            The category of malware that was detected in the transaction, if any. Also indicates if a file was submitted to the Sandbox engine for analysis and the result of the analysis.
-        - name: class
+          description: The name of the company.
+        - name: content_type
           type: keyword
-          description: |
-            The class of malware that was detected in the transaction, if any.
-    - name: record.id
-      type: keyword
-      description: |
-        N/A
-    - name: stime
-      type: long
-      description: |
-        The round trip time between the ZEN request and the server.
-    - name: threat.name
-      type: keyword
-      description: |
-        The name of the threat that was detected in the transaction, if any.
-    - name: total.size
-      type: long
-      description: |
-        Total size, in bytes, of the HTTP transaction; sum of the total request size and total response size.
-    - name: unscannable.type
-      type: keyword
-      description: |
-        Unscannable file type.
-    - name: upload
-      type: group
-      fields:
+          description: The name of the content type.
+        - name: datacenter
+          type: group
+          fields:
+            - name: city
+              type: keyword
+              description: The city where the data center is located.
+            - name: country
+              type: keyword
+              description: The country where the data center is located.
+            - name: name
+              type: keyword
+              description: The name of the data center.
+        - name: day
+          type: keyword
+          description: The day of the week.
+        - name: day_of_month
+          type: long
+          description: The day of the month.
+        - name: department
+          type: keyword
+          description: The department of the user.
+        - name: device
+          type: group
+          fields:
+            - name: appversion
+              type: keyword
+              description: The app version the device uses.
+            - name: hostname
+              type: keyword
+              description: The hostname of the device.
+            - name: model
+              type: keyword
+              description: The model of the device.
+            - name: name
+              type: keyword
+              description: The name of the device.
+            - name: os
+              type: group
+              fields:
+                - name: type
+                  type: keyword
+                  description: The OS type of the device.
+                - name: version
+                  type: keyword
+                  description: The OS version the device uses.
+            - name: owner
+              type: keyword
+              description: The owner of the device.
+            - name: type
+              type: keyword
+              description: The type of device.
+        - name: df
+          type: group
+          fields:
+            - name: host
+              type: group
+              fields:
+                - name: head
+                  type: keyword
+                  description: The field contains HTTP/S transactions that indicate domain fronting due to an FQDN mismatch between the request URL and the request's host header.
+                - name: name
+                  type: keyword
+                  description: An optional field that contains the TLS connection's Server Name Indication (SNI).
+        - name: dlp
+          type: group
+          fields:
+            - name: dictionaries
+              type: group
+              fields:
+                - name: hit_count
+                  type: keyword
+                  description: The number of hits for each of the dictionaries that were matched in the transaction.
+                - name: name
+                  type: keyword
+                  description: The DLP dictionaries that were matched.
+            - name: engine
+              type: keyword
+              description: The DLP engine that was matched.
+            - name: identifier
+              type: keyword
+              description: The unique identifier of the DLP incident.
+            - name: md5
+              type: keyword
+              description: The MD5 hash of the transaction.
+            - name: rule
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the DLP rule applied to the transaction.
+        - name: eedone
+          type: keyword
+          description: Indicates if the characters specified in the Feed Escape Character field of the NSS feed configuration page were hex encoded.
+        - name: epochtime
+          type: date
+          description: The epoch time of the transaction.
+        - name: external
+          type: group
+          fields:
+            - name: device
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The external device ID that associates a user’s device with the mobile device management (MDM) solution.
         - name: file
           type: group
           fields:
             - name: class
               type: keyword
+              description: The class of file downloaded during the transaction.
             - name: name
               type: keyword
-            - name: sub_type
+              description: The name of downloaded files during the transaction.
+            - name: subtype
               type: keyword
+              description: Applicable to the web traffic processed via Isolation.
             - name: type
               type: keyword
-    - name: url
-      type: group
-      fields:
-        - name: category
+              description: The type of file downloaded during the transaction.
+        - name: flow_type
+          type: keyword
+          description: The flow type of the transaction.
+        - name: forward_gateway
           type: group
           fields:
-            - name: sub
+            - name: ip
+              type: ip
+              description: The IP address of the gateway used.
+            - name: name
               type: keyword
-              description: |
-                Category of the destination URL.
-            - name: super
-              type: keyword
-              description: |
-                Super category of the destination URL.
-        - name: class
+              description: The name of the gateway defined in a forwarding rule.
+        - name: forward_type
           type: keyword
-          description: |-
-            Class of the destination URL.
-- name: log.source.address
-  type: keyword
-  description: Source address from which the log event was read / sent from.
+          description: The type of forwarding method used.
+        - name: host
+          type: keyword
+          description: The destination hostname.
+        - name: hour
+          type: long
+          description: Hours.
+        - name: is_ssl_certificate_expired
+          type: keyword
+          description: Indicates whether the certificate presented by the server is expired or not.
+        - name: is_ssl_certificate_selfsigned
+          type: keyword
+          description: Indicates whether the certificate presented by the server to the ZIA Public Service Edge was self-signed.
+        - name: is_ssl_certificate_untrusted
+          type: keyword
+          description: Indicates whether the server certificate is signed by a Zscaler-trusted certificate authority or not.
+        - name: key_protection_type
+          type: keyword
+          description: Indicates whether an HSM Protection or a Software Protection intermediate CA certificate is used for the TLS interception.
+        - name: location
+          type: keyword
+          description: The gateway location or sub-location of the source.
+        - name: login
+          type: keyword
+          description: The user's login name in email address format.
+        - name: malware
+          type: group
+          fields:
+            - name: category
+              type: keyword
+              description: The category of malware that was detected in the transaction.
+            - name: class
+              type: keyword
+              description: The class of malware that was detected in the transaction.
+        - name: md5_hash
+          type: keyword
+          description: The MD5 hash of the malware file that was detected in the transaction, or the MD5 of the file that was sent for analysis to the Sandbox engine.
+        - name: minute
+          type: long
+          description: Minutes.
+        - name: mobile
+          type: group
+          fields:
+            - name: application
+              type: group
+              fields:
+                - name: category
+                  type: keyword
+                  description: The category of the mobile app.
+                - name: name
+                  type: keyword
+                  description: The name of the mobile app.
+            - name: dev
+              type: group
+              fields:
+                - name: type
+                  type: keyword
+                  description: The type of mobile device.
+        - name: module
+          type: keyword
+          description: The web application class of the application that was accessed.
+        - name: month
+          type: keyword
+          description: The name of the month.
+        - name: month_of_year
+          type: long
+          description: The month of the year.
+        - name: nss
+          type: group
+          fields:
+            - name: service
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The service IP address of the NSS.
+        - name: obfuscated
+          type: group
+          fields:
+            - name: app_rule_label
+              type: keyword
+              description: The obfuscated version of the name of the rule that was applied to the application.
+            - name: bendwidth
+              type: group
+              fields:
+                - name: class_name
+                  type: keyword
+                  description: The obfuscated version of the name of the bandwidth class.
+            - name: client
+              type: group
+              fields:
+                - name: ip
+                  type: keyword
+                  description: The obfuscated version of the IP address of the user.
+                - name: public
+                  type: group
+                  fields:
+                    - name: ip
+                      type: keyword
+                      description: The obfuscated version of the client public IP address.
+            - name: device
+              type: group
+              fields:
+                - name: host_name
+                  type: keyword
+                  description: The obfuscated version of the hostname of the device.
+                - name: name
+                  type: keyword
+                  description: The obfuscated version of the name of the device.
+                - name: owner
+                  type: keyword
+                  description: The obfuscated version of the owner of the device.
+            - name: dlp
+              type: group
+              fields:
+                - name: dictionaries
+                  type: keyword
+                  description: The obfuscated version of the DLP dictionaries that were matched.
+                - name: engine
+                  type: keyword
+                  description: The obfuscated version of the DLP engine that was matched.
+                - name: rule
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The obfuscated version of the name of the DLP rule that was applied.
+            - name: forward_gateway_name
+              type: keyword
+              description: The obfuscated version of the gateway defined in a forwarding rule.
+            - name: login
+              type: keyword
+              description: The obfuscated version of the user's login name.
+            - name: rule
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The obfuscated version of the name of the redirect/forwarding policy.
+            - name: url
+              type: group
+              fields:
+                - name: category
+                  type: keyword
+                  description: The obfuscated version of the category of the destination URL.
+                - name: filter_rule_label
+                  type: keyword
+                  description: The obfuscated version of the name of the rule that was applied to the URL filter.
+            - name: zpa_app_segment
+              type: keyword
+              description: The obfuscated version of the ZPA application segment.
+        - name: policy
+          type: group
+          fields:
+            - name: reason
+              type: keyword
+              description: The SSL policy reasons.
+        - name: product_version
+          type: keyword
+          description: The current version of the product.
+        - name: prototype
+          type: keyword
+          description: The protocol type of the transaction.
+        - name: reason
+          type: keyword
+          description: The action that the service took and the policy that was applied.
+        - name: record
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The unique record identifier for each log.
+        - name: redirect_policy_name
+          type: keyword
+          description: The name of the redirect/forwarding policy.
+        - name: referer
+          type: group
+          fields:
+            - name: host
+              type: keyword
+              description: The hostname of the referer URL.
+            - name: name
+              type: keyword
+              description: The HTTP referer URL.
+        - name: request
+          type: group
+          fields:
+            - name: header_size
+              type: long
+              description: The size of the HTTP request header in bytes.
+            - name: method
+              type: keyword
+              description: The HTTP request method.
+            - name: payload
+              type: long
+              description: The size of the HTTP request payload.
+            - name: size
+              type: long
+              description: The request size in bytes.
+            - name: version
+              type: keyword
+              description: The HTTP request version.
+        - name: response
+          type: group
+          fields:
+            - name: code
+              type: keyword
+              description: The HTTP response code sent to the client.
+            - name: header_size
+              type: long
+              description: The size of the HTTP response header in bytes.
+            - name: payload
+              type: long
+              description: The size of the HTTP response payload.
+            - name: size
+              type: long
+              description: The total size of the HTTP response in bytes.
+            - name: version
+              type: keyword
+              description: The HTTP response version.
+        - name: risk
+          type: group
+          fields:
+            - name: score
+              type: double
+              description: The Page Risk Index score of the destination URL.
+        - name: rule
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the rule that was applied to the transaction.
+            - name: type
+              type: keyword
+              description: The type of policy.
+        - name: second
+          type: long
+          description: Seconds.
+        - name: server
+          type: group
+          fields:
+            - name: certificate
+              type: group
+              fields:
+                - name: validation
+                  type: group
+                  fields:
+                    - name: period
+                      type: keyword
+                      description: The expiration of the server certificate.
+            - name: certificate_validation_chain
+              type: keyword
+              description: The validation of the certificate chain.
+            - name: certificate_validation_type
+              type: keyword
+              description: The validation method of the server certificate.
+            - name: cipher
+              type: keyword
+              description: The negotiated cipher suite for communication between Zscaler and the server.
+            - name: cipher_reuse
+              type: keyword
+              description: Server cipher reuse information.
+            - name: ip
+              type: ip
+              description: The destination server IP address.
+            - name: ocsp_result
+              type: keyword
+              description: The OCSP result/certificate revocation result.
+            - name: tls_version
+              type: keyword
+              description: The TLS/SSL version used for communication between the ZIA Public Service Edge and the server.
+            - name: wildcard_certificate
+              type: keyword
+              description: The server wildcard certificate.
+        - name: sha256
+          type: keyword
+          description: The hash of identical files.
+        - name: ssl_decrypted
+          type: keyword
+          description: Indicates whether the transaction was SSL inspected or not.
+        - name: threat
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the threat that was detected in the transaction.
+            - name: severity
+              type: keyword
+              description: The severity of the threat that was detected in the transaction.
+        - name: throttle
+          type: group
+          fields:
+            - name: request_size
+              type: long
+              description: The throttled transaction size in the Uplink direction (Upload) in bytes.
+            - name: response_size
+              type: long
+              description: The throttled transaction size in the Downlink direction (Download) in bytes.
+        - name: time
+          type: date
+          description: The time and date of the transaction.
+        - name: timezone
+          type: keyword
+          description: The time zone.
+        - name: total
+          type: group
+          fields:
+            - name: size
+              type: long
+              description: The total size of the HTTP transaction in bytes.
+        - name: traffic_redirect_method
+          type: keyword
+          description: The traffic forwarding method to ZIA Public Service Edges.
+        - name: unscannable
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: The unscannable file type.
+        - name: upload
+          type: group
+          fields:
+            - name: doc
+              type: group
+              fields:
+                - name: type_name
+                  type: keyword
+                  description: The type of document uploaded or downloaded during the transaction.
+            - name: file
+              type: group
+              fields:
+                - name: class
+                  type: keyword
+                  description: The class of file uploaded during the transaction.
+                - name: name
+                  type: keyword
+                  description: The name of uploaded files during the transaction.
+                - name: subtype
+                  type: keyword
+                  description: The subtype of the uploaded file (extension name).
+                - name: type
+                  type: keyword
+                  description: The type of file uploaded during the transaction.
+        - name: url
+          type: group
+          fields:
+            - name: category
+              type: group
+              fields:
+                - name: sub
+                  type: keyword
+                  description: The category of the destination URL.
+                - name: super
+                  type: keyword
+                  description: The super category of the destination URL.
+            - name: category_method
+              type: keyword
+              description: Refers to the source of the URL's category.
+            - name: class
+              type: keyword
+              description: The class of the destination URL.
+            - name: filter_rule_label
+              type: keyword
+              description: The name of the rule that was applied to the URL filter.
+            - name: name
+              type: keyword
+              description: The destination URL.
+        - name: user_agent
+          type: group
+          fields:
+            - name: class
+              type: keyword
+              description: The user agent class.
+            - name: name
+              type: keyword
+              description: The full user agent string for both known and unknown agents.
+            - name: token
+              type: keyword
+              description: The user agent token.
+        - name: user_location_name
+          type: keyword
+          description: Applicable to the web traffic processed via Isolation.
+        - name: year
+          type: long
+          description: Year.
+        - name: z_tunnel_version
+          type: keyword
+          description: The Z-Tunnel version.
+        - name: zpa_app_segment
+          type: keyword
+          description: The name of the Zscaler Private Access (ZPA) application segment.

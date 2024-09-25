@@ -18,19 +18,51 @@ The Rapid7 Threat Command integration collects three types of data: ioc, alert, 
 
 - This integration has been tested against Rapid7 Threat Command `IOC API v2`, `Alert API v1`, and `Vulnerability API v1`.
 
-- Rapid7 Threat Command integration is compatible with Elastic stack `v8.4.0` and newer.
+- Rapid7 Threat Command integration is compatible with Elastic stack `v8.12.0` and newer.
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
+### Elasticsearch
 
-This package requires at least a [Platinum level subscription](https://www.elastic.co/subscriptions#:~:text=Basic%201%2C%202-,Plati%C2%ADnum,-Enter%C2%ADprise) to use drill-downs and alert actions. Please ensure that you have a **Trial** or **Platinum level** subscription installed on your cluster before proceeding.
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+### Elastic Agent
+
+Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+
+You have a few options for installing and managing an Elastic Agent:
+
+#### Install a Fleet-managed Elastic Agent (recommended):
+
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+
+#### Install Elastic Agent in standalone mode (advanced users):
+
+With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
+
+#### Install Elastic Agent in a containerized environment:
+
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
+
+There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+
+### Other prerequisites
+
+The minimum **kibana.version** required is **8.12.0**.
 
 Check the prerequisites for [Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-setup.html#transform-setup).
 
 Check the prerequisites for [Actions and Connectors](https://www.elastic.co/guide/en/kibana/current/create-connector-api.html#_prerequisites_16).
 
-### Filtering IOCs
+## Setup
+
+### Integration settings
+
+#### IOC Expiration Duration
+
+This setting enforces all active Indicators of Compromise (IOCs) to expire after this duration since their last seen time indicated in the feed. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g `10d`). If invalid units are provided, default value `90d` i.e., 90 days is used to expire the indicators. More details on indicator expiration, read [Expiration of Indicators of Compromise (IOCs)](https://www.elastic.co/docs/current/integrations/ti_rapid7_threat_command#expiration-of-indicators-of-compromise-\(iocs\)) section.
+
+#### Filtering IOCs
 
 In order to filter the results based on severity and type, one can make use of **IOC Severities** and **IOC Types** parameters:
 
@@ -38,7 +70,7 @@ In order to filter the results based on severity and type, one can make use of *
 
 - Allowed values for IOC Types: IpAddresses, Urls, Domains, Hashes, Emails.
 
-### Filtering Alerts
+#### Filtering Alerts
 
 In order to filter the results based on severity, type, and status, one can make use of **Alert Severities**, **Alert Types**, **Fetch Closed Alerts** parameters:
 
@@ -48,7 +80,7 @@ In order to filter the results based on severity, type, and status, one can make
 
 **Note**: Individual policies need to be configured to retrieve both **Closed** and **Open** alerts.
 
-### Filtering Vulnerabilities
+#### Filtering Vulnerabilities
 
 In order to filter the results based on severity, one can make use of the **Vulnerability Severities** parameter:
 
@@ -56,122 +88,93 @@ In order to filter the results based on severity, one can make use of the **Vuln
 
 Click on **Add row** to filter out data using multiple values of the parameter.
 
-## Setup
+### Major changes after integration version `1.16.0`
 
-Once the integration is configured and data collection is started, add transforms to identify the latest documents and process data of correlation indices.
+**If the integration is being upgraded from version <=1.16.0 to >=2.0.0, one or more actions in below sections are required for the integration to work.**
 
-### Add Transforms for Unique IOCs and Detection Rule
+#### Removal of custom rules
 
-1. In Kibana, go to **Management > Dev Tools**.
-2. Add the below APIs to the console and execute it.
-- Create a template for unique IOCs index
-```
-POST _index_template/rapid7-tc-unique-ioc-template
-{"index_patterns":["rapid7-tc-unique-iocs"],"template":{"mappings":{"properties":{"@timestamp":{"type":"date"},"agent":{"properties":{"ephemeral_id":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024},"version":{"type":"keyword","ignore_above":1024}}},"cloud":{"properties":{"account":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"availability_zone":{"type":"keyword","ignore_above":1024},"image":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"instance":{"properties":{"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024}}},"machine":{"properties":{"type":{"type":"keyword","ignore_above":1024}}},"project":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"provider":{"type":"keyword","ignore_above":1024},"region":{"type":"keyword","ignore_above":1024}}},"container":{"properties":{"id":{"type":"keyword","ignore_above":1024},"image":{"properties":{"name":{"type":"keyword","ignore_above":1024}}},"name":{"type":"keyword","ignore_above":1024}}},"data_stream":{"properties":{"dataset":{"type":"constant_keyword"},"namespace":{"type":"constant_keyword"},"type":{"type":"constant_keyword"}}},"ecs":{"properties":{"version":{"type":"keyword"}}},"elastic_agent":{"properties":{"id":{"type":"keyword","ignore_above":1024},"snapshot":{"type":"boolean"},"version":{"type":"keyword","ignore_above":1024}}},"error":{"properties":{"message":{"type":"match_only_text"}}},"event":{"properties":{"category":{"type":"keyword"},"created":{"type":"date"},"dataset":{"type":"keyword"},"kind":{"type":"keyword"},"module":{"type":"keyword"},"original":{"type":"keyword"},"risk_score":{"type":"float"},"type":{"type":"keyword"}}},"host":{"properties":{"architecture":{"type":"keyword","ignore_above":1024},"containerized":{"type":"boolean"},"domain":{"type":"keyword","ignore_above":1024},"hostname":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"ip":{"type":"ip"},"mac":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024},"os":{"properties":{"build":{"type":"keyword","ignore_above":1024},"codename":{"type":"keyword","ignore_above":1024},"family":{"type":"keyword","ignore_above":1024},"kernel":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"text"}}},"platform":{"type":"keyword","ignore_above":1024},"version":{"type":"keyword","ignore_above":1024}}},"type":{"type":"keyword","ignore_above":1024}}},"input":{"properties":{"type":{"type":"keyword","ignore_above":1024}}},"log":{"properties":{"offset":{"type":"long"}}},"related":{"properties":{"hash":{"type":"keyword"},"ip":{"type":"ip"}}},"rapid7":{"properties":{"tc":{"properties":{"ioc":{"properties":{"first_seen":{"type":"date"},"geolocation":{"type":"keyword"},"last_seen":{"type":"date"},"last_update_date":{"type":"date"},"provider":{"type":"keyword"},"related":{"properties":{"campaigns":{"type":"keyword"},"malware":{"type":"keyword"},"threat_actors":{"type":"keyword"}}},"reported_feeds":{"type":"nested","properties":{"confidence":{"type":"long"},"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024}}},"score":{"type":"double"},"severity":{"type":"keyword"},"status":{"type":"keyword"},"tags":{"type":"keyword"},"type":{"type":"keyword"},"value":{"type":"keyword","ignore_above":4096},"whitelisted":{"type":"keyword"}}}}}}},"tags":{"type":"keyword"},"threat":{"properties":{"indicator":{"properties":{"as":{"properties":{"number":{"type":"long"},"organization":{"properties":{"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"match_only_text"}}}}}}},"confidence":{"type":"keyword","ignore_above":1024},"description":{"type":"keyword","ignore_above":1024},"email":{"properties":{"address":{"type":"keyword"}}},"file":{"properties":{"hash":{"properties":{"md5":{"type":"keyword","ignore_above":1024},"sha1":{"type":"keyword","ignore_above":1024},"sha256":{"type":"keyword","ignore_above":1024},"sha512":{"type":"keyword","ignore_above":1024},"sha384":{"type":"keyword","ignore_above":1024}}}}},"first_seen":{"type":"date"},"geo":{"properties":{"city_name":{"type":"keyword","ignore_above":1024},"continent_code":{"type":"keyword","ignore_above":1024},"continent_name":{"type":"keyword","ignore_above":1024},"country_iso_code":{"type":"keyword","ignore_above":1024},"country_name":{"type":"keyword","ignore_above":1024},"location":{"type":"geo_point"},"name":{"type":"keyword","ignore_above":1024},"postal_code":{"type":"keyword","ignore_above":1024},"region_iso_code":{"type":"keyword","ignore_above":1024},"region_name":{"type":"keyword","ignore_above":1024},"timezone":{"type":"keyword","ignore_above":1024}}},"ip":{"type":"ip"},"last_seen":{"type":"date"},"modified_at":{"type":"date"},"provider":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024},"url":{"properties":{"domain":{"type":"keyword","ignore_above":1024},"extension":{"type":"keyword","ignore_above":1024},"fragment":{"type":"keyword","ignore_above":1024},"full":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"original":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"password":{"type":"wildcard","ignore_above":1024},"path":{"type":"wildcard","ignore_above":1024},"port":{"type":"long"},"query":{"type":"keyword","ignore_above":4096},"registered_domain":{"type":"keyword","ignore_above":1024},"scheme":{"type":"keyword","ignore_above":1024},"subdomain":{"type":"keyword","ignore_above":1024},"top_level_domain":{"type":"keyword","ignore_above":1024},"username":{"type":"keyword","ignore_above":1024}}}}}}}}}}}
-```
-- Create a transform for unique IOCs
-```
-PUT _transform/ti_rapid7_threat_command_unique_ioc_transform
-{"source":{"index":["logs-*"],"query":{"bool":{"should":[{"match_phrase":{"data_stream.dataset":"ti_rapid7_threat_command.ioc"}}],"minimum_should_match":1}}},"dest":{"index":"rapid7-tc-unique-iocs","pipeline":"0.1.0-ti_rapid7_threat_command-unique-ioc-transform-pipeline"},"frequency":"30m","sync":{"time":{"field":"event.ingested","delay":"60s"}},"latest":{"unique_key":["rapid7.tc.ioc.value"],"sort":"@timestamp"},"description":"This transform creates index to maintain unique values of IOCs."}
-```
-- Start a transform for unique IOCs
-```
-POST _transform/ti_rapid7_threat_command_unique_ioc_transform/_start
-```
-- Create a template for correlation index of IOC rule transform
-```
-POST _index_template/ioc-rule-transform-template
-{"index_patterns":["rapid7-tc-ioc-correlations"],"template":{"mappings":{"properties":{"@timestamp":{"type":"date"},"rapid7":{"properties":{"tc":{"properties":{"ioc":{"properties":{"tags":{"type":"keyword"},"value":{"type":"keyword","ignore_above":4096},"related":{"properties":{"campaigns":{"type":"keyword"},"malware":{"type":"keyword"},"threat_actors":{"type":"keyword"}}}}}}}}},"threat":{"properties":{"enrichment":{"properties":{"indicator":{"properties":{"as":{"properties":{"number":{"type":"long"},"organization":{"properties":{"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"match_only_text"}}}}}}},"confidence":{"type":"keyword","ignore_above":1024},"description":{"type":"keyword","ignore_above":1024},"email":{"properties":{"address":{"type":"keyword"}}},"file":{"properties":{"hash":{"properties":{"md5":{"type":"keyword","ignore_above":1024},"sha1":{"type":"keyword","ignore_above":1024},"sha256":{"type":"keyword","ignore_above":1024},"sha512":{"type":"keyword","ignore_above":1024},"sha384":{"type":"keyword","ignore_above":1024}}}}},"first_seen":{"type":"date"},"geo":{"properties":{"city_name":{"type":"keyword","ignore_above":1024},"continent_code":{"type":"keyword","ignore_above":1024},"continent_name":{"type":"keyword","ignore_above":1024},"country_iso_code":{"type":"keyword","ignore_above":1024},"country_name":{"type":"keyword","ignore_above":1024},"location":{"type":"geo_point"},"name":{"type":"keyword","ignore_above":1024},"postal_code":{"type":"keyword","ignore_above":1024},"region_iso_code":{"type":"keyword","ignore_above":1024},"region_name":{"type":"keyword","ignore_above":1024},"timezone":{"type":"keyword","ignore_above":1024}}},"ip":{"type":"ip"},"last_seen":{"type":"date"},"modified_at":{"type":"date"},"provider":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024},"url":{"properties":{"domain":{"type":"keyword","ignore_above":1024},"extension":{"type":"keyword","ignore_above":1024},"fragment":{"type":"keyword","ignore_above":1024},"full":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"original":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"password":{"type":"wildcard","ignore_above":1024},"path":{"type":"wildcard","ignore_above":1024},"port":{"type":"long"},"query":{"type":"keyword","ignore_above":4096},"registered_domain":{"type":"keyword","ignore_above":1024},"scheme":{"type":"keyword","ignore_above":1024},"subdomain":{"type":"keyword","ignore_above":1024},"top_level_domain":{"type":"keyword","ignore_above":1024},"username":{"type":"keyword","ignore_above":1024}}}}},"matched":{"properties":{"atomic":{"type":"keyword"},"field":{"type":"keyword"},"id":{"type":"keyword"},"index":{"type":"keyword"},"occured":{"type":"keyword"},"type":{"type":"keyword"}}}}},"indicator":{"properties":{"as":{"properties":{"number":{"type":"long"},"organization":{"properties":{"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"match_only_text"}}}}}}},"confidence":{"type":"keyword","ignore_above":1024},"description":{"type":"keyword","ignore_above":1024},"email":{"properties":{"address":{"type":"keyword"}}},"file":{"properties":{"hash":{"properties":{"md5":{"type":"keyword","ignore_above":1024},"sha1":{"type":"keyword","ignore_above":1024},"sha256":{"type":"keyword","ignore_above":1024},"sha512":{"type":"keyword","ignore_above":1024},"sha384":{"type":"keyword","ignore_above":1024}}}}},"first_seen":{"type":"date"},"geo":{"properties":{"city_name":{"type":"keyword","ignore_above":1024},"continent_code":{"type":"keyword","ignore_above":1024},"continent_name":{"type":"keyword","ignore_above":1024},"country_iso_code":{"type":"keyword","ignore_above":1024},"country_name":{"type":"keyword","ignore_above":1024},"location":{"type":"geo_point"},"name":{"type":"keyword","ignore_above":1024},"postal_code":{"type":"keyword","ignore_above":1024},"region_iso_code":{"type":"keyword","ignore_above":1024},"region_name":{"type":"keyword","ignore_above":1024},"timezone":{"type":"keyword","ignore_above":1024}}},"ip":{"type":"ip"},"last_seen":{"type":"date"},"provider":{"type":"keyword","ignore_above":1024},"modified_at":{"type":"date"},"type":{"type":"keyword","ignore_above":1024},"url":{"properties":{"domain":{"type":"keyword","ignore_above":1024},"extension":{"type":"keyword","ignore_above":1024},"fragment":{"type":"keyword","ignore_above":1024},"full":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"original":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"password":{"type":"wildcard","ignore_above":1024},"path":{"type":"wildcard","ignore_above":1024},"port":{"type":"long"},"query":{"type":"keyword","ignore_above":4096},"registered_domain":{"type":"keyword","ignore_above":1024},"scheme":{"type":"keyword","ignore_above":1024},"subdomain":{"type":"keyword","ignore_above":1024},"top_level_domain":{"type":"keyword","ignore_above":1024},"username":{"type":"keyword","ignore_above":1024}}}}}}}}}}}
-```
-- Create a transform for IOC detection rule
-```
-PUT _transform/ti_rapid7_threat_command_ioc_rule_transform
-{"source":{"index":[".internal.alerts-security.alerts-default-*"],"query":{"bool":{"filter":[{"match_phrase":{"kibana.alert.rule.tags":"Rapid7 Threat Command"}},{"match_phrase":{"kibana.alert.rule.tags":"IOC"}},{"match_phrase":{"kibana.alert.rule.category":"Indicator Match Rule"}}]}}},"dest":{"index":"rapid7-tc-ioc-correlations","pipeline":"0.1.0-ti_rapid7_threat_command-ioc-rule-transform-pipeline"},"frequency":"30m","sync":{"time":{"field":"@timestamp","delay":"60s"}},"latest":{"unique_key":["kibana.alert.uuid"],"sort":"@timestamp"},"retention_policy":{"time":{"field":"@timestamp","max_age":"60d"}},"description":"This transform creates index to populate the IOC Correlation and IOC Correlation Details Dashboards."}
-```
-- Start a transform for IOC detection Rule
-```
-POST _transform/ti_rapid7_threat_command_ioc_rule_transform/_start
-```
+The integration versions until `1.16.0` added custom security detection rules for storing matching indicators and CVEs from user indices to those ingested from Rapid7 Threat Command integration. These rules are now replaced by one or more of [Elastic prebuilt detection rules](https://www.elastic.co/guide/en/security/current/prebuilt-rules.html). Following are the changes:
 
-### Add Transforms for Unique alerts
 
-1. In Kibana, go to **Management > Dev Tools**.
-2. Add below API to the console and execute it.
-- Create a template for unique alerts index
-```
-POST _index_template/rapid7-tc-unique-alert-template
-{"index_patterns":["rapid7-tc-unique-alerts"],"template":{"mappings":{"properties":{"@timestamp":{"type":"date"},"agent":{"properties":{"ephemeral_id":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024},"version":{"type":"keyword","ignore_above":1024}}},"cloud":{"properties":{"account":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"availability_zone":{"type":"keyword","ignore_above":1024},"image":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"instance":{"properties":{"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024}}},"machine":{"properties":{"type":{"type":"keyword","ignore_above":1024}}},"project":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"provider":{"type":"keyword","ignore_above":1024},"region":{"type":"keyword","ignore_above":1024}}},"container":{"properties":{"id":{"type":"keyword","ignore_above":1024},"image":{"properties":{"name":{"type":"keyword","ignore_above":1024}}},"name":{"type":"keyword","ignore_above":1024}}},"data_stream":{"properties":{"dataset":{"type":"constant_keyword"},"namespace":{"type":"constant_keyword"},"type":{"type":"constant_keyword"}}},"ecs":{"properties":{"version":{"type":"keyword","ignore_above":1024}}},"elastic_agent":{"properties":{"id":{"type":"keyword","ignore_above":1024},"snapshot":{"type":"boolean"},"version":{"type":"keyword","ignore_above":1024}}},"error":{"properties":{"message":{"type":"match_only_text"}}},"event":{"properties":{"agent_id_status":{"type":"keyword","ignore_above":1024},"category":{"type":"keyword","ignore_above":1024},"created":{"type":"date"},"dataset":{"type":"constant_keyword"},"id":{"type":"keyword","ignore_above":1024},"ingested":{"type":"date","format":"strict_date_time_no_millis||strict_date_optional_time||epoch_millis"},"kind":{"type":"keyword","ignore_above":1024},"module":{"type":"constant_keyword"},"original":{"type":"keyword","index":false,"doc_values":false,"ignore_above":1024},"reference":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024}}},"host":{"properties":{"architecture":{"type":"keyword","ignore_above":1024},"containerized":{"type":"boolean"},"domain":{"type":"keyword","ignore_above":1024},"hostname":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"ip":{"type":"ip"},"mac":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024},"os":{"properties":{"build":{"type":"keyword","ignore_above":1024},"codename":{"type":"keyword","ignore_above":1024},"family":{"type":"keyword","ignore_above":1024},"kernel":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"text"}}},"platform":{"type":"keyword","ignore_above":1024},"version":{"type":"keyword","ignore_above":1024}}},"type":{"type":"keyword","ignore_above":1024}}},"input":{"properties":{"type":{"type":"keyword","ignore_above":1024}}},"log":{"properties":{"offset":{"type":"long"}}},"rapid7":{"properties":{"tc":{"properties":{"alert":{"properties":{"assets":{"type":"nested","properties":{"type":{"type":"keyword","ignore_above":1024},"value":{"type":"keyword","ignore_above":1024}}},"assignees":{"type":"keyword","ignore_above":1024},"details":{"properties":{"description":{"type":"keyword","ignore_above":1024},"images":{"type":"keyword","ignore_above":1024},"severity":{"type":"keyword","ignore_above":1024},"source":{"properties":{"date":{"type":"date"},"email":{"type":"keyword","ignore_above":1024},"leak_name":{"type":"keyword","ignore_above":1024},"network_type":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024},"url":{"type":"keyword","ignore_above":1024}}},"subtype":{"type":"keyword","ignore_above":1024},"tags":{"type":"nested","properties":{"created_by":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024}}},"title":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024}}},"found_date":{"type":"date"},"id":{"type":"keyword","ignore_above":1024},"is_closed":{"type":"boolean"},"is_flagged":{"type":"boolean"},"related_iocs":{"type":"keyword","ignore_above":1024},"related_threat_ids":{"type":"keyword","ignore_above":1024},"takedown_status":{"type":"keyword","ignore_above":1024},"update_date":{"type":"date"}}}}}}},"tags":{"type":"keyword","ignore_above":1024}}}}}
-```
-- Create a transform for unique alerts
-```
-PUT _transform/ti_rapid7_threat_command_unique_alert_transform
-{"source":{"index":["logs-*"],"query":{"bool":{"should":[{"match_phrase":{"data_stream.dataset":"ti_rapid7_threat_command.alert"}}],"minimum_should_match":1}}},"dest":{"index":"rapid7-tc-unique-alerts"},"frequency":"30m","sync":{"time":{"field":"event.ingested","delay":"60s"}},"latest":{"unique_key":["event.id"],"sort":"@timestamp"},"retention_policy":{"time":{"field":"@timestamp","max_age":"180d"}},"description":"This transform creates index to maintain unique values of Alerts."}
-```
-- Start a transform for unique alerts
-```
-POST _transform/ti_rapid7_threat_command_unique_alert_transform/_start
-```
+| Rule in `<= v1.16.0`                               | Replaced by Rule in `v2.0.0`                                        |
+| ---------------------------------------------------| --------------------------------------------------------------------|
+| `Rapid7 Threat Command IOCs Correlation`           | `Threat Intel Hash Indicator Match`, `Threat Intel IP Address Indicator Match`, `Threat Intel URL Indicator Match`, `Threat Intel Windows Registry Indicator Match`                                                      |
+| `Rapid7 Threat Command CVEs Correlation`           | `Rapid7 Threat Command CVEs Correlation`                            |
 
-### Add Transforms for Unique CVEs and Detection Rule
+After upgrading to `2.0.0`, users are advised to disable and delete old rules to avoid duplicate [Security Alerts](https://www.elastic.co/guide/en/security/current/alerts-ui-manage.html). Users must also install and enable new rules in their place as documented [here](#install-and-enable-detection-rule-in-elasticsearch).
 
-1. In Kibana, go to **Management > Dev Tools**.
-2. Add below API to the console and execute it.
-- Create a template for unique CVEs index
-```
-POST _index_template/rapid7-tc-unique-cve-template
-{"index_patterns":["rapid7-tc-unique-cves"],"template":{"mappings":{"properties":{"@timestamp":{"type":"date"},"cloud":{"properties":{"account":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"availability_zone":{"type":"keyword","ignore_above":1024},"image":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"instance":{"properties":{"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024}}},"machine":{"properties":{"type":{"type":"keyword","ignore_above":1024}}},"project":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"provider":{"type":"keyword","ignore_above":1024},"region":{"type":"keyword","ignore_above":1024}}},"container":{"properties":{"id":{"type":"keyword","ignore_above":1024},"image":{"properties":{"name":{"type":"keyword","ignore_above":1024}}},"name":{"type":"keyword","ignore_above":1024}}},"data_stream":{"properties":{"dataset":{"type":"constant_keyword"},"namespace":{"type":"constant_keyword"},"type":{"type":"constant_keyword"}}},"ecs":{"properties":{"version":{"type":"keyword","ignore_above":1024}}},"error":{"properties":{"message":{"type":"match_only_text"}}},"event":{"properties":{"agent_id_status":{"type":"keyword","ignore_above":1024},"category":{"type":"keyword","ignore_above":1024},"created":{"type":"date"},"dataset":{"type":"keyword","ignore_above":1024},"ingested":{"type":"date","format":"strict_date_time_no_millis||strict_date_optional_time||epoch_millis"},"kind":{"type":"keyword","ignore_above":1024},"module":{"type":"keyword","ignore_above":1024},"original":{"type":"keyword","index":false,"doc_values":false,"ignore_above":8191},"type":{"type":"keyword","ignore_above":1024}}},"host":{"properties":{"architecture":{"type":"keyword","ignore_above":1024},"containerized":{"type":"boolean"},"domain":{"type":"keyword","ignore_above":1024},"hostname":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"ip":{"type":"ip"},"mac":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024},"os":{"properties":{"build":{"type":"keyword","ignore_above":1024},"codename":{"type":"keyword","ignore_above":1024},"family":{"type":"keyword","ignore_above":1024},"kernel":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"text"}}},"platform":{"type":"keyword","ignore_above":1024},"version":{"type":"keyword","ignore_above":1024}}},"type":{"type":"keyword","ignore_above":1024}}},"input":{"properties":{"type":{"type":"keyword","ignore_above":1024}}},"log":{"properties":{"offset":{"type":"long"}}},"rapid7":{"properties":{"tc":{"properties":{"vulnerability":{"properties":{"cpe":{"properties":{"range":{"properties":{"version":{"properties":{"end":{"properties":{"excluding":{"type":"version"},"including":{"type":"version"}}},"start":{"properties":{"excluding":{"type":"version"},"including":{"type":"version"}}}}}}},"title":{"type":"keyword","ignore_above":1024},"value":{"type":"keyword","ignore_above":1024},"vendor_product":{"type":"keyword","ignore_above":1024}}},"cvss_score":{"type":"double"},"exploit_availability":{"type":"boolean"},"id":{"type":"keyword","ignore_above":1024},"intsights_score":{"type":"double"},"mention":{"properties":{"first_date":{"type":"keyword"},"last_date":{"type":"keyword"}}},"mentions":{"properties":{"source":{"properties":{"clear_web_cyber_blogs":{"type":"long"},"code_repositories":{"type":"long"},"dark_web":{"type":"long"},"exploit":{"type":"long"},"hacking_forum":{"type":"long"},"instant_message":{"type":"long"},"paste_site":{"type":"long"},"social_media":{"type":"long"}}},"total":{"type":"long"}}},"origin":{"type":"keyword","ignore_above":1024},"published_date":{"type":"date"},"related":{"properties":{"campaigns":{"type":"keyword","ignore_above":1024},"malware":{"type":"keyword","ignore_above":1024},"threat_actors":{"type":"keyword","ignore_above":1024}}},"severity":{"type":"keyword","ignore_above":1024},"update_date":{"type":"date"}}}}}}},"tags":{"type":"keyword","ignore_above":1024},"vulnerability":{"properties":{"classification":{"type":"keyword","ignore_above":1024},"enumeration":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"reference":{"type":"keyword","ignore_above":1024},"scanner":{"properties":{"vendor":{"type":"keyword","ignore_above":1024}}},"score":{"properties":{"base":{"type":"float"}}},"severity":{"type":"keyword","ignore_above":1024}}}}}}}
-```
-- Create a transform for unique CVEs
-```
-PUT _transform/ti_rapid7_threat_command_unique_cve_transform
-{"source":{"index":["logs-*"],"query":{"bool":{"should":[{"match_phrase":{"data_stream.dataset":"ti_rapid7_threat_command.vulnerability"}}],"minimum_should_match":1}}},"dest":{"index":"rapid7-tc-unique-cves"},"frequency":"30m","sync":{"time":{"field":"event.ingested","delay":"60s"}},"latest":{"unique_key":["vulnerability.id"],"sort":"@timestamp"},"retention_policy":{"time":{"field":"@timestamp","max_age":"180d"}},"description":"This transform creates index to maintain unique values of CVEs."}
-```
-- Start a transform for unique CVEs
-```
-POST _transform/ti_rapid7_threat_command_unique_cve_transform/_start
-```
-- Create a template for correlation index of CVE rule transform
-```
-POST _index_template/cve-rule-transform-template
-{"index_patterns":["rapid7-tc-cve-correlations"],"template":{"mappings":{"properties":{"@timestamp":{"type":"date"},"rapid7":{"properties":{"tc":{"properties":{"vulnerability":{"properties":{"cpe":{"properties":{"range":{"properties":{"version":{"properties":{"end":{"properties":{"excluding":{"type":"version"},"including":{"type":"version"}}},"start":{"properties":{"excluding":{"type":"version"},"including":{"type":"version"}}}}}}},"title":{"type":"keyword","ignore_above":1024},"value":{"type":"keyword","ignore_above":1024},"vendor_product":{"type":"keyword","ignore_above":1024}}},"cvss_score":{"type":"double"},"exploit_availability":{"type":"boolean"},"id":{"type":"keyword","ignore_above":1024},"intsights_score":{"type":"double"},"mention":{"properties":{"first_date":{"type":"keyword"},"last_date":{"type":"keyword"}}},"mentions":{"properties":{"source":{"properties":{"clear_web_cyber_blogs":{"type":"long"},"code_repositories":{"type":"long"},"dark_web":{"type":"long"},"exploit":{"type":"long"},"hacking_forum":{"type":"long"},"instant_message":{"type":"long"},"paste_site":{"type":"long"},"social_media":{"type":"long"}}},"total":{"type":"long"}}},"origin":{"type":"keyword","ignore_above":1024},"published_date":{"type":"date"},"related":{"properties":{"campaigns":{"type":"keyword","ignore_above":1024},"malware":{"type":"keyword","ignore_above":1024},"threat_actors":{"type":"keyword","ignore_above":1024}}},"severity":{"type":"keyword","ignore_above":1024},"update_date":{"type":"date"}}}}}}},"threat":{"properties":{"enrichments":{"properties":{"feed":{"type":"object"},"indicator":{"properties":{"cpe":{"properties":{"range":{"properties":{"version":{"properties":{"end":{"properties":{"excluding":{"type":"version"},"including":{"type":"version"}}},"start":{"properties":{"excluding":{"type":"version"},"including":{"type":"version"}}}}}}},"title":{"type":"keyword","ignore_above":1024},"value":{"type":"keyword","ignore_above":1024},"vendor_product":{"type":"keyword","ignore_above":1024}}},"cvss_score":{"type":"double"},"exploit_availability":{"type":"boolean"},"id":{"type":"keyword","ignore_above":1024},"intsights_score":{"type":"double"},"mention":{"properties":{"first_date":{"type":"keyword"},"last_date":{"type":"keyword"}}},"mentions":{"properties":{"source":{"properties":{"clear_web_cyber_blogs":{"type":"long"},"code_repositories":{"type":"long"},"dark_web":{"type":"long"},"exploit":{"type":"long"},"hacking_forum":{"type":"long"},"instant_message":{"type":"long"},"paste_site":{"type":"long"},"social_media":{"type":"long"}}},"total":{"type":"long"}}},"origin":{"type":"keyword","ignore_above":1024},"published_date":{"type":"date"},"related":{"properties":{"campaigns":{"type":"keyword","ignore_above":1024},"malware":{"type":"keyword","ignore_above":1024},"threat_actors":{"type":"keyword","ignore_above":1024}}},"severity":{"type":"keyword","ignore_above":1024},"update_date":{"type":"date"}}},"matched":{"properties":{"atomic":{"type":"keyword"},"field":{"type":"keyword"},"id":{"type":"keyword"},"index":{"type":"keyword"},"type":{"type":"keyword"}}}}}}},"vulnerability":{"properties":{"classification":{"type":"keyword","ignore_above":1024},"enumeration":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"reference":{"type":"keyword","ignore_above":1024},"scanner":{"properties":{"vendor":{"type":"keyword","ignore_above":1024}}},"score":{"properties":{"base":{"type":"float"}}},"severity":{"type":"keyword","ignore_above":1024}}}}}}}
-```
-- Create a transform for CVE detection Rule
-```
-PUT _transform/ti_rapid7_threat_command_cve_rule_transform
-{"source":{"index":[".internal.alerts-security.alerts-default-*"],"query":{"bool":{"filter":[{"match_phrase":{"kibana.alert.rule.tags":"Rapid7 Threat Command"}},{"match_phrase":{"kibana.alert.rule.tags":"CVE"}},{"match_phrase":{"kibana.alert.rule.category":"Indicator Match Rule"}}]}}},"dest":{"index":"rapid7-tc-cve-correlations","pipeline":"0.1.0-ti_rapid7_threat_command-cve-rule-transform-pipeline"},"frequency":"30m","sync":{"time":{"field":"@timestamp","delay":"60s"}},"latest":{"unique_key":["kibana.alert.uuid"],"sort":"@timestamp"},"description":"This transform creates index to populate the Vulnerability Correlation and Vulnerability Correlation Details Dashboards."}
-```
-- Start a transform for CVE detection Rule
-```
-POST _transform/ti_rapid7_threat_command_cve_rule_transform/_start
-```
+#### Removal of custom views and dashboards
 
-For more details, please refer to the [Kibana Dev Tools Guide](https://www.elastic.co/guide/en/kibana/current/console-kibana.html)
+The integration until version `1.16.0` adds custom indices and [Data Views](https://www.elastic.co/guide/en/kibana/current/data-views.html) namely `rapid7-tc-ioc-correlations` and `rapid7-tc-cve-correlations` to store matching indicators and CVEs from user indices with the help of [custom rules](#removal-of-custom-rules). Since the custom rules are replaced with Elastic prebuilt rules, these custom views are deleted. Users can view the same matching indicators and CVEs by navigating to `Security` -> `Alerts` page. Read [View Detection Alert](https://www.elastic.co/guide/en/security/current/view-alert-details.html) for more details.
 
-### Enabling correlation detection rule in Elasticsearch
+Some dashboards that depended on above custom views were also removed. These dashboards include `IOC Correlation`, `IOC Correlation Details`, `Vulnerability Correlation`, and `Vulnerability Correlation Details`. Users can view these correlations by navigating to the same `Security` -> `Alerts` page.
 
-1. In Kibana, go to **Security > Manage > Rules**.
-2. Click the **Load Elastic prebuilt rules and timeline templates** button to load Elastic prebuilt detection rules. By default, all loaded prebuilt rules are disabled.
-3. In the integrations search bar, type **Rapid7 Threat Command IOCs Correlation** for the IOC correlation rule and **Rapid7 Threat Command CVEs Correlation** for the CVE correlation rule.
+#### Removal of custom transforms
+
+This integration versions until `1.16.0` guided users to create custom transforms on datasets `IOC`, `Alert`, and `Vulnerability` with the commands to execute from Kibana Dev Tools. Starting `2.0.0`, the integration replaces them with fleet-managed transforms, which are automatically installed and started after upgrade. Following are the changes:
+
+| Transform Name `<= v1.16.0`                               | Transform Name `v2.0.0`                                           |
+| --------------------------------------------------------- | ------------------------------------------------------------------|
+| `ti_rapid7_threat_command_unique_ioc_transform`           | `logs-ti_rapid7_threat_command.latest_ioc-default-*`              |
+| `ti_rapid7_threat_command_ioc_rule_transform`             | `N/A`                                                             |
+| `ti_rapid7_threat_command_unique_alert_transform`         | `logs-ti_rapid7_threat_command.latest_alert-default-*`            |
+| `ti_rapid7_threat_command_unique_cve_transform`           | `logs-ti_rapid7_threat_command.latest_vulnerability-default-*`    |
+| `ti_rapid7_threat_command_cve_rule_transform`             | `N/A`                                                             |
+
+In versions `<= v1.16.0`, the transforms `ti_rapid7_threat_command_ioc_rule_transform` and `ti_rapid7_threat_command_cve_rule_transform` were used to index the security alerts generated from the [custom rules](#removal-of-custom-rules) into [custom views](#removal-of-custom-views-and-dashboards). Since both custom rules and custom views are deleted, these transforms are no longer required. 
+
+If users are upgrading to any version after `1.16.0`, it is advised to stop and delete all of the transforms used in older versions to avoid duplicate data and [Security Alerts](https://www.elastic.co/guide/en/security/current/alerts-ui-manage.html).
+
+#### Expiration of Indicators of Compromise (IOCs)
+The threat landscape is always evolving and therefore the IOCs need to update to reflect the current state or expired when the indicators are no longer relevant. 
+
+The ingested indicators from the integration are expired after the duration configured by `IOC Expiration Duration` integration setting. This setting is `required` property and must be set by the users. Refer [IOC Expiration Duration](#ioc-expiration-duration) section for more details.
+
+The [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) named `logs-ti_rapid7_threat_command.latest_ioc-default-*` is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_rapid7_threat_command_latest.dest_ioc-*` which only contains active and unexpired IOCs. This latest destination index also has an alias named `logs-ti_rapid7_threat_command_latest.ioc`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. 
+
+Dashboards are also pointing to the latest destination indices containing only active indicators. 
+
+An [ILM Policy](#ilm-policy) is added to avoid unbounded growth on source datastream `.ds-logs-ti_rapid7_threat_command.ioc-*` indices.
+
+#### ILM Policy
+Due to the addition of [fleet-managed transforms](#removal-of-custom-transforms), ILM policy is also added to `IOC`, `Alert`, and `Vulnerability` datasets so that source datastream-backed indices `.ds-logs-ti_rapid7_threat_command.ioc-*`, `.ds-logs-ti_rapid7_threat_command.alert-*`, `.ds-logs-ti_rapid7_threat_command.vulnerability-*` doesn't lead to unbounded growth. This means data in these source indices will be deleted based on the ILM policy, which defaults to `5 days` from ingested date.
+
+| Source datastream-backed indices                              | Policy Name                                                    | Default Retention |
+| --------------------------------------------------------------| ---------------------------------------------------------------|-------------------|
+| `.ds-logs-ti_rapid7_threat_command.ioc-*`                     | logs-ti_rapid7_threat_command.ioc-default_policy               |    5 days         |
+| `.ds-logs-ti_rapid7_threat_command.alert-*`                   | logs-ti_rapid7_threat_command.alert-default_policy             |    5 days         |
+| `.ds-logs-ti_rapid7_threat_command.vulnerability-*`           | logs-ti_rapid7_threat_command.vulnerability-default_policy     |    5 days         |
+
+The ILM policies can be modified as per user needs.
+
+### Detection Rules
+
+As noted in above sections, there are 5 prebuilt detection rules that are available and need to be added by the users. 4 rules are for matching indicators, while 1 rule is for matching vulnerabilities. Following are the rules:
+
+- Threat Intel Hash Indicator Match.
+- Threat Intel IP Address Indicator Match.
+- Threat Intel URL Indicator Match.
+- Threat Intel Windows Registry Indicator Match.
+- Rapid7 Threat Command CVEs Correlation.
+
+#### Install and Enable Detection Rule in Elasticsearch
+
+1. In Kibana, go to **Security > Rules > Detection rules (SIEM)**.
+2. Click on **Add Elastic Rules**.
+3. In the integrations search bar, type and search for each of the 5 rules from above.
+4. Click on **Install rule** to install the rule.
 4. To enable a detection rule, switch on the rule’s **Enabled** toggle.
 
-### Add Webhook Connectors for adding tags and comments
+### Add Connectors for rules
 
-Please refer to the Setup Guide of **Rapid7 Threat Command IOCs Correlation** to tag the specific IOC in the Rapid7 Threat Command platform on correlation match.
+1. In Kibana, go to **Security > Rules > Detection rules (SIEM)**.
+2. Under **Installed Rules**, click on each of the 5 rules from above.
+3. Click on `Edit rule settings`.
+4. Under **Actions** tab, choose a connector from the list `Select a connector type`.
+5. [Configure the connector](https://www.elastic.co/guide/en/kibana/current/action-types.html).
 
-1. In Kibana, go to **Security > Manage > Rules**.
-2. In the integrations search bar, type **Rapid7 Threat Command IOCs Correlation** and click on it.
-3. In the About section, select **Setup Guide** and follow the steps.
-
-## Retention policy
-Retention policy is used to retire data older than the default period. Refer to [Retention Policy](https://www.elastic.co/guide/en/elasticsearch/reference/current/put-transform.html#:~:text=to%20false.-,retention_policy,-(Optional%2C%20object)%20Defines) page for more information.
-
-The following table indicates the retention period for each data stream. Users can update the retention period once transform is configured:
-
-| Data stream   | Retention Period |
-| --------------| -----------------|
-| IOC           | 60 days          |
-| Alert         | 180 days         |
-| Vulnerability | 180 days         |
+For more details on Rule Actions, read [Rule Actions](https://www.elastic.co/guide/en/kibana/current/create-and-manage-rules.html#defining-rules-actions-details). For adding Webhook Connector to Rule Actions, read [Webhook - Case Management](https://www.elastic.co/guide/en/kibana/current/cases-webhook-action-type.html).
 
 ## Limitations
 
@@ -182,7 +185,7 @@ The following table indicates the retention period for each data stream. Users c
 
 - If you don't see any data for IOCs, Alerts, or CVEs, check the Agent logs to see if there are errors.
 
-  * Common error types:
+    **Common errors**:
 
   1. Module is not included in the ETP Suite subscription. Verify the system modules of your account using below CURL request.
       ```
@@ -199,8 +202,6 @@ The following table indicates the retention period for each data stream. Users c
     1. Check whether transforms are running without any errors. If you face any issues in transforms please refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
     2. Check whether source indices fields (e.g. `source.ip`, `url.full`, `vulnerability.id` etc.) are mapped according to the [ECS schema](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html).
 
-- If you don't see matched documents in **Matched CVE Details** drill down as per the **Match Count**, please adjust the time range accordingly to analyze all the matched documents.
-
 ## Logs reference
 
 ### IOC
@@ -213,38 +214,38 @@ An example event for `ioc` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-05T10:39:07.851Z",
+    "@timestamp": "2022-06-16T10:39:07.851Z",
     "agent": {
-        "ephemeral_id": "26a79bb1-c4ec-498b-b31e-e125ba1f3bc3",
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
+        "ephemeral_id": "f8dfeb31-2b56-4f8e-bb91-d4b94b8086da",
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.ioc",
-        "namespace": "ep",
+        "namespace": "98425",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
-        "snapshot": true,
-        "version": "8.11.0"
+        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-09-26T13:26:21.497Z",
+        "created": "2024-08-02T06:09:57.917Z",
         "dataset": "ti_rapid7_threat_command.ioc",
-        "ingested": "2023-09-26T13:26:22Z",
+        "ingested": "2024-08-02T06:10:07Z",
         "kind": "enrichment",
         "module": "ti_rapid7_threat_command",
-        "original": "{\"firstSeen\":\"2022-05-04T20:11:04.000Z\",\"lastSeen\":\"2022-05-04T20:11:04.000Z\",\"lastUpdateDate\":\"2022-05-05T10:39:07.851Z\",\"relatedCampaigns\":[],\"relatedMalware\":[\"remcos\"],\"relatedThreatActors\":[],\"reportedFeeds\":[{\"confidenceLevel\":2,\"id\":\"5b68306df84f7c8696047fdd\",\"name\":\"Test Feed\"}],\"score\":13.26086956521739,\"severity\":\"Low\",\"status\":\"Active\",\"tags\":[\"Test\"],\"type\":\"IpAddresses\",\"value\":\"89.160.20.112\",\"whitelisted\":false}",
+        "original": "{\"firstSeen\":\"2022-05-04T20:11:04.000Z\",\"lastSeen\":\"2022-06-15T20:11:04.000Z\",\"lastUpdateDate\":\"2022-06-16T10:39:07.851Z\",\"relatedCampaigns\":[],\"relatedMalware\":[\"remcos\"],\"relatedThreatActors\":[],\"reportedFeeds\":[{\"confidenceLevel\":2,\"id\":\"5b68306df84f7c8696047fdd\",\"name\":\"Test Feed\"}],\"score\":13.26086956521739,\"severity\":\"Low\",\"status\":\"Active\",\"tags\":[\"Test\"],\"type\":\"IpAddresses\",\"value\":\"89.160.20.112\",\"whitelisted\":false}",
         "risk_score": 13.26087,
         "type": [
             "indicator"
@@ -256,9 +257,11 @@ An example event for `ioc` looks as following:
     "rapid7": {
         "tc": {
             "ioc": {
+                "deleted_at": "2022-08-05T10:39:07.851Z",
+                "expiration_duration": "50d",
                 "first_seen": "2022-05-04T20:11:04.000Z",
-                "last_seen": "2022-05-04T20:11:04.000Z",
-                "last_update_date": "2022-05-05T10:39:07.851Z",
+                "last_seen": "2022-06-15T20:11:04.000Z",
+                "last_update_date": "2022-06-16T10:39:07.851Z",
                 "related": {
                     "malware": [
                         "remcos"
@@ -317,8 +320,9 @@ An example event for `ioc` looks as following:
                 "region_name": "Östergötland County"
             },
             "ip": "89.160.20.112",
-            "last_seen": "2022-05-04T20:11:04.000Z",
-            "modified_at": "2022-05-05T10:39:07.851Z",
+            "last_seen": "2022-06-15T20:11:04.000Z",
+            "modified_at": "2022-06-16T10:39:07.851Z",
+            "name": "89.160.20.112",
             "provider": [
                 "Test Feed"
             ],
@@ -326,7 +330,6 @@ An example event for `ioc` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -334,51 +337,18 @@ An example event for `ioc` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container ID. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host IP addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset | long |
+| rapid7.tc.ioc.deleted_at | The timestamp when indicator is (or will be) expired. | date |
+| rapid7.tc.ioc.expiration_duration | The configured expiration duration. | keyword |
 | rapid7.tc.ioc.first_seen | IOC first seen date in Unix Millisecond Timestamp. | date |
 | rapid7.tc.ioc.geolocation | Geographical location of an IP address. | keyword |
 | rapid7.tc.ioc.last_seen | IOC last seen date in Unix Millisecond Timestamp. | date |
@@ -397,49 +367,9 @@ An example event for `ioc` looks as following:
 | rapid7.tc.ioc.type | IOC type. | keyword |
 | rapid7.tc.ioc.value | IOC value. | keyword |
 | rapid7.tc.ioc.whitelisted | An indicator which states if the IOC was checked and found as whitelisted or not. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| tags | List of keywords used to tag each event. | keyword |
-| threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| threat.indicator.as.organization.name | Organization name. | keyword |
-| threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
-| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
-| threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
-| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
-| threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
-| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
-| threat.indicator.file.hash.sha384 | SHA384 hash. | keyword |
-| threat.indicator.file.hash.sha512 | SHA512 hash. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.indicator.geo.city_name | City name. | keyword |
-| threat.indicator.geo.continent_name | Name of the continent. | keyword |
-| threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
-| threat.indicator.geo.country_name | Country name. | keyword |
-| threat.indicator.geo.location | Longitude and latitude. | geo_point |
-| threat.indicator.geo.region_iso_code | Region ISO code. | keyword |
-| threat.indicator.geo.region_name | Region name. | keyword |
-| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
-| threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
-| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| threat.indicator.url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
-| threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| threat.indicator.url.full.text | Multi-field of `threat.indicator.url.full`. | match_only_text |
-| threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
-| threat.indicator.url.original.text | Multi-field of `threat.indicator.url.original`. | match_only_text |
-| threat.indicator.url.password | Password of the request. | keyword |
-| threat.indicator.url.path | Path of the request, such as "/search". | wildcard |
-| threat.indicator.url.port | Port of the request, such as 443. | long |
-| threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
-| threat.indicator.url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
-| threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| threat.indicator.url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
-| threat.indicator.url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
-| threat.indicator.url.username | Username of the request. | keyword |
 
 
 ### Alert
@@ -452,13 +382,13 @@ An example event for `alert` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-02T10:03:56.139Z",
+    "@timestamp": "2022-11-02T10:12:46.260Z",
     "agent": {
-        "ephemeral_id": "743b16ad-875e-4038-9516-8f13a9aa47df",
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
+        "ephemeral_id": "0a1f430f-ec76-4046-9683-49dd5ebaeab2",
+        "id": "34592ccf-10ae-4d24-a28c-97be832bde99",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.alert",
@@ -469,20 +399,20 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
-        "snapshot": true,
-        "version": "8.11.0"
+        "id": "34592ccf-10ae-4d24-a28c-97be832bde99",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-09-26T13:25:23.714Z",
+        "created": "2024-06-26T07:01:05.859Z",
         "dataset": "ti_rapid7_threat_command.alert",
-        "id": "123456789abcdefgh8866123",
-        "ingested": "2023-09-26T13:25:26Z",
+        "id": "123456789zxcvbnmas8a8q60",
+        "ingested": "2024-06-26T07:01:15Z",
         "kind": "alert",
         "module": "ti_rapid7_threat_command",
-        "original": "{\"Assets\":[{\"Type\":\"Domains\",\"Value\":\"example.com\"}],\"Assignees\":[],\"Closed\":{\"IsClosed\":true},\"Details\":{\"Description\":\"A suspicious domain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.\",\"Images\":[\"1al5s6789z6e2b0m9s8a8q60\"],\"Severity\":\"Low\",\"Source\":{\"NetworkType\":\"ClearWeb\",\"Type\":\"WHOIS servers\",\"URL\":\"http://example.com\"},\"SubType\":\"RegisteredSuspiciousDomain\",\"Tags\":[{\"CreatedBy\":\"ProfilingRule\",\"Name\":\"Phishing Domain - Default Detection Rule\",\"_id\":\"1al3p6789zxcvbnmas8a8q60\"}],\"Title\":\"Suspected Phishing Domain - 'example.com'\",\"Type\":\"Phishing\"},\"FoundDate\":\"2022-11-02T10:03:56.139Z\",\"IsFlagged\":false,\"RelatedIocs\":[\"example.com\"],\"RelatedThreatIDs\":[\"6a4e7t9a111bd0003bcc2a57\"],\"TakedownStatus\":\"NotSent\",\"UpdateDate\":\"2022-11-02T10:03:56.139Z\",\"_id\":\"123456789abcdefgh8866123\"}",
-        "reference": "https://dashboard.ti.insight.rapid7.com/#/threat-command/alerts/?search=123456789abcdefgh8866123"
+        "original": "{\"Assets\":[{\"Type\":\"Domains\",\"Value\":\"example.com\"}],\"Assignees\":[],\"Closed\":{\"IsClosed\":true},\"Details\":{\"Description\":\"A suspicious subdomain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.\",\"Images\":[],\"Severity\":\"Low\",\"Source\":{\"NetworkType\":\"ClearWeb\",\"Type\":\"WHOIS servers\",\"URL\":\"http://example.com\"},\"SubType\":\"RegisteredSuspiciousDomain\",\"Tags\":[{\"CreatedBy\":\"ProfilingRule\",\"Name\":\"Phishing Domain - Default Detection Rule\",\"_id\":\"1al3p6789z6c2b7m9s8a8q60\"}],\"Title\":\"Suspected Phishing Domain - 'example.com'\",\"Type\":\"Phishing\"},\"FoundDate\":\"2022-11-02T10:12:46.260Z\",\"IsFlagged\":false,\"RelatedIocs\":[\"example.com\"],\"RelatedThreatIDs\":[\"6a4e7t9a111bd0003bcc2a55\"],\"TakedownStatus\":\"NotSent\",\"UpdateDate\":\"2022-11-02T10:12:46.260Z\",\"_id\":\"123456789zxcvbnmas8a8q60\"}",
+        "reference": "https://dashboard.ti.insight.rapid7.com/#/threat-command/alerts/?search=123456789zxcvbnmas8a8q60"
     },
     "input": {
         "type": "httpjson"
@@ -497,10 +427,7 @@ An example event for `alert` looks as following:
                     }
                 ],
                 "details": {
-                    "description": "A suspicious domain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.",
-                    "images": [
-                        "1al5s6789z6e2b0m9s8a8q60"
-                    ],
+                    "description": "A suspicious subdomain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.",
                     "severity": "Low",
                     "source": {
                         "network_type": "ClearWeb",
@@ -511,25 +438,25 @@ An example event for `alert` looks as following:
                     "tags": [
                         {
                             "created_by": "ProfilingRule",
-                            "id": "1al3p6789zxcvbnmas8a8q60",
+                            "id": "1al3p6789z6c2b7m9s8a8q60",
                             "name": "Phishing Domain - Default Detection Rule"
                         }
                     ],
                     "title": "Suspected Phishing Domain - 'example.com'",
                     "type": "Phishing"
                 },
-                "found_date": "2022-11-02T10:03:56.139Z",
-                "id": "123456789abcdefgh8866123",
+                "found_date": "2022-11-02T10:12:46.260Z",
+                "id": "123456789zxcvbnmas8a8q60",
                 "is_closed": true,
                 "is_flagged": false,
                 "related_iocs": [
                     "example.com"
                 ],
                 "related_threat_ids": [
-                    "6a4e7t9a111bd0003bcc2a57"
+                    "6a4e7t9a111bd0003bcc2a55"
                 ],
                 "takedown_status": "NotSent",
-                "update_date": "2022-11-02T10:03:56.139Z"
+                "update_date": "2022-11-02T10:12:46.260Z"
             }
         }
     },
@@ -540,7 +467,6 @@ An example event for `alert` looks as following:
         "Phishing Domain - Default Detection Rule"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -548,48 +474,13 @@ An example event for `alert` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container ID. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.reference | Reference URL linking to additional information about this event. This URL links to a static definition of this event. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host IP addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | rapid7.tc.alert.assets.type | Type of an asset. | keyword |
@@ -618,7 +509,6 @@ An example event for `alert` looks as following:
 | rapid7.tc.alert.related_threat_ids | List of related threat IDs. | keyword |
 | rapid7.tc.alert.takedown_status | Alert remediation status. | keyword |
 | rapid7.tc.alert.update_date | Last update date of an alert in Unix Millisecond Timestamp. | date |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 ### Vulnerability
@@ -633,11 +523,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2020-08-24T21:46:48.619Z",
     "agent": {
-        "ephemeral_id": "79ef7310-154a-4f30-a450-263900ebad89",
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
+        "ephemeral_id": "98178c63-7de1-4041-877c-bf829b4fc0d3",
+        "id": "34592ccf-10ae-4d24-a28c-97be832bde99",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.vulnerability",
@@ -648,9 +538,9 @@ An example event for `vulnerability` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
-        "snapshot": true,
-        "version": "8.11.0"
+        "id": "34592ccf-10ae-4d24-a28c-97be832bde99",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -658,9 +548,9 @@ An example event for `vulnerability` looks as following:
             "threat",
             "vulnerability"
         ],
-        "created": "2023-09-26T13:27:12.970Z",
+        "created": "2024-06-26T07:02:37.947Z",
         "dataset": "ti_rapid7_threat_command.vulnerability",
-        "ingested": "2023-09-26T13:27:15Z",
+        "ingested": "2024-06-26T07:02:49Z",
         "kind": "event",
         "module": "ti_rapid7_threat_command",
         "original": "{\"cpe\":[{\"Range\":{\"VersionEndExcluding\":\"\",\"VersionEndIncluding\":\"4.0.0\",\"VersionStartExcluding\":\"\",\"VersionStartIncluding\":\"1.0.0\"},\"Title\":\"Php\",\"Value\":\"cpe:2.3:a:php:php:*:*:*:*:*:*:*:*\",\"VendorProduct\":\"php php\"}],\"cveId\":\"CVE-2020-7064\",\"cvssScore\":5.4,\"exploitAvailability\":false,\"firstMentionDate\":\"N/A\",\"intsightsScore\":16,\"lastMentionDate\":\"2020-04-01T04:15:00.000Z\",\"mentionsAmount\":0,\"mentionsPerSource\":{\"ClearWebCyberBlogs\":0,\"CodeRepositories\":0,\"DarkWeb\":0,\"Exploit\":0,\"HackingForum\":0,\"InstantMessage\":0,\"PasteSite\":0,\"SocialMedia\":0},\"publishedDate\":\"2020-04-01T04:15:00.000Z\",\"relatedCampaigns\":[\"SolarWinds\"],\"relatedMalware\":[\"doppeldridex\",\"dridex\"],\"relatedThreatActors\":[\"doppelspider\"],\"severity\":\"Low\",\"updateDate\":\"2020-08-24T21:46:48.619Z\",\"vulnerabilityOrigin\":[\"Qualys\"]}",
@@ -752,7 +642,6 @@ An example event for `vulnerability` looks as following:
         "severity": "Low"
     }
 }
-
 ```
 
 **Exported fields**
@@ -760,48 +649,13 @@ An example event for `vulnerability` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container ID. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host IP addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | rapid7.tc.vulnerability.cpe.range.version.end.excluding | The CPE version end range. | version |
@@ -833,12 +687,4 @@ An example event for `vulnerability` looks as following:
 | rapid7.tc.vulnerability.related.threat_actors | List of related threat actors. | keyword |
 | rapid7.tc.vulnerability.severity | CVE severity. Allowed values: 'Critical', 'High', 'Medium', 'Low'. | keyword |
 | rapid7.tc.vulnerability.update_date | CVE's update date in ISO 8601 format. | date |
-| tags | List of keywords used to tag each event. | keyword |
-| vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
-| vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
-| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
-| vulnerability.reference | A resource that provides additional information, context, and mitigations for the identified vulnerability. | keyword |
-| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | keyword |
-| vulnerability.score.base | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope. For example (https://www.first.org/cvss/specification-document) | float |
-| vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 

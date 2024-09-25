@@ -14,6 +14,10 @@ The `connection` dataset fetches the data returned by the `cons` admin keyword.
 
 {{event "connection"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "connection"}}
 
 ### mntr
@@ -22,6 +26,10 @@ The `mntr` Metricset fetches the data returned by the `mntr` admin keyword.
 
 {{event "mntr"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "mntr"}}
 
 ### server
@@ -29,5 +37,9 @@ The `mntr` Metricset fetches the data returned by the `mntr` admin keyword.
 The `server` Metricset fetches the data returned by the `srvr` admin keyword.
 
 {{event "server"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "server"}}

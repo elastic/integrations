@@ -22,6 +22,9 @@ processors:
     - set:
         field: observer.vendor
         value: Jamf
+    - set:
+        field: observer.type
+        value: Endpoint Security
 
 #######################
 ## ECS Event Mapping ##
@@ -119,15 +122,6 @@ processors:
         field: host.os.type
         value: macos
         if: ctx.jamf_protect?.traffic?.event?.device?.osType == "MAC_OS"
-
-#######################
-## ECS Interface Mapping ##
-#######################
-    - rename:
-        field: jamf_protect.traffic.event.networkInterface
-        target_field: interface.name
-        ignore_missing: true
-        if: ctx.jamf_protect?.traffic?.event?.networkInterface != null
 
 
 ########################

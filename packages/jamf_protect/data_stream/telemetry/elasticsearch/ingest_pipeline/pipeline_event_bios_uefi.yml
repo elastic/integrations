@@ -1,0 +1,22 @@
+---
+description: Pipeline for parsing specific fields related to bios events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: Collection of bios data
+    - rename:
+        field: jamf_protect.telemetry.event.bios_uefi.architecture
+        target_field: host.architecture
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.bios_uefi.bios.firmware-version
+        target_field: jamf_protect.telemetry.bios_firmware_version
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.bios_uefi.bios.system-firmware-version
+        target_field: jamf_protect.telemetry.bios_system_firmware_version
+        ignore_missing: true

@@ -200,7 +200,6 @@ An example event for `device` looks as following:
         "type": "devices"
     }
 }
-
 ```
 
 **Exported fields**
@@ -215,7 +214,6 @@ An example event for `device` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | trellix_epo_cloud.device.attributes.agent.guid |  | keyword |
 | trellix_epo_cloud.device.attributes.agent.platform |  | keyword |
 | trellix_epo_cloud.device.attributes.agent.state |  | boolean |
@@ -423,7 +421,6 @@ An example event for `event` looks as following:
         "type": "MVEvents"
     }
 }
-
 ```
 
 **Exported fields**
@@ -438,7 +435,6 @@ An example event for `event` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | trellix_epo_cloud.event.attributes.agent.guid |  | keyword |
 | trellix_epo_cloud.event.attributes.analyzer.dat_version |  | keyword |
 | trellix_epo_cloud.event.attributes.analyzer.detection_method |  | keyword |
@@ -582,7 +578,6 @@ An example event for `group` looks as following:
         "type": "groups"
     }
 }
-
 ```
 
 **Exported fields**
@@ -597,7 +592,6 @@ An example event for `group` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | trellix_epo_cloud.group.attributes.group_type.id |  | keyword |
 | trellix_epo_cloud.group.attributes.l1_parent.id |  | keyword |
 | trellix_epo_cloud.group.attributes.l2_parent.id |  | keyword |

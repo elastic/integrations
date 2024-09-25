@@ -34,12 +34,7 @@ Activity Logs summarize the history of changes and events occurring within Lumos
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The activity that occurred | keyword |
-| event.created | The time the event began | date |
-| event.id | The event hash | keyword |
 | event.module | Event module | constant_keyword |
-| event.outcome | The outcome of the event, whether it succeeded or failed | keyword |
 | input.type | Input type | keyword |
 | lumos.activity_logs.actor.actor_type | The type of actor | keyword |
 | lumos.activity_logs.actor.email | The email of the actor | keyword |
@@ -49,61 +44,62 @@ Activity Logs summarize the history of changes and events occurring within Lumos
 | lumos.activity_logs.event_type_user_friendly | The user friendly type of the event | keyword |
 | lumos.activity_logs.targets.name |  | keyword |
 | lumos.activity_logs.targets.target_type |  | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 
 
 An example event for `activity` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-14T17:53:58.869Z",
+    "@timestamp": "2024-06-12T03:14:31.761Z",
     "agent": {
-        "ephemeral_id": "9d0d6b51-1c05-4ab1-ab5c-c16e485d734f",
-        "id": "f57bb12d-cf67-4ec4-9ed0-52eeb865959e",
+        "ephemeral_id": "164152f0-95db-44c9-a369-1412cbf18efd",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "lumos.activity_logs",
-        "namespace": "ep",
+        "namespace": "41003",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f57bb12d-cf67-4ec4-9ed0-52eeb865959e",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "SOD_POLICY_DELETED",
         "agent_id_status": "verified",
-        "created": "2024-03-14T17:53:58.869Z",
+        "created": "2024-06-12T03:14:31.761Z",
         "dataset": "lumos.activity_logs",
         "id": "630b90cedc35a8a5f43361534099bee51e032f42dd442085fc76ef094d228f543c78fbe59c132df992cf71a6b8496504e8ebbc6020fbae1f34206676985412e7",
-        "ingested": "2024-03-14T17:54:10Z",
+        "ingested": "2024-06-12T03:14:43Z",
         "kind": "event",
         "outcome": "success",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "fb3be8e9409740ebb6621b777f0c397d",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.144.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-90-07"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "6.6.12-linuxkit",
+            "kernel": "6.5.11-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",

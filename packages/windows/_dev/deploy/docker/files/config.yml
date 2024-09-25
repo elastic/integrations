@@ -351,3 +351,47 @@ rules:
                   "splunk_server": "69819b6ce1bd"
               }
           }
+  - path: /services/search/jobs/export
+    user: test
+    password: test
+    methods:
+      - post
+    query_params:
+      index_earliest: "{index_earliest:[0-9]+}"
+      index_latest: "{index_latest:[0-9]+}"
+      output_mode: json
+      search: 'search sourcetype="XmlWinEventLog:Microsoft-Windows-Windows Defender/Operational" | streamstats max(_indextime) AS max_indextime'
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+              "preview": false,
+              "offset": 194,
+              "lastrow": true,
+              "result": {
+                  "_bkt": "main~0~1212176D-89E1-485D-89E6-3ADC276CCA38",
+                  "_cd": "0:315",
+                  "_indextime": "1622471463",
+                  "_raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Windows Defender' Guid='{11cd958a-c507-4ef3-b3f2-5fd9dfbd2c78}'/><EventID>1151</EventID><Version>0</Version><Level>4</Level><Task>0</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='2024-06-21T07:56:39.3136791Z'/><EventRecordID>5655</EventRecordID><Correlation/><Execution ProcessID='7676' ThreadID='15392'/><Channel>Microsoft-Windows-Windows Defender/Operational</Channel><Computer>el33t-b00k-1</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='Product Name'>Microsoft Defender Antivirus</Data><Data Name='Platform version'>4.18.24050.7</Data><Data Name='Unused'></Data><Data Name='Engine version'>1.1.24050.5</Data><Data Name='NRI engine version'>1.1.24050.5</Data><Data Name='AV security intelligence version'>1.413.419.0</Data><Data Name='AS security intelligence version'>1.413.419.0</Data><Data Name='NRI security intelligence version'>1.413.419.0</Data><Data Name='RTP state'>Enabled</Data><Data Name='OA state'>Enabled</Data><Data Name='IOAV state'>Enabled</Data><Data Name='BM state'>Enabled</Data><Data Name='Last AV security intelligence age'>0</Data><Data Name='Last AS security intelligence age'>0</Data><Data Name='Last quick scan age'>1</Data><Data Name='Last full scan age'>4294967295</Data><Data Name='AV security intelligence creation time'>2024-06-20T17:59:45Z</Data><Data Name='AS security intelligence creation time'>2024-06-20T17:59:47Z</Data><Data Name='Last quick scan start time'>2024-06-19T15:49:55Z</Data><Data Name='Last quick scan end time'>2024-06-19T15:51:57Z</Data><Data Name='Last quick scan source'>2</Data><Data Name='Last full scan start time'>1601-01-01T00:00:00Z</Data><Data Name='Last full scan end time'>1601-01-01T00:00:00Z</Data><Data Name='Last full scan source'>0</Data><Data Name='Product status'>0x00080000</Data><Data Name='Latest engine version'>1.1.24050.5</Data><Data Name='Engine up-to-date'>0</Data><Data Name='Latest platform version'>4.18.24050.7</Data><Data Name='Platform up-to-date'>1</Data></EventData></Event>",
+                  "_serial": "194",
+                  "_si": [
+                      "69819b6ce1bd",
+                      "main"
+                  ],
+                  "_sourcetype": "XmlWinEventLog:Microsoft-Windows-Windows Defender/Operational",
+                  "_time": "2021-05-25 13:11:45.000 UTC",
+                  "host": "VAGRANT",
+                  "index": "main",
+                  "linecount": "1",
+                  "max_indextime": "1622471606",
+                  "source": "WinEventLog:Microsoft-Windows-Windows Defender/Operational",
+                  "sourcetype": "XmlWinEventLog:Microsoft-Windows-Windows Defender/Operational",
+                  "splunk_server": "69819b6ce1bd"
+              }
+          }

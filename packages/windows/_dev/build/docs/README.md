@@ -151,6 +151,15 @@ The Windows `sysmon_operational` data stream provides events from the Windows
 
 {{fields "sysmon_operational"}}
 
+### Windows Defender/Operational
+
+The Windows `windows_defender` data stream provides events from the Windows
+`Microsoft-Windows-Windows Defender/Operational` event log.
+
+{{event "windows_defender"}}
+
+{{fields "windows_defender"}}
+
 ## Metrics reference
 
 Both data streams are available on Windows only.

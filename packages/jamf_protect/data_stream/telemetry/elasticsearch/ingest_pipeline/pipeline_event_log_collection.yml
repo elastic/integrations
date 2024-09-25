@@ -1,0 +1,19 @@
+---
+description: Pipeline for Jamf Protect Telemetry log collection events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: New entries have been collected from a log file
+    - rename:
+        field: jamf_protect.telemetry.event.log_collection.path
+        target_field: log.file.path
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.log_collection.texts
+        target_field: jamf_protect.telemetry.log_entries
+        type: string
+        ignore_missing: true
