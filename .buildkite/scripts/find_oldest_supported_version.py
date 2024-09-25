@@ -221,7 +221,8 @@ class TestFindOldestSupportVersion(unittest.TestCase):
             "8.9",
             "8.10-SNAPSHOT",
             "8.10",
-            "8.11-SNAPSHOT"
+            "8.11-SNAPSHOT",
+            "8.x-SNAPSHOT"
         ],
         "manifests": {
             "last-update-time": "Thu, 14 Sep 2023 16:03:46 UTC",
@@ -261,13 +262,20 @@ class TestFindOldestSupportVersion(unittest.TestCase):
 
     def test_no_version_available_no_next_minor_in_current_major(self):
         # returns the version as in the manifest
-        self.assertEqual(find_oldest_supported_version("8.11.3"), "8.11.3")
+        # no exists in available_versions or snapshots, neither the current {major}-x.SNAPSHOT
+        self.assertEqual(find_oldest_supported_version("9.0.0"), "9.0.0")
 
     def test_available_next_minor_in_current_major(self):
         self.assertEqual(find_oldest_supported_version("7.19.0"), "7.x-SNAPSHOT")
 
+        # not sure if this test case should return 8.x-SNAPSHOT stack version,
+        # that would test with probably a newer stack (8.11.0-SNAPSHOT).
+        self.assertEqual(find_oldest_supported_version("8.8.3"), "8.x-SNAPSHOT")
+
     def test_available_version_in_current_major_but_missing_minor(self):
-        # 8.9.2 and 8.9.4 versions exist, but not 8.9.3 version
+        # 8.9.2 and 8.9.4 versions exist in the artifacts-api response and the alias
+        # 8.x-SNAPSHOT too exists,
+        # but there is no 8.9.3 version in the artifacts-api response.
         self.assertEqual(find_oldest_supported_version("8.9.3"), "8.9.3")
 
     def test_or(self):
