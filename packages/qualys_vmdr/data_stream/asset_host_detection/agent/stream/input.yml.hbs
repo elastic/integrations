@@ -46,7 +46,6 @@ program: |
         resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0').as(body, {
             "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(h,
               h.DETECTION_LIST.DETECTION.map(v, {
-                ?"xml":    state.keep_xml ? optional.of(string(xml)) : optional.none(),
                 "message": h.with({"DETECTION_LIST": v}).encode_json(),
               })
             ).flatten(),
