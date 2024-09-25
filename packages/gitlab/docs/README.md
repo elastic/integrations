@@ -38,7 +38,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#_minimum_requirements).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
 
 ## Setup
@@ -61,6 +61,7 @@ Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | gitlab.api.correlation_id |  | keyword |
 | gitlab.api.cpu_s |  | long |
@@ -342,6 +343,7 @@ Collect logs for events happening in GitLab like user creation or project deleti
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | gitlab.application.attributes |  | keyword |
 | gitlab.application.caller |  | keyword |
@@ -620,6 +622,7 @@ Collect logs for changes to group or project settings and memberships. Check out
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.kind | Event kind | constant_keyword |
 | gitlab.audit.change |  | keyword |
 | gitlab.audit.created_at |  | date |
 | gitlab.audit.entity_id |  | long |
@@ -766,6 +769,7 @@ Collect logs for abusive protect paths requests or requests over the Rate Limit.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.kind | Event kind | constant_keyword |
 | gitlab.auth.controller |  | keyword |
 | gitlab.auth.cpu_s |  | long |
 | gitlab.auth.db_cached_count |  | long |
@@ -1015,6 +1019,7 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | gitlab.production.controller |  | keyword |
 | gitlab.production.cpu_s |  | long |
