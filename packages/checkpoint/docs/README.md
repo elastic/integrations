@@ -114,7 +114,6 @@ An example event for `firewall` looks as following:
         "forwarded"
     ]
 }
-
 ```
 
 **Exported fields**

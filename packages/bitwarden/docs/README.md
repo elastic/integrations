@@ -103,7 +103,6 @@ An example event for `collection` looks as following:
         "bitwarden-collection"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -236,7 +235,6 @@ An example event for `event` looks as following:
         "id": "e68b8629-85eb-4929-92c0-b84464976ba4"
     }
 }
-
 ```
 
 **Exported fields**
@@ -343,7 +341,6 @@ An example event for `group` looks as following:
         "bitwarden-group"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -460,7 +457,6 @@ An example event for `member` looks as following:
         "name": "John Smith"
     }
 }
-
 ```
 
 **Exported fields**
@@ -572,7 +568,6 @@ An example event for `policy` looks as following:
         "bitwarden-policy"
     ]
 }
-
 ```
 
 **Exported fields**
