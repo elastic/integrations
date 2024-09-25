@@ -7,7 +7,7 @@ This integration periodically fetches metrics from [Palo Alto Networks](https://
 The integration uses the [Pango](https://github.com/PaloAltoNetworks/pango) library to collect metrics from Palo Alto Networks firewalls.
 
 ## Configuration
-
+The 1.0 release of this integration can be configured to work with one firewall: multiple firewalls in one integration policy is not supported, nor has it been tested with Panorama. To collect metrics from multiple firewalls with this release, create a separate a integration policy for each with the specific host ip of the firewall and api key.
 ## Metrics
 
 ### interfaces
@@ -121,96 +121,114 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit | Metric Type |
-|---|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
-| data_stream.type | Data stream type. | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
-| panw.interfaces.ha.enabled | HA enabled | boolean |  |  |
-| panw.interfaces.ha.link_monitoring.enabled | Indicates if link monitoring is enabled | boolean |  |  |
-| panw.interfaces.ha.link_monitoring.failure_condition | Condition that triggers a link monitoring failure, e.g., "any" | keyword |  |  |
-| panw.interfaces.ha.link_monitoring.group.enabled | Indicates if the link monitoring group is enabled | boolean |  |  |
-| panw.interfaces.ha.link_monitoring.group.failure_condition | Condition that triggers a failure in the link monitoring group | keyword |  |  |
-| panw.interfaces.ha.link_monitoring.group.interface.name | Name of the interface in the link monitoring group | keyword |  |  |
-| panw.interfaces.ha.link_monitoring.group.interface.status | Status of the interface in the link monitoring group | keyword |  |  |
-| panw.interfaces.ha.link_monitoring.group.name | Name of the link monitoring group | keyword |  |  |
-| panw.interfaces.ha.local_info.app_version | The version of the application database | keyword |  |  |
-| panw.interfaces.ha.local_info.av_version | The version of the antivirus database | keyword |  |  |
-| panw.interfaces.ha.local_info.build_rel | The PAN-OS software version running on the firewall | keyword |  |  |
-| panw.interfaces.ha.local_info.gp_client_version | Version of the GlobalProtect client software | keyword |  |  |
-| panw.interfaces.ha.local_info.ha1_backup_gateway | Default gateway for the backup HA1 interface | ip |  |  |
-| panw.interfaces.ha.local_info.ha1_backup_ipaddr | The backup IP address for the HA1 interface | ip |  |  |
-| panw.interfaces.ha.local_info.ha1_backup_macaddr | HA local info HA1 backup MAC address | keyword |  |  |
-| panw.interfaces.ha.local_info.ha1_backup_port | HA local info HA1 backup port, e.g. "management" | keyword |  |  |
-| panw.interfaces.ha.local_info.ha1_ipaddr | IP Address of HA1 interface, used for heartbeat and management synchronization | ip |  |  |
-| panw.interfaces.ha.local_info.ha1_macaddr | HA local info HA1 MAC address | keyword |  |  |
-| panw.interfaces.ha.local_info.ha1_port | Indicates which interface is used for HA1 traffic, e.g., "dedicated-ha1" | keyword |  |  |
-| panw.interfaces.ha.local_info.ha2_ipaddr | HA local info HA2 IP address | ip |  |  |
-| panw.interfaces.ha.local_info.ha2_macaddr | HA local info HA2 MAC address | keyword |  |  |
-| panw.interfaces.ha.local_info.ha2_port | Indicates which interface is used for HA1 traffic, e.g., "dedicated-ha2" | keyword |  |  |
-| panw.interfaces.ha.local_info.iot_version | HA local info IoT database version | keyword |  |  |
-| panw.interfaces.ha.local_info.mgmt_ip | HA local info management IP | ip |  |  |
-| panw.interfaces.ha.local_info.mode | HA mode, e.g., "active-active" or "active-passive" | keyword |  |  |
-| panw.interfaces.ha.local_info.platform_model | Platform model of the local device | keyword |  |  |
-| panw.interfaces.ha.local_info.preemptive | Indicates whether the firewall is configured to preemptively take over as the active unit in an HA setup | boolean |  |  |
-| panw.interfaces.ha.local_info.state | HA state of the local device, e.g., "active" or "passive" | keyword |  |  |
-| panw.interfaces.ha.local_info.state_duration | Duration in milliseconds of the current state | long | ms |  |
-| panw.interfaces.ha.local_info.state_sync | Status of HA synchronization, e.g., "complete" | keyword |  |  |
-| panw.interfaces.ha.local_info.state_sync_type | Type of interface used for HA synchronization | keyword |  |  |
-| panw.interfaces.ha.local_info.threat_version | HA local info threat version | keyword |  |  |
-| panw.interfaces.ha.local_info.url_version | The version of the URL filtering database | keyword |  |  |
-| panw.interfaces.ha.local_info.version | HA configuration info version | long |  |  |
-| panw.interfaces.ha.local_info.vpn_client_version | Version of the VPN client (if installed) | keyword |  |  |
-| panw.interfaces.ha.mode | HA mode, e.g., "active-active" or "active-passive" | keyword |  |  |
-| panw.interfaces.ha.peer_info.conn_ha1.description | Description of the connection type ,e.g., "heartbeat status" | keyword |  |  |
-| panw.interfaces.ha.peer_info.conn_ha1.primary | Specifies if the HA1 connection is primary | boolean |  |  |
-| panw.interfaces.ha.peer_info.conn_ha1.status | Peer HA1 connection status, e.g., "up" | keyword |  |  |
-| panw.interfaces.ha.peer_info.conn_ha1_backup.description | HA peer info connection HA1 backup description | keyword |  |  |
-| panw.interfaces.ha.peer_info.conn_ha1_backup.status | HA peer info connection HA1 backup status, e.g., "up" means it is operational | keyword |  |  |
-| panw.interfaces.ha.peer_info.conn_ha2.description | HA peer info connection HA2 description | keyword |  |  |
-| panw.interfaces.ha.peer_info.conn_ha2.primary | Specifies if the HA2 connection is primary | boolean |  |  |
-| panw.interfaces.ha.peer_info.conn_ha2.status | HA peer info connection HA2 status | keyword |  |  |
-| panw.interfaces.ha.peer_info.conn_status | Overall status of the HA connections ("up" means all connections are operational) | keyword |  |  |
-| panw.interfaces.ha.peer_info.ha1_backup_ipaddr | HA peer info HA1 backup IP address | ip |  |  |
-| panw.interfaces.ha.peer_info.ha1_backup_macaddr | HA peer info HA1 backup MAC address | keyword |  |  |
-| panw.interfaces.ha.peer_info.ha1_ipaddr | IP address of the HA1 interface on the peer | ip |  |  |
-| panw.interfaces.ha.peer_info.ha1_macaddr | HA1 MAC address of the peer | keyword |  |  |
-| panw.interfaces.ha.peer_info.ha2_ipaddr | HA peer info HA2 IP address | ip |  |  |
-| panw.interfaces.ha.peer_info.ha2_macaddr | HA peer info HA2 MAC address | keyword |  |  |
-| panw.interfaces.ha.peer_info.mgmt_ip | Management IP address of the peer firewall | ip |  |  |
-| panw.interfaces.ha.peer_info.mode | HA mode configured on the peer firewall, e.g. "Active-Passive" | keyword |  |  |
-| panw.interfaces.ha.peer_info.platform_model | Model of the peer firewall | keyword |  |  |
-| panw.interfaces.ha.peer_info.preemptive | Indicates if preemption is enabled on the peer firewall | boolean |  |  |
-| panw.interfaces.ha.peer_info.priority | HA priority value of the peer firewall | long |  |  |
-| panw.interfaces.ha.peer_info.state | Current operational state of the peer firewall (passive means it is in standby mode and not handling traffic) | keyword |  |  |
-| panw.interfaces.ha.peer_info.state_duration | How long the peer has been in the current state | long | ms | gauge |
-| panw.interfaces.ha.running_sync | Indicates the sychronization status of the HA pair, e.g., "synchronized","not-synchronized","synchronizing" | keyword |  |  |
-| panw.interfaces.ha.running_sync_enabled | Indicates if running configuration synchronization is enabled | boolean |  |  |
-| panw.interfaces.logical.addr | Used to store aditional static IP addresses | keyword |  |  |
-| panw.interfaces.logical.addr6 | Logical IPv6 address | keyword |  |  |
-| panw.interfaces.logical.dyn_addr | Dynamic addresses, e.g., generated by DHCP | keyword |  |  |
-| panw.interfaces.logical.fwd | Indicates if the interface is used for forwarding | keyword |  |  |
-| panw.interfaces.logical.id | Logical interface ID | keyword |  |  |
-| panw.interfaces.logical.ip | Logical IP Address with subnet mask, e.g., 111.222.333.10/29 | ip |  |  |
-| panw.interfaces.logical.name | Logical interface name | keyword |  |  |
-| panw.interfaces.logical.tag | VLAN tag associated with this interface | integer |  |  |
-| panw.interfaces.logical.vsys | Virtual system to which this interface belongs | integer |  |  |
-| panw.interfaces.logical.zone | Logical zone, e.g., "inside" or "outside" | keyword |  |  |
-| panw.interfaces.physical.ae_member | For aggregate interfaces, the array of member interfaces | keyword |  |  |
-| panw.interfaces.physical.duplex | Duplex configuration, e.g., "full" or "half" | keyword |  |  |
-| panw.interfaces.physical.full_state | Physical full state, speed/duplex/state, e.g., "1000/full/up" | keyword |  |  |
-| panw.interfaces.physical.id | Physical interface ID | keyword |  |  |
-| panw.interfaces.physical.mac | Physical MAC address | keyword |  |  |
-| panw.interfaces.physical.mode | Physical interface mode, e.g., autoneg | keyword |  |  |
-| panw.interfaces.physical.name | Physical interface name | keyword |  |  |
-| panw.interfaces.physical.speed | Physical interface speed | keyword |  |  |
-| panw.interfaces.physical.state | Physical interface state, up or down | keyword |  |  |
-| panw.interfaces.physical.type | Physical interface type | keyword |  |  |
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| interfaces.ha.enabled | HA enabled | boolean |
+| interfaces.ha.link_monitoring.enabled | Indicates if link monitoring is enabled | boolean |
+| interfaces.ha.link_monitoring.failure_condition | Condition that triggers a link monitoring failure, e.g., "any" | keyword |
+| interfaces.ha.link_monitoring.group.enabled | Indicates if the link monitoring group is enabled | boolean |
+| interfaces.ha.link_monitoring.group.failure_condition | Condition that triggers a failure in the link monitoring group | keyword |
+| interfaces.ha.link_monitoring.group.interface.name | Name of the interface in the link monitoring group | keyword |
+| interfaces.ha.link_monitoring.group.interface.status | Status of the interface in the link monitoring group | keyword |
+| interfaces.ha.link_monitoring.group.name | Name of the link monitoring group | keyword |
+| interfaces.ha.local_info.app_version | The version of the application database | keyword |
+| interfaces.ha.local_info.av_version | The version of the antivirus database | keyword |
+| interfaces.ha.local_info.build_rel | The PAN-OS software version running on the firewall | keyword |
+| interfaces.ha.local_info.gp_client_version | Version of the GlobalProtect client software | keyword |
+| interfaces.ha.local_info.ha1_backup_gateway | Default gateway for the backup HA1 interface | ip |
+| interfaces.ha.local_info.ha1_backup_ipaddr | The backup IP address for the HA1 interface | ip |
+| interfaces.ha.local_info.ha1_backup_macaddr | HA local info HA1 backup MAC address | keyword |
+| interfaces.ha.local_info.ha1_backup_port | HA local info HA1 backup port, e.g. "management" | keyword |
+| interfaces.ha.local_info.ha1_ipaddr | IP Address of HA1 interface, used for heartbeat and management synchronization | ip |
+| interfaces.ha.local_info.ha1_macaddr | HA local info HA1 MAC address | keyword |
+| interfaces.ha.local_info.ha1_port | Indicates which interface is used for HA1 traffic, e.g., "dedicated-ha1" | keyword |
+| interfaces.ha.local_info.ha2_ipaddr | HA local info HA2 IP address | ip |
+| interfaces.ha.local_info.ha2_macaddr | HA local info HA2 MAC address | keyword |
+| interfaces.ha.local_info.ha2_port | Indicates which interface is used for HA1 traffic, e.g., "dedicated-ha2" | keyword |
+| interfaces.ha.local_info.iot_version | HA local info IoT database version | keyword |
+| interfaces.ha.local_info.mgmt_ip | HA local info management IP | ip |
+| interfaces.ha.local_info.mode | HA mode, e.g., "active-active" or "active-passive" | keyword |
+| interfaces.ha.local_info.platform_model | Platform model of the local device | keyword |
+| interfaces.ha.local_info.preemptive | Indicates whether the firewall is configured to preemptively take over as the active unit in an HA setup | boolean |
+| interfaces.ha.local_info.state | HA state of the local device, e.g., "active" or "passive" | keyword |
+| interfaces.ha.local_info.state_duration.sec | Duration in seconds of the current state | long |
+| interfaces.ha.local_info.state_sync | Status of HA synchronization, e.g., "complete" | keyword |
+| interfaces.ha.local_info.state_sync_type | Type of interface used for HA synchronization | keyword |
+| interfaces.ha.local_info.threat_version | HA local info threat version | keyword |
+| interfaces.ha.local_info.url_version | The version of the URL filtering database | keyword |
+| interfaces.ha.local_info.version | HA configuration info version | long |
+| interfaces.ha.local_info.vpn_client_version | Version of the VPN client (if installed) | keyword |
+| interfaces.ha.mode | HA mode, e.g., "active-active" or "active-passive" | keyword |
+| interfaces.ha.peer_info.conn_ha1.description | Description of the connection type ,e.g., "heartbeat status" | keyword |
+| interfaces.ha.peer_info.conn_ha1.primary | Specifies if the HA1 connection is primary | boolean |
+| interfaces.ha.peer_info.conn_ha1.status | Peer HA1 connection status, e.g., "up" | keyword |
+| interfaces.ha.peer_info.conn_ha1_backup.description | HA peer info connection HA1 backup description | keyword |
+| interfaces.ha.peer_info.conn_ha1_backup.status | HA peer info connection HA1 backup status, e.g., "up" means it is operational | keyword |
+| interfaces.ha.peer_info.conn_ha2.description | HA peer info connection HA2 description | keyword |
+| interfaces.ha.peer_info.conn_ha2.primary | Specifies if the HA2 connection is primary | boolean |
+| interfaces.ha.peer_info.conn_ha2.status | HA peer info connection HA2 status | keyword |
+| interfaces.ha.peer_info.conn_status | Overall status of the HA connections ("up" means all connections are operational) | keyword |
+| interfaces.ha.peer_info.ha1_backup_ipaddr | HA peer info HA1 backup IP address | ip |
+| interfaces.ha.peer_info.ha1_backup_macaddr | HA peer info HA1 backup MAC address | keyword |
+| interfaces.ha.peer_info.ha1_ipaddr | IP address of the HA1 interface on the peer | ip |
+| interfaces.ha.peer_info.ha1_macaddr | HA1 MAC address of the peer | keyword |
+| interfaces.ha.peer_info.ha2_ipaddr | HA peer info HA2 IP address | ip |
+| interfaces.ha.peer_info.ha2_macaddr | HA peer info HA2 MAC address | keyword |
+| interfaces.ha.peer_info.mgmt_ip | Management IP address of the peer firewall | ip |
+| interfaces.ha.peer_info.mode | HA mode configured on the peer firewall, e.g. "Active-Passive" | keyword |
+| interfaces.ha.peer_info.platform_model | Model of the peer firewall | keyword |
+| interfaces.ha.peer_info.preemptive | Indicates if preemption is enabled on the peer firewall | boolean |
+| interfaces.ha.peer_info.priority | HA priority value of the peer firewall | long |
+| interfaces.ha.peer_info.state | Current operational state of the peer firewall (passive means it is in standby mode and not handling traffic) | keyword |
+| interfaces.ha.peer_info.state_duration.sec | How long the peer has been in the current state in seconds | long |
+| interfaces.ha.running_sync | Indicates the sychronization status of the HA pair, e.g., "synchronized","not-synchronized","synchronizing" | keyword |
+| interfaces.ha.running_sync_enabled | Indicates if running configuration synchronization is enabled | boolean |
+| interfaces.ipsec_tunnel.TSi_ip | Traffic Selector Initiator IP. This is the local IP (0.0.0.0 means any IP address) | ip |
+| interfaces.ipsec_tunnel.TSi_port | Port number associated with TSi (0 means any port) | long |
+| interfaces.ipsec_tunnel.TSi_prefix | Network prefix for the TSi IP, 0 means no specific network is defined. | keyword |
+| interfaces.ipsec_tunnel.TSi_proto | Protocol associated with the TSi (0 means any protocol) | keyword |
+| interfaces.ipsec_tunnel.TSr_ip | Traffic Selector Responder IP. | ip |
+| interfaces.ipsec_tunnel.TSr_port | TSr port of the IPsec tunnel | long |
+| interfaces.ipsec_tunnel.TSr_prefix | Network prefix for the TSr IP. Similar to TSi_prefix | keyword |
+| interfaces.ipsec_tunnel.TSr_proto | TSr protocol of the IPsec tunnel | keyword |
+| interfaces.ipsec_tunnel.dh | Diffie-Hellman group of the IPsec tunnel | keyword |
+| interfaces.ipsec_tunnel.enc | Encryption algorithm of the IPsec tunnel | keyword |
+| interfaces.ipsec_tunnel.gw | Gateway of the IPsec tunnel | keyword |
+| interfaces.ipsec_tunnel.hash | Hash algorithm of the IPsec tunnel | keyword |
+| interfaces.ipsec_tunnel.id | ID of the IPsec tunnel | keyword |
+| interfaces.ipsec_tunnel.kb | Traffic volume limit for SA rekeying | long |
+| interfaces.ipsec_tunnel.life.sec | The lifetime of the IPsec Security Association (SA) in seconds | long |
+| interfaces.ipsec_tunnel.mode | This specifies the IPsec mode. e.g., 'tunl' | keyword |
+| interfaces.ipsec_tunnel.name | Name of the IPsec tunnel | keyword |
+| interfaces.ipsec_tunnel.proto | Protocol of the IPsec tunnel | keyword |
+| interfaces.logical.addr | Used to store additional static IP addresses | keyword |
+| interfaces.logical.addr6 | Logical IPv6 address | keyword |
+| interfaces.logical.dyn_addr | Dynamic addresses, e.g., generated by DHCP | keyword |
+| interfaces.logical.fwd | Indicates if the interface is used for forwarding | keyword |
+| interfaces.logical.id | Logical interface ID | keyword |
+| interfaces.logical.ip | Logical IP Address with subnet mask, e.g., 111.222.333.10/29 | ip |
+| interfaces.logical.name | Logical interface name | keyword |
+| interfaces.logical.tag | VLAN tag associated with this interface | integer |
+| interfaces.logical.vsys | Virtual system to which this interface belongs | integer |
+| interfaces.logical.zone | Logical zone, e.g., "inside" or "outside" | keyword |
+| interfaces.physical.ae_member | For aggregate interfaces, the array of member interfaces | keyword |
+| interfaces.physical.duplex | Duplex configuration, e.g., "full" or "half" | keyword |
+| interfaces.physical.full_state | Physical full state, speed/duplex/state, e.g., "1000/full/up" | keyword |
+| interfaces.physical.id | Physical interface ID | keyword |
+| interfaces.physical.mac | Physical MAC address | keyword |
+| interfaces.physical.mode | Physical interface mode, e.g., autoneg | keyword |
+| interfaces.physical.name | Physical interface name | keyword |
+| interfaces.physical.speed | Physical interface speed | keyword |
+| interfaces.physical.state | Physical interface state: up/down | keyword |
+| interfaces.physical.type | Physical interface type (numeric value in source XML, string value sent to elasticsearch):    0:  "Ethernet interface",   1:  "Aggregate Ethernet (AE) interface",   2:  "High Availability (HA) interface",   3:  "VLAN interface",   5:  "Loopback interface",   6:  "Tunnel interface",   10: "SD-WAN interface", | keyword |
 
 
 ### routing
@@ -330,70 +348,54 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit | Metric Type |
-|---|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
-| data_stream.type | Data stream type. | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
-| panw.routing.bgp.aggregate_confed_as | Indicates that Autonomous System (AS) aggregation is enabled for the confederation | boolean |  |  |
-| panw.routing.bgp.connect_retry_interval | The interval (in seconds) between connection retries | long | s |  |
-| panw.routing.bgp.established_counts | Number of times the BGP session has successfully transitioned to the "Established" state | long |  | counter |
-| panw.routing.bgp.holdtime | Time in seconds that the BGP peer will wait for a keepalive message, negotiated between peers | long | s |  |
-| panw.routing.bgp.holdtime_config | Represents the locally configured hold time on this peer | long | s |  |
-| panw.routing.bgp.idle_hold | The idle hold time (in seconds) before retrying a connection after failure | long | s |  |
-| panw.routing.bgp.keepalive | The interval (in seconds) at which BGP keepalive messages are sent, negotiated between peers | long | s |  |
-| panw.routing.bgp.keepalive_config | The keepalive configured on this peer | long | s |  |
-| panw.routing.bgp.last_error | The last BGP error message received from the peer | keyword |  |  |
-| panw.routing.bgp.last_update_age | Time in seconds since the last update message was received from the peer | long | s |  |
-| panw.routing.bgp.local_address | Local address and port used for BGP connection | keyword |  |  |
-| panw.routing.bgp.msg_total_in | Total of all messages received from the peer | long |  | counter |
-| panw.routing.bgp.msg_total_out | Total of all messages sent to the peer | long |  | counter |
-| panw.routing.bgp.msg_update_in | The number of BGP UPDATE messages received by the router from this peer | long |  | counter |
-| panw.routing.bgp.msg_update_out | the number of BGP UPDATE messages sent from the local router to the peer | long |  | counter |
-| panw.routing.bgp.multi_hop_ttl | Time to Live (TTL) value for multi-hop BGP sessions. | long |  |  |
-| panw.routing.bgp.nexthop_peer | Indicates whether the peer is being used as the next-hop for the routes received from this peer | boolean |  |  |
-| panw.routing.bgp.nexthop_self | Whether the router is configured to use itself as the next-hop for routes sent to this peer | boolean |  |  |
-| panw.routing.bgp.nexthop_thirdparty | Third-party next-hop feature is enabled | boolean |  |  |
-| panw.routing.bgp.open_delay | Delay before sending an Open message (in seconds) | long | s |  |
-| panw.routing.bgp.orf_entry_received | Number of ORF (Outbound Route Filtering) entries received from the peer | long |  | gauge |
-| panw.routing.bgp.passive | Indicates if the BGP peer is in passive mode, if yes then router will not initiate a connection to the peer | boolean |  |  |
-| panw.routing.bgp.password_set | Indicates whether a password is set for the BGP peer | boolean |  |  |
-| panw.routing.bgp.peer_address | IP address and port of the peer | keyword |  |  |
-| panw.routing.bgp.peer_group | The name of the BGP peer group this peer belongs to | keyword |  |  |
-| panw.routing.bgp.peer_name | The name of the current peer in the BGP peer group | keyword |  |  |
-| panw.routing.bgp.peer_router_id | BGP peer router ID | ip |  |  |
-| panw.routing.bgp.peering_type | Defines the type of relationship between peers, e.g., "External BGP", "Internal BGP", or "Unspecified" | keyword |  |  |
-| panw.routing.bgp.prefix_limit | The maximum number of prefixes that can be received from the peer (0 = no limit) | long |  |  |
-| panw.routing.bgp.reflector_client | Indicates if the BGP peer is a route reflector client | keyword |  |  |
-| panw.routing.bgp.remote_as_asn | The remote Autonomous System (AS) number of the peer | long |  |  |
-| panw.routing.bgp.same_confederation | Peers in the same confederation exchange routes using internal BGP (iBGP) instead of external BGP (eBGP) | boolean |  |  |
-| panw.routing.bgp.status | The BGP session status, e.g., "Established" means the session is up and running | keyword |  |  |
-| panw.routing.bgp.status_duration | Time in seconds since the current status was set | long | s |  |
-| panw.routing.bgp.status_flap_counts | Indicates the number of times the BGP session has "flapped" or transitioned between up and down states | long |  | counter |
-| panw.routing.bgp.virtual_router | The virtual router with which the BGP peer is associated | keyword |  |  |
-| panw.routing.ipsec_tunnel.TSi_ip | Traffic Selector Initiator IP. This is the local IP (0.0.0.0 means any IP address) | ip |  |  |
-| panw.routing.ipsec_tunnel.TSi_port | Port number associated with TSi (0 means any port) | long |  |  |
-| panw.routing.ipsec_tunnel.TSi_prefix | Network prefix for the TSi IP, 0 means no specific network is defined. | keyword |  |  |
-| panw.routing.ipsec_tunnel.TSi_proto | Protocol associated with the TSi (0 means any protocol) | keyword |  |  |
-| panw.routing.ipsec_tunnel.TSr_ip | Traffic Selector Responder IP. | ip |  |  |
-| panw.routing.ipsec_tunnel.TSr_port | TSr port of the IPsec tunnel | long |  |  |
-| panw.routing.ipsec_tunnel.TSr_prefix | Network prefix for the TSr IP. Similar to TSi_prefix | keyword |  |  |
-| panw.routing.ipsec_tunnel.TSr_proto | TSr protocol of the IPsec tunnel | keyword |  |  |
-| panw.routing.ipsec_tunnel.dh | Diffie-Hellman group of the IPsec tunnel | keyword |  |  |
-| panw.routing.ipsec_tunnel.enc | Encryption algorithm of the IPsec tunnel | keyword |  |  |
-| panw.routing.ipsec_tunnel.gw | Gateway of the IPsec tunnel | keyword |  |  |
-| panw.routing.ipsec_tunnel.hash | Hash algorithm of the IPsec tunnel | keyword |  |  |
-| panw.routing.ipsec_tunnel.id | ID of the IPsec tunnel | keyword |  |  |
-| panw.routing.ipsec_tunnel.kb | Traffic volume limit for SA rekeying | long | byte |  |
-| panw.routing.ipsec_tunnel.life | The lifetime of the IPsec Security Association (SA) in seconds | long | s |  |
-| panw.routing.ipsec_tunnel.mode | This specifies the IPsec mode. e.g., 'tunl' | keyword |  |  |
-| panw.routing.ipsec_tunnel.name | Name of the IPsec tunnel | keyword |  |  |
-| panw.routing.ipsec_tunnel.proto | Protocol of the IPsec tunnel | keyword |  |  |
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| routing.bgp.aggregate_confed_as | Indicates that Autonomous System (AS) aggregation is enabled for the confederation | boolean |
+| routing.bgp.connect_retry_interval.sec | The interval (in seconds) between connection retries | long |
+| routing.bgp.established_counts | Number of times the BGP session has successfully transitioned to the "Established" state | long |
+| routing.bgp.holdtime.sec | Time in seconds that the BGP peer will wait for a keepalive message, negotiated between peers | long |
+| routing.bgp.holdtime_config.sec | Represents the locally configured hold time on this peer (in seconds) | long |
+| routing.bgp.idle_hold.sec | The idle hold time (in seconds) before retrying a connection after failure | long |
+| routing.bgp.keepalive.sec | The interval (in seconds) at which BGP keepalive messages are sent, negotiated between peers | long |
+| routing.bgp.keepalive_config.sec | The keepalive configured on this peer | long |
+| routing.bgp.last_error | The last BGP error message received from the peer | keyword |
+| routing.bgp.last_update_age.sec | Time in seconds since the last update message was received from the peer | long |
+| routing.bgp.local_ip | Local ip address used for BGP connection | ip |
+| routing.bgp.local_port | Local port number used for BGP connection | long |
+| routing.bgp.msg_total_in.count | Total of all messages received from the peer | long |
+| routing.bgp.msg_total_out.count | Total of all messages sent to the peer | long |
+| routing.bgp.msg_update_in.count | The number of BGP UPDATE messages received by the router from this peer | long |
+| routing.bgp.msg_update_out.count | the number of BGP UPDATE messages sent from the local router to the peer | long |
+| routing.bgp.multi_hop_ttl | Time to Live (TTL) value for multi-hop BGP sessions. Units are the number of hops. | long |
+| routing.bgp.nexthop_peer | Indicates whether the peer is being used as the next-hop for the routes received from this peer | boolean |
+| routing.bgp.nexthop_self | Whether the router is configured to use itself as the next-hop for routes sent to this peer | boolean |
+| routing.bgp.nexthop_thirdparty | Third-party next-hop feature is enabled | boolean |
+| routing.bgp.open_delay.sec | Delay before sending an Open message (in seconds) | long |
+| routing.bgp.orf_entry_received | Number of ORF (Outbound Route Filtering) entries received from the peer | long |
+| routing.bgp.passive | Indicates if the BGP peer is in passive mode: if yes then router will not initiate a connection to the peer | boolean |
+| routing.bgp.password_set | Indicates whether a password is set for the BGP peer | boolean |
+| routing.bgp.peer_group | The name of the BGP peer group this peer belongs to | keyword |
+| routing.bgp.peer_ip | IP address of the peer | ip |
+| routing.bgp.peer_name | The name of the current peer in the BGP peer group | keyword |
+| routing.bgp.peer_port | Port number of the peer | long |
+| routing.bgp.peer_router_id | BGP peer router ID | ip |
+| routing.bgp.peering_type | Defines the type of relationship between peers, e.g., "External BGP", "Internal BGP", or "Unspecified" | keyword |
+| routing.bgp.prefix_limit | The maximum number of prefixes that can be received from the peer (0 = no limit) | long |
+| routing.bgp.reflector_client | Specifies the BGP peer relationship to route reflectors, e.g. "client", "not-client", "meshed-client" | keyword |
+| routing.bgp.remote_as_asn | The remote Autonomous System (AS) number of the peer | long |
+| routing.bgp.same_confederation | Peers in the same confederation exchange routes using internal BGP (iBGP) instead of external BGP (eBGP) | boolean |
+| routing.bgp.status | The BGP session status, e.g., "Established" means the session is up and running | keyword |
+| routing.bgp.status_duration.sec | Time in seconds since the current status was set | long |
+| routing.bgp.status_flap_counts | Indicates the number of times the BGP session has "flapped" or transitioned between up and down states | long |
+| routing.bgp.virtual_router | The virtual router with which the BGP peer is associated | keyword |
 
 
 ### system
@@ -504,84 +506,85 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit | Metric Type |
-|---|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
-| data_stream.type | Data stream type. | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
-| panw.system.certificate.db_exp_date | Expiration date, format, 310329235959Z(Mar 29 23:59:59 2031 GMT) | keyword |  |  |
-| panw.system.certificate.db_file | File name of the certificate database | keyword |  |  |
-| panw.system.certificate.db_name | Name of the certificate database | keyword |  |  |
-| panw.system.certificate.db_rev_date | Revision date of the certificate database | keyword |  |  |
-| panw.system.certificate.db_serial_no | Serial number of the certificate database | keyword |  |  |
-| panw.system.certificate.db_status | Status of the certificate database | keyword |  |  |
-| panw.system.certificate.db_type | Type of the certificate database | keyword |  |  |
-| panw.system.certificate.issuer | Issuer of the certificate database | keyword |  |  |
-| panw.system.certificate.issuer_key_hash | Key hash of the issuer of the certificate database | keyword |  |  |
-| panw.system.certificate.issuer_subject_hash | Subject hash of the issuer of the certificate database | keyword |  |  |
-| panw.system.cpu.hi | CPU hardware interrupts | float | percent | gauge |
-| panw.system.cpu.idle | CPU idle time | float | percent | gauge |
-| panw.system.cpu.nice | CPU usage by processes with a positive nice value | float | percent | gauge |
-| panw.system.cpu.steal | CPU steal time | float | percent | gauge |
-| panw.system.cpu.system | CPU usage by system processes | float | percent | gauge |
-| panw.system.cpu.system_int | CPU software interrupts | float | percent | gauge |
-| panw.system.cpu.user | CPU usage by user processes | float | percent | gauge |
-| panw.system.cpu.wait | CPU wait time | float | percent | gauge |
-| panw.system.fan.alarm | Is there an alarm status of the fan | boolean |  |  |
-| panw.system.fan.description | The description of the fan | keyword |  |  |
-| panw.system.fan.min_rpm | The minimum speed of the fan in RPM | integer |  | gauge |
-| panw.system.fan.rpm | The speed of the fan in RPM | integer |  | gauge |
-| panw.system.fan.slot_number | The number of the hardware slot | integer |  |  |
-| panw.system.filesystem.available | Disk space available on the filesystem | float | byte | gauge |
-| panw.system.filesystem.mounted | Filesystem mount point | keyword |  |  |
-| panw.system.filesystem.name | Filesystem name | keyword |  |  |
-| panw.system.filesystem.size | Total size of the filesystem | float | byte | gauge |
-| panw.system.filesystem.use_percent | Percent of filesystem used | integer | percent | gauge |
-| panw.system.filesystem.used | Amount used on the filesystem | float | byte | gauge |
-| panw.system.license.auth_code | Authorization code to activate or install the license | keyword |  |  |
-| panw.system.license.description | Description of the licensed feature | text |  |  |
-| panw.system.license.expired | Indicates if the license is expired | boolean |  |  |
-| panw.system.license.expires | Date the license expires, but this is a keyword because value might be "never" | keyword |  |  |
-| panw.system.license.feature | Feature licensed, e.g. Advanced Threat Prevention | keyword |  |  |
-| panw.system.license.issued | Date the license was issued | date |  |  |
-| panw.system.license.serial | Serial number of license | keyword |  |  |
-| panw.system.load_average.15m | Load average in 15 minutes | float |  | gauge |
-| panw.system.load_average.1m | Load average in 1 minute | float |  | gauge |
-| panw.system.load_average.5m | Load average in 5 minutes | float |  | gauge |
-| panw.system.memory.buffer_cache | Memory used for buffers and cache | float | byte | gauge |
-| panw.system.memory.free | Free memory | float | byte | gauge |
-| panw.system.memory.total | Total memory | float | byte | gauge |
-| panw.system.memory.used | Used memory | float | byte | gauge |
-| panw.system.power.alarm | Indicates if alarm is active | boolean |  |  |
-| panw.system.power.description | Description field | text |  |  |
-| panw.system.power.maximum_volts | Maximum volts recorded | float |  |  |
-| panw.system.power.minimum_volts | Minimum volts recorded | float |  |  |
-| panw.system.power.slot_number | Slot number field | keyword |  |  |
-| panw.system.power.volts | Current Volts | float |  | gauge |
-| panw.system.swap.available | Available swap space | float | byte | gauge |
-| panw.system.swap.free | Free swap space | float | byte | gauge |
-| panw.system.swap.total | Total swap space | float | byte | gauge |
-| panw.system.swap.used | Used swap space | float | byte | gauge |
-| panw.system.tasks.running | Number of running tasks | long |  | gauge |
-| panw.system.tasks.sleeping | Number of sleeping tasks | long |  | gauge |
-| panw.system.tasks.stopped | Number of stopped tasks | long |  | gauge |
-| panw.system.tasks.total | Total number of tasks | long |  | gauge |
-| panw.system.tasks.zombie | Number of zombie tasks | long |  | gauge |
-| panw.system.thermal.alarm | Alarm field | boolean |  |  |
-| panw.system.thermal.degrees_celsius | Degrees Celsius field | float |  | gauge |
-| panw.system.thermal.description | Description field | text |  |  |
-| panw.system.thermal.maximum_temp | Maximum temperature field | float |  | gauge |
-| panw.system.thermal.minimum_temp | Minimum temperature field | float |  | gauge |
-| panw.system.thermal.slot_number | Slot number field | integer |  |  |
-| panw.system.uptime.days | Uptime in days | integer | d | gauge |
-| panw.system.uptime.hours | Hours component of uptime | integer | h | gauge |
-| panw.system.uptime.minutes | Minutes component of uptime | integer | m | gauge |
-| panw.system.user_count | Number of users | long |  | gauge |
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| system.certificate.db_exp_date | expiration date, format: 310329235959Z(Mar 29 23:59:59 2031 GMT) | keyword |
+| system.certificate.db_file | db_file field | keyword |
+| system.certificate.db_name | db_name field | keyword |
+| system.certificate.db_rev_date | db_rev_date field | keyword |
+| system.certificate.db_serial_no | db_serial_no field | keyword |
+| system.certificate.db_status | db_status field | keyword |
+| system.certificate.db_type | db_type field | keyword |
+| system.certificate.issuer | issuer field | keyword |
+| system.certificate.issuer_key_hash | issuer_key_hash field | keyword |
+| system.certificate.issuer_subject_hash | issuer_subject_hash field | keyword |
+| system.cpu.hi | CPU hardware interrupts | float |
+| system.cpu.idle | CPU idle time | float |
+| system.cpu.nice | CPU usage by processes with a positive nice value | float |
+| system.cpu.steal | CPU steal time | float |
+| system.cpu.system | CPU usage by system processes | float |
+| system.cpu.system_int | CPU software interrupts | float |
+| system.cpu.user | CPU usage by user processes | float |
+| system.cpu.wait | CPU wait time | float |
+| system.fan.alarm | Is there an alarm status of the fan | boolean |
+| system.fan.description | The description of the fan | keyword |
+| system.fan.min_rpm | The minimum speed of the fan in RPM | integer |
+| system.fan.rpm | The speed of the fan in RPM | integer |
+| system.fan.slot_number | The number of the hardware slot | integer |
+| system.filesystem.available | Disk space available on the filesystem | float |
+| system.filesystem.mounted | Filesystem mount point | keyword |
+| system.filesystem.name | Filesystem name | keyword |
+| system.filesystem.size | Total size of the filesystem | float |
+| system.filesystem.use_percent | Percent of filesystem used | integer |
+| system.filesystem.used | Amount used on the filesystem | float |
+| system.license.auth_code | Authorization code to activate or install the license | keyword |
+| system.license.description | Description of the licensed feature | text |
+| system.license.expired | Indicates if the license is expired | boolean |
+| system.license.expires | Date the license expires - not set if license never expires | date |
+| system.license.feature | Feature licensed, e.g. Advanced Threat Prevention | keyword |
+| system.license.issued | Date the license was issued | date |
+| system.license.never_expires | Indicates if the license never expires | boolean |
+| system.license.serial | Serial number of license | keyword |
+| system.load_average.15m | Load average in 15 minutes | float |
+| system.load_average.1m | Load average in 1 minute | float |
+| system.load_average.5m | Load average in 5 minutes | float |
+| system.memory.buffer_cache | Memory used for buffers and cache | float |
+| system.memory.free | Free memory | float |
+| system.memory.total | Total memory | float |
+| system.memory.used | Used memory | float |
+| system.power.alarm | Indicates if alarm is active | boolean |
+| system.power.description | Description field | text |
+| system.power.maximum_volts | Maximum volts recorded | float |
+| system.power.minimum_volts | Minimum volts recorded | float |
+| system.power.slot_number | Slot number field | integer |
+| system.power.volts | Current Volts | float |
+| system.swap.available | Available swap space | float |
+| system.swap.free | Free swap space | float |
+| system.swap.total | Total swap space | float |
+| system.swap.used | Used swap space | float |
+| system.tasks.running | Number of running tasks | long |
+| system.tasks.sleeping | Number of sleeping tasks | long |
+| system.tasks.stopped | Number of stopped tasks | long |
+| system.tasks.total | Total number of tasks | long |
+| system.tasks.zombie | Number of zombie tasks | long |
+| system.thermal.alarm | Alarm field | boolean |
+| system.thermal.degrees_celsius | Degrees Celsius field | float |
+| system.thermal.description | Description field | text |
+| system.thermal.maximum_temp | Maximum temperature field | float |
+| system.thermal.minimum_temp | Minimum temperature field | float |
+| system.thermal.slot_number | Slot number field | integer |
+| system.uptime.days | Uptime in days | integer |
+| system.uptime.hours | Hours component of uptime | integer |
+| system.uptime.minutes | Minutes component of uptime | integer |
+| system.user_count | Number of users | long |
 
 
 ### vpn
@@ -683,42 +686,42 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit | Metric Type |
-|---|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
-| data_stream.type | Data stream type. | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
-| panw.vpn.globalprotect.gateway.current_users | Current number of users connected to the GlobalProtect gateway | long |  | gauge |
-| panw.vpn.globalprotect.gateway.name | Name of the GlobalProtect gateway | keyword |  |  |
-| panw.vpn.globalprotect.gateway.previous_users | Previous number of users connected to the GlobalProtect gateway | long |  | gauge |
-| panw.vpn.globalprotect.session.app_version | Application version used in the session | keyword |  |  |
-| panw.vpn.globalprotect.session.client | Client information of the session | keyword |  |  |
-| panw.vpn.globalprotect.session.client_ip | Client IP address of the session | ip |  |  |
-| panw.vpn.globalprotect.session.computer | Computer name in the session | keyword |  |  |
-| panw.vpn.globalprotect.session.domain | Domain of the GlobalProtect session | keyword |  |  |
-| panw.vpn.globalprotect.session.host_id | Host ID of the session | keyword |  |  |
-| panw.vpn.globalprotect.session.is_local | Indicates if the session is local | boolean |  |  |
-| panw.vpn.globalprotect.session.lifetime | Lifetime of the session | long | s |  |
-| panw.vpn.globalprotect.session.login_time | Login time of the session | date |  |  |
-| panw.vpn.globalprotect.session.login_time_utc | Login time in UTC of the session | date |  |  |
-| panw.vpn.globalprotect.session.primary_username | Primary username of the session | keyword |  |  |
-| panw.vpn.globalprotect.session.public_connection_ipv6 | Public connection IPv6 address of the session | ip |  |  |
-| panw.vpn.globalprotect.session.public_ip | Public IP address of the session | ip |  |  |
-| panw.vpn.globalprotect.session.public_ipv6 | Public IPv6 address of the session | ip |  |  |
-| panw.vpn.globalprotect.session.region_for_config | Region for configuration | keyword |  |  |
-| panw.vpn.globalprotect.session.request_get_config | Request get configuration information of the session | keyword |  |  |
-| panw.vpn.globalprotect.session.request_login | Request login information of the session | keyword |  |  |
-| panw.vpn.globalprotect.session.request_sslvpn_connect | Request SSL VPN connect information of the session | keyword |  |  |
-| panw.vpn.globalprotect.session.source_region | Source region of the session | keyword |  |  |
-| panw.vpn.globalprotect.session.tunnel_type | Type of tunnel used in the session | keyword |  |  |
-| panw.vpn.globalprotect.session.username | Username of the session | keyword |  |  |
-| panw.vpn.globalprotect.session.virtual_ip | Virtual IP address of the session | ip |  |  |
-| panw.vpn.globalprotect.session.virtual_ipv6 | Virtual IPv6 address of the session | ip |  |  |
-| panw.vpn.globalprotect.session.vpn_type | Type of VPN used in the session | keyword |  |  |
-| panw.vpn.globalprotect.total_current_users | Total current number of users connected to GlobalProtect | long |  | gauge |
-| panw.vpn.globalprotect.total_previous_users | Total previous number of users connected to GlobalProtect | long |  | gauge |
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| vpn.globalprotect.gateway.current_users | Current number of users connected to the GlobalProtect gateway | long |
+| vpn.globalprotect.gateway.name | Name of the GlobalProtect gateway | keyword |
+| vpn.globalprotect.gateway.previous_users | Previous number of users connected to the GlobalProtect gateway | long |
+| vpn.globalprotect.session.app_version | Application version used in the session | keyword |
+| vpn.globalprotect.session.client | Client information of the session | keyword |
+| vpn.globalprotect.session.client_ip | Client IP address of the session | ip |
+| vpn.globalprotect.session.computer | Computer name in the session | keyword |
+| vpn.globalprotect.session.domain | Domain of the GlobalProtect session | keyword |
+| vpn.globalprotect.session.host_id | Host ID of the session | keyword |
+| vpn.globalprotect.session.is_local | Indicates if the session is local | boolean |
+| vpn.globalprotect.session.lifetime | Lifetime of the session | long |
+| vpn.globalprotect.session.login_time | Login time of the session | date |
+| vpn.globalprotect.session.login_time_utc | Login time in UTC of the session | date |
+| vpn.globalprotect.session.primary_username | Primary username of the session | keyword |
+| vpn.globalprotect.session.public_connection_ipv6 | Public connection IPv6 address of the session | ip |
+| vpn.globalprotect.session.public_ip | Public IP address of the session | ip |
+| vpn.globalprotect.session.public_ipv6 | Public IPv6 address of the session | ip |
+| vpn.globalprotect.session.region_for_config | Region for configuration | keyword |
+| vpn.globalprotect.session.request_get_config | Request get configuration information of the session | keyword |
+| vpn.globalprotect.session.request_login | Request login information of the session | keyword |
+| vpn.globalprotect.session.request_sslvpn_connect | Request SSL VPN connect information of the session | keyword |
+| vpn.globalprotect.session.source_region | Source region of the session | keyword |
+| vpn.globalprotect.session.tunnel_type | Type of tunnel used in the session | keyword |
+| vpn.globalprotect.session.username | Username of the session | keyword |
+| vpn.globalprotect.session.virtual_ip | Virtual IP address of the session | ip |
+| vpn.globalprotect.session.virtual_ipv6 | Virtual IPv6 address of the session | ip |
+| vpn.globalprotect.session.vpn_type | Type of VPN used in the session | keyword |
+| vpn.globalprotect.total_current_users | Total current number of users connected to GlobalProtect gateway | long |
+| vpn.globalprotect.total_previous_users | Total previous number of users connected to GlobalProtect gateway | long |
