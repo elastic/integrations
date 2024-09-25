@@ -27,7 +27,7 @@ integration. Please refer to the AWS integration for more details.**
 
 ## Compatibility
 
-This integration is compatible with the Amazon Bedrock Model Invocation Log schema,
+This integration is compatible with the Amazon Bedrock model invocation log schema,
 version 1.0.
 
 
@@ -101,7 +101,7 @@ either S3 or CloudWatch. For more details check the
 [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html).
 
 1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) Logs destination.
-2. Enable logging. Yoyu can do it either through the [Amazon Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the Amazon Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
+2. Enable logging. You can do it either through the [Amazon Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the Amazon Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
 
 
 ## Collecting Amazon Bedrock model invocation logs from S3 bucket
