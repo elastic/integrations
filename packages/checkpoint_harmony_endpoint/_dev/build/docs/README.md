@@ -1,5 +1,7 @@
 # Check Point Harmony Endpoint
 
+The Check Point Harmony Endpoint integration allows you to ingest data from Harmony Endpoint management service(https://www.checkpoint.com/harmony/endpoint/).
+
 Harmony Endpoint EPMaaS (Endpoint Management as a Service) is the cloud service to manage policies and deployments for Endpoint Security. It provides advanced threat prevention and detection capabilities to safeguard endpoints from malware, ransomware, and other sophisticated attacks. The solution offers real-time protection through behavioral analysis, machine learning, and threat intelligence.
 
 For details please refer to the [Harmony Endpoint Admin guide](https://sc1.checkpoint.com/documents/Infinity_Portal/WebAdminGuides/EN/Harmony-Endpoint-Admin-Guide/Topics-HEP/Introduction.htm)
@@ -51,6 +53,7 @@ This is `Anti-bot` dataset.
 {{event "antibot"}}
 
 {{fields "antibot"}}
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Anti-Malware
 
@@ -59,6 +62,7 @@ This is `Anti-Malware` dataset.
 {{event "antimalware"}}
 
 {{fields "antimalware"}}
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Forensics
 This is `Forensics` dataset.
@@ -66,6 +70,7 @@ This is `Forensics` dataset.
 {{event "forensics"}}
 
 {{fields "forensics"}}
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Threat Emulation
 This is `Threat Emulation` dataset.
@@ -73,6 +78,7 @@ This is `Threat Emulation` dataset.
 {{event "threatemulation"}}
 
 {{fields "threatemulation"}}
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Threat Extraction
 This is `Threat Extraction` dataset.
@@ -80,6 +86,7 @@ This is `Threat Extraction` dataset.
 {{event "threatextraction"}}
 
 {{fields "threatextraction"}}
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### URL Filtering
 This is `URL Filtering` dataset.
@@ -87,6 +94,7 @@ This is `URL Filtering` dataset.
 {{event "urlfiltering"}}
 
 {{fields "urlfiltering"}}
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Zero-phishing
 This is `Zero-Phishing` dataset.
@@ -94,3 +102,4 @@ This is `Zero-Phishing` dataset.
 {{event "zerophishing"}}
 
 {{fields "zerophishing"}}
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)

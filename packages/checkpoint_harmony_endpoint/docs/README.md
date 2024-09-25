@@ -1,5 +1,7 @@
 # Check Point Harmony Endpoint
 
+The Check Point Harmony Endpoint integration allows you to ingest data from Harmony Endpoint management service(https://www.checkpoint.com/harmony/endpoint/).
+
 Harmony Endpoint EPMaaS (Endpoint Management as a Service) is the cloud service to manage policies and deployments for Endpoint Security. It provides advanced threat prevention and detection capabilities to safeguard endpoints from malware, ransomware, and other sophisticated attacks. The solution offers real-time protection through behavioral analysis, machine learning, and threat intelligence.
 
 For details please refer to the [Harmony Endpoint Admin guide](https://sc1.checkpoint.com/documents/Infinity_Portal/WebAdminGuides/EN/Harmony-Endpoint-Admin-Guide/Topics-HEP/Introduction.htm)
@@ -194,6 +196,7 @@ An example event for `antibot` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
 
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Anti-Malware
 
@@ -330,6 +333,7 @@ An example event for `antimalware` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
 
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Forensics
 This is `Forensics` dataset.
@@ -468,6 +472,7 @@ An example event for `forensics` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
 
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Threat Emulation
 This is `Threat Emulation` dataset.
@@ -609,6 +614,7 @@ An example event for `threatemulation` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
 
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Threat Extraction
 This is `Threat Extraction` dataset.
@@ -744,6 +750,7 @@ An example event for `threatextraction` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
 
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### URL Filtering
 This is `URL Filtering` dataset.
@@ -891,6 +898,7 @@ An example event for `urlfiltering` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
 
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
 
 ### Zero-phishing
 This is `Zero-Phishing` dataset.
@@ -1024,3 +1032,4 @@ An example event for `zerophishing` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type | keyword |
 
+A range of ECS fields are also exported. They are described in the ECS documentation.(https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)
