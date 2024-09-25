@@ -1,0 +1,78 @@
+extensions:
+  file_integrations:
+    path: "./integrations"
+
+receivers:
+  integration/nginx_otel:
+    name: "nginx_otel"
+    pipelines: ["metrics", "logs/access", "logs/error"]
+    parameters:
+      endpoint: http://localhost:8088/nginx-status
+      access_paths:
+        - ${env:NGINX_LOGS_DIR}/access.log
+      error_paths:
+        - ${env:NGINX_LOGS_DIR}/error.log
+      log_storage: "./data"
+
+processors:
+  integration/nginx_otel:
+    name: "nginx_otel"
+
+exporters:
+  debug:
+    verbosity: detailed
+    # verbosity: normal
+    use_internal_logger: false
+  logging:
+    # verbosity: detailed
+    verbosity: normal
+    sampling_initial: 5
+    sampling_thereafter: 200
+  elasticsearch:
+    endpoint: http://localhost:9200
+    flush:
+      interval: 100ms
+    mapping:
+      mode: otel
+    password: changeme
+    user: elastic
+    logs_dynamic_index:
+      enabled: true
+    metrics_dynamic_index:
+      enabled: true
+
+service:
+  extensions:
+    - file_storage
+    - file_integrations
+  pipelines:
+    metrics:
+      receivers:
+        - nginx
+      exporters:
+        - debug
+        - logging
+        - elasticsearch
+      processors:
+        - resourcedetection/system
+        - transform/parse_status_nginx/metrics
+    logs/access:
+      receivers:
+        - filelog/access
+      exporters:
+        - debug
+        - logging
+        - elasticsearch
+      processors:
+        - resourcedetection/system
+        - transform/parse_access_nginx/log
+    logs/error:
+      receivers:
+        - filelog/error
+      exporters:
+        - debug
+        - logging
+        - elasticsearch
+      processors:
+        - resourcedetection/system
+        - transform/parse_error_nginx/log
