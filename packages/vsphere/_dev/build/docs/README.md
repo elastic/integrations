@@ -29,9 +29,9 @@ Data Streams:
 - **`virtualmachine`**: This data stream gathers virtual machine metrics from VMware vSphere, including performance statistics such as status, uptime, CPU usage, memory usage, and network activity.
 - **`network`**: This data stream gathers metrics and status information related to VMware vSphere networks, including network accessibility, connected hosts and virtual machines, configuration health, and network type.
 
-Important Note:
+## Important Note
 - Users can monitor and see the log inside the ingested documents for vSphere in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
-- ### Supported Periods:
+- **Supported Periods**:
     - Real-time data collection – An ESXi Server collects data for each performance counter every 20 seconds by default.
     - The Datastore and Host datastreams support performance data collection using the vSphere performance API.
     - Since the performance API has usage restrictions based on data collection intervals, users should ensure that the period is configured optimally to receive real-time data. Users can still collect summary metrics if performance metrics are not supported for the configured instance.
@@ -155,4 +155,4 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ## Troubleshoot
 
-If you encounter any issues during the setup or usage of the VMware vSphere integration, particularly with regards to Data Collection Intervals, with agent error messages such as **`Failed to query performance metrics: ServerFaultCode: A specified parameter was not correct: querySpec.interval`**, please refer to the mentioned Important Notes/[Supported Periods](#supported-periods) for guidance and resolution.
+If you encounter any issues during the setup or usage of the VMware vSphere integration, particularly with regards to Data Collection Intervals, with agent error messages such as **`Failed to query performance metrics: ServerFaultCode: A specified parameter was not correct: querySpec.interval`**, please refer to the mentioned Important Notes/Supported Periods for guidance and resolution.
