@@ -43,7 +43,7 @@ processors:
           - IsMatch(body, "[\\d+/ :]+ \\[.+\\] \\d+#\\d+:\\ .+") and (not IsMatch(body, ", client:\\ (.+), server:\\ (.+), request:\\ (.+), host:\\ (.+)$"))
         statements:
           # capturing all the nginx attributes with a single regex
-          - merge_maps(attributes, ExtractPatterns(body, "(?P<time__local>[\\d+/ :]+) \\[(?P<severity>.+)\\] (?P<process__pid>\\d+)#(?P<process__thread_id>\\d+):\\ (?P<message>.+)$"), "upsert")
+          - merge_maps(attributes, ExtractPatterns(body, "(?P<time__local>[\\d+/ :]+) \\[(?P<log__level>.+)\\] (?P<process__pid>\\d+)#(?P<process__thread_id>\\d+):\\ (?P<message>.+)$"), "upsert")
 
           # replace all "__" for "." (intermediate step as regular expressions do not allow capture variable names with dots)
           - replace_all_patterns(attributes, "key", "__", ".")
@@ -57,7 +57,7 @@ processors:
           - IsMatch(body, "[\\d+/ :]+ \\[.+\\] \\d+#\\d+:\\ .+") and IsMatch(body, ", client:\\ (.+), server:\\ (.+), request:\\ (.+), host:\\ (.+)$")
         statements:
           # capturing all the nginx attributes with a single regex
-          - merge_maps(attributes, ExtractPatterns(body, "(?P<time__local>[\\d+/ :]+) \\[(?P<severity>.+)\\] (?P<process__pid>\\d+)#(?P<process__thread_id>\\d+):\\ (?P<message>.+), client:\\ (?P<client>.+), server:\\ (?P<server>.+), request:\\ \\\"(?P<http__request__method>[^ ]+) (?P<url__original>[^ ]+) HTTP/(?P<http__version>[^\\\"]+)\\\", host:\\ \\\"(?P<source__address>.+)\\\"$"), "upsert")
+          - merge_maps(attributes, ExtractPatterns(body, "(?P<time__local>[\\d+/ :]+) \\[(?P<log__level>.+)\\] (?P<process__pid>\\d+)#(?P<process__thread_id>\\d+):\\ (?P<message>.+), client:\\ (?P<client>.+), server:\\ (?P<server>.+), request:\\ \\\"(?P<http__request__method>[^ ]+) (?P<url__original>[^ ]+) HTTP/(?P<http__version>[^\\\"]+)\\\", host:\\ \\\"(?P<source__address>.+)\\\"$"), "upsert")
 
           # replace all "__" for "." (intermediate step as regular expressions do not allow capture variable names with dots)
           - replace_all_patterns(attributes, "key", "__", ".")
