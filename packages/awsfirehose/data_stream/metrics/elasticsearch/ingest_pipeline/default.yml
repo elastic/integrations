@@ -1,9 +1,50 @@
 ---
 description: Pipeline for rerouting metrics stream from Amazon Data Firehose.
 processors:
+  - dot_expander:
+      field: "*"
+      ignore_failure: true
   - set:
       field: ecs.version
       value: 8.11.0
+  - append:
+      field: "aws.metrics_names"
+      value: [ null ]
+      allow_duplicates: false
+      description: Create an empty field of the object type to temporarily store list of all metrics names
+  - script:
+      lang: painless
+      description: This script adds all metric names from 'aws.*.metrics.*.*' into aws.metrics_names field.
+      if: ctx.aws != null
+      source: >-
+        List metricNames = new ArrayList();
+        if (ctx.aws != null && ctx.aws instanceof Map) {
+            for (entry in ctx.aws.entrySet()) {
+                String topLevelKey = entry.getKey();  // Get the top-level key (kinesis, cloudwatch, etc.)
+                def nestedMap = entry.getValue();
+                if (nestedMap instanceof Map) {
+                    for (nestedEntry in nestedMap.entrySet()) {
+                        String key = nestedEntry.getKey(); // Get the second-level key (metrics, namespace, etc.)
+                        if (key.equals("metrics")) {
+                            def metricsMap = nestedEntry.getValue(); // Get aws.*.metrics.*
+                            if (metricsMap instanceof Map) {
+                                for (metricsEntry in metricsMap.entrySet()) {
+                                    metricNames.add(metricsEntry.getKey());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ctx.aws.metrics_names = metricNames;
+  - fingerprint:
+      fields: [ "aws.metrics_names" ]
+      target_field: "aws.metrics_names_fingerprint"
+      ignore_missing: true
+  - remove:
+      field: "aws.metrics_names"
+      description: Remove field as it contains a redundant information and can impact the documents size
 on_failure:
   - set:
       field: error.message
