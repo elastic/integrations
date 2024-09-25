@@ -268,7 +268,7 @@ class TestFindOldestSupportVersion(unittest.TestCase):
     def test_available_next_minor_in_current_major(self):
         self.assertEqual(find_oldest_supported_version("7.19.0"), "7.x-SNAPSHOT")
 
-        # not sure if this test case should return 8.x-SNAPSHOT stack version,
+        # not sure if this test case for 8.8.3 should return 8.x-SNAPSHOT stack version,
         # that would test with probably a newer stack (8.11.0-SNAPSHOT).
         self.assertEqual(find_oldest_supported_version("8.8.3"), "8.x-SNAPSHOT")
         self.assertEqual(find_oldest_supported_version("8.12.0"), "8.x-SNAPSHOT")
