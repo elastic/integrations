@@ -27,7 +27,7 @@ integration. Please refer to the AWS integration for more details.**
 
 ## Compatibility
 
-This integration is compatible with the Amazon Bedrock ModelInvocationLog schema,
+This integration is compatible with the Amazon Bedrock Model Invocation Log schema,
 version 1.0.
 
 
@@ -55,7 +55,7 @@ Before using any Amazon Bedrock integration you will need:
 * **AWS Permissions** to make sure the user you're using to connect has
   permission to share the relevant data.
 
-For more details about these requirements, please take a look at the [AWS
+For more details about these requirements, check the [AWS
 integration
 documentation](https://docs.elastic.co/integrations/aws#requirements).
 
@@ -65,51 +65,48 @@ documentation](https://docs.elastic.co/integrations/aws#requirements).
   data to Elastic, where the events will then be processed via the
   integration's ingest pipelines.
 
-### Installing and managing an Elastic Agent:
+### Installing and managing an Elastic Agent
 
-You have a few options for installing and managing an Elastic Agent:
+To install and manage an Elastic Agent you have the following options:
 
-### Install a Fleet-managed Elastic Agent (recommended):
+### Install a Fleet-managed Elastic Agent (recommended)
 
-With this approach, you install Elastic Agent and use Fleet in Kibana to
+You install Elastic Agent and use Fleet in Kibana to
 define, configure, and manage your agents in a central location. We recommend
 using Fleet management because it makes the management and upgrade of your
 agents considerably easier.
 
-### Install Elastic Agent in standalone mode (advanced users):
+### Install Elastic Agent in standalone mode (advanced users)
 
-With this approach, you install Elastic Agent and manually configure the agent
+You install Elastic Agent and manually configure the agent
 locally on the system where it is installed. You are responsible for managing
-and upgrading the agents. This approach is reserved for advanced users only.
+and upgrading the agents. This approach is for advanced users only.
 
-### Install Elastic Agent in a containerized environment:
+### Install Elastic Agent in a containerized environment
 
 You can run Elastic Agent inside a container, either with Fleet Server or
 standalone. Docker images for all versions of Elastic Agent are available
 from the Elastic Docker registry, and we provide deployment manifests for
 running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more
-information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+To run Elastic Agent, check these [requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **Elastic stack** required is **8.13.0**.
+The minimum **Elastic Stack** version required is **8.13.0**.
 
+## Setup
 
-### Setup
-
-In order to use the Amazon Bedrock model invocation logs, logging model
+To use the Amazon Bedrock model invocation logs, the logging model
 invocation logging must be enabled and be sent to a log store destination,
-either S3 or CloudWatch. The full details of this are available from the
-[Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html),
-but outlined here.
+either S3 or CloudWatch. For more details check the
+[Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html).
 
 1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) Logs destination.
-2. Enable logging. This can be done either through the [Amazon Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the Amazon Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
+2. Enable logging. Yoyu can do it either through the [Amazon Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the Amazon Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
 
 
 ## Collecting Amazon Bedrock model invocation logs from S3 bucket
 
-When collecting logs from S3 bucket is enabled, users can retrieve logs from S3
+When collecting logs from S3 bucket is enabled, you can retrieve logs from S3
 objects that are pointed to by S3 notification events read from an SQS queue or
 directly polling list of S3 objects in an S3 bucket. 
 
@@ -125,7 +122,7 @@ at the same time and at least one of the two value must be set.
 
 ## Collecting Amazon Bedrock model invocation logs from CloudWatch
 
-When collecting logs from CloudWatch is enabled, users can retrieve logs from 
+When collecting logs from CloudWatch is enabled, you can retrieve logs from 
 all log streams in a specific log group. `filterLogEvents` AWS API is used to 
 list log events from the specified log group.
 
@@ -250,10 +247,10 @@ list log events from the specified log group.
 
 Amazon Bedrock runtime metrics include `Invocations`, `InvocationLatency`,
 `InvocationClientErrors`, `InvocationServerErrors`, `OutputTokenCount`,
-`OutputImageCount`, `InvocationThrottles`. These metrics can be used for variety of use cases including 
- - Comparing model latency. 
- - Measuring input and output token counts.
- - Detecting the number of invocations that the system throttled.   
+`OutputImageCount`, `InvocationThrottles`. These metrics can be used for various use cases including: 
+ - Comparing model latency 
+ - Measuring input and output token counts
+ - Detecting the number of invocations that the system throttled   
 
 An example event for `runtime` looks as following:
 
