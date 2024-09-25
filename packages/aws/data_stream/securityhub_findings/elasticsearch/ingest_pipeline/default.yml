@@ -1563,6 +1563,9 @@ processors:
         if (ctx.host == null) {
           ctx.host = new HashMap();
         }
+        if (ctx.host.ip == null) {
+          ctx.host.ip = new ArrayList();
+        }
         if (ctx.orchestrator == null) {
           ctx.orchestrator = new HashMap();
         }
@@ -1622,8 +1625,20 @@ processors:
             ctx.host.id = res.Id;
           }
           if (res.Details != null) {
-            if (res.Type == 'AwsEcsTask' && res.Details.AwsEcsTask?.Containers != null) {
-              ctx.orchestrator.cluster.id = res.Details.AwsEcsCluster.ClusterArn;
+            if (res.Type == 'AwsEcsContainer' && res.Details.AwsEcsContainer?.Name != null) {
+              ctx.host.name = res.Details.AwsEcsContainer.Name;
+            }
+            if (res.Type == 'AwsEc2Instance' && (res.Details.AwsEc2Instance?.IpV4Addresses != null || res.Details.AwsEc2Instance?.IpV6Addresses != null)) {
+              for (def ipv4 : res.Details.AwsEc2Instance.IpV4Addresses) {
+                if (ipv4 instanceof String) {
+                  ctx.host.ip.add(ipv4);
+                }
+              }
+              for (def ipv6 : res.Details.AwsEc2Instance.IpV6Addresses) {
+                if (ipv6 instanceof String) {
+                  ctx.host.ip.add(ipv6);
+                }
+              }
             }
           }
 
@@ -1720,6 +1735,12 @@ processors:
         if (ctx.host.id == null) {
           ctx.host.id = new ArrayList();
         }
+        if (ctx.host.ip == null) {
+          ctx.host.ip = new ArrayList();
+        }
+        if (ctx.host.name == null) {
+          ctx.host.name = new ArrayList();
+        }
         
         if (ctx.orchestrator.type == null) {
           ctx.orchestrator.type = new ArrayList();
@@ -1791,6 +1812,23 @@ processors:
           // Extract ECS host field
           if (res.Type == 'AwsEc2Instance' && res.Id != null) {
             ctx.host.id.add(res.Id);
+          }
+          if (res.Details != null) {
+            if (res.Type == 'AwsEcsContainer' && res.Details.AwsEcsContainer?.Name != null) {
+              ctx.host.name.add(res.Details.AwsEcsContainer.Name);
+            }
+            if (res.Type == 'AwsEc2Instance' && (res.Details.AwsEc2Instance?.IpV4Addresses != null || res.Details.AwsEc2Instance?.IpV6Addresses != null)) {
+              for (def ipv4 : res.Details.AwsEc2Instance.IpV4Addresses) {
+                if (ipv4 instanceof String) {
+                  ctx.host.ip.add(ipv4);
+                }
+              }
+              for (def ipv6 : res.Details.AwsEc2Instance.IpV6Addresses) {
+                if (ipv6 instanceof String) {
+                  ctx.host.ip.add(ipv6);
+                }
+              }
+            }
           }
 
           // Extract ECS orchestrator field
