@@ -48,7 +48,8 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": [
-                                "nginx_otel.access"
+                                "nginx_otel.access.otel",
+                                "nginx_otel.error.otel"
                             ],
                             "type": "phrases"
                         },
@@ -58,7 +59,12 @@
                                 "should": [
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "nginx_otel.access"
+                                            "data_stream.dataset": "nginx_otel.access.otel"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nginx_otel.error.otel"
                                         }
                                     }
                                 ]
@@ -362,6 +368,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "26f293c7-fd97-4077-9f33-69996b16581c": {
                                             "columnOrder": [
@@ -411,28 +418,28 @@
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "http.response.status_code \u003e= 200 and http.response.status_code \u003c= 299"
+                                                                    "query": "attributes.http.response.status_code \u003e= 200 and attributes.http.response.status_code \u003c= 299"
                                                                 },
                                                                 "label": "200s"
                                                             },
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "http.response.status_code \u003e= 300 and http.response.status_code \u003c= 399"
+                                                                    "query": "attributes.http.response.status_code \u003e= 300 and attributes.http.response.status_code \u003c= 399"
                                                                 },
                                                                 "label": "300s"
                                                             },
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "http.response.status_code \u003e= 400 and http.response.status_code \u003c= 499"
+                                                                    "query": "attributes.http.response.status_code \u003e= 400 and attributes.http.response.status_code \u003c= 499"
                                                                 },
                                                                 "label": "400s"
                                                             },
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "http.response.status_code \u003e= 500 and http.response.status_code \u003c= 599"
+                                                                    "query": "attributes.http.response.status_code \u003e= 500 and attributes.http.response.status_code \u003c= 599"
                                                                 },
                                                                 "label": "500s"
                                                             }
@@ -441,7 +448,7 @@
                                                     "scale": "ordinal"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -478,13 +485,15 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "bottom",
                                     "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yTitle": ""
                             }
                         },
@@ -519,6 +528,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "f4ff081d-fdd1-4c3e-980c-d64585cb4574": {
                                             "columnOrder": [
@@ -562,7 +572,7 @@
                                                 "e012f19a-e3be-4d80-9f0e-bb798fd6a287": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of log.level",
+                                                    "label": "Top 10 values of attributes.severity",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -578,10 +588,11 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "log.level"
+                                                    "sourceField": "attributes.severity"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -624,13 +635,15 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "bottom",
                                     "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "bar",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yTitle": ""
                             }
                         },
@@ -799,6 +812,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "af1b0284-d308-40fc-ab5e-f4c56b3fbe18": {
                                             "columnOrder": [
@@ -835,10 +849,11 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "http.response.body.bytes"
+                                                    "sourceField": "attributes.http.response.body.bytes"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -847,7 +862,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset:nginx_otel.access"
+                                "query": "data_stream.dataset:nginx_otel.access.otel"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -879,13 +894,15 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [
+                                        "currentAndLastValue"
+                                    ],
                                     "position": "bottom",
                                     "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": true,
                                 "yTitle": ""
                             }
                         },
@@ -1078,7 +1095,7 @@
                                                 "4bdd1170-9e37-477f-86f3-06a403a558a0": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of attributes.user_agent.original",
+                                                    "label": "Top 5 values of attributes.user_agent.version",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -1091,15 +1108,16 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "attributes.user_agent.original"
+                                                    "sourceField": "attributes.user_agent.version"
                                                 },
                                                 "af2711f0-7714-4291-b405-e4413bf099d7": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of attributes.user_agent.original",
+                                                    "label": "Top 5 values of attributes.user_agent.name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -1112,10 +1130,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "attributes.user_agent.original"
+                                                    "sourceField": "attributes.user_agent.name"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1179,7 +1198,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-09-25T13:12:02.945Z",
+    "created_at": "2024-09-25T13:57:32.881Z",
     "id": "nginx_otel-98f4e620-5d5b-4a4a-b5ce-77f0322b2722",
     "managed": false,
     "references": [
@@ -1230,5 +1249,6 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0"
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
