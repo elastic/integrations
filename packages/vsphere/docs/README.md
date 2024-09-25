@@ -1001,7 +1001,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| vsphere.resourcepool.alert.names | List of all the alerts on this resource pool. | keyword |  |  |
+| vsphere.resourcepool.alert.names | List of all the alerts on this resourcepool. | keyword |  |  |
 | vsphere.resourcepool.cpu.demand.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
 | vsphere.resourcepool.cpu.entitlement.mhz | The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS. | long |  | gauge |
 | vsphere.resourcepool.cpu.entitlement.static.mhz | The static CPU resource entitlement for a virtual machine. | long |  | gauge |
@@ -1017,7 +1017,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.resourcepool.memory.swapped.bytes | The portion of memory, in bytes, that is granted to a virtual machine from the host's swap space. | long | byte | gauge |
 | vsphere.resourcepool.memory.usage.guest.bytes | Guest memory utilization statistics, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.usage.host.bytes | Host memory utilization statistics, in bytes. | long | byte | gauge |
-| vsphere.resourcepool.name | The name of the resource pool. | keyword |  |  |
+| vsphere.resourcepool.name | The name of the resourcepool. | keyword |  |  |
 | vsphere.resourcepool.status | The overall health status of a host in the vSphere environment. | keyword |  |  |
 | vsphere.resourcepool.triggered_alarms.description | Description of the alarm. | keyword |  |  |
 | vsphere.resourcepool.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |  |
@@ -1025,9 +1025,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.resourcepool.triggered_alarms.name | Name of the alarm. | keyword |  |  |
 | vsphere.resourcepool.triggered_alarms.status | Status of the alarm. | keyword |  |  |
 | vsphere.resourcepool.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
-| vsphere.resourcepool.vm.count | Number of virtual machines on the resource pool. | long |  | gauge |
-| vsphere.resourcepool.vm.names | Names of virtual machines on the resource pool. | keyword |  |  |
-| vsphere.resourcepool.warning.names | List of all the warnings on this resource pool. | keyword |  |  |
+| vsphere.resourcepool.vm.count | Number of virtual machines on the resourcepool. | long |  | gauge |
+| vsphere.resourcepool.vm.names | Names of virtual machines on the resourcepool. | keyword |  |  |
+| vsphere.resourcepool.warning.names | List of all the warnings on this resourcepool. | keyword |  |  |
 
 
 ### Virtual Machine
