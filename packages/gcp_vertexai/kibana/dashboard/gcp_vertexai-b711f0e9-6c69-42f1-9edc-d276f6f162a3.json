@@ -626,7 +626,7 @@
                     "y": 12
                 },
                 "panelIndex": "6f04594d-b252-417a-b4be-47c7ef7d2c97",
-                "title": "Overall request rate by LLM deployment",
+                "title": "Overall Inovcation rate by LLM deployment",
                 "type": "lens"
             },
             {
@@ -1014,13 +1014,28 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "69aa0632-b7b7-4eda-8472-0a1da484b9df": {
                                             "columnOrder": [
+                                                "4359a5d7-ef1c-4acd-b44f-cf2a59970a80",
                                                 "0961c298-8b92-4f61-a876-384339e739ba",
-                                                "55e25d36-8cc7-4aff-97db-6bebb3b9c6c6"
+                                                "55e25d36-8cc7-4aff-97db-6bebb3b9c6c6",
+                                                "008b034c-832a-4e5e-bb07-eb5e1232dd07"
                                             ],
                                             "columns": {
+                                                "008b034c-832a-4e5e-bb07-eb5e1232dd07": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "95th percentile of Latency",
+                                                    "operationType": "percentile",
+                                                    "params": {
+                                                        "percentile": 95
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gcp.vertexai.publisher.online_serving.model_invocation_latencies"
+                                                },
                                                 "0961c298-8b92-4f61-a876-384339e739ba": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
@@ -1034,20 +1049,46 @@
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 },
+                                                "4359a5d7-ef1c-4acd-b44f-cf2a59970a80": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 3 values of gcp.labels.resource.model_user_id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "55e25d36-8cc7-4aff-97db-6bebb3b9c6c6",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "gcp.labels.resource.model_user_id"
+                                                },
                                                 "55e25d36-8cc7-4aff-97db-6bebb3b9c6c6": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Model Inovcation Latencies",
-                                                    "operationType": "median",
+                                                    "label": "5th percentile of Latency",
+                                                    "operationType": "percentile",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "percentile": 5
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gcp.vertexai.publisher.online_serving.model_invocation_latencies"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1085,7 +1126,8 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "55e25d36-8cc7-4aff-97db-6bebb3b9c6c6"
+                                            "55e25d36-8cc7-4aff-97db-6bebb3b9c6c6",
+                                            "008b034c-832a-4e5e-bb07-eb5e1232dd07"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -1110,6 +1152,7 @@
                                         "position": "top",
                                         "seriesType": "bar_stacked",
                                         "showGridlines": false,
+                                        "splitAccessor": "4359a5d7-ef1c-4acd-b44f-cf2a59970a80",
                                         "xAccessor": "0961c298-8b92-4f61-a876-384339e739ba"
                                     }
                                 ],
