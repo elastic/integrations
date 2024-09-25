@@ -89,7 +89,6 @@ An example event for `waf` looks as following:
         "forwarded"
     ]
 }
-
 ```
 
 **Exported fields**

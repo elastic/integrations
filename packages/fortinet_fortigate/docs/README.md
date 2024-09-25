@@ -170,7 +170,6 @@ An example event for `log` looks as following:
         "path": "/"
     }
 }
-
 ```
 
 **Exported fields**
