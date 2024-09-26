@@ -653,15 +653,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.securityhub_findings.workflow.state | The workflow state of a finding. | keyword |
 | aws.securityhub_findings.workflow.status | The status of the investigation into the finding. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.provider |  | constant_keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.kind |  | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| observer.vendor |  | constant_keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
 | resource.sub_type |  | keyword |
