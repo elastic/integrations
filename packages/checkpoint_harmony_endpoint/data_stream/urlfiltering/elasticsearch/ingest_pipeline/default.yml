@@ -1,26 +1,40 @@
 ---
 description: Pipeline for processing Harmony Endpoint URL Filtering logs
 processors:
+
+#################### Event ECS fields ####################
+
+  - set:
+      field: event.module
+      value: checkpoint_harmony_endpoint
   - set:
       field: ecs.version
       value: "8.11.0"
   - set:
       field: event.kind
       value: alert
+  - set:
+      field: event.type
+      value: ['info']
+  - set:
+      field: event.category
+      value: ['malware']
+  - set:
+      field: event.dataset
+      value: checkpoint_harmony_endpoint.urlfiltering
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      ignore_failure: true
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true
-  - date:
-      field: json.time
-      target_field: "@timestamp"
-      formats:
-        - strict_date_optional_time_nanos
       ignore_failure: true
   - rename:
       field: json.id
@@ -32,20 +46,15 @@ processors:
       target_field: event.action
       ignore_missing: true
       ignore_failure: true
-  - set:
-      field: event.dataset
-      value: checkpoint_harmony_endpoint.urlfiltering
-  - set:
-      field: event.module
-      value: checkpoint_harmony_endpoint
-  - append:
-      field: event.category
-      value: malware
-      allow_duplicates: false
-  - append:
-      field: event.type
-      value: info
-      allow_duplicates: false
+
+#################### Threat Extraction Log fields ####################
+
+  - date:
+      field: json.time
+      target_field: "@timestamp"
+      formats:
+        - strict_date_optional_time_nanos
+      ignore_failure: true
   - rename:
       field: json.host_type
       target_field: host.type
@@ -218,12 +227,16 @@ processors:
       field: json
       ignore_missing: true
       ignore_failure: true
-  - remove:
-      field: message
-      if: ctx.event?.original != null
-      ignore_missing: true
-      ignore_failure: true
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+
+######################################################################
