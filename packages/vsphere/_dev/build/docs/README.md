@@ -29,16 +29,13 @@ Data Streams:
 - **`virtualmachine`**: This data stream gathers virtual machine metrics from VMware vSphere, including performance statistics such as status, uptime, CPU usage, memory usage, and network activity.
 - **`network`**: This data stream gathers metrics and status information related to VMware vSphere networks, including network accessibility, connected hosts and virtual machines, configuration health, and network type.
 
-Note:
+## Important Note
 - Users can monitor and see the log inside the ingested documents for vSphere in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
-- Real-time data collection – An ESXi Server collects data for each performance counter every 20 seconds by default.
-- Supported Periods:
-- The Datastore and Host metricsets support performance data collection using the vSphere performance API.
-- Since the performance API has usage restrictions based on data collection intervals,
-- users should ensure that the period is configured optimally to receive real-time data.
-- users can still collect summary metrics if performance metrics are not supported for the configured instance.
-- This configuration can be determined based on the Data Collection Intervals and Data Collection Levels.
-- Reference for [Data Collection Intervals](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-247646EA-A04B-411A-8DD4-62A3DCFCF49B.html) and [Data Collection Levels](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-25800DE4-68E5-41CC-82D9-8811E27924BC.html)
+- **Supported Periods**:
+    - Real-time data collection – An ESXi Server collects data for each performance counter every 20 seconds by default.
+    - The Datastore and Host datastreams support performance data collection using the vSphere performance API.
+    - Since the performance API has usage restrictions based on data collection intervals, users should ensure that the period is configured optimally to receive real-time data. Users can still collect summary metrics if performance metrics are not supported for the configured instance.
+    - Period configuration can be determined based on the [Data Collection Intervals](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-247646EA-A04B-411A-8DD4-62A3DCFCF49B.html) and [Data Collection Levels](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.monitoring.doc/GUID-25800DE4-68E5-41CC-82D9-8811E27924BC.html).
 
 ## Prerequisites
 
@@ -46,7 +43,7 @@ You can store and search your data using Elasticsearch and visualize and manage 
 
 ## Compatibility
 
-This integration supports VMware ESXi and vCenter versions 6.5, 6.7, 7.0, and 7.0.3. It has been tested and verified to work with these versions.
+This integration has been tested and verified against VMware ESXi and vCenter version 7.0.3.
 
 ## Setup
 
@@ -74,7 +71,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 Note:
 - To access the metrics, provide the URL <https://host:port/sdk> in the "Add Integration" page of the vSphere package.
 
-### Cluster Metrics
+### Cluster
 Clusters in vSphere represent a group of ESXi hosts working together to optimize resource allocation, ensure high availability, and manage workloads efficiently.
 
 {{event "cluster"}}
@@ -133,7 +130,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "network"}}
 
-### Resourcepool Metrics
+### Resourcepool
 Resource pools in vSphere allow for the allocation and management of CPU and memory resources across groups of virtual machines.
 
 {{event "resourcepool"}}
@@ -155,3 +152,7 @@ This is the `virtualmachine` data stream. This data stream collects virtual mach
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "virtualmachine"}}
+
+## Troubleshoot
+
+If you encounter any issues during the setup or usage of the VMware vSphere integration, particularly with regards to Data Collection Intervals, with agent error messages such as **`Failed to query performance metrics: ServerFaultCode: A specified parameter was not correct: querySpec.interval`**, please refer to the mentioned Important Notes/Supported Periods for guidance and resolution.
