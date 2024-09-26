@@ -13,7 +13,13 @@ echo; find -name 'common_host.yml' | xargs md5sum | sort
 echo; find -name 'common_init.yml' | xargs md5sum | sort
 echo; find -name 'default_policy.json' | xargs md5sum | sort
 echo; find -name 'docker-compose.yml' | xargs md5sum | sort
+echo; find -name 'ecs-required.yml' | xargs md5sum | sort
+echo; find -name 'filestream.yml.hbs' | xargs md5sum | sort
+echo; find -name 'filestream.yml' | xargs md5sum | sort
+echo; find -name 'is-transform-source-false.yml' | xargs md5sum | sort
+echo; find -name 'is-transform-source-true.yml' | xargs md5sum | sort
 echo; find -name 'test-default-config.yml' | xargs md5sum | sort
+echo; find -name 'tychon-agent.yml' | xargs md5sum | sort
 echo; find -wholename './elasticsearch/transform/*/manifest.yml' | xargs md5sum | sort
 ```
 
