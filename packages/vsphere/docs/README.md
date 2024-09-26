@@ -1005,7 +1005,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.resourcepool.cpu.entitlement.mhz | The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS. | long |  | gauge |
 | vsphere.resourcepool.cpu.entitlement.static.mhz | The static CPU resource entitlement for a virtual machine. | long |  | gauge |
 | vsphere.resourcepool.cpu.usage.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
-| vsphere.resourcepool.id | Unique ID of the resourcepool. | keyword |  |  |
 | vsphere.resourcepool.memory.ballooned.bytes | The size of the balloon driver in a virtual machine, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.compressed.bytes | The amount of compressed memory currently consumed by VM, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.entitlement.bytes | The amount of memory, in bytes, that this VM is entitled to, as calculated by DRS. | long | byte | gauge |
