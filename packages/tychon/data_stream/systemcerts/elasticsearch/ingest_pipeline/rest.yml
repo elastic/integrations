@@ -84,21 +84,25 @@ processors:
       tag: script_normalize_tychon_x509_array_fields
       lang: painless
       description: Normalize tychon.x509 array fields
+      params:
+        party_names:
+          - issuer
+          - subject
+        field_names:
+          - common_name
+          - country
+          - distinguished_name
+          - locality
+          - organizational_unit
+          - organization
+          - state_or_province
       source: |
         def fieldset = ctx.tychon.x509;
         if (fieldset != null) {
-          for (String partyName : ["issuer", "subject"]) {
+          for (String partyName : params.party_names) {
             def party = fieldset[partyName];
             if (party != null) {
-              for (String fieldName : [
-                  "common_name",
-                  "country",
-                  "distinguished_name",
-                  "locality",
-                  "organizational_unit",
-                  "organization",
-                  "state_or_province"
-                ]) {
+              for (String fieldName : params.field_names) {
                 def value = party[fieldName];
                 if (value == "") {
                   party.remove(fieldName);
