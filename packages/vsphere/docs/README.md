@@ -929,6 +929,7 @@ An example event for `resourcepool` looks as following:
         "version": "8.16.0"
     },
     "event": {
+        "id": "IqGup33ooQgbWIgSs7+sAcX4MDo=",
         "agent_id_status": "verified",
         "dataset": "vsphere.resourcepool",
         "duration": 21732347,
@@ -996,6 +997,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.id | Unique ID to describe the event. | keyword |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | vsphere.resourcepool.alert.names | List of all the alerts on this resourcepool. | keyword |  |  |
