@@ -87,7 +87,7 @@ To start using the generic metrics integration, enable "Collect Azure Monitor me
 
 A specialized integration specializes in a specific Azure service and comes with a built-in configuration that provides the most appropriate mapping for each field with one or more out-of-the-box dashboards to visualize data. You cannot edit the built-in configurations. When you install the integration, you can send the metrics to the data stream, and can immediately visualize and search the data. You still have customization options like custom pipelines and mappings, but they are optional for specific needs.
 
-Specialized integrations include the Azure Virtual Machine, Storage Account, Container Registry, and other Container-related metrics integration.
+Specialized integrations include the Azure Virtual Machine, Storage Account, Container Registry, and other Container-related metrics integrations.
 
 ## Setup
 
