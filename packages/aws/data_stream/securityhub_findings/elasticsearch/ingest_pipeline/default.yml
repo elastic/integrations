@@ -1601,8 +1601,9 @@ processors:
           }
           ctx.resource.name = res_name;
 
-          // Extract ECS user field
+          // Extract ECS fields from res.Details
           if (res.Details != null) {
+            // Extract ECS user field from res.Details
             if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserName != null) {
               ctx.user.name = res.Details.AwsIamUser.UserName;
             }
@@ -1618,13 +1619,8 @@ processors:
             if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerId != null) {
               ctx.user.id = res.Details.AwsS3Bucket.OwnerId;
             }
-          }
 
-          // Extract ECS host field
-          if (res.Type == 'AwsEc2Instance' && res.Id != null) {
-            ctx.host.id = res.Id;
-          }
-          if (res.Details != null) {
+            // Extract ECS host field from res.Details
             if (res.Type == 'AwsEcsContainer' && res.Details.AwsEcsContainer?.Name != null) {
               ctx.host.name = res.Details.AwsEcsContainer.Name;
             }
@@ -1640,10 +1636,8 @@ processors:
                 }
               }
             }
-          }
 
-          // Extract ECS orchestrator field
-          if (res.Details != null) {
+            // Extract ECS orchestrator field from res.Details
             if (['AwsEcsCluster', 'AwsEcsTask'].contains(res.Type) && res.Details.AwsEcsCluster?.ClusterArn != null) {
               ctx.orchestrator.cluster.id = res.Details.AwsEcsCluster.ClusterArn;
             }
@@ -1662,27 +1656,8 @@ processors:
             if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Endpoint != null) {
               ctx.orchestrator.cluster.url = res.Details.AwsEksCluster.Endpoint;
             }
-          }
-          if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
-            ctx.orchestrator.resource.id = res.Id;
-            ctx.orchestrator.resource.name = res_name;
-            ctx.orchestrator.resource.type = res.Type;
-            if (res.Type.startsWith('AwsEks')) {
-              ctx.orchestrator.type = 'kubernetes';
-            } else {
-              ctx.orchestrator.type = 'ecs';
-            }
-          }
-          
-          // Extract ECS cloud field
-          if (res.Type == 'AwsEc2Instance') {
-            ctx.cloud.instance.id = res.Id;
-            ctx.cloud.instance.name = res_name;
-          }
-          if (tokenList.length > 2) {
-            ctx.cloud.service.name = tokenList[2];
-          }
-          if (res.Details != null) {
+
+            // Extract ECS cloud field from res.Details
             if (['AwsEc2Subnet', 'AwsRedshiftCluster', 'AwsDmsReplicationInstance'].contains(res.Type) && res.Details[res.Type]?.AvailabilityZone != null) {
               ctx.cloud.availability_zone = res.Details[res.Type].AvailabilityZone;
             }
@@ -1704,6 +1679,32 @@ processors:
                 ctx.cloud.availability_zone = az.ZoneName;
               }
             }
+          }
+
+          // Extract ECS host field not in res.Details
+          if (res.Type == 'AwsEc2Instance' && res.Id != null) {
+            ctx.host.id = res.Id;
+          }
+
+          // Extract ECS orchestrator field not in res.Details
+          if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
+            ctx.orchestrator.resource.id = res.Id;
+            ctx.orchestrator.resource.name = res_name;
+            ctx.orchestrator.resource.type = res.Type;
+            if (res.Type.startsWith('AwsEks')) {
+              ctx.orchestrator.type = 'kubernetes';
+            } else {
+              ctx.orchestrator.type = 'ecs';
+            }
+          }
+          
+          // Extract ECS cloud field not in res.Details
+          if (res.Type == 'AwsEc2Instance') {
+            ctx.cloud.instance.id = res.Id;
+            ctx.cloud.instance.name = res_name;
+          }
+          if (tokenList.length > 2) {
+            ctx.cloud.service.name = tokenList[2];
           }
         }
   - script:
@@ -1790,8 +1791,9 @@ processors:
           }
           ctx.resource.name.add(res_name);
 
-          // Extract ECS user field
+          // Extract ECS fields from res.Details
           if (res.Details != null) {
+            // Extract ECS user field from res.Details
             if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserName != null) {
               ctx.user.name.add(res.Details.AwsIamUser.UserName);
             }
@@ -1807,13 +1809,8 @@ processors:
             if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerId != null) {
               ctx.user.id.add(res.Details.AwsS3Bucket.OwnerId);
             }
-          }
 
-          // Extract ECS host field
-          if (res.Type == 'AwsEc2Instance' && res.Id != null) {
-            ctx.host.id.add(res.Id);
-          }
-          if (res.Details != null) {
+            // Extract ECS host field from res.Details
             if (res.Type == 'AwsEcsContainer' && res.Details.AwsEcsContainer?.Name != null) {
               ctx.host.name.add(res.Details.AwsEcsContainer.Name);
             }
@@ -1829,10 +1826,8 @@ processors:
                 }
               }
             }
-          }
 
-          // Extract ECS orchestrator field
-          if (res.Details != null) {
+            // Extract ECS orchestrator field from res.Details
             if (['AwsEcsCluster', 'AwsEcsTask'].contains(res.Type) && res.Details.AwsEcsCluster?.ClusterArn != null) {
               ctx.orchestrator.cluster.id.add(res.Details.AwsEcsCluster.ClusterArn);
             }
@@ -1851,27 +1846,8 @@ processors:
             if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Endpoint != null) {
               ctx.orchestrator.cluster.url.add(res.Details.AwsEksCluster.Endpoint);
             }
-          }
-          if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
-            ctx.orchestrator.resource.id.add(res.Id);
-            ctx.orchestrator.resource.name.add(res_name);
-            ctx.orchestrator.resource.type.add(res.Type);
-            if (res.Type.startsWith('AwsEks')) {
-              ctx.orchestrator.type.add('kubernetes');
-            } else {
-              ctx.orchestrator.type.add('ecs');
-            }
-          }
-          
-          // Extract ECS cloud field
-          if (res.Type == 'AwsEc2Instance') {
-            ctx.cloud.instance.id.add(res.Id);
-            ctx.cloud.instance.name.add(res_name);
-          }
-          if (tokenList.length > 2) {
-            ctx.cloud.service.name.add(tokenList[2]);
-          }
-          if (res.Details != null) {
+
+            // Extract ECS cloud field from res.Details
             if (['AwsEc2Subnet', 'AwsRedshiftCluster', 'AwsDmsReplicationInstance'].contains(res.Type) && res.Details[res.Type]?.AvailabilityZone != null) {
               ctx.cloud.availability_zone.add(res.Details[res.Type].AvailabilityZone);
             }
@@ -1893,6 +1869,32 @@ processors:
                 ctx.cloud.availability_zone.add(az.ZoneName);
               }
             }
+          }
+
+          // Extract ECS host field not in res.Details
+          if (res.Type == 'AwsEc2Instance' && res.Id != null) {
+            ctx.host.id.add(res.Id);
+          }
+
+          // Extract ECS orchestrator field not in res.Details
+          if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
+            ctx.orchestrator.resource.id.add(res.Id);
+            ctx.orchestrator.resource.name.add(res_name);
+            ctx.orchestrator.resource.type.add(res.Type);
+            if (res.Type.startsWith('AwsEks')) {
+              ctx.orchestrator.type.add('kubernetes');
+            } else {
+              ctx.orchestrator.type.add('ecs');
+            }
+          }
+          
+          // Extract ECS cloud field not in res.Details
+          if (res.Type == 'AwsEc2Instance') {
+            ctx.cloud.instance.id.add(res.Id);
+            ctx.cloud.instance.name.add(res_name);
+          }
+          if (tokenList.length > 2) {
+            ctx.cloud.service.name.add(tokenList[2]);
           }
         }
   - convert:
