@@ -285,6 +285,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| vsphere.cluster.alert.names | List of all the alerts on this Cluster. | keyword |  |
 | vsphere.cluster.das_config.admission.control.enabled | Indicates whether strict admission control is enabled. | boolean |  |
 | vsphere.cluster.das_config.enabled | Indicates whether vSphere HA feature is enabled. | boolean |  |
 | vsphere.cluster.datastore.count | Number of Datastores associated with the cluster. | long | gauge |
@@ -300,6 +301,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.cluster.triggered_alarms.name | Name of the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.status | Status of the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |
+| vsphere.cluster.warning.names | List of all the warnings on this Cluster. | keyword |  |
 
 
 ### Datastore
@@ -448,6 +450,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| vsphere.datastore.alert.names | List of all the alerts on this Datastore. | keyword |  |  |
 | vsphere.datastore.capacity.free.bytes | Free bytes of the datastore. | long | byte | gauge |
 | vsphere.datastore.capacity.total.bytes | Total bytes of the datastore. | long | byte | gauge |
 | vsphere.datastore.capacity.used.bytes | Used bytes of the datastore. | long | byte | gauge |
@@ -469,6 +472,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
 | vsphere.datastore.vm.count | Number of VMs associated with the datastore. | long |  | gauge |
 | vsphere.datastore.vm.names | List of all the VM names associated with the datastore. | keyword |  |  |
+| vsphere.datastore.warning.names | List of all the warnings on this Datastore. | keyword |  |  |
 | vsphere.datastore.write.bytes | Rate of writing data to the datastore. | long | byte | gauge |
 
 
@@ -583,6 +587,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | event.module | Event module | constant_keyword |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| vsphere.datastorecluster.alert.names | List of all the alerts on this Datastore Cluster. | keyword |  |  |
 | vsphere.datastorecluster.capacity.bytes | Total capacity of this storage pod, in bytes. | long | byte | gauge |
 | vsphere.datastorecluster.datastore.count | Number of datastores in the Datastore Cluster. | long |  | gauge |
 | vsphere.datastorecluster.datastore.names | List of all the Datastore names associated with the Datastore Cluster. | keyword |  |  |
@@ -594,6 +599,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastorecluster.triggered_alarms.name | Name of the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.status | Status of the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
+| vsphere.datastorecluster.warning.names | List of all the warnings on this Datastore Cluster. | keyword |  |  |
 
 
 ### Host
@@ -718,6 +724,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | event.module | Event module | constant_keyword |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| vsphere.host.alert.names | List of all the alerts on this Host. | keyword |  |  |
 | vsphere.host.cpu.free.mhz | Free CPU in MHz. | long |  | gauge |
 | vsphere.host.cpu.total.mhz | Total CPU in MHz. | long |  | counter |
 | vsphere.host.cpu.used.mhz | Used CPU in MHz. | long |  | gauge |
@@ -762,6 +769,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.host.uptime | The total uptime of a host in seconds within the vSphere environment. | long |  | gauge |
 | vsphere.host.vm.count | Number of virtual machines on the host. | long |  | gauge |
 | vsphere.host.vm.names | List of all the VM names. | keyword |  |  |
+| vsphere.host.warning.names | List of all the warnings on this Host. | keyword |  |  |
 
 
 ### Network
@@ -874,6 +882,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | vsphere.network.accessible | Indicates whether at least one host is configured to provide this network. | boolean |  |
+| vsphere.network.alert.names | List of all the alerts on this network. | keyword |  |
 | vsphere.network.config.status | Indicates whether the system has detected a configuration issue. | keyword |  |
 | vsphere.network.host.count | Number of hosts connected to this network. | long | gauge |
 | vsphere.network.host.names | List of all the hosts connected to this network. | keyword |  |
@@ -888,6 +897,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.network.type | Type of the network (e.g., Network(Standard), DistributedVirtualport). | keyword |  |
 | vsphere.network.vm.count | Number of virtual machines connected to this network. | long | gauge |
 | vsphere.network.vm.names | List of all the virtual machines connected to this network. | keyword |  |
+| vsphere.network.warning.names | List of all the warnings on this network. | keyword |  |
 
 
 ### Resourcepool
@@ -988,6 +998,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| vsphere.resourcepool.alert.names | List of all the alerts on this resourcepool. | keyword |  |  |
 | vsphere.resourcepool.cpu.demand.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
 | vsphere.resourcepool.cpu.entitlement.mhz | The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS. | long |  | gauge |
 | vsphere.resourcepool.cpu.entitlement.static.mhz | The static CPU resource entitlement for a virtual machine. | long |  | gauge |
@@ -1003,7 +1014,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.resourcepool.memory.swapped.bytes | The portion of memory, in bytes, that is granted to a virtual machine from the host's swap space. | long | byte | gauge |
 | vsphere.resourcepool.memory.usage.guest.bytes | Guest memory utilization statistics, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.usage.host.bytes | Host memory utilization statistics, in bytes. | long | byte | gauge |
-| vsphere.resourcepool.name | The name of the resource pool. | keyword |  |  |
+| vsphere.resourcepool.name | The name of the resourcepool. | keyword |  |  |
 | vsphere.resourcepool.status | The overall health status of a host in the vSphere environment. | keyword |  |  |
 | vsphere.resourcepool.triggered_alarms.description | Description of the alarm. | keyword |  |  |
 | vsphere.resourcepool.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |  |
@@ -1011,8 +1022,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.resourcepool.triggered_alarms.name | Name of the alarm. | keyword |  |  |
 | vsphere.resourcepool.triggered_alarms.status | Status of the alarm. | keyword |  |  |
 | vsphere.resourcepool.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
-| vsphere.resourcepool.vm.count | Number of virtual machines on the resource pool. | long |  | gauge |
-| vsphere.resourcepool.vm.names | Names of virtual machines on the resource pool. | keyword |  |  |
+| vsphere.resourcepool.vm.count | Number of virtual machines on the resourcepool. | long |  | gauge |
+| vsphere.resourcepool.vm.names | Names of virtual machines on the resourcepool. | keyword |  |  |
+| vsphere.resourcepool.warning.names | List of all the warnings on this resourcepool. | keyword |  |  |
 
 
 ### Virtual Machine
@@ -1190,6 +1202,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| vsphere.virtualmachine.alert.names | List of all the alerts on this virtualmachine. | keyword |  |  |
 | vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz. | long |  | gauge |
 | vsphere.virtualmachine.cpu.total.mhz | Total Reserved CPU in Mhz. | long |  | counter |
 | vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz. | long |  | gauge |
@@ -1221,6 +1234,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.triggered_alarms.status | Status of the alarm. | keyword |  |  |
 | vsphere.virtualmachine.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
 | vsphere.virtualmachine.uptime | The uptime of the VM in seconds. | long |  | counter |
+| vsphere.virtualmachine.warning.names | List of all the warnings on this virtualmachine. | keyword |  |  |
 
 
 ## Troubleshoot
