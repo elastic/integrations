@@ -82,20 +82,34 @@ processors:
       field: event.reference
       ignore_empty_value: true
       copy_from: winlog.event_data.FWLink
-  - set:
-      field: event.type
-      value: change
-      if: ctx.event?.category == "configuration" && ctx.event?.code == "5007"
-  - set:
-      field: event.type
-      value: info
-      override: false
-      if: ctx.event?.category == "malware" || ctx.event?.category == "file" || ctx.event?.category == "process"
-  - set:
-      field: event.type
-      value: ["start"]
-      override: false
-      if: ctx.event?.category == "process"
+  - script:
+      description: Set Event Types
+      lang: painless
+      source: |
+        if (ctx?.event?.category instanceof List) {
+          for (category in ctx.event.category) {
+            if (category == 'configuration' && ctx?.event?.code == '5007') {
+              ctx.event.type = ['change'];
+              break;
+            }
+          }
+        }
+        if (ctx?.event?.type == null && ctx?.event?.category instanceof List) {
+          for (category in ctx.event.category) {
+            if (category == 'malware' || category == 'file' || category == 'process') {
+              ctx.event.type = ['info'];
+              break;
+            }
+          }
+        }
+        if (ctx?.event?.type == null && ctx?.event?.category instanceof List) {
+          for (category in ctx.event.category) {
+            if (category == 'process') {
+              ctx.event.type = ['start'];
+              break;
+            }
+          }
+        }
   - set:
       field: destination.domain
       override: false
