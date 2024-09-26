@@ -929,7 +929,6 @@ An example event for `resourcepool` looks as following:
         "version": "8.16.0"
     },
     "event": {
-        "id": "IqGup33ooQgbWIgSs7+sAcX4MDo=",
         "agent_id_status": "verified",
         "dataset": "vsphere.resourcepool",
         "duration": 21732347,
@@ -971,6 +970,7 @@ An example event for `resourcepool` looks as following:
     ],
     "vsphere": {
         "resourcepool": {
+            "fingerprint": "IqGup33ooQgbWIgSs7+sAcX4MDo=",
             "name": "Resources",
             "status": "green"
         }
@@ -997,7 +997,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| event.id | Unique ID to describe the event. | keyword |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | vsphere.resourcepool.alert.names | List of all the alerts on this resourcepool. | keyword |  |  |
@@ -1005,6 +1004,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.resourcepool.cpu.entitlement.mhz | The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS. | long |  | gauge |
 | vsphere.resourcepool.cpu.entitlement.static.mhz | The static CPU resource entitlement for a virtual machine. | long |  | gauge |
 | vsphere.resourcepool.cpu.usage.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
+| vsphere.resourcepool.fingerprint | Unique ID to avoid duplications and to identify the unique resourcepool. | keyword |  |  |
 | vsphere.resourcepool.memory.ballooned.bytes | The size of the balloon driver in a virtual machine, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.compressed.bytes | The amount of compressed memory currently consumed by VM, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.entitlement.bytes | The amount of memory, in bytes, that this VM is entitled to, as calculated by DRS. | long | byte | gauge |
