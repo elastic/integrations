@@ -186,7 +186,6 @@ An example event for `ami` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | gigamon.ami.app_id |  | long |
 | gigamon.ami.app_name |  | keyword |

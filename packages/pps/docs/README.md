@@ -146,7 +146,6 @@ An example event for `log` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.kind | Event kind | constant_keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
