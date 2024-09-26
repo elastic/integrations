@@ -20,23 +20,20 @@ processors:
         List metricNames = new ArrayList();
         if (ctx.aws != null && ctx.aws instanceof Map) {
             for (entry in ctx.aws.entrySet()) {
-                String topLevelKey = entry.getKey();  // Get the top-level key (kinesis, cloudwatch, etc.)
                 def nestedMap = entry.getValue();
-                if (nestedMap instanceof Map) {
+                if (nestedMap instanceof Map) { // Get the top-level key (firehose, cloudwatch, etc.)
                     for (nestedEntry in nestedMap.entrySet()) {
-                        String key = nestedEntry.getKey(); // Get the second-level key (metrics, namespace, etc.)
-                        if (key.equals("metrics")) {
-                            def metricsMap = nestedEntry.getValue(); // Get aws.*.metrics.*
-                            if (metricsMap instanceof Map) {
-                                for (metricsEntry in metricsMap.entrySet()) {
-                                    metricNames.add(metricsEntry.getKey());
-                                }
+                        def metricsMap = nestedMap.get("metrics"); // Get aws.*.metrics.*
+                        if (metricsMap instanceof Map) {
+                            for (metricsEntry in metricsMap.entrySet()) {
+                                metricNames.add(metricsEntry.getKey());
                             }
                         }
                     }
                 }
             }
         }
+        Collections.sort(metricNames);
         ctx.aws.metrics_names = metricNames;
   - fingerprint:
       fields: [ "aws.metrics_names" ]
