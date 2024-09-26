@@ -37,7 +37,7 @@ program: |-
   				// to the last event we received.
   				// See https://developer.carbonblack.com/reference/carbon-black-cloud/guides/alert-bulk-export/
   				"time_range": (now - duration("60s")).as(delayed, {
-  					"start": state.?cursor.last_backend_update_timestamp.orValue(delayed - duration(state.initial_interval)),
+  					"start": timestamp(state.?cursor.last_backend_update_timestamp.orValue(delayed - duration(state.initial_interval))),
   					"end": delayed,
   				}).as(range, {
   					"start": string(range.start < range.end ? range.start : range.end),
