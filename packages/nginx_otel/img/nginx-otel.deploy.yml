@@ -8,7 +8,8 @@ receivers:
   integration/nginx_otel:
     name: "nginx_otel"
     # pipelines: ["metrics", "logs/access", "logs/error"]
-    pipelines: ["metrics"]
+    # pipelines: ["metrics"]
+    pipelines: ["logs/access"]
     parameters:
       endpoint: http://localhost:8088/nginx-status
       access_paths:
@@ -46,26 +47,12 @@ service:
     - file_storage
     - file_integrations
   pipelines:
-    metrics:
-      receivers: [integration/nginx_otel]
-      exporters: [logging, elasticsearch]
-    # logs/access:
-    #   receivers:
-    #     - filelog/access
-    #   exporters:
-    #     - debug
-    #     - logging
-    #     - elasticsearch
-    #   processors:
-    #     - resourcedetection/system
-    #     - transform/parse_access_nginx/log
+    # metrics:
+    #   receivers: [integration/nginx_otel]
+    #   exporters: [logging, elasticsearch]
+    logs/access:
+       receivers: [integration/nginx_otel]
+       exporters: [logging, elasticsearch]
     # logs/error:
-    #   receivers:
-    #     - filelog/error
-    #   exporters:
-    #     - debug
-    #     - logging
-    #     - elasticsearch
-    #   processors:
-    #     - resourcedetection/system
-    #     - transform/parse_error_nginx/log
+    #   receivers: [integration/nginx_otel]
+    #   exporters: [logging, elasticsearch]
