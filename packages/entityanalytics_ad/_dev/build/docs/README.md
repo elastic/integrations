@@ -6,7 +6,7 @@ This Active Directory Entity Analytics integration allows users to securely stre
 
 The Active Directory Entity Analytics integration collects one type of data: user.
 
-**User** is used to retrieve all user entries available from an Active Directory server.
+- **User** is used to retrieve all user entries available from an Active Directory server.
 
 ## Requirements
 

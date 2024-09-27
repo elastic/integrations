@@ -4,8 +4,9 @@ Gigamon leverages deep packet inspection (DPI) to extract over 7500+ app related
 
 ## Data streams
 
-The Gigamon integration currently provides a single
-data stream: `ami`.
+The Cybereason integration collects the following logs from Gigamon:
+
+- **ami**
 
 ## Requirements
 

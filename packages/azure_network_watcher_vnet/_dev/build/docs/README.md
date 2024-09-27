@@ -6,7 +6,7 @@
 
 This integration supports ingestion of logs from Azure Network Watcher VNet, via [Azure Blob Storage](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html) input.
 
-**Log** is used to retrieve VNet Flow data. See more details in the documentation [here](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview).
+- **Log** is used to retrieve VNet Flow data. See more details in the documentation [here](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview).
 
 ## Requirements
 

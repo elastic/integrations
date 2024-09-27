@@ -2,6 +2,11 @@
 
 This integration is for [Thinkst OpenCanary](https://github.com/thinkst/opencanary) honeypot event logs. The package processes messages from OpenCanary honeypot logs.
 
+## Data streams
+
+The OpenCanary integration collects the following event types:
+
+- **events**
 
 ## Requirements
 

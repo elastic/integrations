@@ -16,7 +16,9 @@ by time, as well as such data points as the geographical location of clients and
 
 ## Data streams
 
-The data stream `audit` provides events from Teleport audit logs.
+The `teleport` integration collects the following logs:
+
+- **audit** provides events from Teleport audit logs.
 
 ## Requirements
 

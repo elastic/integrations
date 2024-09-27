@@ -10,68 +10,68 @@ The Symantec Endpoint Security integration collects logs via Amazon S3 and SQS, 
 
 **Security [1]**
 
-**8020 - Scan**                     
-**8025 - Boot Record Detection**       
-**8026 - User Session Detection**      
-**8027 - Process Detection**           
-**8028 - Module Detection**            
-**8030 - Kernel Detection**            
-**8031 - File Detection**              
-**8032 - Registry Key Detection**      
-**8033 - Registry Value Detection**    
-**8038 - Peripheral Device Detection** 
-**8040 - Host Network Detection**      
-**8061 - Entity Change**               
-**8070 - Compliance Scan**             
-**8071 - Compliance**                  
-**8075 - Incident Creation**           
-**8076 - Incident Update**             
-**8077 - Incident Closure**            
-**8078 - Incident Associate**          
+- **8020 - Scan**                     
+- **8025 - Boot Record Detection**       
+- **8026 - User Session Detection**      
+- **8027 - Process Detection**           
+- **8028 - Module Detection**            
+- **8030 - Kernel Detection**            
+- **8031 - File Detection**              
+- **8032 - Registry Key Detection**      
+- **8033 - Registry Value Detection**    
+- **8038 - Peripheral Device Detection** 
+- **8040 - Host Network Detection**      
+- **8061 - Entity Change**               
+- **8070 - Compliance Scan**             
+- **8071 - Compliance**                  
+- **8075 - Incident Creation**           
+- **8076 - Incident Update**             
+- **8077 - Incident Closure**            
+- **8078 - Incident Associate**          
 
 **License [2]**
 
 
-**30 - License Lifecycle**                            
-**31 - License Expiry**                               
+- **30 - License Lifecycle**                            
+- **31 - License Expiry**                               
 
 **Application Activity [3]**
 
 
-**2 - Application Lifecycle**                   
-**3 - Update**                                  
-**4 - Policy Change**                           
-**5 - File Reputation**                         
-**11 - Command Activity**                       
-**12 - Action Request**                         
-**13 - Action Response**                        
-**42 - URL Reputation**                         
+- **2 - Application Lifecycle**                   
+- **3 - Update**                                  
+- **4 - Policy Change**                           
+- **5 - File Reputation**                         
+- **11 - Command Activity**                       
+- **12 - Action Request**                         
+- **13 - Action Response**                        
+- **42 - URL Reputation**                         
 
 **Audit [4]**
 
-**20 - User Session Audit**                         
-**21 - Entity Audit**                                
-**22 - Policy Override Audit**                       
+- **20 - User Session Audit**                         
+- **21 - Entity Audit**                                
+- **22 - Policy Override Audit**                       
 
 **System Activity [5]**
 
-**8000 - User Session Activity**           
-**8001 - Process Activity**                
-**8002 - Module Activity**                 
-**8003 - File Activity**                   
-**8004 - Directory Activity**              
-**8005 - Registry Key Activity**           
-**8006 - Registry Value Activity**         
-**8007 - Host Network Activity**           
-**8009 - Kernel Activity**                 
-**8011 - Email Activity**                  
-**8015 - Monitored Source**                
-**8016 - Startup Application Configuration Change** 
-**8018 - AMSI Activity**                   
+- **8000 - User Session Activity**           
+- **8001 - Process Activity**                
+- **8002 - Module Activity**                 
+- **8003 - File Activity**                   
+- **8004 - Directory Activity**              
+- **8005 - Registry Key Activity**           
+- **8006 - Registry Value Activity**         
+- **8007 - Host Network Activity**           
+- **8009 - Kernel Activity**                 
+- **8011 - Email Activity**                  
+- **8015 - Monitored Source**                
+- **8016 - Startup Application Configuration Change** 
+- **8018 - AMSI Activity**                   
 
 **Diagnostic [6]**
 
-**1000 - Status**                                      
+- **1000 - Status**                                      
 
 The Symantec Endpoint Security integration can also retrieve **EDR incidents** via a REST API. See more details in the API documentation [here](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
 

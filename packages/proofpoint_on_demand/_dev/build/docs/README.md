@@ -8,9 +8,9 @@ The Proofpoint On Demand integration collects data for Audit, Mail, and Message 
 
 The Proofpoint On Demand integration collects data for the following three events:
 
-**Audit**  
-**Mail**  
-**Message**
+- **Audit**  
+- **Mail**  
+- **Message**
 
 ## Requirements
 

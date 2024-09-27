@@ -8,7 +8,7 @@ The integration allows collection of events and alerts from [Digital Guardian An
 
 The Digital Guardian integration collects events to populate following data-streams:
 
-- `digital_guardian.arc`: Collects all events and alerts from `Digital Guardian Analytics & Reporting Cloud (ARC)` via the REST API.
+- **digital_guardian.arc**: Collects all events and alerts from `Digital Guardian Analytics & Reporting Cloud (ARC)` via the REST API.
 
 ## Requirements
 

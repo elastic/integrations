@@ -2,6 +2,12 @@
 
 The Pleasant Password Server integration collects and parses DNS, DHCP, and Audit data collected from [Pleasant Password Server](https://pleasantpasswords.com/) via TCP/UDP or logfile.
 
+## Data streams
+
+The PPS integration collects the following event types:
+
+- **log**
+
 ## Setup steps
 1. Enable the integration with TCP/UDP input.
 2. Log in to the PPS WebUI.

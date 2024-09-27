@@ -12,11 +12,11 @@ The Sublime Security integration collects data for Audit, Email Message(MDM Sche
 
 The Sublime Security integration collects three types of logs:
 
-**[Audit](https://docs.sublime.security/reference/listeventsinauditlog)** - Captures detailed records of all significant actions and changes within the platform, including changes to email security policies, user access to email data, and modifications to email configurations, ensuring traceability and compliance for all operations.
+- **[Audit](https://docs.sublime.security/reference/listeventsinauditlog)** - Captures detailed records of all significant actions and changes within the platform, including changes to email security policies, user access to email data, and modifications to email configurations, ensuring traceability and compliance for all operations.
 
-**[Email Message](https://docs.sublime.security/docs/export-message-mdms)** - Represents the flow of individual emails through the platform, including sender and recipient details, spam filtering outcomes, and overall email disposition, helping to secure and analyze email communication.
+- **[Email Message](https://docs.sublime.security/docs/export-message-mdms)** - Represents the flow of individual emails through the platform, including sender and recipient details, spam filtering outcomes, and overall email disposition, helping to secure and analyze email communication.
 
-**[Message Event](https://docs.sublime.security/reference/getmessage-1)** - Represents document specific actions taken on emails, like spam detection or rule applications, providing detailed insights into how the platform processes and protects email communications.
+- **[Message Event](https://docs.sublime.security/reference/getmessage-1)** - Represents document specific actions taken on emails, like spam detection or rule applications, providing detailed insights into how the platform processes and protects email communications.
 
 ## Requirements
 

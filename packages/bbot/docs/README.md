@@ -28,7 +28,7 @@ BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/scanning
 
 This integration collects the following logs:
 
-**asm_intel** Made up of the findings found in the BBOT Scans.
+- **asm_intel** Made up of the findings found in the BBOT Scans.
 
 ## Requirements
 
