@@ -1,84 +1,38 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
+# GCP Vertex AI
 
-# GCP Vertex AI Integration
+## Overview
 
-<!-- The GCP Vertex AI Integration integration allows you to monitor {name of service}. {name of service} is {describe service}.
+The Vertex AI is a platform that lets you train and deploy ML models and AI applications.
+Vertex AI is designed to simplify and accelerate the development and deployment of ML models, and provides a wide range of features and integrations for enterprise-level ML workflows.
 
-Use the GCP Vertex AI Integration integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
+The GCP Vertex AI integration allows you to collect the token usage, latency, overall requests and the error rates for the deployed models. 
+This integration also collects CPU and memory usage related to the replicas of the deployed models.
 
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
+## Metrics
 
-## Data streams
+The GCP Vertex AI includes **Vertex AI Model Garden Publisher Model** metrics under the publisher category and the **Vertex AI Endpoint** metrics under the prediction category.
 
-<!-- The GCP Vertex AI Integration integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
+**Exported fields**
 
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
-
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
-
-## Requirements
-
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
-
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
-
-## Setup
-
-<!-- Any prerequisite instructions -->
-
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-
-<!-- Additional set up instructions -->
-
-<!-- If applicable -->
-<!-- ## Logs reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
-
-<!-- If applicable -->
-<!-- ## Metrics reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| gcp.labels.resource.location | Location of the resource | keyword |  |  |
+| gcp.vertexai.prediction.online.cpu.utilization | Fraction of CPU allocated by the deployed model replica and currently in use. May exceed 100% if the machine type has multiple CPUs. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | double |  | gauge |
+| gcp.vertexai.prediction.online.error_count | Number of online prediction errors. | long |  |  |
+| gcp.vertexai.prediction.online.memory.bytes_used | Amount of memory allocated by the deployed model replica and currently in use. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | long | byte | gauge |
+| gcp.vertexai.prediction.online.network.received_bytes_count | Number of bytes received over the network by the deployed model replica. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | long | byte |  |
+| gcp.vertexai.prediction.online.network.sent_bytes_count | Number of bytes sent over the network by the deployed model replica. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | long | byte |  |
+| gcp.vertexai.prediction.online.prediction_count | Number of online predictions. | long |  |  |
+| gcp.vertexai.prediction.online.prediction_latencies | Online prediction latency of the deployed model. | histogram |  |  |
+| gcp.vertexai.prediction.online.replicas | Number of active replicas used by the deployed model. | long |  | gauge |
+| gcp.vertexai.prediction.online.response_count | Number of different online prediction response codes. | long |  |  |
+| gcp.vertexai.prediction.online.target_replicas | Target number of active replicas needed for the deployed model. | long |  | gauge |
+| gcp.vertexai.publisher.online_serving.character_count | Accumulated input/output character count. | long |  |  |
+| gcp.vertexai.publisher.online_serving.consumed_throughput | Overall throughput used (accounting for burndown rate) in terms of characters. | long |  |  |
+| gcp.vertexai.publisher.online_serving.model_invocation_count | Number of model invocations (prediction requests). | long |  |  |
+| gcp.vertexai.publisher.online_serving.model_invocation_latencies | Model invocation latencies (prediction latencies). | histogram |  |  |
+| gcp.vertexai.publisher.online_serving.token_count | Accumulated input/output token count. | long |  |  |
