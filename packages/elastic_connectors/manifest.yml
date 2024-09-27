@@ -1,7 +1,7 @@
 format_version: 3.2.1
 name: elastic_connectors
 title: "Elastic Connectors"
-version: 0.0.1
+version: 0.0.2
 source:
   license: "Elastic-2.0"
 description: "Sync data from source to the Elasticsearch index."
@@ -28,7 +28,7 @@ policy_templates:
     title: GitHub & GitHub Enterprise Server Connector
     icons:
       - src: /img/service_type/github.svg
-        title: Google Drive logo
+        title: GitHub logo
         size: 32x32
         type: image/svg+xml
     description: Use a connector to sync data from your GitHub data source.
@@ -37,11 +37,18 @@ policy_templates:
         enabled: false
       agentless:
         enabled: true
-    multiple: false
     inputs:
       - type: connectors-py
         title: GitHub & GitHub Enterprise Server Connector
         description: Connectors syncs data from an original data source to an Elasticsearch index.
+        vars:
+          - name: index_name
+            type: text
+            title: Index Name
+            required: true
+            show_user: false
+            description: This index will hold your data source content, and is optimized with default field mappings for relevant search experiences. Give your index a unique name.
+            default: content-
         template_path: github.yml.hbs
   - name: google_drive
     title: Google Drive Connector
@@ -56,12 +63,20 @@ policy_templates:
         enabled: false
       agentless:
         enabled: true
-    multiple: false
     inputs:
       - type: connectors-py
         title: Google Drive Connector
         description: Connectors syncs data from an original data source to an Elasticsearch index.
+        vars:
+          - name: index_name
+            type: text
+            title: Index Name
+            required: true
+            show_user: false
+            description: This index will hold your data source content, and is optimized with default field mappings for relevant search experiences. Give your index a unique name.
+            default: content-
         template_path: google_drive.yml.hbs
+
 owner:
   github: elastic/search-extract-and-transform
   type: elastic
