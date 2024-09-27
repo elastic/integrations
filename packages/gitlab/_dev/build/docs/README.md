@@ -10,7 +10,7 @@ This integration is for ingesting logs from [GitLab](https://about.gitlab.com/).
 
 - **auth**: Collect logs for protected paths abusive requests or requests over the Rate Limit.
 
-  - **production**: Collect logs for Rails controller requests received from GitLab.
+- **production**: Collect logs for Rails controller requests received from GitLab.
 
 See the GitLab [Log system docs](https://docs.gitlab.com/ee/administration/logs/) for more information.
 
