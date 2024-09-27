@@ -33,7 +33,7 @@ processors:
   - set:
       field: event.reason
       copy_from: forgerock.payload.message
-      ignore_failure: true
+      ignore_empty_value: true
   # cleaning up
   - remove:
       field:
@@ -45,18 +45,15 @@ processors:
       if: ctx.forgerock?.payload instanceof String && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - forgerock.payload
-      ignore_failure: true
       ignore_missing: true
   - remove:
       if: ctx.forgerock?.payload instanceof Map && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - forgerock.payload.message
-      ignore_failure: true
       ignore_missing: true
   - rename:
       field: forgerock.payload
       target_field: forgerock.idm_core
-      ignore_failure: true
       ignore_missing: true
   - remove:
       field: event.original
