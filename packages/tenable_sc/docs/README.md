@@ -135,7 +135,6 @@ An example event for `asset` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -346,7 +345,6 @@ An example event for `plugin` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -640,7 +638,6 @@ An example event for `vulnerability` looks as following:
         "severity": "Info"
     }
 }
-
 ```
 
 **Exported fields**

@@ -222,7 +222,6 @@ An example event for `asset` looks as following:
         "google_scc-asset"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -262,7 +261,7 @@ An example event for `asset` looks as following:
 | google_scc.asset.access_policy.scopes | The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/\{folder_number\} or projects/\{project_number\}. | keyword |
 | google_scc.asset.access_policy.title | Required. Human readable title. Does not affect behavior. | keyword |
 | google_scc.asset.ancestors | The ancestry path of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. If the asset is a project, folder, or organization, the ancestry path starts from the asset itself. Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
-| google_scc.asset.iam_policy.audit_configs.audit_log_configs.exemted_members | Specifies the identities that do not cause logging for this type of permission. Follows the same format of Binding.members. | keyword |
+| google_scc.asset.iam_policy.audit_configs.audit_log_configs.exempted_members | Specifies the identities that do not cause logging for this type of permission. Follows the same format of Binding.members. | keyword |
 | google_scc.asset.iam_policy.audit_configs.audit_log_configs.log_type | The log type that this config enables. | keyword |
 | google_scc.asset.iam_policy.audit_configs.service | Specifies a service that will be enabled for audit logging. For example, storage.googleapis.com, cloudsql.googleapis.com. allServices is a special value that covers all services. | keyword |
 | google_scc.asset.iam_policy.bindings.condition | The condition that is associated with this binding. If the condition evaluates to true, then this binding applies to the current request. If the condition evaluates to false, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding. To learn which resources support conditions in their IAM policies, see the IAM documentation. | flattened |
@@ -324,7 +323,7 @@ An example event for `asset` looks as following:
 | google_scc.asset.prior.access_policy.scopes | The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/\{folder_number\} or projects/\{project_number\}. | keyword |
 | google_scc.asset.prior.access_policy.title | Required. Human readable title. Does not affect behavior. | keyword |
 | google_scc.asset.prior.ancestors | The ancestry path of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. If the asset is a project, folder, or organization, the ancestry path starts from the asset itself. Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
-| google_scc.asset.prior.iam_policy.audit_configs.audit_log_configs.exemted_members | Specifies the identities that do not cause logging for this type of permission. Follows the same format of Binding.members. | keyword |
+| google_scc.asset.prior.iam_policy.audit_configs.audit_log_configs.exempted_members | Specifies the identities that do not cause logging for this type of permission. Follows the same format of Binding.members. | keyword |
 | google_scc.asset.prior.iam_policy.audit_configs.audit_log_configs.log_type | The log type that this config enables. | keyword |
 | google_scc.asset.prior.iam_policy.audit_configs.service | Specifies a service that will be enabled for audit logging. For example, storage.googleapis.com, cloudsql.googleapis.com. allServices is a special value that covers all services. | keyword |
 | google_scc.asset.prior.iam_policy.bindings.condition | The condition that is associated with this binding. If the condition evaluates to true, then this binding applies to the current request. If the condition evaluates to false, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding. To learn which resources support conditions in their IAM policies, see the IAM documentation. | flattened |
@@ -586,7 +585,6 @@ An example event for `finding` looks as following:
         "scheme": "http"
     }
 }
-
 ```
 
 **Exported fields**
@@ -845,7 +843,6 @@ An example event for `source` looks as following:
         "google_scc-source"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -958,7 +955,6 @@ An example event for `audit` looks as following:
         "google_scc-audit"
     ]
 }
-
 ```
 
 **Exported fields**

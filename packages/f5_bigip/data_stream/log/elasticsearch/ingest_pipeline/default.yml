@@ -3,75 +3,43 @@ description: Pipeline for processing F5 BIGIP logs.
 processors:
   - set:
       field: ecs.version
+      tag: set_ecs_version
       value: '8.11.0'
   - set:
       field: event.kind
+      tag: set_event_kind
       value: event
-  - set:
-      field: event.type
-      value: [info]
-  - set:
-      field: event.category
-      value: [network]
   - rename:
       field: message
       target_field: event.original
+      tag: rename_message_to_event_original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - json:
       field: event.original
+      tag: json_event_original
       target_field: json
-      ignore_failure: true
-  - rename:
-      field: json.hostname
-      target_field: f5_bigip.log.hostname
-      ignore_missing: true
+      if: >-
+        ctx.event?.original != null && !(
+          ctx.event.original.contains('device_product="Application Security Module"') ||
+          ctx.event.original.contains('device_product=ASM')
+        )
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: host.name
-      copy_from: f5_bigip.log.hostname
-      ignore_failure: true
-  - append:
-      field: related.hosts
-      value: '{{{host.name}}}'
-      allow_duplicates: false
-      ignore_failure: true
-  - rename:
-      field: json.application
-      target_field: f5_bigip.log.application.name
-      ignore_missing: true
-  - set:
-      field: network.application
-      copy_from: f5_bigip.log.application.name
-      ignore_failure: true
-  - lowercase:
-      field: network.application
-      ignore_failure: true
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_bigipltm" }}'
-      if: ctx.json?.telemetryEventCategory == 'LTM'
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_bigipafm" }}'
-      if: ctx.json?.telemetryEventCategory == 'AFM'
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_bigipapm" }}'
-      if: ctx.json?.telemetryEventCategory == 'APM'
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_bigipasm" }}'
-      if: ctx.json?.telemetryEventCategory == 'ASM'
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_bigipavr" }}'
-      if: ctx.json?.telemetryEventCategory == 'AVR'
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: F5
   - script:
-      description: Drops null/empty values recursively.
+      description: Drops NA and 'NA' values recursively.
+      tag: script_to_remove_NA_values
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
+          if (object == 'N/A' || object == 'NA') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -83,10 +51,99 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-on_failure:
+  - rename:
+      field: json.hostname
+      tag: rename_hostname
+      target_field: f5_bigip.log.hostname
+      ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_hostname_to_host_name
+      copy_from: f5_bigip.log.hostname
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      tag: append_hostname_to_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.application
+      tag: rename_application
+      target_field: f5_bigip.log.application.name
+      ignore_missing: true
+  - set:
+      field: network.application
+      tag: set_network_application
+      copy_from: f5_bigip.log.application.name
+      ignore_failure: true
+  - lowercase:
+      field: network.application
+      tag: lowercase_network_application
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipltm" }}'
+      tag: pipeline_bigipltm
+      if: ctx.json?.telemetryEventCategory == 'LTM'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipafm" }}'
+      tag: pipeline_bigipafm
+      if: ctx.json?.telemetryEventCategory == 'AFM'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipapm" }}'
+      tag: pipeline_bigipapm
+      if: ctx.json?.telemetryEventCategory == 'APM'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipasm" }}'
+      tag: pipeline_bigipasm
+      if: ctx.json?.telemetryEventCategory == 'ASM'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipavr" }}'
+      tag: pipeline_bigipavr
+      if: ctx.json?.telemetryEventCategory == 'AVR'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipsystem" }}'
+      tag: pipeline_bigipsysteminfo
+      if: ctx.json?.telemetryEventCategory == 'systemInfo'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipihealthinfo" }}'
+      tag: pipeline_bigipihealthinfo
+      if: ctx.json?.telemetryEventCategory == 'ihealthInfo'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigip_bot_and_dos" }}'
+      tag: pipeline_bigip_bot_and_dos
+      if: >-
+        ctx.event?.original != null && (
+          ctx.event.original.contains('device_product="Application Security Module"') ||
+          ctx.event.original.contains('device_product=ASM')
+        )
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == 'null') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
   - set:
       field: event.kind
       value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

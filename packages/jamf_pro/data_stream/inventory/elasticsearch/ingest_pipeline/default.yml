@@ -1,0 +1,156 @@
+---
+description: Process inventory data from the Jamf Pro API
+processors:
+
+- rename:
+    field: message
+    target_field: jamf_pro.inventory
+
+- fingerprint:
+    fields:
+      - jamf_pro.inventory.udid
+    target_field: "_id"
+
+- script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: |
+      boolean dropEmptyFields(Object object) {
+        if (object == null || object == "") {
+          return true;
+        } else if (object instanceof Map) {
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
+        }
+        return false;
+      }
+      dropEmptyFields(ctx);
+
+- script:
+    description: Convert Additional Info keys to snake case.
+    tag: additional-info-keys-to-snake-case
+    lang: painless
+    source: |
+      Map keysToSnakeCase(Map m) {
+        def regex = /_?([a-z])([A-Z]+)/;
+        def snakeCaseMap = [:];
+
+        for (entry in m.entrySet()) {
+          def k = entry.getKey();
+          def v = entry.getValue();
+
+          if (v instanceof Map) {
+            v = keysToSnakeCase(v);
+          } else if (v instanceof List) {
+            for (int i = 0; i < v.size(); i++) {
+              def item = v.get(i);
+              if (item instanceof Map) {
+                v.set(i, keysToSnakeCase(item));
+              }
+            }
+          }
+
+          k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+          snakeCaseMap.put(k, v);
+        }
+        return snakeCaseMap;
+      }
+
+      if (ctx.jamf_pro.inventory != null) {
+        ctx.jamf_pro.inventory = keysToSnakeCase(ctx.jamf_pro.inventory);
+      }
+
+- geoip:
+    field: jamf_pro.inventory.general.last_ip_address
+    target_field: jamf_pro.inventory.general.last_ip_address_geo
+    ignore_missing: true
+- set:
+    field: ecs.version
+    value: '8.11.0'
+
+##############
+# ECS compat #
+##############
+
+- append:
+    if: "ctx.jamf_pro.inventory.general != null && ctx.jamf_pro.inventory.general.last_ip_address != ''"
+    field: host.ip
+    value: '{{{jamf_pro.inventory.general.last_ip_address}}}'
+    ignore_failure: true
+- set:
+    field: host.address
+    copy_from: host.ip
+    ignore_empty_value: true
+- append:
+    if: "ctx.jamf_pro.inventory.hardware != null && ctx.jamf_pro.inventory.hardware.mac_address != ''"
+    field: host.mac
+    value: '{{{jamf_pro.inventory.hardware.mac_address}}}'
+    ignore_failure: true
+- set:
+    field: host.geo
+    copy_from: jamf_pro.inventory.general.last_ip_address_geo
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: os.name
+    copy_from: jamf_pro.inventory.operating_system.name
+    ignore_empty_value: true
+- set:
+    field: os.version
+    copy_from: jamf_pro.inventory.operating_system.version
+    ignore_empty_value: true
+- set:
+    field: os.platform
+    copy_from: jamf_pro.inventory.general.platform
+    ignore_empty_value: true
+- set:
+    field: user.name
+    copy_from: jamf_pro.inventory.user_and_location.name
+    ignore_empty_value: true
+- set:
+    field: user.email
+    copy_from: jamf_pro.inventory.user_and_location.email
+    ignore_empty_value: true
+- set:
+    field: user.full_name
+    copy_from: jamf_pro.inventory.user_and_location.realname
+    ignore_empty_value: true
+- append:
+    field: related.user
+    value: '{{{user.email}}}'
+- set:
+    field: related.ip
+    copy_from: host.ip
+    ignore_empty_value: true
+
+####################
+# Asset definition #
+####################
+
+- set:
+    field: event.kind
+    value: asset
+
+- append:
+    field: event.type
+    value: user
+    if: ctx.jamf_pro.inventory.user_and_location != null
+- append:
+    field: event.type
+    value: info
+    if: ctx.jamf_pro.inventory.hardware != null
+
+##################
+# Error handling #
+##################
+
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

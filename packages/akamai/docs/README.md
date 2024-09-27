@@ -41,6 +41,7 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 | akamai.siem.response.headers | HTTP response headers | flattened |
 | akamai.siem.rule_actions | Actions taken for this request. | keyword |
 | akamai.siem.rule_tags | The set of categories for the triggered rule. | keyword |
+| akamai.siem.rules | Rules triggered by this request | nested |
 | akamai.siem.rules.ruleActions | Actions of rules that triggered for this request. | keyword |
 | akamai.siem.rules.ruleData | User data of rules that triggered for this request. | keyword |
 | akamai.siem.rules.ruleMessages | Messages of rules that triggered for this request. | keyword |
@@ -268,5 +269,4 @@ An example event for `siem` looks as following:
         "query": "a=../../../etc/passwd"
     }
 }
-
 ```

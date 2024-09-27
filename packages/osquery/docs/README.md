@@ -129,7 +129,6 @@ An example event for `result` looks as following:
         "name": "ubuntu"
     }
 }
-
 ```
 
 **Exported fields**

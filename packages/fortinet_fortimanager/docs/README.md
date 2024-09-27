@@ -140,7 +140,6 @@ An example event for `log` looks as following:
         "name": "system"
     }
 }
-
 ```
 
 **Exported fields**
@@ -161,6 +160,8 @@ An example event for `log` looks as following:
 | fortimanager.log.adom.name | The name of admin ADOM. | keyword |
 | fortimanager.log.adom.oid | The OID of target ADOM. | keyword |
 | fortimanager.log.app | Application name. | keyword |
+| fortimanager.log.appcat | Application category. | keyword |
+| fortimanager.log.apprisk | Application risk. | keyword |
 | fortimanager.log.attribute_name | Variable name of which value is changed. | keyword |
 | fortimanager.log.auth_msg | SSH authentication message. | keyword |
 | fortimanager.log.bid | BID. | keyword |
@@ -178,6 +179,8 @@ An example event for `log` looks as following:
 | fortimanager.log.connect_status | Status of connection to the device. | keyword |
 | fortimanager.log.const_msg | Constant message. | keyword |
 | fortimanager.log.cpu_usage | CPU usage. | long |
+| fortimanager.log.crlevel | CR level. | keyword |
+| fortimanager.log.crscore | CR score. | long |
 | fortimanager.log.date | The year, month, and day when the event occurred in the format: YY-MM-DD. | date |
 | fortimanager.log.db.status | DVM device status. | keyword |
 | fortimanager.log.db.ver | The service database version. | keyword |
@@ -194,12 +197,16 @@ An example event for `log` looks as following:
 | fortimanager.log.device_log.last_logging | Last logging device. | keyword |
 | fortimanager.log.device_log.name | Device log name. | keyword |
 | fortimanager.log.device_log.offline_duration | Offline durations of device. | keyword |
+| fortimanager.log.direction | Direction. | keyword |
 | fortimanager.log.disk.label | Raid disk label. | long |
 | fortimanager.log.disk.status.before | RAID disk status before change. | keyword |
 | fortimanager.log.disk.status.current | RAID disk status after change. | keyword |
 | fortimanager.log.dm_state | Deployment manager states. | keyword |
+| fortimanager.log.dstcountry | Destination country. | keyword |
 | fortimanager.log.dste.pid | An identification number for the destination endpoint. | keyword |
 | fortimanager.log.dste.uid | An identification number for the destination end user. | keyword |
+| fortimanager.log.dstip | Destination IP. | ip |
+| fortimanager.log.dstname | Destination name. | keyword |
 | fortimanager.log.dvid | Device id. | keyword |
 | fortimanager.log.dvmdb_obj | Dvm_db object type. | keyword |
 | fortimanager.log.end_time | End time of the report. | date |
@@ -247,6 +254,7 @@ An example event for `log` looks as following:
 | fortimanager.log.old_value | String representation of value before being changed. | keyword |
 | fortimanager.log.oper_stat | The result of the operation. | keyword |
 | fortimanager.log.operation | Operation name. | keyword |
+| fortimanager.log.osname | OS name. | keyword |
 | fortimanager.log.package.desc | Package description. | keyword |
 | fortimanager.log.package.name | Name of package which is installed. | keyword |
 | fortimanager.log.package.type | Identifier of package type. | keyword |
@@ -276,6 +284,7 @@ An example event for `log` looks as following:
 | fortimanager.log.rate_limit | Log rate limit. | long |
 | fortimanager.log.rate_peak | Log rate peak. | long |
 | fortimanager.log.rate_value | Log rate. | long |
+| fortimanager.log.rcvdbyte | Number of bytes received. | long |
 | fortimanager.log.reboot_reason | The reason for system reboot. | keyword |
 | fortimanager.log.remote.filename | Remote filename on server side. | keyword |
 | fortimanager.log.remote.host | Remote host name or host ip in string presentation. | keyword |
@@ -292,12 +301,16 @@ An example event for `log` looks as following:
 | fortimanager.log.sensor.name | Sensor name. | keyword |
 | fortimanager.log.sensor.st | Sensor status. | keyword |
 | fortimanager.log.sensor.val | Sensor value. | keyword |
+| fortimanager.log.sentbyte | Number of bytes sent. | long |
 | fortimanager.log.serial | Serial number of the device. | keyword |
 | fortimanager.log.service | Name of the starting service. | keyword |
 | fortimanager.log.session_id | The session identification number. | keyword |
 | fortimanager.log.setup | Whether it needs to setup or not. | long |
 | fortimanager.log.shutdown_reason | The reason for system shutdown. | keyword |
 | fortimanager.log.size | The size of log file that is rolling and uploaded. | long |
+| fortimanager.log.srcip | Source IP. | ip |
+| fortimanager.log.srcname | Source name. | keyword |
+| fortimanager.log.srcport | Source port. | long |
 | fortimanager.log.start_time | Start time of the report. | date |
 | fortimanager.log.state | The state of the task. | keyword |
 | fortimanager.log.status | Interface/Operation status. | keyword |
@@ -311,6 +324,7 @@ An example event for `log` looks as following:
 | fortimanager.log.type | Log type. | keyword |
 | fortimanager.log.tz | Event timezone. | keyword |
 | fortimanager.log.uid | UID of a fortiClient installation. | keyword |
+| fortimanager.log.unauthuser | Unauthenticated user. | keyword |
 | fortimanager.log.upddb_ver | Version of the updating database. | keyword |
 | fortimanager.log.upg_act | Operation that is failed. | keyword |
 | fortimanager.log.upgrade.adom | The name of ADOM to be upgraded. | keyword |
