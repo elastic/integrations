@@ -127,6 +127,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| entity.targets |  | keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
