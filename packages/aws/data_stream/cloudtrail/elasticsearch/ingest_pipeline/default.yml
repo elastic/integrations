@@ -51,6 +51,7 @@ processors:
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
+      if: ctx?.json?.eventName != null
       on_failure: 
         - set:
             description: Add error reason
@@ -254,6 +255,8 @@ processors:
           });
         }
 
+        String actor = field("json.userIdentity.arn").get(null);
+
         String eventName = field("json.eventName").get(null);
         TreeSet target = new TreeSet();
 
@@ -284,12 +287,14 @@ processors:
 
         }
 
-
-        field("related.entity").set(related);
-
         if (!target.isEmpty()) {
           field("entity.targets").set(target);
+          related.addAll(target);
         }
+
+        field("entity.actor").set([ actor ]);
+
+        field("related.entity").set(related);
         
 
   - rename:
