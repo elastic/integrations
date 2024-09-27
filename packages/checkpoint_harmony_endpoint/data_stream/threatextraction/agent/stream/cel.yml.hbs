@@ -11,10 +11,12 @@ state:
   initial_interval: {{initial_interval}}
   limit: {{limit}}
   page_limit: {{page_limit}}
+  filter: {{filter}}
 program: |
   (
     (!has(state.cursor) || (has(state.cursor) && has(state.cursor.auth_token) && state.cursor.auth_token == null))
     ?
+    // Authenticating using API to retrieve auth tocken
     request("POST", state.url.trim_right("/")+"/auth/external").with({
       "Header": {
         "Accept": ["application/json"],
@@ -39,6 +41,7 @@ program: |
             )
         )
       ).as(auth_token,
+      // submit logs query to search security event logs
       request("POST", state.url.trim_right("/")+"/app/laas-logs-api/api/logs_query").with({
         "Header": {
           "Accept": ["application/json"],
@@ -46,7 +49,7 @@ program: |
           "Authorization": ["Bearer "+auth_token],
         },
         "Body": {
-          "filter": "product:\"Threat Extraction\" AND NOT event_type:\"TEX Info Event\"",
+          "filter": state.filter,
           "limit": state.limit,
           "pageLimit": state.page_limit,
           "cloudService": "Harmony Endpoint",
@@ -78,7 +81,8 @@ program: |
           "auth_access_key": state.auth_access_key,
           "limit": state.limit,
           "page_limit": state.page_limit,
-          "initial_interval": state.initial_interval
+          "initial_interval": state.initial_interval,
+          "filter": state.filter
         })
         :
         {
@@ -101,7 +105,8 @@ program: |
           "auth_access_key": state.auth_access_key,
           "limit": state.limit,
           "page_limit": state.page_limit,
-          "initial_interval": state.initial_interval
+          "initial_interval": state.initial_interval,
+          "filter": state.filter
         }
       )
     )
@@ -109,6 +114,7 @@ program: |
     (
       has(state.cursor) && has(state.cursor.task_ready) && state.cursor.task_ready == false
       ?
+    // submit task ID to Check the progress of specific search event logs task and get the pageTokens
       (
         request("GET", state.url.trim_right("/")+"/app/laas-logs-api/api/logs_query/"+state.cursor.task_id).with({
           "Header": {
@@ -136,7 +142,8 @@ program: |
               "auth_access_key": state.auth_access_key,
               "limit": state.limit,
               "page_limit": state.page_limit,
-              "initial_interval": state.initial_interval
+              "initial_interval": state.initial_interval,
+              "filter": state.filter
             }
             :
             (
@@ -158,7 +165,8 @@ program: |
                 "auth_access_key": state.auth_access_key,
                 "limit": state.limit,
                 "page_limit": state.page_limit,
-                "initial_interval": state.initial_interval
+                "initial_interval": state.initial_interval,
+                "filter": state.filter
               }
               :
               {
@@ -177,13 +185,15 @@ program: |
                 "auth_access_key": state.auth_access_key,
                 "limit": state.limit,
                 "page_limit": state.page_limit,
-                "initial_interval": state.initial_interval
+                "initial_interval": state.initial_interval,
+                "filter": state.filter
               }
             )
           )
         )
       )
       :
+    // use task ID and pageToken to retrieve event logs results on a specific page
       (
         request("POST", state.url.trim_right("/")+"/app/laas-logs-api/api/logs_query/retrieve").with({
           "Header": {
@@ -215,7 +225,8 @@ program: |
               "auth_access_key": state.auth_access_key,
               "limit": state.limit,
               "page_limit": state.page_limit,
-              "initial_interval": state.initial_interval
+              "initial_interval": state.initial_interval,
+              "filter": state.filter
             }
             :
             {
@@ -234,7 +245,8 @@ program: |
               "auth_access_key": state.auth_access_key,
               "limit": state.limit,
               "page_limit": state.page_limit,
-              "initial_interval": state.initial_interval
+              "initial_interval": state.initial_interval,
+              "filter": state.filter
             }
           )
         )
