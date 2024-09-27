@@ -22,7 +22,7 @@ You will need one or more Check Point Firewall appliances to monitor.
 
 ### Compatibility
 
-This integration has been tested against Check Point Log Exporter on R80.X and R81.X.
+This integration has been tested against Check Point Log Exporter on R81.X.
 
 ## Setup
 
