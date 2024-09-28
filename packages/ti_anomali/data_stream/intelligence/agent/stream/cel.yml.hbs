@@ -29,45 +29,59 @@ state:
 redact:
   fields:
     - api_key
-program: |
-  request("GET", state.url.trim_right("/") + "/api/v2/intelligence/?" + (
-    {
-      "order_by": ["update_id"],
-      "modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
-      "limit": [string(state.page_size)],
-      ?"search_after": has(state.cursor) && has(state.cursor.last_update_id) ? optional.of([string(int(state.cursor.last_update_id))]) : optional.none(),
-    }.format_query()
-  )).with({
-      "Header": {
-        "Authorization": ["apikey " + state.username + ":" + state.api_key],
-      },
-  }).do_request().as(resp,
-    resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(body, state.with({
-        "events": body.objects.map(obj, {
-          "json": obj,
-        }),
-        "want_more": body.meta.next != null,
-        "cursor": (has(state.cursor) ? state.cursor : {}).with({
-          ?"last_update_id": body.objects.size() > 0 ? optional.of(body.objects[body.objects.size() - 1].update_id) : optional.none(),
-        }),
-      }))
-    :
-      state.with({
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": "GET:"+(
-              size(resp.Body) != 0 ?
-                string(resp.Body)
-              :
-                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-            ),
-          },
-        },
-        "want_more": false,
-      })
+program: |-
+  request(
+  	"GET",
+  	state.url.trim_right("/") + "/api/v2/intelligence/?" + {
+  		"order_by": ["update_id"],
+  		"modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
+  		"limit": [string(state.page_size)],
+  		?"search_after": (has(state.cursor) && has(state.cursor.last_update_id)) ? optional.of([string(int(state.cursor.last_update_id))]) : optional.none(),
+  	}.format_query()
+  ).with(
+  	{
+  		"Header": {
+  			"Authorization": ["apikey " + state.username + ":" + state.api_key],
+  		},
+  	}
+  ).do_request().as(resp,
+  	(resp.StatusCode == 200) ?
+  		bytes(resp.Body).decode_json().as(body,
+  			state.with(
+  				{
+  					"events": body.objects.map(obj,
+  						{
+  							"json": obj,
+  						}
+  					),
+  					"want_more": body.meta.next != null,
+  					"cursor": (has(state.cursor) ? state.cursor : {}).with(
+  						{
+  							?"last_update_id": (body.objects.size() > 0) ? optional.of(body.objects[body.objects.size() - 1].update_id) : optional.none(),
+  						}
+  					),
+  				}
+  			)
+  		)
+  	:
+  		state.with(
+  			{
+  				"events": {
+  					"error": {
+  						"code": string(resp.StatusCode),
+  						"id": string(resp.Status),
+  						"message": "GET:" + 
+  						(
+  							(size(resp.Body) != 0) ?
+  								string(resp.Body)
+  							:
+  								string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+  						),
+  					},
+  				},
+  				"want_more": false,
+  			}
+  		)
   )
 tags:
 {{#if preserve_original_event}}
