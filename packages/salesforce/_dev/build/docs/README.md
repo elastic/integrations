@@ -83,7 +83,7 @@ The last entry in the list indicates the current release version of your Salesfo
 
   1. Go to **Setup** > **Quick Find** and type **Event Manager**.
   2. Select **Event Manager** from the left navigation tree.
-  3. To monitor an event, for example Login Event, or Logout Event, click the dropdown arrow and select **Enable Storage**.
+  3. To monitor an event, for example, Login Event, or Logout Event, click the dropdown arrow and select **Enable Storage**.
   4. Check if you have the required permissions: **View Real-Time Event Monitoring Data**.
 
 **Note**: Real-Time Event Monitoring may require additional licensing. Check your subscription level with your Salesforce account representative.
