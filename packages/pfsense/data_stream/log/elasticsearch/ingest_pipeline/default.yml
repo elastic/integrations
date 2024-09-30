@@ -86,8 +86,11 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "squid" }}'
       if: ctx.event.provider == 'squid'
+  - pipeline:
+      name: '{{ IngestPipeline "snort" }}'
+      if: ctx.event.provider == 'snort'
   - drop:
-      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid"].contains(ctx.event?.provider)'
+      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid", "snort"].contains(ctx.event?.provider)'
   - append:
       field: event.category
       value: network
