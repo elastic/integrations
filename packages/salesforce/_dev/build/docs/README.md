@@ -70,7 +70,7 @@ The last entry in the list indicates the current release version of your Salesfo
 
 ## Prerequisites
 
-- You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your hardware.
+- You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
 - Make sure API Enabled permission is selected for the user profile in your Salesforce instance:
 
