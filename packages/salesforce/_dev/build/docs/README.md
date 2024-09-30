@@ -19,7 +19,7 @@ The Salesforce integration collects the following data streams:
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
 - `apex`: Collects information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, and so on.
-- `setupaudittrail`: Collects information related to  changes users made in the organization's setup area for the last 180 days.
+- `setupaudittrail`: Collects information related to changes users made in the organization's setup area for the last 180 days.
 
 The Salesforce integration collects the following events using the Salesforce REST API:
 
