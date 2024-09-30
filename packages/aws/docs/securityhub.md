@@ -526,6 +526,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.securityhub_findings.aws_account_id | The Amazon Web Services account ID that a finding is generated in. | keyword |
 | aws.securityhub_findings.company.name | The name of the company for the product that generated the finding. | keyword |
 | aws.securityhub_findings.compliance.related_requirements | For a control, the industry or regulatory framework requirements that are related to the control. | keyword |
+| aws.securityhub_findings.compliance.security_control_id | Unique identifier of a control across standards. | keyword |
 | aws.securityhub_findings.compliance.status | The result of a standards check. | keyword |
 | aws.securityhub_findings.compliance.status_reasons.description | The corresponding description for the status reason code. | keyword |
 | aws.securityhub_findings.compliance.status_reasons.reason_code | A code that represents a reason for the control status. | keyword |
@@ -652,15 +653,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.securityhub_findings.workflow.state | The workflow state of a finding. | keyword |
 | aws.securityhub_findings.workflow.status | The status of the investigation into the finding. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.provider |  | constant_keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.kind |  | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| observer.vendor |  | constant_keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
 | resource.sub_type |  | keyword |
