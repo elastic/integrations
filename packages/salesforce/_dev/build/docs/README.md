@@ -154,7 +154,7 @@ To find the API version:
 
 ## Validation
 
-Once the Salesforce integration is successfully configured, follows these steps to validate the setup:
+Once the Salesforce integration is successfully configured, follow these steps to validate the setup:
 
 1. Navigate to the **Assets** tab within the Salesforce Integration. You should get a list of available dashboards corresponding to your configured data streams.
 3. Select the dashboard relevant to your data stream (for example, login, logout, apex, setupaudittrail).
