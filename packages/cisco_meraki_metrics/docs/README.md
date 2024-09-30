@@ -37,12 +37,12 @@ The `device_health` dataset provides metrics related to the health and status of
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | meraki.device.address | Physical address of the device. | keyword |  |  |
-| meraki.device.channel_utilization.wifi0.utilization_80211 | Percentage of wifi channel utiliation for the given radio. | double |  | gauge |
-| meraki.device.channel_utilization.wifi0.utilization_non_80211 | Percentage of non-wifi channel utiliation for the given radio. | double |  | gauge |
-| meraki.device.channel_utilization.wifi0.utilization_total | Percentage of total channel utiliation for the given radio. | double |  | gauge |
-| meraki.device.channel_utilization.wifi1.utilization_80211 | Percentage of wifi channel utiliation for the given radio. | double |  | gauge |
-| meraki.device.channel_utilization.wifi1.utilization_non_80211 | Percentage of non-wifi channel utiliation for the given radio. | double |  | gauge |
-| meraki.device.channel_utilization.wifi1.utilization_total | Percentage of total channel utiliation for the given radio. | double |  | gauge |
+| meraki.device.channel_utilization.wifi0.utilization_80211 | Percentage of wifi channel utiliation for the given radio. | double | percent | gauge |
+| meraki.device.channel_utilization.wifi0.utilization_non_80211 | Percentage of non-wifi channel utiliation for the given radio. | double | percent | gauge |
+| meraki.device.channel_utilization.wifi0.utilization_total | Percentage of total channel utiliation for the given radio. | double | percent | gauge |
+| meraki.device.channel_utilization.wifi1.utilization_80211 | Percentage of wifi channel utiliation for the given radio. | double | percent | gauge |
+| meraki.device.channel_utilization.wifi1.utilization_non_80211 | Percentage of non-wifi channel utiliation for the given radio. | double | percent | gauge |
+| meraki.device.channel_utilization.wifi1.utilization_total | Percentage of total channel utiliation for the given radio. | double | percent | gauge |
 | meraki.device.firmware | Firmware version of the device. | keyword |  |  |
 | meraki.device.high_availability.enabled | Indicates whether High Availability is enabled for the device. For devices that do not support HA, this will be 'false'. | boolean |  |  |
 | meraki.device.high_availability.role | The HA role of the device on the network. For devices that do not support HA, this will be 'primary'. | keyword |  |  |
@@ -142,7 +142,7 @@ The `device_health` dataset provides metrics related to the health and status of
 | meraki.uplink.ip_assigned_by | The way in which the IP is assigned. | keyword |  |  |
 | meraki.uplink.last_reported_at | Uplink Last Reported Location. | date |  |  |
 | meraki.uplink.latency.ms | Latency in milliseconds. | double | ms | gauge |
-| meraki.uplink.loss.pct | Loss percentage. | double |  | gauge |
+| meraki.uplink.loss.pct | Loss percentage. | double | percent | gauge |
 | meraki.uplink.model | Uplink model. | keyword |  |  |
 | meraki.uplink.primary_dns | Primary DNS IP. | ip |  |  |
 | meraki.uplink.provider | Network Provider. | keyword |  |  |
