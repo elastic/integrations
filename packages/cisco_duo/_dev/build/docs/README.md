@@ -29,11 +29,11 @@ The Cisco Duo integration collects logs for the following types of events.
 - [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
 - [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
 
-## HTTPJSON vs CEL
+## V2 Handlers
 
-Cisco Duo has started implementing v2 handlers for endpoints. In these cases, the API v1 handler remains supported, but will be limited or deprecated in the future. We encourage use of the v2 endpoints where available and recommend migrating existing API implementations to the v2 handlers.
+Cisco Duo has implemented v2 handlers for some endpoints. In these cases, the API v1 handler remains supported, but will be limited or deprecated in the future.
 
-From data streams listed above, v2 handlers are supported for Authentication and Telephony Logs at the moment. For these data streams, version 2.0.0 introduces the use of the CEL input in favor of HTTPJSON, which is marked as [Legacy] and will not receive enhancement changes.
+From data streams listed above, v2 handlers are supported for Authentication and Telephony Logs at the moment. It is recommended to migrate data streams to the v2 endpoints when they become available.
 
 ## Configuration
 

@@ -34,22 +34,22 @@ program: |
             })
     ).as(state, state.with(
         request(
-        	"GET",
-        	state.?want_more.orValue(false) ?
-        		state.next_url
-        	:
-        		state.url.trim_right("/") + "/admin/v2/logs/telephony?" + {
+            "GET",
+            state.?want_more.orValue(false) ?
+                state.next_url
+            :
+                state.url.trim_right("/") + "/admin/v2/logs/telephony?" + {
                     "limit": [string(int(state.limit))],
                     "maxtime": [string(int(state.maxtime))],
-        			"mintime": [string(int(state.mintime))],
+                    "mintime": [string(int(state.mintime))],
                     "sort": ["ts:asc"],
-        		}.format_query()
+                }.format_query()
         ).with(
-        	{
-        		"Header": {
-        			"Content-Type": ["application/x-www-form-urlencoded"],
-        			"Date": [state.date],
-        			"Authorization": ["Basic " + (
+            {
+                "Header": {
+                    "Content-Type": ["application/x-www-form-urlencoded"],
+                    "Date": [state.date],
+                    "Authorization": ["Basic " + (
                         state.integration_key + ":" + (
                             [
                                 state.date,
@@ -71,76 +71,76 @@ program: |
                             .hex()
                         )
                     ).base64()],
-        		},
-        	}
+                },
+            }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
-        	bytes(resp.Body).decode_json().as(body, has(body.?response.items) && size(body.response.items) > 0 ?
-        		{
-        			"events": body.response.items.map(item,
-        				{
-        					"message": item.encode_json(),
-        				}
-        			),
-        			"url": state.url,
+            bytes(resp.Body).decode_json().as(body, has(body.?response.items) && size(body.response.items) > 0 ?
+                {
+                    "events": body.response.items.map(item,
+                        {
+                            "message": item.encode_json(),
+                        }
+                    ),
+                    "url": state.url,
                     "integration_key": state.integration_key,
                     "secret_key": state.secret_key,
                     "limit": state.limit,
                     "mintime": state.mintime,
                     "maxtime": state.maxtime,
                     "date": now.format(time_layout.RFC1123Z),
-        			"want_more": has(body.?response.?metadata.next_offset),
+                    "want_more": has(body.?response.?metadata.next_offset),
                     ?"next_offset": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
                                         optional.of(string(body.response.metadata.next_offset))
                                     :
                                         optional.none(),
-        			"next_url": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
-        				(
+                    "next_url": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
+                        (
                             state.url.trim_right("/") + "/admin/v2/logs/telephony?" + {
                                 "limit": [string(int(state.limit))],
                                 "maxtime": [string(int(state.maxtime))],
-        			            "mintime": [string(int(state.mintime))],
+                                "mintime": [string(int(state.mintime))],
                                 "next_offset": [string(body.response.metadata.next_offset)],
                                 "sort": ["ts:asc"],
-        		            }.format_query()
+                            }.format_query()
                         )
-        			:
-        				state.url,
+                    :
+                        state.url,
                     "cursor": {
                         ?"last_published": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
                             optional.of(body.response.metadata.next_offset.re_find("next_offset_timestamp"))
                         :
                             optional.none(),
                     }
-        		}
+                }
             :
                 {
                     "events":[],
                     "want_more": false,
                 }
 
-        	)
+            )
         :
             bytes(resp.Body).decode_json().as(body,
                 {
                     "events": {
-        	    		"error": {
-        	    			"code": has(body.code) ? string(body.code) : string(resp.StatusCode),
-        	    			"id": string(resp.Status),
-        	    			"message": "GET: " +
-        	    			(
-        	    				(has(body.message) && body.message != "") ?
-        	    					string(body.message) + 
+                        "error": {
+                            "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
+                            "id": string(resp.Status),
+                            "message": "GET: " +
+                            (
+                                (has(body.message) && body.message != "") ?
+                                    string(body.message) +
                                         (has(body.message_detail) ?
                                             ": " + string(body.message_detail)
                                         :
                                             ""
                                         )
-        	    				:
-        	    					string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-        	    			),
-        	    		},
-        	    	},
-        	    	"want_more": false,
+                                :
+                                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                            ),
+                        },
+                    },
+                    "want_more": false,
                 }
             )
         )
