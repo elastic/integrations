@@ -179,7 +179,7 @@ With version 0.15.0, we've significantly enhanced the Salesforce integration, in
 
 1. Data stream consolidation: Reduced from 6 to 4 data streams — `apex`, `login`, `logout`, and `setupaudittrail`.
 2. Field mapping updates: Modified mappings for multiple fields.
-3. Additional changes: Various other modifications to enhance the overall integration performance and functionality.
+3. Additional changes: Several other adjustments have been made to improve the overall performance and functionality of the integration.
 
 ## Troubleshooting
 
