@@ -2,11 +2,14 @@
 
 ## Overview
 
-The Vertex AI is a platform that lets you train and deploy ML models and AI applications.
-Vertex AI is designed to simplify and accelerate the development and deployment of ML models, and provides a wide range of features and integrations for enterprise-level ML workflows.
+Vertex AI is a platform that enables the training and deployment of machine learning models and AI applications. It aims to streamline and expedite the development and deployment process for ML models, offering a variety of features and integrations tailored for enterprise-level workflows.
 
-The GCP Vertex AI integration allows you to collect the token usage, latency, overall requests and the error rates for the deployed models. 
-This integration also collects CPU and memory usage related to the replicas of the deployed models.
+The integration with Google Cloud Platform (GCP) Vertex AI allows you to gather metrics such as token usage, latency, overall invocations, and error rates for deployed models. Additionally, it tracks resource utilization metrics for the model replicas as well as prediction metrics of endpoints.
+
+## Configuration
+
+For fetching the metrics, users need to enter the project_id and the credentials file/json.
+Optional Configuration options are for the GCP Regions/Zone.
 
 ## Metrics
 
