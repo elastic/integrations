@@ -14,7 +14,7 @@ auth:
       secret: {{client_secret}}
     token_url: "{{api_host}}/api/oauth/token"
     endpoint_params:
-      grant_type: "client_credentials" 
+      grant_type: "client_credentials"
 interval: {{interval}}
 max_executions: {{max_executions}}
 
@@ -30,119 +30,127 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 
 keep_null: true
-program: |
+program: |-
   request(
-    "GET",
-      state.url.trim_right("/")  + "?" +	{
-      "section" : state.sections,
-      "page-size": [string(state.page_size)],
-      "sort": ["general.reportDate:asc"],
-      ?"filter": has(state.?cursor.last_report_date) && (state.?cursor.last_report_date.orValue("") != "") ? 
-        optional.of(['general.reportDate>="'+state.cursor.last_report_date+'"']) 
-        :
-        optional.none(),
-     }.format_query()
-  ).with({  
-    "Header": ({
-      "Content-Type": ["application/json"]
-    })
-  }).do_request().as(resp,
-    bytes(resp.Body).decode_json().as(body,
-      resp.StatusCode != 200 ?
-        {
-          "events": [{
-            "error": { "message": "response: " + string(resp.StatusCode) },
-            "event": { "original": resp.Body }
-          }]
-        }
-      :
-        state.with({
-          "events": body.results.map(e, {
-              "message": e,
-              ?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none()
-          }),
-          "want_more": body.totalCount > size(body.results),
-          "cursor": {
-            "last_report_date": ((size(body.results) == 0 ) || (size(body.results) == body.totalCount))? 
-              state.?cursor.last_report_date.orValue("") :
-              string(body.results[size(body.results)-1].general.reportDate)
-            },
-        })
-    )
+  	"GET",
+  	state.url.trim_right("/") + "?" + {
+  		"section": state.sections,
+  		"page-size": [string(state.page_size)],
+  		"sort": ["general.reportDate:asc"],
+  		?"filter": (has(state.?cursor.last_report_date) && state.?cursor.last_report_date.orValue("") != "") ?
+  			optional.of(["general.reportDate>=\"" + state.cursor.last_report_date + "\""])
+  		:
+  			optional.none(),
+  	}.format_query()
+  ).with(
+  	{
+  		"Header": {
+  			"Content-Type": ["application/json"],
+  		},
+  	}
+  ).do_request().as(resp,
+  	bytes(resp.Body).decode_json().as(body, (resp.StatusCode != 200) ?
+  		{
+  			"events": [
+  				{
+  					"error": {"message": "response: " + string(resp.StatusCode)},
+  					"event": {"original": resp.Body},
+  				},
+  			],
+  		}
+  	:
+  		state.with(
+  			{
+  				"events": body.results.map(e,
+  					{
+  						"message": e,
+  						?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  					}
+  				),
+  				"want_more": body.totalCount > size(body.results),
+  				"cursor": {
+  					"last_report_date": (size(body.results) == 0 || size(body.results) == body.totalCount) ?
+  						state.?cursor.last_report_date.orValue("")
+  					:
+  						string(body.results[size(body.results) - 1].general.reportDate),
+  				},
+  			}
+  		)
+  	)
   )
 state:
   preserve_original_event: {{preserve_original_event}}
   page_size: {{page_size}}
   sections:
-  {{#if enable_section_general }} 
+  {{#if enable_section_general }}
     - GENERAL
   {{/if}}
-  {{#if enable_section_hardware }} 
+  {{#if enable_section_hardware }}
     - HARDWARE
   {{/if}}
-  {{#if enable_section_operating_system }} 
+  {{#if enable_section_operating_system }}
     - OPERATING_SYSTEM
   {{/if}}
-  {{#if enable_section_disk_encryption }} 
+  {{#if enable_section_disk_encryption }}
     - DISK_ENCRYPTION
   {{/if}}
-  {{#if enable_section_purchasing }} 
+  {{#if enable_section_purchasing }}
     - PURCHASING
   {{/if}}
-  {{#if enable_section_applications }} 
+  {{#if enable_section_applications }}
     - APPLICATIONS
   {{/if}}
-  {{#if enable_section_storage }} 
+  {{#if enable_section_storage }}
     - STORAGE
   {{/if}}
-  {{#if enable_section_user_and_location  }} 
+  {{#if enable_section_user_and_location  }}
     - USER_AND_LOCATION
   {{/if}}
-  {{#if enable_section_configuration_profiles }} 
+  {{#if enable_section_configuration_profiles }}
     - CONFIGURATION_PROFILES
   {{/if}}
-  {{#if enable_section_printers }} 
+  {{#if enable_section_printers }}
     - PRINTERS
   {{/if}}
-  {{#if enable_section_services }} 
+  {{#if enable_section_services }}
     - SERVICES
   {{/if}}
-  {{#if enable_section_local_user_accounts }} 
+  {{#if enable_section_local_user_accounts }}
     - LOCAL_USER_ACCOUNTS
   {{/if}}
-  {{#if enable_section_certificates }} 
+  {{#if enable_section_certificates }}
     - CERTIFICATES
   {{/if}}
-  {{#if enable_section_attachments }} 
+  {{#if enable_section_attachments }}
     - ATTACHMENTS
   {{/if}}
-  {{#if enable_section_plugins }} 
+  {{#if enable_section_plugins }}
     - PLUGINS
   {{/if}}
-  {{#if enable_section_package_receipts }} 
+  {{#if enable_section_package_receipts }}
     - PACKAGE_RECEIPTS
   {{/if}}
-  {{#if enable_section_fonts }} 
+  {{#if enable_section_fonts }}
     - FONTS
   {{/if}}
-  {{#if enable_section_security }} 
+  {{#if enable_section_security }}
     - SECURITY
   {{/if}}
-  {{#if enable_section_licensed_software }} 
+  {{#if enable_section_licensed_software }}
     - LICENSED_SOFTWARE
   {{/if}}
-  {{#if enable_section_ibeacons }} 
+  {{#if enable_section_ibeacons }}
     - IBEACONS
   {{/if}}
-  {{#if enable_section_software_updates }} 
+  {{#if enable_section_software_updates }}
     - SOFTWARE_UPDATES
   {{/if}}
-  {{#if enable_section_extension_attributes }} 
+  {{#if enable_section_extension_attributes }}
     - EXTENSION_ATTRIBUTES
   {{/if}}
-  {{#if enable_section_content_caching }} 
+  {{#if enable_section_content_caching }}
     - CONTENT_CACHING
   {{/if}}
-  {{#if enable_section_group_memberships }} 
+  {{#if enable_section_group_memberships }}
     - GROUP_MEMBERSHIPS
   {{/if}}

@@ -30,6 +30,28 @@
                                 "azure.namespace": "Microsoft.Storage/storageAccounts/queueServices"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "storage_account",
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "azure.storage_account"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "azure.storage_account"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -64,10 +86,10 @@
                         "description": "",
                         "params": {
                             "fontSize": 10,
-                            "markdown": "### Azure Storage\n\n[Overview](#/dashboard/azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc) | [Blob](#/dashboard/azure_metrics-b165ef60-32f7-11ea-a83e-25b8612d00cc) | [File](#/dashboard/azure_metrics-dff7a080-32f7-11ea-a83e-25b8612d00cc) | [Table](#/dashboard/azure_metrics-ff2fe020-32f7-11ea-a83e-25b8612d00cc) | [**Queue**](#/dashboard/azure_metrics-10efa340-32f8-11ea-a83e-25b8612d00cc) ",
+                            "markdown": "[Overview](#/dashboard/azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc) | [Blob](#/dashboard/azure_metrics-b165ef60-32f7-11ea-a83e-25b8612d00cc) | [File](#/dashboard/azure_metrics-dff7a080-32f7-11ea-a83e-25b8612d00cc) | [Table](#/dashboard/azure_metrics-ff2fe020-32f7-11ea-a83e-25b8612d00cc) | [**Queue**](#/dashboard/azure_metrics-10efa340-32f8-11ea-a83e-25b8612d00cc) ",
                             "openLinksInNewTab": false
                         },
-                        "title": "Navigation Queue Storage Overview",
+                        "title": "Azure Storage — Queue Storage Overview",
                         "type": "markdown",
                         "uiState": {}
                     }
@@ -80,7 +102,7 @@
                     "y": 0
                 },
                 "panelIndex": "933a427d-a8b7-48ff-ac53-337f32b340ea",
-                "title": "Navigation Queue Storage Overview",
+                "title": "Azure Storage — Queue Storage Overview",
                 "type": "visualization",
                 "version": "8.7.0"
             },
@@ -118,7 +140,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.queue_capacity.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Queue Capacity",
@@ -296,7 +318,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.queue_message_count.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Queue Message Count",
@@ -433,7 +455,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.queue_count.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Queue Count",
@@ -1647,6 +1669,11 @@
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },        
         {
             "id": "metrics-*",
             "name": "controlGroup_13954387-48b2-4103-97e6-1d4ffcf73360:optionsListDataView",

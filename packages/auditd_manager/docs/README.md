@@ -266,7 +266,6 @@ An example event for `auditd` looks as following:
         "name": "root"
     }
 }
-
 ```
 
 **Exported fields**

@@ -11,6 +11,10 @@
       type: keyword
     - name: AccountType
       type: keyword
+    - name: ActiveDirectoryAuthenticationMethod
+      type: keyword
+    - name: ActivityId
+      type: keyword
     - name: AgentIdString
       type: keyword
     - name: AgentTimeOffset
@@ -23,7 +27,11 @@
       type: long
     - name: AsepWrittenCount
       type: long
+    - name: assessments.*
+      type: flattened
     - name: AssociatedFile
+      type: keyword
+    - name: AuthenticationActivityId
       type: keyword
     - name: AuthenticationId
       type: keyword
@@ -43,6 +51,11 @@
       type: version
     - name: ClientComputerName
       type: keyword
+    - name: CommandHistory
+      type: keyword
+      multi_fields:
+        - name: text
+          type: match_only_text
     - name: CompletionEventId
       type: keyword
     - name: ConfigBuild
@@ -140,6 +153,9 @@
       type: keyword
     - name: GrandparentCommandLine
       type: keyword
+      multi_fields:
+        - name: text
+          type: match_only_text
     - name: GrandparentImageFileName
       type: keyword
     - name: HostGroups
@@ -254,6 +270,9 @@
       type: keyword
     - name: ParentCommandLine
       type: keyword
+      multi_fields:
+        - name: text
+          type: match_only_text
     - name: ParentImageFileName
       type: keyword
     - name: PasswordLastSet
@@ -363,6 +382,19 @@
       type: keyword
     - name: SVUID
       type: keyword
+    - name: scores
+      type: group
+      fields:
+        - name: modified_time
+          type: date
+        - name: os
+          type: long
+        - name: overall
+          type: long
+        - name: sensor
+          type: long
+        - name: version
+          type: keyword
     - name: ScreenshotsTakenCount
       type: long
     - name: ScriptEngineInvocationCount
@@ -395,6 +427,26 @@
       type: keyword
     - name: SnapshotFileOpenCount
       type: long
+    - name: SourceAccountDomain
+      type: keyword
+    - name: SourceAccountObjectGuid
+      type: keyword
+    - name: SourceAccountObjectSid
+      type: keyword
+    - name: SourceAccountSamAccountName
+      type: keyword
+    - name: SourceEndpointAccountObjectGuid
+      type: keyword
+    - name: SourceEndpointAccountObjectSid
+      type: keyword
+    - name: SourceEndpointAddressIP4
+      type: keyword
+    - name: SourceEndpointHostName
+      type: keyword
+    - name: SourceEndpointNetworkTag
+      type: keyword
+    - name: SourceEndpointNetworkType
+      type: keyword
     - name: SourceFileName
       type: keyword
     - name: SourceProcessId
@@ -420,6 +472,10 @@
     - name: Tactic
       type: keyword
     - name: Tags
+      type: keyword
+    - name: TargetDomainControllerObjectGuid
+      type: keyword
+    - name: TargetDomainControllerObjectSid
       type: keyword
     - name: TargetThreadId
       type: keyword
@@ -573,6 +629,8 @@
       type: keyword
     - name: FirmwareAnalysisEclControlInterfaceVersion
       type: keyword
+    - name: hostname
+      type: keyword
     - name: IOServiceClass
       type: keyword
     - name: IOServiceName
@@ -633,6 +691,8 @@
       type: long
     - name: NetworkContainmentState
       type: keyword
+    - name: os_version
+      type: keyword
     - name: OSVersionFileData
       type: match_only_text
     - name: OSVersionFileName
@@ -661,6 +721,8 @@
       type: long
     - name: ProcessorPackageCount
       type: long
+    - name: product_type_desc
+      type: keyword
     - name: ProvisionState
       type: keyword
     - name: PupAdwareConfidence

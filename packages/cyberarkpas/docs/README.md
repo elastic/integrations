@@ -124,7 +124,6 @@ An example event for `audit` looks as following:
         "name": "PVWAGWUser"
     }
 }
-
 ```
 
 **Exported fields**

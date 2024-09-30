@@ -90,7 +90,6 @@ An example event for `admin` looks as following:
         "name": "narroway"
     }
 }
-
 ```
 
 **Exported fields**
@@ -266,7 +265,6 @@ An example event for `auth` looks as following:
         "version": "67.0.3396.99"
     }
 }
-
 ```
 
 **Exported fields**
@@ -395,7 +393,6 @@ An example event for `offline_enrollment` looks as following:
         "name": "narroway"
     }
 }
-
 ```
 
 **Exported fields**
@@ -475,7 +472,6 @@ An example event for `summary` looks as following:
         "cisco_duo-summary"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -554,7 +550,6 @@ An example event for `telephony` looks as following:
         "cisco_duo-telephony"
     ]
 }
-
 ```
 
 **Exported fields**
