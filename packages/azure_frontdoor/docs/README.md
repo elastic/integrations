@@ -129,7 +129,6 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.waf.identity_name | identity name | keyword |
 | azure.frontdoor.waf.policy | WAF policy name. | keyword |
 | azure.frontdoor.waf.policy_mode | WAF policy mode. | keyword |
-| azure.frontdoor.waf.time | The date and time when the AFD edge delivered requested contents to client (in UTC). | date |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
