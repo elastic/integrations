@@ -6,7 +6,7 @@ The Salesforce integration enables you to monitor your [Salesforce](https://www.
 
 You can use the Salesforce integration for:
 
-- **Operational insights**: Gain valuable insights into login and logout activities and other operational events within your organization.
+- **Operational insights**: Gain valuable insights into your organization's login and logout activities and other operational events.
 
 - **Data visualization**: Create detailed visualizations to monitor, measure, and analyze usage trends and key data, helping you derive actionable business insights.
 
