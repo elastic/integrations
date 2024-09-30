@@ -387,7 +387,6 @@ An example event for `audit` looks as following:
         "id": "userid123test-234sdfa2-423sdfa-2134"
     }
 }
-
 ```
 
 **Exported fields**
@@ -558,7 +557,6 @@ An example event for `vulnerabilities` looks as following:
         "severity": "high"
     }
 }
-
 ```
 
 **Exported fields**

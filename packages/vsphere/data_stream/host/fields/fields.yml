@@ -1,43 +1,86 @@
 - name: vsphere.host
   type: group
   description: >
-    host
-
+    Host information from vSphere environment.
   fields:
+    - name: alert.names
+      type: keyword
+      description: >
+        List of all the alerts on this Host.
     - name: name
       type: keyword
       # Reason to add as a dimension field: unique identifier of the host
       dimension: true
-      description: Host name
+      description: Host name.
     - name: cpu.used.mhz
       type: long
       metric_type: gauge
-      description: Used CPU of host in Mhz
+      description: Used CPU in MHz.
     - name: cpu.total.mhz
       type: long
       metric_type: counter
-      description: Total CPU of host in Mhz
+      description: Total CPU in MHz.
     - name: cpu.free.mhz
       type: long
       metric_type: gauge
-      description: Free CPU of host in Mhz
+      description: Free CPU in MHz.
+    - name: datastore.names
+      type: keyword
+      description: List of all the datastore names.
+    - name: datastore.count
+      type: long
+      metric_type: gauge
+      description: Number of datastores on the host.
+    - name: disk.capacity.usage.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: The amount of storage capacity currently being consumed by or on the entity.
+      format: bytes
+    - name: disk.devicelatency.average.ms
+      type: long
+      metric_type: gauge
+      unit: ms
+      description: Average amount of time it takes to complete an SCSI command from physical device in milliseconds.
+    - name: disk.latency.total.ms
+      type: long
+      metric_type: gauge
+      unit: ms
+      description: Highest latency value across all disks used by the host in milliseconds.
+    - name: disk.read.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: Average number of bytes read from the disk each second.
+      format: bytes
+    - name: disk.write.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: Average number of bytes written to the disk each second.
+      format: bytes
+    - name: disk.total.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: Sum of disk read and write rates each second in bytes.
     - name: memory.used.bytes
       type: long
       metric_type: gauge
       unit: byte
-      description: Used Memory of host in bytes
+      description: Used Memory in bytes.
       format: bytes
     - name: memory.total.bytes
       type: long
       metric_type: gauge
       unit: byte
-      description: Total Memory of host in bytes
+      description: Total Memory in bytes.
       format: bytes
     - name: memory.free.bytes
       type: long
       metric_type: gauge
       unit: byte
-      description: Free Memory of host in bytes
+      description: Free Memory in bytes.
       format: bytes
     - name: memory.used.pct
       type: scaled_float
@@ -53,4 +96,114 @@
       format: percent
     - name: network_names
       type: keyword
-      description: Network names
+      description: Network names.
+    - name: network.names
+      type: keyword
+      description: List of all the network names.
+    - name: network.count
+      type: long
+      metric_type: gauge
+      description: Number of networks on the host.
+    - name: network.bandwidth.transmitted.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: Average rate at which data was transmitted during the interval. This represents the bandwidth of the network.
+      format: bytes
+    - name: network.bandwidth.received.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: Average rate at which data was received during the interval. This represents the bandwidth of the network.
+      format: bytes
+    - name: network.bandwidth.total.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: Sum of network transmitted and received rates in bytes during the interval.
+      format: bytes
+    - name: network.packets.transmitted.count
+      type: long
+      metric_type: gauge
+      description: Number of packets transmitted.
+    - name: network.packets.received.count
+      type: long
+      metric_type: gauge
+      description: Number of packets received.
+    - name: network.packets.errors.transmitted.count
+      type: long
+      metric_type: gauge
+      description: Number of packets with errors transmitted.
+    - name: network.packets.errors.received.count
+      type: long
+      metric_type: gauge
+      description: Number of packets with errors received.
+    - name: network.packets.errors.total.count
+      type: long
+      metric_type: gauge
+      description: Total number of packets with errors.
+    - name: network.packets.multicast.transmitted.count
+      type: long
+      metric_type: gauge
+      description: Number of multicast packets transmitted.
+    - name: network.packets.multicast.received.count
+      type: long
+      metric_type: gauge
+      description: Number of multicast packets received.
+    - name: network.packets.multicast.total.count
+      type: long
+      metric_type: gauge
+      description: Total number of multicast packets.
+    - name: network.packets.dropped.transmitted.count
+      type: long
+      metric_type: gauge
+      description: Number of transmitted packets dropped.
+    - name: network.packets.dropped.received.count
+      type: long
+      metric_type: gauge
+      description: Number of received packets dropped.
+    - name: network.packets.dropped.total.count
+      type: long
+      metric_type: gauge
+      description: Total number of packets dropped.
+    - name: status
+      type: keyword
+      description: The overall health status of a host in the vSphere environment.
+    - name: triggered_alarms
+      type: group
+      description: >
+        List of all the triggered alarms.
+      fields:
+        - name: status
+          type: keyword
+          description: Status of the alarm.
+        - name: triggered_time
+          type: date
+          description: Time when the alarm was triggered.
+        - name: description
+          type: keyword
+          description: Description of the alarm.
+        - name: entity_name
+          type: keyword
+          description: Name of the entity associated with the alarm.
+        - name: name
+          type: keyword
+          description: Name of the alarm.
+        - name: id
+          type: keyword
+          description: Unique identifier for the alarm.
+    - name: uptime
+      type: long
+      metric_type: gauge
+      description: The total uptime of a host in seconds within the vSphere environment.
+    - name: vm.names
+      type: keyword
+      description: List of all the VM names.
+    - name: vm.count
+      type: long
+      metric_type: gauge
+      description: Number of virtual machines on the host.
+    - name: warning.names
+      type: keyword
+      description: >
+        List of all the warnings on this Host.
