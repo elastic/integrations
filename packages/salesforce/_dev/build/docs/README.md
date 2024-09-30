@@ -121,8 +121,8 @@ To use this integration, you need to create a new Salesforce Application using O
 5. Provide a name for the connected application. This name will be displayed in the App Manager and on its App Launcher tile.
 6. Enter the API name. The default is a version of the name without spaces. Only letters, numbers, and underscores are allowed. If the original app name contains any other characters, edit the default name.
 7. Enter the contact email for Salesforce.
-8. In the **API (Enable OAuth Settings)** section, select **Enable OAuth Settings**.
-9. In the **Callback URL** field, enter the instance URL as described in [Salesforce instance URL](#salesforce-instance-url).
+8. Under the **API (Enable OAuth Settings)** section, check the box for **Enable OAuth Settings**. 
+9. In the **Callback URL** field, enter the instance URL as specified in [Salesforce instance URL](#salesforce-instance-url).
 10. Select the following OAuth scopes to apply to the connected app:
     - **Manage user data via APIs (api)**
     - **Perform requests at any time (refresh_token, offline_access)**
