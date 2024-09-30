@@ -183,7 +183,7 @@ An example event for `indicator` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | input.type | Input type | keyword |
-| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Path to the log file. | keyword |
