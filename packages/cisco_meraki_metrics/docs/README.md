@@ -76,6 +76,7 @@ The `device_health` dataset provides metrics related to the health and status of
 | meraki.device.status.secondary_dns | Secondary DNS. | keyword |  |  |
 | meraki.device.status.value | Device Status. | keyword |  |  |
 | meraki.device.tags | List of tags assigned to the device. | keyword |  |  |
+| meraki.organization_id |  | keyword |  |  |
 | meraki.switch.port.access_policy_type | The type of the access policy of the switch port. Only applicable to access ports. Can be one of 'Open', 'Custom access policy', 'MAC allow list' or 'Sticky MAC allow list'. | keyword |  |  |
 | meraki.switch.port.allowed_vlans | The VLANs allowed on the switch port. Only applicable to trunk ports. | keyword |  |  |
 | meraki.switch.port.enabled | The status of the switch port. | boolean |  |  |
