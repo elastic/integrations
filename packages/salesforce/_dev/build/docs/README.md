@@ -130,8 +130,8 @@ To use this integration, you need to create a new Salesforce Application using O
 11. Select **Require Secret for the Web Server Flow** to require the app's client secret in exchange for an access token.
 12. Select **Require Secret for Refresh Token Flow** to require the app's client secret in the authorization request of a refresh token and hybrid refresh token flow.
 13. Click **Save**. It may take approximately 10 minutes for the changes to take effect.
-14. Click **Continue**, then under **API details**, click **Manage Consumer Details**. Verify the user account using the Verification Code.
-15. Copy the `Consumer Key` and `Consumer Secret` from the Consumer Details section. These should be populated as the values for Client ID and Client Secret, respectively, in the configuration.
+14. Click **Continue**, then select **Manage Consumer Details** under **API details**. Verify the user account by entering the Verification Code.
+15. Copy the `Consumer Key` and `Consumer Secret` from the Consumer Details section. These values should be used as the Client ID and Client Secret, respectively, in the configuration.
 
 For more details, check the Salesforce documentation on how to [Create a Connected App](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
 
@@ -205,12 +205,12 @@ If you encounter data ingestion errors, you might get the following error messag
 
 If the error persists, follow these steps:
 
-1. Go to **Setup** > **Quick Find** > **App Manager**.
-2. Find the app and click the corresponding arrow to check which actions are available.
+1. Navigate to **Setup** > **Quick Find** > **App Manager**.
+2. Locate the app and click the corresponding arrow to view available actions.
 3. Click **View**.
-4. Get the key and secret by clicking **Manage Consumer Details** in the API section.
+4. Obtain the client key and secret by clicking on **Manage Consumer Details** in the API section.
 5. Click **Manage** to edit the policies.
-6. Click **Edit Policies** and select **Relax IP restrictions** from the dropdown for IP Relaxation.
+6. Click **Edit Policies** and choose **Relax IP restrictions** from the dropdown menu for IP Relaxation.
 
 ## Logs reference
 

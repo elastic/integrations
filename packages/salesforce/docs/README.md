@@ -6,7 +6,7 @@ The Salesforce integration enables you to monitor your [Salesforce](https://www.
 
 You can use the Salesforce integration for:
 
-- **Operational insights**: Gain valuable insights into login and logout activities and other operational events within your organization.
+- **Operational insights**: Gain valuable insights into your organization's login and logout activities and other operational events.
 
 - **Data visualization**: Create detailed visualizations to monitor, measure, and analyze usage trends and key data, helping you derive actionable business insights.
 
@@ -19,7 +19,7 @@ The Salesforce integration collects the following data streams:
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
 - `apex`: Collects information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, and so on.
-- `setupaudittrail`: Collects information related to  changes users made in the organization's setup area for the last 180 days.
+- `setupaudittrail`: Collects information related to changes users made in the organization's setup area for the last 180 days.
 
 The Salesforce integration collects the following events using the Salesforce REST API:
 
@@ -42,7 +42,7 @@ To determine your Salesforce instance version, use one of the following methods:
 
 - Use the Salesforce Instance URL
 
-  Use your Salesforce instance URL with the following format: `Salesforce Instance URL/services/data`, for example: https://na9.salesforce.com/services/data.
+  Use your Salesforce Instance URL with the following format: `<Salesforce Instance URL>/services/data`, for example: `https://na9.salesforce.com/services/data`, here `https://na9.salesforce.com` is the Salesforce Instance URL.
 
 This will return an XML response listing with available API versions:
 
@@ -70,7 +70,7 @@ The last entry in the list indicates the current release version of your Salesfo
 
 ## Prerequisites
 
-- You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your hardware.
+- You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
 - Make sure API Enabled permission is selected for the user profile in your Salesforce instance:
 
@@ -83,7 +83,7 @@ The last entry in the list indicates the current release version of your Salesfo
 
   1. Go to **Setup** > **Quick Find** and type **Event Manager**.
   2. Select **Event Manager** from the left navigation tree.
-  3. To monitor an event, for example Login Event, or Logout Event, click the dropdown arrow and select **Enable Storage**.
+  3. To monitor an event, for example, Login Event, or Logout Event, click the dropdown arrow and select **Enable Storage**.
   4. Check if you have the required permissions: **View Real-Time Event Monitoring Data**.
 
 **Note**: Real-Time Event Monitoring may require additional licensing. Check your subscription level with your Salesforce account representative.
@@ -121,8 +121,8 @@ To use this integration, you need to create a new Salesforce Application using O
 5. Provide a name for the connected application. This name will be displayed in the App Manager and on its App Launcher tile.
 6. Enter the API name. The default is a version of the name without spaces. Only letters, numbers, and underscores are allowed. If the original app name contains any other characters, edit the default name.
 7. Enter the contact email for Salesforce.
-8. In the **API (Enable OAuth Settings)** section, select **Enable OAuth Settings**.
-9. In the **Callback URL** field, enter the instance URL as described in [Salesforce instance URL](#salesforce-instance-url).
+8. Under the **API (Enable OAuth Settings)** section, check the box for **Enable OAuth Settings**. 
+9. In the **Callback URL** field, enter the instance URL as specified in [Salesforce instance URL](#salesforce-instance-url).
 10. Select the following OAuth scopes to apply to the connected app:
     - **Manage user data via APIs (api)**
     - **Perform requests at any time (refresh_token, offline_access)**
@@ -130,8 +130,8 @@ To use this integration, you need to create a new Salesforce Application using O
 11. Select **Require Secret for the Web Server Flow** to require the app's client secret in exchange for an access token.
 12. Select **Require Secret for Refresh Token Flow** to require the app's client secret in the authorization request of a refresh token and hybrid refresh token flow.
 13. Click **Save**. It may take approximately 10 minutes for the changes to take effect.
-14. Click **Continue**, then under **API details**, click **Manage Consumer Details**. Verify the user account using the Verification Code.
-15. Copy the `Consumer Key` and `Consumer Secret` from the Consumer Details section. These should be populated as the values for Client ID and Client Secret, respectively, in the configuration.
+14. Click **Continue**, then select **Manage Consumer Details** under **API details**. Verify the user account by entering the Verification Code.
+15. Copy the `Consumer Key` and `Consumer Secret` from the Consumer Details section. These values should be used as the Client ID and Client Secret, respectively, in the configuration.
 
 For more details, check the Salesforce documentation on how to [Create a Connected App](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
 
@@ -154,11 +154,11 @@ To find the API version:
 
 ## Validation
 
-Once the Salesforce integration is successfully configured, follows these steps to validate the setup:
+Once the Salesforce integration is successfully configured, follow these steps to validate the setup:
 
-1. Navigate to the **Assets** tab within the Salesforce Integration. You should get a list of available dashboards corresponding to your configured data streams.
-3. Select the dashboard relevant to your data stream (for example, login, logout, apex, setupaudittrail).
-4. Verify that the dashboard is populated with the expected data.
+1. Navigate to the **Assets** tab in the Salesforce Integration. You will find a list of available dashboards related to your configured data streams.
+2. Select the dashboard relevant to your data stream (for example, login, logout, apex, setupaudittrail).
+3. Verify that the dashboard is populated with the expected data.
 
 If the dashboard displays the data correctly, your integration is successfully validated.
 
@@ -179,7 +179,7 @@ With version 0.15.0, we've significantly enhanced the Salesforce integration, in
 
 1. Data stream consolidation: Reduced from 6 to 4 data streams — `apex`, `login`, `logout`, and `setupaudittrail`.
 2. Field mapping updates: Modified mappings for multiple fields.
-3. Additional changes: Various other modifications to enhance the overall integration performance and functionality.
+3. Additional changes: Several other adjustments have been made to improve the overall performance and functionality of the integration.
 
 ## Troubleshooting
 
@@ -205,12 +205,12 @@ If you encounter data ingestion errors, you might get the following error messag
 
 If the error persists, follow these steps:
 
-1. Go to **Setup** > **Quick Find** > **App Manager**.
-2. Find the app and click the corresponding arrow to check which actions are available.
+1. Navigate to **Setup** > **Quick Find** > **App Manager**.
+2. Locate the app and click the corresponding arrow to view available actions.
 3. Click **View**.
-4. Get the key and secret by clicking **Manage Consumer Details** in the API section.
+4. Obtain the client key and secret by clicking on **Manage Consumer Details** in the API section.
 5. Click **Manage** to edit the policies.
-6. Click **Edit Policies** and select **Relax IP restrictions** from the dropdown for IP Relaxation.
+6. Click **Edit Policies** and choose **Relax IP restrictions** from the dropdown menu for IP Relaxation.
 
 ## Logs reference
 
