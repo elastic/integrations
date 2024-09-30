@@ -42,7 +42,7 @@ To determine your Salesforce instance version, use one of the following methods:
 
 - Use the Salesforce Instance URL
 
-  Use your Salesforce instance URL with the following format: `Salesforce Instance URL/services/data`, for example: https://na9.salesforce.com/services/data.
+  Use your Salesforce Instance URL with the following format: `<Salesforce Instance URL>/services/data`, for example: `https://na9.salesforce.com/services/data`, here `https://na9.salesforce.com` is the Salesforce Instance URL.
 
 This will return an XML response listing with available API versions:
 
