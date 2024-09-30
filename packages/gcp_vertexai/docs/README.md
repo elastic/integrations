@@ -25,17 +25,17 @@ The GCP Vertex AI includes **Vertex AI Model Garden Publisher Model** metrics un
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | gcp.labels.resource.location | Location of the resource | keyword |  |  |
 | gcp.vertexai.prediction.online.cpu.utilization | Fraction of CPU allocated by the deployed model replica and currently in use. May exceed 100% if the machine type has multiple CPUs. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | double |  | gauge |
-| gcp.vertexai.prediction.online.error_count | Number of online prediction errors. | long |  |  |
+| gcp.vertexai.prediction.online.error_count | Number of online prediction errors. | long |  | gauge |
 | gcp.vertexai.prediction.online.memory.bytes_used | Amount of memory allocated by the deployed model replica and currently in use. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | long | byte | gauge |
-| gcp.vertexai.prediction.online.network.received_bytes_count | Number of bytes received over the network by the deployed model replica. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | long | byte |  |
-| gcp.vertexai.prediction.online.network.sent_bytes_count | Number of bytes sent over the network by the deployed model replica. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | long | byte |  |
-| gcp.vertexai.prediction.online.prediction_count | Number of online predictions. | long |  |  |
+| gcp.vertexai.prediction.online.network.received_bytes_count | Number of bytes received over the network by the deployed model replica. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | long | byte | gauge |
+| gcp.vertexai.prediction.online.network.sent_bytes_count | Number of bytes sent over the network by the deployed model replica. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | long | byte | gauge |
+| gcp.vertexai.prediction.online.prediction_count | Number of online predictions. | long |  | gauge |
 | gcp.vertexai.prediction.online.prediction_latencies | Online prediction latency of the deployed model. | histogram |  |  |
 | gcp.vertexai.prediction.online.replicas | Number of active replicas used by the deployed model. | long |  | gauge |
-| gcp.vertexai.prediction.online.response_count | Number of different online prediction response codes. | long |  |  |
+| gcp.vertexai.prediction.online.response_count | Number of different online prediction response codes. | long |  | gauge |
 | gcp.vertexai.prediction.online.target_replicas | Target number of active replicas needed for the deployed model. | long |  | gauge |
-| gcp.vertexai.publisher.online_serving.character_count | Accumulated input/output character count. | long |  |  |
-| gcp.vertexai.publisher.online_serving.consumed_throughput | Overall throughput used (accounting for burndown rate) in terms of characters. | long |  |  |
-| gcp.vertexai.publisher.online_serving.model_invocation_count | Number of model invocations (prediction requests). | long |  |  |
+| gcp.vertexai.publisher.online_serving.character_count | Accumulated input/output character count. | long |  | gauge |
+| gcp.vertexai.publisher.online_serving.consumed_throughput | Overall throughput used (accounting for burndown rate) in terms of characters. | long |  | gauge |
+| gcp.vertexai.publisher.online_serving.model_invocation_count | Number of model invocations (prediction requests). | long |  | gauge |
 | gcp.vertexai.publisher.online_serving.model_invocation_latencies | Model invocation latencies (prediction latencies). | histogram |  |  |
-| gcp.vertexai.publisher.online_serving.token_count | Accumulated input/output token count. | long |  |  |
+| gcp.vertexai.publisher.online_serving.token_count | Accumulated input/output token count. | long |  | gauge |
