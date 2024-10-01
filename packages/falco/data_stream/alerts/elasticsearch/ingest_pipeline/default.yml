@@ -228,7 +228,7 @@ processors:
     tag: set_event_outcome_failure
 - set:
     field: event.ingested
-    value: '{{_ingest.timestamp}}'
+    value: '{{{_ingest.timestamp}}}'
     ignore_empty_value: true
     ignore_failure: true
 - script:
@@ -354,7 +354,7 @@ processors:
     ignore_empty_value: true
 - append:
       field: related.hosts
-      value: '{{falco.hostname}}'
+      value: '{{{falco.hostname}}}'
       if: ctx.falco?.hostname != null
       allow_duplicates: false
 - set:
@@ -364,12 +364,12 @@ processors:
 
 - set:
     field: file.path
-    value: '{{falco.output_fields.fd.name}}'
+    value: '{{{falco.output_fields.fd.name}}}'
     if: ctx.falco.output_fields.fd?.type != null && (ctx.falco.output_fields.fd.type == 'file' || ctx.falco.output_fields.fd.type == 'directory')
     tag: 'painless_set_file_path'
 - set:
     field: file.type
-    value: '{{falco.output_fields.fd.type}}'
+    value: '{{{falco.output_fields.fd.type}}}'
     if: ctx.falco.output_fields.fd?.type != null && (ctx.falco.output_fields.fd.type == 'file' || ctx.falco.output_fields.fd.type == 'directory')
     tag: 'painless_set_file_path'
 
