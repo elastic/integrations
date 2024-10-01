@@ -309,17 +309,18 @@ processors:
   - rename:
       field: json.tlp
       target_field: threat.indicator.marking.tlp
+      ignore_missing: true
   - uppercase:
       field: threat.indicator.marking.tlp
       ignore_missing: true
   - set:
       field: threat.indicator.marking.tlp
       value: AMBER
-      if: 'ctx.threat.indicator.marking.tlp == null && !ctx.json.is_public'
+      if: 'ctx.threat?.indicator?.marking?.tlp == null && !ctx.json.is_public'
   - set:
       field: threat.indicator.marking.tlp
       value: WHITE
-      if: 'ctx.threat.indicator.marking.tlp == null && ctx.json.is_public'
+      if: 'ctx.threat?.indicator?.marking?.tlp == null && ctx.json.is_public'
 
   - script:
       lang: painless
