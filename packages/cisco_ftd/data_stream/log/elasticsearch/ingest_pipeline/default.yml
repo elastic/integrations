@@ -390,13 +390,10 @@ processors:
       description: "113029, 113030, 113031, 113032, 113033, 113034, 113035, 113036, 113038, 113039"
       tag: "113039_group_user_ip"
       patterns:
-        - "Group <%{NOTSPACE:source.user.group.name}> User <%{CISCO_USER:source.user.name}> IP <%{IP:source.address}>"
-        - "Group %{NOTSPACE:source.user.group.name} User %{CISCO_USER:source.user.name} IP %{IP:source.address}"
+        - '^Group <%{NOTBRACKET:source.user.group.name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}>'
+        - '^Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address}'
       pattern_definitions:
-        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
-        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER_ALT: (?:%{DATA})
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)|%{CISCO_USER_ALT}
+        NOTBRACKET: "[^<>]+"
   - grok:
       if: "ctx._temp_.cisco.message_id == '113042'"
       field: "message"
