@@ -339,7 +339,6 @@ An example event for `event` looks as following:
         "name": "example user"
     }
 }
-
 ```
 
 **Exported fields**
