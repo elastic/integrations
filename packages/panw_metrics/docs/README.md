@@ -228,7 +228,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | interfaces.physical.name | Physical interface name | keyword |
 | interfaces.physical.speed | Physical interface speed | keyword |
 | interfaces.physical.state | Physical interface state: up/down | keyword |
-| interfaces.physical.type | Physical interface type (numeric value in source XML, string value sent to elasticsearch):    0:  "Ethernet interface",   1:  "Aggregate Ethernet (AE) interface",   2:  "High Availability (HA) interface",   3:  "VLAN interface",   5:  "Loopback interface",   6:  "Tunnel interface",   10: "SD-WAN interface", | keyword |
+| interfaces.physical.type | Physical interface type (numeric value in source XML, string value sent to elasticsearch):    0:  "Ethernet interface",   1:  "Aggregate Ethernet (AE) interface",   2:  "High Availability (HA) interface",   3:  "VLAN interface",   5:  "Loopback interface",   6:  "Tunnel interface",   10: "SD-WAN interface" | keyword |
 
 
 ### routing
@@ -373,9 +373,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | routing.bgp.msg_total_in.count | Total of all messages received from the peer | long |
 | routing.bgp.msg_total_out.count | Total of all messages sent to the peer | long |
 | routing.bgp.msg_update_in.count | The number of BGP UPDATE messages received by the router from this peer | long |
-| routing.bgp.msg_update_out.count | the number of BGP UPDATE messages sent from the local router to the peer | long |
+| routing.bgp.msg_update_out.count | The number of BGP UPDATE messages sent from the local router to the peer | long |
 | routing.bgp.multi_hop_ttl | Time to Live (TTL) value for multi-hop BGP sessions. Units are the number of hops. | long |
-| routing.bgp.nexthop_peer | Indicates whether the peer is being used as the next-hop for the routes received from this peer | boolean |
+| routing.bgp.nexthop_peer | Indicates whether the peer is being used as the next-hop for the routes received from this peerfields: | boolean |
 | routing.bgp.nexthop_self | Whether the router is configured to use itself as the next-hop for routes sent to this peer | boolean |
 | routing.bgp.nexthop_thirdparty | Third-party next-hop feature is enabled | boolean |
 | routing.bgp.open_delay.sec | Delay before sending an Open message (in seconds) | long |
@@ -521,7 +521,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.certificate.db_name | db_name field | keyword |
 | system.certificate.db_rev_date | db_rev_date field | keyword |
 | system.certificate.db_serial_no | db_serial_no field | keyword |
-| system.certificate.db_status | db_status field | keyword |
+| system.certificate.db_status | db_status fieldfields: | keyword |
 | system.certificate.db_type | db_type field | keyword |
 | system.certificate.issuer | issuer field | keyword |
 | system.certificate.issuer_key_hash | issuer_key_hash field | keyword |
@@ -584,7 +584,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.uptime.days | Uptime in days | integer |
 | system.uptime.hours | Hours component of uptime | integer |
 | system.uptime.minutes | Minutes component of uptime | integer |
-| system.user_count | Number of users | long |
 
 
 ### vpn
@@ -696,9 +695,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| vpn.globalprotect.gateway.current_users | Current number of users connected to the GlobalProtect gateway | long |
-| vpn.globalprotect.gateway.name | Name of the GlobalProtect gateway | keyword |
-| vpn.globalprotect.gateway.previous_users | Previous number of users connected to the GlobalProtect gateway | long |
+| vpn.gateway.current_users | Current number of users connected to the GlobalProtect gateway | long |
+| vpn.gateway.name | Name of the GlobalProtect gateway | keyword |
+| vpn.gateway.previous_users | Previous number of users connected to the GlobalProtect gateway | long |
 | vpn.globalprotect.session.app_version | Application version used in the session | keyword |
 | vpn.globalprotect.session.client | Client information of the session | keyword |
 | vpn.globalprotect.session.client_ip | Client IP address of the session | ip |
@@ -723,5 +722,5 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vpn.globalprotect.session.virtual_ip | Virtual IP address of the session | ip |
 | vpn.globalprotect.session.virtual_ipv6 | Virtual IPv6 address of the session | ip |
 | vpn.globalprotect.session.vpn_type | Type of VPN used in the session | keyword |
-| vpn.globalprotect.total_current_users | Total current number of users connected to GlobalProtect gateway | long |
-| vpn.globalprotect.total_previous_users | Total previous number of users connected to GlobalProtect gateway | long |
+| vpn.total_current_users | Total current number of users connected to GlobalProtect gateway | long |
+| vpn.total_previous_users | Total previous number of users connected to GlobalProtect gateway | long |
