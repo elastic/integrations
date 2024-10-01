@@ -81,7 +81,6 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.access.pop | The edge pop, which responded to the user request. | keyword |
 | azure.frontdoor.access.routing_rule_name | The name of the route that the request matched. | keyword |
 | azure.frontdoor.access.rules_engine_match_names | The names of the rules that were processed. | keyword |
-| azure.frontdoor.access.time | The date and time when the AFD edge delivered requested contents to client (in UTC). | date |
 | azure.frontdoor.access.time_taken | The length of time from the time AFD edge server receives a client's request to the time that AFD sends the last byte of response to client, in milliseconds. This field doesn't take into account network latency and TCP buffering. | double |
 | azure.frontdoor.access.time_to_first_byte | The length of time in milliseconds from AFD receives the request to the time the first byte gets sent to client, as measured on Azure Front Door. This property doesn't measure the client data. | double |
 | azure.frontdoor.category | Azure frontdoor category name. | keyword |
