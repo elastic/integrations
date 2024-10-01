@@ -10,9 +10,11 @@ processors:
       tag: grok_detail
       field: citrix.detail
       patterns:
+        - '^%{SPACE}%{HEADER_NOTIMEZONE} : %{DATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
         - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
         - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
       pattern_definitions:
+        HEADER_NOTIMEZONE: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
         HEADER: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone}? (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
         NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}|%{MONTHDAY}/%{MONTHNUM}/%{YEAR}):%{HOUR}:%{MINUTE}:%{SECOND}'  
   - grok:
@@ -83,7 +85,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "sslvpn_and_aaatm_feature" }}'
       tag: pipeline_sslvpn_and_aaatm_feature
-      if: ctx.citrix?.device_event_class_id != null && (ctx.citrix.device_event_class_id == "SSLVPN" || ctx.citrix.device_event_class_id == "AAATM")
+      if: ctx.citrix?.device_event_class_id != null && ((ctx.citrix.device_event_class_id == "SSLVPN" && !ctx.citrix?.name?.equalsIgnoreCase("MESSAGE")) || ctx.citrix.device_event_class_id == "AAATM")
   - pipeline:
       name: '{{ IngestPipeline "ci_feature" }}'
       tag: pipeline_ci_feature

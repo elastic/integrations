@@ -1,6 +1,6 @@
 # Cisco Duo
 
-The Cisco Duo integration collects and parses data from the [Cisco Duo Admin APIs](https://duo.com/docs/adminapi).
+The Cisco Duo integration collects and parses data from the [Cisco Duo Admin APIs](https://duo.com/docs/adminapi). The Duo Admin API provides programmatic access to the administrative functionality of Duo Security's two-factor authentication platform.
 
 ## Compatibility
 
@@ -16,11 +16,33 @@ In order to ingest data from the Cisco Duo Admin API you must:
 - For this integration you will require **Grant read information** and **Grant read log** permissions.
 - Make sure you have whitelisted your IP Address.
 
-## Note
+More details for each step can be found at [First steps](https://duo.com/docs/adminapi#first-steps).
 
-While setting up the interval take care of following.
-- `Interval has to be greater than 1m.`
-- `Larger values of interval might cause delay in data ingestion.`
+## Data streams
+
+The Cisco Duo integration collects logs for the following types of events.
+
+- [**Administrator Logs**](https://duo.com/docs/adminapi#administrator-logs)
+- [**Authentication Logs**](https://duo.com/docs/adminapi#authentication-logs)
+- [**Offline Enrollment Logs**](https://duo.com/docs/adminapi#offline-enrollment-logs)
+- [**Summary**](https://duo.com/docs/adminapi#retrieve-summary)
+- [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
+- [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
+
+## V2 Handlers
+
+Cisco Duo has implemented v2 handlers for some endpoints. In these cases, the API v1 handler remains supported, but will be limited or deprecated in the future.
+
+From data streams listed above, v2 handlers are supported for Authentication and Telephony Logs at the moment. It is recommended to migrate data streams to the v2 endpoints when they become available.
+
+## Configuration
+
+The following considerations should be taken into account when configuring the integration.
+
+- Interval has to be greater or equal than `1m`.
+- The Duo Admin API retrieves records from the last 180 days up to as recently as two minutes before the API request. Consider this when configuring the `Initial interval` parameter for the v2 API endpoints, as it doesn't support `d` as a suffix, its maximum value is `4320h` which corresponds to that 180 days.
+- For v2 API endpoints, a new parameter `limit` has been added to control the number of records per response. Default value is 100 and can be incresead until 1000.
+- Larger values of interval might cause delay in data ingestion.
 
 ## Logs
 
@@ -90,7 +112,6 @@ An example event for `admin` looks as following:
         "name": "narroway"
     }
 }
-
 ```
 
 **Exported fields**
@@ -127,11 +148,11 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2020-02-13T18:56:20.000Z",
     "agent": {
-        "ephemeral_id": "d12366d8-e76c-4b7a-a521-cf8f709b7fd3",
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "1db72ca4-3a98-4d58-9502-353229adb966",
+        "id": "50f2e03e-cb60-4d41-b1dc-57dd6c65753c",
+        "name": "elastic-agent-19338",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.13.0"
     },
     "cisco_duo": {
         "auth": {
@@ -172,25 +193,24 @@ An example event for `auth` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_duo.auth",
-        "namespace": "ep",
+        "namespace": "16086",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "50f2e03e-cb60-4d41-b1dc-57dd6c65753c",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
-        "created": "2023-05-10T14:55:22.717Z",
         "dataset": "cisco_duo.auth",
-        "ingested": "2023-05-10T14:55:23Z",
+        "ingested": "2024-09-30T16:10:27Z",
         "kind": "event",
         "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"67.0.3396.99\",\"flash_version\":\"uninstalled\",\"hostname\":null,\"ip\":\"89.160.20.156\",\"is_encryption_enabled\":true,\"is_firewall_enabled\":true,\"is_password_set\":true,\"java_version\":\"uninstalled\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.14.1\",\"security_agents\":null},\"alias\":\"\",\"application\":{\"key\":\"DIY231J8BR23QK4UKBY8\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":\"192.168.225.254\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"name\":\"My iPhone X (734-555-2342)\"},\"email\":\"narroway@example.com\",\"event_type\":\"authentication\",\"factor\":\"duo_push\",\"isotimestamp\":\"2020-02-13T18:56:20.351346+00:00\",\"ood_software\":null,\"reason\":\"user_approved\",\"result\":\"success\",\"timestamp\":1581620180,\"trusted_endpoint_status\":\"not trusted\",\"txid\":\"340a23e3-23f3-23c1-87dc-1491a23dfdbb\",\"user\":{\"groups\":[\"Duo Users\",\"CorpHQ Users\"],\"key\":\"DU3KC77WJ06Y5HIV7XKQ\",\"name\":\"narroway@example.com\"}}",
         "outcome": "success",
@@ -200,7 +220,7 @@ An example event for `auth` looks as following:
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "related": {
         "hosts": [
@@ -266,7 +286,6 @@ An example event for `auth` looks as following:
         "version": "67.0.3396.99"
     }
 }
-
 ```
 
 **Exported fields**
@@ -395,7 +414,6 @@ An example event for `offline_enrollment` looks as following:
         "name": "narroway"
     }
 }
-
 ```
 
 **Exported fields**
@@ -475,7 +493,6 @@ An example event for `summary` looks as following:
         "cisco_duo-summary"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -510,11 +527,11 @@ An example event for `telephony` looks as following:
 {
     "@timestamp": "2020-03-20T15:38:12.000Z",
     "agent": {
-        "ephemeral_id": "fc6cd027-e67d-45f2-81f3-547c668998c6",
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e8ad4b18-fbaa-4216-91a3-4607968d61f3",
+        "id": "0e034435-4ea5-4a95-9f07-151a1467f7d9",
+        "name": "elastic-agent-20659",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.13.0"
     },
     "cisco_duo": {
         "telephony": {
@@ -526,22 +543,22 @@ An example event for `telephony` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_duo.telephony",
-        "namespace": "ep",
+        "namespace": "52653",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "0e034435-4ea5-4a95-9f07-151a1467f7d9",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-05-10T14:57:17.933Z",
+        "created": "2024-09-30T16:13:10.700Z",
         "dataset": "cisco_duo.telephony",
-        "ingested": "2023-05-10T14:57:18Z",
+        "ingested": "2024-09-30T16:13:11Z",
         "kind": "event",
         "original": "{\"context\":\"authentication\",\"credits\":1,\"isotimestamp\":\"2020-03-20T15:38:12+00:00\",\"phone\":\"+121234512345\",\"timestamp\":1584718692,\"type\":\"sms\"}"
     },
@@ -554,7 +571,6 @@ An example event for `telephony` looks as following:
         "cisco_duo-telephony"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -577,3 +593,86 @@ An example event for `telephony` looks as following:
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+
+
+### Telephony v2
+
+This is the `telephony_v2` dataset.
+
+An example event for `telephony_v2` looks as following:
+
+```json
+{
+    "@timestamp": "2022-10-25T16:07:45.304Z",
+    "agent": {
+        "ephemeral_id": "cfc63710-9c78-4d83-acc6-cc1f17ea61ae",
+        "id": "04bc48e2-1bc2-4745-baec-658738d836f3",
+        "name": "elastic-agent-56970",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "cisco_duo": {
+        "telephony_v2": {
+            "credits": 0,
+            "event_type": "administrator login",
+            "id": "5bf1a860-fe39-49e3-be29-217659663a74",
+            "phone_number": "+13135559542",
+            "txid": "fb0c129b-f994-4d3d-953b-c3e764272eb7",
+            "type": "sms"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_duo.telephony_v2",
+        "namespace": "98588",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "04bc48e2-1bc2-4745-baec-658738d836f3",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "cisco_duo.telephony_v2",
+        "id": "5bf1a860-fe39-49e3-be29-217659663a74",
+        "ingested": "2024-09-30T16:14:08Z",
+        "kind": "event",
+        "original": "{\"context\":\"administrator login\",\"credits\":0,\"phone\":\"+13135559542\",\"telephony_id\":\"5bf1a860-fe39-49e3-be29-217659663a74\",\"ts\":\"2022-10-25T16:07:45.304526+00:00\",\"txid\":\"fb0c129b-f994-4d3d-953b-c3e764272eb7\",\"type\":\"sms\"}"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cisco_duo-telephony_v2"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cisco_duo.telephony_v2.credits | How many telephony credits this event used. | integer |
+| cisco_duo.telephony_v2.event_type | The context under which this telephony event was used (e.g. Administrator Login). | keyword |
+| cisco_duo.telephony_v2.id | A unique identifier for the telephony event. | keyword |
+| cisco_duo.telephony_v2.phone_number | The phone number that initiated this event. | keyword |
+| cisco_duo.telephony_v2.txid | A unique identifier that relates to the successful authentication attempt using this telephony event. | keyword |
+| cisco_duo.telephony_v2.type | The event type. Either "sms" or "phone". | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+

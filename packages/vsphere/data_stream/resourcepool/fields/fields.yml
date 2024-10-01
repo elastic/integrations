@@ -1,0 +1,177 @@
+- name: vsphere.resourcepool
+  type: group
+  description: >
+    Resourcepool information from vSphere environment.
+  fields:
+    - name: fingerprint
+      type: keyword
+      # Reason to add as a dimension field: to uniquely identify the resourcepool
+      dimension: true
+      description: >
+        Unique ID to avoid duplications and to identify the unique resourcepool.
+    - name: alert.names
+      type: keyword
+      description: >
+        List of all the alerts on this resourcepool.
+    - name: cpu
+      type: group
+      fields:
+        - name: demand.mhz
+          type: long
+          metric_type: gauge
+          description: >
+            Basic CPU performance statistics, in MHz.
+        - name: entitlement
+          type: group
+          fields:
+            - name: mhz
+              type: long
+              metric_type: gauge
+              description: >
+                The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS.
+            - name: static.mhz
+              metric_type: gauge
+              type: long
+              description: >
+                The static CPU resource entitlement for a virtual machine.
+        - name: usage.mhz
+          type: long
+          metric_type: gauge
+          description: >
+            Basic CPU performance statistics, in MHz.
+    - name: memory
+      type: group
+      fields:
+        - name: ballooned.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: >
+            The size of the balloon driver in a virtual machine, in bytes.
+          format: bytes     
+        - name: compressed.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: >
+            The amount of compressed memory currently consumed by VM, in bytes.
+          format: bytes
+        - name: entitlement
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: >
+                The amount of memory, in bytes, that this VM is entitled to, as calculated by DRS.
+              format: bytes
+            - name: static.bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: >
+                The static memory resource entitlement for a virtual machine, in bytes.
+              format: bytes    
+        - name: overhead
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: >
+                The amount of memory resource (in bytes) that will be used by a virtual machine above its guest memory requirements.
+              format: bytes
+            - name: consumed.bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: >
+                The amount of overhead memory, in bytes, currently being consumed to run a VM.
+              format: bytes       
+        - name: private.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: >
+            The portion of memory, in bytes, that is granted to a virtual machine from non-shared host memory.
+          format: bytes
+        - name: shared.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: >
+            The portion of memory, in bytes, that is granted to a virtual machine from host memory that is shared between VMs.
+          format: bytes
+        - name: swapped.bytes
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: >
+            The portion of memory, in bytes, that is granted to a virtual machine from the host's swap space.
+          format: bytes
+        - name: usage
+          type: group
+          fields:
+            - name: guest.bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: >
+                Guest memory utilization statistics, in bytes.
+              format: bytes
+            - name: host.bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: >
+                Host memory utilization statistics, in bytes.
+              format: bytes
+    - name: name
+      type: keyword
+      description: >
+        The name of the resourcepool.
+    - name: status
+      type: keyword
+      description: >
+        The overall health status of a host in the vSphere environment.
+    - name: vm
+      type: group
+      fields:
+        - name: count
+          type: long
+          metric_type: gauge
+          description: >
+            Number of virtual machines on the resourcepool.
+        - name: names
+          type: keyword
+          description: >
+            Names of virtual machines on the resourcepool.
+    - name: triggered_alarms
+      type: group
+      description: >
+        List of all the triggered alarms.
+      fields:
+        - name: description
+          type: keyword
+          description: Description of the alarm.
+        - name: entity_name
+          type: keyword
+          description: Name of the entity associated with the alarm.
+        - name: id
+          type: keyword
+          description: Unique identifier for the alarm.
+        - name: name
+          type: keyword
+          description: Name of the alarm.
+        - name: status
+          type: keyword
+          description: Status of the alarm.
+        - name: triggered_time
+          type: date
+          description: Time when the alarm was triggered.
+    - name: warning.names
+      type: keyword
+      description: >
+        List of all the warnings on this resourcepool. 

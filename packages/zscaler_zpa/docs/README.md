@@ -299,7 +299,6 @@ An example event for `app_connector_status` looks as following:
         }
     }
 }
-
 ```
 
 ## Audit Logs
@@ -425,7 +424,6 @@ An example event for `audit` looks as following:
         }
     }
 }
-
 ```
 
 ## Browser Access Logs
@@ -635,7 +633,6 @@ An example event for `browser_access` looks as following:
         }
     }
 }
-
 ```
 
 ## User Activity Logs
@@ -872,7 +869,6 @@ An example event for `user_activity` looks as following:
         }
     }
 }
-
 ```
 
 ## User Status Logs
@@ -1052,5 +1048,4 @@ An example event for `user_status` looks as following:
         }
     }
 }
-
 ```

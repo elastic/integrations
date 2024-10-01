@@ -349,7 +349,6 @@ An example event for `ai_analyst_alert` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1010,7 +1009,6 @@ An example event for `model_breach_alert` looks as following:
         "darktrace-model_breach_alert"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1261,7 +1259,6 @@ An example event for `system_status_alert` looks as following:
         "darktrace-system_status_alert"
     ]
 }
-
 ```
 
 **Exported fields**

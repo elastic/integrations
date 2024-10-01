@@ -891,7 +891,7 @@ processors:
       processor:
         gsub:
           field: _ingest._value
-          pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)' 
+          pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'
           replacement: '$1'
   - foreach:
       field: dns.resolved_ip
@@ -900,7 +900,7 @@ processors:
       processor:
         gsub:
           field: _ingest._value
-          pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)' 
+          pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'
           replacement: '$1'
   - foreach:
       field: dns.resolved_ip
@@ -1402,6 +1402,7 @@ processors:
       description: Remove all empty values from event_data.
       lang: painless
       source: ctx?.winlog?.event_data?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || entry.getValue().equals("-"));
+      if: ctx?.winlog?.event_data != null
   - remove:
       description: Remove empty event data.
       field: winlog.event_data

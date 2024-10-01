@@ -1,0 +1,24 @@
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+prospector.scanner.exclude_files: ['\.gz$']
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+fields_under_root: true
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_fields:
+    target: _temp_
+    fields:
+      _conf: "{{config}}"
+{{#if processors}}
+{{processors}}
+{{/if}}

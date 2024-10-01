@@ -2,37 +2,122 @@
   type: group
   description: datastore
   fields:
+    - name: alert.names
+      type: keyword
+      description: >
+        List of all the alerts on this Datastore.
     - name: name
       type: keyword
       # Reason to add as a dimension field: to uniquely identify the datastore
       dimension: true
-      description: Datastore name
+      description: Datastore name.
     - name: fstype
       type: keyword
       # Reason to add as a dimension field: in case datastore name is duplicated across different type.
       dimension: true
-      description: Filesystem type
+      description: Filesystem type.
+    - name: disk.capacity.bytes
+      type: long
+      metric_type: gauge
+      description: >
+        Configured size of the datastore.
+      format: bytes
+    - name: disk.capacity.usage.bytes
+      type: long
+      metric_type: gauge
+      description: >
+        The amount of storage capacity currently being consumed by datastore.
+      format: bytes
+    - name: disk.provisioned.bytes
+      type: long
+      metric_type: gauge
+      description: >
+        Amount of storage set aside for use by a datastore.
+      format: bytes
     - name: capacity.total.bytes
       type: long
       metric_type: gauge
       unit: byte
-      description: Total bytes of the datastore
+      description: Total bytes of the datastore.
       format: bytes
     - name: capacity.free.bytes
       type: long
       metric_type: gauge
       unit: byte
-      description: Free bytes of the datastore
+      description: Free bytes of the datastore.
       format: bytes
     - name: capacity.used.bytes
       type: long
       metric_type: gauge
       unit: byte
-      description: Used bytes of the datastore
+      description: Used bytes of the datastore.
       format: bytes
     - name: capacity.used.pct
       type: scaled_float
       metric_type: gauge
       unit: percent
-      description: Used percent of the datastore
+      description: Percentage of datastore capacity used.
       format: percent
+    - name: host.count
+      type: long
+      metric_type: gauge
+      description: >
+        Number of hosts associated with the datastore.
+    - name: host.names
+      type: keyword
+      description: >
+        List of all the host names associated with the datastore.
+    - name: read.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: >
+        Rate of reading data from the datastore.
+      format: bytes
+    - name: status
+      type: keyword
+      description: >
+        Status of the datastore.
+    - name: vm.count
+      type: long
+      metric_type: gauge
+      description: >
+        Number of VMs associated with the datastore.
+    - name: vm.names
+      type: keyword
+      description: >
+        List of all the VM names associated with the datastore.
+    - name: write.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: >
+        Rate of writing data to the datastore.
+      format: bytes
+    - name: triggered_alarms
+      type: group
+      description: >
+        List of all the triggered alarms.
+      fields:
+        - name: status
+          type: keyword
+          description: Status of the alarm.
+        - name: triggered_time
+          type: date
+          description: Time when the alarm was triggered.
+        - name: description
+          type: keyword
+          description: Description of the alarm.
+        - name: entity_name
+          type: keyword
+          description: Name of the entity associated with the alarm.
+        - name: name
+          type: keyword
+          description: Name of the alarm.
+        - name: id
+          type: keyword
+          description: Unique identifier for the alarm.
+    - name: warning.names
+      type: keyword
+      description: >
+        List of all the warnings on this Datastore.

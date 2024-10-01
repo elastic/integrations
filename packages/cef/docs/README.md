@@ -253,7 +253,6 @@ An example event for `log` looks as following:
         "original": "https://www.example.com/cart"
     }
 }
-
 ```
 
 **Exported fields**

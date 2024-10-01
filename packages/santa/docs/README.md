@@ -119,7 +119,6 @@ An example event for `log` looks as following:
         "name": "root"
     }
 }
-
 ```
 
 **Exported fields**
@@ -154,4 +153,5 @@ An example event for `log` looks as following:
 | santa.mode | Operating mode of Santa. | keyword |
 | santa.pidversion | macOS process identity version. | long |
 | santa.reason | Reason for the decision. | keyword |
+| santa.team_id | Team ID. | keyword |
 
