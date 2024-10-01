@@ -53,7 +53,7 @@ The Data Source within Endace to pivot to. Example: tag:rotation-file
 The default investigation tools to include in the EndaceVision Investigation. Example:
 trafficOverTime_by_app,conversations_by_ipaddress
 
-#### `view_window`
+#### `endace_view_window`
 The size of the search window in minutes centered on the event time.  The
 default is 10m, resulting in a search from 5m before to 5m after the event.
 
