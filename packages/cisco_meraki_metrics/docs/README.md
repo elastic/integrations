@@ -15,6 +15,14 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Configuration
 
+You need the following information from `Cisco Meraki` to configure this integration in Elastic:
+
+- API Key
+- Organization IDs
+- API Base URL (optional)
+
+You can find more information about the required settings for this integration in the [Meraki Dashboard API documentation](https://documentation.meraki.com/General_Administration/Other_Topics/Cisco_Meraki_Dashboard_API).
+
 ### Enabling the integration in Elastic
 
 1. In Kibana go to **Management > Integrations**
