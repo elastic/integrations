@@ -56,11 +56,11 @@ An example event for `admin` looks as following:
 {
     "@timestamp": "2021-07-20T11:41:31.000Z",
     "agent": {
-        "ephemeral_id": "a6a9d7a6-4c52-4096-87ef-d572bd35c04b",
-        "id": "986771b7-0cc9-40c5-9b38-7d08f72a0394",
-        "name": "elastic-agent-74657",
+        "ephemeral_id": "2785cbfe-5f49-4cf2-b1c4-7dbc52b0f1fa",
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.8.0"
     },
     "cisco_duo": {
         "admin": {
@@ -72,23 +72,23 @@ An example event for `admin` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_duo.admin",
-        "namespace": "24754",
+        "namespace": "ep",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "986771b7-0cc9-40c5-9b38-7d08f72a0394",
-        "snapshot": false,
-        "version": "8.13.0"
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "action": "activation_begin",
         "agent_id_status": "verified",
-        "created": "2024-09-30T16:09:33.484Z",
+        "created": "2023-05-10T14:54:46.085Z",
         "dataset": "cisco_duo.admin",
-        "ingested": "2024-09-30T16:09:34Z",
+        "ingested": "2023-05-10T14:54:47Z",
         "kind": "event",
         "original": "{\"action\":\"activation_begin\",\"description\":\"Starting activation process\",\"isotimestamp\":\"2021-07-20T11: 41: 31+00: 00\",\"object\":null,\"timestamp\":1626781291,\"username\":\"narroway\"}",
         "outcome": "success",
@@ -112,6 +112,7 @@ An example event for `admin` looks as following:
         "name": "narroway"
     }
 }
+
 ```
 
 **Exported fields**
@@ -354,11 +355,11 @@ An example event for `offline_enrollment` looks as following:
 {
     "@timestamp": "2019-08-30T16:10:05.000Z",
     "agent": {
-        "ephemeral_id": "239d2b20-6d4f-4547-ba66-f0f7bf7e7b5f",
-        "id": "3f7f8b53-35c2-4669-9288-8cdf9ef47b88",
-        "name": "elastic-agent-71204",
+        "ephemeral_id": "24599b3c-1dd1-45c6-802a-ec30f6e720cc",
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.8.0"
     },
     "cisco_duo": {
         "offline_enrollment": {
@@ -376,22 +377,22 @@ An example event for `offline_enrollment` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_duo.offline_enrollment",
-        "namespace": "83684",
+        "namespace": "ep",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3f7f8b53-35c2-4669-9288-8cdf9ef47b88",
-        "snapshot": false,
-        "version": "8.13.0"
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-09-30T16:11:17.036Z",
+        "created": "2023-05-10T14:56:00.686Z",
         "dataset": "cisco_duo.offline_enrollment",
-        "ingested": "2024-09-30T16:11:20Z",
+        "ingested": "2023-05-10T14:56:04Z",
         "original": "{\"action\":\"o2fa_user_provisioned\",\"description\":\"{\\\"user_agent\\\": \\\"DuoCredProv/4.0.6.413 (Windows NT 6.3.9600; x64; Server)\\\", \\\"hostname\\\": \\\"WKSW10x64\\\", \\\"factor\\\": \\\"duo_otp\\\"}\",\"isotimestamp\":\"2019-08-30T16:10:05+00:00\",\"object\":\"Acme Laptop Windows Logon\",\"timestamp\":1567181405,\"username\":\"narroway\"}"
     },
     "input": {
@@ -414,6 +415,7 @@ An example event for `offline_enrollment` looks as following:
         "name": "narroway"
     }
 }
+
 ```
 
 **Exported fields**
@@ -448,13 +450,13 @@ An example event for `summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-30T16:12:18.330924252Z",
+    "@timestamp": "2023-05-10T14:56:41.873942700Z",
     "agent": {
-        "ephemeral_id": "cabc4a90-1525-4e3e-8205-8ed19cb12a32",
-        "id": "ebf1b01a-625a-48e2-ad5f-a1f64cde45fc",
-        "name": "elastic-agent-54595",
+        "ephemeral_id": "e03bb3c3-0d99-45e9-bd9d-a30e435ed069",
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.8.0"
     },
     "cisco_duo": {
         "summary": {
@@ -466,22 +468,22 @@ An example event for `summary` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_duo.summary",
-        "namespace": "70842",
+        "namespace": "ep",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ebf1b01a-625a-48e2-ad5f-a1f64cde45fc",
-        "snapshot": false,
-        "version": "8.13.0"
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-09-30T16:12:15.321Z",
+        "created": "2023-05-10T14:56:40.862Z",
         "dataset": "cisco_duo.summary",
-        "ingested": "2024-09-30T16:12:18Z",
+        "ingested": "2023-05-10T14:56:41Z",
         "original": "{\"response\":{\"admin_count\":3,\"integration_count\":9,\"telephony_credits_remaining\":960,\"user_count\":8},\"stat\":\"OK\"}"
     },
     "input": {
@@ -493,6 +495,7 @@ An example event for `summary` looks as following:
         "cisco_duo-summary"
     ]
 }
+
 ```
 
 **Exported fields**
