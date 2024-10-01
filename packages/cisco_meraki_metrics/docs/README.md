@@ -105,8 +105,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | meraki.device.serial | Serial number of the device. | keyword |  |  |
 | meraki.device.status.gateway | IP Gateway. | ip |  |  |
 | meraki.device.status.ip_type | IP Type. | keyword |  |  |
-| meraki.device.status.last_reported_at | Device Last Reported Location. | date |  |  |
-| meraki.device.status.primary_dns | Primary DNS. | keyword |  |  |
+| meraki.device.status.last_reported_at | Device Last Reported Date. | date |  |  |
+| meraki.device.status.primary_dns | Primary DNS. | ip |  |  |
 | meraki.device.status.public_ip | Public IP Address. | ip |  |  |
 | meraki.device.status.secondary_dns | Secondary DNS. | keyword |  |  |
 | meraki.device.status.value | Device Status. | keyword |  |  |
@@ -123,7 +123,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | meraki.switch.port.status.cdp.address | Contains network addresses of both receiving and sending devices. | keyword |  |  |
 | meraki.switch.port.status.cdp.capabilities | Identifies the device type, which indicates the functional capabilities of the device. | keyword |  |  |
 | meraki.switch.port.status.cdp.device_id | Identifies the device name. | keyword |  |  |
-| meraki.switch.port.status.cdp.management_address | The device's management IP. | keyword |  |  |
+| meraki.switch.port.status.cdp.management_address | The device's management IP. | ip |  |  |
 | meraki.switch.port.status.cdp.native_vlan | Indicates, per interface, the assumed VLAN for untagged packets on the interface. | long |  |  |
 | meraki.switch.port.status.cdp.platform | Identifies the hardware platform of the device. | keyword |  |  |
 | meraki.switch.port.status.cdp.port_id | Identifies the port from which the CDP packet was sent. | keyword |  |  |
@@ -171,20 +171,20 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | meraki.switch.port.voice_vlan | The voice VLAN of the switch port. Only applicable to access ports. | long |  |  |
 | meraki.uplink.apn | Access Point Name. | keyword |  |  |
 | meraki.uplink.connection_type | Connection Type. | keyword |  |  |
-| meraki.uplink.gateway | Gateway IP. | keyword |  |  |
+| meraki.uplink.gateway | Gateway IP. | ip |  |  |
 | meraki.uplink.iccid | Integrated Circuit Card Identification Number. | keyword |  |  |
 | meraki.uplink.interface | Uplink interface. | keyword |  |  |
 | meraki.uplink.ip | Uplink IP. | ip |  |  |
 | meraki.uplink.ip_assigned_by | The way in which the IP is assigned. | keyword |  |  |
-| meraki.uplink.last_reported_at | Uplink Last Reported Location. | date |  |  |
+| meraki.uplink.last_reported_at | Uplink Last Reported Date. | date |  |  |
 | meraki.uplink.latency.ms | Latency in milliseconds. | double | ms | gauge |
 | meraki.uplink.loss.pct | Loss percentage. | double | percent | gauge |
 | meraki.uplink.model | Uplink model. | keyword |  |  |
 | meraki.uplink.primary_dns | Primary DNS IP. | ip |  |  |
 | meraki.uplink.provider | Network Provider. | keyword |  |  |
 | meraki.uplink.public_ip | Public IP. | ip |  |  |
-| meraki.uplink.rsrp | Reference Signal Received Power. | keyword |  |  |
-| meraki.uplink.rsrq | Reference Signal Received Quality. | keyword |  |  |
+| meraki.uplink.rsrp | Reference Signal Received Power. | float |  |  |
+| meraki.uplink.rsrq | Reference Signal Received Quality. | float |  |  |
 | meraki.uplink.secondary_dns | Secondary DNS IP. | ip |  |  |
 | meraki.uplink.signal_type | Signal Type. | keyword |  |  |
 | meraki.uplink.status | Uplink status. | keyword |  |  |
