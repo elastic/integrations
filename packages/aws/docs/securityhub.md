@@ -667,20 +667,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | observer.vendor |  | constant_keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
-| resource.sub_type |  | keyword |
 | resource.type |  | keyword |
 | result.evaluation |  | keyword |
-| result.evidence.cloud_configuration_link |  | text |
-| result.evidence.configuration_path |  | text |
-| result.evidence.current_value |  | text |
-| result.evidence.expected_value |  | text |
 | rule.description |  | text |
 | rule.id |  | keyword |
 | rule.name |  | keyword |
 | rule.reference |  | text |
 | rule.references |  | text |
 | rule.remediation |  | text |
-| rule.uuid |  | keyword |
 | url.user_info |  | keyword |
 
 
