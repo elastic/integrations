@@ -37,11 +37,7 @@ To prevent unbounded growth of the source data streams `logs-ti_opencti.<datastr
 
 The Anomali ThreatStream API's intelligence endpoint is the preferred source of indicators. This data will be be accessible using the alias `logs-ti_anomali_latest.intelligence`.
 
-Here is an example event:
-
 {{event "intelligence"}}
-
-The following non-ECS fields may be populated:
 
 {{fields "intelligence"}}
 
@@ -53,10 +49,6 @@ Please refer to the documentation included with the extension for a detailed exp
 
 Indicators ingested in this way will become accessible using the alias `logs-ti_anomali_latest.threatstream`.
 
-Here is an example event:
-
 {{event "threatstream"}}
-
-The following fields may be populated:
 
 {{fields "threatstream"}}
