@@ -55,7 +55,11 @@ streams:
         multi: false
         required: false
         show_user: false
-        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename)
+          for details.
       - name: ioc_duration_before_deletion
         type: text
         title: IOC Duration Before Deletion
@@ -64,7 +68,21 @@ streams:
         show_user: true
         default: "90d"
         description: >-
-          All IOCs are deleted after this duration. This setting is required to avoid "orphaned" IOCs that never expire. If an earlier expiration time is set upstream, that will be used. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g 10d).
+          All IOCs are deleted after this duration. This setting is required to avoid "orphaned" IOCs that never expire.
+          If an earlier expiration time is set upstream, that will be used.
+          Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units)
+          to specify a duration in minutes, hours or days (e.g 10d).
+      - name: remote_api_true
+        type: bool
+        title: Get remote observables
+        multi: false
+        required: true
+        show_user: false
+        default: false
+        description: >-
+          Get remote observables (for ThreatStream OnPrem only).
+          This attribute does not need to be set to retrieve local observables.
+          Only use this when retrieving remote observables from ThreatStream Cloud.
       - name: tags
         type: text
         title: Tags
@@ -88,8 +106,10 @@ streams:
         multi: false
         required: false
         show_user: false
-        description: >
-          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed.
+          See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
     template_path: cel.yml.hbs
     title: Anomali Threatstream Intelligence

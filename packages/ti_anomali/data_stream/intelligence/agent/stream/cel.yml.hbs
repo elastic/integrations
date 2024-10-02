@@ -24,6 +24,7 @@ state:
   username: {{username}}
   api_key: {{api_key}}
   page_size: {{page_size}}
+  remote_api_true: {{remote_api_true}}
   delay: 1m
   want_more: false
   preserve_original_event: {{preserve_original_event}}
@@ -38,6 +39,7 @@ program: |-
   		"modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
   		"limit": [string(state.page_size)],
   		?"search_after": (has(state.cursor) && has(state.cursor.last_update_id)) ? optional.of([string(int(state.cursor.last_update_id))]) : optional.none(),
+  		?"remote_api": state.remote_api_true ? optional.of(["true"]) : optional.none(), // never set remote_api=false, only true or absent
   	}.format_query()
   ).with(
   	{
