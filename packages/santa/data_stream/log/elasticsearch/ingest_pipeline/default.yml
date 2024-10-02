@@ -25,7 +25,7 @@ processors:
       ignore_missing: true
       on_failure:
         - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - remove:
       field: _tmp.message
       ignore_missing: true
@@ -189,14 +189,14 @@ processors:
       ignore_missing: true
   - append:
       field: process.args
-      value: "{{process.executable}}"
+      value: "{{{process.executable}}}"
       if: "ctx?.process?.executable != null"
   - foreach:
       field: santa.args
       processor:
         append:
           field: process.args
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
       ignore_missing: true
   - remove:
       field: santa.args
@@ -222,22 +222,22 @@ processors:
       if: "ctx?.santa?.decision == 'DENY'"
   - set:
       field: event.action
-      value: "{{santa.action}}"
+      value: "{{{santa.action}}}"
       ignore_empty_value: true
   - lowercase:
       field: event.action
       ignore_missing: true
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       if: "ctx?.user?.name != null"
   - append:
       field: related.hash
-      value: "{{santa.certificate.sha256}}"
+      value: "{{{santa.certificate.sha256}}}"
       if: "ctx?.santa?.certificate?.sha256 != null"
   - append:
       field: related.hash
-      value: "{{process.hash.sha256}}"
+      value: "{{{process.hash.sha256}}}"
       if: "ctx?.process?.hash != null"
   - append:
       field: file.x509.issuer.common_name
