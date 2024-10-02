@@ -159,7 +159,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.interfaces.ha.local_info.platform_model | Platform model of the local device | keyword |
 | panw.interfaces.ha.local_info.preemptive | Indicates whether the firewall is configured to preemptively take over as the active unit in an HA setup. This is a yes/no value which the beat is not converting to a boolean, so it will be a keyword. | keyword |
 | panw.interfaces.ha.local_info.state | HA state of the local device, e.g., "active" or "passive" | keyword |
-| panw.interfaces.ha.local_info.state_duration.sec | Duration in seconds of the current state | long |
+| panw.interfaces.ha.local_info.state_duration | Duration in seconds of the current state | long |
 | panw.interfaces.ha.local_info.state_sync | Status of HA synchronization, e.g., "complete" | keyword |
 | panw.interfaces.ha.local_info.state_sync_type | Type of interface used for HA synchronization | keyword |
 | panw.interfaces.ha.local_info.threat_version | HA local info threat version | keyword |
@@ -168,12 +168,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.interfaces.ha.local_info.vpn_client_version | Version of the VPN client (if installed) | keyword |
 | panw.interfaces.ha.mode | HA mode, e.g., "active-active" or "active-passive" | keyword |
 | panw.interfaces.ha.peer_info.conn_ha1.description | Description of the connection type ,e.g., "heartbeat status" | keyword |
-| panw.interfaces.ha.peer_info.conn_ha1.primary | Specifies if the HA1 connection is primary | boolean |
+| panw.interfaces.ha.peer_info.conn_ha1.primary | Specifies if the HA1 connection is primary | keyword |
 | panw.interfaces.ha.peer_info.conn_ha1.status | Peer HA1 connection status, e.g., "up" | keyword |
 | panw.interfaces.ha.peer_info.conn_ha1_backup.description | HA peer info connection HA1 backup description | keyword |
 | panw.interfaces.ha.peer_info.conn_ha1_backup.status | HA peer info connection HA1 backup status, e.g., "up" means it is operational | keyword |
 | panw.interfaces.ha.peer_info.conn_ha2.description | HA peer info connection HA2 description | keyword |
-| panw.interfaces.ha.peer_info.conn_ha2.primary | Specifies if the HA2 connection is primary | boolean |
+| panw.interfaces.ha.peer_info.conn_ha2.primary | Specifies if the HA2 connection is primary | keyword |
 | panw.interfaces.ha.peer_info.conn_ha2.status | HA peer info connection HA2 status | keyword |
 | panw.interfaces.ha.peer_info.conn_status | Overall status of the HA connections ("up" means all connections are operational) | keyword |
 | panw.interfaces.ha.peer_info.ha1_backup_ipaddr | HA peer info HA1 backup IP address, in CIDR format. | ip |
@@ -185,10 +185,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.interfaces.ha.peer_info.mgmt_ip | Management IP address of the peer firewall. This is in CIDR format. | keyword |
 | panw.interfaces.ha.peer_info.mode | HA mode configured on the peer firewall, e.g. "Active-Passive" | keyword |
 | panw.interfaces.ha.peer_info.platform_model | Model of the peer firewall | keyword |
-| panw.interfaces.ha.peer_info.preemptive | Indicates if preemption is enabled on the peer firewall | boolean |
+| panw.interfaces.ha.peer_info.preemptive | Indicates if preemption is enabled on the peer firewall | keyword |
 | panw.interfaces.ha.peer_info.priority | HA priority value of the peer firewall | long |
 | panw.interfaces.ha.peer_info.state | Current operational state of the peer firewall (passive means it is in standby mode and not handling traffic) | keyword |
-| panw.interfaces.ha.peer_info.state_duration.sec | How long the peer has been in the current state in seconds | long |
+| panw.interfaces.ha.peer_info.state_duration | How long the peer has been in the current state in seconds | long |
 | panw.interfaces.ha.running_sync | Indicates the sychronization status of the HA pair, e.g., "synchronized","not-synchronized","synchronizing" | keyword |
 | panw.interfaces.ha.running_sync_enabled | Indicates if running configuration synchronization is enabled | boolean |
 | panw.interfaces.ipsec_tunnel.TSi_ip | Traffic Selector Initiator IP. This is the local IP (0.0.0.0 means any IP address) | ip |
@@ -546,7 +546,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.system.filesystem.use_percent | Percent of filesystem used | integer |
 | panw.system.filesystem.used | Amount used on the filesystem | float |
 | panw.system.license.auth_code | Authorization code to activate or install the license | keyword |
-| panw.system.license.description | Description of the licensed feature | text |
+| panw.system.license.description | Description of the licensed feature | keyword |
 | panw.system.license.expired | Indicates if the license is expired | boolean |
 | panw.system.license.expires | Date the license expires - not set if license never expires | date |
 | panw.system.license.feature | Feature licensed, e.g. Advanced Threat Prevention | keyword |
