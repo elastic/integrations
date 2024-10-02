@@ -6,7 +6,7 @@ The Anomali integration supports the following datasets.
 
 ## Logs
 
-### Anomali Threatstream
+### Anomali ThreatStream
 
 This integration requires additional software, the _Elastic_ _Extension,_
 to connect the Anomali ThreatStream with this integration. It's available
