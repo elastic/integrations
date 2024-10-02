@@ -26,6 +26,7 @@ state:
   page_size: {{page_size}}
   delay: 1m
   want_more: false
+  preserve_original_event: {{preserve_original_event}}
 redact:
   fields:
     - api_key
@@ -50,9 +51,12 @@ program: |-
   			state.with(
   				{
   					"events": body.objects.map(obj,
-  						{
-  							"json": obj,
-  						}
+  						{"json": obj}.with(
+  							(has(state.preserve_original_event) && state.preserve_original_event) ?
+  								{"event": {"original": obj.encode_json()}}
+  							:
+  								{}
+  						)
   					),
   					"want_more": body.meta.next != null,
   					"cursor": (has(state.cursor) ? state.cursor : {}).with(
