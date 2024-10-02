@@ -520,7 +520,7 @@
                     "y": 0
                 },
                 "panelIndex": "07e847d6-bf46-4201-8ffe-74540b469629",
-                "title": "CPU Utilization",
+                "title": "CPU Usage",
                 "type": "lens"
             },
             {
@@ -812,7 +812,7 @@
                     "y": 0
                 },
                 "panelIndex": "2122e0c2-60c2-4efb-9e64-8e5959102d93",
-                "title": "Memory Utilization",
+                "title": "Memory Usage",
                 "type": "lens"
             },
             {
@@ -1160,7 +1160,10 @@
                                             "columnOrder": [
                                                 "bf28e529-3f60-4c01-9b8b-7b7a51c72b33",
                                                 "71507b5a-60f2-491e-8774-ae2b88424b9b",
-                                                "95e56b61-fe65-4ac4-81aa-d9608a43162d"
+                                                "95e56b61-fe65-4ac4-81aa-d9608a43162d",
+                                                "95e56b61-fe65-4ac4-81aa-d9608a43162dX2",
+                                                "95e56b61-fe65-4ac4-81aa-d9608a43162dX1",
+                                                "95e56b61-fe65-4ac4-81aa-d9608a43162dX0"
                                             ],
                                             "columns": {
                                                 "71507b5a-60f2-491e-8774-ae2b88424b9b": {
@@ -1179,13 +1182,9 @@
                                                 "95e56b61-fe65-4ac4-81aa-d9608a43162d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"metrics.k8s.node.cpu.usage\": *"
-                                                    },
                                                     "isBucketed": false,
-                                                    "label": "CPU usage Pct",
-                                                    "operationType": "last_value",
+                                                    "label": "CPU Utilization",
+                                                    "operationType": "formula",
                                                     "params": {
                                                         "format": {
                                                             "id": "percent",
@@ -1193,10 +1192,72 @@
                                                                 "decimals": 2
                                                             }
                                                         },
+                                                        "formula": "last_value(metrics.k8s.node.cpu.usage)/last_value(metrics.k8s.node.allocatable_cpu)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "95e56b61-fe65-4ac4-81aa-d9608a43162dX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "95e56b61-fe65-4ac4-81aa-d9608a43162dX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"metrics.k8s.node.cpu.usage\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "last_value",
+                                                    "params": {
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "metrics.k8s.node.cpu.usage"
+                                                },
+                                                "95e56b61-fe65-4ac4-81aa-d9608a43162dX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"metrics.k8s.node.allocatable_cpu\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "metrics.k8s.node.allocatable_cpu"
+                                                },
+                                                "95e56b61-fe65-4ac4-81aa-d9608a43162dX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "95e56b61-fe65-4ac4-81aa-d9608a43162dX0",
+                                                                "95e56b61-fe65-4ac4-81aa-d9608a43162dX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 83,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "last_value(metrics.k8s.node.cpu.usage)/last_value(metrics.k8s.node.allocatable_cpu)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "95e56b61-fe65-4ac4-81aa-d9608a43162dX0",
+                                                        "95e56b61-fe65-4ac4-81aa-d9608a43162dX1"
+                                                    ],
+                                                    "scale": "ratio"
                                                 },
                                                 "bf28e529-3f60-4c01-9b8b-7b7a51c72b33": {
                                                     "dataType": "string",
@@ -1210,10 +1271,10 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "95e56b61-fe65-4ac4-81aa-d9608a43162d",
-                                                            "type": "column"
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
                                                         "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
@@ -1226,6 +1287,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1245,15 +1307,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "metrics.k8s.node.cpu.usage",
-                                        "index": "2e647e9f-b00e-4883-8f05-d290f5239956",
-                                        "key": "metrics.k8s.node.cpu.usage",
+                                        "field": "resource.attributes.k8s.node.name",
+                                        "index": "6f2e38ed-8fa8-426f-a951-2b138654a71e",
+                                        "key": "resource.attributes.k8s.node.name",
                                         "negate": false,
-                                        "type": "exists"
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
                                         "exists": {
-                                            "field": "metrics.k8s.node.cpu.usage"
+                                            "field": "resource.attributes.k8s.node.name"
                                         }
                                     }
                                 }
@@ -1373,7 +1436,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Memory usage Pct",
+                                                    "label": "Memory Utilization",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "format": {
@@ -1398,7 +1461,7 @@
                                                         "query": "\"metrics.k8s.node.memory.working_set\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Memory usage Pct",
+                                                    "label": "Part of Memory Utilization",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -1414,7 +1477,7 @@
                                                         "query": "\"metrics.k8s.node.allocatable_memory\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Memory usage Pct",
+                                                    "label": "Part of Memory Utilization",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -1426,7 +1489,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Memory usage Pct",
+                                                    "label": "Part of Memory Utilization",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -1590,6 +1653,11 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-f494e875-7646-4748-b9d8-e4120c00e866",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "1b04b540-39ae-4cfd-8088-34a4bf3d5654",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -1624,7 +1692,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Filesystem usage Pct",
+                                                    "label": "Filesystem Utilization",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "format": {
@@ -1649,7 +1717,7 @@
                                                         "query": "\"metrics.k8s.node.filesystem.usage\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Filesystem usage Pct",
+                                                    "label": "Part of Filesystem Utilization",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -1665,7 +1733,7 @@
                                                         "query": "\"metrics.k8s.node.filesystem.capacity\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Filesystem usage Pct",
+                                                    "label": "Part of Filesystem Utilization",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -1677,7 +1745,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Filesystem usage Pct",
+                                                    "label": "Part of Filesystem Utilization",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -1747,15 +1815,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "metrics.k8s.node.filesystem.usage",
-                                        "index": "aa5eecba-37b7-430d-9b99-1972c2bfffab",
-                                        "key": "metrics.k8s.node.filesystem.usage",
+                                        "field": "resource.attributes.k8s.node.name",
+                                        "index": "1b04b540-39ae-4cfd-8088-34a4bf3d5654",
+                                        "key": "resource.attributes.k8s.node.name",
                                         "negate": false,
-                                        "type": "exists"
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
                                         "exists": {
-                                            "field": "metrics.k8s.node.filesystem.usage"
+                                            "field": "resource.attributes.k8s.node.name"
                                         }
                                     }
                                 }
@@ -1829,7 +1898,7 @@
                     "y": 10
                 },
                 "panelIndex": "aac20a1f-8631-4c97-adaa-730171145291",
-                "title": "Top Filesystem Usage intensive Nodes",
+                "title": "Top Filesystem Utilization intensive Nodes",
                 "type": "lens"
             },
             {
@@ -1879,6 +1948,11 @@
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-57a8eb42-6f2c-4112-9d6c-c03d982c569e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "0e11ca27-40f5-4300-b885-17ade4895220",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1976,7 +2050,28 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "resource.attributes.k8s.container.status.last_terminated_reason",
+                                        "index": "0e11ca27-40f5-4300-b885-17ade4895220",
+                                        "key": "resource.attributes.k8s.container.status.last_terminated_reason",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "resource.attributes.k8s.container.status.last_terminated_reason"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -3141,6 +3236,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "5cd693aa-6e5b-43de-b3c5-3d353a0644a3": {
                                             "columnOrder": [
@@ -3182,7 +3278,7 @@
                                                         "query": "\"metrics.k8s.pod.cpu.node.utilization\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Pod CPU Usage ",
+                                                    "label": "Pod CPU Utilization ",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "format": {
@@ -3201,6 +3297,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -3311,7 +3408,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Pod cpu utilization is calculated as a ratio of the node's allocatable cpu",
+                    "description": "Pod cpu utilization is calculated as a ratio of the total node's capacity",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -3340,6 +3437,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "5cd693aa-6e5b-43de-b3c5-3d353a0644a3": {
                                             "columnOrder": [
@@ -3381,7 +3479,7 @@
                                                         "query": "\"metrics.k8s.pod.cpu_limit_utilization\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Pod CPU Usage ",
+                                                    "label": "Pod CPU Utilization ",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "format": {
@@ -3399,6 +3497,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -3533,6 +3632,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "5cd693aa-6e5b-43de-b3c5-3d353a0644a3": {
                                             "columnOrder": [
@@ -3574,7 +3674,7 @@
                                                         "query": "\"metrics.k8s.pod.memory.node.utilization\" :*"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Pod Memory Usage",
+                                                    "label": "Pod Memory Utilization",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "format": {
@@ -3592,6 +3692,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -3697,7 +3798,7 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Pod memory utilization is calculated as a ratio of the node's allocatable memory",
+                    "description": "Pod memory utilization is calculated as a ratio of the total node's capacity",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -3726,6 +3827,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "5cd693aa-6e5b-43de-b3c5-3d353a0644a3": {
                                             "columnOrder": [
@@ -3767,7 +3869,7 @@
                                                         "query": "metrics.k8s.pod.memory_limit_utilization :*"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Pod Memory Usage",
+                                                    "label": "Pod Memory Utilization",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -3785,6 +3887,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -4582,7 +4685,17 @@
         },
         {
             "id": "metrics-*",
+            "name": "aac20a1f-8631-4c97-adaa-730171145291:1b04b540-39ae-4cfd-8088-34a4bf3d5654",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
             "name": "ebef2e13-2669-4591-bede-b38060c22d99:indexpattern-datasource-layer-57a8eb42-6f2c-4112-9d6c-c03d982c569e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "ebef2e13-2669-4591-bede-b38060c22d99:0e11ca27-40f5-4300-b885-17ade4895220",
             "type": "index-pattern"
         },
         {
@@ -4604,11 +4717,6 @@
             "id": "metrics-*",
             "name": "ce946c49-ce69-4e53-81a1-20172210ee35:indexpattern-datasource-layer-5cd693aa-6e5b-43de-b3c5-3d353a0644a3",
             "type": "index-pattern"
-        },
-        {
-            "id": "kubernetes_otel-fleet-shared-tag-kubernetes_otel-dfd505f6-fc02-5c53-adc7-148425d7972c-default",
-            "name": "tag-ref-fleet-shared-tag-kubernetes_otel-dfd505f6-fc02-5c53-adc7-148425d7972c-default",
-            "type": "tag"
         },
         {
             "id": "metrics-*",
