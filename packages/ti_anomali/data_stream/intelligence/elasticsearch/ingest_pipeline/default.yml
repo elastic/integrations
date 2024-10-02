@@ -471,10 +471,11 @@ processors:
       field: json.tags
       ignore_missing: true
 
-  - convert:
-      field: json.id
-      type: string
-      if: "ctx.json?.id != null"
+  - script:
+      description: Convert a large integer that arrives as a Double to a string without an exponent
+      lang: painless
+      source: ctx.json.id = Long.toString((long) ctx.json.id);
+      if: "!(ctx.json.id instanceof String)"
 
   # restructure meta.registrant_* to meta.registrant.*
   - rename:
