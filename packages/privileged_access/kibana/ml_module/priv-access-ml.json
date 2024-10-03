@@ -1,0 +1,94 @@
+{
+  "attributes": {
+    "id": "privileged-access-ml",
+    "title": "Privileged Access Detection",
+    "description": "Detects anomalous privileged access",
+    "type": "priv-access",
+    "logo": {
+      "icon": "machineLearningApp"
+    },
+    "query": {
+      "bool": {
+        "should": [
+          {
+            "term": {
+              "event.category": "file"
+            }
+          },
+          {
+            "bool": {
+              "filter": [
+                {
+                  "exists": {
+                    "field": "session.start_time"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "must_not": {
+          "terms": {
+            "_tier": [
+              "data_frozen",
+              "data_cold"
+            ]
+          }
+        }
+      }
+    },
+    "jobs": [
+      {
+        "job_id": "privileged-access-logins-per-user",
+        "description": "",
+        "groups": [
+          "windows"
+        ],
+        "analysis_config": {
+          "bucket_span": "15m",
+          "detectors": [
+            {
+              "function": "non_zero_count",
+              "partition_field_name": "winlog.event_data.SubjectUserName"
+            }
+          ],
+          "influencers": [
+            "winlog.event_data.SubjectUserName",
+            "source.ip",
+            "winlog.event_data.PrivilegeList"
+            // TODO: placeholder
+          ]
+        },
+        "data_description": {
+          "time_field": "@timestamp"
+        },
+        "analysis_limits": {
+          "model_memory_limit": "12MB"
+        },
+        "model_plot_config": {
+          "enabled": false,
+          "annotations_enabled": true
+        }
+      }
+    ],
+    "datafeeds": [
+      {
+        "indices": [
+          "windows-events-privilege-escalation"
+        ],
+        "query": {
+          "bool": {
+            "must": [
+              {
+                "match_all": {}
+              }
+            ]
+          }
+        },
+        "runtime_mappings": {},
+        "job_id": "anomalous-logins-per-user",
+        "datafeed_id": "datafeed-anomalous-logins-per-user"
+      }
+    ]
+  }
+}
