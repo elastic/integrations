@@ -29,12 +29,14 @@ processors:
       target_field: _conf.event.start
       output_format: epoch_millis
       if: ctx.event?.start != null && ctx.event.start != ''
+      tag: start time to epoch
 
   - convert:
       field: _conf.event.start
       type: long
       description: "Convert Start time to Long"
-      if: ctx._conf?.event?.start != null && ctx._conf?.event?.start != ''
+      if: ctx._conf?.event?.start != null && ctx._conf.event.start != ''
+      tag: long start time
 
   - date:
       description: "Convert End time to Epoch"
@@ -42,13 +44,15 @@ processors:
       formats: ["ISO8601"]
       target_field: _conf.event.end
       output_format: epoch_millis
-      if: ctx.event?.end != null && ctx.event?.end != ''
+      if: ctx.event?.end != null && ctx.event.end != ''
+      tag: end time to epoch
 
   - convert:
       field: _conf.event.end
       type: long
       description: "Convert End time to Long"
       if: ctx._conf?.event?.end != null && ctx._conf.event.end != ''
+      tag: long end time
 
   - script:
       source: "ctx._conf.timedelta = ctx._conf.endace_view_window * 60 * 1000"
