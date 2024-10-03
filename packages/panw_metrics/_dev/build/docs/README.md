@@ -7,7 +7,9 @@ This integration periodically fetches metrics from [Palo Alto Networks](https://
 The integration uses the [Pango](https://github.com/PaloAltoNetworks/pango) library to collect metrics from Palo Alto Networks firewalls.
 
 ## Configuration
-The 1.0 release of this integration can be configured to work with one firewall: multiple firewalls in one integration policy is not supported, nor has it been tested with Panorama. To collect metrics from multiple firewalls with this release, create a separate a integration policy for each with the specific host ip of the firewall and api key.
+
+This integration is designed to work with a single firewall at a time. Support for multiple firewalls within one integration policy is not available and has not been tested with Panorama. To collect metrics from multiple firewalls, create a separate integration policy for each firewall, specifying the respective host IP and API key.
+
 ## Metrics
 
 ### interfaces
