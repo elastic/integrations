@@ -1,0 +1,223 @@
+---
+description: Pipeline for processing MongoDB Atlas Alert logs
+processors:
+  - drop:
+      if: ctx.response == "The application encountered an error while retrieving the current page"
+      tag: drop_retry_page_events
+  - fingerprint:
+      fields:
+        - response.id
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - set:
+      field: event.kind
+      value: alert
+  - set:
+      field: event.module
+      value: mongodb_atlas
+  - set:
+      field: event.category
+      value: ["host"]
+  - set:
+      field: event.type
+      value: ["info"]
+  - set:
+      copy_from: response
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
+  - convert:
+      type: string
+      field: event.original
+      ignore_missing: true
+  - date:
+      field: response.created
+      target_field: '@timestamp'
+      formats: [ISO8601]
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{ _ingest.on_failure_message }}'
+  - rename:
+      field: response.id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: response.groupId
+      target_field: group.id
+      ignore_missing: true
+  - rename:
+      field: response.orgId
+      target_field: organization.id
+      ignore_missing: true
+  - rename:
+      field: response.acknowledgedUntil
+      target_field: mongodb_atlas.alert.acknowledged.time
+      ignore_missing: true
+  - rename:
+      field: response.acknowledgementComment
+      target_field: mongodb_atlas.alert.acknowledged.comment
+      ignore_missing: true
+  - rename:
+      field: response.acknowledgingUsername
+      target_field: mongodb_atlas.alert.acknowledged.user.name
+      ignore_missing: true
+  - rename:
+      field: response.alertConfigId
+      target_field: mongodb_atlas.alert.config.id
+      ignore_missing: true
+  - rename:
+      field: response.parentClusterId
+      target_field: mongodb_atlas.alert.cluster.parent.id
+      ignore_missing: true
+  - rename:
+      field: response.clusterId
+      target_field: mongodb_atlas.alert.cluster.id
+      ignore_missing: true
+  - rename:
+      field: response.clusterName
+      target_field: mongodb_atlas.alert.cluster.name
+      ignore_missing: true
+  - rename:
+      field: response.currentValue.number
+      target_field: mongodb_atlas.alert.metric.value
+      ignore_missing: true
+  - rename:
+      field: response.currentValue.units
+      target_field: mongodb_atlas.alert.metric.unit
+      ignore_missing: true
+  - rename:
+      field: response.metricName
+      target_field: mongodb_atlas.alert.metric.name
+      ignore_missing: true
+  - rename:
+      field: response.eventTypeName
+      target_field: mongodb_atlas.alert.event_type.name
+      ignore_missing: true
+  - rename:
+      field: response.nonRunningHostIds
+      target_field: mongodb_atlas.alert.host.non_running.ids
+      ignore_missing: true
+  - rename:
+      field: response.hostId
+      target_field: mongodb_atlas.alert.host.id
+      ignore_missing: true
+  - rename:
+      field: response.hostnameAndPort
+      target_field: mongodb_atlas.alert.host_name_and_port
+      ignore_missing: true
+  - grok:
+      field: mongodb_atlas.alert.host_name_and_port
+      patterns:
+        - '%{HOSTNAME:source.address}:%{POSINT:source.port}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Failed to parse host_name_and_port: {{{ _ingest.on_failure_message }}}'
+      ignore_missing: true
+  - convert:
+      field: source.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: source.address
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: related.hosts
+            value: '{{{source.address}}}'
+            allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{source.address}}}'
+      allow_duplicates: false
+      if : "ctx.related?.hosts == null"
+  - rename:
+      field: response.lastNotified
+      target_field: mongodb_atlas.alert.last_notified.time
+      ignore_missing: true
+  - rename:
+      field: response.replicaSetName
+      target_field: mongodb_atlas.alert.replicaset.name
+      ignore_missing: true
+  - rename:
+      field: response.resolved
+      target_field: mongodb_atlas.alert.resolved.time
+      ignore_missing: true
+  - rename:
+      field: response.status
+      target_field: mongodb_atlas.alert.status
+      ignore_missing: true
+  - rename:
+      field: response.sourceTypeName
+      target_field: mongodb_atlas.alert.source_type.name
+      ignore_missing: true
+  - rename:
+      field: response.updated
+      target_field: mongodb_atlas.alert.updated.time
+      ignore_missing: true
+  - rename:
+      field: response.instanceName
+      target_field: mongodb_atlas.alert.processor.instance.name
+      ignore_missing: true
+  - rename:
+      field: response.processorErrorMsg
+      target_field: mongodb_atlas.alert.processor.error_msg
+      ignore_missing: true
+  - rename:
+      field: response.processorName
+      target_field: mongodb_atlas.alert.processor.name
+      ignore_missing: true
+  - rename:
+      field: response.processorState
+      target_field: mongodb_atlas.alert.processor.state
+      ignore_missing: true
+  - rename:
+      field: response.userAlias
+      target_field: mongodb_atlas.alert.user.alias
+      ignore_missing: true
+  - rename:
+      field: response.tags
+      target_field: mongodb_atlas.alert.tags
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).size() == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null and empty values recursively from the Elasticsearch document context.
+  - remove:
+      field: response
+      ignore_missing: true
+      description: Removes temporary fields.
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.response != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

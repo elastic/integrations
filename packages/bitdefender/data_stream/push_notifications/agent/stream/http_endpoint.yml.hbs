@@ -24,6 +24,19 @@ secret.value: "{{authorization_value}}"
 ssl: {{ssl}}
 {{/if}}
 
+program: |
+  has(obj.jsonrpc) ?
+    obj.params.events.map(e, {
+      "event": e,
+      "id": obj.id,
+      "jsonrpc": {
+        "version": obj.jsonrpc,
+        "method": obj.method
+      }
+    })
+  : 
+    obj
+
 {{#if preserve_original_event}}
 preserve_original_event: true
 {{/if}}

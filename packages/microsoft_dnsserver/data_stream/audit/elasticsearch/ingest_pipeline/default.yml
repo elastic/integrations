@@ -378,6 +378,11 @@ processors:
       allow_duplicates: false
       tag: append_related_source_ip
 
+  - convert:
+      field: error.code
+      type: string
+      ignore_missing: true
+
 # Remove duplicated and empty fields
   - script:
       lang: painless
@@ -419,7 +424,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

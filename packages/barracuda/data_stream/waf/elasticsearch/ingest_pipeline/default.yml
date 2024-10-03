@@ -80,11 +80,6 @@ processors:
   - remove:
       field:
         - _temp
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 ################################################################
 # Handle failures
 ################################################################
@@ -98,4 +93,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"

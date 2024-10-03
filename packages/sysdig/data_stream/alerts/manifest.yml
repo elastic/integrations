@@ -1,0 +1,89 @@
+title: "Sysdig"
+type: logs
+streams:
+  - input: http_endpoint
+    enabled: false
+    template_path: http.yml.hbs
+    title: HTTP input
+    description: Collect Sysdig Alerts over an HTTP Webhook
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: |
+          Bind address for the HTTP listener. Use 0.0.0.0 to listen on all interfaces.
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: text
+        title: Listen port
+        description: |
+          Bind port for the listener.
+        required: true
+        show_user: true
+        default: 9035
+      - name: url
+        type: text
+        title: URL
+        description: This options specific which URL path to accept requests on. Defaults to /.
+        required: false
+        show_user: true
+      - name: secret_header
+        type: text
+        title: Secret Header
+        description: The header to check for a specific value specified by `secret.value`.
+        required: false
+        show_user: false
+        secret: false
+      - name: secret_value
+        type: password
+        title: Secret Value
+        description: The secret stored in the header name specified by `secret.header`.
+        required: false
+        show_user: false
+        secret: true
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: Options for enabling TLS for the listening webhook endpoint. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # enabled: false
+          # certificate: "/etc/pki/client/cert.pem"
+          # key: "/etc/pki/client/cert.key"
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: This option copies the raw unmodified body of the incoming request to the event.original field as a string before sending the event to Elasticsearch.
+        required: false
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        default:
+          - forwarded
+          - sysdig-alerts
+        multi: true
+        show_user: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.

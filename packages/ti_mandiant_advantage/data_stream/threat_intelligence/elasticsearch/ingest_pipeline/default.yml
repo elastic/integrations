@@ -309,12 +309,26 @@ processors:
         }
         ctx.threat.software.name = software;
       }
+- script:
+    lang: painless
+    description: Restructure MISP fields
+    if: ctx.json?.misp != null
+    source: |-
+      def positive = new ArrayList();
+      def negative = new ArrayList();
+      def keys = ctx.json.misp.keySet().asList();
+      keys.sort((a, b) -> a.compareTo(b));
+      for (key in keys) {
+        if (ctx.json.misp[key]) {
+          positive.add(key);
+        } else {
+          negative.add(key);
+        }
+      }
+      ctx.json["misp_warning_list_hits"] = positive;
+      ctx.json["misp_warning_list_misses"] = negative;
 - remove:
     field: json.misp
-    ignore_missing: true
-    ignore_failure: true
-- remove:
-    field: json.is_publishable
     ignore_missing: true
     ignore_failure: true
 - rename:

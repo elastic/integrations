@@ -33,9 +33,11 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 In order to ingest data from Couchbase, you must know the host(s) and the administrator credentials for the Couchbase instance(s).
 
-Host Configuration Format: `http[s]://username:password@host:port`
+Host Configuration Format: `http[s]://[username:password@]hostname[:port]`
 
 Example Host Configuration: `http://Administrator:password@localhost:8091`
+
+> Note: To mask the password in the Hosts connection string, remove the username and password from the string. Then, set up the Hosts field with only the host address and port (`localhost:5984` in the example) and any additional connection parameters. Finally, use the `username` and `password` fields under advanced options for configuration.
 
 ## Setup
 

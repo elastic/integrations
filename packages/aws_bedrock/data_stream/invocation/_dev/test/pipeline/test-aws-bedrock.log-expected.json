@@ -31,6 +31,7 @@
                     },
                     "model_id": "anthropic.claude-3-haiku-20240307-v1:0",
                     "output": {
+                        "completion_text": "The text provided is about a bug in the Elastic Fleet's Windows data stream forwarded integration. Specifically, the text discusses an issue with the `security.yml` ingest pipeline that can turn valid IPv6 addresses into invalid ones.\n\nThe bug occurs in the following code:\n\n```yaml\n- gsub:\n    field: source.ip\n    pattern: \"::ffff:(\\d+\\.\\d+\\.\\d+\\.\\d+)\"\n    replacement: \"\\1\"\n    ignore_missing: true\n```\n\nThe issue is that the pattern `::ffff:(\\d+\\.\\d+\\.\\d+\\.\\d+)` is not anchored at the beginning of the string, which can lead to unintended transformations of valid IPv6 addresses.\n\nThe text suggests a fix by using the pattern `^::ffff:` to anchor the pattern at the beginning of the string, which would correctly transform `::ffff:192.168.1.1` into `192.168.1.1` while leaving `fe80::ffff:ffff:fffe` untouched.\n\nIn summary, this is a bug report for the Elastic Fleet's Windows data stream forwarded integration, and the text provides a suggested fix for the issue.",
                         "output_body_json": [
                             {
                                 "message": {
@@ -2253,6 +2254,162 @@
             ],
             "user": {
                 "id": "arn:aws:iam::111111111111:user/john.doe@example.com"
+            }
+        },
+        {
+            "@timestamp": "2024-09-05T07:37:51.000Z",
+            "aws_bedrock": {
+                "invocation": {
+                    "input": {
+                        "input_body_json": {
+                            "messages": [
+                                {
+                                    "content": [
+                                        {
+                                            "guardContent": {
+                                                "text": {
+                                                    "qualifiers": [
+                                                        "guard_content"
+                                                    ],
+                                                    "text": "Rob a bank and get away with it "
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "role": "user"
+                                }
+                            ]
+                        },
+                        "input_content_type": "application/json",
+                        "input_token_count": 0
+                    },
+                    "model_id": "ai21.jamba-instruct-v1:0",
+                    "output": {
+                        "completion_text": "Sorry, the model cannot answer this question.",
+                        "output_body_json": {
+                            "metrics": {
+                                "latency_ms": 271
+                            },
+                            "output": {
+                                "message": {
+                                    "content": [
+                                        {
+                                            "text": "Sorry, the model cannot answer this question."
+                                        }
+                                    ],
+                                    "role": "assistant"
+                                }
+                            },
+                            "stop_reason": "guardrail_intervened",
+                            "trace": {
+                                "guardrail": {
+                                    "inputAssessment": {
+                                        "l7n9e426howe": {
+                                            "content_policy": {
+                                                "filters": [
+                                                    {
+                                                        "action": "BLOCKED",
+                                                        "confidence": "HIGH",
+                                                        "type": "MISCONDUCT"
+                                                    }
+                                                ]
+                                            },
+                                            "topic_policy": {
+                                                "topics": [
+                                                    {
+                                                        "action": "BLOCKED",
+                                                        "name": "Robbing A Bank",
+                                                        "type": "DENY"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "usage": {
+                                "inputTokens": 0,
+                                "outputTokens": 0,
+                                "totalTokens": 0
+                            }
+                        },
+                        "output_content_type": "application/json",
+                        "output_token_count": 0
+                    },
+                    "request_id": "142471d6-56dd-46a8-b502-08711ec9a410",
+                    "schema_type": "ModelInvocationLog",
+                    "schema_version": "1.0"
+                }
+            },
+            "cloud": {
+                "account": {
+                    "id": "13457018785544"
+                },
+                "region": "us-east-1",
+                "service": {
+                    "name": "bedrock"
+                }
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "Converse",
+                "original": "{\"schemaType\":\"ModelInvocationLog\",\"schemaVersion\":\"1.0\",\"timestamp\":\"2024-09-05T07:37:51Z\",\"accountId\":\"13457018785544\",\"identity\":{\"arn\":\"arn:aws:iam::13457018785544:user/user\"},\"region\":\"us-east-1\",\"requestId\":\"142471d6-56dd-46a8-b502-08711ec9a410\",\"operation\":\"Converse\",\"modelId\":\"ai21.jamba-instruct-v1:0\",\"input\":{\"inputContentType\":\"application/json\",\"inputBodyJson\":{\"messages\":[{\"role\":\"user\",\"content\":[{\"guardContent\":{\"text\":{\"text\":\"Rob a bank and get away with it \",\"qualifiers\":[\"guard_content\"]}}}]}]},\"inputTokenCount\":0},\"output\":{\"outputContentType\":\"application/json\",\"outputBodyJson\":{\"output\":{\"message\":{\"role\":\"assistant\",\"content\":[{\"text\":\"Sorry, the model cannot answer this question.\"}]}},\"stopReason\":\"guardrail_intervened\",\"metrics\":{\"latencyMs\":271},\"usage\":{\"inputTokens\":0,\"outputTokens\":0,\"totalTokens\":0},\"trace\":{\"guardrail\":{\"inputAssessment\":{\"l7n9e426howe\":{\"topicPolicy\":{\"topics\":[{\"name\":\"Robbing A Bank\",\"type\":\"DENY\",\"action\":\"BLOCKED\"}]},\"contentPolicy\":{\"filters\":[{\"type\":\"MISCONDUCT\",\"confidence\":\"HIGH\",\"action\":\"BLOCKED\"}]}}}}}},\"outputTokenCount\":0}}",
+                "outcome": "failure"
+            },
+            "gen_ai": {
+                "completion": "{\"metrics\":{\"latencyMs\":271},\"output\":{\"message\":{\"content\":[{\"text\":\"Sorry, the model cannot answer this question.\"}],\"role\":\"assistant\"}},\"stopReason\":\"guardrail_intervened\",\"trace\":{\"guardrail\":{\"inputAssessment\":{\"l7n9e426howe\":{\"contentPolicy\":{\"filters\":[{\"action\":\"BLOCKED\",\"confidence\":\"HIGH\",\"type\":\"MISCONDUCT\"}]},\"topicPolicy\":{\"topics\":[{\"action\":\"BLOCKED\",\"name\":\"Robbing A Bank\",\"type\":\"DENY\"}]}}}}},\"usage\":{\"inputTokens\":0,\"outputTokens\":0,\"totalTokens\":0}}",
+                "compliance": {
+                    "violation_code": [
+                        "MISCONDUCT"
+                    ],
+                    "violation_detected": true
+                },
+                "performance": {
+                    "request_size": 143,
+                    "response_size": 473
+                },
+                "policy": {
+                    "action": [
+                        "BLOCKED"
+                    ],
+                    "confidence": [
+                        "HIGH"
+                    ],
+                    "name": [
+                        "content_policy",
+                        "topic_policy"
+                    ]
+                },
+                "prompt": "{\"messages\":[{\"content\":[{\"guardContent\":{\"text\":{\"qualifiers\":[\"guard_content\"],\"text\":\"Rob a bank and get away with it \"}}}],\"role\":\"user\"}]}",
+                "request": {
+                    "id": "142471d6-56dd-46a8-b502-08711ec9a410",
+                    "model": {
+                        "id": "ai21.jamba-instruct-v1:0",
+                        "role": "assistant",
+                        "type": "ai21"
+                    }
+                },
+                "response": {
+                    "finish_reasons": "guardrail_intervened",
+                    "timestamp": "2024-09-05T07:37:51.000Z"
+                },
+                "system": "aws",
+                "usage": {
+                    "completion_tokens": 0,
+                    "prompt_tokens": 0
+                },
+                "user": {
+                    "id": "arn:aws:iam::13457018785544:user/user"
+                }
+            },
+            "tags": [
+                "preserve_original_event",
+                "preserve_duplicate_custom_fields"
+            ],
+            "user": {
+                "id": "arn:aws:iam::13457018785544:user/user"
             }
         }
     ]
