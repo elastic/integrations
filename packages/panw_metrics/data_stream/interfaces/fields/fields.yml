@@ -1,34 +1,25 @@
 - name: panw.interfaces
   type: group
-  description: >
-    interfaces
-
   fields:
     - name: physical
       type: group
       fields:
         - name: name
           type: keyword
+          dimension: true
           description: >
             Physical interface name
 
         - name: id
           type: keyword
+          dimension: true
           description: >
             Physical interface ID
 
         - name: type
           type: keyword
           description: >
-            Physical interface type (numeric value in source XML, string value sent to elasticsearch):
-
-              0:  "Ethernet interface",
-              1:  "Aggregate Ethernet (AE) interface",
-              2:  "High Availability (HA) interface",
-              3:  "VLAN interface",
-              5:  "Loopback interface",
-              6:  "Tunnel interface",
-              10: "SD-WAN interface"
+            Physical interface type
 
         - name: mac
           type: keyword
@@ -70,11 +61,13 @@
       fields:
         - name: name
           type: keyword
+          dimension: true
           description: >
             Logical interface name
 
         - name: id
           type: keyword
+          dimension: true
           description: >
             Logical interface ID
 
@@ -85,10 +78,12 @@
 
         - name: vsys
           type: integer
-          description: "Virtual system to which this interface belongs"
+          description: >
+            Virtual system to which this interface belongs
 
         - name: zone
           type: keyword
+          dimension: true
           description: >
             Logical zone, e.g., "inside" or "outside"
 
@@ -114,7 +109,8 @@
 
         - name: addr6
           type: keyword
-          description: "Logical IPv6 address"
+          description: >
+            Logical IPv6 address
 
     - name: ha
       type: group
@@ -132,7 +128,7 @@
         - name: running_sync
           type: keyword
           description: >
-            Indicates the sychronization status of the HA pair, e.g., "synchronized","not-synchronized","synchronizing"
+            Indicates the sychronization status of the HA pair, e.g., "synchronized", "not-synchronized", "synchronizing"
 
         - name: running_sync_enabled
           type: boolean
@@ -154,6 +150,7 @@
 
             - name: state_duration
               type: long
+              unit: s
               description: >
                 Duration in seconds of the current state
 
@@ -165,8 +162,7 @@
             - name: preemptive
               type: keyword
               description: >
-                Indicates whether the firewall is configured to preemptively take over as the active unit in an HA setup. This is a yes/no
-                value which the beat is not converting to a boolean, so it will be a keyword.
+                Indicates whether the firewall is configured to preemptively take over as the active unit in an HA setup. This is a yes/no value which the beat is not converting to a boolean, so it will be a keyword.
 
             - name: mode
               type: keyword
@@ -175,6 +171,7 @@
 
             - name: platform_model
               type: keyword
+              dimension: true
               description: >
                 Platform model of the local device
 
@@ -220,7 +217,8 @@
 
             - name: ha1_backup_gateway
               type: keyword
-              description: "Default gateway for the backup HA1 interface"
+              description: >
+                Default gateway for the backup HA1 interface
 
             - name: ha2_ipaddr
               type: keyword
@@ -239,15 +237,18 @@
 
             - name: build_rel
               type: keyword
-              description: "The PAN-OS software version running on the firewall"
+              description: >
+                The PAN-OS software version running on the firewall
 
             - name: url_version
               type: keyword
-              description: "The version of the URL filtering database"
+              description: >
+                The version of the URL filtering database
 
             - name: app_version
               type: keyword
-              description: "The version of the application database"
+              description: >
+                The version of the application database
 
             - name: iot_version
               type: keyword
@@ -271,7 +272,8 @@
 
             - name: gp_client_version
               type: keyword
-              description: "Version of the GlobalProtect client software"
+              description: >
+                Version of the GlobalProtect client software
 
         - name: peer_info
           type: group
@@ -288,6 +290,8 @@
 
             - name: state_duration
               type: long
+              metric_type: gauge
+              unit: s
               description: >
                 How long the peer has been in the current state in seconds
 
@@ -308,7 +312,9 @@
 
             - name: platform_model
               type: keyword
-              description: "Model of the peer firewall"
+              dimension: true
+              description: >
+                Model of the peer firewall
 
             - name: priority
               type: long
@@ -523,11 +529,13 @@
 
         - name: life.sec
           type: long
+          unit: s
+          metric_type: gauge
           description: >
             The lifetime of the IPsec Security Association (SA) in seconds
 
         - name: kb
           type: long
-          description: "Traffic volume limit for SA rekeying"   
+          description: >
+            Traffic volume limit for SA rekeying
 
- 
