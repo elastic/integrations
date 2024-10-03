@@ -649,7 +649,7 @@ An example event for `host` looks as following:
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "kernel": "5.15.153.1-microsoft-standard",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
