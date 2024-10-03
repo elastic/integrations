@@ -79,24 +79,24 @@ An example event for `indicator` looks as following:
 {
     "@timestamp": "2015-05-15T09:12:16.432Z",
     "agent": {
-        "ephemeral_id": "e9b7affb-d2fa-46df-8a5b-7aa4b0be26d6",
-        "id": "7cab520a-0f06-4789-9ad6-56085169c3db",
-        "name": "elastic-agent-24648",
+        "ephemeral_id": "3179505d-300c-450f-9a13-6c48e97a6453",
+        "id": "f2593b61-002f-42d8-b72b-c4181b590c92",
+        "name": "elastic-agent-77457",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "ti_custom.indicator",
-        "namespace": "56403",
+        "namespace": "36027",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7cab520a-0f06-4789-9ad6-56085169c3db",
+        "id": "f2593b61-002f-42d8-b72b-c4181b590c92",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -104,7 +104,7 @@ An example event for `indicator` looks as following:
             "threat"
         ],
         "dataset": "ti_custom.indicator",
-        "ingested": "2024-09-12T17:23:58Z",
+        "ingested": "2024-10-02T10:51:17Z",
         "kind": "enrichment",
         "original": "{\"type\":\"indicator\",\"spec_version\":\"2.1\",\"pattern_type\":\"stix\",\"id\":\"indicator--745e1537-b4f3-49da-9f64-df6b1b5df190\",\"created\":\"2015-05-15T09:12:16.432Z\",\"modified\":\"2015-05-15T09:12:16.432Z\",\"name\":\"Appendix E MD5 hash '002325a0a67fded0381b5648d7fe9b8e'\",\"description\":\"Test description.\",\"pattern\":\"[file:hashes.md5 = '002325a0a67fded0381b5648d7fe9b8e']\",\"indicator_types\":[\"malicious-activity\"],\"valid_from\":\"2015-05-15T09:12:16.432678Z\"}",
         "type": [
@@ -117,7 +117,7 @@ An example event for `indicator` looks as following:
     "log": {
         "file": {
             "device_id": "36",
-            "inode": "239",
+            "inode": "125",
             "path": "/tmp/service_logs/stix-indicators-ndjson.log"
         },
         "offset": 3409
