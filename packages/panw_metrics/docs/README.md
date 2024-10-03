@@ -181,7 +181,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.interfaces.ha.local_info.platform_model | Platform model of the local device | keyword |  |  |
 | panw.interfaces.ha.local_info.preemptive | Indicates whether the firewall is configured to preemptively take over as the active unit in an HA setup. This is a yes/no value which the beat is not converting to a boolean, so it will be a keyword. | keyword |  |  |
 | panw.interfaces.ha.local_info.state | HA state of the local device, e.g., "active" or "passive" | keyword |  |  |
-| panw.interfaces.ha.local_info.state_duration | Duration in seconds of the current state | long | s |  |
+| panw.interfaces.ha.local_info.state_duration | Duration in seconds of the current state | long | s | gauge |
 | panw.interfaces.ha.local_info.state_sync | Status of HA synchronization, e.g., "complete" | keyword |  |  |
 | panw.interfaces.ha.local_info.state_sync_type | Type of interface used for HA synchronization | keyword |  |  |
 | panw.interfaces.ha.local_info.threat_version | HA local info threat version | keyword |  |  |
@@ -226,7 +226,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.interfaces.ipsec_tunnel.gw | Gateway of the IPsec tunnel | keyword |  |  |
 | panw.interfaces.ipsec_tunnel.hash | Hash algorithm of the IPsec tunnel | keyword |  |  |
 | panw.interfaces.ipsec_tunnel.id | ID of the IPsec tunnel | keyword |  |  |
-| panw.interfaces.ipsec_tunnel.kb | Traffic volume limit for SA rekeying | long |  |  |
+| panw.interfaces.ipsec_tunnel.kb | Traffic volume limit for SA rekeying | long | byte | gauge |
 | panw.interfaces.ipsec_tunnel.life.sec | The lifetime of the IPsec Security Association (SA) in seconds | long | s | gauge |
 | panw.interfaces.ipsec_tunnel.mode | This specifies the IPsec mode. e.g., 'tunl' | keyword |  |  |
 | panw.interfaces.ipsec_tunnel.name | Name of the IPsec tunnel | keyword |  |  |
@@ -348,54 +348,54 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| panw.routing.bgp.aggregate_confed_as | Indicates that Autonomous System (AS) aggregation is enabled for the confederation | boolean |  |
-| panw.routing.bgp.connect_retry_interval | The interval (in seconds) between connection retries | long | s |
-| panw.routing.bgp.established_counts | Number of times the BGP session has successfully transitioned to the "Established" state | long |  |
-| panw.routing.bgp.holdtime | Time in seconds that the BGP peer will wait for a keepalive message, negotiated between peers | long | s |
-| panw.routing.bgp.holdtime_config | Represents the locally configured hold time on this peer (in seconds) | long | s |
-| panw.routing.bgp.idle_hold | The idle hold time (in seconds) before retrying a connection after failure | long | s |
-| panw.routing.bgp.keepalive | The interval (in seconds) at which BGP keepalive messages are sent, negotiated between peers | long | s |
-| panw.routing.bgp.keepalive_config | The keepalive configured on this peer | long |  |
-| panw.routing.bgp.last_error | The last BGP error message received from the peer | keyword |  |
-| panw.routing.bgp.last_update_age | Time in seconds since the last update message was received from the peer | long | s |
-| panw.routing.bgp.local_ip | Local ip address used for BGP connection | ip |  |
-| panw.routing.bgp.local_port | Local port number used for BGP connection | long |  |
-| panw.routing.bgp.msg_total_in | Total of all messages received from the peer | long |  |
-| panw.routing.bgp.msg_total_out | Total of all messages sent to the peer | long |  |
-| panw.routing.bgp.msg_update_in | The number of BGP UPDATE messages received by the router from this peer | long |  |
-| panw.routing.bgp.msg_update_out | The number of BGP UPDATE messages sent from the local router to the peer | long |  |
-| panw.routing.bgp.multi_hop_ttl | Time to Live (TTL) value for multi-hop BGP sessions. Units are the number of hops. | long |  |
-| panw.routing.bgp.nexthop_peer | Indicates whether the peer is being used as the next-hop for the routes received from this peerfields: | boolean |  |
-| panw.routing.bgp.nexthop_self | Whether the router is configured to use itself as the next-hop for routes sent to this peer | boolean |  |
-| panw.routing.bgp.nexthop_thirdparty | Third-party next-hop feature is enabled | boolean |  |
-| panw.routing.bgp.open_delay | Delay before sending an Open message (in seconds) | long | s |
-| panw.routing.bgp.orf_entry_received | Number of ORF (Outbound Route Filtering) entries received from the peer | long |  |
-| panw.routing.bgp.passive | Indicates if the BGP peer is in passive mode: if yes then router will not initiate a connection to the peer | boolean |  |
-| panw.routing.bgp.password_set | Indicates whether a password is set for the BGP peer | boolean |  |
-| panw.routing.bgp.peer_group | The name of the BGP peer group this peer belongs to | keyword |  |
-| panw.routing.bgp.peer_ip | IP address of the peer | ip |  |
-| panw.routing.bgp.peer_name | The name of the current peer in the BGP peer group | keyword |  |
-| panw.routing.bgp.peer_port | Port number of the peer | long |  |
-| panw.routing.bgp.peer_router_id | BGP peer router ID | ip |  |
-| panw.routing.bgp.peering_type | Defines the type of relationship between peers, e.g., "External BGP", "Internal BGP", or "Unspecified" | keyword |  |
-| panw.routing.bgp.prefix_limit | The maximum number of prefixes that can be received from the peer (0 = no limit) | long |  |
-| panw.routing.bgp.reflector_client | Specifies the BGP peer relationship to route reflectors, e.g. "client", "not-client", "meshed-client" | keyword |  |
-| panw.routing.bgp.remote_as_asn | The remote Autonomous System (AS) number of the peer | long |  |
-| panw.routing.bgp.same_confederation | Peers in the same confederation exchange routes using internal BGP (iBGP) instead of external BGP (eBGP) | boolean |  |
-| panw.routing.bgp.status | The BGP session status, e.g., "Established" means the session is up and running | keyword |  |
-| panw.routing.bgp.status_duration | Time in seconds since the current status was set | long | s |
-| panw.routing.bgp.status_flap_counts | Indicates the number of times the BGP session has "flapped" or transitioned between up and down states | long |  |
-| panw.routing.bgp.virtual_router | The virtual router with which the BGP peer is associated | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| panw.routing.bgp.aggregate_confed_as | Indicates that Autonomous System (AS) aggregation is enabled for the confederation | boolean |  |  |
+| panw.routing.bgp.connect_retry_interval | The interval (in seconds) between connection retries | long | s | gauge |
+| panw.routing.bgp.established_counts | Number of times the BGP session has successfully transitioned to the "Established" state | long |  | gauge |
+| panw.routing.bgp.holdtime | Time in seconds that the BGP peer will wait for a keepalive message, negotiated between peers | long | s | gauge |
+| panw.routing.bgp.holdtime_config | Represents the locally configured hold time on this peer (in seconds) | long | s | gauge |
+| panw.routing.bgp.idle_hold | The idle hold time (in seconds) before retrying a connection after failure | long | s | gauge |
+| panw.routing.bgp.keepalive | The interval (in seconds) at which BGP keepalive messages are sent, negotiated between peers | long | s | gauge |
+| panw.routing.bgp.keepalive_config | The keepalive configured on this peer | long | s | gauge |
+| panw.routing.bgp.last_error | The last BGP error message received from the peer | keyword |  |  |
+| panw.routing.bgp.last_update_age | Time in seconds since the last update message was received from the peer | long | s | gauge |
+| panw.routing.bgp.local_ip | Local ip address used for BGP connection | ip |  |  |
+| panw.routing.bgp.local_port | Local port number used for BGP connection | long |  |  |
+| panw.routing.bgp.msg_total_in | Total of all messages received from the peer | long |  | gauge |
+| panw.routing.bgp.msg_total_out | Total of all messages sent to the peer | long |  | gauge |
+| panw.routing.bgp.msg_update_in | The number of BGP UPDATE messages received by the router from this peer | long |  | gauge |
+| panw.routing.bgp.msg_update_out | The number of BGP UPDATE messages sent from the local router to the peer | long |  | gauge |
+| panw.routing.bgp.multi_hop_ttl | Time to Live (TTL) value for multi-hop BGP sessions. Units are the number of hops. | long |  | gauge |
+| panw.routing.bgp.nexthop_peer | Indicates whether the peer is being used as the next-hop for the routes received from this peerfields. | boolean |  |  |
+| panw.routing.bgp.nexthop_self | Whether the router is configured to use itself as the next-hop for routes sent to this peer | boolean |  |  |
+| panw.routing.bgp.nexthop_thirdparty | Third-party next-hop feature is enabled | boolean |  |  |
+| panw.routing.bgp.open_delay | Delay before sending an Open message (in seconds) | long | s | gauge |
+| panw.routing.bgp.orf_entry_received | Number of ORF (Outbound Route Filtering) entries received from the peer | long |  | gauge |
+| panw.routing.bgp.passive | Indicates if the BGP peer is in passive mode: if yes then router will not initiate a connection to the peer | boolean |  |  |
+| panw.routing.bgp.password_set | Indicates whether a password is set for the BGP peer | boolean |  |  |
+| panw.routing.bgp.peer_group | The name of the BGP peer group this peer belongs to | keyword |  |  |
+| panw.routing.bgp.peer_ip | IP address of the peer | ip |  |  |
+| panw.routing.bgp.peer_name | The name of the current peer in the BGP peer group | keyword |  |  |
+| panw.routing.bgp.peer_port | Port number of the peer | long |  |  |
+| panw.routing.bgp.peer_router_id | BGP peer router ID | ip |  |  |
+| panw.routing.bgp.peering_type | Defines the type of relationship between peers, e.g., "External BGP", "Internal BGP", or "Unspecified" | keyword |  |  |
+| panw.routing.bgp.prefix_limit | The maximum number of prefixes that can be received from the peer (0 = no limit) | long |  | gauge |
+| panw.routing.bgp.reflector_client | Specifies the BGP peer relationship to route reflectors, e.g. "client", "not-client", "meshed-client" | keyword |  |  |
+| panw.routing.bgp.remote_as_asn | The remote Autonomous System (AS) number of the peer | long |  |  |
+| panw.routing.bgp.same_confederation | Peers in the same confederation exchange routes using internal BGP (iBGP) instead of external BGP (eBGP) | boolean |  |  |
+| panw.routing.bgp.status | The BGP session status, e.g., "Established" means the session is up and running | keyword |  |  |
+| panw.routing.bgp.status_duration | Time in seconds since the current status was set | long | s | gauge |
+| panw.routing.bgp.status_flap_counts | Indicates the number of times the BGP session has "flapped" or transitioned between up and down states | long |  | gauge |
+| panw.routing.bgp.virtual_router | The virtual router with which the BGP peer is associated | keyword |  |  |
 
 
 ### system
@@ -679,42 +679,42 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| panw.vpn.globalprotect.gateway.current_users | Current number of users connected to the GlobalProtect gateway | long | gauge |
-| panw.vpn.globalprotect.gateway.name | Name of the GlobalProtect gateway | keyword |  |
-| panw.vpn.globalprotect.gateway.previous_users | Previous number of users connected to the GlobalProtect gateway | long | gauge |
-| panw.vpn.globalprotect.session.app_version | Application version used in the session | keyword |  |
-| panw.vpn.globalprotect.session.client | Client information of the session | keyword |  |
-| panw.vpn.globalprotect.session.client_ip | Client IP address of the session | ip |  |
-| panw.vpn.globalprotect.session.computer | Computer name in the session | keyword |  |
-| panw.vpn.globalprotect.session.domain | Domain of the GlobalProtect session | keyword |  |
-| panw.vpn.globalprotect.session.host_id | Host ID of the session | keyword |  |
-| panw.vpn.globalprotect.session.is_local | Indicates if the session is local | boolean |  |
-| panw.vpn.globalprotect.session.lifetime | Lifetime of the session | long |  |
-| panw.vpn.globalprotect.session.login_time | Login time of the session | date |  |
-| panw.vpn.globalprotect.session.login_time_utc | Login time in UTC of the session | date |  |
-| panw.vpn.globalprotect.session.primary_username | Primary username of the session | keyword |  |
-| panw.vpn.globalprotect.session.public_connection_ipv6 | Public connection IPv6 address of the session | ip |  |
-| panw.vpn.globalprotect.session.public_ip | Public IP address of the session | ip |  |
-| panw.vpn.globalprotect.session.public_ipv6 | Public IPv6 address of the session | ip |  |
-| panw.vpn.globalprotect.session.region_for_config | Region for configuration | keyword |  |
-| panw.vpn.globalprotect.session.request_get_config | Request get configuration information of the session | keyword |  |
-| panw.vpn.globalprotect.session.request_login | Request login information of the session | keyword |  |
-| panw.vpn.globalprotect.session.request_sslvpn_connect | Request SSL VPN connect information of the session | keyword |  |
-| panw.vpn.globalprotect.session.source_region | Source region of the session | keyword |  |
-| panw.vpn.globalprotect.session.tunnel_type | Type of tunnel used in the session | keyword |  |
-| panw.vpn.globalprotect.session.username | Username of the session | keyword |  |
-| panw.vpn.globalprotect.session.virtual_ip | Virtual IP address of the session | ip |  |
-| panw.vpn.globalprotect.session.virtual_ipv6 | Virtual IPv6 address of the session | ip |  |
-| panw.vpn.globalprotect.session.vpn_type | Type of VPN used in the session | keyword |  |
-| panw.vpn.globalprotect.total_current_users | Total current number of users connected to GlobalProtect gateway | long | gauge |
-| panw.vpn.globalprotect.total_previous_users | Total previous number of users connected to GlobalProtect gateway | long | gauge |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| panw.vpn.globalprotect.gateway.current_users | Current number of users connected to the GlobalProtect gateway | long |  | gauge |
+| panw.vpn.globalprotect.gateway.name | Name of the GlobalProtect gateway | keyword |  |  |
+| panw.vpn.globalprotect.gateway.previous_users | Previous number of users connected to the GlobalProtect gateway | long |  | gauge |
+| panw.vpn.globalprotect.session.app_version | Application version used in the session | keyword |  |  |
+| panw.vpn.globalprotect.session.client | Client information of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.client_ip | Client IP address of the session | ip |  |  |
+| panw.vpn.globalprotect.session.computer | Computer name in the session | keyword |  |  |
+| panw.vpn.globalprotect.session.domain | Domain of the GlobalProtect session | keyword |  |  |
+| panw.vpn.globalprotect.session.host_id | Host ID of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.is_local | Indicates if the session is local | boolean |  |  |
+| panw.vpn.globalprotect.session.lifetime | Lifetime of the session | long | s |  |
+| panw.vpn.globalprotect.session.login_time | Login time of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.login_time_utc | Login time in UTC of the session | date |  |  |
+| panw.vpn.globalprotect.session.primary_username | Primary username of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.public_connection_ipv6 | Public connection IPv6 address of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.public_ip | Public IP address of the session | ip |  |  |
+| panw.vpn.globalprotect.session.public_ipv6 | Public IPv6 address of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.region_for_config | Region for configuration | keyword |  |  |
+| panw.vpn.globalprotect.session.request_get_config | Request get configuration information of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.request_login | Request login information of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.request_sslvpn_connect | Request SSL VPN connect information of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.source_region | Source region of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.tunnel_type | Type of tunnel used in the session | keyword |  |  |
+| panw.vpn.globalprotect.session.username | Username of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.virtual_ip | Virtual IP address of the session | ip |  |  |
+| panw.vpn.globalprotect.session.virtual_ipv6 | Virtual IPv6 address of the session | keyword |  |  |
+| panw.vpn.globalprotect.session.vpn_type | Type of VPN used in the session | keyword |  |  |
+| panw.vpn.globalprotect.total_current_users | Total current number of users connected to GlobalProtect gateway | long |  | gauge |
+| panw.vpn.globalprotect.total_previous_users | Total previous number of users connected to GlobalProtect gateway | long |  | gauge |
