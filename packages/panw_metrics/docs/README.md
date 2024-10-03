@@ -543,7 +543,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.system.filesystem.mounted | Filesystem mount point | keyword |  |  |
 | panw.system.filesystem.name | Filesystem name | keyword |  |  |
 | panw.system.filesystem.size | Total size of the filesystem | float | byte | gauge |
-| panw.system.filesystem.use_percent | Percent of filesystem used | integer | percent | gauge |
+| panw.system.filesystem.use_percent | Percent of filesystem used | float | percent | gauge |
 | panw.system.filesystem.used | Amount used on the filesystem | float | byte | gauge |
 | panw.system.license.auth_code | Authorization code to activate or install the license | keyword |  |  |
 | panw.system.license.description | Description of the licensed feature | keyword |  |  |
