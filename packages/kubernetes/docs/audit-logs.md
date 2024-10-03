@@ -76,7 +76,6 @@ An example event for `audit` looks as following:
         "dataset": "kubernetes.audit_logs"
     }
 }
-
 ```
 
 **Exported fields**

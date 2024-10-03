@@ -6,15 +6,15 @@
 
 This integration supports ingestion of logs from Azure Network Watcher NSG, via [Azure Blob Storage](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html) input.
 
-**Log** is used to retrieve NSG Flow data. See more details in the documentation [here](https://learn.microsoft.com/en-us/azure/network-watcher/nsg-flow-logs-overview).
+- **Log** is used to retrieve NSG Flow data. See more details in the documentation [here](https://learn.microsoft.com/en-us/azure/network-watcher/nsg-flow-logs-overview).
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
-You have a few options for installing and managing an Elastic Agent:
+There are several options for installing and managing Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
@@ -28,7 +28,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#_minimum_requirements).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
 ## Setup
 
@@ -44,10 +44,10 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type Azure Network Watcher NSG.
-3. Click on the "Azure Network Watcher NSG" integration from the search results.
-4. Click on the "Add Azure Network Watcher NSG" button to add the integration.
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `Azure Network Watcher NSG`.
+3. Select the "Azure Network Watcher NSG" integration from the search results.
+4. Select "Add Azure Network Watcher NSG" to add the integration.
 5. While adding the integration, to collect logs via Azure Blob Storage, keep **Collect NSG logs via Azure Blob Storage** toggle on and then configure following parameters:
    - account name
    - containers

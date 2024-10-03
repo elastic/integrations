@@ -212,7 +212,6 @@ An example event for `applocker_exe_and_dll` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -605,7 +604,6 @@ An example event for `applocker_msi_and_script` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -992,7 +990,6 @@ An example event for `applocker_packaged_app_deployment` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1381,7 +1378,6 @@ An example event for `applocker_packaged_app_execution` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1744,7 +1740,6 @@ An example event for `powershell` looks as following:
         "record_id": "1089"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2086,7 +2081,6 @@ An example event for `powershell_operational` looks as following:
         "version": 1
     }
 }
-
 ```
 
 **Exported fields**
@@ -2921,7 +2915,6 @@ An example event for `windows_defender` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**

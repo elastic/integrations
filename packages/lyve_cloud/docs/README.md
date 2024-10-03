@@ -144,5 +144,4 @@ An example event for `audit` looks as following:
         "original": "MinIO (linux; amd64) minio-go/v7.0.15"
     }
 }
-
 ```

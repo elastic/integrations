@@ -233,7 +233,6 @@ An example event for `event_report` looks as following:
         ]
     }
 }
-
 ```
 
 **Exported fields**
@@ -371,7 +370,6 @@ An example event for `user` looks as following:
         "id": "101"
     }
 }
-
 ```
 
 **Exported fields**

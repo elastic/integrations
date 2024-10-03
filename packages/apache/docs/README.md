@@ -496,7 +496,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
 
-## ML Modules
+## Anomaly Detection Configurations
 
 These anomaly detection jobs are available in the Machine Learning app in Kibana
 when you have data that matches the query specified in the
