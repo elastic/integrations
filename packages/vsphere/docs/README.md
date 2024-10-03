@@ -643,8 +643,12 @@ An example event for `host` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "57723763cd1b4ff48e54a505de4ebe6c",
-        "ip": "172.18.0.7",
-        "mac": "02-42-AC-12-00-07",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
