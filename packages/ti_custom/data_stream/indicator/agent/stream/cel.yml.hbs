@@ -73,10 +73,10 @@ program: |
                     "Accept": ["application/taxii+json;version=2.1"],
                     "Authorization": (has(state.api_key) && state.api_key != "") ?
                         ["Bearer " + string(state.api_key)]
-                    : (has(state.username) && has(state.password) && state.username != "" && state.password != "") ?
-                            ["Basic " + (state.username + ":" + state.password).base64()]
-                        :
-                            []
+                    : (state.?username.orValue("") != "" && state.?password.orValue("") != "") ?
+                        ["Basic " + (state.username + ":" + state.password).base64()]
+                    :
+                        []
                 },
             }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
@@ -88,18 +88,9 @@ program: |
                         }
                     ),
                     "url": state.url,
-                    "api_key": (has(state.api_key) && state.api_key != "") ?
-                        state.api_key
-                    :
-                        "",
-                    "username": (has(state.username) && state.username != "") ?
-                        state.username
-                    :
-                        "",
-                    "password": (has(state.password) && state.password != "") ?
-                        state.password
-                    :
-                        "",
+                    "api_key": state.?api_key.orValue(""),
+                    "username": state.?username.orValue(""),
+                    "password": state.?password.orValue(""),
                     "want_more": has(body.next) && body.next != null && body.next != "",
                     "next_url": (has(body.next) && body.next != null && body.next != "") ?
                         (
