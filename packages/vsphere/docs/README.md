@@ -668,7 +668,9 @@ An example event for `host` looks as following:
         "address": "https://172.18.0.4:8989/sdk",
         "type": "vsphere"
     },
-    "tags": "vsphere-host",
+    "tags": [
+        "vsphere-host"
+    ],
     "vsphere": {
         "host": {
             "cpu": {
