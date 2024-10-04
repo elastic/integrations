@@ -132,7 +132,7 @@ program: |
                                 (has(l1.contentExpiration) && (l1.contentExpiration.parse_time(time_layout.RFC3339) >= now)) ?
                                     (
                                         request("GET", l1.contentUri).do_request().as(content_resp,
-                                            (has(content_resp.StatusCode) && content_resp.StatusCode == 200 && size(content_resp.Body) > 0) ?
+                                            has(content_resp.StatusCode) && content_resp.StatusCode == 200 && size(content_resp.Body)> 0 ?
                                                 (
                                                     bytes(content_resp.Body).decode_json()
                                                     .map(content_resp_body, 
@@ -145,18 +145,24 @@ program: |
                                                         // if 'contentCreated' is older than 167h55m, change it to 167h55m.
                                                         "content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, temp_max.parse_time(time_layout.RFC3339) > (now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
                                                         "next_page": (
-                                                            has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0  ?
+                                                             has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ?
                                                                 list_contents_resp.Header.NextPageUri[0]
+                                                            : has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0 ?
+                                                                list_contents_resp.Header.Nextpageuri[0]
                                                             :
                                                                 ""
-                                                         ),
+                                                        ),
                                                         // keep fetching more if (nextpageuri exists) or (max time returned date != today's date)
                                                         "want_more_content": (
                                                             (
-                                                              has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0          
+                                                                has(list_contents_resp.Header) && (
+                                                                    (has(list_contents_resp.Header.NextPageUri) && (list_contents_resp.Header.NextPageUri.size() > 0)) ||
+                                                                    (has(list_contents_resp.Header.Nextpageuri) && (list_contents_resp.Header.Nextpageuri.size() > 0))
+                                                                )
                                                             ) ||
-                                                            (
-                                                              {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now.format("2006-01-02")
+                                                            (   
+                                                                {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split('T').size() > 1 &&
+                                                                {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now.format("2006-01-02")
                                                             )
                                                         )
                                                     })
@@ -167,8 +173,10 @@ program: |
                                                     "content_type": content_type,
                                                     "content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, temp_max.parse_time(time_layout.RFC3339) > (now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
                                                     "next_page": (
-                                                        has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ?
+                                                         has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ?
                                                             list_contents_resp.Header.NextPageUri[0]
+                                                        :  has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0 ?
+                                                            list_contents_resp.Header.Nextpageuri[0]
                                                         :
                                                             ""
                                                     )
@@ -181,8 +189,10 @@ program: |
                                         "content_type": content_type,
                                         "content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, temp_max.parse_time(time_layout.RFC3339) > (now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
                                         "next_page": (
-                                            has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ?
+                                             has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ?
                                                 list_contents_resp.Header.NextPageUri[0]
+                                            :  has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0 ?
+                                                list_contents_resp.Header.Nextpageuri[0]
                                             :
                                                 ""
                                         )
@@ -209,8 +219,12 @@ program: |
                                   ),
                                   "next_page": "",
                                   "want_more_content": (
-                                      has(list_contents_resp.StatusCode) && has(reqQuery.endTime) && list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0 &&
-                                      (reqQuery.endTime[0].split('T')[0] != now.format("2006-01-02"))
+                                      has(list_contents_resp.StatusCode) && 
+                                      has(reqQuery.endTime) && 
+                                      list_contents_resp.StatusCode == 200 && 
+                                      reqQuery.endTime.size() > 0 &&
+                                      reqQuery.endTime[0].split('T').size() > 0 &&
+                                      reqQuery.endTime[0].split('T')[0] != now.format("2006-01-02")
                                   )
                               }])
                       )
