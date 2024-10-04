@@ -53,12 +53,13 @@ program: |-
   			state.with(
   				{
   					"events": body.objects.map(obj,
-  						{"json": obj}.with(
-  							(has(state.preserve_original_event) && state.preserve_original_event) ?
-  								{"event": {"original": obj.encode_json()}}
+  						{
+  							"json": obj,
+  							?"event": (state.?preserve_original_event.orValue(false)) ?
+  								optional.of({"original": obj.encode_json()})
   							:
-  								{}
-  						)
+  								optional.none(),
+  						}
   					),
   					"want_more": body.meta.next != null,
   					"cursor": (has(state.cursor) ? state.cursor : {}).with(
