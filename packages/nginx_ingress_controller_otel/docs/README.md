@@ -12,17 +12,16 @@ The integration was tested with the Nginx Ingress Controller v0.30.0 and v0.40.2
 
 **OpenTelemetry collector components:**
 
-- Filelog receiver: TODO (compatible component versions)
-- Transform processor: TODO
-- Resource detector processor: TODO
-- (Optional) GeoIP processor: TODO
-- Elasticsearch exporter: TODO
-- Filestorage extension: TODO
+- Filelog receiver v0.110.0+
+- Transform processor v0.110.0+
+- Resource detector processor v0.110.0+
+- (Optional) GeoIP processor v0.110.0+
+- Elasticsearch exporter v0.110.0+
+- Filestorage extension v0.110.0+
 
 ## Usage
 
-<summary>Copy the following configuration in your EDOT collector's configuration</summary>
-<br>
+```yaml
 extensions:
   file_storage:
 
@@ -162,8 +161,7 @@ service:
       # Uncomment the following line if geoip is configured
       # processors: [transform/parse_nginx_ingress_access/log, transform/parse_nginx_ingress_error/log, geoip, resourcedetection/system]
       exporters: [debug, elasticsearch]
-<br><br>
-<pre>
+```
 
 Don't forget to replace:
    - `YOUR_ELASTICSEARCH_ENDPOINT`: your Elasticsearch endpoint (*with* `https://` prefix example: `https://1234567.us-west2.gcp.elastic-cloud.com:443`).
@@ -194,7 +192,6 @@ processors: [transform/parse_nginx_ingress_access/log, transform/parse_nginx_ing
 ### Access Logs
 
 The `access` data stream collects the Nginx Ingress Controller access logs.
-
 
 **Exported fields**
 
@@ -314,6 +311,3 @@ The `error` data stream collects the Nginx Ingress Controller error logs.
 | nginx_ingress_controller.error.source.line_number | Source line number | long |
 | nginx_ingress_controller.error.thread_id | Thread ID | long |
 | body_text | Raw log message | keyword |
-
-
-
