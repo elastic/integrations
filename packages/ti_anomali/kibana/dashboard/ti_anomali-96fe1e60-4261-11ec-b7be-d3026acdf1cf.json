@@ -1,7 +1,63 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "9340fc1e-fc86-4ccc-b176-b011ca2f0a5b": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "threat.indicator.provider",
+                        "grow": true,
+                        "id": "9340fc1e-fc86-4ccc-b176-b011ca2f0a5b",
+                        "searchTechnique": "prefix",
+                        "title": "Indicator Provider",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "93bd81a7-a783-45ef-9fac-c83a3ca9bab9": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "threat.feed.name",
+                        "grow": true,
+                        "id": "93bd81a7-a783-45ef-9fac-c83a3ca9bab9",
+                        "searchTechnique": "prefix",
+                        "title": "Feed Name",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "9ca5470b-7641-489f-ae9d-5da5391cdd23": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "threat.indicator.type",
+                        "grow": true,
+                        "id": "9ca5470b-7641-489f-ae9d-5da5391cdd23",
+                        "searchTechnique": "prefix",
+                        "title": "Indicator Type",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
+        },
         "description": "Dashboard providing statistics about indicators ingested from the Anomali integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -37,8 +93,8 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": [
-                                "ti_anomali.limo",
-                                "ti_anomali.threatstream"
+                                "ti_anomali.threatstream",
+                                "ti_anomali.intelligence"
                             ],
                             "type": "phrases"
                         },
@@ -48,15 +104,37 @@
                                 "should": [
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.limo"
+                                            "data_stream.dataset": "ti_anomali.threatstream"
                                         }
                                     },
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.threatstream"
+                                            "data_stream.dataset": "ti_anomali.intelligence"
                                         }
                                     }
                                 ]
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "labels.is_ioc_transform_source",
+                            "negate": true,
+                            "params": {
+                                "query": "true"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_ioc_transform_source": "true"
                             }
                         }
                     }
@@ -70,6 +148,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -97,8 +177,7 @@
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    },
-                    "type": "visualization"
+                    }
                 },
                 "gridData": {
                     "h": 38,
@@ -108,95 +187,7 @@
                     "y": 0
                 },
                 "panelIndex": "12dc83c2-c8cf-4583-88b5-48761c63a1f7",
-                "type": "visualization",
-                "version": "8.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "controls": [
-                                {
-                                    "fieldName": "event.dataset",
-                                    "id": "1636972155400",
-                                    "indexPatternRefName": "control_d0d28809-695c-4190-9b91-b62c60dff1fe_0_index_pattern",
-                                    "label": "Feed Name",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                },
-                                {
-                                    "fieldName": "threat.indicator.provider",
-                                    "id": "1636972320770",
-                                    "indexPatternRefName": "control_d0d28809-695c-4190-9b91-b62c60dff1fe_1_index_pattern",
-                                    "label": "Indicator Provider",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                },
-                                {
-                                    "fieldName": "threat.indicator.type",
-                                    "id": "1636972345166",
-                                    "indexPatternRefName": "control_d0d28809-695c-4190-9b91-b62c60dff1fe_2_index_pattern",
-                                    "label": "Indicator Type",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                }
-                            ],
-                            "pinFilters": false,
-                            "updateFiltersOnChange": false,
-                            "useTimeFilter": true
-                        },
-                        "title": "",
-                        "type": "input_control_vis",
-                        "uiState": {}
-                    },
-                    "type": "visualization"
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "d0d28809-695c-4190-9b91-b62c60dff1fe",
-                    "w": 41,
-                    "x": 7,
-                    "y": 0
-                },
-                "panelIndex": "d0d28809-695c-4190-9b91-b62c60dff1fe",
-                "title": "Feed and Indicator Selector [Logs Anomali]",
-                "type": "visualization",
-                "version": "8.7.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -256,20 +247,18 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
                     "i": "444bedab-0363-4e0c-81e3-d8e370ae3aec",
                     "w": 6,
                     "x": 7,
-                    "y": 7
+                    "y": 0
                 },
                 "panelIndex": "444bedab-0363-4e0c-81e3-d8e370ae3aec",
                 "title": "Total Datastreams [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -369,20 +358,18 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 16,
                     "i": "5809310f-2beb-446c-8b5d-c84f44c041b3",
                     "w": 23,
                     "x": 13,
-                    "y": 7
+                    "y": 0
                 },
                 "panelIndex": "5809310f-2beb-446c-8b5d-c84f44c041b3",
                 "title": "Total Indicators per Provider [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -472,20 +459,18 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 16,
                     "i": "2c98de99-50a0-4a21-86f5-005f80dab887",
                     "w": 12,
                     "x": 36,
-                    "y": 7
+                    "y": 0
                 },
                 "panelIndex": "2c98de99-50a0-4a21-86f5-005f80dab887",
                 "title": "Total Indicators per Datastream [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -545,20 +530,18 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
                     "i": "4bf9c1a3-dd8e-4640-9a8e-8641d62a4c89",
                     "w": 6,
                     "x": 7,
-                    "y": 15
+                    "y": 8
                 },
                 "panelIndex": "4bf9c1a3-dd8e-4640-9a8e-8641d62a4c89",
                 "title": "Total Indicators [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -690,31 +673,27 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 15,
+                    "h": 22,
                     "i": "aea6ddeb-b045-4372-bfe4-5eb52cd394db",
                     "w": 41,
                     "x": 7,
-                    "y": 23
+                    "y": 16
                 },
                 "panelIndex": "aea6ddeb-b045-4372-bfe4-5eb52cd394db",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Anomali] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-04-20T13:27:57.912Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-10-02T18:33:36.469Z",
     "id": "ti_anomali-96fe1e60-4261-11ec-b7be-d3026acdf1cf",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -728,17 +707,7 @@
         },
         {
             "id": "logs-*",
-            "name": "d0d28809-695c-4190-9b91-b62c60dff1fe:control_d0d28809-695c-4190-9b91-b62c60dff1fe_0_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "d0d28809-695c-4190-9b91-b62c60dff1fe:control_d0d28809-695c-4190-9b91-b62c60dff1fe_1_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "d0d28809-695c-4190-9b91-b62c60dff1fe:control_d0d28809-695c-4190-9b91-b62c60dff1fe_2_index_pattern",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         },
         {
@@ -792,20 +761,21 @@
             "type": "index-pattern"
         },
         {
-            "id": "ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
-            "name": "tag-ref-ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
-            "type": "tag"
+            "id": "logs-*",
+            "name": "controlGroup_93bd81a7-a783-45ef-9fac-c83a3ca9bab9:optionsListDataView",
+            "type": "index-pattern"
         },
         {
-            "id": "ti_anomali-fleet-managed-default",
-            "name": "tag-ref-fleet-managed-default",
-            "type": "tag"
+            "id": "logs-*",
+            "name": "controlGroup_9340fc1e-fc86-4ccc-b176-b011ca2f0a5b:optionsListDataView",
+            "type": "index-pattern"
         },
         {
-            "id": "ti_anomali-fleet-pkg-ti_anomali-default",
-            "name": "tag-ref-fleet-pkg-ti_anomali-default",
-            "type": "tag"
+            "id": "logs-*",
+            "name": "controlGroup_9ca5470b-7641-489f-ae9d-5da5391cdd23:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
