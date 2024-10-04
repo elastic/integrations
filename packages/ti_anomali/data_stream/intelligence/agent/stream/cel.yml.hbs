@@ -32,30 +32,30 @@ redact:
   fields:
     - api_key
 program: |-
-  request(
-  	"GET",
-  	state.url.trim_right("/") + "/api/v2/intelligence/?" + {
-  		"order_by": ["update_id"],
-  		"modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
-  		"limit": [string(state.page_size)],
-  		?"search_after": (has(state.cursor) && has(state.cursor.last_update_id)) ? optional.of([string(int(state.cursor.last_update_id))]) : optional.none(),
-  		?"remote_api": state.remote_api_true ? optional.of(["true"]) : optional.none(), // never set remote_api=false, only true or absent
-  	}.format_query()
-  ).with(
-  	{
-  		"Header": {
-  			"Authorization": ["apikey " + state.username + ":" + state.api_key],
-  		},
-  	}
-  ).do_request().as(resp,
-  	(resp.StatusCode == 200) ?
-  		bytes(resp.Body).decode_json().as(body,
-  			state.with(
+  state.with(
+  	request(
+  		"GET",
+  		state.url.trim_right("/") + "/api/v2/intelligence/?" + {
+  			"order_by": ["update_id"],
+  			"modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
+  			"limit": [string(state.page_size)],
+  			?"search_after": (has(state.cursor) && has(state.cursor.last_update_id)) ? optional.of([string(int(state.cursor.last_update_id))]) : optional.none(),
+  			?"remote_api": state.remote_api_true ? optional.of(["true"]) : optional.none(), // never set remote_api=false, only true or absent
+  		}.format_query()
+  	).with(
+  		{
+  			"Header": {
+  				"Authorization": ["apikey " + state.username + ":" + state.api_key],
+  			},
+  		}
+  	).do_request().as(resp,
+  		(resp.StatusCode == 200) ?
+  			bytes(resp.Body).decode_json().as(body,
   				{
   					"events": body.objects.map(obj,
   						{
   							"json": obj,
-  							?"event": (state.?preserve_original_event.orValue(false)) ?
+  							?"event": state.?preserve_original_event.orValue(false) ?
   								optional.of({"original": obj.encode_json()})
   							:
   								optional.none(),
@@ -69,9 +69,7 @@ program: |-
   					),
   				}
   			)
-  		)
-  	:
-  		state.with(
+  		:
   			{
   				"events": {
   					"error": {
@@ -88,7 +86,7 @@ program: |-
   				},
   				"want_more": false,
   			}
-  		)
+  	)
   )
 tags:
 {{#if preserve_original_event}}
