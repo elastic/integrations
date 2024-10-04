@@ -33,12 +33,17 @@ var (
 // Ref: https://developers.cloudflare.com/logs/logpull/requesting-logs/
 func main() {
 	router := mux.NewRouter()
+	router.Path("/health").HandlerFunc(healthHandler).Methods("GET").Schemes("http")
 	router.Path("/client/v4/zones/aaabbbccc/logs/received").HandlerFunc(logpullHandler).Methods("GET").Schemes("http")
 
 	port := 3000
 	log.Printf("Server listening on port %d...\n", port)
 	h := handlers.CombinedLoggingHandler(os.Stderr, router)
 	http.ListenAndServe(fmt.Sprintf(":%d", port), h)
+}
+
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "OK")
 }
 
 func logpullHandler(w http.ResponseWriter, r *http.Request) {
