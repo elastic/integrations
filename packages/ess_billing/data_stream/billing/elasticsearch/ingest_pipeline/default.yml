@@ -1,0 +1,26 @@
+description: "Ingest pipeline for ECS compliance"
+processors:
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: event.created
+      value: "{{@timestamp}}"
+  - date:
+      field: ess.billing.from
+      formats:
+        - ISO8601
+  - date_index_name:
+      field: "@timestamp"
+      date_formats:
+        - "ISO8601"
+      index_name_prefix: "{{datastream.type}}-{{datastream.dataset}}-{[datastream.namespace}}-"
+      date_rounding: "y"
+      index_name_format: "yyyy"
+on_failure:
+  - set:
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      field: error.message
+      value: "{{{ _ingest.on_failure_message }}}"
