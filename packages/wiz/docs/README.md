@@ -833,67 +833,21 @@ An example event for `vulnerability` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| agent.ephemeral_id |  | keyword |
-| agent.id |  | keyword |
-| agent.name |  | keyword |
-| agent.type |  | keyword |
-| agent.version |  | keyword |
-| cloud.account.id |  | keyword |
-| cloud.account.name |  | keyword |
-| cloud.instance.id |  | keyword |
-| cloud.instance.name |  | keyword |
-| cloud.provider |  | keyword |
-| cloud.region |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.agent_id_status |  | keyword |
-| event.category |  | keyword |
-| event.created |  | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.id |  | keyword |
-| event.ingested |  | date |
-| event.kind |  | keyword |
 | event.module | Event module. | constant_keyword |
-| event.outcome |  | keyword |
-| event.sequence |  | keyword |
-| event.type |  | keyword |
-| host.architecture |  | keyword |
-| host.hostname |  | keyword |
-| host.ip |  | keyword |
-| host.mac |  | keyword |
-| host.name |  | keyword |
-| host.os.family |  | keyword |
-| host.os.full |  | keyword |
-| host.os.kernel |  | keyword |
-| host.os.name |  | keyword |
-| host.os.platform |  | keyword |
-| host.os.type |  | keyword |
-| host.os.version |  | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| message |  | keyword |
 | package.fixed_version |  | keyword |
-| package.name |  | keyword |
-| package.path |  | keyword |
-| package.type |  | keyword |
-| package.version |  | keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
-| user.name |  | keyword |
-| vulnerability.category |  | keyword |
-| vulnerability.classification |  | keyword |
 | vulnerability.cwe |  | keyword |
-| vulnerability.description |  | keyword |
-| vulnerability.enumeration |  | keyword |
-| vulnerability.id |  | keyword |
 | vulnerability.package.fixed_version |  | keyword |
+| vulnerability.package.name |  | keyword |
 | vulnerability.package.version |  | keyword |
-| vulnerability.reference |  | keyword |
-| vulnerability.report_id |  | keyword |
-| vulnerability.score.base |  | keyword |
-| vulnerability.score.version |  | keyword |
-| vulnerability.severity |  | keyword |
+| vulnerability.published_date |  | date |
 | wiz.vulnerability.cve_description |  | keyword |
 | wiz.vulnerability.cvss_severity |  | keyword |
 | wiz.vulnerability.data_source_name |  | keyword |
@@ -932,6 +886,7 @@ An example event for `vulnerability` looks as following:
 | wiz.vulnerability.resolved_at |  | date |
 | wiz.vulnerability.score |  | double |
 | wiz.vulnerability.status |  | keyword |
+| wiz.vulnerability.title |  | keyword |
 | wiz.vulnerability.validated_in_runtime |  | boolean |
 | wiz.vulnerability.vendor_severity |  | keyword |
 | wiz.vulnerability.version |  | keyword |
