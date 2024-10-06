@@ -229,6 +229,30 @@ processors:
   - set:
       field: event.kind
       value: event
+  - script:
+      description: Appends identifiers of relevant entities to `related.entity`
+      lang: painless
+      ignore_failure: true
+      on_failure: 
+        - set:
+            description: Add error reason
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
+      source: |
+        ctx.related = ctx.related ?: [:];
+        ctx.related.entity = new HashSet();
+        ctx.related.entity.add(field("azure.auditlogs.properties.initiated_by.user.id").get(null));
+        ctx.related.entity.add(field("azure.auditlogs.properties.initiated_by.app.servicePrincipalId").get(null));
+        if (ctx.azure.auditlogs.properties.target_resources != null) {
+        for (String i : ctx.azure.auditlogs.properties.target_resources.keySet()) {
+            def resource = ctx.azure.auditlogs.properties.target_resources[i];
+            if (resource != null && resource.id != null) {
+                    ctx.related.entity.add(resource.id);
+                }
+            }
+        }
+        ctx.related.entity.remove("");
+        ctx.related.entity.remove(null);
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
