@@ -283,7 +283,26 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_missing: true
-
+  - script:
+      description: Appends identifiers of relevant entities to `related.entity`
+      lang: painless
+      ignore_failure: true
+      on_failure: 
+        - set:
+            description: Add error reason
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
+      source: |
+        ctx.related = ctx.related ?: [:];
+        ctx.related.entity = new HashSet();
+        ctx.related.entity.add(field("azure.signinlogs.properties.app_id").get(null));
+        ctx.related.entity.add(field("azure.signinlogs.properties.resource_id").get(null));
+        ctx.related.entity.add(field("azure.signinlogs.properties.service_principal_id").get(null));
+        ctx.related.entity.add(field("azure.signinlogs.properties.service_principal_credential_key_id").get(null));
+        ctx.related.entity.add(field("azure.signinlogs.properties.user_id").get(null));
+        ctx.related.entity.add(field("azure.signinlogs.properties.device_detail.device_id").get(null));
+        ctx.related.entity.remove("");
+        ctx.related.entity.remove(null);
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
