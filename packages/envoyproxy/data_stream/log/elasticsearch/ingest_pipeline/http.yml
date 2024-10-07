@@ -8,7 +8,7 @@ processors:
       def p = ctx.proto.indexOf ('/');
       def l = ctx.proto.length();
       ctx.http.version = ctx.proto.substring(p+1, l);
-    ignore_failure: true
+    if: ctx.proto != null && ctx.proto != '-'
 - rename:
     field: method
     target_field: http.request.method
@@ -46,7 +46,7 @@ processors:
 - set:
     field: url.domain
     value: '{{envoyproxy.log.authority}}'
-    ignore_empty_value: true
+    if: ctx.envoyproxy?.log?.authority != null && ctx.envoyproxy?.log?.authority != '-'
 - registered_domain:
     field: url.domain
     target_field: url
