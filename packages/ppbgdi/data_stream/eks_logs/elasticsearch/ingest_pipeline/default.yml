@@ -1,0 +1,79 @@
+---
+description: Pipeline for EKS logs ingested from Kinesis Firehose/CloudWatch
+
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - remove:
+      field: message
+      if: 'ctx.event?.original != null'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+  - set:
+      field: cloud.provider
+      value: aws
+  - set:
+      field: event.kind
+      value: event
+  - dot_expander:
+      field: "*"
+  - script:
+      description: Set 'ochestrator.cluster.name' based on 'aws?.cloudwatch?.log_group'
+      lang: painless
+      source: |
+        def log_group = ctx.aws?.cloudwatch?.log_group;
+        if (log_group != null) {
+          // sample log_group: /aws/eks/dev/cluster
+          String cluster_name = log_group.splitOnToken('/')[3];
+
+          // Is there a better way of doing this?
+          if (ctx.orchestrator == null){ ctx.orchestrator = new HashMap(); }
+          if (ctx.orchestrator.cluster == null){ ctx.orchestrator.cluster = new HashMap(); }
+
+          // Set cluster name
+          ctx.orchestrator.cluster.name = cluster_name;
+        }
+
+  - script:
+      description: Set 'event.dataset' based on 'aws?.cloudwatch?.log_stream'
+      lang: painless
+      source: |
+        def log_stream = ctx.aws?.cloudwatch?.log_stream;
+        if (log_stream != null) {
+          if (log_stream.startsWith('kube-apiserver-audit')) {
+            ctx.event.dataset = 'kubernetes.audit_logs';
+          }
+          else if (log_stream.startsWith('kube-apiserver')) {
+            ctx.event.dataset = 'kubernetes.apiserver_logs';
+          }
+          else if (log_stream.startsWith('authenticator')) {
+            ctx.event.dataset = 'aws.eks_authenticator_logs';
+          }
+          else if (log_stream.startsWith('cloud-controller-manager') || log_stream.startsWith('kube-controller-manager')) {
+            ctx.event.dataset = 'kubernetes.controllermanager_logs';
+          }
+          else if (log_stream.startsWith('kube-scheduler')) {
+            ctx.event.dataset = 'kubernetes.scheduler_logs';
+          }
+        }
+  - json:
+      field: event.original
+      target_field: kubernetes.audit
+      strict_json_parsing: true
+      if: "ctx.event?.dataset == 'kubernetes.audit_logs'"
+
+
+on_failure:
+  - append:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'

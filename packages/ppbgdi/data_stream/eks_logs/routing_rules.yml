@@ -1,0 +1,29 @@
+# Route eks logs to the kubernetes integration
+# based on service-name.
+- source_dataset: aws.eks_logs
+  rules:
+    - target_dataset: aws.eks_authenticator_logs
+      if: "ctx?.event?.dataset == 'aws.eks_authenticator_logs'"
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: kubernetes.apiserver_logs
+      if: "ctx?.event?.dataset == 'kubernetes.apiserver_logs'"
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: kubernetes.audit_logs
+      if: "ctx?.event?.dataset == 'kubernetes.audit_logs'"
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: kubernetes.controllermanager_logs
+      if: "ctx?.event?.dataset == 'kubernetes.controllermanager_logs'"
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: kubernetes.scheduler_logs
+      if: "ctx?.event?.dataset == 'kubernetes.scheduler_logs'"
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
