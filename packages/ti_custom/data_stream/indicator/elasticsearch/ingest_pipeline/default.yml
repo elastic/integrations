@@ -52,6 +52,15 @@ processors:
         ctx.stix.spec_version != '2.1' &&
         ctx._conf?.restrict_stix == true
       tag: drop_no_stix_2_1
+
+  - fingerprint:
+      fields:
+        - stix.id
+        - stix.created
+        - stix.pattern
+      target_field: "_id"
+      ignore_missing: true
+
   - date:
       field: stix.created
       target_field: "@timestamp"
@@ -396,7 +405,7 @@ on_failure:
   - append:
       field: error.message
       value: >
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error
