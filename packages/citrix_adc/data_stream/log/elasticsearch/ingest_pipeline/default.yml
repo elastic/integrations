@@ -88,8 +88,24 @@ processors:
         - yyyy MMMM d HH:mm:ss
         - yyyy MMMM  d HH:mm:ss
         - yyyy MMMM dd HH:mm:ss
+  - script:
+      description: Convert timestamp_native via custom format
+      tag: date_tmp_timestamp_native_custom_format
+      lang: painless
+      source: >-
+        def dateFormat = ctx["_conf"]["custom_date_format"];
+        def formatter = DateTimeFormatter.ofPattern(dateFormat);
+        def text = ctx["_tmp"]["timestamp_native"];
+        def parsedDate = LocalDateTime.parse(text, formatter);
+        ctx["_tmp"]["timestamp_native"] = parsedDate.toString();
+
+      if: ctx._tmp?.timestamp_native != null && ctx?._conf?.custom_date_format != null && ctx?._conf?.custom_date_format != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}. Offending format: {{{_conf.custom_date_format}}}.'
   - date:
-      if: ctx._tmp?.timestamp_native != null
+      if: ctx._tmp?.timestamp_native != null && ctx?._conf?.custom_date_format == null
       tag: date_tmp_timestamp_native
       field: _tmp.timestamp_native
       formats:
