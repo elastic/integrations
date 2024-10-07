@@ -359,12 +359,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | panw.routing.bgp.aggregate_confed_as | Indicates that Autonomous System (AS) aggregation is enabled for the confederation | boolean |  |  |
-| panw.routing.bgp.connect_retry_interval | The interval (in seconds) between connection retries | long | s | gauge |
+| panw.routing.bgp.connect_retry_interval | The interval between connection retries | long | s | gauge |
 | panw.routing.bgp.established_counts | Number of times the BGP session has successfully transitioned to the "Established" state | long |  | gauge |
 | panw.routing.bgp.holdtime | Time in seconds that the BGP peer will wait for a keepalive message, negotiated between peers | long | s | gauge |
-| panw.routing.bgp.holdtime_config | Represents the locally configured hold time on this peer (in seconds) | long | s | gauge |
-| panw.routing.bgp.idle_hold | The idle hold time (in seconds) before retrying a connection after failure | long | s | gauge |
-| panw.routing.bgp.keepalive | The interval (in seconds) at which BGP keepalive messages are sent, negotiated between peers | long | s | gauge |
+| panw.routing.bgp.holdtime_config | Represents the locally configured hold time on this peer | long | s | gauge |
+| panw.routing.bgp.idle_hold | The idle hold time before retrying a connection after failure | long | s | gauge |
+| panw.routing.bgp.keepalive | The interval at which BGP keepalive messages are sent, negotiated between peers | long | s | gauge |
 | panw.routing.bgp.keepalive_config | The keepalive configured on this peer | long | s | gauge |
 | panw.routing.bgp.last_error | The last BGP error message received from the peer | keyword |  |  |
 | panw.routing.bgp.last_update_age | Time in seconds since the last update message was received from the peer | long | s | gauge |
@@ -378,7 +378,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | panw.routing.bgp.nexthop_peer | Indicates whether the peer is being used as the next-hop for the routes received from this peerfields. | boolean |  |  |
 | panw.routing.bgp.nexthop_self | Whether the router is configured to use itself as the next-hop for routes sent to this peer | boolean |  |  |
 | panw.routing.bgp.nexthop_thirdparty | Third-party next-hop feature is enabled | boolean |  |  |
-| panw.routing.bgp.open_delay | Delay before sending an Open message (in seconds) | long | s | gauge |
+| panw.routing.bgp.open_delay | Delay before sending an Open message | long | s | gauge |
 | panw.routing.bgp.orf_entry_received | Number of ORF (Outbound Route Filtering) entries received from the peer | long |  | gauge |
 | panw.routing.bgp.passive | Indicates if the BGP peer is in passive mode: if yes then router will not initiate a connection to the peer | boolean |  |  |
 | panw.routing.bgp.password_set | Indicates whether a password is set for the BGP peer | boolean |  |  |
