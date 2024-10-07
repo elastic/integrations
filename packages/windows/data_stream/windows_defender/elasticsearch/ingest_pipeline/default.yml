@@ -157,26 +157,28 @@ processors:
 
     ## File Fields
 
-  - grok:
-      field: winlog.event_data.Filename
-      patterns:
-        - ':_%{GREEDYDATA:file.path}'
+  - gsub:
+      field: "winlog.event_data.Path"
+      pattern: ".*:_"
+      replacement: ""
+      target_field: "file.path"
       ignore_missing: true
-      on_failure:
-        - grok:
-            field: winlog.event_data.Filename
-            patterns:
-              - '%{GREEDYDATA:file.path}'
-  - grok:
-      field: winlog.event_data.Path
-      patterns:
-        - ':_%{GREEDYDATA:file.path}'
+  - gsub:
+      field: "winlog.event_data.FileName"
+      pattern: ".*:_"
+      replacement: ""
+      target_field: "file.path"
       ignore_missing: true
-      on_failure:
-        - grok:
-            field: winlog.event_data.Filename
-            patterns:
-              - '%{GREEDYDATA:file.path}'
+  - set:
+      field: "file.path"
+      copy_from: "winlog.event_data.Path"
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: "file.path"
+      override: false
+      ignore_empty_value: true
+      copy_from: "winlog.event_data.Filename"
   - grok:
       field: file.path
       patterns:
