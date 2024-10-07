@@ -146,13 +146,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
 | panw.interfaces.ha.enabled | HA enabled | boolean |  |  |
 | panw.interfaces.ha.link_monitoring.enabled | Indicates if link monitoring is enabled | boolean |  |  |
 | panw.interfaces.ha.link_monitoring.failure_condition | Condition that triggers a link monitoring failure, e.g., "any" | keyword |  |  |
@@ -351,13 +347,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
 | panw.routing.bgp.aggregate_confed_as | Indicates that Autonomous System (AS) aggregation is enabled for the confederation | boolean |  |  |
 | panw.routing.bgp.connect_retry_interval | The interval (in seconds) between connection retries | long | s | gauge |
 | panw.routing.bgp.established_counts | Number of times the BGP session has successfully transitioned to the "Established" state | long |  | gauge |
@@ -509,13 +501,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
 | panw.system.certificate.db_exp_date | Expiration date, format: 310329235959Z (Mar 29 23:59:59 2031 GMT) | keyword |  |  |
 | panw.system.certificate.db_file | File name of the certificate database | keyword |  |  |
 | panw.system.certificate.db_name | Name of the certificate database | keyword |  |  |
@@ -682,13 +670,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
 | panw.vpn.globalprotect.gateway.current_users | Current number of users connected to the GlobalProtect gateway | long |  | gauge |
 | panw.vpn.globalprotect.gateway.name | Name of the GlobalProtect gateway | keyword |  |  |
 | panw.vpn.globalprotect.gateway.previous_users | Previous number of users connected to the GlobalProtect gateway | long |  | gauge |
