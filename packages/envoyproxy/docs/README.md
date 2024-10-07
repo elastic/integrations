@@ -160,8 +160,10 @@ An example event for `log` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.flags | Flags for the log file. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ## Stats reference
