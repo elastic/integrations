@@ -33,7 +33,7 @@ processors:
         - yyyy MMMM d HH:mm:ss
         - yyyy MMMM  d HH:mm:ss
         - yyyy MMMM dd HH:mm:ss
-      if: ctx.citrix_adc?.log?.timestamp != null && ctx.citrix_adc.log.timestamp != ''
+      if: ctx.citrix_adc?.log?.timestamp != null && ctx.citrix_adc.log.timestamp != '' && ctx?._conf?.custom_date_format == null
       on_failure:
         - append:
             field: error.message
@@ -134,6 +134,33 @@ processors:
       tag: set_event_action_from_action
       copy_from: citrix_adc.log.action
       ignore_empty_value: true
+  - script:
+      description: Convert delink_time via custom format
+      tag: date_delink_time_custom_format
+      lang: painless
+      source: >-
+        def dateFormat = ctx["_conf"]["custom_date_format"];
+        def formatter = DateTimeFormatter.ofPattern(dateFormat);
+
+        ["delink_time", "start_time", "end_time", "timestamp"].forEach(l -> {
+
+            if (ctx.containsKey("citrix_adc")) {
+                if (ctx.citrix_adc.containsKey("log")) {
+                    if (ctx.citrix_adc.log.containsKey(l)) {
+                        def text = ctx.citrix_adc.log[l];
+                        def parsedDate = LocalDateTime.parse(text, formatter);
+                        ctx.citrix_adc.log[l] = parsedDate.toString();
+                    }
+                }
+            }
+            return true;
+        });
+
+      if: ctx?._conf?.custom_date_format != null && ctx?._conf?.custom_date_format != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}. Offending format: {{{_conf.custom_date_format}}}.'
   - date:
       field: citrix_adc.log.delink_time
       tag: date_delink_time
@@ -143,7 +170,7 @@ processors:
         - MM/dd/yyyy:HH:mm:ss
         - yyyy/MM/dd:HH:mm:ss
         - ISO8601
-      if: ctx.citrix_adc?.log?.delink_time != null && ctx.citrix_adc.log.delink_time != ''
+      if: ctx.citrix_adc?.log?.delink_time != null && ctx.citrix_adc.log.delink_time != '' && ctx?._conf?.custom_date_format == null
       on_failure:
         - append:
             field: error.message
@@ -161,7 +188,7 @@ processors:
         - ISO8601
         - MM/dd/yyyy:HH:mm:ss
         - yyyy/MM/dd:HH:mm:ss
-      if: ctx.citrix_adc?.log?.end_time != null && ctx.citrix_adc.log.end_time != ''
+      if: ctx.citrix_adc?.log?.end_time != null && ctx.citrix_adc.log.end_time != '' && ctx?._conf?.custom_date_format == null
       on_failure:
         - append:
             field: error.message
@@ -184,7 +211,7 @@ processors:
         - ISO8601
         - MM/dd/yyyy:HH:mm:ss
         - yyyy/MM/dd:HH:mm:ss
-      if: ctx.citrix_adc?.log?.start_time != null && ctx.citrix_adc.log.start_time != ''
+      if: ctx.citrix_adc?.log?.start_time != null && ctx.citrix_adc.log.start_time != '' && ctx?._conf?.custom_date_format == null
       on_failure:
         - append:
             field: error.message
