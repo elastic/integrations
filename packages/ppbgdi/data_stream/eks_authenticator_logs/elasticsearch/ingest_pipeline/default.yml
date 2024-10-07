@@ -1,0 +1,129 @@
+---
+description: Pipeline for EKS authenticator logs ingested from Kinesis Firehose/CloudWatch
+
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  # Remove after development
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - remove:
+      field: message
+      if: 'ctx.event?.original != null'
+      ignore_missing: true
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+  - set:
+      field: cloud.provider
+      value: aws
+  - set:
+      field: event.kind
+      value: event
+  - dot_expander:
+      field: "*"
+  - kv:
+      field: event.original
+      #field_split: '\s(?![-_,:()\w\"\\! ]+?(\s+|\d+|[,_\.]+|$))'
+      field_split: ' (?=[a-zA-Z0-9_\-]+=)'
+      value_split: '(?<=\S+)='
+      target_field: _tmp
+      strip_brackets: true
+  - rename:
+      field: _tmp.accesskeyid
+      target_field: aws.eks.authenticator.access_key_id
+      ignore_missing: true
+  - rename:
+      field: _tmp.arn
+      target_field: aws.eks.authenticator.arn
+      ignore_missing: true
+  - rename:
+      field: _tmp.accountid
+      target_field: cloud.account.id
+      ignore_missing: true
+  - grok:
+      field: _tmp.client
+      patterns:
+        - '^%{IP:client.ip:ip}:%{POSINT:client.port:long}$'
+      ignore_missing: true
+  - remove:
+      field: _tmp.client
+      ignore_missing: true
+  - rename:
+      field: _tmp.error
+      target_field: aws.eks.authenticator.error_message
+      ignore_missing: true
+  - remove:
+      field: _tmp.groups
+      if: ctx._tmp?.groups != null && ctx._tmp?.groups == '[]'
+  - gsub:
+      field: _tmp.groups
+      pattern: '\[|\]'
+      replacement: ""
+      ignore_missing: true
+  - split:
+      field: _tmp.groups
+      separator: ' '
+      ignore_missing: true
+  - rename:
+      field: _tmp.groups
+      target_field: aws.eks.authenticator.groups
+      ignore_missing: true
+  - rename:
+      field: _tmp.method
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: _tmp.level
+      target_field: log.level
+      ignore_missing: true
+  - rename:
+      field: _tmp.msg
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: _tmp.path
+      target_field: url.path
+      ignore_missing: true
+  - rename:
+      field: _tmp.session
+      target_field: aws.eks.authenticator.session_id
+      ignore_missing: true
+  - date:
+      field: _tmp.time
+      formats:
+        - ISO8601
+  - remove:
+      field: _tmp.time
+  - rename:
+      field: _tmp.uid
+      target_field: aws.eks.authenticator.uid
+      ignore_missing: true
+  - rename:
+      field: _tmp.userid
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: _tmp.username
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: _tmp
+      target_field: aws.eks.authenticator.parameters
+      if: 'ctx?._tmp != null && ctx._tmp.size() > 0'
+
+on_failure:
+  - append:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
