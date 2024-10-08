@@ -299,7 +299,12 @@ processors:
 
         } else if (eventName == "PutBucketLogging") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+
+        } else if (eventName == "StopLogging") {
+          addField(target, "json.requestParameters.name");
+          
         }
+
         
         if (!target.isEmpty()) {
           field("entity.targets").set(target);
