@@ -4,6 +4,9 @@ processors:
   - set:
       field: ecs.version
       value: 8.11.0
+  - set:
+      field: event.kind
+      value: event
   - rename:
       field: message
       target_field: event.original
@@ -125,7 +128,7 @@ processors:
       if: ctx.client?.ip != null
   - append:
       field: related.ip
-      value: '{{client.ip}}'
+      value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
   - convert:
@@ -152,27 +155,27 @@ processors:
       if: ctx.gitlab?.audit?.created_at != null
   - append:
       field: related.user
-      value: '{{user.id}}'
+      value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
   - append:
       field: related.user
-      value: '{{user.name}}'
+      value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
   - append:
       field: related.user
-      value: '{{gitlab.audit.target_id}}'
+      value: '{{{gitlab.audit.target_id}}}'
       if: ctx.gitlab?.audit?.target_id != null && ctx.gitlab.audit.target_type == "User"
       allow_duplicates: false
   - append:
       field: related.user
-      value: '{{gitlab.audit.target_details}}'
+      value: '{{{gitlab.audit.target_details}}}'
       if: ctx.gitlab?.audit?.target_details != null && ctx.gitlab.audit.target_type == "User"
       allow_duplicates: false
   - append:
       field: related.user
-      value: '{{gitlab.audit.entity_id}}'
+      value: '{{{gitlab.audit.entity_id}}}'
       if: ctx.gitlab?.auadit?.entity_id != null && ctx.gitlab.audit.entity_type == "User"
       allow_duplicates: false
   - append:

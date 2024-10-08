@@ -9,7 +9,9 @@ processors:
       target_field: gigamon.ami
       if: ctx.json != null
       tag: rename_json
-  
+  - set:
+      field: event.kind
+      value: event
   # process dates on base fields
   - date:
       field: gigamon.ami.ts
@@ -853,9 +855,9 @@ on_failure:
   - set:
       field: error.message
       value: >-
-        Processor '{{ _ingest.on_failure_processor_type }}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error

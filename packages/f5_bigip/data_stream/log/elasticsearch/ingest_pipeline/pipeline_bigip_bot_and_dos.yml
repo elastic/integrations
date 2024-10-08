@@ -643,6 +643,15 @@ processors:
       field: f5_bigip.log.http.request
       pattern: '%{f5_bigip.log.http.method} %{f5_bigip.log.http.path} %{f5_bigip.log.http.version}\r\nHost: %{f5_bigip.log.http.host}\r\nConnection: %{f5_bigip.log.http.connection}\r\nPragma: %{f5_bigip.log.http.pragma}\r\nCache-Control: %{f5_bigip.log.http.cache_control}\r\nUser-Agent: %{f5_bigip.log.http.user_agent}\r\n%{f5_bigip.log.http.other_headers}\r\n'
       ignore_failure: true
+  - gsub:
+      field: f5_bigip.log.http.user_agent
+      pattern: '(\([^)]*)\+(https?://)'
+      replacement: '$1%2b$2'
+      ignore_missing: true
+  - urldecode:
+      field: f5_bigip.log.http.user_agent
+      ignore_missing: true
+      ignore_failure: true
   - user_agent:
       field: f5_bigip.log.http.user_agent
       ignore_missing: true
