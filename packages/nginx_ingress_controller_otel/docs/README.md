@@ -1,6 +1,6 @@
 # Nginx Ingress Controller Integration
 
-This integration periodically fetches logs from [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx)
+This integration collects and parses logs from [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx)
 instances. It can parse access and error logs created by the ingress.
 
 ## Compatibility
