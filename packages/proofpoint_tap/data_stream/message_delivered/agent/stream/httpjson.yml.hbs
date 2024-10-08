@@ -20,12 +20,36 @@ request.transforms:
       value: json
   - set:
       target: url.params.interval
-      value: '[[if (le (formatDate ((parseDate .cursor.last_received_time "RFC3339").Add (parseDuration "1h"))) (formatDate (now)))]][[formatDate (parseDate .cursor.last_received_time "RFC3339")]]/[[formatDate ((parseDate .cursor.last_received_time "RFC3339").Add (parseDuration "1h"))]][[else]][[formatDate (parseDate .cursor.last_received_time "RFC3339")]]/[[formatDate now]][[end]]'
-      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]/[[formatDate ((now (parseDuration "-{{initial_interval}}")).Add (parseDuration "1h"))]]'
+      value: |-
+        [[- $last := (parseDate .cursor.last_received_time "RFC3339") -]]
+        [[- $hour := (parseDuration "1h") -]]
+        [[- $end := ($last .Add $hour) -]]
+        [[- if ($end .Before now) -]]
+          [[- formatDate $last ]]/[[ formatDate $end -]]
+        [[- else -]]
+          [[- formatDate $last ]]/[[ formatDate now -]]
+        [[- end -]]
+      default: |-
+        [[- $start := (now (parseDuration "-{{initial_interval}}")) -]]
+        [[- $hour := (parseDuration "1h") -]]
+        [[- $end := ($start .Add $hour) -]]
+        [[- if ($end .Before now) -]]
+          [[- formatDate $start ]]/[[ formatDate $end -]]
+        [[- else -]]
+          [[- formatDate $start ]]/[[ formatDate now -]]
+        [[- end -]]
 response.pagination:
   - set:
       target: url.params.interval
-      value: '[[if (le (formatDate ((parseDate .last_response.body.queryEndTime "RFC3339").Add (parseDuration "1h"))) (formatDate (now)))]][[formatDate (parseDate .last_response.body.queryEndTime "RFC3339")]]/[[formatDate ((parseDate .last_response.body.queryEndTime "RFC3339").Add (parseDuration "1h"))]][[end]]'
+      value: |-
+        [[- $last := (parseDate .cursor.last_received_time "RFC3339") -]]
+        [[- $hour := (parseDuration "1h") -]]
+        [[- $end := ($last .Add $hour) -]]
+        [[- if ($end .Before now) -]]
+          [[- formatDate $last ]]/[[ formatDate $end -]]
+        [[- else -]]
+          [[- formatDate $last ]]/[[ formatDate now -]]
+        [[- end -]]
       fail_on_template_error: true
 cursor:
   last_received_time:
