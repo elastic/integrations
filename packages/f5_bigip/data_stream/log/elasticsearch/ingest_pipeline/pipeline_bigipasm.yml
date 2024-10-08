@@ -364,6 +364,15 @@ processors:
       field: related.hosts
       tag: lowercase_related_hosts
       ignore_missing: true
+  - gsub:
+      field: f5_bigip.log.request.user_agent
+      pattern: '(\([^)]*)\+(https?://)'
+      replacement: '$1%2b$2'
+      ignore_missing: true
+  - urldecode:
+      field: f5_bigip.log.request.user_agent
+      ignore_missing: true
+      ignore_failure: true
   - user_agent:
       field: f5_bigip.log.request.user_agent
       ignore_missing: true

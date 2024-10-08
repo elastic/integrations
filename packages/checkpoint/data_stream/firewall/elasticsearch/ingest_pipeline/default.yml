@@ -192,7 +192,7 @@ processors:
       if: ctx.checkpoint?.type == null
   - set:
       field: observer.product
-      value: "{{checkpoint.product}}"
+      value: "{{{checkpoint.product}}}"
       ignore_empty_value: true
   - rename:
       field: checkpoint.src
@@ -435,37 +435,37 @@ processors:
       if: ctx.checkpoint?.action == 'Failed Log In'
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.ip
-      value: "{{source.nat.ip}}"
+      value: "{{{source.nat.ip}}}"
       allow_duplicates: false
       if: ctx.source?.nat?.ip != null
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
       field: related.ip
-      value: "{{destination.nat.ip}}"
+      value: "{{{destination.nat.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.nat?.ip != null
   - append:
       field: related.hash
-      value: "{{checkpoint.file_md5}}"
+      value: "{{{checkpoint.file_md5}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.file_md5 != null
   - append:
       field: related.hash
-      value: "{{checkpoint.file_sha1}}"
+      value: "{{{checkpoint.file_sha1}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.file_sha1 != null
   - append:
       field: related.hash
-      value: "{{checkpoint.file_sha256}}"
+      value: "{{{checkpoint.file_sha256}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.file_sha256 != null
   - rename:
@@ -1097,22 +1097,22 @@ processors:
       if: ctx.checkpoint?.sys_message != null
   - append:
       field: related.user
-      value: "{{checkpoint.user}}"
+      value: "{{{checkpoint.user}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.user != null
   - append:
       field: related.user
-      value: "{{checkpoint.administrator}}"
+      value: "{{{checkpoint.administrator}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.administrator != null
   - append:
       field: related.user
-      value: "{{checkpoint.src_user_name}}"
+      value: "{{{checkpoint.src_user_name}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.src_user_name != null
   - append:
       field: related.user
-      value: "{{checkpoint.dst_user_name}}"
+      value: "{{{checkpoint.dst_user_name}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.dst_user_name != null
   - script:
@@ -1303,4 +1303,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"

@@ -58,23 +58,23 @@ processors:
       ignore_missing: true
   - set:
       field: github.repository.name
-      value: "{{_temp_.repository}}"
+      value: "{{{_temp_.repository}}}"
       if: ctx._temp_?.repository != null
   - set:
       field: github.repository.html_url
-      value: "https://github.com/{{_temp_.owner}}/{{_temp_.repository}}"
+      value: "https://github.com/{{{_temp_.owner}}}/{{{_temp_.repository}}}"
       if: ctx._temp_?.owner != null && ctx._temp_?.repository != null
   - set:
       field: github.repository.url
-      value: "https://api.github.com/repos/{{_temp_.owner}}/{{_temp_.repository}}"
+      value: "https://api.github.com/repos/{{{_temp_.owner}}}/{{{_temp_.repository}}}"
       if: ctx._temp_?.owner != null && ctx._temp_?.repository != null
   - set:
       field: github.repository.owner.login
-      value: "{{_temp_.owner}}"
+      value: "{{{_temp_.owner}}}"
       if: ctx._temp_?.owner != null
   - set:
       field: github.state
-      value: "{{github.issues.state}}"
+      value: "{{{github.issues.state}}}"
       if: ctx.github.issues.state != null
   - foreach:
       field: github.issues.assignees
@@ -179,7 +179,7 @@ processors:
       ###################
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       if: ctx.user?.name != null
       allow_duplicates: false
   - foreach:
@@ -188,7 +188,7 @@ processors:
       processor:
         append:
           field: related.user
-          value: "{{_ingest._value.login}}"
+          value: "{{{_ingest._value.login}}}"
           allow_duplicates: false
           ###########
           # Cleanup #
