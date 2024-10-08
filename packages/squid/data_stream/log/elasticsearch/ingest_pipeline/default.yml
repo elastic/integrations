@@ -88,6 +88,27 @@ processors:
       target_field: destination.bytes
       ignore_missing: true
 
+  - rename:
+      tag: move_http_method
+      field: _tmp.method
+      target_field: http.request.method
+      ignore_missing: true
+  - uri_parts:
+      tag: uri_parts
+      field: _tmp.url
+      if: ctx.http?.request?.method != 'CONNECT'
+      ignore_missing: true
+      on_failure:
+        - set:
+            tag: set_url_original_on_fail
+            field: url.original
+            copy_from: _tmp.url
+  - rename:
+      tag: move_connect_hostport
+      field: _tmp.url
+      target_field: url.original
+      if: ctx._tmp?.url != null && ctx.http?.request?.method == 'CONNECT'
+
   - set:
       tag: set_event_outcome_success
       field: event.outcome
@@ -125,55 +146,6 @@ processors:
       field: _tmp.peer_host
       target_field: destination.address
       ignore_missing: true
-
-  - geoip:
-      tag: geoip_source_ip
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      tag: geoip_source_as
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-  - rename:
-      tag: rename_source_as_asn
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-  - rename:
-      tag: rename_source_as_organization_name
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-
-  - append:
-      tag: append_related_source_ip
-      field: related.ip
-      value: '{{{source.ip}}}'
-      allow_duplicates: false
-      if: ctx.source?.ip != null
-
-  - rename:
-      tag: move_http_method
-      field: _tmp.method
-      target_field: http.request.method
-      ignore_missing: true
-  - uri_parts:
-      tag: uri_parts
-      field: _tmp.url
-      if: ctx.http?.request?.method != 'CONNECT'
-      ignore_missing: true
-  - rename:
-      tag: move_connect_hostport
-      field: _tmp.url
-      target_field: url.original
-      if: ctx._tmp?.url != null && ctx.http?.request?.method == 'CONNECT'
-
   - set:
       tag: set_url_destination_address
       field: destination.address
@@ -189,9 +161,23 @@ processors:
       ignore_missing: true
 
   - geoip:
+      tag: geoip_source_ip
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
       tag: geoip_destination_ip
       field: destination.ip
       target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      tag: geoip_source_as
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
       ignore_missing: true
   - geoip:
       tag: geoip_destination_as
@@ -202,7 +188,16 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
-
+  - rename:
+      tag: rename_source_as_asn
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_organization_name
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - rename:
       tag: rename_destination_as_asn
       field: destination.as.asn
@@ -227,6 +222,12 @@ processors:
       allow_duplicates: false
       if: ctx.url?.domain != null
   - append:
+      tag: append_related_source_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
       tag: append_related_destination_ip
       field: related.ip
       value: '{{{destination.ip}}}'
@@ -240,6 +241,11 @@ processors:
       ignore_missing: true
 
 on_failure:
+  - remove:
+      tag: remove_fields
+      field:
+        - _tmp
+      ignore_missing: true
   - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
