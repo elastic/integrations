@@ -313,23 +313,18 @@ processors:
   - set:
       field: event.kind
       value: event
-  - script:
-      description: Appends principal_id and resource_id to `related.entity`
-      lang: painless
-      ignore_failure: true
-      on_failure: 
-        - set:
-            description: Add error reason
-            field: error.message
-            value: "{{{ _ingest.on_failure_message }}}"
-      source: |
-        ctx.related = ctx.related ?: [:];
-        ctx.related.entity = new HashSet();
-        ctx.related.entity.add(field("azure.activitylogs.identity.authorization.evidence.principal_id").get(null));
-        ctx.related.entity.add(field("azure.resource_id").get(null));
-        ctx.related.entity.remove("");
-        ctx.related.entity.remove(null);
-
+  - append:
+      field: related.entity
+      value: '{{{ azure.resource_id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.resource_id != null && ctx.azure.resource_id != ''
+  - append:
+      field: related.entity
+      value: '{{{ azure.activitylogs.identity.authorization.evidence.principal_id }}}'
+      allow_duplicates: false
+      if: >
+        ctx.azure?.activitylogs?.identity?.authorization?.evidence?.principal_id != null &&
+        ctx.azure.activitylogs.identity.authorization.evidence.principal_id != ''
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
@@ -337,3 +332,4 @@ on_failure:
       field: error.message
       value: |-
         Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+
