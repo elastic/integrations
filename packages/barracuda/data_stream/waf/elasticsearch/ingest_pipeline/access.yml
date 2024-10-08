@@ -5,13 +5,26 @@ processors:
       field: _temp.remMessage
       tag: grok_temp_remMessage_access
       patterns:
-        - '^%{IP:destination.ip} %{NUMBER:destination.port:long} %{IP:client.ip} %{NUMBER:client.port:long} %{NOTSPACE:client.user.id} %{GREEDYDATA:client.user.name} %{NOTSPACE:http.request.method} %{NOTSPACE:network.protocol} %{DATA:_temp.hostIp} (HTTP/)?%{NOTSPACE:http.version} %{NONNEGINT:http.response.status_code:long} %{NUMBER:http.response.bytes:long} %{NONNEGINT:http.request.bytes:long} %{NONNEGINT:barracuda.waf.cache_hit:long} %{NONNEGINT:barracuda.waf.response_timetaken:long} %{IP:_temp.serverIp} %{NUMBER:_temp.serverPort:long} %{NONNEGINT:barracuda.waf.server_time:long} %{NOTSPACE:barracuda.waf.sessionid}\s+(%{BARRACUDA_RESPONSE_TYPE:barracuda.waf.response_type} )?(%{BARRACUDA_PROFILE_MATCHED:barracuda.waf.profile_matched} )?(%{BARRACUDA_PROTECTED:barracuda.waf.protected} )?(%{BARRACUDA_WF_MATCHED:barracuda.waf.wf_matched} )?(%{DATA:url.path})?\s+%{NOTSPACE:url.query}\s+%{NOTSPACE:http.request.referrer} %{DATA:barracuda.waf.request_cookie} "?"%{DATA:user_agent.original}""? %{IP:barracuda.waf.proxy.ip} %{NONNEGINT:barracuda.waf.proxy.port:long} ("-"|%{DATA:user.name}) %{DATA:_temp.raw_custom_headers}\s+%{BARRACUDA_EVENTID:event.id}\s*$'
+        - >-
+          ^%{IP:destination.ip} %{NUMBER:destination.port:long}
+          %{IP:client.ip} %{NUMBER:client.port:long}
+          %{NOTSPACE:client.user.id} %{GREEDYDATA:client.user.name}
+          %{NOTSPACE:http.request.method} %{NOTSPACE:network.protocol} %{DATA:_temp.hostIp} (HTTP/)?%{NOTSPACE:http.version}
+          %{NONNEGINT:http.response.status_code:long} %{NUMBER:http.response.bytes:long} %{NONNEGINT:http.request.bytes:long}
+          %{NONNEGINT:barracuda.waf.cache_hit:long} %{NONNEGINT:barracuda.waf.response_timetaken:long}
+          %{IP:_temp.serverIp} %{NUMBER:_temp.serverPort:long} %{NONNEGINT:barracuda.waf.server_time:long}
+          %{NOTSPACE:barracuda.waf.sessionid}\s+(%{BARRACUDA_RESPONSE_TYPE:barracuda.waf.response_type}
+          )?(%{BARRACUDA_PROFILE_MATCHED:barracuda.waf.profile_matched} )?(%{BARRACUDA_PROTECTED:barracuda.waf.protected}
+          )?(%{BARRACUDA_WF_MATCHED:barracuda.waf.wf_matched} )?(%{DATA:url.path})?\s+%{NOTSPACE:url.query}\s+%{NOTSPACE:http.request.referrer}
+          %{DATA:barracuda.waf.request_cookie} "?"%{DATA:user_agent.original}""?
+          %{IP:barracuda.waf.proxy.ip} %{NONNEGINT:barracuda.waf.proxy.port:long}
+          ("-"|%{DATA:user.name}) %{DATA:_temp.raw_custom_headers}\s+%{BARRACUDA_EVENTID:event.id}\s*$
       pattern_definitions:
         BARRACUDA_EVENTID: '[A-Za-z0-9\-]+'
-        BARRACUDA_RESPONSE_TYPE: '(INTERNAL|SERVER)'
-        BARRACUDA_PROFILE_MATCHED: '(DEFAULT|PROFILED)'
-        BARRACUDA_PROTECTED: '(PASSIVE|PROTECTED|UNPROTECTED)'
-        BARRACUDA_WF_MATCHED: '(IN)?VALID'
+        BARRACUDA_RESPONSE_TYPE: '(?:INTERNAL|SERVER)'
+        BARRACUDA_PROFILE_MATCHED: '(?:DEFAULT|PROFILED)'
+        BARRACUDA_PROTECTED: '(?:PASSIVE|PROTECTED|UNPROTECTED)'
+        BARRACUDA_WF_MATCHED: '(?:IN)?VALID'
         HTTP_REQUEST_METHOD: '[A-Z]+'
       ignore_missing: true
       on_failure:
@@ -37,10 +50,12 @@ processors:
       value: '{{{_temp.hostIp}}}'
       if: ctx._temp?.hostIp != null
       allow_duplicates: false
+  # In https://campus.barracuda.com/product/webapplicationfirewall/doc/168312823/exporting-log-formats, under `Access Logs` section 
+  # after expanding the `Detailed Description`, the format allows for 6 custom headers to be defined.
   - script:
       lang: painless
       description: Extracts custom headers.
-      if: ctx._temp?.raw_custom_headers != null && ctx._temp?.raw_custom_headers != ''
+      if: ctx._temp?.raw_custom_headers != null && ctx._temp.raw_custom_headers != ''
       params:
         "1": "accept_encoding"
         "2": "host"
