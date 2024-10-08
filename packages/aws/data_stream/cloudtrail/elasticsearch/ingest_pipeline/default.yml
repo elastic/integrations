@@ -291,7 +291,11 @@ processors:
         } else if (eventName == "DeleteResolverQueryLogConfig") {
           addField(target, "json.responseElements.resolverQueryLogConfig.arn");
 
+        } else if (eventName == "CopyObject") {
+          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+          
         }
+        
 
         if (!target.isEmpty()) {
           field("entity.targets").set(target);
