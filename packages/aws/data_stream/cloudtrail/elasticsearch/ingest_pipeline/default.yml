@@ -293,10 +293,12 @@ processors:
 
         } else if (eventName == "CopyObject") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-          
+
+        } else if (eventName == "AttachGroupPolicy") {
+          addField(target, "json.requestParameters.groupName");
+
         }
         
-
         if (!target.isEmpty()) {
           field("entity.targets").set(target);
           related.addAll(target);
