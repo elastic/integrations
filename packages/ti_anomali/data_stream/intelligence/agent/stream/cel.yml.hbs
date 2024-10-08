@@ -1,0 +1,104 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ioc_duration_before_deletion}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_duration_before_deletion: "{{ioc_duration_before_deletion}}"
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  username: {{username}}
+  api_key: {{api_key}}
+  page_size: {{page_size}}
+  remote_api_true: {{remote_api_true}}
+  delay: 1m
+  want_more: false
+  preserve_original_event: {{preserve_original_event}}
+redact:
+  fields:
+    - api_key
+program: |-
+  state.with(
+  	request(
+  		"GET",
+  		state.url.trim_right("/") + "/api/v2/intelligence/?" + {
+  			"order_by": ["update_id"],
+  			"modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
+  			"limit": [string(state.page_size)],
+  			?"search_after": state.?cursor.last_update_id.optMap(id, [string(int(id))]),
+  			?"remote_api": state.remote_api_true ? optional.of(["true"]) : optional.none(), // never set remote_api=false, only true or absent
+  		}.format_query()
+  	).with(
+  		{
+  			"Header": {
+  				"Authorization": ["apikey " + state.username + ":" + state.api_key],
+  			},
+  		}
+  	).do_request().as(resp,
+  		(resp.StatusCode == 200) ?
+  			bytes(resp.Body).decode_json().as(body,
+  				{
+  					"events": body.objects.map(obj,
+  						{
+  							"json": obj,
+  							?"event": state.?preserve_original_event.orValue(false) ?
+  								optional.of({"original": obj.encode_json()})
+  							:
+  								optional.none(),
+  						}
+  					),
+  					"want_more": body.meta.next != null,
+  					"cursor": (has(state.cursor) ? state.cursor : {}).with(
+  						{
+  							?"last_update_id": (body.objects.size() > 0) ? optional.of(body.objects[body.objects.size() - 1].update_id) : optional.none(),
+  						}
+  					),
+  				}
+  			)
+  		:
+  			{
+  				"events": {
+  					"error": {
+  						"code": string(resp.StatusCode),
+  						"id": string(resp.Status),
+  						"message": "GET:" + 
+  						(
+  							(size(resp.Body) != 0) ?
+  								string(resp.Body)
+  							:
+  								string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+  						),
+  					},
+  				},
+  				"want_more": false,
+  			}
+  	)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
