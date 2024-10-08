@@ -31,21 +31,17 @@ processors:
       field: message
       if: ctx.event?.original != null
       ignore_missing: true
-      ignore_failure: true
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true
   - rename:
       field: json.id
       target_field: event.id
       ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.action
       target_field: event.action
       ignore_missing: true
-      ignore_failure: true
 
 #################### Threat Extraction Log fields ####################
 
@@ -54,18 +50,15 @@ processors:
       target_field: "@timestamp"
       formats:
         - strict_date_optional_time_nanos
-      ignore_failure: true
   - rename:
       field: json.host_type
       target_field: host.type
       ignore_missing: true
-      ignore_failure: true
   - append:
       field: host.ip
       value: '{{{json.src}}}'
       if: ctx.json?.src != null
       allow_duplicates: false
-      ignore_failure: true
   - rename:
       field: json.src_machine_name
       target_field: host.hostname
@@ -74,40 +67,35 @@ processors:
   - set:
       field: host.name
       copy_from: host.hostname
-      ignore_failure: true
+      ignore_empty_value: true
   - join:
       field: json.os_name
       target_field: host.os.name
       separator: ','
       if: ctx.json?.os_name != null
-      ignore_failure: true
   - join:
       field: json.os_version
       target_field: host.os.version
       separator: ','
       if: ctx.json?.os_version != null
-      ignore_failure: true
   - rename:
       field: json.domain
       target_field: user.domain
       ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.src_user_name
       target_field: user.name
       ignore_missing: true
-      ignore_failure: true
+      if: ctx.json?.src_user_name != null
   - rename:
       field: json.user_sid
       target_field: user.id
       ignore_missing: true
-      ignore_failure: true
   - join:
       field: json.resource
       target_field: url.original
       separator: ','
       if: ctx.json?.resource != null && ["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
-      ignore_failure: true
   - uri_parts:
       field: url.original
       tag: uri_parts_harmony_endpoint_urlfiltering
@@ -120,7 +108,6 @@ processors:
       field: json.protection_name
       target_field: rule.name
       ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.protection_type
       target_field: checkpoint_harmony_endpoint.urlfiltering.protection_type
@@ -161,7 +148,6 @@ processors:
       field: json.client_version
       target_field: checkpoint_harmony_endpoint.urlfiltering.client.version
       separator: ','
-      ignore_failure: true
       if: ctx.json?.client_version != null
   - rename:
       field: json.advanced_info
@@ -180,11 +166,9 @@ processors:
       target_field: checkpoint_harmony_endpoint.urlfiltering.web_client_type
       separator: ','
       if: ctx.json?.web_client_type != null
-      ignore_failure: true
   - remove:
       field: checkpoint_harmony_endpoint.urlfiltering.web_client_type
       ignore_missing: true
-      ignore_failure: true
       if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.web_client_type == " "
   - rename:
       field: json.event_type
@@ -199,11 +183,9 @@ processors:
       target_field: checkpoint_harmony_endpoint.urlfiltering.app.properties
       separator: ','
       if: ctx.json.app_properties != null
-      ignore_failure: true
   - remove:
       field: checkpoint_harmony_endpoint.urlfiltering.app.properties
       ignore_missing: true
-      ignore_failure: true
       if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.app.properties == " "
 
   - rename:
@@ -226,7 +208,6 @@ processors:
   - remove:
       field: json
       ignore_missing: true
-      ignore_failure: true
 on_failure:
   - append:
       field: error.message
