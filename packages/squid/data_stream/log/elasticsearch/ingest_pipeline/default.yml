@@ -98,6 +98,11 @@ processors:
       field: _tmp.url
       if: ctx.http?.request?.method != 'CONNECT'
       ignore_missing: true
+      on_failure:
+        - set:
+            tag: set_url_original_on_fail
+            field: url.original
+            copy_from: _tmp.url
   - rename:
       tag: move_connect_hostport
       field: _tmp.url
@@ -236,6 +241,11 @@ processors:
       ignore_missing: true
 
 on_failure:
+  - remove:
+      tag: remove_fields
+      field:
+        - _tmp
+      ignore_missing: true
   - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
