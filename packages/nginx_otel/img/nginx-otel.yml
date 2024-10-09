@@ -1,0 +1,150 @@
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+    timeout: 2s
+    system:
+      resource_attributes:
+        host.arch:
+          enabled: true
+        os.description:
+          enabled: true
+  transform/parse_status_nginx/metrics:
+    metric_statements:
+      - context: metric
+        statements:
+          # set nginx_otel.data_stream.*
+          - set(resource.attributes["data_stream.dataset"], "nginx_otel.status")
+          # - set(attributes["data_stream.namespace"], "ep")
+          - set(resource.attributes["data_stream.type"], "metrics")
+      - context: metric
+        statements:
+          - set(resource.attributes["os.name"], resource.attributes["os.description"])
+          - replace_pattern(resource.attributes["os.name"], "^(.*?)\\ \\(.*$", "$$1" )
+  transform/parse_access_nginx/log:
+    log_statements:
+      - context: log
+        conditions:
+          - IsMatch(body, "^([0-9a-fA-F:.]+) - .*")
+        statements:
+          # capturing all the nginx attributes with a single regex
+          - merge_maps(attributes, ExtractPatterns(body, "^(?P<source__address>[0-9a-fA-F:.]+) - (?P<remote__user>[^ ]*) \\[(?P<time__local>[^\\]]+)\\] \\\"(?P<http__request__method>[^ ]+) (?P<url__original>[^ ]+) HTTP/(?P<http__version>[^\\\"]+)\\\" (?P<http__response__status_code>\\d+) (?P<http__response__body__bytes>\\d+) \\\"(?P<http_referer>[^\\\"]*)\\\" \\\"(?P<user_agent__name>[^/]+)/(?P<user_agent__version>[^\\\"]+)\\\" \\\"(?P<http__x_forwarded_for>[^\\\"]*)\\\"$"), "upsert")
+
+          # replace all "__" for "." (intermediate step as regular expressions do not allow capture variable names with dots)
+          - replace_all_patterns(attributes, "key", "__", ".")
+
+          # attributes type conversions
+          - set(attributes["http.response.status_code"], Int(attributes["http.response.status_code"]))
+          - set(attributes["http.response.body.bytes"], Int(attributes["http.response.body.bytes"]))
+
+          # set nginx_otel.data_stream.*
+          - set(attributes["data_stream.dataset"], "nginx_otel.access")
+          # - set(attributes["data_stream.namespace"], "ep")
+          - set(attributes["data_stream.type"], "logs")
+      - context: log
+        statements:
+          - set(resource.attributes["os.name"], resource.attributes["os.description"])
+          - replace_pattern(resource.attributes["os.name"], "^(.*?)\\ \\(.*$", "$$1" )
+  transform/parse_error_nginx/log:
+    log_statements:
+      - context: log
+        conditions:
+          - IsMatch(body, "[\\d+/ :]+ \\[.+\\] \\d+#\\d+:\\ .+") and (not IsMatch(body, ", client:\\ (.+), server:\\ (.+), request:\\ (.+), host:\\ (.+)$"))
+        statements:
+          # capturing all the nginx attributes with a single regex
+          - merge_maps(attributes, ExtractPatterns(body, "(?P<time__local>[\\d+/ :]+) \\[(?P<log__level>.+)\\] (?P<process__pid>\\d+)#(?P<process__thread_id>\\d+):\\ (?P<message>.+)$"), "upsert")
+
+          # replace all "__" for "." (intermediate step as regular expressions do not allow capture variable names with dots)
+          - replace_all_patterns(attributes, "key", "__", ".")
+
+          # set nginx_otel.data_stream.*
+          - set(attributes["data_stream.dataset"], "nginx_otel.error")
+          # - set(attributes["data_stream.namespace"], "ep")
+          - set(attributes["data_stream.type"], "logs")
+      - context: log
+        conditions:
+          - IsMatch(body, "[\\d+/ :]+ \\[.+\\] \\d+#\\d+:\\ .+") and IsMatch(body, ", client:\\ (.+), server:\\ (.+), request:\\ (.+), host:\\ (.+)$")
+        statements:
+          # capturing all the nginx attributes with a single regex
+          - merge_maps(attributes, ExtractPatterns(body, "(?P<time__local>[\\d+/ :]+) \\[(?P<log__level>.+)\\] (?P<process__pid>\\d+)#(?P<process__thread_id>\\d+):\\ (?P<message>.+), client:\\ (?P<client>.+), server:\\ (?P<server>.+), request:\\ \\\"(?P<http__request__method>[^ ]+) (?P<url__original>[^ ]+) HTTP/(?P<http__version>[^\\\"]+)\\\", host:\\ \\\"(?P<source__address>.+)\\\"$"), "upsert")
+
+          # replace all "__" for "." (intermediate step as regular expressions do not allow capture variable names with dots)
+          - replace_all_patterns(attributes, "key", "__", ".")
+          #
+          # set nginx_otel.data_stream.*
+          - set(attributes["data_stream.dataset"], "nginx_otel.error")
+          # - set(attributes["data_stream.namespace"], "ep")
+          - set(attributes["data_stream.type"], "logs")
+      - context: log
+        statements:
+          - set(resource.attributes["os.name"], resource.attributes["os.description"])
+          - replace_pattern(resource.attributes["os.name"], "^(.*?)\\ \\(.*$", "$$1" )
+
+extensions:
+  file_storage:
+    directory: ./data
+receivers:
+  nginx:  
+    endpoint: "http://localhost:8088/nginx-status"
+    collection_interval: 10s
+  filelog/access:
+    include_file_path: true
+    include:
+      - ${env:NGINX_LOGS_DIR}/access.log
+    start_at: beginning
+    storage: file_storage
+  filelog/error:
+    include_file_path: true
+    include:
+      - ${env:NGINX_LOGS_DIR}/error.log
+    start_at: beginning
+    storage: file_storage
+
+exporters:
+  debug:
+    verbosity: detailed
+    # verbosity: normal
+    use_internal_logger: false
+  elasticsearch:
+    endpoint: http://localhost:9200
+    flush:
+      interval: 100ms
+    mapping:
+      mode: otel
+    password: changeme
+    user: elastic
+    logs_dynamic_index:
+      enabled: true
+    metrics_dynamic_index:
+      enabled: true
+
+service:
+  extensions:
+    - file_storage
+  pipelines:
+    metrics:
+      receivers:
+        - nginx
+      exporters:
+        - debug
+        - elasticsearch
+      processors:
+        - resourcedetection/system
+        - transform/parse_status_nginx/metrics
+    logs/access:
+      receivers:
+        - filelog/access
+      exporters:
+        - debug
+        - elasticsearch
+      processors:
+        - resourcedetection/system
+        - transform/parse_access_nginx/log
+    logs/error:
+      receivers:
+        - filelog/error
+      exporters:
+        - debug
+        - elasticsearch
+      processors:
+        - resourcedetection/system
+        - transform/parse_error_nginx/log
