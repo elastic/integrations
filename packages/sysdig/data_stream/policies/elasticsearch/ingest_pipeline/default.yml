@@ -1,0 +1,31 @@
+---
+description: Pipeline for mapping Sysdig policy fields to ECS / sysdig-namespaced fields via CEL logic
+processors:
+- set:
+    field: event.kind
+    value: 'state'
+- json:
+    field: message
+    target_field: json
+    if: ctx?.message != null
+- rename:
+    field: json
+    target_field: sysdig
+- dot_expander:
+    field: '*'
+    path: sysdig.content
+    tag: 'Primary doc_expander for sysdig.content'
+    ignore_failure: true
+- dot_expander:
+    field: '*'
+    path: sysdig.labels
+    tag: 'Primary doc_expander for sysdig.labels'
+    ignore_failure: true
+- set:
+    field: event.id
+    copy_from: sysdig.id
+    ignore_empty_value: true
+- set:
+    field: event.provider
+    copy_from: sysdig.source
+    ignore_empty_value: true
