@@ -43,6 +43,58 @@ processors:
       target_field: event.action
       ignore_missing: true
 
+#################### Related fields ####################
+
+  - append:
+      field: related.user
+      value: '{{{json.src_user_name}}}'
+      allow_duplicates: false
+      if: ctx.json?.src_user_name instanceof String
+  - foreach:
+      field: json.src_user_name
+      if: ctx.json?.src_user_name instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_src_user_name_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{json.process_username}}}'
+      allow_duplicates: false
+      if: ctx.json?.process_username != null
+  - append:
+      field: related.ip
+      value: '{{{json.src}}}'
+      if: ctx.json?.src != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{json.dst}}}'
+      if: ctx.json?.dst != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{json.proxy_src_ip}}}'
+      if: ctx.json?.proxy_src_ip != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{json.src_machine_name}}}'
+      if: ctx.json?.src_machine_name != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{json.file_md5}}}'
+      if: ctx.json?.file_md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{json.file_sha1}}}'
+      if: ctx.json?.file_sha1 != null
+      allow_duplicates: false
+
 #################### Threat Extraction Log fields ####################
 
   - date:
@@ -109,46 +161,30 @@ processors:
       target_field: rule.name
       ignore_missing: true
   - rename:
-      field: json.protection_type
-      target_field: checkpoint_harmony_endpoint.urlfiltering.protection_type
+      field: json
+      target_field: checkpoint_harmony_endpoint.urlfiltering
       ignore_missing: true
   - rename:
-      field: json.confidence_level
-      target_field: checkpoint_harmony_endpoint.urlfiltering.confidence_level
-      ignore_missing: true
-  - rename:
-      field: json.description
-      target_field: checkpoint_harmony_endpoint.urlfiltering.description
-      ignore_missing: true
-  - rename:
-      field: json.policy_date
+      field: checkpoint_harmony_endpoint.urlfiltering.policy_date
       target_field: checkpoint_harmony_endpoint.urlfiltering.policy.date
       ignore_missing: true
   - rename:
-      field: json.policy_name
+      field: checkpoint_harmony_endpoint.urlfiltering.policy_name
       target_field: checkpoint_harmony_endpoint.urlfiltering.policy.name
       ignore_missing: true
   - rename:
-      field: json.policy_number
+      field: checkpoint_harmony_endpoint.urlfiltering.policy_number
       target_field: checkpoint_harmony_endpoint.urlfiltering.policy.number
       ignore_missing: true
   - rename:
-      field: json.severity
-      target_field: checkpoint_harmony_endpoint.urlfiltering.severity
-      ignore_missing: true
-  - rename:
-      field: json.tenant_id
-      target_field: checkpoint_harmony_endpoint.urlfiltering.tenant_id
-      ignore_missing: true
-  - rename:
-      field: json.client_name
+      field: checkpoint_harmony_endpoint.urlfiltering.client_name
       target_field: checkpoint_harmony_endpoint.urlfiltering.client.name
       ignore_missing: true
   - join:
-      field: json.client_version
+      field: checkpoint_harmony_endpoint.urlfiltering.client_version
       target_field: checkpoint_harmony_endpoint.urlfiltering.client.version
       separator: ','
-      if: ctx.json?.client_version != null
+      if: ctx.checkpoint_harmony_endpoint.urlfiltering?.client_version != null
   - rename:
       field: json.advanced_info
       target_field: checkpoint_harmony_endpoint.urlfiltering.advanced_info
@@ -175,39 +211,41 @@ processors:
       target_field: checkpoint_harmony_endpoint.urlfiltering.event_type
       ignore_missing: true
   - rename:
-      field: json.app_id
+      field: checkpoint_harmony_endpoint.urlfiltering.app_id
       target_field: checkpoint_harmony_endpoint.urlfiltering.app.id
       ignore_missing: true
   - join:
-      field: json.app_properties
+      field: checkpoint_harmony_endpoint.urlfiltering.app_properties
       target_field: checkpoint_harmony_endpoint.urlfiltering.app.properties
       separator: ','
-      if: ctx.json.app_properties != null
+      if: ctx.checkpoint_harmony_endpoint.urlfiltering.app_properties != null
   - remove:
       field: checkpoint_harmony_endpoint.urlfiltering.app.properties
       ignore_missing: true
       if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.app.properties == " "
-
   - rename:
-      field: json.appi_name
-      target_field: checkpoint_harmony_endpoint.urlfiltering.appi_name
+      field: checkpoint_harmony_endpoint.urlfiltering.product
+      target_field: checkpoint_harmony_endpoint.urlfiltering.product.name
       ignore_missing: true
   - rename:
-      field: json.matched_category
-      target_field: checkpoint_harmony_endpoint.urlfiltering.matched_category
-      ignore_missing: true
-  - rename:
-      field: json.process_exe_path
-      target_field: checkpoint_harmony_endpoint.urlfiltering.process_exe_path
-      ignore_missing: true
-  - rename:
-      field: json.dst
+      field: checkpoint_harmony_endpoint.urlfiltering.dst
       target_field: destination.ip
       ignore_missing: true
-      if: ctx.json.dst != null
+      if: ctx.checkpoint_harmony_endpoint.urlfiltering.dst != null && ctx.checkpoint_harmony_endpoint.urlfiltering.dst != "0.0.0.0"
+
+##################################### Clean Up ###########################################
+
   - remove:
       field: json
       ignore_missing: true
+      tag: remove_json
+  - remove:
+      field: ['checkpoint_harmony_endpoint.urlfiltering.orig', 'checkpoint_harmony_endpoint.urlfiltering.os_name', 'checkpoint_harmony_endpoint.urlfiltering.os_version', 'checkpoint_harmony_endpoint.urlfiltering.client_version', 'checkpoint_harmony_endpoint.urlfiltering.product_family']
+      ignore_missing: true
+      tag: remove_custom_duplicate_fields
+
+##########################################################################
+
 on_failure:
   - append:
       field: error.message
