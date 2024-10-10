@@ -20,12 +20,53 @@ request.transforms:
       value: json
   - set:
       target: url.params.interval
-      value: '[[if (le (formatDate ((parseDate .cursor.last_received_time "RFC3339").Add (parseDuration "1h"))) (formatDate (now)))]][[formatDate (parseDate .cursor.last_received_time "RFC3339")]]/[[formatDate ((parseDate .cursor.last_received_time "RFC3339").Add (parseDuration "1h"))]][[else]][[formatDate (parseDate .cursor.last_received_time "RFC3339")]]/[[formatDate now]][[end]]'
-      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]/[[formatDate ((now (parseDuration "-{{initial_interval}}")).Add (parseDuration "1h"))]]'
+      value: |-
+        [[- $last := (parseDate .cursor.last_received_time "RFC3339") -]]
+        [[- $hour := (parseDuration "1h") -]]
+        [[- $end := 0 -]][[- /* Predeclare $end. */ -]]
+        [[- with $last -]]
+          [[- $end = .Add $hour -]]
+        [[- end -]]
+        [[- with $end -]]
+          [[- if .Before now -]]
+            [[- formatDate $last ]]/[[ formatDate $end -]]
+          [[- else -]]
+            [[- formatDate $last ]]/[[ formatDate now -]]
+          [[- end -]]
+        [[- end -]]
+      default: |-
+        [[- $start := (now (parseDuration "-{{initial_interval}}")) -]]
+        [[- $hour := (parseDuration "1h") -]]
+        [[- $end := 0 -]][[- /* Predeclare $end. */ -]]
+        [[- with $start -]]
+          [[- $end = .Add $hour -]]
+        [[- end -]]
+        [[- with $end -]]
+          [[- if .Before now -]]
+            [[- formatDate $start ]]/[[ formatDate $end -]]
+          [[- else -]]
+            [[- formatDate $start ]]/[[ formatDate now -]]
+          [[- end -]]
+        [[- end -]]
 response.pagination:
   - set:
       target: url.params.interval
-      value: '[[if (le (formatDate ((parseDate .last_response.body.queryEndTime "RFC3339").Add (parseDuration "1h"))) (formatDate (now)))]][[formatDate (parseDate .last_response.body.queryEndTime "RFC3339")]]/[[formatDate ((parseDate .last_response.body.queryEndTime "RFC3339").Add (parseDuration "1h"))]][[end]]'
+      value: |-
+        [[- if ne (len .last_response.body.clicksBlocked) 0 -]]
+          [[- $last := (parseDate .last_response.body.queryEndTime "RFC3339") -]]
+          [[- $hour := (parseDuration "1h") -]]
+          [[- $end := 0 -]][[- /* Predeclare $end. */ -]]
+          [[- with $last -]]
+            [[- $end = .Add $hour -]]
+          [[- end -]]
+          [[- with $end -]]
+            [[- if .Before now -]]
+              [[- formatDate $last ]]/[[ formatDate $end -]]
+            [[- else -]]
+              [[- formatDate $last ]]/[[ formatDate now -]]
+            [[- end -]]
+          [[- end -]]
+        [[- end -]]
       fail_on_template_error: true
 cursor:
   last_received_time:
