@@ -610,50 +610,50 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-02T06:04:26.077Z",
+    "@timestamp": "2024-10-03T04:09:10.462Z",
     "agent": {
-        "ephemeral_id": "1acd79f0-0361-47dd-8d47-32064268713f",
-        "id": "958125fc-776b-4be3-b0ce-2762148f5f6d",
+        "ephemeral_id": "c13fd262-b655-4a62-a5f7-dda2f497332f",
+        "id": "036bbeff-9b4f-497d-846d-d5562d328109",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.13.0"
+        "version": "8.15.2"
     },
     "data_stream": {
         "dataset": "vsphere.host",
-        "namespace": "50835",
+        "namespace": "default",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "958125fc-776b-4be3-b0ce-2762148f5f6d",
-        "snapshot": false,
-        "version": "8.13.0"
+        "id": "036bbeff-9b4f-497d-846d-d5562d328109",
+        "snapshot": true,
+        "version": "8.15.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.host",
-        "duration": 32951837,
-        "ingested": "2024-09-02T06:04:38Z",
+        "duration": 83416967,
+        "ingested": "2024-10-03T04:09:20Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "id": "57723763cd1b4ff48e54a505de4ebe6c",
         "ip": [
-            "192.168.253.6"
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-FD-06"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "kernel": "5.15.153.1-microsoft-standard",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -662,12 +662,15 @@ An example event for `host` looks as following:
     },
     "metricset": {
         "name": "host",
-        "period": 10000
+        "period": 20000
     },
     "service": {
-        "address": "https://svc-vsphere-metrics:8989/sdk",
+        "address": "https://172.18.0.4:8989/sdk",
         "type": "vsphere"
     },
+    "tags": [
+        "vsphere-host"
+    ],
     "vsphere": {
         "host": {
             "cpu": {
@@ -680,6 +683,26 @@ An example event for `host` looks as following:
                 "used": {
                     "mhz": 67,
                     "pct": 0.015
+                }
+            },
+            "datastore": {
+                "count": 4,
+                "names": [
+                    "LocalDS_0",
+                    "LocalDS_1",
+                    "LocalDS_2",
+                    "LocalDS_3"
+                ]
+            },
+            "disk": {
+                "read": {
+                    "bytes": 142336
+                },
+                "total": {
+                    "bytes": 1492992
+                },
+                "write": {
+                    "bytes": 1895424
                 }
             },
             "memory": {
@@ -695,7 +718,52 @@ An example event for `host` looks as following:
                 }
             },
             "name": "DC0_H0",
-            "network_names": "VM Network"
+            "network": {
+                "bandwidth": {
+                    "received": {
+                        "bytes": 702464
+                    },
+                    "total": {
+                        "bytes": 1538048
+                    },
+                    "transmitted": {
+                        "bytes": 564224
+                    }
+                },
+                "count": 3,
+                "names": [
+                    "DC0_DVPG0",
+                    "DVS0-DVUplinks-10",
+                    "VM Network"
+                ],
+                "packets": {
+                    "multicast": {
+                        "received": {
+                            "count": 97
+                        }
+                    },
+                    "received": {
+                        "count": 11933
+                    },
+                    "transmitted": {
+                        "count": 8801
+                    }
+                }
+            },
+            "network_names": [
+                "DC0_DVPG0",
+                "DVS0-DVUplinks-10",
+                "VM Network"
+            ],
+            "status": "gray",
+            "uptime": 77229,
+            "vm": {
+                "count": 2,
+                "names": [
+                    "DC0_H0_VM0",
+                    "DC0_H0_VM1"
+                ]
+            }
         }
     }
 }
