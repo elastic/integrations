@@ -844,6 +844,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: reconstruct_has_script_or_module_ioc_from_ioc_context
+      lang: painless
+      if: ctx.crowdstrike?.alert?.has_script_or_module_ioc == null && ctx.json?.ioc_context instanceof List
+      source: |
+        if (ctx.crowdstrike == null) {
+          ctx.crowdstrike = [:];
+        }
+        if (ctx.crowdstrike.alert == null) {
+          ctx.crowdstrike.alert = [:];
+        }
+        for (def c: ctx.json.ioc_context) {
+          if (c.type == 'module' || c.type == 'script') {
+            ctx.crowdstrike.alert.has_script_or_module_ioc = true;
+            return;
+          }
+        }
   - rename:
       field: json.id
       tag: rename_id
@@ -1034,6 +1051,23 @@ processors:
       tag: rename_ioc_values
       target_field: crowdstrike.alert.ioc_values
       ignore_missing: true
+  - append:
+      field: crowdstrike.alert.ioc_values
+      tag: append_ioc_context_ioc_value_to_ioc_values
+      value: '{{{crowdstrike.alert.ioc_value}}}'
+      if: ctx.crowdstrike?.alert?.ioc_value != null
+      allow_duplicates: false
+  - foreach:
+      tag: reconstruct_ioc_values_from_ioc_context
+      field: crowdstrike.alert.ioc_context
+      if: ctx.crowdstrike?.alert?.ioc_context instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: crowdstrike.alert.ioc_values
+          tag: append_ioc_context_ioc_value_to_ioc_values
+          value: '{{{_ingest._value.ioc_value}}}'
+          allow_duplicates: false
   - convert:
       field: json.is_synthetic_quarantine_disposition
       tag: convert_is_synthetic_quarantine_disposition_to_boolean
@@ -1045,6 +1079,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: reconstruct_is_synthetic_quarantine_disposition_from_pattern_disposition_details
+      lang: painless
+      if: ctx.crowdstrike?.alert?.is_synthetic_quarantine_disposition == null && ctx.json?.pattern_disposition_details instanceof Map
+      source: |
+        if (ctx.crowdstrike == null) {
+          ctx.crowdstrike = [:];
+        }
+        if (ctx.crowdstrike.alert == null) {
+          ctx.crowdstrike.alert = [:];
+        }
+        for (def d: ctx.json.pattern_disposition_details.entrySet()) {
+          if (d.getKey() == 'quarantine_file') {
+            ctx.crowdstrike.alert.is_synthetic_quarantine_disposition = d.getValue();
+            return;
+          }
+        }
   - convert:
       field: json.ldap_search_query_attack
       tag: convert_ldap_search_query_attack_to_long
