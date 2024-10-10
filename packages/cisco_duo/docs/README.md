@@ -28,6 +28,7 @@ The Cisco Duo integration collects logs for the following types of events.
 - [**Summary**](https://duo.com/docs/adminapi#retrieve-summary)
 - [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
 - [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
+- [**Trust Monitor**](https://duo.com/docs/adminapi#trust-monitor)
 
 ## V2 Handlers
 
@@ -664,6 +665,169 @@ An example event for `telephony_v2` looks as following:
 | cisco_duo.telephony_v2.phone_number | The phone number that initiated this event. | keyword |
 | cisco_duo.telephony_v2.txid | A unique identifier that relates to the successful authentication attempt using this telephony event. | keyword |
 | cisco_duo.telephony_v2.type | The event type. Either "sms" or "phone". | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+
+
+### Trust Monitor
+
+This is the `trust_monitor` dataset.
+
+An example event for `trust_monitor` looks as following:
+
+```json
+{
+    "@timestamp": "2020-11-17T08:48:31.680Z",
+    "agent": {
+        "ephemeral_id": "6425e1a1-6171-4b20-ba87-65bf63231ef4",
+        "id": "a2c45cbf-69cf-4bf5-93e2-df91aa0f8eae",
+        "name": "elastic-agent-51366",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "cisco_duo": {
+        "trust_monitor": {
+            "explanations": [
+                {
+                    "summary": "amanda_tucker has not logged in from this location recently.",
+                    "type": "NEW_COUNTRY_CODE"
+                },
+                {
+                    "summary": "amanda_tucker has not logged in from this IP recently.",
+                    "type": "NEW_NETBLOCK"
+                },
+                {
+                    "summary": "amanda_tucker has not accessed this application recently.",
+                    "type": "NEW_IKEY"
+                }
+            ],
+            "from_common_netblock": true,
+            "from_new_user": false,
+            "low_risk_ip": false,
+            "priority_event": true,
+            "priority_reasons": [
+                {
+                    "label": "CN",
+                    "type": "country"
+                }
+            ],
+            "sekey": "SEDOR9BP00L23C6YUH5",
+            "state": "new",
+            "surfaced_auth": {
+                "access_device": {
+                    "browser": "Chrome",
+                    "browser_version": "86.0.4240.198",
+                    "epkey": "EP18JX1A10AB102M2T2X",
+                    "ip": "17.88.232.83",
+                    "is_encryption_enabled": "unknown",
+                    "is_firewall_enabled": "unknown",
+                    "is_password_set": "unknown",
+                    "location": {
+                        "city": "Shanghai",
+                        "country": "China",
+                        "state": "Shanghai"
+                    },
+                    "os": "Windows",
+                    "os_version": "10",
+                    "security_agents": "unknown"
+                },
+                "alias": "unknown",
+                "application": {
+                    "key": "DIUD2X62LHMPDP00LXS3",
+                    "name": "Microsoft Azure Active Directory"
+                },
+                "factor": "not_available",
+                "isotimestamp": "2020-11-17T03:19:13.092+00:00",
+                "reason": "location_restricted",
+                "result": "denied",
+                "timestamp": 1605583153,
+                "txid": "436694ad-467c-4aed-b048-8ad--f58e04c",
+                "user": {
+                    "groups": [
+                        "crazy"
+                    ],
+                    "key": "DUN73JE5M92DP00L4ZYS",
+                    "name": "amanda_tucker"
+                }
+            },
+            "triage_event_uri": "https://admin-xxxxxxxx.duosecurity.com/trust-monitor?sekey=SEDOR9BP00L23C6YUH5",
+            "triaged_as_interesting": false,
+            "type": "auth"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_duo.trust_monitor",
+        "namespace": "54506",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "a2c45cbf-69cf-4bf5-93e2-df91aa0f8eae",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "cisco_duo.trust_monitor",
+        "id": "SEDOR9BP00L23C6YUH5",
+        "ingested": "2024-10-04T07:55:31Z",
+        "kind": "event",
+        "original": "{\"explanations\":[{\"summary\":\"amanda_tucker has not logged in from this location recently.\",\"type\":\"NEW_COUNTRY_CODE\"},{\"summary\":\"amanda_tucker has not logged in from this IP recently.\",\"type\":\"NEW_NETBLOCK\"},{\"summary\":\"amanda_tucker has not accessed this application recently.\",\"type\":\"NEW_IKEY\"}],\"from_common_netblock\":true,\"from_new_user\":false,\"low_risk_ip\":false,\"priority_event\":true,\"priority_reasons\":[{\"label\":\"CN\",\"type\":\"country\"}],\"sekey\":\"SEDOR9BP00L23C6YUH5\",\"state\":\"new\",\"state_updated_timestamp\":null,\"surfaced_auth\":{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"86.0.4240.198\",\"epkey\":\"EP18JX1A10AB102M2T2X\",\"flash_version\":null,\"hostname\":null,\"ip\":\"17.88.232.83\",\"is_encryption_enabled\":\"unknown\",\"is_firewall_enabled\":\"unknown\",\"is_password_set\":\"unknown\",\"java_version\":null,\"location\":{\"city\":\"Shanghai\",\"country\":\"China\",\"state\":\"Shanghai\"},\"os\":\"Windows\",\"os_version\":\"10\",\"security_agents\":\"unknown\"},\"alias\":\"unknown\",\"application\":{\"key\":\"DIUD2X62LHMPDP00LXS3\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":null,\"key\":null,\"location\":{\"city\":null,\"country\":null,\"state\":null},\"name\":null},\"email\":\"\",\"event_type\":null,\"factor\":\"not_available\",\"isotimestamp\":\"2020-11-17T03:19:13.092+00:00\",\"ood_software\":\"\",\"reason\":\"location_restricted\",\"result\":\"denied\",\"timestamp\":1605583153,\"trusted_endpoint_status\":null,\"txid\":\"436694ad-467c-4aed-b048-8ad--f58e04c\",\"user\":{\"groups\":[\"crazy\"],\"key\":\"DUN73JE5M92DP00L4ZYS\",\"name\":\"amanda_tucker\"}},\"surfaced_timestamp\":1605602911680,\"triage_event_uri\":\"https://admin-xxxxxxxx.duosecurity.com/trust-monitor?sekey=SEDOR9BP00L23C6YUH5\",\"triaged_as_interesting\":false,\"type\":\"auth\"}"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cisco_duo-trust_monitor"
+    ],
+    "url": {
+        "domain": "admin-xxxxxxxx.duosecurity.com",
+        "original": "https://admin-xxxxxxxx.duosecurity.com/trust-monitor?sekey=SEDOR9BP00L23C6YUH5",
+        "path": "/trust-monitor",
+        "query": "sekey=SEDOR9BP00L23C6YUH5",
+        "scheme": "https"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cisco_duo.trust_monitor.bypass_status_enabled | The Unix timestamp in milliseconds when bypass status was enabled for the user or group. Returned for events with type=bypass_status. | long |
+| cisco_duo.trust_monitor.enabled_by.key | Key of the application or the administrator that enabled bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.enabled_by.name | Name of the application or the administrator that enabled bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.enabled_for.key | Key of the user or group with bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.enabled_for.name | Name of the user or group with bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.explanations.summary | Description of why Trust Monitor surfaced the event. | keyword |
+| cisco_duo.trust_monitor.explanations.type | Type of reason why Trust Monitor surfaced the event. | keyword |
+| cisco_duo.trust_monitor.from_common_netblock | A boolean describing if this event was created from a common IP netblock. Returned for events with type=auth. | boolean |
+| cisco_duo.trust_monitor.from_new_user | A boolean describing if this event was created for a new user. Returned for events with type=auth or type=device_registration. | boolean |
+| cisco_duo.trust_monitor.low_risk_ip | A boolean describing if this event was created from an IP address identified in the Risk Profile configuration as a low risk IP address. Returned for events with type=auth. | boolean |
+| cisco_duo.trust_monitor.priority_event | A boolean describing if the event matches the Risk Profile configuration. | boolean |
+| cisco_duo.trust_monitor.priority_reasons.label | The label of the priority reason describing how the event matches the Trust Monitor Risk Profile configuration for the event's match. Returned for events with type=auth or type=device_registration. | keyword |
+| cisco_duo.trust_monitor.priority_reasons.type | The type of priority reason describing how the event matches the Trust Monitor Risk Profile configuration for the event's match. Returned for events with type=auth or type=device_registration. | keyword |
+| cisco_duo.trust_monitor.sekey | The unique identifier for this event as a 20 character string. This is unique across all different event types. | keyword |
+| cisco_duo.trust_monitor.state | A string describing the state of the event. One of statenew or stateprocessed. | keyword |
+| cisco_duo.trust_monitor.state_updated_timestamp | The Unix timestamp in milliseconds of the last change to the state of the event. | long |
+| cisco_duo.trust_monitor.surfaced_auth | An object which represents the actual authentication. Returned for events with type=auth. | flattened |
+| cisco_duo.trust_monitor.triage_event_uri | A string representing the URI of the security event, which a Duo administrator can use to view and process the surfaced event in the Duo Admin Panel. Returned for events with type=auth. | keyword |
+| cisco_duo.trust_monitor.triaged_as_interesting | A boolean describing if this event was triaged as being interesting or not interesting. | boolean |
+| cisco_duo.trust_monitor.type | The type of event, as a string. One of auth, bypass_status, or device_registration. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
