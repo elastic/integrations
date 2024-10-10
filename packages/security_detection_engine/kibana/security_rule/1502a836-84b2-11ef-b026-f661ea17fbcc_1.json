@@ -3,30 +3,27 @@
         "author": [
             "Elastic"
         ],
-        "description": "Detects successful Microsoft 365 portal logins from rare locations. Rare locations are defined as locations that are not commonly associated with the user's account. This behavior may indicate an adversary attempting to access a Microsoft 365 account from an unusual location or behind a VPN.",
-        "false_positives": [
-            "False positives may occur when users are using a VPN or when users are traveling to different locations."
-        ],
+        "description": "Detects successful single sign-on (SSO) events to Okta applications from an unrecognized or \"unknown\" client device, as identified by the user-agent string. This activity may be indicative of exploitation of a vulnerability in Okta's Classic Engine, which could allow an attacker to bypass application-specific sign-on policies, such as device or network restrictions. The vulnerability potentially enables unauthorized access to applications using only valid, stolen credentials, without requiring additional authentication factors.",
         "from": "now-9m",
         "history_window_start": "now-14d",
         "index": [
             "filebeat-*",
-            "logs-o365.audit-*"
+            "logs-okta*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
-        "name": "Microsoft 365 Portal Login from Rare Location",
+        "name": "Successful Application SSO from Rare Unknown Client Device",
         "new_terms_fields": [
-            "o365.audit.UserId",
-            "source.geo.country_name"
+            "client.user.name",
+            "okta.client.user_agent.raw_user_agent"
         ],
-        "query": "event.dataset: \"o365.audit\"\n    and event.provider: \"AzureActiveDirectory\"\n    and event.action: \"UserLoggedIn\"\n    and event.outcome: \"success\"\n",
+        "query": "event.dataset: \"okta.system\"\n    and event.action: \"user.authentication.sso\"\n    and event.outcome: \"success\"\n    and okta.client.device: (\"Unknown\" or \"unknown\")\n",
         "references": [
-            "https://www.huntress.com/blog/time-travelers-busted-how-to-detect-impossible-travel-"
+            "https://trust.okta.com/security-advisories/okta-classic-application-sign-on-policy-bypass-2024/"
         ],
         "related_integrations": [
             {
-                "package": "o365",
+                "package": "okta",
                 "version": "^2.0.0"
             }
         ],
@@ -47,18 +44,19 @@
                 "type": "keyword"
             },
             {
-                "ecs": true,
-                "name": "event.provider",
+                "ecs": false,
+                "name": "okta.client.device",
                 "type": "keyword"
             }
         ],
         "risk_score": 47,
-        "rule_id": "32d3ad0e-6add-11ef-8c7b-f661ea17fbcc",
+        "rule_id": "1502a836-84b2-11ef-b026-f661ea17fbcc",
         "severity": "medium",
         "tags": [
-            "Domain: Cloud",
-            "Data Source: Microsoft 365",
+            "Domain: SaaS",
+            "Data Source: Okta",
             "Use Case: Threat Detection",
+            "Use Case: Identity and Access Audit",
             "Tactic: Initial Access"
         ],
         "threat": [
@@ -73,14 +71,7 @@
                     {
                         "id": "T1078",
                         "name": "Valid Accounts",
-                        "reference": "https://attack.mitre.org/techniques/T1078/",
-                        "subtechnique": [
-                            {
-                                "id": "T1078.004",
-                                "name": "Cloud Accounts",
-                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
-                            }
-                        ]
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
                     }
                 ]
             }
@@ -89,6 +80,6 @@
         "type": "new_terms",
         "version": 1
     },
-    "id": "32d3ad0e-6add-11ef-8c7b-f661ea17fbcc_1",
+    "id": "1502a836-84b2-11ef-b026-f661ea17fbcc_1",
     "type": "security-rule"
 }
