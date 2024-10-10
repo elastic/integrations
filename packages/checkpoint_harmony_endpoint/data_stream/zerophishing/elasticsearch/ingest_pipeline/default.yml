@@ -206,6 +206,10 @@ processors:
       field: checkpoint_harmony_endpoint.zerophishing.product
       target_field: checkpoint_harmony_endpoint.zerophishing.product.name
       ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.zerophishing.product_family
+      target_field: checkpoint_harmony_endpoint.zerophishing.product.family
+      ignore_missing: true
 
 ##################################### Clean Up ###########################################
 
@@ -214,13 +218,22 @@ processors:
       ignore_missing: true
       tag: remove_json
   - remove:
-      field: ['checkpoint_harmony_endpoint.zerophishing.client_version', 'checkpoint_harmony_endpoint.zerophishing.malware_action', 'checkpoint_harmony_endpoint.zerophishing.os_name', 'checkpoint_harmony_endpoint.zerophishing.os_version', 'checkpoint_harmony_endpoint.zerophishing.product_family', 'checkpoint_harmony_endpoint.zerophishing.orig', 'checkpoint_harmony_endpoint.zerophishing.product_name']
+      field: ['checkpoint_harmony_endpoint.zerophishing.client_version', 'checkpoint_harmony_endpoint.zerophishing.malware_action', 'checkpoint_harmony_endpoint.zerophishing.os_name', 'checkpoint_harmony_endpoint.zerophishing.os_version', 'checkpoint_harmony_endpoint.zerophishing.product_family', 'checkpoint_harmony_endpoint.zerophishing.orig','checkpoint_harmony_endpoint.zerophishing.time']
       ignore_missing: true
       tag: remove_custom_duplicate_fields
 
 ##########################################################################
 
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+
+############################################################################

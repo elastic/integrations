@@ -219,10 +219,6 @@ processors:
       target_field: checkpoint_harmony_endpoint.threatemulation.client.version
       separator: ','
       if: ctx.checkpoint_harmony_endpoint.threatemulation?.client_version != null
-  - rename:
-      field: checkpoint_harmony_endpoint.threatemulation.product
-      target_field: checkpoint_harmony_endpoint.threatemulation.product.name
-      ignore_missing: true
   - join:
       field: checkpoint_harmony_endpoint.threatemulation.web_client_type
       target_field: checkpoint_harmony_endpoint.threatemulation.web_client_type
@@ -232,6 +228,14 @@ processors:
       field: checkpoint_harmony_endpoint.threatemulation.web_client_type
       ignore_missing: true
       if: ctx.checkpoint_harmony_endpoint?.threatemulation?.web_client_type == " "
+  - rename:
+      field: checkpoint_harmony_endpoint.threatemulation.product
+      target_field: checkpoint_harmony_endpoint.threatemulation.product.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.threatemulation.product_family
+      target_field: checkpoint_harmony_endpoint.threatemulation.product.family
+      ignore_missing: true
 
 ##################################### Clean Up ###########################################
 
@@ -240,7 +244,7 @@ processors:
       ignore_missing: true
       tag: remove_json
   - remove:
-      field: ['checkpoint_harmony_endpoint.threatemulation.client_version', 'checkpoint_harmony_endpoint.threatemulation.file_name', 'checkpoint_harmony_endpoint.threatemulation.malware_action', 'checkpoint_harmony_endpoint.threatemulation.orig', 'checkpoint_harmony_endpoint.threatemulation.os_name', 'checkpoint_harmony_endpoint.threatemulation.os_version', 'checkpoint_harmony_endpoint.threatemulation.product_family']
+      field: ['checkpoint_harmony_endpoint.threatemulation.client_version', 'checkpoint_harmony_endpoint.threatemulation.file_name', 'checkpoint_harmony_endpoint.threatemulation.malware_action', 'checkpoint_harmony_endpoint.threatemulation.orig', 'checkpoint_harmony_endpoint.threatemulation.os_name', 'checkpoint_harmony_endpoint.threatemulation.os_version', 'checkpoint_harmony_endpoint.threatemulation.product_family','checkpoint_harmony_endpoint.threatemulation.time']
       ignore_missing: true
       tag: remove_custom_duplicate_fields
 

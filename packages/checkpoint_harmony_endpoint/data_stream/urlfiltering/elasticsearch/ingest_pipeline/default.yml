@@ -67,17 +67,12 @@ processors:
   - append:
       field: related.ip
       value: '{{{json.src}}}'
-      if: ctx.json?.src != null
+      if: ctx.json?.src != null && ctx.json?.src != "0.0.0.0"
       allow_duplicates: false
   - append:
       field: related.ip
       value: '{{{json.dst}}}'
-      if: ctx.json?.dst != null
-      allow_duplicates: false
-  - append:
-      field: related.ip
-      value: '{{{json.proxy_src_ip}}}'
-      if: ctx.json?.proxy_src_ip != null
+      if: ctx.json?.dst != null && ctx.json?.dst != "0.0.0.0"
       allow_duplicates: false
   - append:
       field: related.hosts
@@ -224,14 +219,18 @@ processors:
       ignore_missing: true
       if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.app.properties == " "
   - rename:
-      field: checkpoint_harmony_endpoint.urlfiltering.product
-      target_field: checkpoint_harmony_endpoint.urlfiltering.product.name
-      ignore_missing: true
-  - rename:
       field: checkpoint_harmony_endpoint.urlfiltering.dst
       target_field: destination.ip
       ignore_missing: true
       if: ctx.checkpoint_harmony_endpoint.urlfiltering.dst != null && ctx.checkpoint_harmony_endpoint.urlfiltering.dst != "0.0.0.0"
+  - rename:
+      field: checkpoint_harmony_endpoint.urlfiltering.product
+      target_field: checkpoint_harmony_endpoint.urlfiltering.product.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.urlfiltering.product_family
+      target_field: checkpoint_harmony_endpoint.urlfiltering.product.family
+      ignore_missing: true
 
 ##################################### Clean Up ###########################################
 
@@ -240,7 +239,7 @@ processors:
       ignore_missing: true
       tag: remove_json
   - remove:
-      field: ['checkpoint_harmony_endpoint.urlfiltering.orig', 'checkpoint_harmony_endpoint.urlfiltering.os_name', 'checkpoint_harmony_endpoint.urlfiltering.os_version', 'checkpoint_harmony_endpoint.urlfiltering.client_version', 'checkpoint_harmony_endpoint.urlfiltering.product_family']
+      field: ['checkpoint_harmony_endpoint.urlfiltering.orig', 'checkpoint_harmony_endpoint.urlfiltering.os_name', 'checkpoint_harmony_endpoint.urlfiltering.os_version', 'checkpoint_harmony_endpoint.urlfiltering.client_version', 'checkpoint_harmony_endpoint.urlfiltering.product_family','checkpoint_harmony_endpoint.urlfiltering.time','checkpoint_harmony_endpoint.urlfiltering.dst']
       ignore_missing: true
       tag: remove_custom_duplicate_fields
 

@@ -174,23 +174,34 @@ An example event for `antibot` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| checkpoint_harmony_endpoint.antibot.advanced_info | Internal field used for configuring exclusions | keyword |
 | checkpoint_harmony_endpoint.antibot.attack_status | Status of attack | keyword |
 | checkpoint_harmony_endpoint.antibot.client.name | Can be either Check Point Endpoint Security Client or Check Point Capsule Docs Client | keyword |
 | checkpoint_harmony_endpoint.antibot.client.version | Build version of Harmony Endpoint client installed on the computer | version |
 | checkpoint_harmony_endpoint.antibot.confidence_level | Confidence level | keyword |
 | checkpoint_harmony_endpoint.antibot.description | Details of the event | text |
 | checkpoint_harmony_endpoint.antibot.detected_by | Component which detected Event | keyword |
-| checkpoint_harmony_endpoint.antibot.malware.action | Description of detected malware activity | keyword |
+| checkpoint_harmony_endpoint.antibot.dst_country | Destination Country | keyword |
+| checkpoint_harmony_endpoint.antibot.event_type | Name of the event | keyword |
+| checkpoint_harmony_endpoint.antibot.installed_products | List of installed Endpoint Software Blades | keyword |
+| checkpoint_harmony_endpoint.antibot.malware.action | Malware action | keyword |
+| checkpoint_harmony_endpoint.antibot.packet_capture | Link to the PCAP traffic capture file with the recorded malicious connection. | keyword |
 | checkpoint_harmony_endpoint.antibot.packet_capture_unique_id | Unique Packet Capture ID | keyword |
 | checkpoint_harmony_endpoint.antibot.policy.date | Date of policy | date |
 | checkpoint_harmony_endpoint.antibot.policy.name | Name of policy | keyword |
 | checkpoint_harmony_endpoint.antibot.policy.number | Version number of policy | integer |
+| checkpoint_harmony_endpoint.antibot.product.family | The product family the blade/product belongs to possible values (0 - Network, 1 - Endpoint, 2 - Access, 3 - Threat, 4 - Mobile) | keyword |
+| checkpoint_harmony_endpoint.antibot.product.name | Product Name | keyword |
 | checkpoint_harmony_endpoint.antibot.protection_type | Source of detection - can be IOC when manually configured, or URL/IP/CMI Reputation | keyword |
 | checkpoint_harmony_endpoint.antibot.proxy_src_ip | Address where traffic was sent | ip |
+| checkpoint_harmony_endpoint.antibot.resource | Resource from the HTTP request | keyword |
+| checkpoint_harmony_endpoint.antibot.sequencenum | Number added to order logs with the same Linux timestamp and origin (Security Gateway that generated these logs) | integer |
 | checkpoint_harmony_endpoint.antibot.service_domain | Service Domain Name | keyword |
 | checkpoint_harmony_endpoint.antibot.severity | Event severity | keyword |
+| checkpoint_harmony_endpoint.antibot.src | Client source IP address | ip |
 | checkpoint_harmony_endpoint.antibot.suspicious_events | ID of EFR report, if relevant/exists | text |
 | checkpoint_harmony_endpoint.antibot.tenant_id | Tenant ID | keyword |
+| checkpoint_harmony_endpoint.antibot.type | Log type | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -309,7 +320,11 @@ An example event for `antimalware` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| checkpoint_harmony_endpoint.antimalware.Number_of_items.detected | Number of detected items | integer |
+| checkpoint_harmony_endpoint.antimalware.Number_of_items.scanned | Number of scan items | integer |
+| checkpoint_harmony_endpoint.antimalware.Number_of_items.treated | Number of treated items | integer |
 | checkpoint_harmony_endpoint.antimalware.action_details | Malware action details | keyword |
+| checkpoint_harmony_endpoint.antimalware.advanced_info | Internal field used for configuring exclusions | text |
 | checkpoint_harmony_endpoint.antimalware.attack_status | Status of attack | keyword |
 | checkpoint_harmony_endpoint.antimalware.client.name | Can be either Check Point Endpoint Security Client or Check Point Capsule Docs Client | keyword |
 | checkpoint_harmony_endpoint.antimalware.client.version | Build version of Harmony Endpoint client installed on the computer | version |
@@ -317,17 +332,33 @@ An example event for `antimalware` looks as following:
 | checkpoint_harmony_endpoint.antimalware.connectivity_state | Type of currently applied AM policy (Connected/Disconnected/Restricted) | keyword |
 | checkpoint_harmony_endpoint.antimalware.description | Details of the event | text |
 | checkpoint_harmony_endpoint.antimalware.detected_by | Component which detected Event | keyword |
+| checkpoint_harmony_endpoint.antimalware.duration | Scan duration | long |
+| checkpoint_harmony_endpoint.antimalware.engine_version | Engine Version | keyword |
+| checkpoint_harmony_endpoint.antimalware.event_type | Name of the event | keyword |
+| checkpoint_harmony_endpoint.antimalware.installed_products | List of installed Endpoint Software Blades | keyword |
+| checkpoint_harmony_endpoint.antimalware.integrity_av_invoke_type | Type of scan | keyword |
 | checkpoint_harmony_endpoint.antimalware.malware.category | Malware category | keyword |
+| checkpoint_harmony_endpoint.antimalware.orig |  | ip |
+| checkpoint_harmony_endpoint.antimalware.os_name | Name of the OS installed on the source endpoint computer | keyword |
+| checkpoint_harmony_endpoint.antimalware.os_version | Build version of the OS installed on the source endpoint computer | keyword |
+| checkpoint_harmony_endpoint.antimalware.packet_capture | Link to the PCAP traffic capture file with the recorded malicious connection. | keyword |
 | checkpoint_harmony_endpoint.antimalware.packet_capture_unique_id | Unique Packet Capture ID | keyword |
 | checkpoint_harmony_endpoint.antimalware.policy.date | Date of policy | date |
 | checkpoint_harmony_endpoint.antimalware.policy.name | Name of policy | keyword |
 | checkpoint_harmony_endpoint.antimalware.policy.number | Version number of policy | integer |
+| checkpoint_harmony_endpoint.antimalware.product.family | The product family the blade/product belongs to possible values (0 - Network, 1 - Endpoint, 2 - Access, 3 - Threat, 4 - Mobile) | keyword |
+| checkpoint_harmony_endpoint.antimalware.product.name | Product Name | keyword |
 | checkpoint_harmony_endpoint.antimalware.protection_type | Source of detection - can be IOC when manually configured, or URL/IP/CMI Reputation | keyword |
 | checkpoint_harmony_endpoint.antimalware.proxy_src_ip | Address where traffic was sent | ip |
+| checkpoint_harmony_endpoint.antimalware.result | Update result | keyword |
+| checkpoint_harmony_endpoint.antimalware.sequencenum | Number added to order logs with the same Linux timestamp and origin (Security Gateway that generated these logs) | integer |
 | checkpoint_harmony_endpoint.antimalware.service_domain | Service Domain Name | keyword |
 | checkpoint_harmony_endpoint.antimalware.severity | Event severity | keyword |
+| checkpoint_harmony_endpoint.antimalware.signature_version | signarure version | keyword |
+| checkpoint_harmony_endpoint.antimalware.src | Client source IP address | ip |
 | checkpoint_harmony_endpoint.antimalware.suspicious_events | Identified suspicious events | text |
 | checkpoint_harmony_endpoint.antimalware.tenant_id | Tenant ID | keyword |
+| checkpoint_harmony_endpoint.antimalware.type | Log type | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -451,22 +482,32 @@ An example event for `forensics` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| checkpoint_harmony_endpoint.forensics.action_details | Malware action details | keyword |
 | checkpoint_harmony_endpoint.forensics.attack_status | Status of attack | keyword |
 | checkpoint_harmony_endpoint.forensics.client.name | Can be either Check Point Endpoint Security Client or Check Point Capsule Docs Client | keyword |
 | checkpoint_harmony_endpoint.forensics.client.version | Build version of Harmony Endpoint client installed on the computer | version |
 | checkpoint_harmony_endpoint.forensics.confidence_level | Confidence level | keyword |
 | checkpoint_harmony_endpoint.forensics.description | Details of the event | text |
 | checkpoint_harmony_endpoint.forensics.detected_by | Component which detected Event | keyword |
+| checkpoint_harmony_endpoint.forensics.event_type | Name of the event | keyword |
+| checkpoint_harmony_endpoint.forensics.installed_products | List of installed Endpoint Software Blades | keyword |
 | checkpoint_harmony_endpoint.forensics.malware.action | Malware action | keyword |
+| checkpoint_harmony_endpoint.forensics.packet_capture | Link to the PCAP traffic capture file with the recorded malicious connection. | keyword |
 | checkpoint_harmony_endpoint.forensics.packet_capture_unique_id | ID of EFR report | keyword |
 | checkpoint_harmony_endpoint.forensics.policy.date | Date of policy | date |
 | checkpoint_harmony_endpoint.forensics.policy.name | Name of policy | keyword |
 | checkpoint_harmony_endpoint.forensics.policy.number | Version number of policy | integer |
+| checkpoint_harmony_endpoint.forensics.product.family | The product family the blade/product belongs to possible values (0 - Network, 1 - Endpoint, 2 - Access, 3 - Threat, 4 - Mobile) | keyword |
+| checkpoint_harmony_endpoint.forensics.product.name | Product Name | keyword |
 | checkpoint_harmony_endpoint.forensics.protection_type | Source of detection - can be IOC when manually configured, or URL/IP/CMI Reputation | keyword |
+| checkpoint_harmony_endpoint.forensics.remediated_files | Remediated files | keyword |
+| checkpoint_harmony_endpoint.forensics.sequencenum | Number added to order logs with the same Linux timestamp and origin (Security Gateway that generated these logs) | integer |
 | checkpoint_harmony_endpoint.forensics.service_domain | Service Domain Name | keyword |
 | checkpoint_harmony_endpoint.forensics.severity | Event severity | keyword |
+| checkpoint_harmony_endpoint.forensics.src | Client source IP address | ip |
 | checkpoint_harmony_endpoint.forensics.suspicious_events | Events that lead to the trigger | text |
 | checkpoint_harmony_endpoint.forensics.tenant_id | Tenant ID | keyword |
+| checkpoint_harmony_endpoint.forensics.type | Log type | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -598,15 +639,25 @@ An example event for `threatemulation` looks as following:
 | checkpoint_harmony_endpoint.threatemulation.client.version | Build version of Harmony Endpoint client installed on the computer | version |
 | checkpoint_harmony_endpoint.threatemulation.confidence_level | Can be Low/Medium/High/N-A | keyword |
 | checkpoint_harmony_endpoint.threatemulation.description | Details of the event | text |
+| checkpoint_harmony_endpoint.threatemulation.event_type | Name of the event | keyword |
 | checkpoint_harmony_endpoint.threatemulation.incident_uid | ID of EFR report, if relevant/exists | keyword |
+| checkpoint_harmony_endpoint.threatemulation.installed_products | List of installed Endpoint Software Blades | keyword |
 | checkpoint_harmony_endpoint.threatemulation.malware.action | Additional info about malware category or actions that led to detection | keyword |
+| checkpoint_harmony_endpoint.threatemulation.orig |  | ip |
+| checkpoint_harmony_endpoint.threatemulation.packet_capture | Link to the PCAP traffic capture file with the recorded malicious connection. | keyword |
 | checkpoint_harmony_endpoint.threatemulation.packet_capture_unique_id | ID of EFR report, if relevant/exists | keyword |
 | checkpoint_harmony_endpoint.threatemulation.policy.date | Date of policy | date |
 | checkpoint_harmony_endpoint.threatemulation.policy.name | Name of policy | keyword |
 | checkpoint_harmony_endpoint.threatemulation.policy.number | Version number of policy | integer |
+| checkpoint_harmony_endpoint.threatemulation.product.family | The product family the blade/product belongs to possible values (0 - Network, 1 - Endpoint, 2 - Access, 3 - Threat, 4 - Mobile) | keyword |
+| checkpoint_harmony_endpoint.threatemulation.product.name | Product Name | keyword |
 | checkpoint_harmony_endpoint.threatemulation.protection_type | Type of detection | keyword |
+| checkpoint_harmony_endpoint.threatemulation.resource | Resource from the HTTP request | keyword |
+| checkpoint_harmony_endpoint.threatemulation.sequencenum | Number added to order logs with the same Linux timestamp and origin (Security Gateway that generated these logs) | integer |
 | checkpoint_harmony_endpoint.threatemulation.severity | Event severity | keyword |
+| checkpoint_harmony_endpoint.threatemulation.src | Client source IP address | ip |
 | checkpoint_harmony_endpoint.threatemulation.tenant_id | Tenant ID | keyword |
+| checkpoint_harmony_endpoint.threatemulation.type | Log type | keyword |
 | checkpoint_harmony_endpoint.threatemulation.verdict | Can be Malicious/Benign | keyword |
 | checkpoint_harmony_endpoint.threatemulation.web_client_type | When relevant, name of the browser (Chrome, Edge, …) | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -736,14 +787,24 @@ An example event for `threatextraction` looks as following:
 | checkpoint_harmony_endpoint.threatextraction.client.version | Build version of Harmony Endpoint client installed on the computer | version |
 | checkpoint_harmony_endpoint.threatextraction.confidence_level | Can be Low/Medim/High/N-A | keyword |
 | checkpoint_harmony_endpoint.threatextraction.description | Details of the event | text |
+| checkpoint_harmony_endpoint.threatextraction.event_type | Name of the event | keyword |
 | checkpoint_harmony_endpoint.threatextraction.incident_uid | ID of EFR report, if relevant/exists | keyword |
+| checkpoint_harmony_endpoint.threatextraction.installed_products | List of installed Endpoint Software Blades | keyword |
 | checkpoint_harmony_endpoint.threatextraction.malware.action | Additional info about the extraction - can be Extracted, Verified, Oversized, Not Supported, Corrupted file | keyword |
+| checkpoint_harmony_endpoint.threatextraction.orig |  | ip |
+| checkpoint_harmony_endpoint.threatextraction.packet_capture | Link to the PCAP traffic capture file with the recorded malicious connection. | keyword |
 | checkpoint_harmony_endpoint.threatextraction.policy.date | Date of policy | date |
 | checkpoint_harmony_endpoint.threatextraction.policy.name | Name of policy | keyword |
 | checkpoint_harmony_endpoint.threatextraction.policy.number | Version number of policy | integer |
+| checkpoint_harmony_endpoint.threatextraction.product.family | The product family the blade/product belongs to possible values (0 - Network, 1 - Endpoint, 2 - Access, 3 - Threat, 4 - Mobile) | keyword |
+| checkpoint_harmony_endpoint.threatextraction.product.name | Product Name | keyword |
 | checkpoint_harmony_endpoint.threatextraction.protection_type | Type of detection | keyword |
+| checkpoint_harmony_endpoint.threatextraction.resource | Resource from the HTTP request | keyword |
+| checkpoint_harmony_endpoint.threatextraction.sequencenum | Number added to order logs with the same Linux timestamp and origin (Security Gateway that generated these logs) | integer |
 | checkpoint_harmony_endpoint.threatextraction.severity | Event severity | keyword |
+| checkpoint_harmony_endpoint.threatextraction.src | Client source IP address | ip |
 | checkpoint_harmony_endpoint.threatextraction.tenant_id | Tenant ID | keyword |
+| checkpoint_harmony_endpoint.threatextraction.type | Log type | keyword |
 | checkpoint_harmony_endpoint.threatextraction.web_client_type | When relevant, name of the browser (Chrome, Edge, …) | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -877,20 +938,31 @@ An example event for `urlfiltering` looks as following:
 | checkpoint_harmony_endpoint.urlfiltering.analyzed_on | Describes location where threat is analyzed. | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.app.id | Application ID | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.app.properties | All categories application belongs to | text |
+| checkpoint_harmony_endpoint.urlfiltering.app_properties | Application categories | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.appi_name | Requested website (domain only, without path) | text |
 | checkpoint_harmony_endpoint.urlfiltering.client.name | Can be either Check Point Endpoint Security Client or Check Point Capsule Docs Client | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.client.version | Build version of Harmony Endpoint client installed on the computer | version |
 | checkpoint_harmony_endpoint.urlfiltering.confidence_level | Can be Low/Medim/High/N-A | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.description | Details of the event | text |
+| checkpoint_harmony_endpoint.urlfiltering.dst | Destination IP address | ip |
 | checkpoint_harmony_endpoint.urlfiltering.event_type | Name of the event | keyword |
+| checkpoint_harmony_endpoint.urlfiltering.installed_products | List of installed Endpoint Software Blades | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.matched_category | Matched category | keyword |
+| checkpoint_harmony_endpoint.urlfiltering.orig |  | ip |
+| checkpoint_harmony_endpoint.urlfiltering.packet_capture | Link to the PCAP traffic capture file with the recorded malicious connection. | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.policy.date | Date of policy | date |
 | checkpoint_harmony_endpoint.urlfiltering.policy.name | Name of policy | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.policy.number | Version number of policy | integer |
 | checkpoint_harmony_endpoint.urlfiltering.process_exe_path | Path to Process's executable | keyword |
+| checkpoint_harmony_endpoint.urlfiltering.product.family | The product family the blade/product belongs to possible values (0 - Network, 1 - Endpoint, 2 - Access, 3 - Threat, 4 - Mobile) | keyword |
+| checkpoint_harmony_endpoint.urlfiltering.product.name | Product Name | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.protection_type | Type of detection | keyword |
+| checkpoint_harmony_endpoint.urlfiltering.resource | Resource from the HTTP request | keyword |
+| checkpoint_harmony_endpoint.urlfiltering.sequencenum | Number added to order logs with the same Linux timestamp and origin (Security Gateway that generated these logs) | integer |
 | checkpoint_harmony_endpoint.urlfiltering.severity | Event severity | keyword |
+| checkpoint_harmony_endpoint.urlfiltering.src | Client source IP address | ip |
 | checkpoint_harmony_endpoint.urlfiltering.tenant_id | Tenant ID | keyword |
+| checkpoint_harmony_endpoint.urlfiltering.type | Log type | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.usercheck_incident_uid | Internal ID of user confirmation | keyword |
 | checkpoint_harmony_endpoint.urlfiltering.web_client_type | When relevant, name of the browser (Chrome, Edge, …) | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -1019,13 +1091,21 @@ An example event for `zerophishing` looks as following:
 | checkpoint_harmony_endpoint.zerophishing.description | Details of the event | text |
 | checkpoint_harmony_endpoint.zerophishing.event_type | Name of the event | keyword |
 | checkpoint_harmony_endpoint.zerophishing.extension_version | Browser Extention version | keyword |
+| checkpoint_harmony_endpoint.zerophishing.installed_products | List of installed Endpoint Software Blades | keyword |
 | checkpoint_harmony_endpoint.zerophishing.malware.action | Additional information about detection, for example "User reused corporate credentials" | keyword |
+| checkpoint_harmony_endpoint.zerophishing.orig |  | ip |
 | checkpoint_harmony_endpoint.zerophishing.policy.date | Date of policy | date |
 | checkpoint_harmony_endpoint.zerophishing.policy.name | Name of policy | keyword |
 | checkpoint_harmony_endpoint.zerophishing.policy.number | Version number of policy | integer |
+| checkpoint_harmony_endpoint.zerophishing.product.family | The product family the blade/product belongs to possible values (0 - Network, 1 - Endpoint, 2 - Access, 3 - Threat, 4 - Mobile) | keyword |
+| checkpoint_harmony_endpoint.zerophishing.product.name | Product Name | keyword |
 | checkpoint_harmony_endpoint.zerophishing.protection_type | Type of detection | keyword |
+| checkpoint_harmony_endpoint.zerophishing.resource | Resource from the HTTP request | keyword |
+| checkpoint_harmony_endpoint.zerophishing.sequencenum | Number added to order logs with the same Linux timestamp and origin (Security Gateway that generated these logs) | integer |
 | checkpoint_harmony_endpoint.zerophishing.severity | Event severity | keyword |
+| checkpoint_harmony_endpoint.zerophishing.src | Client source IP address | ip |
 | checkpoint_harmony_endpoint.zerophishing.tenant_id | Tenant ID | keyword |
+| checkpoint_harmony_endpoint.zerophishing.type | Log type | keyword |
 | checkpoint_harmony_endpoint.zerophishing.web_client_type | When relevant, name of the browser (Chrome, Edge, …) | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
