@@ -51,6 +51,7 @@ processors:
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
+      if: ctx?.json?.eventName != null
       on_failure: 
         - set:
             description: Add error reason
@@ -81,28 +82,25 @@ processors:
             return false;
           }
 
-         return entities.add(value);
+          return entities.add(value);
         }
 
         // Using tree set to ensure a sorting is kept (testing purposes)
-        TreeSet entities = new TreeSet();
+        TreeSet related = new TreeSet();
 
-        addFields(entities, new String[]{
+        addFields(related, new String[]{
           "json.userIdentity.arn",
+          "json.userIdentity.userName",
           "json.userIdentity.sessionContext.sessionIssuer.arn",
-          "json.userIdentity.identityProvider",
-          "json.userIdentity.principalId",
-          "json.userIdentity.sessionContext.sessionIssuer.userName",
-          "json.userIdentity.sessionContext.webIdFederationData.federatedProvider",
-          "json.userIdentity.userName"
+          "json.userIdentity.sessionContext.sessionIssuer.userName"
         });
-        
-        field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(entities, f.ARN));
+
+        field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(related, f.ARN));
 
         String eventSource = field("json.eventSource").get(null);
 
         if (eventSource == "sts.amazonaws.com") {
-          addFields(entities, new String[]{
+          addFields(related, new String[]{
             "json.requestParameters.roleArn",
             "json.sourceIdentity",
             "json.additionalEventData.MFAIdentifier",
@@ -112,7 +110,7 @@ processors:
           });
 
         } else if (eventSource == "iam.amazonaws.com") {
-          addFields(entities, new String[]{
+          addFields(related, new String[]{
             "json.requestParameters.userName",
             "json.requestParameters.accessKeyId",
             "json.requestParameters.policyArn",
@@ -127,7 +125,7 @@ processors:
           });
 
         } else if (eventSource == "ec2.amazonaws.com") {
-          addFields(entities, new String[]{
+          addFields(related, new String[]{
             "json.requestParameters.groupId",
             "json.requestParameters.groupName",
             "json.requestParameters.roleName",
@@ -145,7 +143,7 @@ processors:
           });
           
           field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValues(entities, new String[]{
+            addValues(related, new String[]{
               i.groupId,
               i.referencedGroupInfo?.groupId,
               i.securityGroupRuleId
@@ -153,19 +151,19 @@ processors:
           });
 
           field("json.responseElements.groupSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.groupId);
+            addValue(related, i.groupId);
           });
 
           field("json.requestParameters.groupSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.groupId);
+            addValue(related, i.groupId);
           });
 
           field("json.requestParameters.instancesSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.instanceId);
+            addValue(related, i.instanceId);
           });
 
           field("json.responseElements.instancesSet.items").get(new ArrayList()).stream().forEach(instances -> {
-            addValues(entities, new String[]{
+            addValues(related, new String[]{
               instances.subnetId,
               instances.vpcId,
               instances.instanceId,
@@ -174,30 +172,30 @@ processors:
             });
 
             instances.networkInterfaceSet?.items?.stream().forEach(networks -> {
-              addValues(entities, new String[]{
+              addValues(related, new String[]{
                 networks.networkInterfaceId,
                 networks.vpcId,
                 networks.subnetId
               });
 
               networks.groupSet?.items?.stream().forEach(group -> {
-                addValue(entities, group.groupId);
+                addValue(related, group.groupId);
               });
             });
           });
 
           field("json.requestParameters.revokedSecurityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValues(entities, new String[]{
+            addValues(related, new String[]{
               i.securityGroupRuleId, 
               i.groupId
             });
           });
 
         } else if (eventSource == "s3.amazonaws.com") {
-          addField(entities, "json.requestParameters.bucketName");
-        
+          addField(related, "json.requestParameters.bucketName");
+
         } else if (eventSource == "cloudtrail.amazonaws.com") {
-          addFields(entities, new String[]{
+          addFields(related, new String[]{
             "json.requestParameters.name",
             "json.requestParameters.s3BucketName",
             "json.responseElements.cloudWatchLogsLogGroupArn",
@@ -207,20 +205,20 @@ processors:
             "json.responseElements.trailARN",
             "json.responseElements.name"
           });
-        
+
         } else if (eventSource == "kms.amazonaws.com") {
-          addFields(entities, new String[]{
+          addFields(related, new String[]{
             "json.requestParameters.keyId",
             "json.responseElements.keyId",
             "json.responseElements.keyMetadata.arn",
             "json.responseElements.keyMetadata.keyId"
           });
-        
+
         } else if (eventSource == "config.amazonaws.com") {
-          addField(entities, "json.requestParameters.configurationRecorderName");
-        
+          addField(related, "json.requestParameters.configurationRecorderName");
+
         } else if (eventSource == "lambda.amazonaws.com") {
-          addFields(entities, new String[]{
+          addFields(related, new String[]{
             "json.requestParameters.functionName",
             "json.responseElements.functionArn",
             "json.responseElements.functionName",
@@ -230,7 +228,7 @@ processors:
           });
 
         } else if (eventSource == "rds.amazonaws.com") {
-          addFields(entities, new String[]{
+          addFields(related, new String[]{
             "json.requestParameters.dBInstanceIdentifier",
             "json.requestParameters.dBInstanceArn",
             "json.responseElements.dBInstanceIdentifier",
@@ -240,16 +238,125 @@ processors:
           });
 
           field("json.responseElements.dBSubnetGroup.subnets").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.subnetIdentifier);
+            addValue(related, i.subnetIdentifier);
           });
 
           field("json.responseElements.vpcSecurityGroups").get(new ArrayList()).stream().forEach(i -> {
-            addValue(entities, i.vpcSecurityGroupId);
+            addValue(related, i.vpcSecurityGroupId);
+          });
+        } else if (eventSource == "guardduty.amazonaws.com") {
+          addFields(related, new String[]{
+            "json.requestParameters.detectorId",
+            "json.responseElements.detectorId"
           });
         }
+
+        String actor = field("json.userIdentity.arn").get(null);
+
+        String eventName = field("json.eventName").get(null);
+        TreeSet target = new TreeSet();
+
+        if (eventName == "CreateDetector") {
+          addField(target, "json.responseElements.detectorId");
+
+        } else if (eventName == "DeleteDetector") {
+          addField(target, "json.requestParameters.detectorId");
+
+        } else if (eventName == "ConsoleLogin") {
+          addField(target, "json.userIdentity.accountId");
+
+        } else if (eventName == "AttachUserPolicy") {
+          addFields(target, new String[]{
+            "json.requestParameters.policyArn",
+            "json.requestParameters.userName"
+          });
+
+        } else if (eventName == "AttachUserPolicy") {
+          addFields(target, new String[]{
+            "json.requestParameters.policyArn",
+            "json.requestParameters.userName"
+          });
+
+        } else if (eventName == "StopConfigurationRecorder" 
+                || eventName == "StartConfigurationRecorder") {
+          addField(target, "json.requestParameters.configurationRecorderName");
+
+        } else if (eventName == "DeleteFlowLogs") {
+          addField(target, "json.requestParameters.DeleteFlowLogsRequest.FlowLogId.content");
+
+        } else if (eventName == "DeleteResolverQueryLogConfig") {
+          addField(target, "json.responseElements.resolverQueryLogConfig.arn");
+
+        } else if (eventName == "CopyObject") {
+          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+
+        } else if (eventName == "AttachGroupPolicy") {
+          addField(target, "json.requestParameters.groupName");
+
+        } else if (eventName == "PutBucketLogging") {
+          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+
+        } else if (eventName == "StopLogging") {
+          addField(target, "json.requestParameters.name");
+          
+        } else if (eventName == "ModifyDBClusterSnapshotAttribute") {
+          addField(target, "json.responseElements.dBClusterSnapshotIdentifier");
+          
+        } else if (eventName == "ModifyDBSnapshotAttribute") {
+          addField(target, "json.responseElements.dBSnapshotIdentifier");
+          
+        } else if (eventName == "DeleteAlarms") {
+          field("json.requestParameters.alarmNames").get(new ArrayList()).stream().forEach(f -> addValue(target, f));
+          
+        } else if (eventName == "StartSession") {
+          addField(target, "json.requestParameters.target");
+          
+        } else if (eventName == "CreateTrustAnchor") {
+          addField(target, "json.responseElements.trustAnchor.trustAnchorArn");
+          
+        } else if (eventName == "ModifyImageAttribute") {
+          addField(target, "json.requestParameters.imageId");
+          
+        } else if (eventName != null && eventName.contains("AddPermission")) { // needs to be contains because lambda event names are versioned on the name
+          addField(target, "json.requestParameters.functionName");
+
+        } else if (eventName == "ModifyDBInstance") {
+          addField(target, "json.responseElements.dBInstanceArn");
+
+        } else if (eventName == "ModifyDBCluster") {
+          addField(target, "json.responseElements.dBClusterArn");
+
+        } else if (eventName == "RestoreDBInstanceFromDBSnapshot") {
+          addField(target, "json.responseElements.dBInstanceArn");
+
+        } else if (eventName == "RestoreDBInstanceFromS3") {
+          addField(target, "json.responseElements.dBInstanceArn");
+
+        }  else if (eventName == "StopDBCluster") {
+          addField(target, "json.responseElements.dBClusterArn");
+
+        } else if (eventName == "StopDBInstance") {
+          addField(target, "json.responseElements.dBInstanceArn");
+
+        } else if (eventName == "DeleteDBCluster") {
+          addField(target, "json.responseElements.dBClusterArn");
+
+        } else if (eventName == "DeleteDBInstance") {
+          addField(target, "json.responseElements.dBInstanceArn");
+
+        }
+
         
-        field("related.entity").set(entities);
+        if (!target.isEmpty()) {
+          field("entity.targets").set(target);
+          related.addAll(target);
+        }
+
+        field("entity.actor").set([ actor ]);
+
+        field("related.entity").set(related);
         
+
   - rename:
       field: json.eventVersion
       target_field: aws.cloudtrail.event_version
