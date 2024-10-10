@@ -126,8 +126,6 @@ with_mage() {
 
     local install_packages=(
             "github.com/magefile/mage"
-            "github.com/elastic/go-licenser"
-            "golang.org/x/tools/cmd/goimports"
             "github.com/jstemmer/go-junit-report"
             "gotest.tools/gotestsum"
     )
@@ -464,12 +462,19 @@ is_supported_stack() {
     if [ "${kibana_version}" == "null" ]; then
         return 0
     fi
-    if [[ ! "${kibana_version}" =~ \^7\. && "${STACK_VERSION}" =~ ^7\. ]]; then
+    if [[ ( ! "${kibana_version}" =~ \^7\. ) && "${STACK_VERSION}" =~ ^7\. ]]; then
         return 1
     fi
-    if [[ ! "${kibana_version}" =~ \^8\. && "${STACK_VERSION}" =~ ^8\. ]]; then
+    if [[ ( ! "${kibana_version}" =~ \^8\. ) && "${STACK_VERSION}" =~ ^8\. ]]; then
         return 1
     fi
+
+    # TODO: Allowed temporarily to test packages with stack version 9.0 if they have as constraint ^8.0 defined too.
+    # This workaround should be removed once packages have been updated their constraints for 9.0 stack.
+    if [[ ( ! ( "${kibana_version}" =~ \^9\. || "${kibana_version}" =~ \^8\. ) ) && "${STACK_VERSION}" =~ ^9\. ]]; then
+        return 1
+    fi
+
     return 0
 }
 
@@ -501,6 +506,10 @@ prepare_stack() {
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
         fi
+    fi
+
+    if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+        args="${args} -U stack.logsdb_enabled=true"
     fi
 
     echo "Boot up the Elastic stack"
@@ -692,7 +701,7 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
@@ -817,6 +826,9 @@ test_package_in_serverless() {
     # FIXME: adding test-coverage for serverless results in errors like this:
     # Error: error running package pipeline tests: could not complete test run: error calculating pipeline coverage: error fetching pipeline stats for code coverage calculations: need exactly one ES node in stats response (got 4)
     if ! ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS} ; then
+        return 1
+    fi
+    if ! ${ELASTIC_PACKAGE_BIN} test policy ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
     echo ""

@@ -9,7 +9,43 @@
         "description": "Logs Apache integration dashboard",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "apache.access",
+                                "apache.error"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache.access"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache.error"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -670,10 +706,15 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "",
                         "layerListJSON": "[{\"alpha\":1,\"id\":\"0378861a-232d-4383-a60b-ee38d55ce263\",\"includeInFitToBounds\":true,\"label\":null,\"maxZoom\":24,\"minZoom\":0,\"sourceDescriptor\":{\"isAutoSelect\":true,\"lightModeDefault\":\"road_map_desaturated\",\"type\":\"EMS_TMS\"},\"style\":{\"type\":\"TILE\"},\"type\":\"EMS_VECTOR_TILE\",\"visible\":true},{\"alpha\":0.75,\"id\":\"ced4b190-2f39-417e-ab9e-6557cb4996a2\",\"includeInFitToBounds\":true,\"joins\":[],\"label\":\"Unique IPs map [Logs Apache]\",\"maxZoom\":24,\"minZoom\":0,\"sourceDescriptor\":{\"applyForceRefresh\":true,\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"geoField\":\"source.geo.location\",\"id\":\"844378cb-6817-449e-a434-8b50c9fd3dc9\",\"metrics\":[{\"field\":\"source.address\",\"type\":\"cardinality\"}],\"requestType\":\"point\",\"resolution\":\"MOST_FINE\",\"type\":\"ES_GEO_GRID\",\"indexPatternRefName\":\"layer_1_source_index_pattern\"},\"style\":{\"isTimeAware\":true,\"properties\":{\"fillColor\":{\"options\":{\"color\":\"Yellow to Red\",\"colorCategory\":\"palette_0\",\"field\":{\"name\":\"cardinality_of_source.address\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":false,\"sigma\":3},\"type\":\"ORDINAL\"},\"type\":\"DYNAMIC\"},\"icon\":{\"options\":{\"value\":\"marker\"},\"type\":\"STATIC\"},\"iconOrientation\":{\"options\":{\"orientation\":0},\"type\":\"STATIC\"},\"iconSize\":{\"options\":{\"field\":{\"name\":\"cardinality_of_source.address\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":false,\"sigma\":3},\"maxSize\":18,\"minSize\":7},\"type\":\"DYNAMIC\"},\"labelBorderColor\":{\"options\":{\"color\":\"#FFFFFF\"},\"type\":\"STATIC\"},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}},\"labelColor\":{\"options\":{\"color\":\"#000000\"},\"type\":\"STATIC\"},\"labelSize\":{\"options\":{\"size\":14},\"type\":\"STATIC\"},\"labelText\":{\"options\":{\"value\":\"\"},\"type\":\"STATIC\"},\"lineColor\":{\"options\":{\"color\":\"#3d3d3d\"},\"type\":\"STATIC\"},\"lineWidth\":{\"options\":{\"size\":1},\"type\":\"STATIC\"},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}}},\"type\":\"VECTOR\"},\"type\":\"GEOJSON_VECTOR\",\"visible\":true}]",
-                        "mapStateJSON": "{\"adHocDataViews\":[],\"zoom\":1.58,\"center\":{\"lon\":0,\"lat\":19.94277},\"timeFilters\":{\"from\":\"now-15m\",\"to\":\"now\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"data_stream.dataset:apache.access\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"customIcons\":[],\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"keydownScrollZoom\":false,\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
-                        "title": "",
+                        "mapStateJSON": "{\"center\":{\"lat\":19.94277,\"lon\":0},\"filters\":[],\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"refreshConfig\":{\"interval\":0,\"isPaused\":true},\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"browserLocation\":{\"zoom\":2},\"disableInteractive\":false,\"disableTooltipControl\":false,\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"hideLayerControl\":false,\"hideToolbarOverlay\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"},\"timeFilters\":{\"from\":\"now-15m\",\"to\":\"now\"},\"zoom\":1.58}",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "layer_1_source_index_pattern",
+                                "type": "index-pattern"
+                            }
+                        ],
                         "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[]}"
                     },
                     "enhancements": {},
@@ -722,16 +763,6 @@
                                 "id": "logs-*",
                                 "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "fleet-managed-default",
-                                "name": "tag-ref-fleet-managed-default",
-                                "type": "tag"
-                            },
-                            {
-                                "id": "fleet-pkg-apache-default",
-                                "name": "tag-ref-fleet-pkg-apache-default",
-                                "type": "tag"
                             }
                         ],
                         "sort": [
@@ -769,10 +800,15 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-05-08T15:22:37.519Z",
+    "created_at": "2024-05-20T09:41:58.034Z",
     "id": "apache-Logs-Apache-Dashboard",
     "managed": false,
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "665ee316-bf0f-4182-ab1b-2763a7fffc06:indexpattern-datasource-layer-80350264-fda2-4655-918a-5dc7fd048f34",

@@ -339,7 +339,6 @@ An example event for `event` looks as following:
         "name": "example user"
     }
 }
-
 ```
 
 **Exported fields**
@@ -357,12 +356,12 @@ An example event for `event` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | trellix_edr_cloud.event.access_type |  | keyword |
 | trellix_edr_cloud.event.action |  | keyword |
 | trellix_edr_cloud.event.arguments |  | keyword |
 | trellix_edr_cloud.event.author_name |  | keyword |
 | trellix_edr_cloud.event.bytes_received |  | long |
+| trellix_edr_cloud.event.certs |  | nested |
 | trellix_edr_cloud.event.certs.issuer_name |  | keyword |
 | trellix_edr_cloud.event.certs.public_key_hash |  | keyword |
 | trellix_edr_cloud.event.certs.type |  | keyword |

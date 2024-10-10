@@ -1,0 +1,87 @@
+type: logs
+title: Salesforce logout logs
+streams:
+  - input: salesforce
+    vars:
+      - name: api_version
+        type: text
+        title: API Version
+        description: API Version of Salesforce.
+        multi: false
+        required: true
+        show_user: false
+        default: 56.0
+      - name: event_log_file
+        type: bool
+        title: EventLogFile Data Collection
+        description: EventLogFile Data Collection to fetching logs from EventLogFile
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: object
+        type: bool
+        title: Real-Time Object Data Collection
+        description: Real-Time Data Collection to fetching logs from Real-Time Data
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: elf_period
+        type: text
+        title: EventLogFile Period
+        description: EventLogFile Period of fetching logs. Supported units for this parameter are h/m/s.
+        multi: false
+        required: false
+        show_user: true
+        default: 1h
+      - name: real_time_period
+        type: text
+        title: Real-Time Events Period
+        description: Real-Time Events Period of fetching logs. Supported units for this parameter are h/m/s.
+        multi: false
+        required: false
+        show_user: true
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: Initial Interval to fetch historical data from. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 168h
+      - name: log_file_interval
+        type: text
+        title: EventLogFile Interval
+        description: EventLogFile Interval for Event Log. Supported values for this parameter are Hourly/Daily.
+        multi: false
+        required: false
+        show_user: true
+        default: Hourly
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - salesforce-logout
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+    template_path: salesforce.yml.hbs
+    title: Salesforce Logout logs
+    description: Collect Salesforce Logout logs.

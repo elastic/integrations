@@ -1,5 +1,6 @@
 title: Rapid7 Threat Command IOCs
 type: logs
+ilm_policy: logs-ti_rapid7_threat_command.ioc-default_policy
 streams:
   - input: httpjson
     title: Rapid7 Threat Command IOCs
@@ -22,6 +23,14 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          Enforces all active IOCs to expire after this duration since their last seen time indicated in the feed. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g `10d`). If invalid units are provided, default value `90d` i.e., 90 days is used. Check `README` for more details how IOC expiration works and removal of custom transforms and views used in older versions.
       - name: severities
         type: text
         title: IOC Severities

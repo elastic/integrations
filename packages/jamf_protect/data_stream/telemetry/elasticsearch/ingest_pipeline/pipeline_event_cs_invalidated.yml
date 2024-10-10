@@ -1,0 +1,15 @@
+---
+description: Pipeline for parsing specific fields related to codesignature invalid events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: The system detected that a process has had its code signature marked as invalid
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

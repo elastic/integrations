@@ -29,7 +29,7 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
 ### To collect data from Amazon Security Lake follow the below steps:
 
 1. To enable and start Amazon Security Lake, follow the steps mentioned here: [`https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html`](https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html).
-2. After creating data lake, follow below steps to create a data subscribers to consume data.
+2. After creating the data lake, follow the steps below to create data subscribers to consume data.
    - Open the [Security Lake console](https://console.aws.amazon.com/securitylake/).
    - By using the AWS Region selector in the upper-right corner of the page, select the Region where you want to create the subscriber.
    - In the navigation pane, choose **Subscribers**.
@@ -40,7 +40,7 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
    - For **Subscriber credentials**, provide the subscriber's **AWS account ID** and **external ID**.
    - For **Notification details**, select **SQS queue**.
    - Choose Create.
-3. Above mentioned steps will create and provide required details such as IAM roles/AWS role ID, external id and queue url to configure AWS Security Lake Integration.
+3. Above mentioned steps will create and provide the required details such as IAM roles/AWS role ID, external ID and queue URL to configure AWS Security Lake Integration.
 
 ### Enabling the integration in Elastic:
 
@@ -51,7 +51,6 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
 4. Click on the Add Amazon Security Lake Integration button to add the integration.
    ![Home Page](../img/home_page.png)
 5. By default collect logs via S3 Bucket toggle will be off and collect logs for AWS SQS.
-6. While adding the integration, if you want to collect logs via AWS SQS, then you have to put the following details:
    - queue url
       ![Queue URL](../img/queue_url.png)
    - collect logs via S3 Bucket toggled off
@@ -59,11 +58,10 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
    - external id
       ![Role ARN and External ID](../img/role_arn_and_external_id.png)
 
-   or if you want to collect logs via AWS S3, then you have to put the following details:
-   - bucket arn
-   - collect logs via S3 Bucket toggled on
-   - role ARN
-   - external id
+6. If you want to collect logs via AWS S3, then you have to put the following details:
+    - bucket arn
+    - role ARN
+    - external id
 
 **NOTE**:
 
@@ -1970,4 +1968,3 @@ This is the `Event` dataset.
 | process.user.full_name |  | keyword |
 | process.user.group.id |  | keyword |
 | process.user.group.name |  | keyword |
-| tags | User defined tags. | keyword |

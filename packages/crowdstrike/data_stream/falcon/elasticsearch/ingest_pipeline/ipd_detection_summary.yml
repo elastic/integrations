@@ -63,11 +63,15 @@ processors:
       target_field: host.name
       ignore_missing: true
       tag: rename_source_endpoint_hostname
-  - rename:
+  - append:
+      field: host.ip
+      value: '{{{crowdstrike.event.SourceEndpointIpAddress}}}'
+      if: ctx.crowdstrike?.event?.SourceEndpointIpAddress != null && ctx.crowdstrike.event.SourceEndpointIpAddress != ''
+      tag: append_host_ip
+  - remove:
       field: crowdstrike.event.SourceEndpointIpAddress
-      target_field: host.ip
-      ignore_missing: true
-      tag: rename_source_endpoint_ipaddress
+      if: ctx.crowdstrike?.event?.SourceEndpointIpAddress != null
+      tag: remove_host_ip
   - append:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"
@@ -272,7 +276,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

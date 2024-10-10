@@ -1,0 +1,112 @@
+- name: proofpoint_on_demand
+  type: group
+  fields:
+    - name: mail
+      type: group
+      fields:
+        - name: data
+          type: keyword
+          description: The raw data that corresponds to one log line from maillog.
+        - name: id
+          type: keyword
+          description: A unique ID for the object.
+        - name: metadata
+          type: group
+          fields:
+            - name: origin
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: agent
+                      type: keyword
+                    - name: cid
+                      type: keyword
+                    - name: version
+                      type: keyword
+        - name: pps
+          type: group
+          fields:
+            - name: agent
+              type: keyword
+              description: The FQDN of the source agent on which the mail log line is produced.
+            - name: cid
+              type: keyword
+              description: The cluster ID from which the data log line originated.
+            - name: version
+              type: keyword
+        - name: sm
+          type: group
+          fields:
+            - name: auth
+              type: keyword
+            - name: class
+              type: long
+              description: The class (i.e., numeric precedence) of the message.
+            - name: ctladdr
+              type: keyword
+              description: The "controlling user", that is, the name of the user whose credentials are used for delivery.
+            - name: daemon
+              type: keyword
+              description: The daemon name from the DaemonPortOptions setting.
+            - name: delay
+              type: keyword
+              description: 'The total message delay: (the time difference between reception and final delivery or bounce). Format is delay=HH:MM::SS for a delay of less than one day and delay=days+HH:MM::SS otherwise.'
+            - name: dsn
+              type: keyword
+              description: The enhanced error code (RFC2034) if available.
+            - name: from
+              type: keyword
+              description: The envelope sender address.
+            - name: mailer
+              type: keyword
+              description: The name of the mailer used to deliver to this recipient.
+            - name: msgid
+              type: keyword
+              description: The message id of the message (from the header).
+            - name: nrcpts
+              type: long
+              description: The number of envelope recipients for this message (after aliasing and forwarding).
+            - name: priority
+              type: long
+              description: The initial message priority (used for queue sorting).
+            - name: protocol
+              type: keyword
+              description: The protocol used to receive this message (e.g., ESMTP or UUCP).
+            - name: qid
+              type: keyword
+              description: The corresponding sendmail queue ID for the log line.
+            - name: relay
+              type: keyword
+              description: Shows which user or system sent / received the message; the format is one of relay=user(a)domain [IP], relay=user(a)localhost, or relay=fqdn host.
+            - name: size_bytes
+              type: long
+              description: The size of the incoming message in bytes during the DATA phase, including end-of-line characters.
+            - name: status
+              type: keyword
+              description: The delivery status of the message.
+            - name: tls
+              type: group
+              fields:
+                - name: verify
+                  type: keyword
+                  description: The tls_verify data is included in two log lines. When the data appears in the from= log line, it describes TLS results when the message was received by the Proofpoint Protection Server. When the data appears in the to= log line, it describes TLS results when the message was sent from the Proofpoint Protection Server.
+            - name: to
+              type: keyword
+              description: Recipients to this mailer.
+            - name: xdelay
+              type: keyword
+              description: The total time the message took to be transmitted during final delivery. This differs from the delay= equate, in that the xdelay= equate only counts the time in the actual final delivery.
+        - name: tls
+          type: group
+          fields:
+            - name: cipher
+              type: keyword
+            - name: verify
+              type: keyword
+            - name: version
+              type: keyword
+        - name: ts
+          type: date
+          description: Timestamp of logging time in ISO8601 format.

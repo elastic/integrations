@@ -4,27 +4,19 @@ rules:
     responses:
       - status_code: 200
         headers:
-          content-type: ['application/json']
+          content-type: ["application/json"]
         body: '{"access_token":"access_token","instance_url":"http://{{ hostname }}:{{ env "PORT" }}","id":"https://login.salesforce.com/id/temp_id/temp_token","token_type":"Bearer","issued_at":"1633689089545","signature":"signature"}'
-  - path: /services/data/v54.0/query
+  # Login ELF
+  - path: /services/data/v56.0/query/
     methods: ["GET"]
     query_params:
-      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Login' ORDER BY LogDate ASC NULLS FIRST"]
+      q: ["SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Login' ORDER BY LogDate ASC NULLS FIRST"]
     responses:
       - status_code: 200
-        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD"},"Id":"0AT5j00002GVrfnGAD","CreatedDate":"2022-09-14T21:43:41.000+0000","LogDate":"2022-09-13T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD/LogFile"}]}'
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v56.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD"},"CreatedDate":"2022-09-14T21:43:41.000+0000","LogDate":"2022-09-13T00:00:00.000+0000","LogFile":"/services/data/v56.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD/LogFile"}]}'
         headers:
           content-type: ["text/json"]
-  - path: /services/data/v54.0/query
-    methods: ["GET"]
-    query_params:
-      q: ["SELECT Action,CreatedByContext,CreatedById,CreatedByIssuer,CreatedDate,DelegateUser,Display,Id,Section FROM SetupAuditTrail ORDER BY CreatedDate ASC NULLS FIRST"]
-    responses:
-      - status_code: 200
-        body: '{"done":true,"records":[{"Action":"insertConnectedApplication","CreatedByContext":"Einstein","CreatedById":"0055j000000utlPAAQ","CreatedByIssuer":null,"CreatedDate":"2022-08-16T09:26:38.000+0000","DelegateUser":"user1","Display":"For user user@elastic.co, the User Verified Email status changed to verified","Id":"0Ym5j000019nwonCAA","Section":"Connected Apps","attributes":{"type":"SetupAuditTrail","url":"/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA"}}],"totalSize":160}'
-        headers:
-          content-type: ["text/json"]
-  - path: /services/data/v54.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD/LogFile
+  - path: /services/data/v56.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD/LogFile
     methods: ["GET"]
     responses:
       - status_code: 200
@@ -33,16 +25,37 @@ rules:
         body: |-
           "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","URI","SESSION_KEY","LOGIN_KEY","USER_TYPE","REQUEST_STATUS","DB_TOTAL_TIME","BROWSER_TYPE","API_TYPE","API_VERSION","USER_NAME","TLS_PROTOCOL","CIPHER_SUITE","AUTHENTICATION_METHOD_REFERENCE","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED","LOGIN_STATUS","SOURCE_IP"
           "Login","20221122044615.591","4ehU_U-nbQyAPFl1cJILm-","00D5j000000VI3n","0055j000000utlP","83","30","/index.jsp","","QfNecrLXSII6fsBq","Standard","Success","52435102","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36","f","9998.0","user@elastic.co","TLSv1.2","ECDHE-RSA-AES256-GCM-SHA384","","2022-11-22T04:46:15.591Z","0055j000000utlPAAQ","81.2.69.142","s4heK3WbH-lcJIL3-n","LOGIN_NO_ERROR","81.2.69.142"
-  - path: /services/data/v54.0/query
+  # Login Object
+  - path: /services/data/v56.0/query/
     methods: ["GET"]
     query_params:
-      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Logout' ORDER BY LogDate ASC NULLS FIRST"]
+      q: ["SELECT FIELDS(STANDARD) FROM LoginEvent"]
     responses:
       - status_code: 200
-        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX"},"Id":"0AT5j00002GWEsRGAX","CreatedDate":"2022-09-19T21:03:41.000+0000","LogDate":"2022-09-18T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX/LogFile"}]}'
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LoginEvent","url":"/services/data/v58.0/sobjects/LoginEvent/000000000000000AAA"},"Id":"000000000000000AAA","CreatedDate":"2024-06-05T05:41:20.358+0000","EventIdentifier":"f8c0ee8b-23a0-4c38-9c15-b054291d9a8b","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:41:17.937+0000","RelatedEventIdentifier":null,"PolicyId":null,"PolicyOutcome":null,"EvaluationTime":0,"SessionKey":null,"LoginKey":"JpXdXgpRCtdCFkqA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58","AdditionalInfo":"{}","ApiType":"N/A","ApiVersion":"N/A","Application":"elastic integration","AuthServiceId":null,"Browser":"Unknown","HttpMethod":"POST","CountryIso":"IN","LoginLatitude":21.9974,"LoginLongitude":79.0011,"Country":"India","City":null,"PostalCode":null,"Subdivision":null,"CipherSuite":"ECDHE-RSA-AES256-GCM-SHA384","ClientVersion":"N/A","LoginGeoId":"04FJ4000005zJdFMAA","LoginHistoryId":"0YaJ4000005wlPPKAA","LoginType":"Remote Access 2.0","LoginUrl":"login.salesforce.com","Platform":"Unknown","Status":"Success","TlsProtocol":"TLS 1.2","UserType":"Standard","AuthMethodReference":null,"LoginSubType":"OAuth Username-Password"}]}'
         headers:
           content-type: ["text/json"]
-  - path: /services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX/LogFile
+  # Setup Audit Trail
+  - path: /services/data/v56.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT FIELDS(STANDARD) FROM SetupAuditTrail ORDER BY CreatedDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"done":true,"records":[{"Action":"insertConnectedApplication","CreatedByContext":"Einstein","CreatedById":"0055j000000utlPAAQ","CreatedByIssuer":null,"CreatedDate":"2022-08-16T09:26:38.000+0000","DelegateUser":"user1","Display":"For user user@elastic.co, the User Verified Email status changed to verified","Id":"0Ym5j000019nwonCAA","Section":"Connected Apps","attributes":{"type":"SetupAuditTrail","url":"/services/data/v56.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA"}}],"totalSize":160}'
+        headers:
+          content-type: ["text/json"]
+  # Logout ELF
+  - path: /services/data/v56.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Logout' ORDER BY LogDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v56.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX"},"CreatedDate":"2022-09-19T21:03:41.000+0000","LogDate":"2022-09-18T00:00:00.000+0000","LogFile":"/services/data/v56.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX/LogFile"}]}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v56.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX/LogFile
     methods: ["GET"]
     responses:
       - status_code: 200
@@ -51,16 +64,27 @@ rules:
         body: |-
           "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","USER_TYPE","SESSION_TYPE","SESSION_LEVEL","BROWSER_TYPE","PLATFORM_TYPE","RESOLUTION_TYPE","APP_TYPE","CLIENT_VERSION","API_TYPE","API_VERSION","USER_INITIATED_LOGOUT","SESSION_KEY","LOGIN_KEY","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP"
           "Logout","20221122073725.779","4exLFFQZ1234xFl1cJNwOV","00D5j001234VI3n","0055j000000utlP","S","O","1","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36","1015","9999","1000","9998","f","54.0","0","WvtsJ1235oW24EbH","Obv9123BzbaxqCo1","2022-11-22T07:37:25.779Z","0055j000000utlPAAQ","81.2.69.142"
-  - path: /services/data/v54.0/query
+  # Logout Object
+  - path: /services/data/v56.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT FIELDS(STANDARD) FROM LogoutEvent"]
+    responses:
+      - status_code: 200
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"LogoutEvent","url":"/services/data/v58.0/sobjects/LogoutEvent/000000000000000AAA"},"Id":"000000000000000AAA","CreatedDate":"2024-06-05T05:32:41.610+0000","EventIdentifier":"6f86fbe7-17a3-4a02-8dfe-dee2a38ab73a","UserId":"0055j000000utlPAAQ","Username":"user.name@email.com","EventDate":"2024-06-05T05:32:41.057+0000","SessionKey":"KVpUGBG7dN8Vk40A","LoginKey":"NDIjdAAkZgP5AAUA","SessionLevel":"STANDARD","SourceIp":"103.108.207.58"}]}'
+        headers:
+          content-type: ["text/json"]
+  # Apex ELF
+  - path: /services/data/v56.0/query/
     methods: ["GET"]
     query_params:
       q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND (EventType = 'ApexCallout' OR EventType = 'ApexExecution' OR EventType = 'ApexRestApi' OR EventType = 'ApexSoap' OR EventType = 'ApexTrigger' OR EventType = 'ExternalCustomApexCallout') ORDER BY LogDate ASC NULLS FIRST"]
     responses:
       - status_code: 200
-        body: '{"done":true,"records":[{"CreatedDate":"2022-10-01T23:22:27.000+0000","Id":"0AT5j00002GWEsRGAY","LogDate":"2022-09-30T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY/LogFile","attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY"}}],"totalSize":1}'
+        body: '{"done":true,"records":[{"CreatedDate":"2022-10-01T23:22:27.000+0000","Id":"0AT5j00002GWEsRGAY","LogDate":"2022-09-30T00:00:00.000+0000","LogFile":"/services/data/v56.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY/LogFile","attributes":{"type":"EventLogFile","url":"/services/data/v56.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY"}}],"totalSize":1}'
         headers:
           content-type: ["text/json"]
-  - path: /services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY/LogFile
+  - path: /services/data/v56.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY/LogFile
     methods: ["GET"]
     responses:
       - status_code: 200
@@ -69,43 +93,3 @@ rules:
         body: |-
           "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","URI","SESSION_KEY","LOGIN_KEY","TYPE","METHOD","SUCCESS","TIME","REQUEST_SIZE","RESPONSE_SIZE","URL","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED"
           "ApexCallout","20221122044615.591","4exLFFQZ1234xFl1cJNwOV","00D5j000000001V","0055j0000000001","1305","10","CALLOUT-LOG","WvtsJ1235oW24EbH","Obv9123BzbaxqCo1","OData","GET","1","1293","10","256","https://temp.sh/odata/Accounts","2022-11-22T04:46:15.591Z","0055j012345utlPAAQ","81.2.69.142","0055j000000utlPAQZB"
-  - path: /cometd/38.0
-    methods: ["POST"]
-    request_body: '{"channel": "/meta/handshake", "supportedConnectionTypes": ["long-polling"], "version": "1.0"}'
-    responses:
-      - status_code: 200
-        body: |
-          [{"ext":{"replay":true,"payload.format":true},"minimumVersion":"1.0","clientId":"temp_client_id","supportedConnectionTypes":["long-polling"],"channel":"/meta/handshake","version":"1.0","successful":true}]
-  - path: /cometd/38.0
-    methods: ["POST"]
-    request_body: '{"channel": "/meta/connect", "connectionType": "long-polling", "clientId": "temp_client_id"} '
-    responses:
-      - status_code: 200
-        body: |
-          [{"data": {"payload": { "EventDate": "2022-12-28T11:47:22Z", "AuthServiceId": "06af6d92deqFAwqDaS", "CountryIso": "IN", "Platform": "Unknown", "EvaluationTime": 0.0, "CipherSuite": "ECDHE-RSA-AES256-GCM-SHA384", "PostalCode": "395007", "ClientVersion": "N/A", "LoginGeoId": "04F5j00000FadrI", "LoginUrl": "login.salesforce.com", "LoginHistoryId": "0Ya5j00000GLxCdCAL", "CreatedById": "0055j000000q9s7AAA", "SessionKey": "vMASKIU6AxEr+Op5", "ApiType": "N/A", "AuthMethodReference": "RFC 8176", "LoginType": "Remote Access 2.0", "PolicyOutcome": "Notified", "Status": "Success", "AdditionalInfo": "{}", "ApiVersion": "N/A", "EventIdentifier": "06af6d92-1167-467d-a826-ee8583f7134d", "RelatedEventIdentifier": "bd76f3e7-9ee5-4400-9e7f-54de57ecd79c", "LoginLatitude": 21.1888, "City": "Surat", "Subdivision": "Gujarat", "SourceIp": "81.2.69.142", "Username": "user@elastic.co", "UserId": "0055j000000utlPAAQ", "CreatedDate": "2022-12-28T11:47:30Z", "Country": "India", "LoginLongitude": 72.8293, "TlsProtocol": "TLS 1.2", "LoginKey": "o3vhFaSRBb0OzpCl", "Application": "elastic integration", "UserType": "Standard", "PolicyId": "0NIB000000000KOOAY", "HttpMethod": "POST", "SessionLevel": "STANDARD", "Browser": "Unknown" }, "event": {"replayId":1234}}, "channel": "/event/LoginEventStream"}]
-  - path: /cometd/38.0
-    methods: ["POST"]
-    responses:
-      - status_code: 200
-        body: |
-          [{"clientId": "temp_client_id", "channel": "/meta/subscribe", "subscription": "/event/LoginEventStream", "successful":true}]
-  - path: /cometd/38.0
-    methods: ["POST"]
-    request_body: '{"channel": "/meta/handshake", "supportedConnectionTypes": ["long-polling"], "version": "1.0"}'
-    responses:
-      - status_code: 200
-        body: |
-          [{"ext":{"replay":true,"payload.format":true},"minimumVersion":"1.0","clientId":"temp_client_id_1","supportedConnectionTypes":["long-polling"],"channel":"/meta/handshake","version":"1.0","successful":true}]
-  - path: /cometd/38.0
-    methods: ["POST"]
-    responses:
-      - status_code: 200
-        body: |
-          [{"clientId": "temp_client_id_1", "channel": "/meta/subscribe", "subscription": "/event/LogoutEventStream", "successful":true}]
-  - path: /cometd/38.0
-    methods: ["POST"]
-    request_body: '{"channel": "/meta/connect", "connectionType": "long-polling", "clientId": "temp_client_id_1"} '
-    responses:
-      - status_code: 200
-        body: |
-          [{ "data": { "schema": "KvR3_Gn5cwCA8TYgASeP_A", "payload": { "EventDate": "2022-12-29T11:38:54Z", "EventIdentifier": "06ce4a9d-8d6b-4a71-aad8-04d28c9a43df", "SourceIp": "81.2.69.142", "CreatedById": "0055j000000q9s7AAA", "Username": "user@elastic.co", "UserId": "0055j000000utlPAAQ", "RelatedEventIdentifier": null, "SessionKey": "6/HAElgoPCwskqBU", "CreatedDate": "2022-12-29T11:38:54Z", "LoginKey": "CuRVtbMjat6xxbTH", "SessionLevel": "STANDARD" }, "event": { "replayId": 14168970 } }, "channel": "/event/LogoutEventStream" }]

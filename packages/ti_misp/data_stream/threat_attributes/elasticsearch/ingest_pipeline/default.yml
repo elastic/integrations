@@ -199,14 +199,38 @@ processors:
   - set:
       field: threat.feed.name
       value: "MISP"
-  - rename:
+  - script:
+      description: Convert microseconds to millseconds.
+      lang: painless
+      source: |
+        if (ctx.misp?.attribute?.first_seen != null && ctx.misp.attribute.first_seen.length() > 3) {
+            ctx.misp.attribute.first_seen = ctx.misp.attribute.first_seen.substring(0, ctx.misp.attribute.first_seen.length() - 3)
+        }
+        if (ctx.misp?.attribute?.last_seen != null && ctx.misp.attribute.last_seen.length() > 3) {
+            ctx.misp.attribute.last_seen = ctx.misp.attribute.last_seen.substring(0, ctx.misp.attribute.last_seen.length() - 3)
+        }
+  - date:
       field: misp.attribute.first_seen
       target_field: threat.indicator.first_seen
-      ignore_missing: true
-  - rename:
+      tag: date_attribute_first_seen
+      if: ctx.misp?.attribute?.first_seen != null
+      formats:
+        - UNIX_MS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
       field: misp.attribute.last_seen
       target_field: threat.indicator.last_seen
-      ignore_missing: true
+      tag: date_attribute_last_seen
+      if: ctx.misp?.attribute?.last_seen != null
+      formats:
+        - UNIX_MS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: misp.event.analysis
       type: long
@@ -220,7 +244,7 @@ processors:
       if: "ctx.misp?.attribute?.type != null && (['md5', 'impfuzzy', 'imphash', 'pehash', 'sha1', 'sha224', 'sha256', 'sha3-224', 'sha3-256', 'sha3-384', 'sha3-512', 'sha384', 'sha512', 'sha512/224', 'sha512/256', 'ssdeep', 'tlsh', 'vhash'].contains(ctx.misp.attribute.type) || ctx.misp.attribute.type.startsWith('filename'))"
   - rename:
       field: misp.attribute.value
-      target_field: "threat.indicator.file.hash.{{misp.attribute.type}}"
+      target_field: "threat.indicator.file.hash.{{{misp.attribute.type}}}"
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'file' && ctx.misp?.attribute?.type != null && !ctx.misp.attribute.type.startsWith('filename')"
   - rename:
@@ -241,8 +265,8 @@ processors:
       ignore_missing: true
       if: ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|')
   - set:
-      field: threat.indicator.file.hash.{{_tmp.hashtype}}
-      value: "{{_tmp.hashvalue}}"
+      field: threat.indicator.file.hash.{{{_tmp.hashtype}}}
+      value: "{{{_tmp.hashvalue}}}"
       if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|') && ctx._tmp?.hashvalue != null && ctx._tmp.hashtype != null"
 
   ## URL/URI indicator operations

@@ -2,6 +2,7 @@ title: Web Logs
 type: logs
 streams:
   - input: tcp
+    enabled: false
     template_path: tcp.yml.hbs
     title: Zscaler Internet Access Web Logs
     description: Collect Zscaler Internet Access Web Logs using TCP input.
@@ -14,6 +15,16 @@ streams:
         required: true
         show_user: true
         default: 9014
+      - name: tcp_options
+        type: yaml
+        title: Custom TCP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #max_message_size: 50KiB
+          #max_connections: 1
+        description: Specify custom configuration options for the TCP input.
       - name: tags
         type: text
         title: Tags
@@ -31,6 +42,13 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve Custom fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
       - name: processors
         type: yaml
         title: Processors
@@ -40,6 +58,7 @@ streams:
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
   - input: http_endpoint
+    enabled: false
     template_path: http_endpoint.yml.hbs
     title: Zscaler Internet Access Web Logs
     description: Collect Zscaler Internet Access Web logs via HTTP Endpoint Input.
@@ -69,6 +88,13 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve Custom fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
       - name: processors
         type: yaml
         title: Processors

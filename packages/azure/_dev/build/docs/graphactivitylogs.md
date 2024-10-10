@@ -81,4 +81,8 @@ The `graphactivitylogs` data stream of the Azure Logs package will collect Micro
 
 {{event "graphactivitylogs"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "graphactivitylogs"}}

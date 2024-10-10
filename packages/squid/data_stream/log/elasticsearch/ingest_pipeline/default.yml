@@ -1,71 +1,254 @@
 ---
-description: Pipeline for Squid
-
+description: Pipeline for processing Squid logs.
 processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  # User agent
-  - user_agent:
-      field: user_agent.original
+  - set:
+      field: event.original
+      copy_from: message
+  - remove:
+      field: message
+  - set:
+      field: observer.vendor
+      value: Squid
+  - set:
+      field: observer.product
+      value: Squid
+  - set:
+      field: observer.type
+      value: proxy
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [web]
+  - set:
+      field: event.type
+      value: [access]
+
+  - grok:
+      tag: grok_message
+      field: event.original
+      patterns:
+        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NOTSLASH:_tmp.code}/%{NOTSPACE:_tmp.status:long} %{NUMBER:_tmp.destination_bytes:long} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.content_type}$'
+      pattern_definitions:
+        NOTSLASH: '[^/]+'
+        NOTBRACKET: '[^\[\]]+'
+        NUMBER: '[0-9]+'
+
+  - script:
+      tag: remove_empty_fields
+      lang: painless
+      source: >-
+        ctx._tmp?.values().removeIf(value -> value == "-");
+
+  - script:
+      tag: compute_timestamp
+      lang: painless
+      if: ctx._tmp?.time_s instanceof Number && ctx._tmp?.time_ms instanceof Number
+      source: >-
+        ctx["@timestamp"] = new Date(ctx._tmp.time_s * 1000 + ctx._tmp.time_ms);
+  - script:
+      tag: compute_elapsed
+      lang: painless
+      if: ctx._tmp?.elapsed instanceof Number
+      source: >-
+        ctx.event["duration"] = ctx._tmp.elapsed * 1000000;
+
+  - rename:
+      tag: move_user_name
+      field: _tmp.user_name
+      target_field: source.user.name
       ignore_missing: true
-  # IP Geolocation Lookup
+  - append:
+      tag: append_related_source_user
+      field: related.user
+      value: '{{{source.user.name}}}'
+      allow_duplicates: false
+      if: ctx.source?.user?.name != null
+
+  - rename:
+      tag: move_source_address
+      field: _tmp.source_ip
+      target_field: source.address
+      ignore_missing: true
+  - convert:
+      tag: convert_source_ip
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+
+  - rename:
+      tag: move_destination_bytes
+      field: _tmp.destination_bytes
+      target_field: destination.bytes
+      ignore_missing: true
+
+  - rename:
+      tag: move_http_method
+      field: _tmp.method
+      target_field: http.request.method
+      ignore_missing: true
+  - uri_parts:
+      tag: uri_parts
+      field: _tmp.url
+      if: ctx.http?.request?.method != 'CONNECT'
+      ignore_missing: true
+      on_failure:
+        - set:
+            tag: set_url_original_on_fail
+            field: url.original
+            copy_from: _tmp.url
+  - rename:
+      tag: move_connect_hostport
+      field: _tmp.url
+      target_field: url.original
+      if: ctx._tmp?.url != null && ctx.http?.request?.method == 'CONNECT'
+
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx._tmp?.status instanceof Number && ctx._tmp.status < 400
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: ctx._tmp?.status instanceof Number && ctx._tmp.status >= 400
+  - rename:
+      tag: move_status_code
+      field: _tmp.status
+      target_field: squid.status_code
+      ignore_missing: true
+
+  - rename:
+      tag: move_result_code
+      field: _tmp.code
+      target_field: squid.result_code
+      ignore_missing: true
+  - rename:
+      tag: move_peer_status
+      field: _tmp.peer_status
+      target_field: squid.peer_status
+      ignore_missing: true
+  - rename:
+      tag: move_content_type
+      field: _tmp.content_type
+      target_field: squid.content_type
+      ignore_missing: true
+
+  - rename:
+      tag: move_peer_host
+      field: _tmp.peer_host
+      target_field: destination.address
+      ignore_missing: true
+  - set:
+      tag: set_url_destination_address
+      field: destination.address
+      copy_from: url.domain
+      ignore_empty_value: true
+      if: ctx.destination?.address == null
+  - convert:
+      tag: convert_destination_ip
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+
   - geoip:
+      tag: geoip_source_ip
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
-
-  # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_as
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
       properties:
-          - asn
-          - organization_name
+        - asn
+        - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_as
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
       properties:
-          - asn
-          - organization_name
+        - asn
+        - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-  - append:
-      field: related.hosts
-      value: '{{host.name}}'
-      allow_duplicates: false
-      if: ctx.host?.name != null && ctx.host?.name != ''
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
+
+  - registered_domain:
+      tag: url_registered_domain
+      field: url.domain
+      target_field: url
       ignore_missing: true
+
+  - append:
+      tag: append_related_url_host
+      field: related.hosts
+      value: '{{{url.domain}}}'
+      allow_duplicates: false
+      if: ctx.url?.domain != null
+  - append:
+      tag: append_related_source_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      tag: append_related_destination_ip
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+
+  - remove:
+      tag: remove_fields
+      field:
+        - _tmp
+      ignore_missing: true
+
 on_failure:
+  - remove:
+      tag: remove_fields
+      field:
+        - _tmp
+      ignore_missing: true
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'

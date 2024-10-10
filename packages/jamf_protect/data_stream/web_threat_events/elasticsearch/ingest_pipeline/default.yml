@@ -22,6 +22,9 @@ processors:
     - set:
         field: observer.vendor
         value: Jamf
+    - set:
+        field: observer.type
+        value: Endpoint Security
 
 #######################
 ## ECS Event Mapping ##
@@ -50,7 +53,7 @@ processors:
         if: ctx.jamf_protect?.threat?.event?.action != null
     - set:
         field: event.reason
-        value: '{{jamf_protect.threat.event.eventType.description}}'
+        value: '{{{jamf_protect.threat.event.eventType.description}}}'
         if: ctx.jamf_protect?.threat?.event?.eventType?.description != null
         # ignore_missing: true
     - rename:
@@ -80,7 +83,7 @@ processors:
         ignore_missing: true
     - set:
         field: rule.description
-        value: '{{jamf_protect.threat.event.eventType.description}}'
+        value: '{{{jamf_protect.threat.event.eventType.description}}}'
         if: ctx.jamf_protect?.threat?.event?.eventType?.description != null
         # ignore_missing: true
     - rename:

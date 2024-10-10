@@ -1,0 +1,15 @@
+version: "2.3"
+services:
+  proofpoint_on_demand-websocket:
+    image: golang:1.21-alpine
+    hostname: proofpoint_on_demand
+    working_dir: /app
+    volumes:
+      - ./websocket-mock-service:/app
+    ports:
+      - "8443:8443"
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:8443/health || exit 1"
+      interval: 10s
+      timeout: 5s
+    command: ["go", "run", "main.go"]

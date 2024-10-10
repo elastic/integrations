@@ -2,10 +2,11 @@
 description: Pipeline for Suricata TLS Events
 
 processors:
-  - dissect:
+  - grok:
       field: suricata.eve.tls.version
-      pattern: '%{tls.version_protocol} %{tls.version}'
-      ignore_missing: true
+      patterns:
+        - "%{DATA:tls.version_protocol} %{GREEDYDATA:tls.version}"
+        - "%{DATA:tls.version_protocol}v%{GREEDYDATA:tls.version}"
       if: ctx?.suricata?.eve?.tls?.version != 'UNDETERMINED'
   - lowercase:
       field: tls.version_protocol
@@ -166,7 +167,7 @@ processors:
       ignore_failure: true
   - append:
       field: related.hash
-      value: "{{tls.server.hash.sha1}}"
+      value: "{{{tls.server.hash.sha1}}}"
       if: "ctx?.tls?.server?.hash?.sha1 != null"
   - set:
       field: tls.client.server_name

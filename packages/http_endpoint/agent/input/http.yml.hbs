@@ -54,6 +54,9 @@ include_headers:
   - {{header}}
 {{/each}}
 {{/if}}
+{{#if preserve_original_event}}
+preserve_original_event: true
+{{/if}}
 {{#if ssl}}
 ssl: 
   {{ssl}}
@@ -68,6 +71,10 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+{{#if enable_request_tracer}}
+tracer.filename: "../../logs/http_endpoint/http-request-trace-*.ndjson"
+tracer.maxbackups: 5
+{{/if}}
 {{#if processors}}
 processors:
 {{processors}}

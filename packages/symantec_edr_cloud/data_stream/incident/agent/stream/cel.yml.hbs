@@ -45,7 +45,7 @@ program: |
       })
   ).as(state,
     post_request(
-      state.url + "/v1/incidents",
+      state.url.trim_right("/") + "/v1/incidents",
       "application/json",
       {
         "limit": state.limit,
@@ -53,35 +53,53 @@ program: |
         "end_date": state.end_date,
         "next": state.next
       }.encode_json()
-    ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
-      "events": body.incidents.map(e, {
-        "message": e.encode_json(),
-      }),
-      "next": (
-        has(body.next) && (body.next != body.total)
-        ?
-          body.next
-        :
-          0
-      ),
-      "want_more": has(body.next) && (body.next != body.total),
-      "limit": state.limit,
-      "start_date": string(state.start_date),
-      "end_date": string(state.end_date),
-      "cursor": {
-        "last_timestamp": (
-          (has(body.next) ? (body.next == body.total) : true)
-          ?
-            state.end_date
-          :
-            has(state.cursor) && has(state.cursor.last_timestamp)
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body, {
+          "events": body.incidents.map(e, {
+            "message": e.encode_json(),
+          }),
+          "next": (
+            has(body.next) && (body.next != body.total)
             ?
-              state.cursor.last_timestamp
+              body.next
             :
-              null
-        )
-      }
-    }))
+              0
+          ),
+          "want_more": has(body.next) && (body.next != body.total),
+          "limit": state.limit,
+          "start_date": string(state.start_date),
+          "end_date": string(state.end_date),
+          "cursor": {
+            "last_timestamp": (
+              (has(body.next) ? (body.next == body.total) : true)
+              ?
+                state.end_date
+              :
+                has(state.cursor) && has(state.cursor.last_timestamp)
+                ?
+                  state.cursor.last_timestamp
+                :
+                  null
+            )
+          }
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+    )
   )
 tags:
 {{#if preserve_original_event}}

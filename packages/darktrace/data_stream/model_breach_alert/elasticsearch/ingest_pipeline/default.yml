@@ -343,10 +343,10 @@ processors:
   - uppercase:
       field: darktrace.model_breach_alert.device.mac_address
       ignore_missing: true
-  - set:
+  - append:
       field: host.mac
-      copy_from: darktrace.model_breach_alert.device.mac_address
-      ignore_failure: true
+      value: '{{{darktrace.model_breach_alert.device.mac_address}}}'
+      if: ctx.darktrace?.model_breach_alert?.device?.mac_address != null && ctx.darktrace.model_breach_alert.device.mac_address != ''
   - convert:
       field: json.device.sid
       target_field: darktrace.model_breach_alert.device.sid

@@ -196,7 +196,6 @@ An example event for `log` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | vectra_detect.log.account.access_history.id |  | keyword |
 | vectra_detect.log.account.access_history.last_seen |  | date |
 | vectra_detect.log.account.access_history.privilege_category |  | keyword |

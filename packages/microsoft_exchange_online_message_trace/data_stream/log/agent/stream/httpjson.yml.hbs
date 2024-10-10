@@ -38,12 +38,14 @@ request.transforms:
       target: url.params.$skiptoken
       value: 0
 fields_under_root: true
+{{#if local_domains}}
 fields:
   _conf:
     local_domains:
     {{#each local_domains as |local_domain i|}}
       - {{local_domain}}
     {{/each}}
+{{/if}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
@@ -56,6 +58,7 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 response.split:
   target: body.value
+  ignore_empty_value: true
 response.pagination:
   - set:
       target: url.params.$filter

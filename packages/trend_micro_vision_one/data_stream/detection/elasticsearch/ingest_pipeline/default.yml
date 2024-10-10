@@ -190,9 +190,11 @@ processors:
       field: json.endpointMacAddress
       target_field: trend_micro_vision_one.detection.endpoint.mac
       ignore_missing: true
-  - set:
+  - append:
       field: host.mac
-      copy_from: trend_micro_vision_one.detection.endpoint.mac
+      value: '{{{trend_micro_vision_one.detection.endpoint.mac}}}'
+      if: ctx.trend_micro_vision_one?.detection?.endpoint?.mac != null
+      allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.endpointHostName

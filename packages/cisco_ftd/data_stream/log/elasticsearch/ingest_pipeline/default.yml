@@ -388,13 +388,33 @@ processors:
       if: '["113029","113030","113031","113032","113033","113034","113035","113036","113038","113039"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
       description: "113029, 113030, 113031, 113032, 113033, 113034, 113035, 113036, 113038, 113039"
+      tag: "113039_group_user_ip"
       patterns:
-        - "Group <%{NOTSPACE:source.user.group.name}> User <%{CISCO_USER:source.user.name}> IP <%{IP:source.address}>"
-        - "Group %{NOTSPACE:source.user.group.name} User %{CISCO_USER:source.user.name} IP %{IP:source.address}"
+        - '^Group <%{NOTBRACKET:source.user.group.name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}>'
+        - '^Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address}'
       pattern_definitions:
-        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
+        NOTBRACKET: "[^<>]+"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '113042'"
+      field: "message"
+      description: "113042"
+      tag: "113042"
+      patterns:
+        - "^Non-HTTP connection from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port} denied by redirect filter; only HTTP connections are supported for redirection.$"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '210007'"
+      field: "message"
+      description: "210007"
+      tag: "210007"
+      patterns:
+        - "^LU allocate xlate failed for %{TYPE:_temp_.cisco.translation_type} %{WORD:network.protocol} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \\(%{IPORHOST:_temp_.cisco.mapped_source_ip}/%{NUMBER:_temp_.cisco.mapped_source_port}\\) to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port} \\(%{IPORHOST:_temp_.cisco.mapped_destination_ip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\\)"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        TYPE: "%{WORD}-%{WORD}"
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
@@ -411,6 +431,16 @@ processors:
       field: "message"
       description: "303002"
       pattern: "%{network.protocol} connection from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}, user %{client.user.name} %{} file %{file.path}"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '305006'"
+      field: "message"
+      description: "305006"
+      tag: "305013"
+      patterns:
+        - "^%{NOTSPACE:_temp_.cisco.translation_type} translation creation failed for %{NOTSPACE:network.protocol} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\)$"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
   - grok:
       if: "ctx._temp_.cisco.message_id == '305012'"
       field: "message"
@@ -451,7 +481,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '302023'"
       field: "message"
       description: "302023"
-      pattern: "Teardown stub %{network.transport} connection for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} duration %{_temp_.duration_hms} forwarded bytes %{network.bytes} %{event.reason}"
+      pattern: "Teardown %{->} %{network.transport} connection for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} duration %{_temp_.duration_hms} forwarded bytes %{network.bytes} %{event.reason}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '304001'"
       field: "message"
@@ -474,6 +504,16 @@ processors:
       description: "305011"
       patterns:
         - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port}
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '305013'"
+      field: "message"
+      description: "305013"
+      tag: "305013"
+      patterns:
+        - "^Asymmetric NAT rules matched for forward and reverse flows; Connection for protocol %{NOTSPACE:network.iana_number} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}(?:/%{NUMBER:source.port})?(?:\\(%{NOTSPACE:source.user.name}\\))? dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST}(?:/%{NUMBER:destination.port})? denied due to NAT reverse path failure"
+        - "^Asymmetric NAT rules matched for forward and reverse flows; Connection for %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}(?:/%{NUMBER:source.port})?(?:\\(%{NOTSPACE:source.user.name}\\))? dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST}(?:/%{NUMBER:destination.port})? denied due to NAT reverse path failure"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313001'"
       field: "message"
@@ -688,6 +728,19 @@ processors:
       value: "{{{source.port}}}"
       ignore_empty_value: true
   - dissect:
+      if: "ctx._temp_.cisco.message_id == '401004'"
+      field: "message"
+      description: "401004"
+      tag: "401004"
+      pattern: "Shunned packet: %{source.address} ==> %{destination.address} on interface %{_temp_.cisco.destination_interface}"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '500004'"
+      field: "message"
+      description: "500004"
+      tag: "500004"
+      patterns:
+        - "^Invalid transport field for protocol=%{NOTSPACE:network.transport}, from %{IPORHOST:source.address}/%{NUMBER:source.port} to %{IPORHOST:destination.address}/%{NUMBER:destination.port}$"
+  - dissect:
       if: "ctx._temp_.cisco.message_id == '502103'"
       field: "message"
       description: "502103"
@@ -772,15 +825,19 @@ processors:
       field: "message"
       description: "716002"
       patterns:
-        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> WebVPN session terminated: %{GREEDYDATA:event.reason}."
+        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTANGLE:source.user.name}> IP <%{IP:source.address}> WebVPN session terminated: %{GREEDYDATA:event.reason}."
         - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} WebVPN session terminated: %{GREEDYDATA:event.reason}."
+      pattern_definitions:
+        NOTANGLE: "[^>]+"
   - grok:
       if: "ctx._temp_.cisco.message_id == '722051'"
       field: "message"
       description: "722051"
       patterns:
-        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> IPv4 Address <%{IP:_temp_.cisco.assigned_ip}> %{GREEDYDATA}"
+        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTANGLE:source.user.name}> IP <%{IP:source.address}> IPv4 Address <%{IP:_temp_.cisco.assigned_ip}> %{GREEDYDATA}"
         - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} IPv4 Address %{IP:_temp_.cisco.assigned_ip} %{GREEDYDATA}"
+      pattern_definitions:
+        NOTANGLE: "[^>]+"
   - grok:
       if: "ctx._temp_.cisco.message_id == '733100'"
       field: "message"
@@ -1758,7 +1815,7 @@ processors:
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       field: "destination.user.name"
       tag: "grok_destination_user_name"
@@ -1776,7 +1833,7 @@ processors:
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
   #
   # Normalize protocol names
@@ -2616,11 +2673,6 @@ processors:
   - community_id:
       ignore_missing: true
       ignore_failure: true
-  - remove:
-      field: event.original
-      if: "ctx.tags?.contains('preserve_original_event') != true"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   # Copy any fields under _temp_.cisco to its final destination. Those can help
   # with diagnosing the failure.
@@ -2639,4 +2691,5 @@ on_failure:
       value: pipeline_error
   - append:
       field: "error.message"
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
