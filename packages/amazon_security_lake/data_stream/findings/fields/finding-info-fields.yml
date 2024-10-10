@@ -1,0 +1,137 @@
+- name: ocsf
+  type: group
+  fields:
+    - name: finding_info
+      type: group
+      description: Describes the supporting information about a generated finding.
+      fields:
+        - name: uid
+          type: keyword
+          description: The unique identifier of the reported finding.
+        - name: title
+          type: text
+          description: A title or a brief phrase summarizing the reported finding.
+        - name: desc
+          type: text
+          description: The description of the reported finding.
+        - name: created_time
+          type: long
+          description: The time when the finding was created.
+        - name: created_time_dt
+          type: date
+          description: The time (date) when the finding was created.
+        - name: first_seen_time
+          type: long
+          description: The time when the finding was first observed.
+        - name: first_seen_time_dt
+          type: date
+          description: The time (date) when the finding was first observed.
+        - name: last_seen_time
+          type: long
+          description: The time when the finding was most recently observed.
+        - name: last_seen_time_dt
+          type: date
+          description: The time (date) when the finding was most recently observed.
+        - name: modified_time
+          type: long
+          description: The time when the finding was last modified.
+        - name: modified_time_dt
+          type: date
+          description: The time (date) when the finding was last modified.
+        - name: src_url
+          type: keyword
+          description: The URL pointing to the source of the finding.
+        - name: product_uid
+          type: keyword
+          description: The unique identifier of the product that reported the finding.
+        - name: types
+          type: keyword
+          description: One or more types of the reported finding.
+        - name: data_sources
+          type: keyword
+          description: A list of data sources utilized in generation of the finding.
+        - name: analytic
+          type: group
+          description: The analytic technique used to analyze and derive insights from the data or information that led to the finding or conclusion.
+          fields:
+            - name: category
+              type: keyword
+              description: The analytic category.
+            - name: desc
+              type: text
+              description: The description of the analytic that generated the finding.
+            - name: name
+              type: keyword
+              description: The name of the analytic that generated the finding.
+            - name: related_analytics
+              type: flattened
+              description: Other analytics related to this analytic.
+            - name: type
+              type: keyword
+              description: The analytic type.
+            - name: type_id
+              type: integer
+              description: The analytic type ID.
+            - name: uid
+              type: keyword
+              description: The unique identifier of the analytic that generated the finding.
+            - name: version
+              type: keyword
+              description: The analytic version. For example, 1.1.
+        - name: attacks
+          type: group
+          description: MITRE ATT&CK Details.
+          fields:
+            - name: sub_technique
+              type: flattened
+              description: The Sub Technique object describes the sub technique ID and/or name associated to an attack.
+            - name: tactic
+              type: flattened
+              description: The Tactic object describes the tactic ID and/or name that is associated to an attack.
+            - name: tactics
+              type: flattened
+              description: The Tactic object describes the tactic ID and/or tactic name that are associated with the attack technique.
+            - name: technique
+              type: flattened
+              description: The Technique object describes the technique ID and/or name associated to an attack, as defined by ATT&CK MatrixTM.
+            - name: version
+              type: keyword
+              description: The ATT&CK MatrixTM version.
+        - name: kill_chain
+          type: group
+          description: The Cyber Kill Chain provides a detailed description of each phase and its associated activities within the broader context of a cyber attack.
+          fields:
+            - name: phase
+              type: keyword
+              description: The cyber kill chain phase.
+            - name: phase_id
+              type: integer
+              description: The cyber kill chain phase identifier.
+        - name: related_analytics
+          type: flattened
+          description: Other analytics related to this finding.
+        - name: related_events
+          type: group
+          description: Describes events and/or other findings related to the finding as identified by the security product.
+          fields:
+            - name: attacks
+              type: flattened
+              description: MITRE ATT&CK Details.
+            - name: kill_chain
+              type: flattened
+              description: The Cyber Kill Chain provides a detailed description of each phase and its associated activities within the broader context of a cyber attack.
+            - name: observables
+              type: flattened
+              description: The observables associated with the event or a finding.
+            - name: product_uid
+              type: keyword
+              description: The unique identifier of the product that reported the related event.
+            - name: type
+              type: keyword
+              description: The type of the related event. For example, Process Activity, Launch.
+            - name: type_uid
+              type: integer
+              description: The unique identifier of the related event type. For example, 100701.
+            - name: uid
+              type: keyword
+              description: The unique identifier of the related event.
