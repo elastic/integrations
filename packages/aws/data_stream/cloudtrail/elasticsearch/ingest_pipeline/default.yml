@@ -113,6 +113,7 @@ processors:
         } else if (eventSource == "iam.amazonaws.com") {
           addFields(related, new String[]{
             "json.requestParameters.userName",
+            "json.requestParameters.serialNumber",
             "json.requestParameters.accessKeyId",
             "json.requestParameters.policyArn",
             "json.requestParameters.roleName",
@@ -363,9 +364,10 @@ processors:
         } else if (eventName == "GetPasswordData") {
           addField(target, "json.requestParameters.instanceId");
 
-        }
+        } else if (eventName == "DeactivateMFADevice") {
+          addField(target, "json.requestParameters.userName");
 
-
+        } 
         
         if (!target.isEmpty()) {
           field("entity.targets").set(target);
