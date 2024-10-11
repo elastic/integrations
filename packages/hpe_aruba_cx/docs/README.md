@@ -7,7 +7,7 @@ Use the HPE Aruba integration and follow the setup steps listed below to forward
 
 ## Compatibility
 
-This package follows the [5200-8214 specification](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/PDF/5200-8214.pdf) and has been tested from sample logs captured from the HPE Aruba Networking CX Switches: **6000, 6300 and 8360**. As new appliances are released, they are expected to be compatible with the integration but Elastic does not guarantee compatibility with new version of the product line.
+This package follows the [5200-8214 specification](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/PDF/5200-8214.pdf) and has been tested from sample logs captured from the HPE Aruba Networking CX Switches: **6000, 6300 and 8360** on the 10.07 version of the specification. As new appliances and OSes are released, they are expected to be compatible with the integration but Elastic does not guarantee compatibility with new/old version of the product line.
 
 
 ## Data streams
