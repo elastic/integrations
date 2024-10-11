@@ -28,7 +28,7 @@ processors:
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - kv:
       tag: "kv_syslog_structured_semicolon_colon"
       field: syslog5424_sd
@@ -52,7 +52,7 @@ processors:
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       field: syslog5424_sd
       if: ctx.checkpoint == null
@@ -86,7 +86,7 @@ processors:
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - foreach:
       field: checkpoint
       ignore_missing: true
@@ -160,7 +160,7 @@ processors:
                   field: error.message
                   value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
               - fail:
-                  message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+                  message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   # Some log events lack loguid and time, so to avoid potential
   # collisions hash the complete line in those rare cases.
   - fingerprint:
@@ -192,7 +192,7 @@ processors:
       if: ctx.checkpoint?.type == null
   - set:
       field: observer.product
-      value: "{{checkpoint.product}}"
+      value: "{{{checkpoint.product}}}"
       ignore_empty_value: true
   - rename:
       field: checkpoint.src
@@ -435,37 +435,37 @@ processors:
       if: ctx.checkpoint?.action == 'Failed Log In'
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.ip
-      value: "{{source.nat.ip}}"
+      value: "{{{source.nat.ip}}}"
       allow_duplicates: false
       if: ctx.source?.nat?.ip != null
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
       field: related.ip
-      value: "{{destination.nat.ip}}"
+      value: "{{{destination.nat.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.nat?.ip != null
   - append:
       field: related.hash
-      value: "{{checkpoint.file_md5}}"
+      value: "{{{checkpoint.file_md5}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.file_md5 != null
   - append:
       field: related.hash
-      value: "{{checkpoint.file_sha1}}"
+      value: "{{{checkpoint.file_sha1}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.file_sha1 != null
   - append:
       field: related.hash
-      value: "{{checkpoint.file_sha256}}"
+      value: "{{{checkpoint.file_sha256}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.file_sha256 != null
   - rename:
@@ -1066,7 +1066,7 @@ processors:
             field: error.message
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - rename:
       field: checkpoint._temp_unixms
       target_field: "@timestamp"
@@ -1097,22 +1097,22 @@ processors:
       if: ctx.checkpoint?.sys_message != null
   - append:
       field: related.user
-      value: "{{checkpoint.user}}"
+      value: "{{{checkpoint.user}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.user != null
   - append:
       field: related.user
-      value: "{{checkpoint.administrator}}"
+      value: "{{{checkpoint.administrator}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.administrator != null
   - append:
       field: related.user
-      value: "{{checkpoint.src_user_name}}"
+      value: "{{{checkpoint.src_user_name}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.src_user_name != null
   - append:
       field: related.user
-      value: "{{checkpoint.dst_user_name}}"
+      value: "{{{checkpoint.dst_user_name}}}"
       allow_duplicates: false
       if: ctx.checkpoint?.dst_user_name != null
   - script:
@@ -1303,4 +1303,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"
