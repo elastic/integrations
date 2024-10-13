@@ -91,7 +91,7 @@ processors:
       if: ctx.json?.file_sha1 != null
       allow_duplicates: false
 
-#################### Zero Phishing Log fields ####################
+####################### ECS fields #####################
 
   - date:
       field: json.time
@@ -142,11 +142,16 @@ processors:
       field: json.user_sid
       target_field: user.id
       ignore_missing: true
-  - join:
+  - rename:
       field: json.resource
       target_field: url.original
-      separator: ','
       if: ctx.json?.resource != null && ["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
+  - script:
+      lang: painless
+      if: ctx.url?.original != null
+      source: |-
+        if (ctx.url.original instanceof List && ctx.url.original.size() == 1)
+            ctx.url.original = ctx.url.original[0];
   - uri_parts:
       field: url.original
       tag: uri_parts_harmony_endpoint_zerophishing
@@ -159,6 +164,9 @@ processors:
       field: json.protection_name
       target_field: rule.name
       ignore_missing: true
+
+#################### Zero Phishing Log fields ####################
+
   - rename:
       field: json
       target_field: checkpoint_harmony_endpoint.zerophishing
@@ -179,25 +187,36 @@ processors:
       field: checkpoint_harmony_endpoint.zerophishing.client_name
       target_field: checkpoint_harmony_endpoint.zerophishing.client.name
       ignore_missing: true
-  - join:
+  - rename:
       field: checkpoint_harmony_endpoint.zerophishing.client_version
       target_field: checkpoint_harmony_endpoint.zerophishing.client.version
-      separator: ','
       if: ctx.checkpoint_harmony_endpoint.zerophishing?.client_version != null
-  - join:
-      field: json.web_client_type
-      target_field: checkpoint_harmony_endpoint.zerophishing.web_client_type
-      separator: ','
-      if: ctx.json?.web_client_type != null
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.client?.version != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.zerophishing.client.version instanceof List && ctx.checkpoint_harmony_endpoint.zerophishing.client.version.size() == 1)
+            ctx.checkpoint_harmony_endpoint.zerophishing.client.version = ctx.checkpoint_harmony_endpoint.zerophishing.client.version[0];
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.web_client_type != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.zerophishing.web_client_type instanceof List && ctx.checkpoint_harmony_endpoint.zerophishing.web_client_type.size() == 1)
+            ctx.checkpoint_harmony_endpoint.zerophishing.web_client_type = ctx.checkpoint_harmony_endpoint.zerophishing.web_client_type[0];
   - remove:
       field: checkpoint_harmony_endpoint.zerophishing.web_client_type
       ignore_missing: true
       if: ctx.checkpoint_harmony_endpoint?.zerophishing?.web_client_type == " "
-  - join:
+  - rename:
       field: checkpoint_harmony_endpoint.zerophishing.malware_action
       target_field: checkpoint_harmony_endpoint.zerophishing.malware.action
-      separator: ','
       if: ctx.checkpoint_harmony_endpoint.zerophishing?.malware_action != null
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.malware?.action != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.zerophishing.malware.action instanceof List && ctx.checkpoint_harmony_endpoint.zerophishing.malware.action.size() == 1)
+            ctx.checkpoint_harmony_endpoint.zerophishing.malware.action = ctx.checkpoint_harmony_endpoint.zerophishing.malware.action[0];
   - remove:
       field: checkpoint_harmony_endpoint.zerophishing.malware.action
       ignore_missing: true
@@ -222,7 +241,7 @@ processors:
       ignore_missing: true
       tag: remove_custom_duplicate_fields
 
-##########################################################################
+############################## Handle failures ########################################
 
 on_failure:
   - append:

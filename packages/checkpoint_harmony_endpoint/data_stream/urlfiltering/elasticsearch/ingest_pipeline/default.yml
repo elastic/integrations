@@ -2,7 +2,7 @@
 description: Pipeline for processing Harmony Endpoint URL Filtering logs
 processors:
 
-#################### Event ECS fields ####################
+#################### Event ECS fields #######################
 
   - set:
       field: event.module
@@ -43,7 +43,7 @@ processors:
       target_field: event.action
       ignore_missing: true
 
-#################### Related fields ####################
+#################### Related fields ########################
 
   - append:
       field: related.user
@@ -90,7 +90,7 @@ processors:
       if: ctx.json?.file_sha1 != null
       allow_duplicates: false
 
-#################### Threat Extraction Log fields ####################
+#################### ECS fields ###########################
 
   - date:
       field: json.time
@@ -138,11 +138,16 @@ processors:
       field: json.user_sid
       target_field: user.id
       ignore_missing: true
-  - join:
+  - rename:
       field: json.resource
       target_field: url.original
-      separator: ','
       if: ctx.json?.resource != null && ["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
+  - script:
+      lang: painless
+      if: ctx.url?.original != null
+      source: |-
+        if (ctx.url.original instanceof List && ctx.url.original.size() == 1)
+            ctx.url.original = ctx.url.original[0];
   - uri_parts:
       field: url.original
       tag: uri_parts_harmony_endpoint_urlfiltering
@@ -155,6 +160,9 @@ processors:
       field: json.protection_name
       target_field: rule.name
       ignore_missing: true
+
+#################### Threat Extraction Log fields #########
+
   - rename:
       field: json
       target_field: checkpoint_harmony_endpoint.urlfiltering
@@ -175,45 +183,40 @@ processors:
       field: checkpoint_harmony_endpoint.urlfiltering.client_name
       target_field: checkpoint_harmony_endpoint.urlfiltering.client.name
       ignore_missing: true
-  - join:
+  - rename:
       field: checkpoint_harmony_endpoint.urlfiltering.client_version
       target_field: checkpoint_harmony_endpoint.urlfiltering.client.version
-      separator: ','
       if: ctx.checkpoint_harmony_endpoint.urlfiltering?.client_version != null
-  - rename:
-      field: json.advanced_info
-      target_field: checkpoint_harmony_endpoint.urlfiltering.advanced_info
-      ignore_missing: true
-  - rename:
-      field: json.analyzed_on
-      target_field: checkpoint_harmony_endpoint.urlfiltering.analyzed_on
-      ignore_missing: true
-  - rename:
-      field: json.usercheck_incident_uid
-      target_field: checkpoint_harmony_endpoint.urlfiltering.usercheck_incident_uid
-      ignore_missing: true
-  - join:
-      field: json.web_client_type
-      target_field: checkpoint_harmony_endpoint.urlfiltering.web_client_type
-      separator: ','
-      if: ctx.json?.web_client_type != null
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.client?.version != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.urlfiltering.client.version instanceof List && ctx.checkpoint_harmony_endpoint.urlfiltering.client.version.size() == 1)
+            ctx.checkpoint_harmony_endpoint.urlfiltering.client.version = ctx.checkpoint_harmony_endpoint.urlfiltering.client.version[0];
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.web_client_type != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.urlfiltering.web_client_type instanceof List && ctx.checkpoint_harmony_endpoint.urlfiltering.web_client_type.size() == 1)
+            ctx.checkpoint_harmony_endpoint.urlfiltering.web_client_type = ctx.checkpoint_harmony_endpoint.urlfiltering.web_client_type[0];
   - remove:
       field: checkpoint_harmony_endpoint.urlfiltering.web_client_type
       ignore_missing: true
       if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.web_client_type == " "
   - rename:
-      field: json.event_type
-      target_field: checkpoint_harmony_endpoint.urlfiltering.event_type
-      ignore_missing: true
-  - rename:
       field: checkpoint_harmony_endpoint.urlfiltering.app_id
       target_field: checkpoint_harmony_endpoint.urlfiltering.app.id
       ignore_missing: true
-  - join:
+  - rename:
       field: checkpoint_harmony_endpoint.urlfiltering.app_properties
       target_field: checkpoint_harmony_endpoint.urlfiltering.app.properties
-      separator: ','
       if: ctx.checkpoint_harmony_endpoint.urlfiltering.app_properties != null
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.urlfiltering?.app?.properties != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.urlfiltering.app.properties instanceof List && ctx.checkpoint_harmony_endpoint.urlfiltering.app.properties.size() == 1)
+            ctx.checkpoint_harmony_endpoint.urlfiltering.app.properties = ctx.checkpoint_harmony_endpoint.urlfiltering.app.properties[0];
   - remove:
       field: checkpoint_harmony_endpoint.urlfiltering.app.properties
       ignore_missing: true
@@ -232,7 +235,7 @@ processors:
       target_field: checkpoint_harmony_endpoint.urlfiltering.product.family
       ignore_missing: true
 
-##################################### Clean Up ###########################################
+##################################### Clean Up ############
 
   - remove:
       field: json
@@ -243,7 +246,7 @@ processors:
       ignore_missing: true
       tag: remove_custom_duplicate_fields
 
-##########################################################################
+########################## Handle failures ################
 
 on_failure:
   - append:
