@@ -373,6 +373,12 @@ processors:
         } else if (eventName == "DeleteNetworkAcl") {
           addField(target, "json.requestParameters.networkAclId");
 
+        } else if (eventName == "DeleteNetworkAclEntry") {
+          addField(target, "json.requestParameters.networkAclId");
+          def ruleNumber = field("json.requestParameters.ruleNumber").get(null);
+          if (ruleNumber != null) {
+            addValue(target, String.valueOf(ruleNumber));
+          }
         } 
         
         if (!target.isEmpty()) {
