@@ -28,7 +28,7 @@ extensions:
 receivers:
   filelog:
     include_file_path: true
-    include: [/var/log/pods/*/*/*.log]
+    include: [/var/log/pods/*nginx-ingress-nginx-controller*/controller/*.log]
     operators:
       - id: container-parser
         type: container
@@ -81,7 +81,7 @@ processors:
 
           # LogRecord event: https://github.com/open-telemetry/semantic-conventions/pull/982
           - set(attributes["event.name"], "nginx.ingress.controller.access")
-          - set(attributes["event.timestamp"], attributes["nginx_ingress_controller.access.time"])
+          - set(attributes["event.timestamp"], String(Time(attributes["nginx_ingress_controller.access.time"], "%d/%b/%Y:%H:%M:%S %z")))
           - delete_key(attributes, "nginx_ingress_controller.access.time")
 
       - context: log
