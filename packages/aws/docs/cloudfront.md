@@ -240,5 +240,4 @@ An example event for `cloudfront` looks as following:
         "version": "78.0.3904.108"
     }
 }
-
 ```
