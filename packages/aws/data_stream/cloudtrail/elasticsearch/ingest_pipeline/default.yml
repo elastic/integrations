@@ -399,7 +399,10 @@ processors:
           addField(target, "json.requestParameters.groupId");
           field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(f -> addValue(target, f.securityGroupRuleId));
 
-        } 
+        } else if (eventName == "DisableKey") {
+          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+
+        }
         
         if (!target.isEmpty()) {
           field("target.entity.id").set(target);
