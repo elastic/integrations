@@ -304,6 +304,10 @@ processors:
         } else if (eventName == "PutBucketVersioning") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
 
+        } else if (eventName == "PutBucketReplication") {
+          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+          addField(target, "json.requestParameters.ReplicationConfiguration.Rule.Destination.Bucket");
+
         } else if (eventName == "StopLogging") {
           addField(target, "json.requestParameters.name");
           
