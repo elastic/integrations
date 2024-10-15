@@ -669,12 +669,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | resource.name |  | keyword |
 | resource.type |  | keyword |
 | result.evaluation |  | keyword |
-| rule.description |  | text |
+| rule.description |  | keyword |
 | rule.id |  | keyword |
 | rule.name |  | keyword |
-| rule.reference |  | text |
-| rule.references |  | text |
-| rule.remediation |  | text |
+| rule.reference |  | keyword |
+| rule.remediation |  | keyword |
 | url.user_info |  | keyword |
 
 
