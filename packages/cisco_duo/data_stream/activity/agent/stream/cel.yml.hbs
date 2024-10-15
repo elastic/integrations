@@ -87,13 +87,12 @@ program: |
                     "limit": state.limit,
                     "mintime": state.mintime,
                     "maxtime": state.maxtime,
-                    "date": now.format(time_layout.RFC1123Z),
                     "want_more": has(body.?response.?metadata.next_offset),
-                    ?"next_offset": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
+                    ?"next_offset": (body.?response.?metadata.next_offset.orValue(null) != null) ?
                                         optional.of(string(body.response.metadata.next_offset))
                                     :
                                         optional.none(),
-                    "next_url": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
+                    "next_url": (body.?response.?metadata.next_offset.orValue(null) != null) ?
                         (
                             state.url.trim_right("/") + "/admin/v2/logs/activity?" + {
                                 "limit": [string(int(state.limit))],
@@ -106,7 +105,7 @@ program: |
                     :
                         state.url,
                     "cursor": {
-                        ?"last_published": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
+                        ?"last_published": (body.?response.?metadata.next_offset.orValue(null) != null) ?
                             optional.of(body.response.metadata.next_offset.re_find("next_offset_timestamp"))
                         :
                             optional.none(),

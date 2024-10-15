@@ -12,6 +12,7 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+      tag: rename_event_original
   - json:
       field: event.original
       target_field: json
@@ -24,11 +25,9 @@ processors:
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
-  - drop:
-      description: Drop if no timestamp (invalid json)
-      if: ctx.json?.ts == null
   - date:
       field: json.ts
+      tag: date_ts
       formats:
         - ISO8601
       on_failure:
@@ -37,7 +36,7 @@ processors:
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - fingerprint:
-      tag: fingerprint_activity
+      tag: fingerprint_id
       fields:
         - json.activity_id
         - json.akey
@@ -50,10 +49,12 @@ processors:
       field: json.access_device
       target_field: cisco_duo.activity.access_device
       ignore_missing: true
+      tag: rename_access_device
   - convert:
       field: cisco_duo.activity.access_device.ip.address
       type: ip
       ignore_missing: true
+      tag: convert_ip_address
       on_failure:
         - append:
             field: error.message
@@ -82,94 +83,118 @@ processors:
       field: cisco_duo.activity.access_device.as.asn
       target_field: cisco_duo.activity.access_device.as.number
       ignore_missing: true
+      tag: rename_as_number
   - rename:
       field: cisco_duo.activity.access_device.as.organization_name
       target_field: cisco_duo.activity.access_device.as.organization.name
       ignore_missing: true
+      tag: rename_as_org_name
   - rename:
       field: json.action
       target_field: cisco_duo.activity.action
       ignore_missing: true
+      tag: rename_action
   - rename:
       field: json.activity_id
       target_field: cisco_duo.activity.id
       ignore_missing: true
+      tag: rename_activity_id
   - rename:
       field: json.actor
       target_field: cisco_duo.activity.actor
       ignore_missing: true
+      tag: rename_actor
   - rename:
       field: json.akey
       target_field: cisco_duo.activity.akey
       ignore_missing: true
+      tag: rename_akey
   - rename:
       field: json.application
       target_field: cisco_duo.activity.application
       ignore_missing: true
+      tag: rename_application
   - rename:
       field: json.old_target
       target_field: cisco_duo.activity.old_target
       ignore_missing: true
+      tag: rename_old_target
   - rename:
       field: json.outcome.result
       target_field: cisco_duo.activity.outcome
       ignore_missing: true
       if: ctx.json.outcome?.result != null
+      tag: rename_outcome
   - rename:
       field: json.target
       target_field: cisco_duo.activity.target
       ignore_missing: true
+      tag: rename_target
 
   ## ECS fields
   - set:
       field: event.id
       copy_from: cisco_duo.activity.id
       ignore_empty_value: true
+      tag: set_event_id
   - set:
       field: event.action
       copy_from: cisco_duo.activity.action.name
       ignore_empty_value: true
+      tag: set_event_action
   - set:
       field: event.outcome
       value: success
-      if: ctx.cisco_duo?.activity?.outcome != null && ctx.cisco_duo.activity.outcome == 'SUCCESS'
+      ignore_empty_value: true
+      if: ctx.cisco_duo?.activity?.outcome == 'SUCCESS'
+      tag: set_event_outcome_success
   - set:
       field: event.outcome
       value: failure
-      if: ctx.cisco_duo?.activity?.outcome != null && ctx.cisco_duo.activity.outcome == 'FAILURE'
+      ignore_empty_value: true
+      if: ctx.cisco_duo?.activity?.outcome == 'FAILURE'
+      tag: set_event_outcome_failure
   - set:
       field: source.ip
       copy_from: cisco_duo.activity.access_device.ip.address
       ignore_empty_value: true
+      tag: set_source_ip
   - set:
       field: source.geo
       copy_from: cisco_duo.activity.access_device.geo
       ignore_empty_value: true
+      tag: set_source_geo
   - set:
       field: source.as
       copy_from: cisco_duo.activity.access_device.as
       ignore_empty_value: true
+      tag: set_source_as
   - set:
       field: user.name
       copy_from: cisco_duo.activity.actor.name
-      if: ctx.cisco_duo?.activity?.actor?.type != null && ctx.cisco_duo.activity.actor.type == 'user'
+      if: ctx.cisco_duo?.activity?.actor?.type == 'user'
       ignore_empty_value: true
+      tag: set_user_name
   - set:
       field: user_agent.name
       copy_from: cisco_duo.activity.access_device.browser
       ignore_empty_value: true
+      tag: set_user_agent_name
   - set:
       field: user_agent.version
       copy_from: cisco_duo.activity.access_device.browser_version
       ignore_empty_value: true
+      tag: set_user_agent_version
   - set:
       field: user_agent.os.name
       copy_from: cisco_duo.activity.access_device.os
       ignore_empty_value: true
+      tag: set_user_agent_os_name
   - set:
       field: user_agent.os.version
       copy_from: cisco_duo.activity.access_device.os_version
       ignore_empty_value: true
+      tag: set_user_agent_os_version
 
   ## Related fields
   - append:
@@ -177,11 +202,13 @@ processors:
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
+      tag: append_related_user
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
+      tag: append_related_ip
 
   ## Clean up
   - script:
