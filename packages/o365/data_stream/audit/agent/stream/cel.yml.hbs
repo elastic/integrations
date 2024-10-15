@@ -65,18 +65,20 @@ state:
   base:
     tenant_id: "{{azure_tenant_id}}"
     list_contents_start_time: "{{initial_interval}}"
+    batch_interval: "{{batch_interval}}"
+    content_types: "{{content_types}}"
 
 redact:
   fields:
     - base.tenant_id
 
 program: |
-  "{{content_types}}".split(",").map(content_type_raw,
+  state.base.content_types.split(",").map(content_type_raw,
       content_type_raw.trim_space()
   ).map(content_type,
       request(
           "POST",
-          "{{url}}/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier=" + state.base.tenant_id
+          state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier=" + state.base.tenant_id
       ).do_request().as(start_subs_resp,
           bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body, 
               (
@@ -84,7 +86,7 @@ program: |
                   (has(start_subs_resp_body.error) && has(start_subs_resp_body.error.code) && start_subs_resp_body.error.code == "AF20024")
               ) ?
                   // When start-subscription API returns success or if already started subscription,
-                  duration("{{batch_interval}}").as(batch_interval, (batch_interval > duration("24h") ? duration("24h") : batch_interval).as(batch_interval,
+                  duration(state.base.batch_interval).as(batch_interval, (batch_interval > duration("24h") ? duration("24h") : batch_interval).as(batch_interval,
                       request("GET",
                           (
                               state.want_more &&
@@ -110,7 +112,7 @@ program: |
                                           :
                                               state_created_at
                                       ).as(state_created_at_calc, 
-                                          "{{url}}/api/v1.0/" + state.base.tenant_id
+                                          state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id
                                               + "/activity/feed/subscriptions/content?contentType=" + content_type
                                               + "&PublisherIdentifier=" + state.base.tenant_id
                                               + "&startTime=" + string(state_created_at_calc + duration("1s"))
@@ -120,7 +122,7 @@ program: |
                               )
                           :
                               // initial run when no cursor state exists i.e., polling from initial_interval
-                              "{{url}}/api/v1.0/" + state.base.tenant_id
+                              state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id
                                   + "/activity/feed/subscriptions/content?contentType=" + content_type
                                   + "&PublisherIdentifier=" + state.base.tenant_id
                                   + "&startTime=" + string(now - duration(state.base.list_contents_start_time))
