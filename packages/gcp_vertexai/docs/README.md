@@ -1,4 +1,4 @@
-# GCP Vertex AI
+# GCP Vertex AI Ishleen
 
 ## Overview
 
@@ -36,6 +36,7 @@ The GCP Vertex AI includes **Vertex AI Model Garden Publisher Model** metrics un
 | gcp.vertexai.prediction.online.target_replicas | Target number of active replicas needed for the deployed model. | long |  | gauge |
 | gcp.vertexai.publisher.online_serving.character_count | Accumulated input/output character count. | long |  | gauge |
 | gcp.vertexai.publisher.online_serving.consumed_throughput | Overall throughput used (accounting for burndown rate) in terms of characters. | long |  | gauge |
+| gcp.vertexai.publisher.online_serving.first_token_latencies | Duration from request received to first token sent back to the client | histogram |  |  |
 | gcp.vertexai.publisher.online_serving.model_invocation_count | Number of model invocations (prediction requests). | long |  | gauge |
 | gcp.vertexai.publisher.online_serving.model_invocation_latencies | Model invocation latencies (prediction latencies). | histogram |  |  |
 | gcp.vertexai.publisher.online_serving.token_count | Accumulated input/output token count. | long |  | gauge |
