@@ -8,9 +8,6 @@ resource.tracer.maxbackups: 5
 resource.tracer.maxsize: 5
 {{/if}}
 
-regexp:
-  "next_offset_timestamp": '^\d+'
-
 state:
   url: {{hostname}}
   integration_key: {{integration_key}}
@@ -75,43 +72,50 @@ program: |
             }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
             bytes(resp.Body).decode_json().as(body, has(body.?response.authlogs) && size(body.response.authlogs) > 0 ?
-                {
-                    "events": body.response.authlogs.map(item,
-                        {
-                            "message": item.encode_json(),
-                        }
-                    ),
-                    "url": state.url,
-                    "integration_key": state.integration_key,
-                    "secret_key": state.secret_key,
-                    "limit": state.limit,
-                    "mintime": state.mintime,
-                    "maxtime": state.maxtime,
-                    "date": now.format(time_layout.RFC1123Z),
-                    "want_more": has(body.?response.?metadata.next_offset),
-                    ?"next_offset": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
-                                        optional.of(string(body.response.metadata.next_offset))
-                                    :
-                                        optional.none(),
-                    "next_url": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
-                        (
-                            state.url.trim_right("/") + "/admin/v2/logs/authentication?" + {
-                                "limit": [string(int(state.limit))],
-                                "maxtime": [string(int(state.maxtime))],
-                                "mintime": [string(int(state.mintime))],
-                                "next_offset": [string(body.response.metadata.next_offset)],
-                                "sort": ["ts:asc"],
-                            }.format_query()
-                        )
+                (
+                    body.?response.metadata.next_offset.orValue(null) == null ?
+                        optional.none()
+                    : type(body.response.metadata.next_offset) == type([]) && size(body.response.metadata.next_offset) == 2 ?
+                        optional.of(string(body.response.metadata.next_offset[0])+","+string(body.response.metadata.next_offset[1]))
                     :
-                        state.url,
-                    "cursor": {
-                        ?"last_published": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
-                            optional.of(body.response.metadata.next_offset.re_find("next_offset_timestamp"))
+                        // Fall back to the actual value. This will result in a 
+                        // failure on the next iteration, but will expose the
+                        // value to logging to aid identification of a change
+                        // in the format of this field should that happen.
+                        body.?response.metadata.next_offset
+                ).as(next_offset, 
+                    {
+                        "events": body.response.authlogs.map(item,
+                            {
+                                "message": item.encode_json(),
+                            }
+                        ),
+                        "url": state.url,
+                        "integration_key": state.integration_key,
+                        "secret_key": state.secret_key,
+                        "limit": state.limit,
+                        "mintime": state.mintime,
+                        "maxtime": state.maxtime,
+                        "date": now.format(time_layout.RFC1123Z),
+                        "want_more": next_offset.hasValue(),
+                        ?"next_offset": next_offset,
+                        "next_url": next_offset.hasValue() ?
+                            (
+                                state.url.trim_right("/") + "/admin/v2/logs/authentication?" + {
+                                    "limit": [string(int(state.limit))],
+                                    "maxtime": [string(int(state.maxtime))],
+                                    "mintime": [string(int(state.mintime))],
+                                    "next_offset": [next_offset.value()],
+                                    "sort": ["ts:asc"],
+                                }.format_query()
+                            )
                         :
-                            optional.none(),
+                            state.url,
+                        "cursor": {
+                            ?"last_published": next_offset,
+                        }
                     }
-                }
+                )
             :
                 {
                     "events":[],
@@ -126,17 +130,11 @@ program: |
                         "error": {
                             "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
                             "id": string(resp.Status),
-                            "message": "GET: " +
-                            (
-                                (has(body.message) && body.message != "") ?
-                                    string(body.message) +
-                                        (has(body.message_detail) ?
-                                            ": " + string(body.message_detail)
-                                        :
-                                            ""
-                                        )
+                            "message": "GET:"+(
+                                size(resp.Body) != 0 ?
+                                    string(resp.Body)
                                 :
-                                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                             ),
                         },
                     },
