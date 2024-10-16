@@ -17,9 +17,6 @@ processors:
       field: event.type
       value: ['info']
   - set:
-      field: event.category
-      value: ['malware']
-  - set:
       field: event.dataset
       value: checkpoint_harmony_endpoint.threatemulation
   - rename:
@@ -34,6 +31,14 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - set:
+      field: event.category
+      value: ['malware']
+      if: ctx.json?.event_type != 'TE Info Event'
+  - set:
+      field: event.category
+      value: ['configuration']
+      if: ctx.json?.event_type == 'TE Info Event'
   - rename:
       field: json.id
       target_field: event.id
