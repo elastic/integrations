@@ -254,6 +254,11 @@ processors:
             "json.requestParameters.detectorId",
             "json.responseElements.detectorId"
           });
+        } else if (eventSource == "wafv2.amazonaws.com") {
+          addFields(related, new String[]{
+            "json.requestParameters.id",
+            "json.responseElements.summary"
+          });
         }
 
         String actor = field("json.userIdentity.arn").get(null);
@@ -432,6 +437,9 @@ processors:
 
         } else if (eventName == "GetParameter") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+
+        } else if (eventName == "DeleteRuleGroup") {
+          addField(target, "json.requestParameters.id");
 
         }
         
