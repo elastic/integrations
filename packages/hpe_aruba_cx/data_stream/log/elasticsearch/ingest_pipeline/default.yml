@@ -23,9 +23,11 @@ processors:
         tag: grok_event_original
         if: ctx.event?.original != null
         patterns:
-            - "(?:%{SYSLOG_HEADER})?%{GREEDYDATA:message}"
+            # - "%{SYSLOG_HEADER}%{GREEDYDATA:message}"
+            - "(?:%{SYSLOG_HEADER_1})?%{GREEDYDATA:message}"
         pattern_definitions:
-            SYSLOG_HEADER: "%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.origin.file.name}\\[%{POSINT:log.origin.file.line:long}\\]:\\s+%{WORD:event.kind}\\|%{POSINT:event.id}\\|%{USER:log.level}\\|(?:%{USER:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
+            SYSLOG_HEADER_1: "%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.syslog.appname}\\[%{POSINT:log.syslog.procid}\\]:\\s+%{WORD:aruba.event_type}\\|(?:%{OPTIONAL_HEADER})?"
+            OPTIONAL_HEADER: "%{POSINT:event.code}\\|%{USER:log.level}\\|(?:%{USER:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
     - grok:
         field: aruba.sequence
         if: ctx.aruba?.sequence != null && ctx.aruba.sequence.contains("/")

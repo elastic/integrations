@@ -1315,6 +1315,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.dpse.linecard_name |  | keyword |
 | aruba.ecmp.route |  | keyword |
 | aruba.erps.ring_id |  | keyword |
+| aruba.event_type |  | keyword |
 | aruba.evpn.rd |  | keyword |
 | aruba.evpn.rt |  | keyword |
 | aruba.evpn.vni |  | keyword |
@@ -1483,6 +1484,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | log.origin.file.line | The line number of the file containing the source code which originated the log event. | long |
 | log.origin.file.name | The name of the file containing the source code which originated the log event. Note that this field is not meant to capture the log file. The correct field to capture the log file is `log.file.path`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| log.syslog.appname | The device or application that originated the Syslog message, if available. | keyword |
+| log.syslog.procid | The process name or ID that originated the Syslog message, if available. | keyword |
 | log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
