@@ -652,6 +652,7 @@ An example event for `threatemulation` looks as following:
 | checkpoint_harmony_endpoint.threatemulation.product.family | The product family the blade/product belongs to possible values (0 - Network, 1 - Endpoint, 2 - Access, 3 - Threat, 4 - Mobile) | keyword |
 | checkpoint_harmony_endpoint.threatemulation.product.name | Product Name | keyword |
 | checkpoint_harmony_endpoint.threatemulation.protection_type | Type of detection | keyword |
+| checkpoint_harmony_endpoint.threatemulation.reason | Information on the error occured | keyword |
 | checkpoint_harmony_endpoint.threatemulation.resource | Resource from the HTTP request | keyword |
 | checkpoint_harmony_endpoint.threatemulation.sequencenum | Number added to order logs with the same Linux timestamp and origin (Security Gateway that generated these logs) | integer |
 | checkpoint_harmony_endpoint.threatemulation.severity | Event severity | keyword |
