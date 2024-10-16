@@ -100,8 +100,9 @@ either S3 or CloudWatch. For more details check the
 1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch Logs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) destination.
 2. Enable logging. You can do it either through the [Amazon Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the Amazon Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
 
+## Logs
 
-## Collecting Amazon Bedrock model invocation logs from S3 bucket
+### Collecting Amazon Bedrock model invocation logs from S3 bucket
 
 When collecting logs from S3 bucket is enabled, you can retrieve logs from S3
 objects that are pointed to by S3 notification events read from an SQS queue or
@@ -117,7 +118,7 @@ bucket list polling method is enabled setting `bucket_arn` configuration value
 and `number_of_workers` value. Both `queue_url` and `bucket_arn` cannot be set 
 at the same time and at least one of the two value must be set.
 
-## Collecting Amazon Bedrock model invocation logs from CloudWatch
+### Collecting Amazon Bedrock model invocation logs from CloudWatch
 
 When collecting logs from CloudWatch is enabled, you can retrieve logs from 
 all log streams in a specific log group. `filterLogEvents` AWS API is used to 
