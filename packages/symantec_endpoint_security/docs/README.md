@@ -2186,6 +2186,7 @@ An example event for `event` looks as following:
 | ses.entity_result.version | The version of the managed entity. | keyword |
 | ses.environment_name | The environment in which the event occurred such as Production, Test, Development, Load. | keyword |
 | ses.environment_uid | The unique identifier of the provisioned environment. | keyword |
+| ses.event_data_type | The type of data that is associated with the event. | keyword |
 | ses.event_duration | Time taken (in milliseconds) to process the request (from the first byte of client request data received by the proxy to the last byte sent by the proxy to the client including all of the delays by ICAP and so on). | long |
 | ses.event_id | The event ID identifies the event's semantics, structure and outcome. | keyword |
 | ses.events | The additional events that pertain to the event or incident. | flattened |
@@ -2350,6 +2351,7 @@ An example event for `event` looks as following:
 | ses.injection_type_id | The process injection method. | keyword |
 | ses.interpreter | The script interpreter used. | keyword |
 | ses.is_user_present | The indication of whether the user was logged on at event generation time. | boolean |
+| ses.js_canary_cust | The indication of whether the JavaScript canary is enabled for the customer. | boolean |
 | ses.kernel.is_system | The indication of whether the object is part of the operating system. | boolean |
 | ses.kernel.name | The name of the kernel resource. | keyword |
 | ses.kernel.system_call | The system call that was invoked. | keyword |

@@ -304,6 +304,19 @@ processors:
         - remove:
             field: ses.device_is_unmanaged
             ignore_missing: true
+  - convert:
+      field: ses.js_canary_cust
+      tag: convert_js_canary_cust_to_boolean
+      type: boolean
+      if: ctx.ses?.js_canary_cust != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.js_canary_cust
+            ignore_missing: true
   - gsub:
       field: ses.device_mac
       tag: gsub_device_mac
