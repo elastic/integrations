@@ -240,6 +240,18 @@ processors:
           }
         }
 
+        void enrichElasticFileSystem(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "elasticfilesystem.amazonaws.com") {
+              return;
+          }
+
+          else if (eventName == "DeleteFileSystem") {
+            addField(target, "json.requestParameters.fileSystemId");
+          } else if (eventName == "DeleteMountTarget") {
+            addField(target, "json.requestParameters.mountTargetId");
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -262,6 +274,7 @@ processors:
         enrichCloudtrail(eventSource, eventName, target, related);
         enrichEc2InstanceConnect(eventSource, eventName, target, related);
         enrichEc2(eventSource, eventName, target, related);
+        enrichElasticFileSystem(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -485,12 +498,6 @@ processors:
 
         } else if (eventName == "DeleteLogGroup") {
           addField(target, "json.requestParameters.logGroupName");
-
-        } else if (eventName == "DeleteFileSystem") {
-          addField(target, "json.requestParameters.fileSystemId");
-
-        } else if (eventName == "DeleteMountTarget") {
-          addField(target, "json.requestParameters.mountTargetId");
 
         }
         
