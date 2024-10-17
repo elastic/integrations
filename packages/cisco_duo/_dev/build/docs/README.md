@@ -22,18 +22,20 @@ More details for each step can be found at [First steps](https://duo.com/docs/ad
 
 The Cisco Duo integration collects logs for the following types of events.
 
+- [**Activity Logs**](https://duo.com/docs/adminapi#activity-logs)
 - [**Administrator Logs**](https://duo.com/docs/adminapi#administrator-logs)
 - [**Authentication Logs**](https://duo.com/docs/adminapi#authentication-logs)
 - [**Offline Enrollment Logs**](https://duo.com/docs/adminapi#offline-enrollment-logs)
 - [**Summary**](https://duo.com/docs/adminapi#retrieve-summary)
 - [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
 - [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
+- [**Trust Monitor**](https://duo.com/docs/adminapi#trust-monitor)
 
 ## V2 Handlers
 
 Cisco Duo has implemented v2 handlers for some endpoints. In these cases, the API v1 handler remains supported, but will be limited or deprecated in the future.
 
-From data streams listed above, v2 handlers are supported for Authentication and Telephony Logs at the moment. It is recommended to migrate data streams to the v2 endpoints when they become available.
+From data streams listed above, v2 handlers are supported for Activity, Authentication and Telephony Logs at the moment. It is recommended to migrate data streams to the v2 endpoints when they become available.
 
 ## Configuration
 
@@ -45,6 +47,14 @@ The following considerations should be taken into account when configuring the i
 - Larger values of interval might cause delay in data ingestion.
 
 ## Logs
+
+### Activity
+
+This is the `activity` dataset.
+
+{{event "activity"}}
+
+{{fields "activity"}}
 
 ### Administrator
 
@@ -93,3 +103,11 @@ This is the `telephony_v2` dataset.
 {{event "telephony_v2"}}
 
 {{fields "telephony_v2"}}
+
+### Trust Monitor
+
+This is the `trust_monitor` dataset.
+
+{{event "trust_monitor"}}
+
+{{fields "trust_monitor"}}
