@@ -445,6 +445,16 @@ processors:
           }
         }
 
+        void enrichRoute53Resolver(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "route53resolver.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "DeleteResolverQueryLogConfig") {
+            addField(target, "json.responseElements.resolverQueryLogConfig.arn");
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -477,6 +487,7 @@ processors:
         enrichMonitoring(eventSource, eventName, target, related);
         enrichRds(eventSource, eventName, target, related);
         enrichRolesAnywhere(eventSource, eventName, target, related);
+        enrichRoute53Resolver(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -513,9 +524,6 @@ processors:
         } else if (eventName == "StopConfigurationRecorder" 
                 || eventName == "StartConfigurationRecorder") {
           addField(target, "json.requestParameters.configurationRecorderName");
-
-        } else if (eventName == "DeleteResolverQueryLogConfig") {
-          addField(target, "json.responseElements.resolverQueryLogConfig.arn");
 
         } else if (eventName == "CopyObject") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
