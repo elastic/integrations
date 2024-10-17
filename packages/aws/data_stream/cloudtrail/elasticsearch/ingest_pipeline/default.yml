@@ -504,6 +504,21 @@ processors:
           }
         }
 
+        void enrichSsm(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "ssm.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "GetParameter"
+            || eventName == "GetParameters") {
+            field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+
+          } else if (eventName == "StartSession") {
+            addField(target, "json.requestParameters.target");
+            
+          }
+        }
+
 
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
@@ -541,6 +556,7 @@ processors:
         enrichS3(eventSource, eventName, target, related);
         enrichSecretsManager(eventSource, eventName, target, related);
         enrichSignin(eventSource, eventName, target, related);
+        enrichSsm(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -566,15 +582,6 @@ processors:
         if (eventName == "StopConfigurationRecorder" 
                 || eventName == "StartConfigurationRecorder") {
           addField(target, "json.requestParameters.configurationRecorderName");
-
-        } else if (eventName == "StartSession") {
-          addField(target, "json.requestParameters.target");
-          
-        } else if (eventName == "GetParameters") {
-          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-
-        } else if (eventName == "GetParameter") {
-          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
 
         } else if (eventName == "DeleteRuleGroup") {
           addField(target, "json.requestParameters.id");
