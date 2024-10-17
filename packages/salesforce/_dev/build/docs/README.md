@@ -100,6 +100,7 @@ To configure the Salesforce integration, you need the following information:
 - [Client key and client secret for authentication](#client-key-and-client-secret-for-authentication)
 - [Username](#username)
 - [Password](#password)
+- [Token URL](#token-url)
 - [API version](#api-version)
 
 ### Salesforce instance URL
@@ -108,7 +109,7 @@ This is the URL of your Salesforce Organization.
 
 - **Salesforce Classic**: Given the example URL https://na9.salesforce.com/home/home.jsp, the Salesforce Instance URL is extracted as https://na9.salesforce.com.
 
-- **Salesforce Lightning**: The instance URL is available under your user name in the **View Profile** tab.
+- **Salesforce Lightning**: The instance URL is available under your user name in the **View Profile** tab. Please use the correct instance URL in case of Salesforce Lightning because it uses *.lightning.force.com but the instance URL is *.salesforce.com.
 
 ### Client key and client secret for authentication
 
@@ -142,6 +143,16 @@ The User ID of the registered user.
 ### Password
 
 The password used to authenticate the user.
+
+### Token URL
+
+1. The token URL is used to obtain authentication tokens for API access.
+2. For most Salesforce instances, the token URL follows this format: https://login.salesforce.com/services/oauth2/token
+3. If you're using a Salesforce sandbox environment, use https://test.salesforce.com/services/oauth2/token instead.
+4. For custom Salesforce domains, replace "login.salesforce.com" with your custom domain name. For example, if your custom domain is "mycompany.my.salesforce.com", the token URL becomes https://mycompany.my.salesforce.com/services/oauth2/token. This applies to Sandbox environments as well.
+5. In our Salesforce integration, we internally append "/services/oauth2/token" to the URL. Therefore, ensure that the URL you provide in the Salesforce integration is the base URL without the "/services/oauth2/token" part. For example, if your custom domain is "mycompany.my.salesforce.com", the complete token URL would be "https://mycompany.my.salesforce.com/services/oauth2/token", but the URL you provide in the Salesforce integration should be "https://mycompany.my.salesforce.com". In most cases, this is the same as the Salesforce instance URL.
+
+Note: Salesforce Lightning users must use URL with *.salesforce.com (similar to the Salesforce instance URL) domain instead of *.lightning.force.com because the Salesforce API does not work with *.lightning.force.com.
 
 ### API version
 
@@ -199,7 +210,7 @@ Error while processing http request: failed to execute rf.collectResponse: faile
 
 If you encounter data ingestion errors, you might get the following error message:
 
-> oauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request
+> 400 Bad Request
 
 **Solution:** Make sure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. Check the [Prerequisites](#prerequisites) section for more information.
 
@@ -211,6 +222,28 @@ If the error persists, follow these steps:
 4. Obtain the client key and secret by clicking on **Manage Consumer Details** in the API section.
 5. Click **Manage** to edit the policies.
 6. Click **Edit Policies** and choose **Relax IP restrictions** from the dropdown menu for IP Relaxation.
+
+### Validate OAuth 2.0 authentication with Salesforce Connected App
+
+```bash
+CLIENT_ID="" # Replace with your client ID
+CLIENT_SECRET="" # Replace with your client secret
+USERNAME="" # Replace with your Salesforce username
+PASSWORD="" # Replace with your Salesforce password
+SECURITY_TOKEN=""  # Replace with your Salesforce security token (if applicable). Else, leave it blank.
+TOKEN_URL="https://<your-instance>.my.salesforce.com/services/oauth2/token" # Replace with your Salesforce instance URL
+
+curl -v -X POST "${TOKEN_URL}" \
+     -d "grant_type=password" \
+     -d "client_id=${CLIENT_ID}" \
+     -d "client_secret=${CLIENT_SECRET}" \
+     -d "username=${USERNAME}" \
+     -d "password=${PASSWORD}${SECURITY_TOKEN}"
+```
+
+This command uses the `curl` utility to make a POST request to the Salesforce OAuth 2.0 token endpoint. It includes the necessary parameters for authentication, including the client ID, client secret, username, password, and security token (if applicable). If the request is successful, the response will contain an access token that can be used to authenticate subsequent requests to the Salesforce API. If the request fails, the response will contain an error message indicating the reason for the failure.
+
+This is helpful for debugging and troubleshooting OAuth 2.0 authentication with Salesforce Connected Apps. It is recommended to use a tool like `curl` for testing OAuth 2.0 authentication with Salesforce Connected Apps before setting up the Salesforce integration.
 
 ## Logs reference
 
