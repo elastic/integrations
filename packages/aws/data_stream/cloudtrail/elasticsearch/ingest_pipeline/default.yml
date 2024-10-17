@@ -494,6 +494,16 @@ processors:
           }
         }
 
+        void enrichSignin(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "signin.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "ConsoleLogin") {
+            addField(target, "json.userIdentity.accountId");
+          }
+        }
+
 
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
@@ -530,6 +540,7 @@ processors:
         enrichRoute53Resolver(eventSource, eventName, target, related);
         enrichS3(eventSource, eventName, target, related);
         enrichSecretsManager(eventSource, eventName, target, related);
+        enrichSignin(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -552,10 +563,7 @@ processors:
 
         }
 
-        if (eventName == "ConsoleLogin") {
-          addField(target, "json.userIdentity.accountId");
-
-        } else if (eventName == "StopConfigurationRecorder" 
+        if (eventName == "StopConfigurationRecorder" 
                 || eventName == "StartConfigurationRecorder") {
           addField(target, "json.requestParameters.configurationRecorderName");
 
