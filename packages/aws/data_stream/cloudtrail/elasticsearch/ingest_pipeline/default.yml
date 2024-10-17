@@ -360,6 +360,20 @@ processors:
           }
         }
 
+        void enrichLogs(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "logs.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "DeleteLogGroup") {
+            addField(target, "json.requestParameters.logGroupName");
+
+          } else if (eventName == "DeleteLogStream") {
+            addField(target, "json.requestParameters.logStreamName");
+
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -388,6 +402,7 @@ processors:
         enrichIam(eventSource, eventName, target, related);
         enrichKms(eventSource, eventName, target, related);
         enrichLambda(eventSource, eventName, target, related);
+        enrichLogs(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -520,13 +535,7 @@ processors:
 
         } else if (eventName == "DeleteGlobalCluster") {
           addField(target, "json.responseElements.globalClusterArn");
-
-        } else if (eventName == "DeleteLogStream") {
-          addField(target, "json.requestParameters.logStreamName");
-
-        } else if (eventName == "DeleteLogGroup") {
-          addField(target, "json.requestParameters.logGroupName");
-
+        
         }
         
         if (!target.isEmpty()) {
