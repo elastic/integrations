@@ -88,6 +88,7 @@ processors:
         TreeSet entities = new TreeSet();
 
         addFields(entities, new String[]{
+          "json.userIdentity.accessKeyId",
           "json.userIdentity.arn",
           "json.userIdentity.sessionContext.sessionIssuer.arn",
           "json.userIdentity.identityProvider",
@@ -118,12 +119,15 @@ processors:
             "json.requestParameters.policyArn",
             "json.requestParameters.roleName",
             "json.requestParameters.policyName",
+            "json.requestParameters.serialNumber",
             "json.responseElements.accessKey.userName",
             "json.responseElements.accessKey.accessKeyId",
             "json.responseElements.user.arn",
+            "json.responseElements.user.userId",
             "json.responseElements.user.userName",
             "json.responseElements.userId",
-            "json.responseElements.role.arn"
+            "json.responseElements.role.arn",
+            "json.responseElements.serialNumber"
           });
 
         } else if (eventSource == "ec2.amazonaws.com") {
@@ -984,6 +988,11 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
