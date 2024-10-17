@@ -85,8 +85,21 @@ processors:
           return entities.add(value);
         }
 
+        void enrichCloudformation(def eventSource, def eventName, def target) {
+          if (eventSource != "cloudformation.amazonaws.com") {
+              return;
+          }
+
+          if (eventName == "CreateStackSet") {
+            addField(target, "json.responseElements.stackSetId");
+          } else if (eventName == "CreateStack") {
+            addField(target, "json.responseElements.stackId");
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
+        TreeSet target = new TreeSet();
 
         addFields(related, new String[]{
           "json.userIdentity.accessKeyId",
@@ -99,6 +112,10 @@ processors:
         field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(related, f.ARN));
 
         String eventSource = field("json.eventSource").get(null);
+        String actor = field("json.userIdentity.arn").get(null);
+        String eventName = field("json.eventName").get(null);
+
+        enrichCloudformation(eventSource, eventName, target);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -259,12 +276,15 @@ processors:
             "json.requestParameters.id",
             "json.responseElements.summary"
           });
+
+        } else if (eventSource == "cloudformation.amazonaws.com") {
+          if (eventName == "CreateStackSet") {
+            addField(target, "json.responseElements.stackSetId");
+          } else if (eventName == "CreateStack") {
+            addField(target, "json.responseElements.stackId");
+          }
         }
 
-        String actor = field("json.userIdentity.arn").get(null);
-
-        String eventName = field("json.eventName").get(null);
-        TreeSet target = new TreeSet();
 
         if (eventName == "CreateDetector") {
           addField(target, "json.responseElements.detectorId");
@@ -369,12 +389,6 @@ processors:
 
         } else if (eventName == "GetSecretValue") {
           addField(target, "json.requestParameters.secretId");
-
-        } else if (eventName == "CreateStackSet") {
-          addField(target, "json.responseElements.stackSetId");
-
-        } else if (eventName == "CreateStack") {
-          addField(target, "json.responseElements.stackId");
 
         } else if (eventName == "GetPasswordData") {
           addField(target, "json.requestParameters.instanceId");
