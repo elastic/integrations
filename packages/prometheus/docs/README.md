@@ -241,6 +241,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
+| metrics_count | Number of metrics per Elasticsearch document. | long |  |
 | prometheus.\*.counter | Prometheus counter metric | object | counter |
 | prometheus.\*.histogram | Prometheus histogram metric | object |  |
 | prometheus.\*.rate | Prometheus rated counter metric | object | gauge |
@@ -437,6 +438,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
+| metrics_count | Number of metrics per Elasticsearch document. | long |  |
 | prometheus.\*.counter | Prometheus counter metric | object | counter |
 | prometheus.\*.histogram | Prometheus histogram metric | object |  |
 | prometheus.\*.rate | Prometheus rated counter metric | object | gauge |
