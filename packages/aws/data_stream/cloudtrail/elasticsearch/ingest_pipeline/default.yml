@@ -269,6 +269,11 @@ processors:
               return;
           }
 
+          addFields(related, new String[]{
+            "json.requestParameters.detectorId",
+            "json.responseElements.detectorId"
+          });
+
           if (eventName == "CreateDetector") {
             addField(target, "json.responseElements.detectorId");
           } else if (eventName == "DeleteDetector") {
@@ -455,6 +460,27 @@ processors:
           }
         }
 
+        void enrichS3(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "s3.amazonaws.com") {
+            return;
+          }
+
+          addField(related, "json.requestParameters.bucketName");
+
+          if (eventName == "CopyObject" 
+            || eventName == "PutBucketLogging"
+            || eventName == "PutBucketVersioning"
+            || eventName == "PutObject") {
+            field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+
+          } else if (eventName == "PutBucketReplication") {
+            field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+            addField(target, "json.requestParameters.ReplicationConfiguration.Rule.Destination.Bucket");
+
+          }
+        
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -488,6 +514,7 @@ processors:
         enrichRds(eventSource, eventName, target, related);
         enrichRolesAnywhere(eventSource, eventName, target, related);
         enrichRoute53Resolver(eventSource, eventName, target, related);
+        enrichS3(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -499,17 +526,9 @@ processors:
             "json.responseElements.accessKeyId"
           });
 
-        } else if (eventSource == "s3.amazonaws.com") {
-          addField(related, "json.requestParameters.bucketName");
-
         } else if (eventSource == "config.amazonaws.com") {
           addField(related, "json.requestParameters.configurationRecorderName");
 
-        } else if (eventSource == "guardduty.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.detectorId",
-            "json.responseElements.detectorId"
-          });
         } else if (eventSource == "wafv2.amazonaws.com") {
           addFields(related, new String[]{
             "json.requestParameters.id",
@@ -524,22 +543,6 @@ processors:
         } else if (eventName == "StopConfigurationRecorder" 
                 || eventName == "StartConfigurationRecorder") {
           addField(target, "json.requestParameters.configurationRecorderName");
-
-        } else if (eventName == "CopyObject") {
-          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-
-        } else if (eventName == "PutBucketLogging") {
-          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-        
-        } else if (eventName == "PutBucketVersioning") {
-          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-
-        } else if (eventName == "PutBucketReplication") {
-          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-          addField(target, "json.requestParameters.ReplicationConfiguration.Rule.Destination.Bucket");
-
-        } else if (eventName == "PutObject") {
-          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
 
         } else if (eventName == "StartSession") {
           addField(target, "json.requestParameters.target");
