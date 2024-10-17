@@ -29,12 +29,11 @@ program: |
             state.with({
                 "mintime": state.?cursor.last_timestamp_ms.orValue(string(int(now - duration(state.initial_interval)) * 1000)),
                 "maxtime": string(int(now - duration("2m")) * 1000),
-                "date": now.format(time_layout.RFC1123Z),
             })
     ).as(state, state.with(
         {
             // prepare request data
-            "date": state.date,
+            "date": now.format(time_layout.RFC1123Z),
             "method": "GET",
             "url_base": state.url.trim_right("/"),
             "url_path": "/admin/v2/logs/authentication",
@@ -75,7 +74,6 @@ program: |
                 bytes(resp.Body).decode_json().as(body, has(body.?response.authlogs) && size(body.response.authlogs) > 0 ?
                     body.response.as(r, {
                         "events": r.authlogs.map(item, { "message": item.encode_json() }),
-                        "date": now.format(time_layout.RFC1123Z),
                         "want_more": r.?metadata.next_offset.hasValue(),
                         ?"next_offset_joined": r.?metadata.next_offset.optMap(v, [v].flatten().join(",")),
                         "cursor": {
