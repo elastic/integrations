@@ -374,6 +374,17 @@ processors:
           }
         }
 
+         void enrichMonitoring(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "monitoring.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "DeleteAlarms") {
+            field("json.requestParameters.alarmNames").get(new ArrayList()).stream().forEach(f -> addValue(target, f));
+            
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -403,6 +414,7 @@ processors:
         enrichKms(eventSource, eventName, target, related);
         enrichLambda(eventSource, eventName, target, related);
         enrichLogs(eventSource, eventName, target, related);
+        enrichMonitoring(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -481,9 +493,6 @@ processors:
           
         } else if (eventName == "ModifyDBSnapshotAttribute") {
           addField(target, "json.responseElements.dBSnapshotIdentifier");
-          
-        } else if (eventName == "DeleteAlarms") {
-          field("json.requestParameters.alarmNames").get(new ArrayList()).stream().forEach(f -> addValue(target, f));
           
         } else if (eventName == "StartSession") {
           addField(target, "json.requestParameters.target");
