@@ -262,6 +262,18 @@ processors:
           }
         }
 
+        void enrichGuardDuty(def eventSource, def eventName, def target, def related)  {
+          if (eventSource != "guardduty.amazonaws.com") {
+              return;
+          }
+
+          if (eventName == "CreateDetector") {
+            addField(target, "json.responseElements.detectorId");
+          } else if (eventName == "DeleteDetector") {
+            addField(target, "json.requestParameters.detectorId");
+          } 
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -286,6 +298,7 @@ processors:
         enrichEc2(eventSource, eventName, target, related);
         enrichElasticFileSystem(eventSource, eventName, target, related);
         enrichEvents(eventSource, eventName, target, related);
+        enrichGuardDuty(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -370,13 +383,7 @@ processors:
 
         }
 
-        if (eventName == "CreateDetector") {
-          addField(target, "json.responseElements.detectorId");
-
-        } else if (eventName == "DeleteDetector") {
-          addField(target, "json.requestParameters.detectorId");
-
-        } else if (eventName == "ConsoleLogin") {
+        if (eventName == "ConsoleLogin") {
           addField(target, "json.userIdentity.accountId");
 
         } else if (eventName == "AttachUserPolicy") {
