@@ -97,6 +97,27 @@ processors:
           }
         }
 
+        void enrichCloudtrail(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "cloudtrail.amazonaws.com") {
+              return;
+          }
+
+          addFields(related, new String[]{
+            "json.requestParameters.name",
+            "json.requestParameters.s3BucketName",
+            "json.responseElements.cloudWatchLogsLogGroupArn",
+            "json.responseElements.cloudWatchLogsRoleArn",
+            "json.responseElements.kmsKeyId",
+            "json.responseElements.snsTopicARN",
+            "json.responseElements.trailARN",
+            "json.responseElements.name"
+          });
+
+          if (eventName == "DeleteTrail" || eventName == "StopLogging") {
+            addField(target, "json.requestParameters.name");
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -116,6 +137,7 @@ processors:
         String eventName = field("json.eventName").get(null);
 
         enrichCloudformation(eventSource, eventName, target);
+        enrichCloudtrail(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -215,18 +237,6 @@ processors:
 
         } else if (eventSource == "s3.amazonaws.com") {
           addField(related, "json.requestParameters.bucketName");
-
-        } else if (eventSource == "cloudtrail.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.name",
-            "json.requestParameters.s3BucketName",
-            "json.responseElements.cloudWatchLogsLogGroupArn",
-            "json.responseElements.cloudWatchLogsRoleArn",
-            "json.responseElements.kmsKeyId",
-            "json.responseElements.snsTopicARN",
-            "json.responseElements.trailARN",
-            "json.responseElements.name"
-          });
 
         } else if (eventSource == "kms.amazonaws.com") {
           addFields(related, new String[]{
@@ -336,9 +346,6 @@ processors:
         } else if (eventName == "PutObject") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
 
-        } else if (eventName == "StopLogging") {
-          addField(target, "json.requestParameters.name");
-          
         } else if (eventName == "ModifyDBClusterSnapshotAttribute") {
           addField(target, "json.responseElements.dBClusterSnapshotIdentifier");
           
@@ -430,9 +437,6 @@ processors:
 
         } else if (eventName == "ScheduleKeyDeletion") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-
-        } else if (eventName == "DeleteTrail") {
-          addField(target, "json.requestParameters.name");
 
         } else if (eventName == "CreateAccessKey") {
           addField(target, "json.responseElements.accessKey.accessKeyId");
