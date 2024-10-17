@@ -113,7 +113,8 @@ processors:
             "json.responseElements.name"
           });
 
-          if (eventName == "DeleteTrail" || eventName == "StopLogging") {
+          if (eventName == "DeleteTrail"
+            || eventName == "StopLogging") {
             addField(target, "json.requestParameters.name");
           }
         }
@@ -123,7 +124,8 @@ processors:
               return;
           }
 
-          if (eventName == "SendSSHPublicKey" || eventName == "SendSerialConsoleSSHPublicKey") {
+          if (eventName == "SendSSHPublicKey" 
+            || eventName == "SendSerialConsoleSSHPublicKey") {
             addField(target, "json.requestParameters.instanceId");
           }
         }
@@ -336,7 +338,8 @@ processors:
             "json.responseElements.keyMetadata.keyId"
           });
 
-          if (eventName == "DisableKey" || eventName == "ScheduleKeyDeletion") {
+          if (eventName == "DisableKey" 
+            || eventName == "ScheduleKeyDeletion") {
             field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
           }
         }
@@ -374,13 +377,59 @@ processors:
           }
         }
 
-         void enrichMonitoring(def eventSource, def eventName, def target, def related) {
+        void enrichMonitoring(def eventSource, def eventName, def target, def related) {
           if (eventSource != "monitoring.amazonaws.com") {
             return;
           }
 
           if (eventName == "DeleteAlarms") {
             field("json.requestParameters.alarmNames").get(new ArrayList()).stream().forEach(f -> addValue(target, f));
+            
+          }
+        }
+
+        void enrichRds(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "rds.amazonaws.com") {
+            return;
+          }
+
+          addFields(related, new String[]{
+            "json.requestParameters.dBInstanceIdentifier",
+            "json.requestParameters.dBInstanceArn",
+            "json.responseElements.dBInstanceIdentifier",
+            "json.responseElements.dbInstanceArn",
+            "json.responseElements.dBSubnetGroup.vpcId",
+            "json.responseElements.vpcSecurityGroups.vpcSecurityGroupId"
+          });
+
+          field("json.responseElements.dBSubnetGroup.subnets").get(new ArrayList()).stream().forEach(i -> {
+            addValue(related, i.subnetIdentifier);
+          });
+
+          field("json.responseElements.vpcSecurityGroups").get(new ArrayList()).stream().forEach(i -> {
+            addValue(related, i.vpcSecurityGroupId);
+          });
+
+          if (eventName == "DeleteDBCluster" 
+            || eventName == "ModifyDBCluster"
+            || eventName == "StopDBCluster") {
+            addField(target, "json.responseElements.dBClusterArn");
+          
+          } else if (eventName == "DeleteDBInstance" 
+                  || eventName == "ModifyDBInstance" 
+                  || eventName == "RestoreDBInstanceFromDBSnapshot"
+                  || eventName == "RestoreDBInstanceFromS3"
+                  || eventName == "StopDBInstance") {
+            addField(target, "json.responseElements.dBInstanceArn");
+          
+          } else if (eventName == "DeleteGlobalCluster") {
+            addField(target, "json.responseElements.globalClusterArn");
+
+          } else if (eventName == "ModifyDBClusterSnapshotAttribute") {
+            addField(target, "json.responseElements.dBClusterSnapshotIdentifier");
+            
+          } else if (eventName == "ModifyDBSnapshotAttribute") {
+            addField(target, "json.responseElements.dBSnapshotIdentifier");
             
           }
         }
@@ -415,6 +464,7 @@ processors:
         enrichLambda(eventSource, eventName, target, related);
         enrichLogs(eventSource, eventName, target, related);
         enrichMonitoring(eventSource, eventName, target, related);
+        enrichRds(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -432,23 +482,6 @@ processors:
         } else if (eventSource == "config.amazonaws.com") {
           addField(related, "json.requestParameters.configurationRecorderName");
 
-        } else if (eventSource == "rds.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.dBInstanceIdentifier",
-            "json.requestParameters.dBInstanceArn",
-            "json.responseElements.dBInstanceIdentifier",
-            "json.responseElements.dbInstanceArn",
-            "json.responseElements.dBSubnetGroup.vpcId",
-            "json.responseElements.vpcSecurityGroups.vpcSecurityGroupId"
-          });
-
-          field("json.responseElements.dBSubnetGroup.subnets").get(new ArrayList()).stream().forEach(i -> {
-            addValue(related, i.subnetIdentifier);
-          });
-
-          field("json.responseElements.vpcSecurityGroups").get(new ArrayList()).stream().forEach(i -> {
-            addValue(related, i.vpcSecurityGroupId);
-          });
         } else if (eventSource == "guardduty.amazonaws.com") {
           addFields(related, new String[]{
             "json.requestParameters.detectorId",
@@ -488,42 +521,12 @@ processors:
         } else if (eventName == "PutObject") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
 
-        } else if (eventName == "ModifyDBClusterSnapshotAttribute") {
-          addField(target, "json.responseElements.dBClusterSnapshotIdentifier");
-          
-        } else if (eventName == "ModifyDBSnapshotAttribute") {
-          addField(target, "json.responseElements.dBSnapshotIdentifier");
-          
         } else if (eventName == "StartSession") {
           addField(target, "json.requestParameters.target");
           
         } else if (eventName == "CreateTrustAnchor") {
           addField(target, "json.responseElements.trustAnchor.trustAnchorArn");
           
-        } else if (eventName == "ModifyDBInstance") {
-          addField(target, "json.responseElements.dBInstanceArn");
-
-        } else if (eventName == "ModifyDBCluster") {
-          addField(target, "json.responseElements.dBClusterArn");
-
-        } else if (eventName == "RestoreDBInstanceFromDBSnapshot") {
-          addField(target, "json.responseElements.dBInstanceArn");
-
-        } else if (eventName == "RestoreDBInstanceFromS3") {
-          addField(target, "json.responseElements.dBInstanceArn");
-
-        }  else if (eventName == "StopDBCluster") {
-          addField(target, "json.responseElements.dBClusterArn");
-
-        } else if (eventName == "StopDBInstance") {
-          addField(target, "json.responseElements.dBInstanceArn");
-
-        } else if (eventName == "DeleteDBCluster") {
-          addField(target, "json.responseElements.dBClusterArn");
-
-        } else if (eventName == "DeleteDBInstance") {
-          addField(target, "json.responseElements.dBInstanceArn");
-
         } else if (eventName == "BatchGetSecretValue") {
           field("json.requestParameters.secretIdList").get(new ArrayList()).stream().forEach(f -> addValue(target, f));
 
@@ -542,9 +545,6 @@ processors:
         } else if (eventName == "DeleteWebACL") {
           addField(target, "json.requestParameters.id");
 
-        } else if (eventName == "DeleteGlobalCluster") {
-          addField(target, "json.responseElements.globalClusterArn");
-        
         }
         
         if (!target.isEmpty()) {
