@@ -29,12 +29,12 @@ processors:
         LOG_TYPE: '(event log|conn log)'
   - set:
       field: event.timezone
-      value: "{{_tmp.tz_offset}}"
+      value: "{{{_tmp.tz_offset}}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
-      timezone: "{{ event.timezone }}"
+      timezone: "{{{ event.timezone }}}"
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
@@ -244,17 +244,17 @@ processors:
   - append:
       if: ctx.source?.ip != null
       field: related.ip
-      value: '{{source.ip}}'
+      value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
       if: ctx.source?.domain != null
       field: related.hosts
-      value: '{{source.domain}}'
+      value: '{{{source.domain}}}'
       allow_duplicates: false
   - append:
       if: ctx.user?.name != null
       field: related.user
-      value: '{{user.name}}'
+      value: '{{{user.name}}}'
       allow_duplicates: false
   - remove:
       field:

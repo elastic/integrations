@@ -79,6 +79,41 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Convert microseconds to millseconds.
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx.misp?.attribute?.first_seen != null && ctx.misp.attribute.first_seen.length() == 16) {
+            ctx.misp.attribute.first_seen = ctx.misp.attribute.first_seen.substring(0, ctx.misp.attribute.first_seen.length() - 3)
+        }
+        if (ctx.misp?.attribute?.last_seen != null && ctx.misp.attribute.last_seen.length() == 16) {
+            ctx.misp.attribute.last_seen = ctx.misp.attribute.last_seen.substring(0, ctx.misp.attribute.last_seen.length() - 3)
+        }
+  - date:
+      field: misp.attribute.first_seen
+      target_field: misp.attribute.first_seen
+      tag: date_attribute_first_seen
+      if: ctx.misp?.attribute?.first_seen != null
+      formats:
+        - UNIX_MS
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: misp.attribute.last_seen
+      target_field: misp.attribute.last_seen
+      tag: date_attribute_last_seen
+      if: ctx.misp?.attribute?.last_seen != null
+      formats:
+        - UNIX_MS
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Script for calculating if attribute is decayed/expired based on decaying models. 
 # If majority (i.e., >= 50%) decaying models have `decayed` property as true, then attribute is expired.
 # Set decayed_at to 2 minute before ingest time so that transform deletes the document from destination indices using transform's retention policy.
@@ -117,7 +152,7 @@ processors:
         ZonedDateTime _tmp_timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(ctx.misp.attribute.timestamp) * 1000L), ZoneId.of('Z'));
         ZonedDateTime _tmp_max_time = _tmp_timestamp;
         if (ctx.misp.attribute.last_seen != null) {
-            ZonedDateTime _tmp_last_seen = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(ctx.misp.attribute.last_seen)/1000L), ZoneId.of('Z'));
+            ZonedDateTime _tmp_last_seen = ZonedDateTime.parse(ctx.misp.attribute.last_seen);
             if (_tmp_max_time.isBefore(_tmp_last_seen)) {
                 _tmp_max_time = _tmp_last_seen;
             }
@@ -199,38 +234,14 @@ processors:
   - set:
       field: threat.feed.name
       value: "MISP"
-  - script:
-      description: Convert microseconds to millseconds.
-      lang: painless
-      source: |
-        if (ctx.misp?.attribute?.first_seen != null && ctx.misp.attribute.first_seen.length() > 3) {
-            ctx.misp.attribute.first_seen = ctx.misp.attribute.first_seen.substring(0, ctx.misp.attribute.first_seen.length() - 3)
-        }
-        if (ctx.misp?.attribute?.last_seen != null && ctx.misp.attribute.last_seen.length() > 3) {
-            ctx.misp.attribute.last_seen = ctx.misp.attribute.last_seen.substring(0, ctx.misp.attribute.last_seen.length() - 3)
-        }
-  - date:
-      field: misp.attribute.first_seen
-      target_field: threat.indicator.first_seen
-      tag: date_attribute_first_seen
-      if: ctx.misp?.attribute?.first_seen != null
-      formats:
-        - UNIX_MS
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      field: misp.attribute.last_seen
-      target_field: threat.indicator.last_seen
-      tag: date_attribute_last_seen
-      if: ctx.misp?.attribute?.last_seen != null
-      formats:
-        - UNIX_MS
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.first_seen
+      copy_from: misp.attribute.first_seen
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.last_seen
+      copy_from: misp.attribute.last_seen
+      ignore_empty_value: true
   - convert:
       field: misp.event.analysis
       type: long
@@ -244,7 +255,7 @@ processors:
       if: "ctx.misp?.attribute?.type != null && (['md5', 'impfuzzy', 'imphash', 'pehash', 'sha1', 'sha224', 'sha256', 'sha3-224', 'sha3-256', 'sha3-384', 'sha3-512', 'sha384', 'sha512', 'sha512/224', 'sha512/256', 'ssdeep', 'tlsh', 'vhash'].contains(ctx.misp.attribute.type) || ctx.misp.attribute.type.startsWith('filename'))"
   - rename:
       field: misp.attribute.value
-      target_field: "threat.indicator.file.hash.{{misp.attribute.type}}"
+      target_field: "threat.indicator.file.hash.{{{misp.attribute.type}}}"
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'file' && ctx.misp?.attribute?.type != null && !ctx.misp.attribute.type.startsWith('filename')"
   - rename:
@@ -265,8 +276,8 @@ processors:
       ignore_missing: true
       if: ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|')
   - set:
-      field: threat.indicator.file.hash.{{_tmp.hashtype}}
-      value: "{{_tmp.hashvalue}}"
+      field: threat.indicator.file.hash.{{{_tmp.hashtype}}}
+      value: "{{{_tmp.hashvalue}}}"
       if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|') && ctx._tmp?.hashvalue != null && ctx._tmp.hashtype != null"
 
   ## URL/URI indicator operations

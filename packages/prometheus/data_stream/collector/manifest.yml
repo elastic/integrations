@@ -2,6 +2,9 @@ title: Prometheus collector metrics
 type: metrics
 elasticsearch:
   index_mode: "time_series"
+  # Ensures agents have permissions to write data to `metrics-*-*`
+  dynamic_dataset: true
+  dynamic_namespace: true
 streams:
   - input: prometheus/metrics
     vars:
@@ -76,7 +79,24 @@ streams:
         title: SSL Certificate Authorities
         multi: true
         required: false
-        show_user: false
+        show_user: true
+      - name: ssl.certificate
+        type: text
+        title: SSL Certificate
+        show_user: true
+      - name: ssl.key
+        type: text
+        title: SSL Private Key
+        show_user: true
+      - name: ssl.key_passphrase
+        type: password
+        title: SSL Key Passphrase
+        secret: true
+        show_user: true
+      - name: ssl.ca_trusted_fingerprint
+        type: text
+        title: SSL CA Trusted Fingerprint
+        show_user: true
       - name: metrics_filters.exclude
         type: text
         title: Metrics Filters Exclude
@@ -161,3 +181,4 @@ streams:
     title: Prometheus collector metrics
     enabled: true
     description: Collect Prometheus collector metrics
+  

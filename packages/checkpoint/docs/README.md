@@ -22,7 +22,7 @@ You will need one or more Check Point Firewall appliances to monitor.
 
 ### Compatibility
 
-This integration has been tested against Check Point Log Exporter on R80.X and R81.X.
+This integration has been tested against Check Point Log Exporter on R81.X.
 
 ## Setup
 
@@ -114,7 +114,6 @@ An example event for `firewall` looks as following:
         "forwarded"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -127,6 +126,7 @@ An example event for `firewall` looks as following:
 | checkpoint.additional_info | ID of original file/mail which are sent by admin. | keyword |
 | checkpoint.additional_ip | DNS host name. | keyword |
 | checkpoint.additional_rdata | List of additional resource records. | keyword |
+| checkpoint.administrator | Source administrator name. | keyword |
 | checkpoint.advanced_changes |  | keyword |
 | checkpoint.alert | Alert level of matched rule (for connection logs). | keyword |
 | checkpoint.allocated_ports | Amount of allocated ports. | integer |
@@ -516,6 +516,7 @@ An example event for `firewall` looks as following:
 | checkpoint.src_country | Country name, derived from connection source IP address. | keyword |
 | checkpoint.src_phone_number | Source IP-Phone. | keyword |
 | checkpoint.src_user_dn | User distinguished name connected to source IP. | keyword |
+| checkpoint.src_user_name | User name connected to source IP. | keyword |
 | checkpoint.srckeyid | Initiator Spi ID. | keyword |
 | checkpoint.status | Ok/Warning/Error. | keyword |
 | checkpoint.status_update | Last time log was updated. | keyword |

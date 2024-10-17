@@ -24,11 +24,16 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{ _ingest.on_failure_message }}'
+            value: '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.reason
       copy_from: forgerock.payload
       ignore_failure: true
+      if: ctx.forgerock?.payload instanceof String
+  - set:
+      field: event.reason
+      copy_from: forgerock.payload.message
+      ignore_empty_value: true
   # cleaning up
   - remove:
       field:
@@ -37,10 +42,18 @@ processors:
         - forgerock.source
       ignore_failure: true
   - remove:
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx.forgerock?.payload instanceof String && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - forgerock.payload
-      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      if: ctx.forgerock?.payload instanceof Map && (ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - forgerock.payload.message
+      ignore_missing: true
+  - rename:
+      field: forgerock.payload
+      target_field: forgerock.idm_core
       ignore_missing: true
   - remove:
       field: event.original
@@ -68,7 +81,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

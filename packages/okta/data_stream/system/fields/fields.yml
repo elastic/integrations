@@ -1,30 +1,24 @@
 - name: okta.uuid
-  title: UUID
   type: keyword
   description: |
     The unique identifier of the Okta LogEvent.
 - name: okta.event_type
-  title: Event Type
   type: keyword
   description: |
     The type of the LogEvent.
 - name: okta.version
-  title: Version
   type: keyword
   description: |
     The version of the LogEvent.
 - name: okta.severity
-  title: Severity
   type: keyword
   description: |
     The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR.
 - name: okta.display_message
-  title: Display Message
   type: keyword
   description: |
     The display message of the LogEvent.
 - name: okta.actor
-  title: Actor
   type: group
   fields:
     - name: id
@@ -44,7 +38,6 @@
       description: |
         Display name of the actor.
 - name: okta.client
-  title: Client
   type: group
   fields:
     - name: ip
@@ -79,7 +72,6 @@
       description: |
         The identifier of the client.
 - name: okta.device
-  title: Client
   type: group
   fields:
     - name: device_integrator
@@ -123,7 +115,6 @@
         trusted platform module (TPM) or secure enclave. It does not mark whether there are tokens
         on the secure hardware.
 - name: okta.outcome
-  title: Outcome of the LogEvent.
   type: group
   fields:
     - name: reason
@@ -135,12 +126,10 @@
       description: |
         The result of the outcome. Must be one of: SUCCESS, FAILURE, SKIPPED, ALLOW, DENY, CHALLENGE, UNKNOWN.
 - name: okta.target
-  title: Target
   type: flattened
   description: |
     The list of targets.
 - name: okta.transaction
-  title: Transaction
   type: group
   fields:
     - name: id
@@ -155,58 +144,132 @@
       type: keyword
       description: ID of the API token used in a request.
 - name: okta.debug_context
-  title: Debug Context
   type: group
   fields:
     - name: debug_data
-      type: group
-      fields:
-        - name: device_fingerprint
-          type: keyword
-          description: |
-            The fingerprint of the device.
-        - name: dt_hash
-          type: keyword
-          description: |
-            The device token hash
-        - name: factor
-          type: keyword
-          description: |
-            The factor used for authentication.
-        - name: request_id
-          type: keyword
-          description: |
-            The identifier of the request.
-        - name: request_uri
-          type: keyword
-          description: |
-            The request URI.
-        - name: threat_suspected
-          type: keyword
-          description: |
-            Threat suspected.
-        - name: risk_behaviors
-          type: keyword
-          description: |
-            The set of behaviors that contribute to a risk assessment.
-        - name: risk_level
-          type: keyword
-          description: |
-            The risk level assigned to the sign in attempt.
-        - name: risk_reasons
-          type: keyword
-          description: |
-            The reasons for the risk.
-        - name: url
-          type: keyword
-          description: |
-            The URL.
-        - name: flattened
-          type: flattened
-          description: |
-            The complete debug_data object.
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      subobjects: false
+    - name: debug_data.authnRequestId
+      type: keyword
+      description: |
+        The authorization request ID.
+    - name: debug_data.client_secret
+      type: keyword
+    - name: debug_data.device_fingerprint
+      type: keyword
+      description: |
+        The fingerprint of the device.
+    - name: debug_data.dt_hash
+      type: keyword
+      description: |
+        The device token hash
+    - name: debug_data.factor
+      type: keyword
+      description: |
+        The factor used for authentication.
+    - name: debug_data.granted_scopes
+      type: keyword
+    - name: debug_data.grant_type
+      type: keyword
+    - name: debug_data.request_id
+      type: keyword
+      description: |
+        The identifier of the request.
+    - name: debug_data.request_uri
+      type: keyword
+      description: |
+        The request URI.
+    - name: debug_data.threat_suspected
+      type: keyword
+      description: |
+        Threat suspected.
+    - name: debug_data.requested_scopes
+      type: keyword
+    - name: debug_data.risk_behaviors
+      type: keyword
+      description: |
+        The set of behaviors that contribute to a risk assessment.
+    - name: debug_data.risk_level
+      type: keyword
+      description: |
+        The risk level assigned to the sign in attempt.
+    - name: debug_data.risk_reasons
+      type: keyword
+      description: |
+        The reasons for the risk.
+    - name: debug_data.url
+      type: keyword
+      description: |
+        The URL.
+    - name: debug_data.flattened
+      type: flattened
+      description: |
+        The complete debug_data object.
+    - name: debug_data.behaviors
+      type: keyword
+    - name: debug_data.behaviors.New_City
+      type: keyword
+    - name: debug_data.behaviors.New_Country
+      type: keyword
+    - name: debug_data.behaviors.New_Device
+      type: keyword
+    - name: debug_data.behaviors.New_Geo_Location
+      type: keyword
+    - name: debug_data.behaviors.New_IP
+      type: keyword
+    - name: debug_data.behaviors.New_State
+      type: keyword
+    - name: debug_data.behaviors.Velocity
+      type: keyword
+    - name: debug_data.behaviors.Velocity_Behavior
+      type: keyword
+    - name: debug_data.logOnlySecurityData
+      type: keyword
+    - name: debug_data.logOnlySecurityData.behaviors
+      type: keyword
+    - name: debug_data.logOnlySecurityData.behaviors.New_City
+      type: keyword
+    - name: debug_data.logOnlySecurityData.behaviors.New_Country
+      type: keyword
+    - name: debug_data.logOnlySecurityData.behaviors.New_Device
+      type: keyword
+    - name: debug_data.logOnlySecurityData.behaviors.New_Geo_Location
+      type: keyword
+    - name: debug_data.logOnlySecurityData.behaviors.New_IP
+      type: keyword
+    - name: debug_data.logOnlySecurityData.behaviors.New_State
+      type: keyword
+    - name: debug_data.logOnlySecurityData.behaviors.Velocity
+      type: keyword
+    - name: debug_data.logOnlySecurityData.risk
+      type: keyword
+    - name: debug_data.logOnlySecurityData.risk.level
+      type: keyword
+    - name: debug_data.logOnlySecurityData.risk.reasons
+      type: keyword
+    - name: debug_data.originalPrincipal
+      type: keyword
+    - name: debug_data.originalPrincipal.alternateId
+      type: keyword
+    - name: debug_data.originalPrincipal.displayName
+      type: keyword
+    - name: debug_data.originalPrincipal.id
+      type: keyword
+    - name: debug_data.originalPrincipal.type
+      type: keyword
+    - name: debug_data.promptingPolicyTypes
+      type: keyword
+    - name: debug_data.risk
+      type: keyword
+    - name: debug_data.risk.level
+      type: keyword
+    - name: debug_data.risk.reasons
+      type: keyword
+    - name: debug_data.risk_object
+      type: keyword
 - name: okta.authentication_context
-  title: Authentication Context
   type: group
   fields:
     - name: authentication_provider
@@ -247,7 +310,6 @@
       description: |
         The interface used. e.g., Outlook, Office365, wsTrust
 - name: okta.security_context
-  title: Security Context
   type: group
   fields:
     - name: as
@@ -277,7 +339,6 @@
       description: |
         Whether it is a proxy or not.
 - name: okta.request
-  title: Request
   type: group
   fields:
     - name: ip_chain

@@ -25,7 +25,7 @@ redact:
     - access_token
 program: |
   (
-    has(state.worklist) && size(state.worklist) > 0 ?
+    has(state.?worklist.threats) && size(state.worklist.threats) > 0 ?
       state
     :
       (
@@ -50,7 +50,7 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, {
-              "worklist": body.threats.map(e, e.threatId),
+              "worklist": body,
               "next": 0,
             })
           :
@@ -73,9 +73,9 @@ program: |
       ))
   ).as(state, state.with(
     !has(state.worklist) ? state : // Exit early due to GET failure.
-      state.next < size(state.worklist) ?
+      has(state.worklist.threats) && size(state.worklist.threats) > 0 ?
         request("GET",
-          state.url.trim_right("/") + "/v1/threats/" + string(state.worklist[state.next]) + "?" + {
+          state.url.trim_right("/") + "/v1/threats/" + string(state.worklist.threats[state.next].threatId) + "?" + {
             "pageSize": [string(state.page_size)],
             "pageNumber": [string(state.child_next_page)]
           }.format_query()
@@ -85,30 +85,25 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body,{
-            "events": (
-              size(body.messages) > 0 ?
-                body.messages.map(e,{
-                  "message": e.encode_json(),
-                })
-              :
-                [{"message":"retry"}]
-            ),
+            "events": body.messages.map(e,{
+              "message": e.encode_json(),
+            }),
             "cursor": {
               "last_timestamp": state.end_time
             },
-            "worklist": int(state.next) + 1 < size(state.worklist) || size(body.messages) > 0 ? state.worklist : [],
-            "child_next_page": size(body.messages) > 0 ? int(state.child_next_page) + 1 : 1,
+            "worklist": int(state.next) + 1 < size(state.worklist.threats) || has(body.nextPageNumber) ? state.worklist : {},
+            "child_next_page": has(body.nextPageNumber) ? body.nextPageNumber : 1,
             "next": (
-              size(body.messages) > 0 ?
+              has(body.nextPageNumber) ?
                 state.next
               :
-                int(state.next) + 1 < size(state.worklist) ?
+                int(state.next) + 1 < size(state.worklist.threats) ?
                   int(state.next) + 1
                 :
                   0
             ),
-            "next_page": int(state.next) + 1 < size(state.worklist) || size(body.messages) > 0 ? state.next_page : int(state.next_page) + 1,
-            "want_more": true,
+            "next_page": int(state.next) + 1 < size(state.worklist.threats) || has(body.nextPageNumber) ? state.next_page : has(state.worklist.nextPageNumber) ? state.worklist.nextPageNumber : 1,
+            "want_more": int(state.next) + 1 < size(state.worklist.threats) || has(body.nextPageNumber) || has(state.worklist.nextPageNumber),
           })
         :
           {

@@ -2,11 +2,10 @@
 
 The Google Workspace integration collects and parses data from the different [Google Workspace audit reports APIs](https://developers.google.com/admin-sdk/reports).
 
-If you want to know more about how you can fully leverage the Google Workspace integration, there is a multipart blog from our Security Labs that will help you:
+These blogs from our Security Labs will help you know more about the Google Workspace and how to it setup:
 
 1. To understand what Google Workspace is in [Part One - Surveying the Land](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one)
 2. To set it up, step by step, in [Part Two - Setup Threat Detection with Elastic](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two)
-3. And to use the collected information to your advantage in [Part Three - Detecting Common Threats](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-three)
 
 ## Compatibility
 
@@ -1564,6 +1563,7 @@ An example event for `alert` looks as following:
 | google_workspace.alert.data.rule.violation_info.suppressed.action.types | Actions suppressed due to other actions with higher priority. | keyword |
 | google_workspace.alert.data.rule.violation_info.trigger.user.email | Email of the user who caused the violation. Value could be empty if not applicable, for example, a violation found by drive continuous scan. | keyword |
 | google_workspace.alert.data.rule.violation_info.trigger.value | Trigger of the rule. | keyword |
+| google_workspace.alert.data.rule.violation_info.triggered.action.info | Metadata related to the triggered actions. | nested |
 | google_workspace.alert.data.rule.violation_info.triggered.action.info.object |  | keyword |
 | google_workspace.alert.data.rule.violation_info.triggered.action.types | Actions applied as a consequence of the rule being triggered. | keyword |
 | google_workspace.alert.data.rule_description | Description of the rule. | text |

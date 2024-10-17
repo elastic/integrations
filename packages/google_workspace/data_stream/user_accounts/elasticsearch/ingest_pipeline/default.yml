@@ -27,6 +27,7 @@ processors:
       ignore_failure: true
   - date:
       field: json.id.time
+      if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       timezone: UTC
       formats:
         - ISO8601
@@ -34,6 +35,10 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
         - yyyy-MM-dd'T'HH:mm:ss.SSSZ
         - yyyy/MM/dd HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - fingerprint:
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
@@ -143,12 +148,12 @@ processors:
         ctx.source.user.domain = splitmail[1];
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.user
-      value: "{{source.user.name}}"
+      value: "{{{source.user.name}}}"
       if: ctx?.source?.user?.name != null
       allow_duplicates: false
   - geoip:

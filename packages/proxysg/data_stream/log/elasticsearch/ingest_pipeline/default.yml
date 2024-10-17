@@ -1,0 +1,219 @@
+---
+description: Pipeline for processing onprem ProxySG logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: observer.vendor
+      value: Broadcom
+  - set:
+      field: observer.product
+      value: ProxySG
+  - drop:
+      tag: "drop_commented"
+      description: "Drop commented lines"
+      if: "ctx.message.startsWith('#')"
+      ignore_failure: true
+  - set:
+      tag: set_original
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null
+  - rename:
+      tag: rename_message
+      field: message
+      target_field: _temp_.message
+
+  # Config specific pipelines
+  - pipeline:
+      tag: main_pipeline
+      name: '{{ IngestPipeline "main" }}'
+      if: ctx._temp_._conf == 'main'
+
+  - set:
+      tag: set_timestamp
+      field: "@timestamp"
+      value: "{{{_temp_.date}}}T{{{_temp_.time}}}Z"
+      if: ctx._temp_?.date != null && ctx._temp_?.time != null
+
+  - remove:
+      field: "_temp_"
+      ignore_failure: true
+
+  # Type conversions
+  - convert:
+      tag: convert_client_to_server_port
+      field: "proxysg.client_to_server.uri_port"
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_server_to_client_bytes
+      field: "proxysg.server_to_client.bytes"
+      target_field: "server.bytes"
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_client_to_server_bytes
+      field: proxysg.client_to_server.bytes
+      target_field: "client.bytes"
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: proxysg_server_to_client_status
+      field: proxysg.server_to_client.status
+      target_field: http.response.status_code
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: proxysg_time_taken
+      field: proxysg.time_taken
+      type: long
+      ignore_missing: true
+
+  # ECS mappings
+  - set:
+      field: client.ip
+      copy_from: proxysg.client.ip
+      ignore_failure: true
+  - set:
+      field: server.ip
+      copy_from: proxysg.server.ip
+      ignore_failure: true
+  - set:
+      field: url.scheme
+      copy_from: proxysg.client_to_server.uri_scheme
+      ignore_failure: true
+  - set:
+      field: url.port
+      copy_from: proxysg.client_to_server.uri_port
+      ignore_failure: true
+  - set:
+      field: url.path
+      copy_from: proxysg.client_to_server.uri_path
+      ignore_failure: true
+  - set:
+      field: url.query
+      copy_from: proxysg.client_to_server.uri_query
+      ignore_failure: true
+  - set:
+      field: client.user.name
+      copy_from: proxysg.client_to_server.username
+      ignore_failure: true
+  - set:
+      field: http.request.referrer
+      copy_from: proxysg.client_to_server.referer
+      ignore_failure: true
+  - set:
+      field: user_agent.original
+      copy_from: proxysg.client_to_server.user_agent
+      ignore_failure: true
+  - set:
+      field: http.request.method
+      copy_from: proxysg.client_to_server.method
+      ignore_failure: true
+  - set:
+      field: url.domain
+      copy_from: proxysg.client_to_server.host
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: 'ctx.proxysg.time_taken != null'
+      # proxysg.time_taken is ms, event.duration is ns
+      source: |
+        ctx.event.duration = ctx.proxysg.time_taken * 1000000
+
+  # Enrichment
+  - registered_domain:
+      field: url.domain
+      target_field: url
+      ignore_missing: true
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+
+  # Geo-location
+  - geoip:
+      field: server.ip
+      target_field: server.geo
+      if: ctx.server?.geo == null && ctx.server?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: server.ip
+      target_field: server.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: server.as.asn
+      target_field: server.as.number
+      ignore_missing: true
+  - rename:
+      field: server.as.organization_name
+      target_field: server.as.organization.name
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      if: ctx.client?.geo == null && ctx.client?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+
+  # Add related fields
+  - append:
+      field: related.ip
+      value: "{{{server.ip}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{{client.ip}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{{proxysg.server.supplier_ip}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{{remote.ip}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+
+  - append:
+      field: related.hosts
+      value: "{{{url.domain}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+
+  - append:
+      field: related.user
+      value: "{{{client.user.name}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+          Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline
+          "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

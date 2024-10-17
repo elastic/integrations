@@ -1,6 +1,6 @@
 # Wiz
 
-Wiz continuously prioritizes critical risks based on a deep cloud analysis across misconfigurations, network exposure, secrets, vulnerabilities, malware, and identities to build a single prioritized view of risk for your cloud. This [Wiz](https://www.wiz.io/) integration enables you to consume and analyze Wiz data within Elastic Security, including issues, vulnerability data and audit events, providing you with visibility and context for your cloud environments within Elastic Security.
+Wiz continuously prioritizes critical risks based on a deep cloud analysis across misconfigurations, network exposure, secrets, vulnerabilities, malware, and identities to build a single prioritized view of risk for your cloud. This [Wiz](https://www.wiz.io/) integration enables you to consume and analyze Wiz data within Elastic Security, including issues, vulnerability data, cloud configuration findings and audit events, providing you with visibility and context for your cloud environments within Elastic Security.
 
 ## Data streams
 
@@ -48,6 +48,7 @@ This module has been tested against the **Wiz API Version v1**.
     | Audit         | admin:audit   |
     | Issue         | read:issues   |
     | Vulnerability | read:vulnerabilities |
+    | Cloud Configuration Finding | read:cloud_configuration |
 
 ### To obtain the Wiz URL
 1. Navigate to your user profile and copy the API Endpoint URL.
@@ -210,6 +211,146 @@ An example event for `audit` looks as following:
 | wiz.audit.user.id |  | keyword |
 | wiz.audit.user.name |  | keyword |
 | wiz.audit.user_agent |  | keyword |
+
+
+### Cloud Configuration Finding
+
+This is the `Cloud Configuration Finding` dataset.
+
+#### Example
+
+An example event for `cloud_configuration_finding` looks as following:
+
+```json
+{
+    "@timestamp": "2023-06-12T11:38:07.900Z",
+    "cloud": {
+        "account": {
+            "id": "cfd132be-3bc7-4f86-8efd-ed53ae498fec",
+            "name": "Wiz - DEV Outpost"
+        },
+        "provider": "azure"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "category": [
+            "configuration"
+        ],
+        "created": "2023-06-12T11:38:07.900Z",
+        "id": "bdeba988-f41b-55e6-9b99-96b8d3dc67d4",
+        "kind": "state",
+        "original": "{\"id\":\"bdeba988-f41b-55e6-9b99-96b8d3dc67d4\",\"targetExternalId\":\"k8s/pod/da99fd668e64c2def251b1d48b7b69ad3129638787a0f9144a993fe30fd4554f/default/cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx\",\"targetObjectProviderUniqueId\":\"cd971d74-92db-495c-8244-82da9a988fd0\",\"firstSeenAt\":\"2023-06-12T11:38:07.900129Z\",\"analyzedAt\":\"2023-06-12T11:38:07.900129Z\",\"severity\":\"LOW\",\"result\":\"FAIL\",\"status\":\"OPEN\",\"remediation\":\"Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \\r\\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \\r\\n* `securityContext.capabilities.drop` key is set to `ALL`. \\r\\n\",\"resource\":{\"id\":\"0e814bb7-29e8-5c15-be9c-8da42c67ee99\",\"providerId\":\"provider-id-0e814bb7-29e8-5c15-be9c-8da42c67ee99\",\"name\":\"cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx\",\"nativeType\":\"Pod\",\"type\":\"POD\",\"region\":null,\"subscription\":{\"id\":\"a3a3cc43-1dfd-50f1-882e-692840d4a891\",\"name\":\"Wiz - DEV Outpost\",\"externalId\":\"cfd132be-3bc7-4f86-8efd-ed53ae498fec\",\"cloudProvider\":\"Azure\"},\"projects\":null,\"tags\":[{\"key\":\"pod-template-hash\",\"value\":\"8bc677d64\"},{\"key\":\"app.kubernetes.io/name\",\"value\":\"azure-cluster-autoscaler\"},{\"key\":\"app.kubernetes.io/instance\",\"value\":\"cluster-autoscaler\"}]},\"rule\":{\"id\":\"73553de7-f2ad-4ffb-b425-c69815033530\",\"shortId\":\"Pod-32\",\"graphId\":\"99ffeef7-75df-5c88-9265-5ab50ffbc2b9\",\"name\":\"Pod should run containers with authorized additional capabilities (PSS Restricted)\",\"description\":\"This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \\nThis rule checks whether the pod is running containers with authorized additional capabilities.     \\nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \\nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \\nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.\",\"remediationInstructions\":\"Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \\r\\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \\r\\n* `securityContext.capabilities.drop` key is set to `ALL`. \\r\\n\",\"functionAsControl\":false},\"securitySubCategories\":[{\"id\":\"wsct-id-5206\",\"title\":\"Container Security\",\"category\":{\"id\":\"wct-id-423\",\"name\":\"9 Container Security\",\"framework\":{\"id\":\"wf-id-1\",\"name\":\"Wiz\"}}},{\"id\":\"wsct-id-8176\",\"title\":\"5.1 Containers should not run with additional capabilities\",\"category\":{\"id\":\"wct-id-1295\",\"name\":\"5 Capabilities\",\"framework\":{\"id\":\"wf-id-57\",\"name\":\"Kubernetes Pod Security Standards (Restricted)\"}}},{\"id\":\"wsct-id-8344\",\"title\":\"Cluster misconfiguration\",\"category\":{\"id\":\"wct-id-1169\",\"name\":\"2 Container & Kubernetes Security\",\"framework\":{\"id\":\"wf-id-53\",\"name\":\"Wiz Detailed\"}}}]}",
+        "outcome": "failure",
+        "type": [
+            "info"
+        ]
+    },
+    "message": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
+    "observer": {
+        "vendor": "Wiz"
+    },
+    "resource": {
+        "id": "provider-id-0e814bb7-29e8-5c15-be9c-8da42c67ee99",
+        "name": "cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx",
+        "sub_type": "Pod",
+        "type": "POD"
+    },
+    "result": {
+        "evaluation": "FAILED"
+    },
+    "rule": {
+        "description": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
+        "id": "Pod-32",
+        "name": "Pod should run containers with authorized additional capabilities (PSS Restricted)",
+        "remediation": "Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \r\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \r\n* `securityContext.capabilities.drop` key is set to `ALL`. \r\n",
+        "uuid": "73553de7-f2ad-4ffb-b425-c69815033530"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields"
+    ],
+    "wiz": {
+        "cloud_configuration_finding": {
+            "analyzed_at": "2023-06-12T11:38:07.900Z",
+            "id": "bdeba988-f41b-55e6-9b99-96b8d3dc67d4",
+            "resource": {
+                "id": "0e814bb7-29e8-5c15-be9c-8da42c67ee99",
+                "name": "cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx",
+                "native_type": "Pod",
+                "provider_id": "provider-id-0e814bb7-29e8-5c15-be9c-8da42c67ee99",
+                "subscription": {
+                    "cloud_provider": "Azure",
+                    "external_id": "cfd132be-3bc7-4f86-8efd-ed53ae498fec",
+                    "name": "Wiz - DEV Outpost"
+                },
+                "type": "POD"
+            },
+            "result": "FAIL",
+            "rule": {
+                "description": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
+                "id": "73553de7-f2ad-4ffb-b425-c69815033530",
+                "name": "Pod should run containers with authorized additional capabilities (PSS Restricted)",
+                "remediation_instructions": "Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \r\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \r\n* `securityContext.capabilities.drop` key is set to `ALL`. \r\n",
+                "short_id": "Pod-32"
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| resource.id |  | keyword |
+| resource.name |  | keyword |
+| resource.sub_type |  | keyword |
+| resource.type |  | keyword |
+| result.evaluation |  | keyword |
+| result.evidence.cloud_configuration_link |  | text |
+| result.evidence.configuration_path |  | text |
+| result.evidence.current_value |  | text |
+| result.evidence.expected_value |  | text |
+| rule.description |  | text |
+| rule.id |  | keyword |
+| rule.name |  | keyword |
+| rule.reference |  | text |
+| rule.references |  | text |
+| rule.remediation |  | text |
+| rule.uuid |  | keyword |
+| tags | User defined tags. | keyword |
+| wiz.cloud_configuration_finding.analyzed_at |  | date |
+| wiz.cloud_configuration_finding.evidence.cloud_configuration_link |  | text |
+| wiz.cloud_configuration_finding.evidence.configuration_path |  | text |
+| wiz.cloud_configuration_finding.evidence.current_value |  | text |
+| wiz.cloud_configuration_finding.evidence.expected_value |  | text |
+| wiz.cloud_configuration_finding.id |  | keyword |
+| wiz.cloud_configuration_finding.resource.cloud_platform |  | keyword |
+| wiz.cloud_configuration_finding.resource.id |  | keyword |
+| wiz.cloud_configuration_finding.resource.name |  | keyword |
+| wiz.cloud_configuration_finding.resource.native_type |  | keyword |
+| wiz.cloud_configuration_finding.resource.provider_id |  | keyword |
+| wiz.cloud_configuration_finding.resource.region |  | keyword |
+| wiz.cloud_configuration_finding.resource.subscription.cloud_provider |  | keyword |
+| wiz.cloud_configuration_finding.resource.subscription.external_id |  | keyword |
+| wiz.cloud_configuration_finding.resource.subscription.name |  | keyword |
+| wiz.cloud_configuration_finding.resource.type |  | keyword |
+| wiz.cloud_configuration_finding.result |  | keyword |
+| wiz.cloud_configuration_finding.rule.description |  | text |
+| wiz.cloud_configuration_finding.rule.id |  | keyword |
+| wiz.cloud_configuration_finding.rule.name |  | keyword |
+| wiz.cloud_configuration_finding.rule.remediation_instructions |  | text |
+| wiz.cloud_configuration_finding.rule.short_id |  | keyword |
 
 
 ### Issue
@@ -489,19 +630,22 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2023-08-16T18:40:57.000Z",
     "agent": {
-        "ephemeral_id": "bd7b9b1e-3c24-48fb-ad27-fc8578793608",
-        "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "124489e8-14a9-4120-9631-0c55ec182d07",
+        "id": "9f35182a-afaa-4788-859d-d523d976b90e",
+        "name": "elastic-agent-32792",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.14.3"
     },
     "cloud": {
+        "account": {
+            "name": "wiz-integrations"
+        },
         "provider": "AWS",
         "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "wiz.vulnerability",
-        "namespace": "ep",
+        "namespace": "32071",
         "type": "logs"
     },
     "device": {
@@ -511,9 +655,9 @@ An example event for `vulnerability` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "927b2eff-4394-4486-ab77-d6bfa7c529cf",
+        "id": "9f35182a-afaa-4788-859d-d523d976b90e",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.14.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -521,7 +665,7 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "wiz.vulnerability",
-        "ingested": "2023-10-03T10:23:54Z",
+        "ingested": "2024-10-08T12:48:23Z",
         "kind": "alert",
         "original": "{\"CVEDescription\":\"In LibTIFF, there is a memory malloc failure in tif_pixarlog.c. A crafted TIFF document can lead to an abort, resulting in a remote denial of service attack.\",\"CVSSSeverity\":\"MEDIUM\",\"dataSourceName\":\"data Source\",\"description\":\"Thepackage`libtiff`version`4.0.3-35.amzn2`wasdetectedin`YUMpackagemanager`onamachinerunning`Amazon2(Karoo)`isvulnerableto`CVE-2020-35522`,whichexistsinversions`\\u003c4.0.3-35.amzn2.0.1`.\\n\\nThevulnerabilitywasfoundinthe[OfficialAmazonLinuxSecurityAdvisories](https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html)withvendorseverity:`Medium`([NVD](https://nvd.nist.gov/vuln/detail/CVE-2020-35522)severity:`Medium`).\\n\\nThevulnerabilitycanberemediatedbyupdatingthepackagetoversion`4.0.3-35.amzn2.0.1`orhigher,using`yumupdatelibtiff`.\",\"detailedName\":\"libtiff\",\"detectionMethod\":\"PACKAGE\",\"epssPercentile\":46.2,\"epssProbability\":0.1,\"epssSeverity\":\"LOW\",\"exploitabilityScore\":1.8,\"firstDetectedAt\":\"2022-05-01T11:36:10.063767Z\",\"fixedVersion\":\"4.0.3-35.amzn2.0.1\",\"hasCisaKevExploit\":false,\"hasExploit\":false,\"id\":\"5e95ff50-5490-514e-87f7-11e56f3230ff\",\"ignoreRules\":{\"enabled\":true,\"expiredAt\":\"2023-08-16T18:40:57Z\",\"id\":\"aj3jqtvnaf\",\"name\":\"abc\"},\"impactScore\":3.6,\"lastDetectedAt\":\"2023-08-16T18:40:57Z\",\"layerMetadata\":{\"details\":\"xxxx\",\"id\":\"5e95ff50-5490-514e-87f7-11e56f3230ff\",\"isBaseLayer\":true},\"link\":\"https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html\",\"locationPath\":\"package/library/file\",\"name\":\"CVE-2020-3333\",\"portalUrl\":\"https://app.wiz.io/explorer/vulnerability-findings#~(entity~(~'xxx-xxx*2cSECURITY_TOOL_FINDING))\",\"projects\":[{\"businessUnit\":\"\",\"id\":\"83b76efe-a7b6-5762-8a53-8e8f59e68bd8\",\"name\":\"Project2\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-2\"},{\"businessUnit\":\"Dev\",\"id\":\"af52828c-4eb1-5c4e-847c-ebc3a5ead531\",\"name\":\"project4\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-4\"},{\"businessUnit\":\"Dev\",\"id\":\"d6ac50bb-aec0-52fc-80ab-bacd7b02f178\",\"name\":\"Project1\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project1\"}],\"remediation\":\"yumupdatelibtiff\",\"resolutionReason\":\"resolutionReason\",\"resolvedAt\":\"2023-08-16T18:40:57Z\",\"score\":5.5,\"status\":\"OPEN\",\"validatedInRuntime\":true,\"vendorSeverity\":\"MEDIUM\",\"version\":\"4.0.3-35.amzn2\",\"vulnerableAsset\":{\"cloudPlatform\":\"AWS\",\"cloudProviderURL\":\"https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#InstanceDetails:instanceId=i-0a0f7e1451da5f4a3\",\"hasLimitedInternetExposure\":true,\"hasWideInternetExposure\":true,\"id\":\"c828de0d-4c42-5b1c-946b-2edee094d0b3\",\"ipAddresses\":[\"89.160.20.112\",\"89.160.20.128\"],\"isAccessibleFromOtherSubscriptions\":false,\"isAccessibleFromOtherVnets\":false,\"isAccessibleFromVPN\":false,\"name\":\"test-4\",\"operatingSystem\":\"Linux\",\"providerUniqueId\":\"arn:aws:ec2:us-east-1:998231069301:instance/i-0a0f7e1451da5f4a3\",\"region\":\"us-east-1\",\"status\":\"Active\",\"subscriptionExternalId\":\"998231069301\",\"subscriptionId\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"subscriptionName\":\"wiz-integrations\",\"tags\":{\"Name\":\"test-4\"},\"type\":\"VIRTUAL_MACHINE\"}}",
         "type": [
@@ -529,6 +673,7 @@ An example event for `vulnerability` looks as following:
         ]
     },
     "host": {
+        "name": "test-4",
         "os": {
             "family": "Linux"
         }
@@ -536,12 +681,24 @@ An example event for `vulnerability` looks as following:
     "input": {
         "type": "cel"
     },
-    "message": "Thepackage`libtiff`version`4.0.3-35.amzn2`wasdetectedin`YUMpackagemanager`onamachinerunning`Amazon2(Karoo)`isvulnerableto`CVE-2020-35522`,whichexistsinversions`\u003c4.0.3-35.amzn2.0.1`.\n\nThevulnerabilitywasfoundinthe[OfficialAmazonLinuxSecurityAdvisories](https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html)withvendorseverity:`Medium`([NVD](https://nvd.nist.gov/vuln/detail/CVE-2020-35522)severity:`Medium`).\n\nThevulnerabilitycanberemediatedbyupdatingthepackagetoversion`4.0.3-35.amzn2.0.1`orhigher,using`yumupdatelibtiff`.",
+    "message": "Thepackage`libtiff`version`4.0.3-35.amzn2`wasdetectedin`YUMpackagemanager`onamachinerunning`Amazon2(Karoo)`isvulnerableto`CVE-2020-35522`,whichexistsinversions`<4.0.3-35.amzn2.0.1`.\n\nThevulnerabilitywasfoundinthe[OfficialAmazonLinuxSecurityAdvisories](https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html)withvendorseverity:`Medium`([NVD](https://nvd.nist.gov/vuln/detail/CVE-2020-35522)severity:`Medium`).\n\nThevulnerabilitycanberemediatedbyupdatingthepackagetoversion`4.0.3-35.amzn2.0.1`orhigher,using`yumupdatelibtiff`.",
+    "observer": {
+        "vendor": "Wiz"
+    },
+    "package": {
+        "fixed_version": "4.0.3-35.amzn2.0.1",
+        "name": "libtiff",
+        "version": "4.0.3-35.amzn2"
+    },
     "related": {
         "ip": [
             "89.160.20.112",
             "89.160.20.128"
         ]
+    },
+    "resource": {
+        "id": "arn:aws:ec2:us-east-1:998231069301:instance/i-0a0f7e1451da5f4a3",
+        "name": "test-4"
     },
     "tags": [
         "preserve_original_event",
@@ -550,9 +707,18 @@ An example event for `vulnerability` looks as following:
         "wiz-vulnerability"
     ],
     "vulnerability": {
+        "cwe": "CVE-2020-3333",
         "description": "In LibTIFF, there is a memory malloc failure in tif_pixarlog.c. A crafted TIFF document can lead to an abort, resulting in a remote denial of service attack.",
         "id": "CVE-2020-3333",
+        "package": {
+            "fixed_version": "4.0.3-35.amzn2.0.1",
+            "name": "libtiff",
+            "version": "4.0.3-35.amzn2"
+        },
         "reference": "https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html",
+        "score": {
+            "base": 5.5
+        },
         "severity": "MEDIUM"
     },
     "wiz": {
@@ -560,7 +726,7 @@ An example event for `vulnerability` looks as following:
             "cve_description": "In LibTIFF, there is a memory malloc failure in tif_pixarlog.c. A crafted TIFF document can lead to an abort, resulting in a remote denial of service attack.",
             "cvss_severity": "MEDIUM",
             "data_source_name": "data Source",
-            "description": "Thepackage`libtiff`version`4.0.3-35.amzn2`wasdetectedin`YUMpackagemanager`onamachinerunning`Amazon2(Karoo)`isvulnerableto`CVE-2020-35522`,whichexistsinversions`\u003c4.0.3-35.amzn2.0.1`.\n\nThevulnerabilitywasfoundinthe[OfficialAmazonLinuxSecurityAdvisories](https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html)withvendorseverity:`Medium`([NVD](https://nvd.nist.gov/vuln/detail/CVE-2020-35522)severity:`Medium`).\n\nThevulnerabilitycanberemediatedbyupdatingthepackagetoversion`4.0.3-35.amzn2.0.1`orhigher,using`yumupdatelibtiff`.",
+            "description": "Thepackage`libtiff`version`4.0.3-35.amzn2`wasdetectedin`YUMpackagemanager`onamachinerunning`Amazon2(Karoo)`isvulnerableto`CVE-2020-35522`,whichexistsinversions`<4.0.3-35.amzn2.0.1`.\n\nThevulnerabilitywasfoundinthe[OfficialAmazonLinuxSecurityAdvisories](https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html)withvendorseverity:`Medium`([NVD](https://nvd.nist.gov/vuln/detail/CVE-2020-35522)severity:`Medium`).\n\nThevulnerabilitycanberemediatedbyupdatingthepackagetoversion`4.0.3-35.amzn2.0.1`orhigher,using`yumupdatelibtiff`.",
             "detailed_name": "libtiff",
             "detection_method": "PACKAGE",
             "epss": {
@@ -676,6 +842,13 @@ An example event for `vulnerability` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| package.fixed_version |  | keyword |
+| resource.id |  | keyword |
+| resource.name |  | keyword |
+| vulnerability.cwe |  | keyword |
+| vulnerability.package.fixed_version |  | keyword |
+| vulnerability.package.name |  | keyword |
+| vulnerability.package.version |  | keyword |
 | wiz.vulnerability.cve_description |  | keyword |
 | wiz.vulnerability.cvss_severity |  | keyword |
 | wiz.vulnerability.data_source_name |  | keyword |

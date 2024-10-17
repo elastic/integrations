@@ -21,6 +21,7 @@ streams:
         multi: false
         required: false
         show_user: true
+        secret: false
       - name: secret_access_key
         type: text
         title: Secret Access Key
@@ -34,6 +35,7 @@ streams:
         multi: false
         required: false
         show_user: true
+        secret: false
       - name: shared_credential_file
         type: text
         title: Shared Credential File
@@ -118,6 +120,53 @@ streams:
       - name: azure.credentials.client_certificate_password
         type: password
         title: Client Certificate Password
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+  - input: cloudbeat/asset_inventory_gcp
+    title: GCP Asset Inventory
+    description: Asset Inventory Discovery for GCP
+    template_path: gcp.yml.hbs
+    enabled: false
+    vars:
+      - name: gcp.account_type
+        title: Account Type
+        multi: false
+        required: true
+        show_user: true
+        type: select
+        options:
+          - text: Single Account
+            value: single-account
+          - text: GCP Organization
+            value: organization-account
+        default: single-account
+      - name: gcp.organization_id
+        description: required if Account Type is GCP Organization
+        type: text
+        title: Organization ID
+        multi: false
+        required: false
+        show_user: true
+      - name: gcp.project_id
+        type: text
+        title: Project ID
+        description: the project where the agent will be deployed. if Account Type is Single Account, only this project will be scanned.
+        multi: false
+        required: true
+        show_user: true
+      - name: gcp.credentials.file
+        type: text
+        title: Credentials File
+        description: path to the credentials file. use either this or a credentials JSON.
+        multi: false
+        required: false
+        show_user: true
+      - name: gcp.credentials.json
+        description: 'a service account key JSON. use either this or a credentials file. required roles are: "roles/cloudasset.viewer" and "roles/browser". if Account Type is GCP Organization, grant access to these roles on the organization level.'
+        type: textarea
+        title: Credentials JSON
         multi: false
         required: false
         show_user: true
