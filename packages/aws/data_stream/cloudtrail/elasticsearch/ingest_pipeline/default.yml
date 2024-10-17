@@ -324,6 +324,24 @@ processors:
           }
         }
 
+        void enrichKms(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "kms.amazonaws.com") {
+            return;
+          }
+
+          addFields(related, new String[]{
+            "json.requestParameters.keyId",
+            "json.responseElements.keyId",
+            "json.responseElements.keyMetadata.arn",
+            "json.responseElements.keyMetadata.keyId"
+          });
+
+          if (eventName == "DisableKey" || eventName == "ScheduleKeyDeletion") {
+            field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -350,6 +368,7 @@ processors:
         enrichEvents(eventSource, eventName, target, related);
         enrichGuardDuty(eventSource, eventName, target, related);
         enrichIam(eventSource, eventName, target, related);
+        enrichKms(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -363,14 +382,6 @@ processors:
 
         } else if (eventSource == "s3.amazonaws.com") {
           addField(related, "json.requestParameters.bucketName");
-
-        } else if (eventSource == "kms.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.keyId",
-            "json.responseElements.keyId",
-            "json.responseElements.keyMetadata.arn",
-            "json.responseElements.keyMetadata.keyId"
-          });
 
         } else if (eventSource == "config.amazonaws.com") {
           addField(related, "json.requestParameters.configurationRecorderName");
@@ -488,12 +499,6 @@ processors:
 
         } else if (eventName == "GetSecretValue") {
           addField(target, "json.requestParameters.secretId");
-
-        } else if (eventName == "DisableKey") {
-          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-
-        } else if (eventName == "ScheduleKeyDeletion") {
-          field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
 
         } else if (eventName == "GetParameters") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
