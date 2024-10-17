@@ -519,6 +519,21 @@ processors:
           }
         }
 
+        void enrichSts(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "sts.amazonaws.com") {
+            return;
+          }
+
+          addFields(related, new String[]{
+            "json.requestParameters.roleArn",
+            "json.sourceIdentity",
+            "json.additionalEventData.MFAIdentifier",
+            "json.responseElements.assumedRoleUser.arn",
+            "json.requestParameters.roleSessionName",
+            "json.responseElements.accessKeyId"
+          });
+        }
+
 
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
@@ -557,18 +572,9 @@ processors:
         enrichSecretsManager(eventSource, eventName, target, related);
         enrichSignin(eventSource, eventName, target, related);
         enrichSsm(eventSource, eventName, target, related);
+        enrichSts(eventSource, eventName, target, related);
 
-        if (eventSource == "sts.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.roleArn",
-            "json.sourceIdentity",
-            "json.additionalEventData.MFAIdentifier",
-            "json.responseElements.assumedRoleUser.arn",
-            "json.requestParameters.roleSessionName",
-            "json.responseElements.accessKeyId"
-          });
-
-        } else if (eventSource == "config.amazonaws.com") {
+        if (eventSource == "config.amazonaws.com") {
           addField(related, "json.requestParameters.configurationRecorderName");
 
         } else if (eventSource == "wafv2.amazonaws.com") {
