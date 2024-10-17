@@ -274,6 +274,56 @@ processors:
           } 
         }
 
+        void enrichIam(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "iam.amazonaws.com") {
+            return;
+          }
+
+          addFields(related, new String[]{
+            "json.requestParameters.userName",
+            "json.requestParameters.serialNumber",
+            "json.requestParameters.accessKeyId",
+            "json.requestParameters.policyArn",
+            "json.requestParameters.roleName",
+            "json.requestParameters.policyName",
+            "json.requestParameters.serialNumber",
+            "json.responseElements.accessKey.userName",
+            "json.responseElements.accessKey.accessKeyId",
+            "json.responseElements.user.arn",
+            "json.responseElements.user.userId",
+            "json.responseElements.user.userName",
+            "json.responseElements.userId",
+            "json.responseElements.role.arn",
+            "json.responseElements.serialNumber"
+          });
+
+          if (eventName == "AttachGroupPolicy") {
+            addField(target, "json.requestParameters.groupName");
+
+          } else if (eventName == "AttachRolePolicy") {
+            addField(target, "json.requestParameters.roleName");
+
+          } else if (eventName == "AttachUserPolicy") {
+            addFields(target, new String[]{
+              "json.requestParameters.policyArn",
+              "json.requestParameters.userName"
+            });
+
+          } else if (eventName == "CreateAccessKey") {
+            addField(target, "json.responseElements.accessKey.accessKeyId");
+
+          } else if (eventName == "DeactivateMFADevice") {
+            addField(target, "json.requestParameters.userName");
+
+          } else if (eventName == "DeleteVirtualMFADevice") {
+            addField(target, "json.requestParameters.serialNumber");
+
+          } else if (eventName == "UpdateAssumeRolePolicy") {
+            addField(target, "json.requestParameters.roleName");
+
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -299,6 +349,7 @@ processors:
         enrichElasticFileSystem(eventSource, eventName, target, related);
         enrichEvents(eventSource, eventName, target, related);
         enrichGuardDuty(eventSource, eventName, target, related);
+        enrichIam(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -308,25 +359,6 @@ processors:
             "json.responseElements.assumedRoleUser.arn",
             "json.requestParameters.roleSessionName",
             "json.responseElements.accessKeyId"
-          });
-
-        } else if (eventSource == "iam.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.userName",
-            "json.requestParameters.serialNumber",
-            "json.requestParameters.accessKeyId",
-            "json.requestParameters.policyArn",
-            "json.requestParameters.roleName",
-            "json.requestParameters.policyName",
-            "json.requestParameters.serialNumber",
-            "json.responseElements.accessKey.userName",
-            "json.responseElements.accessKey.accessKeyId",
-            "json.responseElements.user.arn",
-            "json.responseElements.user.userId",
-            "json.responseElements.user.userName",
-            "json.responseElements.userId",
-            "json.responseElements.role.arn",
-            "json.responseElements.serialNumber"
           });
 
         } else if (eventSource == "s3.amazonaws.com") {
@@ -386,18 +418,6 @@ processors:
         if (eventName == "ConsoleLogin") {
           addField(target, "json.userIdentity.accountId");
 
-        } else if (eventName == "AttachUserPolicy") {
-          addFields(target, new String[]{
-            "json.requestParameters.policyArn",
-            "json.requestParameters.userName"
-          });
-
-        } else if (eventName == "AttachUserPolicy") {
-          addFields(target, new String[]{
-            "json.requestParameters.policyArn",
-            "json.requestParameters.userName"
-          });
-
         } else if (eventName == "StopConfigurationRecorder" 
                 || eventName == "StartConfigurationRecorder") {
           addField(target, "json.requestParameters.configurationRecorderName");
@@ -407,9 +427,6 @@ processors:
 
         } else if (eventName == "CopyObject") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-
-        } else if (eventName == "AttachGroupPolicy") {
-          addField(target, "json.requestParameters.groupName");
 
         } else if (eventName == "PutBucketLogging") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
@@ -472,26 +489,11 @@ processors:
         } else if (eventName == "GetSecretValue") {
           addField(target, "json.requestParameters.secretId");
 
-        } else if (eventName == "DeactivateMFADevice") {
-          addField(target, "json.requestParameters.userName");
-
-        } else if (eventName == "DeleteVirtualMFADevice") {
-          addField(target, "json.requestParameters.serialNumber");
-
         } else if (eventName == "DisableKey") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
 
         } else if (eventName == "ScheduleKeyDeletion") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-
-        } else if (eventName == "CreateAccessKey") {
-          addField(target, "json.responseElements.accessKey.accessKeyId");
-
-        } else if (eventName == "AttachRolePolicy") {
-          addField(target, "json.requestParameters.roleName");
-
-        } else if (eventName == "UpdateAssumeRolePolicy") {
-          addField(target, "json.requestParameters.roleName");
 
         } else if (eventName == "GetParameters") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
