@@ -338,7 +338,25 @@ processors:
 
           if (eventName == "DisableKey" || eventName == "ScheduleKeyDeletion") {
             field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
+          }
+        }
 
+        void enrichLambda(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "lambda.amazonaws.com") {
+            return;
+          }
+
+          addFields(related, new String[]{
+            "json.requestParameters.functionName",
+            "json.responseElements.functionArn",
+            "json.responseElements.functionName",
+            "json.responseElements.role",
+            "json.responseElements.vpcConfig.securityGroupIds",
+            "json.responseElements.vpcConfig.subnetIds"
+          });
+
+          if (eventName != null && eventName.contains("AddPermission")) { // needs to be contains because lambda event names are versioned on the name
+            addField(target, "json.requestParameters.functionName");
           }
         }
 
@@ -369,6 +387,7 @@ processors:
         enrichGuardDuty(eventSource, eventName, target, related);
         enrichIam(eventSource, eventName, target, related);
         enrichKms(eventSource, eventName, target, related);
+        enrichLambda(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -385,16 +404,6 @@ processors:
 
         } else if (eventSource == "config.amazonaws.com") {
           addField(related, "json.requestParameters.configurationRecorderName");
-
-        } else if (eventSource == "lambda.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.functionName",
-            "json.responseElements.functionArn",
-            "json.responseElements.functionName",
-            "json.responseElements.role",
-            "json.responseElements.vpcConfig.securityGroupIds",
-            "json.responseElements.vpcConfig.subnetIds"
-          });
 
         } else if (eventSource == "rds.amazonaws.com") {
           addFields(related, new String[]{
@@ -467,9 +476,6 @@ processors:
         } else if (eventName == "CreateTrustAnchor") {
           addField(target, "json.responseElements.trustAnchor.trustAnchorArn");
           
-        } else if (eventName != null && eventName.contains("AddPermission")) { // needs to be contains because lambda event names are versioned on the name
-          addField(target, "json.requestParameters.functionName");
-
         } else if (eventName == "ModifyDBInstance") {
           addField(target, "json.responseElements.dBInstanceArn");
 
