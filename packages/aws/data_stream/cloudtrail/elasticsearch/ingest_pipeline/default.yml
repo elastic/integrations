@@ -534,6 +534,22 @@ processors:
           });
         }
 
+        void enrichWafv2(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "wafv2.amazonaws.com") {
+            return;
+          }
+
+          addFields(related, new String[]{
+            "json.requestParameters.id",
+            "json.responseElements.summary"
+          });
+
+          if (eventName == "DeleteRuleGroup"
+              || eventName == "DeleteWebACL") {
+            addField(target, "json.requestParameters.id");
+          }
+        }
+
 
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
@@ -573,27 +589,16 @@ processors:
         enrichSignin(eventSource, eventName, target, related);
         enrichSsm(eventSource, eventName, target, related);
         enrichSts(eventSource, eventName, target, related);
+        enrichWafv2(eventSource, eventName, target, related);
 
         if (eventSource == "config.amazonaws.com") {
           addField(related, "json.requestParameters.configurationRecorderName");
-
-        } else if (eventSource == "wafv2.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.id",
-            "json.responseElements.summary"
-          });
 
         }
 
         if (eventName == "StopConfigurationRecorder" 
                 || eventName == "StartConfigurationRecorder") {
           addField(target, "json.requestParameters.configurationRecorderName");
-
-        } else if (eventName == "DeleteRuleGroup") {
-          addField(target, "json.requestParameters.id");
-
-        } else if (eventName == "DeleteWebACL") {
-          addField(target, "json.requestParameters.id");
 
         }
         
