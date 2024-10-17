@@ -130,6 +130,19 @@ processors:
           }
         }
 
+        void enrichConfig(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "config.amazonaws.com") {
+            return;
+          }
+
+          addField(related, "json.requestParameters.configurationRecorderName");
+
+          if (eventName == "StopConfigurationRecorder" 
+                  || eventName == "StartConfigurationRecorder") {
+            addField(target, "json.requestParameters.configurationRecorderName");
+          }
+        }
+
         void enrichEc2(def eventSource, def eventName, def target, def related) {
           if (eventSource != "ec2.amazonaws.com") {
               return;
@@ -571,6 +584,7 @@ processors:
 
         enrichCloudformation(eventSource, eventName, target, related);
         enrichCloudtrail(eventSource, eventName, target, related);
+        enrichConfig(eventSource, eventName, target, related);
         enrichEc2InstanceConnect(eventSource, eventName, target, related);
         enrichEc2(eventSource, eventName, target, related);
         enrichElasticFileSystem(eventSource, eventName, target, related);
@@ -590,17 +604,6 @@ processors:
         enrichSsm(eventSource, eventName, target, related);
         enrichSts(eventSource, eventName, target, related);
         enrichWafv2(eventSource, eventName, target, related);
-
-        if (eventSource == "config.amazonaws.com") {
-          addField(related, "json.requestParameters.configurationRecorderName");
-
-        }
-
-        if (eventName == "StopConfigurationRecorder" 
-                || eventName == "StartConfigurationRecorder") {
-          addField(target, "json.requestParameters.configurationRecorderName");
-
-        }
         
         if (!target.isEmpty()) {
           field("target.entity.id").set(target);
