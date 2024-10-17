@@ -85,7 +85,7 @@ processors:
           return entities.add(value);
         }
 
-        void enrichCloudformation(def eventSource, def eventName, def target) {
+        void enrichCloudformation(def eventSource, def eventName, def target, def related) {
           if (eventSource != "cloudformation.amazonaws.com") {
               return;
           }
@@ -118,6 +118,16 @@ processors:
           }
         }
 
+        void enrichEc2InstanceConnect(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "ec2-instance-connect.amazonaws.com") {
+              return;
+          }
+
+          if (eventName == "SendSSHPublicKey" || eventName == "SendSerialConsoleSSHPublicKey") {
+            addField(target, "json.requestParameters.instanceId");
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -136,8 +146,9 @@ processors:
         String actor = field("json.userIdentity.arn").get(null);
         String eventName = field("json.eventName").get(null);
 
-        enrichCloudformation(eventSource, eventName, target);
+        enrichCloudformation(eventSource, eventName, target, related);
         enrichCloudtrail(eventSource, eventName, target, related);
+        enrichEc2InstanceConnect(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -464,12 +475,6 @@ processors:
 
         } else if (eventName == "DeleteRule") {
           addField(target, "json.requestParameters.name");
-
-        } else if (eventName == "SendSSHPublicKey") {
-          addField(target, "json.requestParameters.instanceId");
-
-        } else if (eventName == "SendSerialConsoleSSHPublicKey") {
-          addField(target, "json.requestParameters.instanceId");
 
         } else if (eventName == "DeleteGlobalCluster") {
           addField(target, "json.responseElements.globalClusterArn");
