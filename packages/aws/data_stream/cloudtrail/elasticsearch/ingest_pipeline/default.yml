@@ -434,6 +434,17 @@ processors:
           }
         }
 
+        void enrichRolesAnywhere(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "rolesanywhere.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "CreateTrustAnchor") {
+            addField(target, "json.responseElements.trustAnchor.trustAnchorArn");
+            
+          }
+        }
+
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
         TreeSet target = new TreeSet();
@@ -465,6 +476,7 @@ processors:
         enrichLogs(eventSource, eventName, target, related);
         enrichMonitoring(eventSource, eventName, target, related);
         enrichRds(eventSource, eventName, target, related);
+        enrichRolesAnywhere(eventSource, eventName, target, related);
 
         if (eventSource == "sts.amazonaws.com") {
           addFields(related, new String[]{
@@ -523,9 +535,6 @@ processors:
 
         } else if (eventName == "StartSession") {
           addField(target, "json.requestParameters.target");
-          
-        } else if (eventName == "CreateTrustAnchor") {
-          addField(target, "json.responseElements.trustAnchor.trustAnchorArn");
           
         } else if (eventName == "BatchGetSecretValue") {
           field("json.requestParameters.secretIdList").get(new ArrayList()).stream().forEach(f -> addValue(target, f));
