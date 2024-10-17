@@ -128,58 +128,11 @@ processors:
           }
         }
 
-        // Using tree set to ensure a sorting is kept (testing purposes)
-        TreeSet related = new TreeSet();
-        TreeSet target = new TreeSet();
+        void enrichEc2(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "ec2.amazonaws.com") {
+              return;
+          }
 
-        addFields(related, new String[]{
-          "json.userIdentity.accessKeyId",
-          "json.userIdentity.arn",
-          "json.userIdentity.userName",
-          "json.userIdentity.sessionContext.sessionIssuer.arn",
-          "json.userIdentity.sessionContext.sessionIssuer.userName"
-        });
-
-        field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(related, f.ARN));
-
-        String eventSource = field("json.eventSource").get(null);
-        String actor = field("json.userIdentity.arn").get(null);
-        String eventName = field("json.eventName").get(null);
-
-        enrichCloudformation(eventSource, eventName, target, related);
-        enrichCloudtrail(eventSource, eventName, target, related);
-        enrichEc2InstanceConnect(eventSource, eventName, target, related);
-
-        if (eventSource == "sts.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.roleArn",
-            "json.sourceIdentity",
-            "json.additionalEventData.MFAIdentifier",
-            "json.responseElements.assumedRoleUser.arn",
-            "json.requestParameters.roleSessionName",
-            "json.responseElements.accessKeyId"
-          });
-
-        } else if (eventSource == "iam.amazonaws.com") {
-          addFields(related, new String[]{
-            "json.requestParameters.userName",
-            "json.requestParameters.serialNumber",
-            "json.requestParameters.accessKeyId",
-            "json.requestParameters.policyArn",
-            "json.requestParameters.roleName",
-            "json.requestParameters.policyName",
-            "json.requestParameters.serialNumber",
-            "json.responseElements.accessKey.userName",
-            "json.responseElements.accessKey.accessKeyId",
-            "json.responseElements.user.arn",
-            "json.responseElements.user.userId",
-            "json.responseElements.user.userName",
-            "json.responseElements.userId",
-            "json.responseElements.role.arn",
-            "json.responseElements.serialNumber"
-          });
-
-        } else if (eventSource == "ec2.amazonaws.com") {
           addFields(related, new String[]{
             "json.requestParameters.groupId",
             "json.requestParameters.groupName",
@@ -246,6 +199,99 @@ processors:
             });
           });
 
+          if (eventName == "AuthorizeSecurityGroupIngress") {
+            addField(target, "json.requestParameters.groupId");
+            field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(f -> addValue(target, f.securityGroupRuleId));
+
+          } else if (eventName == "CreateTrafficMirrorFilter") {
+            addField(target, "json.responseElements.CreateTrafficMirrorFilterResponse.trafficMirrorFilter.trafficMirrorFilterId");
+
+          } else if (eventName == "CreateTrafficMirrorFilterRule") {
+            addField(target, "json.responseElements.CreateTrafficMirrorFilterRuleResponse.trafficMirrorFilterRule.trafficMirrorFilterRuleId");
+
+          } else if (eventName == "CreateTrafficMirrorSession") {
+            addField(target, "json.responseElements.CreateTrafficMirrorSessionResponse.trafficMirrorSession.trafficMirrorSessionId");
+
+          } else if (eventName == "CreateTrafficMirrorTarget") {
+            addField(target, "json.responseElements.CreateTrafficMirrorTargetResponse.trafficMirrorTarget.trafficMirrorTargetId");
+
+          } else if (eventName == "DeleteFlowLogs") {
+            addField(target, "json.requestParameters.DeleteFlowLogsRequest.FlowLogId.content");
+
+          } else if (eventName == "DeleteNetworkAcl") {
+            addField(target, "json.requestParameters.networkAclId");
+
+          } else if (eventName == "DeleteNetworkAclEntry") {
+            addField(target, "json.requestParameters.networkAclId");
+            def ruleNumber = field("json.requestParameters.ruleNumber").get(null);
+            if (ruleNumber != null) {
+              addValue(target, String.valueOf(ruleNumber));
+            }
+
+          } else if (eventName == "GetPasswordData") {
+            addField(target, "json.requestParameters.instanceId");
+
+          } else if (eventName == "ModifyImageAttribute") {
+            addField(target, "json.requestParameters.imageId");
+            
+          } else if (eventName == "ModifySnapshotAttribute") {
+            addField(target, "json.requestParameters.snapshotId");
+
+          }
+        }
+
+        // Using tree set to ensure a sorting is kept (testing purposes)
+        TreeSet related = new TreeSet();
+        TreeSet target = new TreeSet();
+
+        addFields(related, new String[]{
+          "json.userIdentity.accessKeyId",
+          "json.userIdentity.arn",
+          "json.userIdentity.userName",
+          "json.userIdentity.sessionContext.sessionIssuer.arn",
+          "json.userIdentity.sessionContext.sessionIssuer.userName"
+        });
+
+        field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(related, f.ARN));
+
+        String eventSource = field("json.eventSource").get(null);
+        String actor = field("json.userIdentity.arn").get(null);
+        String eventName = field("json.eventName").get(null);
+
+        enrichCloudformation(eventSource, eventName, target, related);
+        enrichCloudtrail(eventSource, eventName, target, related);
+        enrichEc2InstanceConnect(eventSource, eventName, target, related);
+        enrichEc2(eventSource, eventName, target, related);
+
+        if (eventSource == "sts.amazonaws.com") {
+          addFields(related, new String[]{
+            "json.requestParameters.roleArn",
+            "json.sourceIdentity",
+            "json.additionalEventData.MFAIdentifier",
+            "json.responseElements.assumedRoleUser.arn",
+            "json.requestParameters.roleSessionName",
+            "json.responseElements.accessKeyId"
+          });
+
+        } else if (eventSource == "iam.amazonaws.com") {
+          addFields(related, new String[]{
+            "json.requestParameters.userName",
+            "json.requestParameters.serialNumber",
+            "json.requestParameters.accessKeyId",
+            "json.requestParameters.policyArn",
+            "json.requestParameters.roleName",
+            "json.requestParameters.policyName",
+            "json.requestParameters.serialNumber",
+            "json.responseElements.accessKey.userName",
+            "json.responseElements.accessKey.accessKeyId",
+            "json.responseElements.user.arn",
+            "json.responseElements.user.userId",
+            "json.responseElements.user.userName",
+            "json.responseElements.userId",
+            "json.responseElements.role.arn",
+            "json.responseElements.serialNumber"
+          });
+
         } else if (eventSource == "s3.amazonaws.com") {
           addField(related, "json.requestParameters.bucketName");
 
@@ -298,14 +344,7 @@ processors:
             "json.responseElements.summary"
           });
 
-        } else if (eventSource == "cloudformation.amazonaws.com") {
-          if (eventName == "CreateStackSet") {
-            addField(target, "json.responseElements.stackSetId");
-          } else if (eventName == "CreateStack") {
-            addField(target, "json.responseElements.stackId");
-          }
         }
-
 
         if (eventName == "CreateDetector") {
           addField(target, "json.responseElements.detectorId");
@@ -331,9 +370,6 @@ processors:
         } else if (eventName == "StopConfigurationRecorder" 
                 || eventName == "StartConfigurationRecorder") {
           addField(target, "json.requestParameters.configurationRecorderName");
-
-        } else if (eventName == "DeleteFlowLogs") {
-          addField(target, "json.requestParameters.DeleteFlowLogsRequest.FlowLogId.content");
 
         } else if (eventName == "DeleteResolverQueryLogConfig") {
           addField(target, "json.responseElements.resolverQueryLogConfig.arn");
@@ -372,9 +408,6 @@ processors:
         } else if (eventName == "CreateTrustAnchor") {
           addField(target, "json.responseElements.trustAnchor.trustAnchorArn");
           
-        } else if (eventName == "ModifyImageAttribute") {
-          addField(target, "json.requestParameters.imageId");
-          
         } else if (eventName != null && eventName.contains("AddPermission")) { // needs to be contains because lambda event names are versioned on the name
           addField(target, "json.requestParameters.functionName");
 
@@ -408,40 +441,11 @@ processors:
         } else if (eventName == "GetSecretValue") {
           addField(target, "json.requestParameters.secretId");
 
-        } else if (eventName == "GetPasswordData") {
-          addField(target, "json.requestParameters.instanceId");
-
         } else if (eventName == "DeactivateMFADevice") {
           addField(target, "json.requestParameters.userName");
 
         } else if (eventName == "DeleteVirtualMFADevice") {
           addField(target, "json.requestParameters.serialNumber");
-
-        } else if (eventName == "DeleteNetworkAcl") {
-          addField(target, "json.requestParameters.networkAclId");
-
-        } else if (eventName == "DeleteNetworkAclEntry") {
-          addField(target, "json.requestParameters.networkAclId");
-          def ruleNumber = field("json.requestParameters.ruleNumber").get(null);
-          if (ruleNumber != null) {
-            addValue(target, String.valueOf(ruleNumber));
-          }
-
-        } else if (eventName == "CreateTrafficMirrorFilter") {
-          addField(target, "json.responseElements.CreateTrafficMirrorFilterResponse.trafficMirrorFilter.trafficMirrorFilterId");
-
-        } else if (eventName == "CreateTrafficMirrorFilterRule") {
-          addField(target, "json.responseElements.CreateTrafficMirrorFilterRuleResponse.trafficMirrorFilterRule.trafficMirrorFilterRuleId");
-
-        } else if (eventName == "CreateTrafficMirrorSession") {
-          addField(target, "json.responseElements.CreateTrafficMirrorSessionResponse.trafficMirrorSession.trafficMirrorSessionId");
-
-        } else if (eventName == "CreateTrafficMirrorTarget") {
-          addField(target, "json.responseElements.CreateTrafficMirrorTargetResponse.trafficMirrorTarget.trafficMirrorTargetId");
-
-        } else if (eventName == "AuthorizeSecurityGroupIngress") {
-          addField(target, "json.requestParameters.groupId");
-          field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(f -> addValue(target, f.securityGroupRuleId));
 
         } else if (eventName == "DisableKey") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
@@ -457,9 +461,6 @@ processors:
 
         } else if (eventName == "UpdateAssumeRolePolicy") {
           addField(target, "json.requestParameters.roleName");
-
-        } else if (eventName == "ModifySnapshotAttribute") {
-          addField(target, "json.requestParameters.snapshotId");
 
         } else if (eventName == "GetParameters") {
           field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
