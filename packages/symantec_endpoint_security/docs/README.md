@@ -2362,7 +2362,7 @@ An example event for `event` looks as following:
 | ses.injection_type_id | The process injection method. | keyword |
 | ses.interpreter | The script interpreter used. | keyword |
 | ses.is_user_present | The indication of whether the user was logged on at event generation time. | boolean |
-| ses.js_canary_cust | The indication of whether the JavaScript canary is enabled for the customer. | boolean |
+| ses.js_canary_enabled | The indication of whether the JavaScript canary is enabled for the customer. | boolean |
 | ses.kernel.is_system | The indication of whether the object is part of the operating system. | boolean |
 | ses.kernel.name | The name of the kernel resource. | keyword |
 | ses.kernel.system_call | The system call that was invoked. | keyword |
