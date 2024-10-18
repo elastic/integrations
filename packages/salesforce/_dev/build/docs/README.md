@@ -238,7 +238,7 @@ curl -v -X POST "${TOKEN_URL}" \
      -d "password=${PASSWORD}${SECURITY_TOKEN}"
 ```
 
-Please note that the script has been tested on Unix-based systems (e.g., macOS, Linux). If you're using a different operating system, you may need to adjust the command accordingly.
+Note that the script has been tested on Unix-based systems (macOS, Linux). If you use a different operating system, you might need to adjust the command accordingly.
 
 This command is useful for debugging and troubleshooting OAuth 2.0 authentication with Salesforce Connected Apps. It is recommended to use a tool like `curl` for testing OAuth 2.0 authentication before setting up the full Salesforce integration. This approach allows you to verify the authentication process and identify any potential issues early when setting up the full Salesforce integration. If the request is successful, the response will contain an access token that can be used to authenticate subsequent requests to the Salesforce API. If the request fails, the response will contain an error message indicating the reason for the failure.
 
