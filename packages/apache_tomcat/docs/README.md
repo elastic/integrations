@@ -1422,3 +1422,22 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
+
+## SLO
+
+SLO allows to set clear, measurable targets for service performance, based on factors like availability, response times, error rates, and other key metrics. 
+Once you’ve defined your SLOs, you can monitor them in real time, with detailed dashboards that help you quickly identify and troubleshoot any issues that may arise.
+>Note: To create and manage SLOs you need an appropriate [license](https://www.elastic.co/subscriptions).
+
+### Apache tomcat http error count
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : apache_tomcat.access` |
+| Good Query  | `apache_tomcat.access.http.response.status_code : 200` |
+| Total Query | `apache_tomcat.access.http.response.status_code : *`   |
+
+### Apache tomcat heap memory usage
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : apache_tomcat.memory.heap` |
+| Good Query  | `apache_tomcat.memory.heap.used.bytes/apache_tomcat.memory.heap.max.bytes* 100 < 80` |
