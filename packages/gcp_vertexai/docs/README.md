@@ -9,7 +9,6 @@ The integration with Google Cloud Platform (GCP) Vertex AI allows you to gather 
 ## Configuration
 
 For fetching the metrics, users need to enter the project_id and the credentials file/json.
-Optional Configuration options are for the GCP Regions/Zone.
 
 ## Metrics
 
