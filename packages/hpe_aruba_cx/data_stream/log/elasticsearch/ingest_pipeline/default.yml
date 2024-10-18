@@ -1,0 +1,47 @@
+---
+description: Pipeline for processing HPE Aruba logs.
+
+processors:
+    - set:
+        field: event.original
+        copy_from: message
+    - remove:
+        field: message
+        ignore_missing: true
+    - set:
+        field: ecs.version
+        value: '8.11.0'
+    - set:
+        field: event.category
+        value: [ network ]
+  #
+  # Parse the syslog message
+  # This grok pattern is based on the syslog message format used by HPE Aruba CX switches.
+  #
+    - grok:
+        field: event.original
+        tag: grok_event_original
+        if: ctx.event?.original != null
+        patterns:
+            - "%{SYSLOG_HEADER}%{GREEDYDATA:message}"
+        pattern_definitions:
+            SYSLOG_HEADER: "%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.syslog.appname}\\[%{POSINT:log.syslog.procid}\\]:\\s+%{WORD:aruba.event_type}\\|(?:%{OPTIONAL_HEADER})?"
+            OPTIONAL_HEADER: "%{POSINT:event.code}\\|%{USER:log.level}\\|(?:%{USER:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
+    - grok:
+        field: aruba.sequence
+        if: ctx.aruba?.sequence != null && ctx.aruba.sequence.contains("/")
+        tag: parse_sequence
+        patterns:
+            - "%{POSINT:event.sequence:long}\\/%{POSINT}"
+    - lowercase:
+        field: event.kind
+        tag: lowercase_event_kind
+        ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
