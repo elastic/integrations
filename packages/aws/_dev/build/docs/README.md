@@ -61,7 +61,7 @@ linked through the [CloudWatch cross-account observability](https://docs.aws.ama
 Internally, the agent uses `ListMetrics` API to include metrics from the monitoring account and all linked source accounts in the returned data, providing a comprehensive cross-account view.
 
 You can further utilize `owning_account` parameter to refine the cross account observability. This parameter accepts a valid AWS account ID which should be linked to the monitoring account.
-If configured, metrics will be extracted from the specified linked account.
+If configured, metrics will be extracted from this specified linked/owning account.
 
 *_Note_:* Users should ensure that the necessary IAM roles and policies are properly set up in order to link the monitoring
 account and source accounts together. 
