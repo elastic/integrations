@@ -1,0 +1,92 @@
+{
+    "name": "PostgreSQL transaction errors",
+    "description": "",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"postgresql.activity\" ",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": {
+                "filters": [
+                  {
+                    "meta": {
+                      "disabled": false,
+                      "negate": true,
+                      "alias": null,
+                      "index": "metrics-*-id",
+                      "key": "postgresql.activity.state",
+                      "field": "postgresql.activity.state",
+                      "params": {
+                        "query": "idle in transaction (aborted)"
+                      },
+                      "type": "phrase"
+                    },
+                    "$state": {
+                      "store": "appState"
+                    },
+                    "query": {
+                      "match_phrase": {
+                        "postgresql.activity.state": "idle in transaction (aborted)"
+                      }
+                    }
+                  }
+                ],
+                "kqlQuery": ""
+              }
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": {
+                "filters": [
+                  {
+                    "meta": {
+                      "disabled": false,
+                      "negate": false,
+                      "alias": null,
+                      "index": "metrics-*-id",
+                      "key": "postgresql.activity.state",
+                      "field": "postgresql.activity.state",
+                      "value": "exists",
+                      "type": "exists"
+                    },
+                    "$state": {
+                      "store": "appState"
+                    },
+                    "query": {
+                      "exists": {
+                        "field": "postgresql.activity.state"
+                      }
+                    }
+                  }
+                ],
+                "kqlQuery": ""
+              }
+            }
+          ],
+          "equation": "A"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "7d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99
+    },
+    "tags": [],
+    "groupBy": "*"
+  }
