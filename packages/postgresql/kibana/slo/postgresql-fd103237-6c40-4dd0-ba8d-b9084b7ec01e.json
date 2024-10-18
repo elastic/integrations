@@ -1,0 +1,92 @@
+{
+    "name": "PostgreSQL query cancellation rate",
+    "description": "",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"postgresql.database\" ",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": {
+                "filters": [
+                  {
+                    "meta": {
+                      "disabled": false,
+                      "negate": false,
+                      "alias": null,
+                      "index": "metrics-*-id",
+                      "key": "postgresql.database.conflicts",
+                      "field": "postgresql.database.conflicts",
+                      "params": {
+                        "query": "0"
+                      },
+                      "type": "phrase"
+                    },
+                    "$state": {
+                      "store": "appState"
+                    },
+                    "query": {
+                      "match_phrase": {
+                        "postgresql.database.conflicts": "0"
+                      }
+                    }
+                  }
+                ],
+                "kqlQuery": ""
+              }
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": {
+                "filters": [
+                  {
+                    "meta": {
+                      "disabled": false,
+                      "negate": false,
+                      "alias": null,
+                      "index": "metrics-*-id",
+                      "key": "postgresql.database.conflicts",
+                      "field": "postgresql.database.conflicts",
+                      "value": "exists",
+                      "type": "exists"
+                    },
+                    "$state": {
+                      "store": "appState"
+                    },
+                    "query": {
+                      "exists": {
+                        "field": "postgresql.database.conflicts"
+                      }
+                    }
+                  }
+                ],
+                "kqlQuery": ""
+              }
+            }
+          ],
+          "equation": "A"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "7d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.9998999999999999
+    },
+    "tags": [],
+    "groupBy": "*"
+  }
