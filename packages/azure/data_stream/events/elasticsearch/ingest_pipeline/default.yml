@@ -1,0 +1,138 @@
+---
+description: Pipeline for parsing Azure logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  # TODO: we can remove this processor when https://github.com/elastic/beats/issues/40561
+  # is fixed and released.
+  - rename:
+      field: azure
+      target_field: azure-eventhub
+      if: 'ctx.azure?.eventhub != null'
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  
+  #
+  # Set the event dataset based on the event category.
+  # --------------------------------------------------
+  #
+  
+  - json:
+      field: message
+      target_field: tmp_json
+      description: 'Parses the message field as JSON and stores it in a temporary field to identify the event dataset.'
+  
+  # Default to azure.eventhub if the category is not recognized.
+  - set:
+      field: event.dataset
+      value: azure.eventhub
+      description: 'Sets the default event dataset.'
+  
+  - set:
+      field: event.dataset
+      value: azure.platformlogs
+      if: 'ctx.tmp_json?.category != null'
+      description: 'If the event has a category field, we consider it a platform log.'
+  - set:
+      field: event.dataset
+      value: azure.activitylogs
+      if: 'ctx.tmp_json?.category == "Administrative" || ctx.tmp_json?.category == "Security" || ctx.tmp_json?.category == "ServiceHealth" || ctx.tmp_json?.category == "Alert" || ctx.tmp_json?.category == "Recommendation" || ctx.tmp_json?.category == "Policy" || ctx.tmp_json?.category == "Autoscale" || ctx.tmp_json?.category == "ResourceHealth"'
+  - set:
+      field: event.dataset
+      value: azure.application_gateway
+      if: 'ctx.tmp_json?.category == "ApplicationGatewayFirewallLog" || ctx.tmp_json?.category == "ApplicationGatewayAccessLog"'
+  - set:
+      field: event.dataset
+      value: azure.auditlogs
+      if: 'ctx.tmp_json?.category == "AuditLogs"'
+  - set:
+      field: event.dataset
+      value: azure.firewall_logs
+      if: 'ctx.tmp_json?.category == "AzureFirewallApplicationRule" || ctx.tmp_json?.category == "AzureFirewallNetworkRule" || ctx.tmp_json?.category == "AzureFirewallDnsProxy" || ctx.tmp_json?.category == "AZFWApplicationRule" || ctx.tmp_json?.category == "AZFWNetworkRule" || ctx.tmp_json?.category == "AZFWNatRule" || ctx.tmp_json?.category == "AZFWDnsQuery"'
+  - set:
+      field: event.dataset
+      value: azure.graphactivitylogs
+      if: 'ctx.tmp_json?.category == "MicrosoftGraphActivityLogs"'
+  - set:
+      field: event.dataset
+      value: azure.identity_protection
+      if: 'ctx.tmp_json?.category == "RiskyUsers" || ctx.tmp_json?.category == "UserRiskEvents"'
+  - set:
+      field: event.dataset
+      value: azure.provisioning
+      if: 'ctx.tmp_json?.category == "ProvisioningLogs"'
+  - set:
+      field: event.dataset
+      value: azure.signinlogs
+      if: 'ctx.tmp_json?.category == "SignInLogs" || ctx.tmp_json?.category == "NonInteractiveUserSignInLogs" || ctx.tmp_json?.category == "ServicePrincipalSignInLogs" || ctx.tmp_json?.category == "ManagedIdentitySignInLogs"'
+  - set:
+      field: event.dataset
+      value: azure.springcloudlogs
+      # TODO: search more categories
+      if: 'ctx.tmp_json?.category == "ApplicationConsole"'
+  
+  # Remove the temporary field used to identify the event dataset.
+  - remove:
+      field: tmp_json
+      ignore_missing: true
+      description: 'Removes the temporary field used to identify the event dataset.'
+
+#   #
+#   # Route the event to the appropriate ingest pipeline based on the event dataset.
+#   # ------------------------------------------------------------------------------
+#   #
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_eventhub" }}'
+#       if: ctx.event?.dataset == 'azure.eventhub'
+#       ignore_missing_pipeline: true
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_activitylogs" }}'
+#       if: ctx.event?.dataset == 'azure.activitylogs'
+#       ignore_missing_pipeline: true
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_application_gateway" }}'
+#       if: ctx.event?.dataset == 'azure.application_gateway'
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_auditlogs" }}'
+#       if: ctx.event?.dataset == 'azure.auditlogs'
+#       ignore_missing_pipeline: true
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_firewall_logs" }}'
+#       if: ctx.event?.dataset == 'azure.firewall_logs'
+#       ignore_missing_pipeline: true
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_graphactivitylogss" }}'
+#       if: ctx.event?.dataset == 'azure.graphactivitylogss'
+#       ignore_missing_pipeline: true
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_identity_protection" }}'
+#       if: ctx.event?.dataset == 'azure.identity_protection'
+#       ignore_missing_pipeline: true
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_platformlogs" }}'
+#       if: ctx.event?.dataset == 'azure.platformlogs'
+#       ignore_missing_pipeline: true
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_provisioning" }}'
+#       if: ctx.event?.dataset == 'azure.provisioning'
+#       ignore_missing_pipeline: true
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_signinlogs" }}'
+#       if: ctx.event?.dataset == 'azure.signinlogs'
+#       ignore_missing_pipeline: true
+#   - pipeline:
+#       name: '{{ IngestPipeline "pipeline_springcloudlogs" }}'
+#       if: ctx.event?.dataset == 'azure.springcloudlogs'
+#       ignore_missing_pipeline: true
+
+#
+# Error handling
+#
+
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
