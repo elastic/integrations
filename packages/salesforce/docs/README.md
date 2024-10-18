@@ -81,7 +81,7 @@ The last entry in the list indicates the current version of your Salesforce inst
   3. To monitor an event, for example, Login Event, or Logout Event, click the dropdown arrow and select **Enable Storage**.
   4. Check if you have the required permissions: **View Real-Time Event Monitoring Data**.
 
-**Note**: Real-Time Event Monitoring may require additional licensing. Check your subscription level with your Salesforce account representative.
+NOTE: Real-Time Event Monitoring may require additional licensing. Check your subscription level with your Salesforce account representative.
 
 ## Setup
 
@@ -104,7 +104,7 @@ This is the URL of your Salesforce Organization.
 
 - **Salesforce Classic**: Given the example URL https://na9.salesforce.com/home/home.jsp, the Salesforce Instance URL is extracted as https://na9.salesforce.com.
 
-- **Salesforce Lightning**: The instance URL is available under your user name in the **View Profile** tab. Please use the correct instance URL in case of Salesforce Lightning because it uses *.lightning.force.com but the instance URL is *.salesforce.com.
+- **Salesforce Lightning**: The instance URL is available under your user name in the **View Profile** tab. Use the correct instance URL in case of Salesforce Lightning because it uses *.lightning.force.com but the instance URL is *.salesforce.com.
 
 ### Client key and client secret for authentication
 
@@ -141,13 +141,13 @@ The password used to authenticate the user.
 
 ### Token URL
 
-1. The token URL is used to obtain authentication tokens for API access.
+1. Use the token URL to obtain authentication tokens for API access.
 2. For most Salesforce instances, the token URL follows this format: https://login.salesforce.com/services/oauth2/token.
 3. If you're using a Salesforce sandbox environment, use https://test.salesforce.com/services/oauth2/token instead.
-4. For custom Salesforce domains, replace "login.salesforce.com" with your custom domain name. For example, if your custom domain is "mycompany.my.salesforce.com", the token URL becomes https://mycompany.my.salesforce.com/services/oauth2/token. This applies to Sandbox environments as well.
-5. In our Salesforce integration, we internally append "/services/oauth2/token" to the URL. Therefore, ensure that the URL you provide in the Salesforce integration is the base URL without the "/services/oauth2/token" part. For example, if your custom domain is "mycompany.my.salesforce.com", the complete token URL would be "https://mycompany.my.salesforce.com/services/oauth2/token", but the URL you provide in the Salesforce integration should be "https://mycompany.my.salesforce.com". In most cases, this is the same as the Salesforce instance URL.
+4. For custom Salesforce domains, replace `login.salesforce.com` with your custom domain name. For example, if your custom domain is `mycompany.my.salesforce.com`, the token URL becomes https://mycompany.my.salesforce.com/services/oauth2/token. This applies to Sandbox environments as well.
+5. In the Salesforce integration, we internally append `/services/oauth2/token` to the URL. Make sure that the URL you provide in the Salesforce integration is the base URL without the `/services/oauth2/token` part. For example, if your custom domain is `mycompany.my.salesforce.com`, the complete token URL would be https://mycompany.my.salesforce.com/services/oauth2/token, but the URL you provide in the Salesforce integration should be https://mycompany.my.salesforce.com. In most cases, this is the same as the Salesforce instance URL.
 
-**Note**: Salesforce Lightning users must use URL with `*.salesforce.com` (similar to the Salesforce instance URL) domain instead of `*.lightning.force.com` because the Salesforce API does not work with `*.lightning.force.com`.
+NOTE: Salesforce Lightning users must use URL with `*.salesforce.com` domain (similar to the Salesforce instance URL) instead of `*.lightning.force.com` because the Salesforce API does not work with `*.lightning.force.com`.
 
 ### API version
 
@@ -195,7 +195,7 @@ This section provides solutions to common issues you might encounter while using
 
 ### Request timeout
 
-If you experience delays in the response from the Salesforce server in the `apex`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter the similar error:
+If you experience delays in the response from the Salesforce server in the `apex`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter a similar error:
 
 ```
 Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
@@ -238,7 +238,7 @@ curl -v -X POST "${TOKEN_URL}" \
      -d "password=${PASSWORD}${SECURITY_TOKEN}"
 ```
 
-Please note that the script has been tested on Unix-based systems (e.g., macOS, Linux). If you're using a different operating system, you may need to adjust the command accordingly.
+NOTE: The script has been tested on Unix-based systems (macOS, Linux). If you use a different operating system, you might need to adjust the command accordingly.
 
 This command is useful for debugging and troubleshooting OAuth 2.0 authentication with Salesforce Connected Apps. It is recommended to use a tool like `curl` for testing OAuth 2.0 authentication before setting up the full Salesforce integration. This approach allows you to verify the authentication process and identify any potential issues early when setting up the full Salesforce integration. If the request is successful, the response will contain an access token that can be used to authenticate subsequent requests to the Salesforce API. If the request fails, the response will contain an error message indicating the reason for the failure.
 
