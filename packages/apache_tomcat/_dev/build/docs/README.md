@@ -261,3 +261,22 @@ This is the `thread pool` data stream. This data stream collects metrics related
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "thread_pool"}}
+
+## SLOs
+
+SLOs allows to set clear, measurable targets for service performance, based on factors like availability, response times, error rates, and other key metrics. 
+Once you’ve defined your SLOs, you can monitor them in real time, with detailed dashboards that help you quickly identify and troubleshoot any issues that may arise.
+>Note: To create and manage SLOs you need an appropriate [license](https://www.elastic.co/subscriptions).
+
+### Apache tomcat http error count
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : apache_tomcat.access` |
+| Good Query  | `apache_tomcat.access.http.response.status_code : 200` |
+| Total Query | `apache_tomcat.access.http.response.status_code : *`   |
+
+### Apache tomcat heap memory usage
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : apache_tomcat.memory.heap` |
+| Good Query  | `apache_tomcat.memory.heap.used.bytes/apache_tomcat.memory.heap.max.bytes* 100 < 80` |

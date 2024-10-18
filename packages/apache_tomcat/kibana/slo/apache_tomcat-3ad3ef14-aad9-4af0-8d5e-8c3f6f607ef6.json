@@ -1,0 +1,49 @@
+{
+    "name": "Apache_tomcat heap memory usage",
+    "description": "",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"apache_tomcat.memory\" ",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "filter": {
+                "filters": [],
+                "kqlQuery": ""
+              },
+              "field": "apache_tomcat.memory.heap.used.bytes"
+            },
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "filter": {
+                "filters": [],
+                "kqlQuery": ""
+              },
+              "field": "apache_tomcat.memory.heap.max.bytes"
+            }
+          ],
+          "equation": "A / B * 100",
+          "comparator": "LT",
+          "threshold": 80
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "7d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.9998999999999999,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "5m"
+    },
+    "tags": [],
+    "groupBy": "*"
+  }
