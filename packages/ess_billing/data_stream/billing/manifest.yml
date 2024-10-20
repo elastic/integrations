@@ -1,10 +1,12 @@
-title: "Elasticsearch Service Billing Metrics"
+title: "Elasticsearch Service Billing"
 type: metrics
-dataset: ess_billing.line_items
+dataset: ess_billing.billing
+elasticsearch:
+  source_mode: synthetic
 streams:
   - input: cel
-    title: Elasticsearch Service Billing Metrics
-    description: Collect billing metrics from Elasticsearch Service billing API.
+    title: Elasticsearch Service Billing
+    description: Collect daily billing information from Elasticsearch Service billing API.
     template_path: cel.yml.hbs
     enabled: true
     vars:
@@ -47,23 +49,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - spycloud-breach_record
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`.
-        type: bool
-        multi: false
-        default: false
-      - name: preserve_duplicate_custom_fields
-        required: true
-        show_user: false
-        title: Preserve duplicate custom fields
-        description: Preserve spycloud.breach_record fields that were copied to Elastic Common Schema (ECS) fields.
-        type: bool
-        multi: false
-        default: false
+          - billing
       - name: processors
         type: yaml
         title: Processors
@@ -72,5 +58,3 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-elasticsearch:
-  source_mode: synthetic

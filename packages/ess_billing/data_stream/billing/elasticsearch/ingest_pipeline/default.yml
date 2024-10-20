@@ -1,5 +1,5 @@
 ---
-description: "Ingest pipeline for ECS compliance"
+description: "Ingest pipeline for ESS billing data"
 processors:
   - set:
       field: event.ingested
@@ -11,13 +11,42 @@ processors:
       field: ess.billing.from
       formats:
         - ISO8601
-  - date_index_name:
-      field: "@timestamp"
-      date_formats:
-        - "ISO8601"
-      index_name_prefix: "{{datastream.type}}-{{datastream.dataset}}-{[datastream.namespace}}-"
-      date_rounding: "y"
-      index_name_format: "yyyy"
+  - fingerprint:
+      fields:
+        - ess.billing
+      tag: fingerprint_event
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: cloud.account.id
+      copy_from: ess.billing.organization_id
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.id
+      copy_from: ess.billing.deployment_id
+      ignore_empty_value: true
+  - set:
+      field: cloud.instance.name
+      copy_from: ess.billing.deployment_name
+      ignore_empty_value: true
+  - dissect:
+      field: "ess.billing.sku"
+      pattern: "%{cloud.machine.type}_%{cloud.provider}-%{cloud.availability_zone}_%{ess.billing.ram_per_zone}_%{ess.billing.zone_count}"
+      if: "ctx.ess.billing.type == 'capacity'"
+      ignore_failure: true
+  - convert:
+      field: ess.billing.ram_per_zone
+      type: "integer"
+      ignore_missing: true
+  - convert:
+    field: ess.billing.zone_count
+    type: "integer"
+    ignore_missing: true
+  - dissect:
+      field: "ess.billing.sku"
+      pattern: "%{cloud.provider}.%{}"
+      if: "ctx.ess.billing.type != 'capacity'"
+      ignore_failure: true
 on_failure:
   - set:
       field: event.kind
