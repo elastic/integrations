@@ -229,30 +229,35 @@ processors:
   - set:
       field: event.kind
       value: event
+  - append:
+      field: related.entity
+      value: '{{{ azure.auditlogs.properties.initiated_by.user.id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.auditlogs?.properties?.initiated_by?.user?.id != null && ctx.azure.auditlogs.properties.initiated_by.user.id != ''
+  - append:
+      field: related.entity
+      value: '{{{ azure.auditlogs.properties.initiated_by.app.servicePrincipalId }}}'
+      allow_duplicates: false
+      if: ctx.azure?.auditlogs?.properties?.initiated_by?.app?.servicePrincipalId != null && ctx.azure.auditlogs.properties.initiated_by.app.servicePrincipalId != ''
   - script:
-      description: Appends identifiers of relevant entities to `related.entity`
+      description: Appends target resources identifiers to `related.entity`
       lang: painless
-      ignore_failure: true
+      source: |
+        ctx.related = ctx.related ?: [:];
+        ctx.related.entity = ctx.related.entity ?: [];
+        if (ctx.azure.auditlogs.properties.target_resources != null) {
+            for (String i : ctx.azure.auditlogs.properties.target_resources.keySet()) {
+                def resource = ctx.azure.auditlogs.properties.target_resources[i];
+                if (resource != null && resource.id != null && resource.id != '' && !ctx.related.entity.contains(resource.id)) {
+                        ctx.related.entity.add(resource.id);
+                }
+            }
+        }
       on_failure: 
         - set:
             description: Add error reason
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
-      source: |
-        ctx.related = ctx.related ?: [:];
-        ctx.related.entity = new HashSet();
-        ctx.related.entity.add(field("azure.auditlogs.properties.initiated_by.user.id").get(null));
-        ctx.related.entity.add(field("azure.auditlogs.properties.initiated_by.app.servicePrincipalId").get(null));
-        if (ctx.azure.auditlogs.properties.target_resources != null) {
-        for (String i : ctx.azure.auditlogs.properties.target_resources.keySet()) {
-            def resource = ctx.azure.auditlogs.properties.target_resources[i];
-            if (resource != null && resource.id != null) {
-                    ctx.related.entity.add(resource.id);
-                }
-            }
-        }
-        ctx.related.entity.remove("");
-        ctx.related.entity.remove(null);
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
