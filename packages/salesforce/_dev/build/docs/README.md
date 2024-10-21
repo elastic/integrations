@@ -40,7 +40,7 @@ To determine your Salesforce instance version, use one of the following methods:
 
   On the **Home** tab in Salesforce Classic, you can find a link in the top right corner that indicates the current release version of your Salesforce instance, for example `Summer '24 for Developers`.
 
-- Use the [Salesforce Instance URL](#salesforce-instance-url)
+- Use the Salesforce Instance URL
 
   Use your Salesforce Instance URL with the following format: `<Salesforce Instance URL>/services/data`, for example: `https://na9.salesforce.com/services/data`, here `https://na9.salesforce.com` is the Salesforce Instance URL.
 
@@ -158,7 +158,7 @@ To find the API version:
 3. Click the `Version Settings` tab.
 4. Refer to the `Version` dropdown for the API Version number.
 
-Alternatively, you can use the Salesforce Instance API version as described in the [Compatibility](#compatibility) section.
+Alternatively, you can use the Salesforce Instance API version as described in the "Compatibility" section.
 
 ## Validation
 
