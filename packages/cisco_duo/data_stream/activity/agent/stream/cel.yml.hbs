@@ -22,6 +22,7 @@ state:
   want_more: false
 redact:
   fields:
+    - integration_key
     - secret_key
 
 program: |
@@ -90,11 +91,11 @@ program: |
                     "mintime": state.mintime,
                     "maxtime": state.maxtime,
                     "want_more": has(body.?response.?metadata.next_offset),
-                    ?"next_offset": (body.?response.?metadata.next_offset.orValue(null) != null) ?
-                                        optional.of(string(body.response.metadata.next_offset))
-                                    :
-                                        optional.none(),
-                    "next_url": (body.?response.?metadata.next_offset.orValue(null) != null) ?
+                    ?"next_offset": (body.?response.metadata.next_offset.orValue(null) != null) ?
+                        optional.of(string(body.response.metadata.next_offset))
+                    :
+                        optional.none(),
+                    "next_url": (body.?response.metadata.next_offset.orValue(null) != null) ?
                         (
                             state.url.trim_right("/") + "/admin/v2/logs/activity?" + {
                                 "limit": [string(int(state.limit))],
@@ -107,7 +108,7 @@ program: |
                     :
                         state.url,
                     "cursor": {
-                        ?"last_published": (body.?response.?metadata.next_offset.orValue(null) != null) ?
+                        ?"last_published": (body.?response.metadata.next_offset.orValue(null) != null) ?
                             optional.of(body.response.metadata.next_offset.re_find("next_offset_timestamp"))
                         :
                             optional.none(),
