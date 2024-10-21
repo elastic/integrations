@@ -30,17 +30,16 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       source: >-
         def convertToMilliseconds(long timestamp) {
-              int digits = ("" + timestamp).length(); 
-              if (digits > 16 && digits <= 19) {
-                  return timestamp / 1000000;  // Convert nanoseconds to milliseconds
-              } else if (digits > 13 && digits <= 16) {
-                  return timestamp / 1000;  // Convert microseconds to milliseconds
-              } else if (digits > 10 && digits <= 13) {
-                  return timestamp;  // Already in milliseconds, no conversion needed
-              } else if (digits <= 10) {
-                  return timestamp * 1000;  // Convert seconds to milliseconds
-              } else {
+              if ((long)1e19 - 1 < timestamp) {
                   throw new IllegalArgumentException("Timestamp format not recognized: " + timestamp);
+              } else if ((long)1e16 - 1 < timestamp) {
+                  return timestamp / 1000000;  // Convert nanoseconds to milliseconds
+              } else if ((long)1e13 - 1 < timestamp) {
+                  return timestamp / 1000;  // Convert microseconds to milliseconds
+              } else if ((long)1e10 - 1 < timestamp) {
+                  return timestamp;  // Already in milliseconds, no conversion needed
+              } else {
+                  return timestamp * 1000;  // Convert seconds to milliseconds
               }
           }
 
