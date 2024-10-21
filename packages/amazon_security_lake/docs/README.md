@@ -115,7 +115,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.auid | The audit user assigned at login by the audit subsystem. | keyword |
 | ocsf.actor.process.cmd_line | The full command line used to launch an application, service, process, or job. | keyword |
 | ocsf.actor.process.container.hash.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.container.hash.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
+| ocsf.actor.process.container.hash.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
 | ocsf.actor.process.container.hash.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.container.image.labels | The image labels. | keyword |
 | ocsf.actor.process.container.image.name | The image name. | keyword |
@@ -186,7 +186,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.creator.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.file.desc | The description of the file, as returned by file system. For example: the description as returned by the Unix file command or the Windows file type. | keyword |
 | ocsf.actor.process.file.hashes.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.hashes.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
+| ocsf.actor.process.file.hashes.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
 | ocsf.actor.process.file.hashes.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.file.is_system | The indication of whether the object is part of the operating system. | boolean |
 | ocsf.actor.process.file.mime_type | The Multipurpose Internet Mail Extensions (MIME) type of the file, if applicable. | keyword |
@@ -247,13 +247,13 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.product.version | The version of the product, as defined by the event source. For example: 2013.1.3-beta. | keyword |
 | ocsf.actor.process.file.security_descriptor | The object security descriptor. | keyword |
 | ocsf.actor.process.file.signature.algorithm | The digital signature algorithm used to create the signature, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.signature.algorithm_id | The identifier of the normalized digital signature algorithm. | integer |
+| ocsf.actor.process.file.signature.algorithm_id | The identifier of the normalized digital signature algorithm. | keyword |
 | ocsf.actor.process.file.signature.certificate.created_time | The time when the certificate was created. | date |
 | ocsf.actor.process.file.signature.certificate.created_time_dt | The time when the certificate was created. | date |
 | ocsf.actor.process.file.signature.certificate.expiration_time | The expiration time of the certificate. | date |
 | ocsf.actor.process.file.signature.certificate.expiration_time_dt | The expiration time of the certificate. | date |
 | ocsf.actor.process.file.signature.certificate.fingerprints.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.signature.certificate.fingerprints.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
+| ocsf.actor.process.file.signature.certificate.fingerprints.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
 | ocsf.actor.process.file.signature.certificate.fingerprints.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.file.signature.certificate.issuer | The certificate issuer distinguished name. | keyword |
 | ocsf.actor.process.file.signature.certificate.serial_number | The serial number of the certificate used to create the digital signature. | keyword |
@@ -264,7 +264,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.signature.created_time_dt | The time when the digital signature was created. | date |
 | ocsf.actor.process.file.signature.developer_uid | The developer ID on the certificate that signed the file. | keyword |
 | ocsf.actor.process.file.signature.digest.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.signature.digest.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
+| ocsf.actor.process.file.signature.digest.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
 | ocsf.actor.process.file.signature.digest.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.file.size | The size of data, in bytes. | long |
 | ocsf.actor.process.file.type | The file type. | keyword |
@@ -287,7 +287,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.auid | The audit user assigned at login by the audit subsystem. | keyword |
 | ocsf.actor.process.parent_process.cmd_line | The full command line used to launch an application, service, process, or job. | keyword |
 | ocsf.actor.process.parent_process.container.hash.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.container.hash.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
+| ocsf.actor.process.parent_process.container.hash.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
 | ocsf.actor.process.parent_process.container.hash.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.parent_process.container.image.labels | The image labels. | keyword |
 | ocsf.actor.process.parent_process.container.image.name | The image name. | keyword |
@@ -358,7 +358,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.creator.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.parent_process.file.desc | The description of the file, as returned by file system. For example: the description as returned by the Unix file command or the Windows file type. | keyword |
 | ocsf.actor.process.parent_process.file.hashes.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.hashes.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
+| ocsf.actor.process.parent_process.file.hashes.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
 | ocsf.actor.process.parent_process.file.hashes.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.parent_process.file.is_system | The indication of whether the object is part of the operating system. | boolean |
 | ocsf.actor.process.parent_process.file.mime_type | The Multipurpose Internet Mail Extensions (MIME) type of the file, if applicable. | keyword |
@@ -419,13 +419,13 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.product.version | The version of the product, as defined by the event source. For example: 2013.1.3-beta. | keyword |
 | ocsf.actor.process.parent_process.file.security_descriptor | The object security descriptor. | keyword |
 | ocsf.actor.process.parent_process.file.signature.algorithm | The digital signature algorithm used to create the signature, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.signature.algorithm_id | The identifier of the normalized digital signature algorithm. | integer |
+| ocsf.actor.process.parent_process.file.signature.algorithm_id | The identifier of the normalized digital signature algorithm. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.created_time | The time when the certificate was created. | date |
 | ocsf.actor.process.parent_process.file.signature.certificate.created_time_dt | The time when the certificate was created. | date |
 | ocsf.actor.process.parent_process.file.signature.certificate.expiration_time | The expiration time of the certificate. | date |
 | ocsf.actor.process.parent_process.file.signature.certificate.expiration_time_dt | The expiration time of the certificate. | date |
 | ocsf.actor.process.parent_process.file.signature.certificate.fingerprints.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.signature.certificate.fingerprints.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
+| ocsf.actor.process.parent_process.file.signature.certificate.fingerprints.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.fingerprints.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.issuer | The certificate issuer distinguished name. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.serial_number | The serial number of the certificate used to create the digital signature. | keyword |
@@ -436,7 +436,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.signature.created_time_dt | The time when the digital signature was created. | date |
 | ocsf.actor.process.parent_process.file.signature.developer_uid | The developer ID on the certificate that signed the file. | keyword |
 | ocsf.actor.process.parent_process.file.signature.digest.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.signature.digest.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
+| ocsf.actor.process.parent_process.file.signature.digest.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
 | ocsf.actor.process.parent_process.file.signature.digest.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.parent_process.file.size | The size of data, in bytes. | long |
 | ocsf.actor.process.parent_process.file.type | The file type. | keyword |
