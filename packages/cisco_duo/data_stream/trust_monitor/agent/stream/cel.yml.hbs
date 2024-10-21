@@ -87,11 +87,11 @@ program: |
                     "maxtime": state.maxtime,
                     "date": now.format(time_layout.RFC1123Z),
                     "want_more": has(body.?response.?metadata.next_offset),
-                    ?"next_offset": (body.?response.?metadata.next_offset.orValue(null) != null) ?
-                                        optional.of(string(body.response.metadata.next_offset))
-                                    :
-                                        optional.none(),
-                    "next_url": (body.?response.?metadata.next_offset.orValue(null) != null) ?
+                    ?"next_offset": (body.?response.metadata.next_offset.orValue(null) != null) ?
+                        optional.of(string(body.response.metadata.next_offset))
+                    :
+                        optional.none(),
+                    "next_url": (body.?response.metadata.next_offset.orValue(null) != null) ?
                         (
                             state.url.trim_right("/") + "/admin/v1/trust_monitor/events?" + {
                                 "limit": [string(int(state.limit))],
