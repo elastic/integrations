@@ -1,0 +1,56 @@
+{{!-- Started based on https://github.com/elastic/integrations/blob/d5f72523ef4d33b3cef93ce35697cd28acc310e3/packages/o365/data_stream/audit/agent/stream/cel.yml.hbs#L47 --}}
+interval: {{interval}}
+
+resource.url: {{url}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/policies-request-trace-*.ndjson"
+resource.tracer.maxbackups: 10
+resource.tracer.maxsize: 5
+{{/if}}
+
+state:
+  want_more: false
+  base:
+    api_token: "{{api_token}}"
+
+redact:
+  fields:
+    - base.api_token
+
+program: |
+  "get_request(state.url+"?cursor="+state.cursor.next).with({
+    "Header":{
+      "Authorization": ["Bearer "+state.base.api_token]
+    }
+  }).do_request().as(resp, bytes(resp.Body).decode_json()).as(body, {
+    "base": state.base,
+    "events": has(body.data) ? body.data : [],
+    "cursor": {
+      "next": has(body.options) && has(body.options.next) ? body.options.next : ""
+    },
+    "want_more": has(body.data) && has(body.options) && has(body.options.next) && body.options.next != ""
+  })
+
+{{#if tags}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

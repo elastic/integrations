@@ -1,0 +1,166 @@
+---
+description: Pipeline for mapping Sysdig user fields to ECS / sysdig-namespaced fields via CEL logic
+processors:
+- set:
+    field: event.kind
+    value: 'state'
+- json:
+    field: message
+    target_field: json
+    if: ctx.message != null
+- rename:
+    field: json
+    target_field: sysdig
+- dot_expander:
+    field: '*'
+    path: sysdig.content
+    tag: 'Primary doc_expander for sysdig.content'
+    ignore_failure: true
+- dot_expander:
+    field: '*'
+    path: sysdig.labels
+    tag: 'Primary doc_expander for sysdig.labels'
+    ignore_failure: true
+- remove:
+    field: 'message'
+
+- rename:
+    field: 'sysdig.customerID'
+    target_field: 'sysdig.customer_id'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.effectivePermissionsCount'
+    target_field: 'sysdig.effective_permissions_count'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.numPermissionsGiven'
+    target_field: 'sysdig.num_permissions_given'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.numPermissionsUnused'
+    target_field: 'sysdig.num_permissions_unused'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.numPermissionsUsed'
+    target_field: 'sysdig.num_permissions_used'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.lastActiveDate'
+    target_field: 'sysdig.last_active_date'
+    ignore_missing: true
+- remove:
+    field: 'sysdig.lastActiveDateText'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.profilingStartTime'
+    target_field: 'sysdig.profiling_start_time'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.createDate'
+    target_field: 'sysdig.create_date'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.riskyPermissions'
+    target_field: 'sysdig.risky_permissions'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.compromisedState'
+    target_field: 'sysdig.compromised_state'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.accountID'
+    target_field: 'cloud.account_id'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.provider'
+    target_field: 'cloud.provider'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.organizationID'
+    target_field: 'organization.id'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.actorID'
+    target_field: 'user.id'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.actorName'
+    target_field: 'user.name'
+    ignore_missing: true
+
+- append:
+    field: 'user.roles'
+    value: '{{sysdig.actorKind}}'
+- remove:
+    field: 'sysdig.actorKind'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.compromisedState'
+    target_field: 'sysdig.compromised_state'
+    ignore_missing: true
+
+- append:
+    field: 'user.roles'
+    value: '{{sysdig.roleType}}'
+- remove:
+    field: 'sysdig.roleType'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.riskCategory'
+    target_field: 'user.risk.calculated_level'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.riskScore'
+    target_field: 'user.risk.calculated_score'
+    ignore_missing: true
+
+- remove:
+    field: 'sysdig.excessiveRiskCategory'
+    ignore_missing: true
+- remove:
+    field: 'sysdig.excessiveRiskScore'
+    ignore_missing: true
+- remove:
+    field: 'sysdig.excessiveRiskyPermissions'
+    ignore_missing: true
+
+- remove:
+    field: 'sysdig.graphID'
+    ignore_missing: true
+
+- rename:
+    field: 'sysdig.labels'
+    target_field: 'labels'
+    ignore_missing: true
+
+# This should be renamed to `labels.access_category` but I can't get the pipeline test to pass when I do that.
+- remove:
+    field: 'sysdig.accessCategory'
+    ignore_missing: true
+
+- set:
+    field: 'tags'
+    value:
+      - 'optimizable'
+    if: 'ctx.sysdig.optimizable == true'
+
+- remove:
+    field: 'sysdig.optimizable'
+    ignore_missing: true
