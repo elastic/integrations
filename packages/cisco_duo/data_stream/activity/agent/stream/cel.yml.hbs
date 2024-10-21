@@ -41,7 +41,7 @@ program: |
             state.?want_more.orValue(false) ?
                 state.next_url
             :
-                state.url.trim_right("/") + "/admin/v2/logs/telephony?" + {
+                state.url.trim_right("/") + "/admin/v2/logs/activity?" + {
                     "limit": [string(int(state.limit))],
                     "maxtime": [string(int(state.maxtime))],
                     "mintime": [string(int(state.mintime))],
@@ -58,7 +58,7 @@ program: |
                                 state.date,
                                 "GET",
                                 state.url.trim_prefix("https://"),
-                                "/admin/v2/logs/telephony",
+                                "/admin/v2/logs/activity",
                                 {
                                     "limit": [string(int(state.limit))],
                                     "maxtime": [string(int(state.maxtime))],
@@ -90,7 +90,6 @@ program: |
                     "limit": state.limit,
                     "mintime": state.mintime,
                     "maxtime": state.maxtime,
-                    "date": now.format(time_layout.RFC1123Z),
                     "want_more": has(body.?response.?metadata.next_offset),
                     ?"next_offset": (body.?response.metadata.next_offset.orValue(null) != null) ?
                         optional.of(string(body.response.metadata.next_offset))
@@ -98,7 +97,7 @@ program: |
                         optional.none(),
                     "next_url": (body.?response.metadata.next_offset.orValue(null) != null) ?
                         (
-                            state.url.trim_right("/") + "/admin/v2/logs/telephony?" + {
+                            state.url.trim_right("/") + "/admin/v2/logs/activity?" + {
                                 "limit": [string(int(state.limit))],
                                 "maxtime": [string(int(state.maxtime))],
                                 "mintime": [string(int(state.mintime))],
