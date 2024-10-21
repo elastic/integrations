@@ -89,7 +89,6 @@ An example event for `waf` looks as following:
         "forwarded"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -105,9 +104,12 @@ An example event for `waf` looks as following:
 | barracuda.waf.cache_hit | Specifies whether the response is served out of the Barracuda Web Application Firewall cache or from the backend server. Values:0 - if the request is fetched from the server and given to the user.1 - if the request is fetched from the cache and given to the user. | long |
 | barracuda.waf.client_type | This indicates that GUI is used as client to access the Barracuda Web Application Firewall. | keyword |
 | barracuda.waf.command_name | The name of the command that was executed on the Barracuda Web Application Firewall. | keyword |
-| barracuda.waf.custom_header.accept_encoding | The header Accept-Encoding in the Access Logs | keyword |
-| barracuda.waf.custom_header.connection | The header connection in the Access Logs | keyword |
-| barracuda.waf.custom_header.host | The header host in the Access Logs | keyword |
+| barracuda.waf.custom_header.accept_encoding | The header Accept-Encoding in the Access Logs. | keyword |
+| barracuda.waf.custom_header.cache_control | The header Cache-Control in the Access Logs. | keyword |
+| barracuda.waf.custom_header.connection | The header Connection in the Access Logs. | keyword |
+| barracuda.waf.custom_header.content_type | The header Content-Type in the Access Logs. | keyword |
+| barracuda.waf.custom_header.host | The header Host in the Access Logs. | keyword |
+| barracuda.waf.custom_header.user_agent | The header User-Agent in the Access Logs. | keyword |
 | barracuda.waf.followup_action | The follow-up action as specified by the action policy. It can be either None or Locked in case the lockout is chosen. | keyword |
 | barracuda.waf.log_type | Specifies the type of log - Web Firewall Log, Access Log, Audit Log, Network Firewall Log or System Log - WF, TR, AUDIT, NF, SYS. | keyword |
 | barracuda.waf.module.event_id | The event ID of the module. | long |
@@ -120,6 +122,8 @@ An example event for `waf` looks as following:
 | barracuda.waf.profile_matched | Specifies whether the request matched a defined URL or Parameter Profile. Values:DEFAULT, PROFILED. | keyword |
 | barracuda.waf.protected | Specifies whether the request went through the Barracuda Web Application Firewall rules and policy checks. Values:PASSIVE, PROTECTED, UNPROTECTED. | keyword |
 | barracuda.waf.protocol | The protocol used for the request. | keyword |
+| barracuda.waf.proxy.ip | Provides the IP address of the proxy. | ip |
+| barracuda.waf.proxy.port | The port of the proxy server. | long |
 | barracuda.waf.request_cookie | Specifies whether the request is valid. Values:INVALID, VALID. | keyword |
 | barracuda.waf.response_timetaken | The total time taken to serve the request from the time the request landed on the Barracuda Web Application Firewall until the last byte given out to the client. | long |
 | barracuda.waf.response_type | Specifies whether the response came from the backend sever or from the Barracuda Web Application Firewall. Values:INTERNAL, SERVER. | keyword |

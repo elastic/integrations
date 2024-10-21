@@ -1,0 +1,78 @@
+---
+description: Pipeline for TYCHON HOST OS
+processors:
+
+  - convert:
+      tag: convert_tychon_host_risk_calculated_score
+      field: tychon.host.risk.calculated_score
+      type: float
+      ignore_missing: true
+  - set:
+      tag: set_tychon_host_security_antivirus_exists
+      field: tychon.host.security.antivirus.exists
+      value: 'false'
+      if: ctx.tychon.host?.security?.antivirus?.exists == null
+  - lowercase:
+      tag: lowercase_tychon_host_security_antivirus_exists
+      field: tychon.host.security.antivirus.exists
+  - split:
+      tag: split_tychon_host_security_antivirus_exists
+      field: tychon.host.security.antivirus.exists
+      separator: ','
+      target_field: _tmp_av
+  - set:
+      tag: set_tychon_host_security_antivirus_exists_2
+      field: tychon.host.security.antivirus.exists
+      value: '{{{_tmp_av.0}}}'
+  - remove:
+      tag: remove_tmp_av
+      field: _tmp_av
+  - convert:
+      tag: convert_tychon_host_memory_size
+      field: tychon.host.memory.size
+      type: long
+      ignore_failure: true
+
+  # ECS fields
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [host]
+
+  # ECS fields from the tychon fieldset
+
+  - append:
+      tag: append_related_hash
+      field: related.hash
+      value: "{{{tychon.host.risk.count.signature_hash}}}"
+      if: ctx.tychon?.host?.risk?.count?.signature_hash != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hash_2
+      field: related.hash
+      value: "{{{tychon.host.risk.score.signature_hash}}}"
+      if: ctx.tychon?.host?.risk?.score?.signature_hash != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hash_3
+      field: related.hash
+      value: "{{{tychon.host.risk.weight.signature_hash}}}"
+      if: ctx.tychon?.host?.risk?.weight?.signature_hash != null
+      allow_duplicates: false
+
+  - set:
+      tag: set_host_architecture
+      field: host.architecture
+      copy_from: tychon.host.architecture
+      ignore_empty_value: true
+  - set:
+      tag: set_host_os_kernel
+      field: host.os.kernel
+      copy_from: tychon.host.os.kernel
+      ignore_empty_value: true
+  - set:
+      tag: set_host_risk_calculated_score
+      field: host.risk.calculated_score
+      copy_from: tychon.host.risk.calculated_score
+      ignore_empty_value: true

@@ -39,9 +39,12 @@ processors:
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{CISCO_HOSTNAME:log.syslog.hostname}|%{IP})[:]? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{GREEDYDATA:_temp_.message}$'
+        - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )(\\*)?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )%{GREEDYDATA:_temp_.message}$'
       pattern_definitions:
         CISCO_PRIORITY_MSGCOUNT: '<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT:cisco.ios.message_count})?(?:: )?'
-        CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
+        CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP_EX:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
+        CISCOTIMESTAMP_EX: '(%{CISCOTIMESTAMP})|(%{YEAR} %{MONTH} %{MONTHDAY} %{TIME})'
         CISCO_UPTIME: '[0-9a-zA-Z]+'
         CISCO_HOSTNAME: '[a-zA-Z][0-9a-zA-Z_-]{0,61}[0-9a-zA-Z]?'
         CISCO_TZ: '[a-zA-Z]{1,4}([+-]\d{1,2}|[+-]\d{2}:\d{2})?'
@@ -135,6 +138,12 @@ processors:
         - "MMM d HH:mm:ss.SSS"
         - "MMM d HH:mm:ss z"
         - "MMM d HH:mm:ss"
+
+        # Year first
+        - "yyyy MMM d HH:mm:ss.SSS z"
+        - "yyyy MMM d HH:mm:ss.SSS"
+        - "yyyy MMM d HH:mm:ss z"
+        - "yyyy MMM d HH:mm:ss"
       timezone: '{{{_temp_.date_timezone}}}'
   - grok:
       field: message
@@ -443,12 +452,6 @@ processors:
        - _temp_
        - _conf
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
-
 on_failure:
   - remove:
       field:
@@ -458,7 +461,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

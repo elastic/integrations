@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+name: integrations-schedule-weekly
+
+env:
+  SETUP_GVM_VERSION: "v0.5.2"
+  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
+
+# The pipeline is triggered by the scheduler every week
+steps:
+  - label: ":white_check_mark: Check go sources"
+    key: "check"
+    command: ".buildkite/scripts/check_sources.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+
+  - label: "Check integrations local stacks and Elastic Agent Ubuntu docker - Stack Version v8.16"
+    trigger: "integrations"
+    build:
+      env:
+        SERVERLESS: "false"
+        FORCE_CHECK_ALL: "true"
+        STACK_VERSION: 8.16.0-SNAPSHOT
+        PUBLISH_COVERAGE_REPORTS: "false"
+        ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI: "true"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+
+  - label: "Check integrations local stacks and non-wolfi images for Elastic Agent - Stack Version v9.0"
+    trigger: "integrations"
+    build:
+      env:
+        SERVERLESS: "false"
+        FORCE_CHECK_ALL: "true"
+        STACK_VERSION: 9.0.0-SNAPSHOT
+        PUBLISH_COVERAGE_REPORTS: "false"
+        ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI: "true"
+    depends_on:
+      - step: "check"
+        allow_failure: false

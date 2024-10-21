@@ -1,5 +1,5 @@
 ---
-description: Pipeline for AWS Bedrock model invocation logs.
+description: Pipeline for Amazon Bedrock model invocation logs.
 processors:
   - rename:
       field: message
@@ -346,7 +346,7 @@ processors:
         def violations = new HashSet();
         def matches = new HashSet();
         for (def e: body) {
-          if (e.amazon_bedrock_guardrail_action == 'INTERVENED') {
+          if (e.amazon_bedrock_guardrail_action == 'INTERVENED' || e.stop_reason == 'guardrail_intervened') {
             if (ctx.gen_ai == null) {
               ctx.gen_ai = new HashMap();
             }
@@ -358,28 +358,48 @@ processors:
             }
             ctx.gen_ai.compliance.violation_detected = true;
             ctx.event.outcome = 'failure';
-            if (!(e.amazon_bedrock_trace?.guardrail?.input instanceof HashMap)) {
-              continue;
-            }
-            for (def o: e.amazon_bedrock_trace.guardrail.input.entrySet()) {
-              for (def i: o.getValue().entrySet()) {
-                String policy_name = i.getKey();
-                policies.add(policy_name);
-                for (def p: i.getValue().entrySet()) {
-                  for (def c: p.getValue()) {
-                    actions.add(c.action);
-                    if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
-                      matches.add(c);
-                    }
-                    if (c.type != null) {
-                      if (policy_name == 'content_policy') {
-                        violations.add(c.type);
-                        confidences.add(c.confidence);
+            if (e.trace?.guardrail?.inputAssessment instanceof HashMap) {
+              for (def o: e.trace.guardrail.inputAssessment.entrySet()) {
+                for (def i: o.getValue().entrySet()) {
+                  String policy_name = i.getKey();
+                  policies.add(policy_name);
+                  for (def p: i.getValue().entrySet()) {
+                    for (def c: p.getValue()) {
+                      actions.add(c.action);
+                      if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
+                        matches.add(c);
+                      }
+                      if (c.type != null) {
+                        if (policy_name == 'content_policy') {
+                          violations.add(c.type);
+                          confidences.add(c.confidence);
+                        }
                       }
                     }
                   }
                 }
               }
+            } else if (e.amazon_bedrock_trace?.guardrail?.input instanceof HashMap) {
+              for (def o: e.amazon_bedrock_trace.guardrail.input.entrySet()) {
+                for (def i: o.getValue().entrySet()) {
+                  String policy_name = i.getKey();
+                  policies.add(policy_name);
+                  for (def p: i.getValue().entrySet()) {
+                    for (def c: p.getValue()) {
+                      actions.add(c.action);
+                      if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
+                        matches.add(c);
+                      }
+                      if (c.type != null) {
+                        if (policy_name == 'content_policy') {
+                          violations.add(c.type);
+                          confidences.add(c.confidence);
+                        }
+                      }
+                    }
+                  }
+                }
+              }              
             }
           }
         }
@@ -442,6 +462,78 @@ processors:
           ctx.aws_bedrock.invocation.input.remove("input_body_json");
           ctx.gen_ai.remove("prompt");
         }
+
+  - script: 
+      description: Convert chat completion response in map or list format to user friendly format
+      lang: painless
+      source: |
+        try {
+          def completionText = new StringBuilder();
+          if (ctx.aws_bedrock?.invocation?.output?.output_body_json != null) {
+            if (ctx.aws_bedrock.invocation.output.output_body_json instanceof List) {
+              for (def block : ctx.aws_bedrock.invocation.output.output_body_json) {
+                if (!(block instanceof Map)) continue;
+                
+                if (block.containsKey('delta') && block.delta instanceof Map && block.delta.containsKey('text')) {
+                  // Titan model response
+                  completionText.append(block.delta.text);
+                } else if (block.containsKey('outputs') && block.outputs instanceof List) {
+                  // Mistral model response
+                  for (def cont : block.outputs) {
+                    if (cont instanceof Map && cont.containsKey('text')) {
+                        completionText.append(cont.text);
+                    }
+                  }
+                } else if (block.containsKey('generation')) {
+                  // Llama3 model response
+                  completionText.append(block.generation);
+                } else if (block.containsKey('outputText')) {
+                    // Titan Text G1 - Express response
+                    completionText.append(block.outputText);
+                }
+              }
+            }else if (ctx.aws_bedrock.invocation.output.output_body_json instanceof Map) {
+              def block = ctx.aws_bedrock.invocation.output.output_body_json;
+              if (block instanceof Map) {
+                Map blockMap = (Map) block;
+                if (blockMap.containsKey('output') && blockMap.output instanceof Map) {
+                  Map outputMap = (Map) blockMap.output;
+                  if (outputMap.containsKey('message') && outputMap.message instanceof Map) {
+                    Map messageMap = (Map) outputMap.message;
+                    if (messageMap.containsKey('content') && messageMap.content instanceof List) {
+                      List contentList = (List) messageMap.content;
+                      for (def cont : contentList) {
+                        if (cont.containsKey('text')) {
+                          completionText.append(cont.text);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }else if (ctx.aws_bedrock.invocation.output.output_body_json instanceof String){
+              completionText.append(ctx.aws_bedrock.invocation.output.output_body_json)
+            }
+          }
+
+          // Ensure ctx.aws_bedrock.invocation.output is initialized
+          if (ctx.aws_bedrock?.invocation?.output == null) {
+              ctx.aws_bedrock.invocation.output = new HashMap();
+          }
+          // Trim completionText if it exceeds 32766 characters
+          if (completionText.length() > 32766) {
+            completionText.setLength(32766);
+          }
+          ctx.aws_bedrock.invocation.output.completion_text = completionText.toString();
+        }
+        catch (Exception e) {
+          if (ctx.aws_bedrock?.invocation?.output == null) {
+              ctx.aws_bedrock.invocation.output = new HashMap();
+          }
+          ctx.aws_bedrock.invocation.output.completion_text =  '';
+          ctx.error.message = e.getMessage()
+        }
+
   - script:
       description: Remove massive output bodies and keep response perf stats.
       if: ctx.gen_ai?.completion instanceof String
@@ -478,11 +570,6 @@ processors:
       tag: remove_duplicate_custom_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
   - script:
       description: Remove massive event.original if it was wanted.
       if: ctx.event?.original instanceof String && ctx.event.original.length() > 32766
@@ -493,6 +580,6 @@ on_failure:
   - set:
       field: error.message
       value: >-
-        Processor '{{ _ingest.on_failure_processor_type }}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

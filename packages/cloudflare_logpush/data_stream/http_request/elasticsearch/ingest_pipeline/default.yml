@@ -539,6 +539,14 @@ processors:
       field: json.JA3Hash
       target_field: cloudflare_logpush.http_request.ja3_hash
       ignore_missing: true
+  - rename:
+      field: json.JA4
+      target_field: cloudflare_logpush.http_request.ja4
+      ignore_missing: true
+  - rename:
+      field: json.JA4Signals
+      target_field: cloudflare_logpush.http_request.ja4_signals
+      ignore_missing: true
   - convert:
       field: json.OriginDNSResponseTimeMs
       target_field: cloudflare_logpush.http_request.origin.dns_response_time.ms
@@ -840,11 +848,6 @@ processors:
         - cloudflare_logpush.http_request.client.ip
         - cloudflare_logpush.http_request.client.request.user.agent
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
   - script:
