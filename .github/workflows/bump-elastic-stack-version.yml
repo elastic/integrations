@@ -1,4 +1,3 @@
----
 name: Update versions of Elastic Stack dependencies
 
 on:
@@ -40,5 +39,21 @@ jobs:
       - name: Update latest testing stack versions
         # --experimental needed for commitusingapi option.
         run: updatecli --experimental ${{ env.UPDATECLI_ACTION }} --config .github/workflows/updatecli/updatecli.d --values .github/workflows/updatecli/values.d/scm.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step to add an empty file
+      - name: Create an empty file
+        run: |
+          echo "Creating an empty file named emptyfile.txt"
+          touch emptyfile.txt  # Creates an empty file
+
+      - name: Commit and push the new empty file
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add emptyfile.txt
+          git commit -m "Automated commit to add empty file"
+          git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
