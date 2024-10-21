@@ -290,6 +290,17 @@ processors:
       value: metric
 
   #
+  # Rewrite the default tag
+  #
+  - script:
+      lang: painless
+      description: 'Rewrite the default tag'
+      if: ctx.tags instanceof List
+      source: >-
+        def i = ctx.tags.indexOf("cyberarkpas-audit");
+        if (i != -1) ctx.tags.set(i, "cyberarkpas-monitor");
+
+  #
   # Observer fields
   #
   - rename:
