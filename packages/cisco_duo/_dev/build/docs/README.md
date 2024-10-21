@@ -28,6 +28,7 @@ The Cisco Duo integration collects logs for the following types of events.
 - [**Summary**](https://duo.com/docs/adminapi#retrieve-summary)
 - [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
 - [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
+- [**Trust Monitor**](https://duo.com/docs/adminapi#trust-monitor)
 
 ## V2 Handlers
 
@@ -93,3 +94,11 @@ This is the `telephony_v2` dataset.
 {{event "telephony_v2"}}
 
 {{fields "telephony_v2"}}
+
+### Trust Monitor
+
+This is the `trust_monitor` dataset.
+
+{{event "trust_monitor"}}
+
+{{fields "trust_monitor"}}

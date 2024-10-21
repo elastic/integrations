@@ -10,9 +10,6 @@ resource.tracer.maxbackups: 5
 resource.tracer.maxsize: 5
 {{/if}}
 
-regexp:
-  "next_offset_timestamp": '^\d+'
-
 state:
   url: {{hostname}}
   integration_key: {{integration_key}}
@@ -41,11 +38,10 @@ program: |
             state.?want_more.orValue(false) ?
                 state.next_url
             :
-                state.url.trim_right("/") + "/admin/v2/logs/telephony?" + {
+                state.url.trim_right("/") + "/admin/v1/trust_monitor/events?" + {
                     "limit": [string(int(state.limit))],
                     "maxtime": [string(int(state.maxtime))],
                     "mintime": [string(int(state.mintime))],
-                    "sort": ["ts:asc"],
                 }.format_query()
         ).with(
             {
@@ -58,16 +54,15 @@ program: |
                                 state.date,
                                 "GET",
                                 state.url.trim_prefix("https://"),
-                                "/admin/v2/logs/telephony",
+                                "/admin/v1/trust_monitor/events",
                                 {
                                     "limit": [string(int(state.limit))],
                                     "maxtime": [string(int(state.maxtime))],
                                     "mintime": [string(int(state.mintime))],
-                                    ?"next_offset": has(state.next_offset) ?
+                                    ?"offset": has(state.next_offset) ?
                                         optional.of([string(state.next_offset)])
                                     :
                                         optional.none(),
-                                    "sort": ["ts:asc"],
                                 }.format_query()
                             ].join("\n")
                             .hmac("sha1", bytes(state.secret_key))
@@ -77,11 +72,11 @@ program: |
                 },
             }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
-            bytes(resp.Body).decode_json().as(body, has(body.?response.items) && size(body.response.items) > 0 ?
+            bytes(resp.Body).decode_json().as(body, has(body.?response.events) && size(body.response.events) > 0 ?
                 {
-                    "events": body.response.items.map(item,
+                    "events": body.response.events.map(event,
                         {
-                            "message": item.encode_json(),
+                            "message": event.encode_json(),
                         }
                     ),
                     "url": state.url,
@@ -98,21 +93,29 @@ program: |
                         optional.none(),
                     "next_url": (body.?response.metadata.next_offset.orValue(null) != null) ?
                         (
-                            state.url.trim_right("/") + "/admin/v2/logs/telephony?" + {
+                            state.url.trim_right("/") + "/admin/v1/trust_monitor/events?" + {
                                 "limit": [string(int(state.limit))],
                                 "maxtime": [string(int(state.maxtime))],
                                 "mintime": [string(int(state.mintime))],
-                                "next_offset": [string(body.response.metadata.next_offset)],
-                                "sort": ["ts:asc"],
+                                "offset": [string(body.response.metadata.next_offset)],
                             }.format_query()
                         )
                     :
                         state.url,
                     "cursor": {
-                        ?"last_published": (body.?response.?metadata.next_offset.orValue(null) != null) ?
-                            optional.of(body.response.metadata.next_offset.re_find("next_offset_timestamp"))
+                        ?"last_published": (has(body.?response.events) && size(body.response.events) > 0) ?
+                            optional.of(
+                                body.response.events.map(e, e.surfaced_timestamp).max().as(last_timestamp,
+                                    !has(state.?cursor.last_published) ?
+                                        last_timestamp
+                                    : (last_timestamp < state.cursor.last_published) ?
+                                        state.cursor.last_published
+                                    :
+                                        last_timestamp
+                                )
+                            )
                         :
-                            optional.none(),
+                            state.?cursor.last_published,
                     }
                 }
             :
