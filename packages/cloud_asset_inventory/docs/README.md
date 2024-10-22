@@ -6,6 +6,8 @@ The Cloud Asset Inventory integration helps you discover and track all the resou
 - **GCP**: Cloud Storage buckets, Compute Engine instances, Kubernetes clusters, and more.
 - **Azure**: Virtual Machines, Blob Storage, Azure Kubernetes Service (AKS), and more.
 
+> ⚠️  (BETA) **Please note** you can select only one cloud provider input per policy.
+
 [View the full list of supported services for discovery](https://github.com/elastic/cloudbeat/blob/main/internal/inventory/ASSETS.md).
 
 ### Why Use Cloud Asset Inventory?
