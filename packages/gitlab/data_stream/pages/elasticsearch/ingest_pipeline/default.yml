@@ -17,7 +17,7 @@ processors:
       tag: remove_message
       if: ctx.event?.original != null
   - drop: 
-      if: ctx.event.original.startsWith('#')
+      if: ctx.event?.original?.startsWith('#')
       description: Drop if logline contains header(s), which startswith `#`.
   - append:
       field: event.category
@@ -121,7 +121,7 @@ processors:
       target_field: message
   - append:
       field: related.user
-      value: '{{user.id}}'
+      value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
   - remove:
