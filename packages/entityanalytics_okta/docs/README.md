@@ -195,7 +195,6 @@ An example event for `user` looks as following:
         }
     },
     "event": {
-        "action": "user-discovered",
         "agent_id_status": "verified",
         "category": [
             "iam"
@@ -252,7 +251,6 @@ An example event for `user` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**

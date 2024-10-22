@@ -1,0 +1,175 @@
+- name: tychon
+  type: group
+  fields:
+    - name: file.accessed
+      type: date
+      description: |-
+        Last time the file was accessed.
+        Note that not all filesystems keep track of access time.
+    - name: file.attributes
+      type: keyword
+      description: |-
+        Array of file attributes.
+        Attributes names will vary by platform. Here's a non-exhaustive list of values that are expected in this field: archive, compressed, directory, encrypted, execute, hidden, read, readonly, system, write.
+    - name: file.created
+      type: date
+      description: |-
+        File creation time.
+        Note that not all filesystems store the creation time.
+    - name: file.extension
+      type: keyword
+      description: |-
+        File extension, excluding the leading dot.
+        Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz").
+    - name: file.hash.md5
+      type: keyword
+      description: MD5 hash.
+    - name: file.hash.sha1
+      type: keyword
+      description: SHA1 hash.
+    - name: file.hash.sha256
+      type: keyword
+      description: SHA256 hash.
+    - name: file.mtime
+      type: date
+      description: Last time the file content was modified.
+    - name: file.name
+      type: keyword
+      description: Name of the file including the extension, without the directory.
+    - name: file.path
+      type: keyword
+      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: file.size
+      type: long
+      description: |-
+        File size in bytes.
+        Only relevant when `file.type` is "file".
+    - name: file.x509.issuer.distinguished_name
+      type: keyword
+      description: Distinguished name (DN) of issuing certificate authority.
+    - name: host.architecture
+      type: keyword
+      description: Operating system architecture.
+    - name: host.domain
+      type: keyword
+      description: |-
+        Name of the domain of which the host is a member.
+        For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider.
+    - name: host.hostname
+      type: keyword
+      description: |-
+        Hostname of the host.
+        It normally contains what the `hostname` command returns on the host machine.
+    - name: host.id
+      type: keyword
+      description: |-
+        Unique host id.
+        As hostname is not always unique, use values that are meaningful in your environment.
+        Example: The current usage of `beat.name`.
+    - name: host.ip
+      type: ip
+      description: Host ip addresses.
+    - name: host.mac
+      type: keyword
+      description: |-
+        Host MAC addresses.
+        The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen.
+    - name: host.name
+      type: keyword
+      description: |-
+        Name of the host.
+        It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host.
+    - name: host.os.family
+      type: keyword
+      description: OS family (such as redhat, debian, freebsd, windows).
+    - name: host.os.kernel
+      type: keyword
+      description: Operating system kernel version as a raw string.
+    - name: host.os.name
+      type: keyword
+      description: Operating system name, without the version.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: host.os.platform
+      type: keyword
+      description: Operating system platform (such centos, ubuntu, windows).
+    - name: host.os.type
+      type: keyword
+      description: |-
+        Use the `os.type` field to categorize the operating system into one of the broad commercial families.
+        If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition.
+    - name: host.os.version
+      type: keyword
+      description: Operating system version as a raw string.
+    - name: host.type
+      type: keyword
+      description: |-
+        Type of host.
+        For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment.
+    - name: host.uptime
+      type: long
+      description: Seconds the host has been up.
+    - name: process.command_line
+      type: wildcard
+      description: |-
+        Full command line that started the process, including the absolute path to the executable, and all arguments.
+        Some arguments may be filtered to protect sensitive information.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: process.executable
+      type: keyword
+      description: Absolute path to the process executable.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: process.name
+      type: keyword
+      description: |-
+        Process name.
+        Sometimes called program name or similar.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: process.parent.pid
+      type: long
+      description: Process id.
+    - name: process.pid
+      type: long
+      description: Process id.
+    - name: process.user.name
+      type: keyword
+      description: Short name or login of the user.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: server.address
+      type: keyword
+      description: |-
+        Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
+        Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.
+    - name: server.port
+      type: long
+      description: Port of the server.
+    - name: service.name
+      type: keyword
+      description: |-
+        Name of the service data is collected from.
+        The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name.
+        In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified.
+    - name: service.state
+      type: keyword
+      description: Current state of the service.
+    - name: tls.client.supported_ciphers
+      type: keyword
+      description: Array of ciphers offered by the client during the client hello.
+    - name: url.full
+      type: wildcard
+      description: If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source.
+      multi_fields:
+        - name: text
+          type: match_only_text

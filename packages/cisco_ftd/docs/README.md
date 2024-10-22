@@ -193,7 +193,6 @@ An example event for `log` looks as following:
         "scheme": "http"
     }
 }
-
 ```
 
 **Exported fields**
