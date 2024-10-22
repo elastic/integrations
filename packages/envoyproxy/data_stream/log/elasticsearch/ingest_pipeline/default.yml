@@ -13,8 +13,10 @@ processors:
 - set:
     field: event.ingested
     value: '{{_ingest.timestamp}}'
+    ignore_empty_value: true
+    ignore_failure: true
 - pipeline:
-    if: ctx.message.charAt(0) == (char)("{")
+    if: ctx.message.startsWith('{')
     name: '{{ IngestPipeline "json"}}'
 - pipeline:
     if: ctx.message.charAt(0) != (char)("{")
