@@ -372,19 +372,20 @@ processors:
               for (def o: e.trace.guardrail.inputAssessment.entrySet()) {
                 for (def i: o.getValue().entrySet()) {
                   String policy_name = i.getKey();
-                  if (policy_name.endsWith('_policy')) {
-                    policies.add(policy_name);
-                    for (def p: i.getValue().entrySet()) {
-                      for (def c: p.getValue()) {
-                        actions.add(c.action);
-                        if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
-                          matches.add(c);
-                        }
-                        if (c.type != null) {
-                          if (policy_name == 'content_policy') {
-                            violations.add(c.type);
-                            confidences.add(c.confidence);
-                          }
+                  if (!policy_name.endsWith('_policy')) {
+                    continue;
+                  }
+                  policies.add(policy_name);
+                  for (def p: i.getValue().entrySet()) {
+                    for (def c: p.getValue()) {
+                      actions.add(c.action);
+                      if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
+                        matches.add(c);
+                      }
+                      if (c.type != null) {
+                        if (policy_name == 'content_policy') {
+                          violations.add(c.type);
+                          confidences.add(c.confidence);
                         }
                       }
                     }
@@ -395,19 +396,20 @@ processors:
               for (def o: e.amazon_bedrock_trace.guardrail.input.entrySet()) {
                 for (def i: o.getValue().entrySet()) {
                   String policy_name = i.getKey();
-                  if (policy_name.endsWith('_policy')) {
-                    policies.add(policy_name);
-                    for (def p: i.getValue().entrySet()) {
-                      for (def c: p.getValue()) {
-                        actions.add(c.action);
-                        if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
-                          matches.add(c);
-                        }
-                        if (c.type != null) {
-                          if (policy_name == 'content_policy') {
-                            violations.add(c.type);
-                            confidences.add(c.confidence);
-                          }
+                  if (!policy_name.endsWith('_policy')) {
+                    continue;
+                  }
+                  policies.add(policy_name);
+                  for (def p: i.getValue().entrySet()) {
+                    for (def c: p.getValue()) {
+                      actions.add(c.action);
+                      if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
+                        matches.add(c);
+                      }
+                      if (c.type != null) {
+                        if (policy_name == 'content_policy') {
+                          violations.add(c.type);
+                          confidences.add(c.confidence);
                         }
                       }
                     }
