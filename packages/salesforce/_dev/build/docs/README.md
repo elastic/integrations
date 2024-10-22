@@ -32,7 +32,7 @@ The Salesforce integration collects the following events using the Salesforce RE
 
 ## Compatibility
 
-This integration has been tested against the Salesforce Spring '22 (v54.0) release. The minimum supported version is v46.0.
+This integration has been tested against the Salesforce Spring '22 (v54.0) release and Summer '24 (v61.0). The minimum supported version is v46.0.
 
 To determine your Salesforce instance version, use one of the following methods:
 
@@ -44,15 +44,10 @@ To determine your Salesforce instance version, use one of the following methods:
 
   Use your Salesforce Instance URL with the following format: `<Salesforce Instance URL>/services/data`, for example: `https://na9.salesforce.com/services/data`, here `https://na9.salesforce.com` is the Salesforce Instance URL.
 
-This will return an XML response listing with available API versions:
+  Requesting the URL returns an XML response with the listing of all available versions:
 
 ```xml
 <Versions>
-    <Version>
-        <label>Winter '22</label>
-        <url>/services/data/v53.0</url>
-        <version>53.0</version>
-    </Version>
     <Version>
         <label>Spring '22</label>
         <url>/services/data/v54.0</url>
@@ -66,7 +61,7 @@ This will return an XML response listing with available API versions:
 </Versions>
 ```
 
-The last entry in the list indicates the current release version of your Salesforce instance. In this example, the version is `Summer '22 (v55.0)`.
+The last entry in the list indicates the current version of your Salesforce instance. In this example, the current version is `Summer '22 (v55.0)`.
 
 ## Prerequisites
 
@@ -86,7 +81,7 @@ The last entry in the list indicates the current release version of your Salesfo
   3. To monitor an event, for example, Login Event, or Logout Event, click the dropdown arrow and select **Enable Storage**.
   4. Check if you have the required permissions: **View Real-Time Event Monitoring Data**.
 
-**Note**: Real-Time Event Monitoring may require additional licensing. Check your subscription level with your Salesforce account representative.
+NOTE: Real-Time Event Monitoring may require additional licensing. Check your subscription level with your Salesforce account representative.
 
 ## Setup
 
@@ -100,6 +95,7 @@ To configure the Salesforce integration, you need the following information:
 - [Client key and client secret for authentication](#client-key-and-client-secret-for-authentication)
 - [Username](#username)
 - [Password](#password)
+- [Token URL](#token-url)
 - [API version](#api-version)
 
 ### Salesforce instance URL
@@ -108,7 +104,7 @@ This is the URL of your Salesforce Organization.
 
 - **Salesforce Classic**: Given the example URL https://na9.salesforce.com/home/home.jsp, the Salesforce Instance URL is extracted as https://na9.salesforce.com.
 
-- **Salesforce Lightning**: The instance URL is available under your user name in the **View Profile** tab.
+- **Salesforce Lightning**: The instance URL is available under your user name in the **View Profile** tab. Use the correct instance URL in case of Salesforce Lightning because it uses *.lightning.force.com but the instance URL is *.salesforce.com.
 
 ### Client key and client secret for authentication
 
@@ -121,7 +117,7 @@ To use this integration, you need to create a new Salesforce Application using O
 5. Provide a name for the connected application. This name will be displayed in the App Manager and on its App Launcher tile.
 6. Enter the API name. The default is a version of the name without spaces. Only letters, numbers, and underscores are allowed. If the original app name contains any other characters, edit the default name.
 7. Enter the contact email for Salesforce.
-8. Under the **API (Enable OAuth Settings)** section, check the box for **Enable OAuth Settings**. 
+8. Under the **API (Enable OAuth Settings)** section, check the box for **Enable OAuth Settings**.
 9. In the **Callback URL** field, enter the instance URL as specified in [Salesforce instance URL](#salesforce-instance-url).
 10. Select the following OAuth scopes to apply to the connected app:
     - **Manage user data via APIs (api)**
@@ -143,6 +139,16 @@ The User ID of the registered user.
 
 The password used to authenticate the user.
 
+### Token URL
+
+1. Use the token URL to obtain authentication tokens for API access.
+2. For most Salesforce instances, the token URL follows this format: https://login.salesforce.com/services/oauth2/token.
+3. If you're using a Salesforce sandbox environment, use https://test.salesforce.com/services/oauth2/token instead.
+4. For custom Salesforce domains, replace `login.salesforce.com` with your custom domain name. For example, if your custom domain is `mycompany.my.salesforce.com`, the token URL becomes https://mycompany.my.salesforce.com/services/oauth2/token. This applies to Sandbox environments as well.
+5. In the Salesforce integration, we internally append `/services/oauth2/token` to the URL. Make sure that the URL you provide in the Salesforce integration is the base URL without the `/services/oauth2/token` part. For example, if your custom domain is `mycompany.my.salesforce.com`, the complete token URL would be https://mycompany.my.salesforce.com/services/oauth2/token, but the URL you provide in the Salesforce integration should be https://mycompany.my.salesforce.com. In most cases, this is the same as the Salesforce instance URL.
+
+NOTE: Salesforce Lightning users must use URL with `*.salesforce.com` domain (similar to the Salesforce instance URL) instead of `*.lightning.force.com` because the Salesforce API does not work with `*.lightning.force.com`.
+
 ### API version
 
 To find the API version:
@@ -151,6 +157,8 @@ To find the API version:
 2. Click `New`.
 3. Click the `Version Settings` tab.
 4. Refer to the `Version` dropdown for the API Version number.
+
+Alternatively, you can use the Salesforce Instance API version as described in the "Compatibility" section.
 
 ## Validation
 
@@ -187,7 +195,7 @@ This section provides solutions to common issues you might encounter while using
 
 ### Request timeout
 
-If you experience delays in the response from the Salesforce server in the `apex`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter the following error:
+If you experience delays in the response from the Salesforce server in the `apex`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter a similar error:
 
 ```
 Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
@@ -199,7 +207,7 @@ Error while processing http request: failed to execute rf.collectResponse: faile
 
 If you encounter data ingestion errors, you might get the following error message:
 
-> oauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request
+> 400 Bad Request
 
 **Solution:** Make sure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. Check the [Prerequisites](#prerequisites) section for more information.
 
@@ -211,6 +219,28 @@ If the error persists, follow these steps:
 4. Obtain the client key and secret by clicking on **Manage Consumer Details** in the API section.
 5. Click **Manage** to edit the policies.
 6. Click **Edit Policies** and choose **Relax IP restrictions** from the dropdown menu for IP Relaxation.
+
+### Validate OAuth 2.0 authentication with Salesforce Connected App
+
+```sh
+CLIENT_ID="" # Replace with your client ID
+CLIENT_SECRET="" # Replace with your client secret
+USERNAME="" # Replace with your Salesforce username
+PASSWORD="" # Replace with your Salesforce password
+SECURITY_TOKEN=""  # Replace with your Salesforce security token (if applicable). Else, leave it blank.
+TOKEN_URL="https://<your-instance>.my.salesforce.com/services/oauth2/token" # Replace with your Salesforce instance URL
+
+curl -v -X POST "${TOKEN_URL}" \
+     -d "grant_type=password" \
+     -d "client_id=${CLIENT_ID}" \
+     -d "client_secret=${CLIENT_SECRET}" \
+     -d "username=${USERNAME}" \
+     -d "password=${PASSWORD}${SECURITY_TOKEN}"
+```
+
+NOTE: The script has been tested on Unix-based systems (macOS, Linux). If you use a different operating system, you might need to adjust the command accordingly.
+
+This command is useful for debugging and troubleshooting OAuth 2.0 authentication with Salesforce Connected Apps. It is recommended to use a tool like `curl` for testing OAuth 2.0 authentication before setting up the full Salesforce integration. This approach allows you to verify the authentication process and identify any potential issues early when setting up the full Salesforce integration. If the request is successful, the response will contain an access token that can be used to authenticate subsequent requests to the Salesforce API. If the request fails, the response will contain an error message indicating the reason for the failure.
 
 ## Logs reference
 
