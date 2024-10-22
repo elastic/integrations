@@ -22,18 +22,20 @@ More details for each step can be found at [First steps](https://duo.com/docs/ad
 
 The Cisco Duo integration collects logs for the following types of events.
 
+- [**Activity Logs**](https://duo.com/docs/adminapi#activity-logs)
 - [**Administrator Logs**](https://duo.com/docs/adminapi#administrator-logs)
 - [**Authentication Logs**](https://duo.com/docs/adminapi#authentication-logs)
 - [**Offline Enrollment Logs**](https://duo.com/docs/adminapi#offline-enrollment-logs)
 - [**Summary**](https://duo.com/docs/adminapi#retrieve-summary)
 - [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
 - [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
+- [**Trust Monitor**](https://duo.com/docs/adminapi#trust-monitor)
 
 ## V2 Handlers
 
 Cisco Duo has implemented v2 handlers for some endpoints. In these cases, the API v1 handler remains supported, but will be limited or deprecated in the future.
 
-From data streams listed above, v2 handlers are supported for Authentication and Telephony Logs at the moment. It is recommended to migrate data streams to the v2 endpoints when they become available.
+From data streams listed above, v2 handlers are supported for Activity, Authentication and Telephony Logs at the moment. It is recommended to migrate data streams to the v2 endpoints when they become available.
 
 ## Configuration
 
@@ -45,6 +47,204 @@ The following considerations should be taken into account when configuring the i
 - Larger values of interval might cause delay in data ingestion.
 
 ## Logs
+
+### Activity
+
+This is the `activity` dataset.
+
+An example event for `activity` looks as following:
+
+```json
+{
+    "@timestamp": "2023-03-21T15:51:22.591Z",
+    "agent": {
+        "ephemeral_id": "a2607e25-642e-478e-ae8e-189c5fa6a9b5",
+        "id": "2f6f5efc-3ffe-45bc-960e-d7ddeea449ac",
+        "name": "elastic-agent-79912",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "cisco_duo": {
+        "activity": {
+            "access_device": {
+                "browser": "Chrome",
+                "browser_version": "111.0.0.0",
+                "epkey": "EP123456789012345678",
+                "ip": {
+                    "address": "172.34.40.116"
+                },
+                "location": {
+                    "city": "Ann Arbor",
+                    "country": "United States",
+                    "state": "Michigan"
+                },
+                "os": "Mac OS X",
+                "os_version": "10.15.7"
+            },
+            "action": {
+                "name": "webauthncredential_create"
+            },
+            "actor": {
+                "details": {
+                    "created": "2015-09-25T23:17:40.000000+00:00",
+                    "groups": [
+                        {
+                            "key": "DGAZ172QBWDM26AK8ITK",
+                            "name": "CorpHQ_Users"
+                        },
+                        {
+                            "key": "DGK3B7XTSIP00LKHK1RD",
+                            "name": "ITAdmins"
+                        },
+                        {
+                            "key": "DGKZWSBCDADEVFGFK5NR",
+                            "name": "yee"
+                        }
+                    ],
+                    "last_login": "2023-03-21T19:51:09.000000+00:00",
+                    "status": "Active"
+                },
+                "key": "DU64TKJPJ0SHFWKO2LNBC",
+                "name": "sogilby",
+                "type": "user"
+            },
+            "akey": "DAAR5FO0OZ4VYZA0WOB2",
+            "application": {
+                "key": "DILSVDEYH66TBHKIXGR9",
+                "name": "Acme Corp",
+                "type": "websdk"
+            },
+            "id": "720b8360-078b-47c4-adc7-7968df1caef0",
+            "outcome": "FAILURE",
+            "target": {
+                "details": {
+                    "authenticator_type": "Security key",
+                    "browser": "Chrome",
+                    "browser_version": "111.0.0.0",
+                    "credential_name": "Security key",
+                    "os": "Mac OS X",
+                    "os_version": "10.15.7",
+                    "passwordless_authorized": false,
+                    "transport_types": "usb",
+                    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
+                },
+                "key": "WAUKH0IMTGP00L90LT4KM",
+                "name": "WAUKH0IMTG3EDD4DT4KM",
+                "type": "webauthn_credential"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_duo.activity",
+        "namespace": "97942",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "2f6f5efc-3ffe-45bc-960e-d7ddeea449ac",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "action": "webauthncredential_create",
+        "agent_id_status": "verified",
+        "dataset": "cisco_duo.activity",
+        "id": "720b8360-078b-47c4-adc7-7968df1caef0",
+        "ingested": "2024-10-15T16:21:02Z",
+        "kind": "event",
+        "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"111.0.0.0\",\"epkey\":\"EP123456789012345678\",\"ip\":{\"address\":\"172.34.40.116\"},\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.15.7\"},\"action\":{\"details\":null,\"name\":\"webauthncredential_create\"},\"activity_id\":\"720b8360-078b-47c4-adc7-7968df1caef0\",\"actor\":{\"details\":{\"created\":\"2015-09-25T23:17:40.000000+00:00\",\"groups\":[{\"key\":\"DGAZ172QBWDM26AK8ITK\",\"name\":\"CorpHQ_Users\"},{\"key\":\"DGK3B7XTSIP00LKHK1RD\",\"name\":\"ITAdmins\"},{\"key\":\"DGKZWSBCDADEVFGFK5NR\",\"name\":\"yee\"}],\"last_login\":\"2023-03-21T19:51:09.000000+00:00\",\"status\":\"Active\"},\"key\":\"DU64TKJPJ0SHFWKO2LNBC\",\"name\":\"sogilby\",\"type\":\"user\"},\"akey\":\"DAAR5FO0OZ4VYZA0WOB2\",\"application\":{\"key\":\"DILSVDEYH66TBHKIXGR9\",\"name\":\"Acme Corp\",\"type\":\"websdk\"},\"old_target\":null,\"outcome\":{\"result\":\"FAILURE\"},\"target\":{\"details\":{\"authenticator_type\":\"Security key\",\"browser\":\"Chrome\",\"browser_version\":\"111.0.0.0\",\"credential_name\":\"Security key\",\"os\":\"Mac OS X\",\"os_version\":\"10.15.7\",\"passwordless_authorized\":false,\"transport_types\":\"usb\",\"user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36\"},\"key\":\"WAUKH0IMTGP00L90LT4KM\",\"name\":\"WAUKH0IMTG3EDD4DT4KM\",\"type\":\"webauthn_credential\"},\"ts\":\"2023-03-21T15:51:22.591015+00:00\"}",
+        "outcome": "failure"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "ip": [
+            "172.34.40.116"
+        ],
+        "user": [
+            "sogilby"
+        ]
+    },
+    "source": {
+        "ip": "172.34.40.116"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cisco_duo-activity"
+    ],
+    "user": {
+        "name": "sogilby"
+    },
+    "user_agent": {
+        "name": "Chrome",
+        "os": {
+            "name": "Mac OS X",
+            "version": "10.15.7"
+        },
+        "version": "111.0.0.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cisco_duo.activity.access_device.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| cisco_duo.activity.access_device.as.organization.name | Organization name. | keyword |
+| cisco_duo.activity.access_device.browser | The web browser used for access. | keyword |
+| cisco_duo.activity.access_device.browser_version | The web browser version. | keyword |
+| cisco_duo.activity.access_device.epkey | The device's unique identifier or epkey. | keyword |
+| cisco_duo.activity.access_device.geo.city_name | City name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.continent_name | Name of the continent (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.country_iso_code | Country ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.country_name | Country name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.location | Longitude and latitude (geo enrichment based on the IP address). | geo_point |
+| cisco_duo.activity.access_device.geo.region_iso_code | Region ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.region_name | Region name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.ip.address | IP address of access device. | ip |
+| cisco_duo.activity.access_device.location.city | The city name provided by Cisco Duo. | keyword |
+| cisco_duo.activity.access_device.location.country | The country code provided by Cisco Duo. Refer to ISO 3166 for a list of possible countries. | keyword |
+| cisco_duo.activity.access_device.location.state | The state, county, province, or prefecture provided by Cisco Duo. | keyword |
+| cisco_duo.activity.access_device.os | The device operating system name. | keyword |
+| cisco_duo.activity.access_device.os_version | The device operating system version. | keyword |
+| cisco_duo.activity.action.details | Provides additional information about the action. Details is optional. | keyword |
+| cisco_duo.activity.action.name | The name is a string representing the action the actor performed. If a target is present, the action was performed on that target. | keyword |
+| cisco_duo.activity.actor.details | Details about the actor. | flattened |
+| cisco_duo.activity.actor.key | Identifier of the actor. | keyword |
+| cisco_duo.activity.actor.name | Name of the actor. | keyword |
+| cisco_duo.activity.actor.type | Type of actor. One of: admin, adminapi, admin_sync, azure_sync, deviceapi, ldapsync, system, or user. | keyword |
+| cisco_duo.activity.akey | Unique identifier of entity associated with the activity log. | keyword |
+| cisco_duo.activity.application.key | The application's integration key. | keyword |
+| cisco_duo.activity.application.name | The application's name. | keyword |
+| cisco_duo.activity.application.type | The application's type. | keyword |
+| cisco_duo.activity.id | Transaction ID of the event. | keyword |
+| cisco_duo.activity.old_target.details | Key-value pair of properties about the target. The properties for a given target may vary by target type, but should be consistent for the same type. | flattened |
+| cisco_duo.activity.old_target.key | Key of the target that corresponds to the target type. | keyword |
+| cisco_duo.activity.old_target.name | Name of the target. | keyword |
+| cisco_duo.activity.old_target.type | The target type. One of: admin, adminap_integrations, authproxy, computer_registration, device_registration, enroll_code, group, log_export, login_settings, hardtoken, integration, phone, policy, trusted_endpoints_integration, u2f_token, user, user_bypass, or webauthn_credentials. | keyword |
+| cisco_duo.activity.outcome | Result of the ADMIN_ACTION_ADMIN_LOGIN action. By default, the outcome field is "SUCCESS". On failure, the outcome field is "FAILURE". | keyword |
+| cisco_duo.activity.target.details | Key-value pair of properties about the target. The properties for a given target may vary by target type, but should be consistent for the same type. | flattened |
+| cisco_duo.activity.target.key | Key of the target that corresponds to the target type. | keyword |
+| cisco_duo.activity.target.name | Name of the target. | keyword |
+| cisco_duo.activity.target.type | The target type. One of: admin, adminap_integrations, authproxy, computer_registration, device_registration, enroll_code, group, log_export, login_settings, hardtoken, integration, phone, policy, trusted_endpoints_integration, u2f_token, user, user_bypass, or webauthn_credentials. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+
 
 ### Administrator
 
@@ -148,16 +348,34 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2020-02-13T18:56:20.000Z",
     "agent": {
-        "ephemeral_id": "1db72ca4-3a98-4d58-9502-353229adb966",
-        "id": "50f2e03e-cb60-4d41-b1dc-57dd6c65753c",
-        "name": "elastic-agent-19338",
+        "ephemeral_id": "59577463-d70a-4e8d-b98a-f19259ea5754",
+        "id": "58df2bd8-08b5-427c-9e9f-5bd330eaff86",
+        "name": "elastic-agent-17284",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "cisco_duo": {
         "auth": {
             "access_device": {
+                "as": {
+                    "number": 29518,
+                    "organization": {
+                        "name": "Bredband2 AB"
+                    }
+                },
                 "flash_version": "uninstalled",
+                "geo": {
+                    "city_name": "Linköping",
+                    "continent_name": "Europe",
+                    "country_iso_code": "SE",
+                    "country_name": "Sweden",
+                    "location": {
+                        "lat": 58.4167,
+                        "lon": 15.6167
+                    },
+                    "region_iso_code": "SE-E",
+                    "region_name": "Östergötland County"
+                },
                 "ip": "89.160.20.156",
                 "is_encryption_enabled": "true",
                 "is_firewall_enabled": "true",
@@ -193,14 +411,14 @@ An example event for `auth` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_duo.auth",
-        "namespace": "16086",
+        "namespace": "35756",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "50f2e03e-cb60-4d41-b1dc-57dd6c65753c",
+        "id": "58df2bd8-08b5-427c-9e9f-5bd330eaff86",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -210,7 +428,7 @@ An example event for `auth` looks as following:
             "authentication"
         ],
         "dataset": "cisco_duo.auth",
-        "ingested": "2024-09-30T16:10:27Z",
+        "ingested": "2024-10-10T16:29:11Z",
         "kind": "event",
         "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"67.0.3396.99\",\"flash_version\":\"uninstalled\",\"hostname\":null,\"ip\":\"89.160.20.156\",\"is_encryption_enabled\":true,\"is_firewall_enabled\":true,\"is_password_set\":true,\"java_version\":\"uninstalled\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.14.1\",\"security_agents\":null},\"alias\":\"\",\"application\":{\"key\":\"DIY231J8BR23QK4UKBY8\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":\"192.168.225.254\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"name\":\"My iPhone X (734-555-2342)\"},\"email\":\"narroway@example.com\",\"event_type\":\"authentication\",\"factor\":\"duo_push\",\"isotimestamp\":\"2020-02-13T18:56:20.351346+00:00\",\"ood_software\":null,\"reason\":\"user_approved\",\"result\":\"success\",\"timestamp\":1581620180,\"trusted_endpoint_status\":\"not trusted\",\"txid\":\"340a23e3-23f3-23c1-87dc-1491a23dfdbb\",\"user\":{\"groups\":[\"Duo Users\",\"CorpHQ Users\"],\"key\":\"DU3KC77WJ06Y5HIV7XKQ\",\"name\":\"narroway@example.com\"}}",
         "outcome": "success",
@@ -223,9 +441,6 @@ An example event for `auth` looks as following:
         "type": "cel"
     },
     "related": {
-        "hosts": [
-            "89.160.20.156"
-        ],
         "ip": [
             "89.160.20.156",
             "192.168.225.254"
@@ -235,7 +450,6 @@ An example event for `auth` looks as following:
         ]
     },
     "source": {
-        "address": "89.160.20.156",
         "as": {
             "number": 29518,
             "organization": {
@@ -293,16 +507,25 @@ An example event for `auth` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cisco_duo.auth.access_device.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| cisco_duo.auth.access_device.as.organization.name | Organization name. | keyword |
 | cisco_duo.auth.access_device.flash_version | The Flash plugin version used, if present. | keyword |
+| cisco_duo.auth.access_device.geo.city_name | City name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.continent_name | Name of the continent (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.country_iso_code | Country ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.country_name | Country name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.location | Longitude and latitude (geo enrichment based on the IP address). | geo_point |
+| cisco_duo.auth.access_device.geo.region_iso_code | Region ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.region_name | Region name (geo enrichment based on the IP address). | keyword |
 | cisco_duo.auth.access_device.hostname | The hostname, if present. | keyword |
 | cisco_duo.auth.access_device.ip | The access device's IP address. | ip |
 | cisco_duo.auth.access_device.is_encryption_enabled | Reports the disk encryption state as detected by the Duo Device Health app. | keyword |
 | cisco_duo.auth.access_device.is_firewall_enabled | Reports the firewall state as detected by the Duo Device Health app. | keyword |
 | cisco_duo.auth.access_device.is_password_set | Reports the system password state as detected by the Duo Device Health app | keyword |
 | cisco_duo.auth.access_device.java_version | The Java plugin version used. | keyword |
-| cisco_duo.auth.access_device.location.city | The city name of the access device using geoip location. | keyword |
-| cisco_duo.auth.access_device.location.country | The country of the access device using geoip location. | keyword |
-| cisco_duo.auth.access_device.location.state | The state name of the access device using geoip location. | keyword |
+| cisco_duo.auth.access_device.location.city | The city name of the access device provided by Cisco Duo. | keyword |
+| cisco_duo.auth.access_device.location.country | The country of the access device provided by Cisco Duo. | keyword |
+| cisco_duo.auth.access_device.location.state | The state name of the access device provided by Cisco Duo. | keyword |
 | cisco_duo.auth.access_device.port | The access device's port number. | long |
 | cisco_duo.auth.access_device.security_agents | Reports the security agents present on the endpoint as detected by the Duo Device Health app. | flattened |
 | cisco_duo.auth.alias | The username alias used to log in. | keyword |
@@ -310,17 +533,17 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.application.name | The application's name. | keyword |
 | cisco_duo.auth.auth_device.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | cisco_duo.auth.auth_device.as.organization.name | Organization name. | keyword |
-| cisco_duo.auth.auth_device.geo.city_name | City name. | keyword |
-| cisco_duo.auth.auth_device.geo.continent_name | Name of the continent. | keyword |
-| cisco_duo.auth.auth_device.geo.country_iso_code | Country ISO code. | keyword |
-| cisco_duo.auth.auth_device.geo.country_name | Country name. | keyword |
-| cisco_duo.auth.auth_device.geo.location | Longitude and latitude. | geo_point |
-| cisco_duo.auth.auth_device.geo.region_iso_code | Region ISO code. | keyword |
-| cisco_duo.auth.auth_device.geo.region_name | Region name. | keyword |
+| cisco_duo.auth.auth_device.geo.city_name | City name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.continent_name | Name of the continent (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.country_iso_code | Country ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.country_name | Country name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.location | Longitude and latitude (geo enrichment based on the IP address). | geo_point |
+| cisco_duo.auth.auth_device.geo.region_iso_code | Region ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.region_name | Region name (geo enrichment based on the IP address). | keyword |
 | cisco_duo.auth.auth_device.ip | The IP address of the authentication device. | ip |
-| cisco_duo.auth.auth_device.location.city | The city name of the authentication device using geoip location. | keyword |
-| cisco_duo.auth.auth_device.location.country | The country of the authentication device using geoip location. | keyword |
-| cisco_duo.auth.auth_device.location.state | The state name of the authentication device using geoip location. | keyword |
+| cisco_duo.auth.auth_device.location.city | The city name of the authentication device provided by Cisco Duo. | keyword |
+| cisco_duo.auth.auth_device.location.country | The country of the authentication device provided by Cisco Duo. | keyword |
+| cisco_duo.auth.auth_device.location.state | The state name of the authentication device provided by Cisco Duo. | keyword |
 | cisco_duo.auth.auth_device.name | The name of the authentication device. | keyword |
 | cisco_duo.auth.auth_device.port | The network port of the authentication device. | long |
 | cisco_duo.auth.email | The email address of the user, if known to Duo, otherwise none. | keyword |
@@ -664,6 +887,169 @@ An example event for `telephony_v2` looks as following:
 | cisco_duo.telephony_v2.phone_number | The phone number that initiated this event. | keyword |
 | cisco_duo.telephony_v2.txid | A unique identifier that relates to the successful authentication attempt using this telephony event. | keyword |
 | cisco_duo.telephony_v2.type | The event type. Either "sms" or "phone". | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+
+
+### Trust Monitor
+
+This is the `trust_monitor` dataset.
+
+An example event for `trust_monitor` looks as following:
+
+```json
+{
+    "@timestamp": "2020-11-17T08:48:31.680Z",
+    "agent": {
+        "ephemeral_id": "6425e1a1-6171-4b20-ba87-65bf63231ef4",
+        "id": "a2c45cbf-69cf-4bf5-93e2-df91aa0f8eae",
+        "name": "elastic-agent-51366",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "cisco_duo": {
+        "trust_monitor": {
+            "explanations": [
+                {
+                    "summary": "amanda_tucker has not logged in from this location recently.",
+                    "type": "NEW_COUNTRY_CODE"
+                },
+                {
+                    "summary": "amanda_tucker has not logged in from this IP recently.",
+                    "type": "NEW_NETBLOCK"
+                },
+                {
+                    "summary": "amanda_tucker has not accessed this application recently.",
+                    "type": "NEW_IKEY"
+                }
+            ],
+            "from_common_netblock": true,
+            "from_new_user": false,
+            "low_risk_ip": false,
+            "priority_event": true,
+            "priority_reasons": [
+                {
+                    "label": "CN",
+                    "type": "country"
+                }
+            ],
+            "sekey": "SEDOR9BP00L23C6YUH5",
+            "state": "new",
+            "surfaced_auth": {
+                "access_device": {
+                    "browser": "Chrome",
+                    "browser_version": "86.0.4240.198",
+                    "epkey": "EP18JX1A10AB102M2T2X",
+                    "ip": "17.88.232.83",
+                    "is_encryption_enabled": "unknown",
+                    "is_firewall_enabled": "unknown",
+                    "is_password_set": "unknown",
+                    "location": {
+                        "city": "Shanghai",
+                        "country": "China",
+                        "state": "Shanghai"
+                    },
+                    "os": "Windows",
+                    "os_version": "10",
+                    "security_agents": "unknown"
+                },
+                "alias": "unknown",
+                "application": {
+                    "key": "DIUD2X62LHMPDP00LXS3",
+                    "name": "Microsoft Azure Active Directory"
+                },
+                "factor": "not_available",
+                "isotimestamp": "2020-11-17T03:19:13.092+00:00",
+                "reason": "location_restricted",
+                "result": "denied",
+                "timestamp": 1605583153,
+                "txid": "436694ad-467c-4aed-b048-8ad--f58e04c",
+                "user": {
+                    "groups": [
+                        "crazy"
+                    ],
+                    "key": "DUN73JE5M92DP00L4ZYS",
+                    "name": "amanda_tucker"
+                }
+            },
+            "triage_event_uri": "https://admin-xxxxxxxx.duosecurity.com/trust-monitor?sekey=SEDOR9BP00L23C6YUH5",
+            "triaged_as_interesting": false,
+            "type": "auth"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_duo.trust_monitor",
+        "namespace": "54506",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "a2c45cbf-69cf-4bf5-93e2-df91aa0f8eae",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "cisco_duo.trust_monitor",
+        "id": "SEDOR9BP00L23C6YUH5",
+        "ingested": "2024-10-04T07:55:31Z",
+        "kind": "event",
+        "original": "{\"explanations\":[{\"summary\":\"amanda_tucker has not logged in from this location recently.\",\"type\":\"NEW_COUNTRY_CODE\"},{\"summary\":\"amanda_tucker has not logged in from this IP recently.\",\"type\":\"NEW_NETBLOCK\"},{\"summary\":\"amanda_tucker has not accessed this application recently.\",\"type\":\"NEW_IKEY\"}],\"from_common_netblock\":true,\"from_new_user\":false,\"low_risk_ip\":false,\"priority_event\":true,\"priority_reasons\":[{\"label\":\"CN\",\"type\":\"country\"}],\"sekey\":\"SEDOR9BP00L23C6YUH5\",\"state\":\"new\",\"state_updated_timestamp\":null,\"surfaced_auth\":{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"86.0.4240.198\",\"epkey\":\"EP18JX1A10AB102M2T2X\",\"flash_version\":null,\"hostname\":null,\"ip\":\"17.88.232.83\",\"is_encryption_enabled\":\"unknown\",\"is_firewall_enabled\":\"unknown\",\"is_password_set\":\"unknown\",\"java_version\":null,\"location\":{\"city\":\"Shanghai\",\"country\":\"China\",\"state\":\"Shanghai\"},\"os\":\"Windows\",\"os_version\":\"10\",\"security_agents\":\"unknown\"},\"alias\":\"unknown\",\"application\":{\"key\":\"DIUD2X62LHMPDP00LXS3\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":null,\"key\":null,\"location\":{\"city\":null,\"country\":null,\"state\":null},\"name\":null},\"email\":\"\",\"event_type\":null,\"factor\":\"not_available\",\"isotimestamp\":\"2020-11-17T03:19:13.092+00:00\",\"ood_software\":\"\",\"reason\":\"location_restricted\",\"result\":\"denied\",\"timestamp\":1605583153,\"trusted_endpoint_status\":null,\"txid\":\"436694ad-467c-4aed-b048-8ad--f58e04c\",\"user\":{\"groups\":[\"crazy\"],\"key\":\"DUN73JE5M92DP00L4ZYS\",\"name\":\"amanda_tucker\"}},\"surfaced_timestamp\":1605602911680,\"triage_event_uri\":\"https://admin-xxxxxxxx.duosecurity.com/trust-monitor?sekey=SEDOR9BP00L23C6YUH5\",\"triaged_as_interesting\":false,\"type\":\"auth\"}"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cisco_duo-trust_monitor"
+    ],
+    "url": {
+        "domain": "admin-xxxxxxxx.duosecurity.com",
+        "original": "https://admin-xxxxxxxx.duosecurity.com/trust-monitor?sekey=SEDOR9BP00L23C6YUH5",
+        "path": "/trust-monitor",
+        "query": "sekey=SEDOR9BP00L23C6YUH5",
+        "scheme": "https"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cisco_duo.trust_monitor.bypass_status_enabled | The Unix timestamp in milliseconds when bypass status was enabled for the user or group. Returned for events with type=bypass_status. | long |
+| cisco_duo.trust_monitor.enabled_by.key | Key of the application or the administrator that enabled bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.enabled_by.name | Name of the application or the administrator that enabled bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.enabled_for.key | Key of the user or group with bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.enabled_for.name | Name of the user or group with bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.explanations.summary | Description of why Trust Monitor surfaced the event. | keyword |
+| cisco_duo.trust_monitor.explanations.type | Type of reason why Trust Monitor surfaced the event. | keyword |
+| cisco_duo.trust_monitor.from_common_netblock | A boolean describing if this event was created from a common IP netblock. Returned for events with type=auth. | boolean |
+| cisco_duo.trust_monitor.from_new_user | A boolean describing if this event was created for a new user. Returned for events with type=auth or type=device_registration. | boolean |
+| cisco_duo.trust_monitor.low_risk_ip | A boolean describing if this event was created from an IP address identified in the Risk Profile configuration as a low risk IP address. Returned for events with type=auth. | boolean |
+| cisco_duo.trust_monitor.priority_event | A boolean describing if the event matches the Risk Profile configuration. | boolean |
+| cisco_duo.trust_monitor.priority_reasons.label | The label of the priority reason describing how the event matches the Trust Monitor Risk Profile configuration for the event's match. Returned for events with type=auth or type=device_registration. | keyword |
+| cisco_duo.trust_monitor.priority_reasons.type | The type of priority reason describing how the event matches the Trust Monitor Risk Profile configuration for the event's match. Returned for events with type=auth or type=device_registration. | keyword |
+| cisco_duo.trust_monitor.sekey | The unique identifier for this event as a 20 character string. This is unique across all different event types. | keyword |
+| cisco_duo.trust_monitor.state | A string describing the state of the event. One of statenew or stateprocessed. | keyword |
+| cisco_duo.trust_monitor.state_updated_timestamp | The Unix timestamp in milliseconds of the last change to the state of the event. | long |
+| cisco_duo.trust_monitor.surfaced_auth | An object which represents the actual authentication. Returned for events with type=auth. | flattened |
+| cisco_duo.trust_monitor.triage_event_uri | A string representing the URI of the security event, which a Duo administrator can use to view and process the surfaced event in the Duo Admin Panel. Returned for events with type=auth. | keyword |
+| cisco_duo.trust_monitor.triaged_as_interesting | A boolean describing if this event was triaged as being interesting or not interesting. | boolean |
+| cisco_duo.trust_monitor.type | The type of event, as a string. One of auth, bypass_status, or device_registration. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
