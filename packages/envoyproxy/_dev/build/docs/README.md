@@ -17,7 +17,7 @@ For Kubernetes deployment see [here](https://www.elastic.co/guide/en/fleet/curre
 
 ### Stats
 
-Update your Envoy config to point statsd output to the agents IP.
+Update your Envoy config to point statsd output to the IP address of the agent running this integration.
 
 > NOTE: Hostnames are not supported by Envoy and must use the IP address where Elastic Agent is installed
 
