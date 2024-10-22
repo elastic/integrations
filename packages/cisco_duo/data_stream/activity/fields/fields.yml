@@ -1,0 +1,197 @@
+- name: cisco_duo.activity
+  type: group
+  fields:
+    - name: access_device
+      type: group
+      description: |
+        Information about the device used to perform the activity. All fields are optional as non-external actors will not have any information to record here.
+      fields:
+        - name: as
+          type: group
+          fields:
+            - name: number
+              type: long
+              description: |
+                Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+            - name: organization.name
+              type: keyword
+              description: |
+                Organization name.
+        - name: browser
+          type: keyword
+          description: |
+            The web browser used for access.
+        - name: browser_version
+          type: keyword
+          description: |
+            The web browser version.
+        - name: epkey
+          type: keyword
+          description: |
+            The device's unique identifier or epkey.
+        - name: geo
+          type: group
+          fields:
+            - name: city_name
+              type: keyword
+              description: |
+                City name (geo enrichment based on the IP address).
+            - name: continent_name
+              type: keyword
+              description: |
+                Name of the continent (geo enrichment based on the IP address).
+            - name: country_iso_code
+              type: keyword
+              description: |
+                Country ISO code (geo enrichment based on the IP address).
+            - name: country_name
+              type: keyword
+              description: |
+                Country name (geo enrichment based on the IP address).
+            - name: location
+              type: geo_point
+              level: core
+              description: |
+                Longitude and latitude (geo enrichment based on the IP address).
+            - name: region_iso_code
+              type: keyword
+              description: |
+                Region ISO code (geo enrichment based on the IP address).
+            - name: region_name
+              type: keyword
+              description: |
+                Region name (geo enrichment based on the IP address).
+        - name: ip.address
+          type: ip
+          description: |
+            IP address of access device.
+        - name: location
+          type: group
+          description: |
+            The location details of the device, if available.
+          fields:
+            - name: city
+              type: keyword
+              description: |
+                The city name provided by Cisco Duo.
+            - name: country
+              type: keyword
+              description: |
+                The country code provided by Cisco Duo. Refer to ISO 3166 for a list of possible countries.
+            - name: state
+              type: keyword
+              description: |
+                The state, county, province, or prefecture provided by Cisco Duo.
+        - name: os
+          type: keyword
+          description: |
+            The device operating system name.
+        - name: os_version
+          type: keyword
+          description: |
+            The device operating system version.
+    - name: action
+      type: group
+      description: |
+        Information about the action performed.
+      fields:
+        - name: details
+          type: keyword
+          description: |
+            Provides additional information about the action. Details is optional.
+        - name: name
+          type: keyword
+          description: |
+            The name is a string representing the action the actor performed. If a target is present, the action was performed on that target.
+    - name: actor
+      type: group
+      description: |
+        The actor represents the entity performing the action.
+      fields:
+        - name: details
+          type: flattened
+          description: |
+            Details about the actor.
+        - name: key
+          type: keyword
+          description: |
+            Identifier of the actor.
+        - name: name
+          type: keyword
+          description: |
+            Name of the actor.
+        - name: type
+          type: keyword
+          description: |
+            Type of actor. One of: admin, adminapi, admin_sync, azure_sync, deviceapi, ldapsync, system, or user.
+    - name: akey
+      type: keyword
+      description: |
+        Unique identifier of entity associated with the activity log.
+    - name: application
+      type: group
+      description: |
+        The integration used to perform the activity.
+      fields:
+        - name: key
+          type: keyword
+          description: |
+            The application's integration key.
+        - name: name
+          type: keyword
+          description: |
+            The application's name.
+        - name: type
+          type: keyword
+          description: |
+            The application's type.
+    - name: id
+      type: keyword
+      description: |
+        Transaction ID of the event.
+    - name: old_target
+      type: group
+      description: |
+        The target represents the entity on which the action was performed, before the action was performed. The old_target is optional, as not all activity may represent a change to another entity.
+      fields:
+        - name: details
+          type: flattened
+          description: |
+            Key-value pair of properties about the target. The properties for a given target may vary by target type, but should be consistent for the same type.
+        - name: key
+          type: keyword
+          description: |
+            Key of the target that corresponds to the target type.
+        - name: name
+          type: keyword
+          description: |
+            Name of the target.
+        - name: type
+          type: keyword
+          description: |
+            The target type. One of: admin, adminap_integrations, authproxy, computer_registration, device_registration, enroll_code, group, log_export, login_settings, hardtoken, integration, phone, policy, trusted_endpoints_integration, u2f_token, user, user_bypass, or webauthn_credentials.
+    - name: outcome
+      type: keyword
+      description: |
+        Result of the ADMIN_ACTION_ADMIN_LOGIN action. By default, the outcome field is "SUCCESS". On failure, the outcome field is "FAILURE".
+    - name: target
+      type: group
+      description: |
+        The target represents the entity on which the action was performed. The target is optional, as not all activity may represent a change to another entity.
+      fields:
+        - name: details
+          type: flattened
+          description: |
+            Key-value pair of properties about the target. The properties for a given target may vary by target type, but should be consistent for the same type.
+        - name: key
+          type: keyword
+          description: |
+            Key of the target that corresponds to the target type.
+        - name: name
+          type: keyword
+          description: |
+            Name of the target.
+        - name: type
+          type: keyword
+          description: |
+            The target type. One of: admin, adminap_integrations, authproxy, computer_registration, device_registration, enroll_code, group, log_export, login_settings, hardtoken, integration, phone, policy, trusted_endpoints_integration, u2f_token, user, user_bypass, or webauthn_credentials.

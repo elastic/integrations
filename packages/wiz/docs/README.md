@@ -630,9 +630,9 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2023-08-16T18:40:57.000Z",
     "agent": {
-        "ephemeral_id": "a3854b6d-49eb-4205-9d2e-1f48033efae0",
-        "id": "1ec8140c-1117-4b91-8a6b-737e424d356a",
-        "name": "elastic-agent-90122",
+        "ephemeral_id": "124489e8-14a9-4120-9631-0c55ec182d07",
+        "id": "9f35182a-afaa-4788-859d-d523d976b90e",
+        "name": "elastic-agent-32792",
         "type": "filebeat",
         "version": "8.14.3"
     },
@@ -645,7 +645,7 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "wiz.vulnerability",
-        "namespace": "22916",
+        "namespace": "32071",
         "type": "logs"
     },
     "device": {
@@ -655,7 +655,7 @@ An example event for `vulnerability` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1ec8140c-1117-4b91-8a6b-737e424d356a",
+        "id": "9f35182a-afaa-4788-859d-d523d976b90e",
         "snapshot": false,
         "version": "8.14.3"
     },
@@ -665,7 +665,7 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "wiz.vulnerability",
-        "ingested": "2024-09-10T07:01:34Z",
+        "ingested": "2024-10-08T12:48:23Z",
         "kind": "alert",
         "original": "{\"CVEDescription\":\"In LibTIFF, there is a memory malloc failure in tif_pixarlog.c. A crafted TIFF document can lead to an abort, resulting in a remote denial of service attack.\",\"CVSSSeverity\":\"MEDIUM\",\"dataSourceName\":\"data Source\",\"description\":\"Thepackage`libtiff`version`4.0.3-35.amzn2`wasdetectedin`YUMpackagemanager`onamachinerunning`Amazon2(Karoo)`isvulnerableto`CVE-2020-35522`,whichexistsinversions`\\u003c4.0.3-35.amzn2.0.1`.\\n\\nThevulnerabilitywasfoundinthe[OfficialAmazonLinuxSecurityAdvisories](https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html)withvendorseverity:`Medium`([NVD](https://nvd.nist.gov/vuln/detail/CVE-2020-35522)severity:`Medium`).\\n\\nThevulnerabilitycanberemediatedbyupdatingthepackagetoversion`4.0.3-35.amzn2.0.1`orhigher,using`yumupdatelibtiff`.\",\"detailedName\":\"libtiff\",\"detectionMethod\":\"PACKAGE\",\"epssPercentile\":46.2,\"epssProbability\":0.1,\"epssSeverity\":\"LOW\",\"exploitabilityScore\":1.8,\"firstDetectedAt\":\"2022-05-01T11:36:10.063767Z\",\"fixedVersion\":\"4.0.3-35.amzn2.0.1\",\"hasCisaKevExploit\":false,\"hasExploit\":false,\"id\":\"5e95ff50-5490-514e-87f7-11e56f3230ff\",\"ignoreRules\":{\"enabled\":true,\"expiredAt\":\"2023-08-16T18:40:57Z\",\"id\":\"aj3jqtvnaf\",\"name\":\"abc\"},\"impactScore\":3.6,\"lastDetectedAt\":\"2023-08-16T18:40:57Z\",\"layerMetadata\":{\"details\":\"xxxx\",\"id\":\"5e95ff50-5490-514e-87f7-11e56f3230ff\",\"isBaseLayer\":true},\"link\":\"https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html\",\"locationPath\":\"package/library/file\",\"name\":\"CVE-2020-3333\",\"portalUrl\":\"https://app.wiz.io/explorer/vulnerability-findings#~(entity~(~'xxx-xxx*2cSECURITY_TOOL_FINDING))\",\"projects\":[{\"businessUnit\":\"\",\"id\":\"83b76efe-a7b6-5762-8a53-8e8f59e68bd8\",\"name\":\"Project2\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-2\"},{\"businessUnit\":\"Dev\",\"id\":\"af52828c-4eb1-5c4e-847c-ebc3a5ead531\",\"name\":\"project4\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-4\"},{\"businessUnit\":\"Dev\",\"id\":\"d6ac50bb-aec0-52fc-80ab-bacd7b02f178\",\"name\":\"Project1\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project1\"}],\"remediation\":\"yumupdatelibtiff\",\"resolutionReason\":\"resolutionReason\",\"resolvedAt\":\"2023-08-16T18:40:57Z\",\"score\":5.5,\"status\":\"OPEN\",\"validatedInRuntime\":true,\"vendorSeverity\":\"MEDIUM\",\"version\":\"4.0.3-35.amzn2\",\"vulnerableAsset\":{\"cloudPlatform\":\"AWS\",\"cloudProviderURL\":\"https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#InstanceDetails:instanceId=i-0a0f7e1451da5f4a3\",\"hasLimitedInternetExposure\":true,\"hasWideInternetExposure\":true,\"id\":\"c828de0d-4c42-5b1c-946b-2edee094d0b3\",\"ipAddresses\":[\"89.160.20.112\",\"89.160.20.128\"],\"isAccessibleFromOtherSubscriptions\":false,\"isAccessibleFromOtherVnets\":false,\"isAccessibleFromVPN\":false,\"name\":\"test-4\",\"operatingSystem\":\"Linux\",\"providerUniqueId\":\"arn:aws:ec2:us-east-1:998231069301:instance/i-0a0f7e1451da5f4a3\",\"region\":\"us-east-1\",\"status\":\"Active\",\"subscriptionExternalId\":\"998231069301\",\"subscriptionId\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"subscriptionName\":\"wiz-integrations\",\"tags\":{\"Name\":\"test-4\"},\"type\":\"VIRTUAL_MACHINE\"}}",
         "type": [
@@ -687,6 +687,7 @@ An example event for `vulnerability` looks as following:
     },
     "package": {
         "fixed_version": "4.0.3-35.amzn2.0.1",
+        "name": "libtiff",
         "version": "4.0.3-35.amzn2"
     },
     "related": {
@@ -711,6 +712,7 @@ An example event for `vulnerability` looks as following:
         "id": "CVE-2020-3333",
         "package": {
             "fixed_version": "4.0.3-35.amzn2.0.1",
+            "name": "libtiff",
             "version": "4.0.3-35.amzn2"
         },
         "reference": "https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html",
@@ -845,6 +847,7 @@ An example event for `vulnerability` looks as following:
 | resource.name |  | keyword |
 | vulnerability.cwe |  | keyword |
 | vulnerability.package.fixed_version |  | keyword |
+| vulnerability.package.name |  | keyword |
 | vulnerability.package.version |  | keyword |
 | wiz.vulnerability.cve_description |  | keyword |
 | wiz.vulnerability.cvss_severity |  | keyword |

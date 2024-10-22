@@ -378,7 +378,7 @@ processors:
       if: ctx.user?.name != null && ctx.user?.name.contains('@') == true
   - set:
       field: user.id
-      value: "{{user.email}}"
+      value: "{{{user.email}}}"
       if: ctx.user?.email != null
   - remove:
       field: user.email
@@ -474,23 +474,23 @@ processors:
       if: ctx.cisco?.umbrella?.action != null
   - set:
       field: event.action
-      value: "dns-request-{{cisco.umbrella.action}}"
+      value: "dns-request-{{{cisco.umbrella.action}}}"
       if: ctx.cisco?.umbrella?.action != null && ctx.log?.file?.path != null && ctx.log.file.path.contains('dnslogs')
   - set:
       field: event.action
-      value: "proxy-request-{{http.request.method}}"
+      value: "proxy-request-{{{http.request.method}}}"
       if: ctx.http?.request?.method != null && ctx.log?.file?.path != null && ctx.log.file.path.contains('proxylogs')
   - set:
       field: event.action
-      value: "fw-connection-{{cisco.umbrella.action}}"
+      value: "fw-connection-{{{cisco.umbrella.action}}}"
       if: ctx.cisco?.umbrella?.action != null && ctx.log?.file?.path != null && (ctx.log.file.path.contains('firewalllogs') || ctx.log.file.path.contains('cloudfirewalllogs'))
   - set:
       field: event.action
-      value: "ips-{{cisco.umbrella.action}}"
+      value: "ips-{{{cisco.umbrella.action}}}"
       if: ctx.cisco?.umbrella?.action != null && ctx.log?.file?.path != null && ctx.log.file.path.contains('intrusionlogs')
   - set:
       field: event.action
-      value: "dlp-{{cisco.umbrella.action}}"
+      value: "dlp-{{{cisco.umbrella.action}}}"
       if: ctx.cisco?.umbrella?.action != null && ctx.log?.file?.path != null && ctx.log.file.path.contains('dlplogs')
   - append:
       field: event.category
@@ -652,37 +652,37 @@ processors:
   ######################
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.ip
-      value: "{{source.nat.ip}}"
+      value: "{{{source.nat.ip}}}"
       allow_duplicates: false
       if: ctx.source?.nat?.ip != null
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
       field: related.hosts
-      value: "{{host.name}}"
+      value: "{{{host.name}}}"
       allow_duplicates: false
       if: ctx.host?.name != null
   - append:
       field: related.hosts
-      value: "{{source.domain}}"
+      value: "{{{source.domain}}}"
       allow_duplicates: false
       if: ctx.source?.domain != null
   - append:
       field: related.hosts
-      value: "{{dns.question.name}}"
+      value: "{{{dns.question.name}}}"
       allow_duplicates: false
       if: ctx.dns?.question?.name != null
   - foreach:
@@ -691,16 +691,16 @@ processors:
       processor:
         append:
           field: related.hosts
-          value: '{{_ingest._value}}'
+          value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
       field: related.hash
-      value: "{{cisco.umbrella.sha_sha256}}"
+      value: "{{{cisco.umbrella.sha_sha256}}}"
       allow_duplicates: false
       if: ctx.cisco?.umbrella?.sha_sha256 != null
   - append:
       field: related.hash
-      value: "{{file.hash.sha256}}"
+      value: "{{{file.hash.sha256}}}"
       allow_duplicates: false
       if: ctx.file?.hash?.sha256 != null
   ###########
