@@ -321,12 +321,7 @@ An example event for `cloud_configuration_finding` looks as following:
 | result.evidence.configuration_path |  | text |
 | result.evidence.current_value |  | text |
 | result.evidence.expected_value |  | text |
-| rule.description | The description of the rule generating the event. | keyword |
-| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
-| rule.name | The name of the rule or signature generating the event. | keyword |
-| rule.reference | Reference URL to additional information about the rule used to generate this event. The URL can point to the vendor's documentation about the rule. If that's not available, it can also be a link to a more general page describing this type of alert. | keyword |
 | rule.remediation |  | keyword |
-| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | wiz.cloud_configuration_finding.analyzed_at |  | date |
 | wiz.cloud_configuration_finding.evidence.cloud_configuration_link |  | text |
