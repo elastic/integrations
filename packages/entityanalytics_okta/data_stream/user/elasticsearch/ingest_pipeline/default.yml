@@ -5,6 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
+  - remove:
+      field: event.action
+      if: ctx.event?.action != "started" && ctx.event?.action != "completed"
+      ignore_missing: true
   - set:
       field: event.kind
       tag: set_event_kind
@@ -207,6 +211,27 @@ processors:
       target_field: entityanalytics_okta.user.type
       tag: rename_user_type
       ignore_missing: true
+  - rename:
+      field: groups
+      target_field: entityanalytics_okta.groups
+      tag: rename_user_groups
+      ignore_missing: true
+  - foreach:
+      field: entityanalytics_okta.groups
+      if: ctx.entityanalytics_okta?.groups != null
+      processor:
+        append:
+          field: user.group.id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: entityanalytics_okta.groups
+      if: ctx.entityanalytics_okta?.groups != null
+      processor:
+        append:
+          field: user.group.name
+          value: '{{{_ingest._value.profile.name}}}'
+          allow_duplicates: false
   - rename:
       field: okta.transitioningToStatus
       target_field: entityanalytics_okta.user.transitioning_to_status

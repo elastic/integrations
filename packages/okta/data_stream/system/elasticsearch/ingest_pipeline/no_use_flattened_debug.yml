@@ -137,6 +137,26 @@ processors:
       target_field: okta.debug_context.debug_data.threat_suspected
       ignore_missing: true
       ignore_failure: true
+  - rename:
+      field: json.debugContext.debugData.clientSecret
+      target_field: okta.debug_context.debug_data.client_secret
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.debugContext.debugData.requestedScopes
+      target_field: okta.debug_context.debug_data.requested_scopes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.debugContext.debugData.grantedScopes
+      target_field: okta.debug_context.debug_data.granted_scopes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.debugContext.debugData.grantType
+      target_field: okta.debug_context.debug_data.grant_type
+      ignore_missing: true
+      ignore_failure: true
   - script:
       lang: painless
       description: Replace spaces and dashes in field names under okta.debug_context.debug_data.
@@ -175,7 +195,7 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        Processor '{{ _ingest.on_failure_processor_type }}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
 

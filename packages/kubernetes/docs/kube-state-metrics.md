@@ -126,7 +126,6 @@ An example event for `state_container` looks as following:
         "dataset": "kubernetes.state_container"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1283,7 +1282,6 @@ An example event for `state_persistentvolume` looks as following:
         "type": "kubernetes"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1519,7 +1517,6 @@ An example event for `state_pod` looks as following:
         "dataset": "kubernetes.state_pod"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1826,7 +1823,6 @@ An example event for `state_resourcequota` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1959,7 +1955,6 @@ An example event for `state_service` looks as following:
         "dataset": "kubernetes.state_service"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2262,7 +2257,6 @@ An example event for `state_storageclass` looks as following:
         "version": "1.5.0"
     }
 }
-
 ```
 
 **Exported fields**

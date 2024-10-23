@@ -16,7 +16,7 @@ processors:
       ignore_missing: true
   - append:
       field: observer.ip
-      value: '{{_tmp_.observer.ip}}'
+      value: '{{{_tmp_.observer.ip}}}'
       if: ctx._tmp_?.observer?.ip != null
   - set:
       field: event.category
@@ -24,6 +24,43 @@ processors:
         - network
         - session
       if: ctx.event?.category != null && ctx.event?.category == "network_session"
+  - append:
+      field: related.ip
+      value: '{{{_tmp_.observer.ip}}}'
+      allow_duplicates: false
+      if: (ctx._tmp_?.observer?.ip != null)
+  - script:
+      description: Collect all related ip addresses
+      tag: script_collect_related_ip
+      lang: painless
+      source: |
+        HashSet set = null;
+        for (key in ctx.netflow.keySet()) {
+            if (key.endsWith("_ipv4_address") || key.endsWith("_ipv6_address")) {
+                // Creating set on demand, avoiding extra garbage
+                if (set == null) {
+                    set = new HashSet();
+                }
+                set.add(ctx.netflow[key]);
+            }
+        }
+
+        if (set != null) {
+            if (ctx.related == null) {
+                ctx.related = new HashMap();
+            }
+            if (ctx.related?.ip != null) {
+                for (ip in ctx.related.ip) {
+                    set.add(ip);
+                }
+            }
+
+            ArrayList list = new ArrayList(set);
+            Collections.sort(list);
+            ctx.related.ip = list;
+        }
+
+      if: ctx.netflow instanceof Map
   - set: 
       field: network.type
       value: ipv4

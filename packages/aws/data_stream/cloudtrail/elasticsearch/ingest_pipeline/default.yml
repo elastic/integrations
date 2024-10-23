@@ -47,6 +47,213 @@ processors:
           return false;
         }
         drop(ctx);
+  # Before renames because some json fields are mutated on the process
+  - script:
+      description: Appends any relevant entity to `related.entity` for all events
+      lang: painless
+      on_failure: 
+        - set:
+            description: Add error reason
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
+      source: |
+        void addFields(Set entities, String[] fields) {
+            for (String field : fields) {
+              addField(entities, field);
+            }
+        }
+
+        void addField(Set entities, String fieldName) {
+          addValue(entities, field(fieldName).get(null));
+        }
+
+        boolean addValues(Set entities, String[] values) {
+            boolean addedAll = true;
+            for (String value : values) {
+              addedAll = addedAll && addValue(entities, value);
+            }
+
+            return addedAll;
+        }
+
+        boolean addValue(Set entities, String value) {
+          if (value == null || value == "") {
+            return false;
+          }
+
+         return entities.add(value);
+        }
+
+        // Using tree set to ensure a sorting is kept (testing purposes)
+        TreeSet entities = new TreeSet();
+
+        addFields(entities, new String[]{
+          "json.userIdentity.accessKeyId",
+          "json.userIdentity.arn",
+          "json.userIdentity.sessionContext.sessionIssuer.arn",
+          "json.userIdentity.identityProvider",
+          "json.userIdentity.principalId",
+          "json.userIdentity.sessionContext.sessionIssuer.userName",
+          "json.userIdentity.sessionContext.webIdFederationData.federatedProvider",
+          "json.userIdentity.userName"
+        });
+        
+        field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(entities, f.ARN));
+
+        String eventSource = field("json.eventSource").get(null);
+
+        if (eventSource == "sts.amazonaws.com") {
+          addFields(entities, new String[]{
+            "json.requestParameters.roleArn",
+            "json.sourceIdentity",
+            "json.additionalEventData.MFAIdentifier",
+            "json.responseElements.assumedRoleUser.arn",
+            "json.requestParameters.roleSessionName",
+            "json.responseElements.accessKeyId"
+          });
+
+        } else if (eventSource == "iam.amazonaws.com") {
+          addFields(entities, new String[]{
+            "json.requestParameters.userName",
+            "json.requestParameters.accessKeyId",
+            "json.requestParameters.policyArn",
+            "json.requestParameters.roleName",
+            "json.requestParameters.policyName",
+            "json.requestParameters.serialNumber",
+            "json.responseElements.accessKey.userName",
+            "json.responseElements.accessKey.accessKeyId",
+            "json.responseElements.user.arn",
+            "json.responseElements.user.userId",
+            "json.responseElements.user.userName",
+            "json.responseElements.userId",
+            "json.responseElements.role.arn",
+            "json.responseElements.serialNumber"
+          });
+
+        } else if (eventSource == "ec2.amazonaws.com") {
+          addFields(entities, new String[]{
+            "json.requestParameters.groupId",
+            "json.requestParameters.groupName",
+            "json.requestParameters.roleName",
+            "json.requestParameters.subnetId",
+            "json.requestParameters.volumeId",
+            "json.requestParameters.networkInterfaceId",
+            "json.requestParameters.vpcId",
+            "json.requestParameters.snapshotId",
+            "json.responseElements.groupId",
+            "json.responseElements.reservationId",
+            "json.responseElements.vpc.vpcId",
+            "json.responseElements.vpc.dhcpOptionsId",
+            "json.responseElements.snapshotId",
+            "json.responseElements.volumeId"
+          });
+          
+          field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
+            addValues(entities, new String[]{
+              i.groupId,
+              i.referencedGroupInfo?.groupId,
+              i.securityGroupRuleId
+            });
+          });
+
+          field("json.responseElements.groupSet.items").get(new ArrayList()).stream().forEach(i -> {
+            addValue(entities, i.groupId);
+          });
+
+          field("json.requestParameters.groupSet.items").get(new ArrayList()).stream().forEach(i -> {
+            addValue(entities, i.groupId);
+          });
+
+          field("json.requestParameters.instancesSet.items").get(new ArrayList()).stream().forEach(i -> {
+            addValue(entities, i.instanceId);
+          });
+
+          field("json.responseElements.instancesSet.items").get(new ArrayList()).stream().forEach(instances -> {
+            addValues(entities, new String[]{
+              instances.subnetId,
+              instances.vpcId,
+              instances.instanceId,
+              instances.imageId,
+              instances.iamInstanceProfile?.arn
+            });
+
+            instances.networkInterfaceSet?.items?.stream().forEach(networks -> {
+              addValues(entities, new String[]{
+                networks.networkInterfaceId,
+                networks.vpcId,
+                networks.subnetId
+              });
+
+              networks.groupSet?.items?.stream().forEach(group -> {
+                addValue(entities, group.groupId);
+              });
+            });
+          });
+
+          field("json.requestParameters.revokedSecurityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
+            addValues(entities, new String[]{
+              i.securityGroupRuleId, 
+              i.groupId
+            });
+          });
+
+        } else if (eventSource == "s3.amazonaws.com") {
+          addField(entities, "json.requestParameters.bucketName");
+        
+        } else if (eventSource == "cloudtrail.amazonaws.com") {
+          addFields(entities, new String[]{
+            "json.requestParameters.name",
+            "json.requestParameters.s3BucketName",
+            "json.responseElements.cloudWatchLogsLogGroupArn",
+            "json.responseElements.cloudWatchLogsRoleArn",
+            "json.responseElements.kmsKeyId",
+            "json.responseElements.snsTopicARN",
+            "json.responseElements.trailARN",
+            "json.responseElements.name"
+          });
+        
+        } else if (eventSource == "kms.amazonaws.com") {
+          addFields(entities, new String[]{
+            "json.requestParameters.keyId",
+            "json.responseElements.keyId",
+            "json.responseElements.keyMetadata.arn",
+            "json.responseElements.keyMetadata.keyId"
+          });
+        
+        } else if (eventSource == "config.amazonaws.com") {
+          addField(entities, "json.requestParameters.configurationRecorderName");
+        
+        } else if (eventSource == "lambda.amazonaws.com") {
+          addFields(entities, new String[]{
+            "json.requestParameters.functionName",
+            "json.responseElements.functionArn",
+            "json.responseElements.functionName",
+            "json.responseElements.role",
+            "json.responseElements.vpcConfig.securityGroupIds",
+            "json.responseElements.vpcConfig.subnetIds"
+          });
+
+        } else if (eventSource == "rds.amazonaws.com") {
+          addFields(entities, new String[]{
+            "json.requestParameters.dBInstanceIdentifier",
+            "json.requestParameters.dBInstanceArn",
+            "json.responseElements.dBInstanceIdentifier",
+            "json.responseElements.dbInstanceArn",
+            "json.responseElements.dBSubnetGroup.vpcId",
+            "json.responseElements.vpcSecurityGroups.vpcSecurityGroupId"
+          });
+
+          field("json.responseElements.dBSubnetGroup.subnets").get(new ArrayList()).stream().forEach(i -> {
+            addValue(entities, i.subnetIdentifier);
+          });
+
+          field("json.responseElements.vpcSecurityGroups").get(new ArrayList()).stream().forEach(i -> {
+            addValue(entities, i.vpcSecurityGroupId);
+          });
+        }
+        
+        field("related.entity").set(entities);
+        
   - rename:
       field: json.eventVersion
       target_field: aws.cloudtrail.event_version
@@ -779,13 +986,13 @@ processors:
   - remove:
       field: json
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

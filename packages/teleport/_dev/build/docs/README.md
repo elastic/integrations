@@ -16,13 +16,32 @@ by time, as well as such data points as the geographical location of clients and
 
 ## Data streams
 
-The data stream `audit` provides events from Teleport audit logs.
+The `teleport` integration collects the following logs:
+
+- **audit** provides events from Teleport audit logs.
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack
-on your own hardware.
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+
+### Installing and managing an Elastic Agent:
+
+There are several options for installing and managing Elastic Agent:
+
+### Install a Fleet-managed Elastic Agent (recommended):
+
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+
+### Install Elastic Agent in standalone mode (advanced users):
+
+With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
+
+### Install Elastic Agent in a containerized environment:
+
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
+
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+
 
 ## Setup
 
@@ -31,6 +50,14 @@ to make it send audit logs to the Elasticsearch instance.
 
 See the {{ url "getting-started-observability" "Getting started guide" }} for instructions on setting up the Elastic Stack.
 
+### Enabling the integration in Elastic:
+
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `Teleport`.
+3. Select the "Teleport" integration from the search results.
+4. Select "Add Teleport" to add the integration.
+5. Add all the required integration configuration parameters, including Paths.
+6. Select "Save and continue" to save the integration.
 
 
 ## Reference

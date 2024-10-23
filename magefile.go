@@ -166,6 +166,11 @@ func ReportFailedTests(testResultsFolder string) error {
 		}
 	}
 
+	logsDBEnabled := false
+	if v, found := os.LookupEnv("STACK_LOGSDB_ENABLED"); found && v == "true" {
+		logsDBEnabled = true
+	}
+
 	maxIssuesString := os.Getenv("CI_MAX_TESTS_REPORTED")
 	maxIssues := defaultMaximumTestsReported
 	if maxIssuesString != "" {
@@ -176,6 +181,14 @@ func ReportFailedTests(testResultsFolder string) error {
 		}
 	}
 
-	mg.Deps(mg.F(testsreporter.Check, testResultsFolder, buildURL, stackVersion, serverless, serverlessProjectEnv, defaultPreviousLinksNumber, maxIssues))
-	return nil
+	options := testsreporter.CheckOptions{
+		Serverless:        serverless,
+		ServerlessProject: serverlessProjectEnv,
+		LogsDB:            logsDBEnabled,
+		StackVersion:      stackVersion,
+		BuildURL:          buildURL,
+		MaxPreviousLinks:  defaultPreviousLinksNumber,
+		MaxTestsReported:  maxIssues,
+	}
+	return testsreporter.Check(testResultsFolder, options)
 }
