@@ -24,8 +24,7 @@ redact:
     - client_secret
 program: |
   (
-    has(state.expiry) && timestamp(state.expiry) > now
-    ?
+    has(state.expiry) && timestamp(state.expiry) > now ?
       state
     :
       state.with(
@@ -66,7 +65,7 @@ program: |
         "end_date": now.format(time_layout.RFC3339),
       })
   ).as(state,
-    has(state.events) && type(state.events) == type({}) && has(state.events.error) ? state : // Exit early due to POST failure.
+    type(state.?events.orValue(null)) == type({}) ? state : // Exit early due to POST failure.
       state.with(
         post_request(
           state.url.trim_right("/") + "/app/hec-api/v1.0/event/query", "application/json", {

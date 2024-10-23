@@ -52,12 +52,20 @@ processors:
       field: event.category
       tag: append_malware_into_event_category
       value: malware
-      if: ctx.json?.type != null && ['malware', 'suspicious malware'].contains(ctx.json.type.toLowerCase())
+      if: >-
+        ctx.json?.type != null && (
+          ctx.json.type.equalsIgnoreCase('malware') ||
+          ctx.json.type.equalsIgnoreCase('suspicious malware')
+        )
   - append:
       field: event.category
       tag: append_threat_into_event_category
       value: threat
-      if: ctx.json?.type != null && ['anomaly', 'shadow_it'].contains(ctx.json.type.toLowerCase())
+      if: >-
+        ctx.json?.type != null && (
+          ctx.json.type.equalsIgnoreCase('anomaly') ||
+          ctx.json.type.equalsIgnoreCase('shadow_it')
+        )
   - append:
       field: event.type
       tag: append_info_into_event_type
@@ -70,7 +78,7 @@ processors:
   - set:
       field: observer.vendor
       tag: set_observer_vendor
-      value: Checkpoint
+      value: Check Point
   - set:
       field: observer.product
       tag: set_observer_product
@@ -334,7 +342,10 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind

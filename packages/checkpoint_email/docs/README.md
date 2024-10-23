@@ -1,8 +1,8 @@
-# Checkpoint Harmony Email & Collaboration
+# Check Point Harmony Email & Collaboration
 
 Check Point's [Harmony Email & Collaboration](https://www.checkpoint.com/harmony/email-security/) monitors traffic across email platforms (Office 365, Gmail), file sharing services (OneDrive, SharePoint, Google Drive, Dropbox, Box, and Citrix ShareFile), and messaging applications (Teams and Slack). It scans emails, files, and messages for malware, DLP, and phishing indicators, and intercepts & quarantines potentially malicious emails before they are delivered.
 
-The Checkpoint Harmony Email & Collaboration integration collects security event logs using REST API.
+The Check Point Harmony Email & Collaboration integration collects security event logs using REST API.
 
 ## Data streams
 
@@ -30,7 +30,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
 ## Setup
 
@@ -51,9 +51,9 @@ For more details, see [Documentation](https://sc1.checkpoint.com/documents/Infin
 ### Enabling the integration in Elastic:
 
 1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Checkpoint Harmony Email & Collaboration`.
-3. Select the "Checkpoint Harmony Email & Collaboration" integration from the search results.
-4. Select "Add Checkpoint Harmony Email & Collaboration" to add the integration.
+2. In "Search for integrations" top bar, search for `Check Point Harmony Email & Collaboration`.
+3. Select the "Check Point Harmony Email & Collaboration" integration from the search results.
+4. Select "Add Check Point Harmony Email & Collaboration" to add the integration.
 5. Add all the required integration configuration parameters, including the URL, Client ID, Client Secret, Interval, and Initial Interval, to enable data collection.
 6. Select "Save and continue" to save the integration.
 
@@ -71,86 +71,88 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-10-15T09:47:06.592Z",
+    "@timestamp": "2024-10-14T07:02:11.229Z",
     "agent": {
-        "ephemeral_id": "383c0b41-e3ee-4815-80ba-61c86f898a35",
-        "id": "14d531c1-4237-458c-ae16-81de8a83f9df",
-        "name": "elastic-agent-26267",
+        "ephemeral_id": "f78244ff-f95d-4db7-a44a-8fbd2ee09f05",
+        "id": "1af139f3-291e-487c-9ca6-540f323ca6d4",
+        "name": "elastic-agent-93190",
         "type": "filebeat",
         "version": "8.15.0"
     },
     "checkpoint_email": {
         "event": {
-            "confidence_indicator": "malicious",
-            "created": "2024-10-15T09:47:06.592Z",
-            "customer_id": "elasticteam",
-            "data": "#{\"entity_id\": \"ad6ada66e6fabcdefabcdefc240dd9d0\", \"entity_type\": \"avanan_ap_scan\", \"label\": \"Phishing\"} attempt detected in an email from #{\"entity_id\": null, \"entity_type\": \"google_user\", \"disable_link\": true, \"label\": \"google-support@webnotifications.net\"} - '#{\"entity_id\": \"ad6ada66e6fabcdefabcdefc240dd9d0\", \"entity_type\": \"google_mail_email\", \"label\": \"Office Holiday Party - Folder Share\"}' (#{\"entity_id\": \"113310123456789535444\", \"entity_type\": \"google_user\", \"label\": \"team@example.com\"}'s mailbox)",
-            "description": "Phishing attempt detected in an email from google-support@webnotifications.net - 'Office Holiday Party - Folder Share' (team@example.com's mailbox)",
-            "entity_id": "ad6ada66e6fabcdefabcdefc240dd9d0",
-            "entity_link": "https://in.portal.checkpoint.com/dashboard/email&collaboration/CGS1?route=cHJvZmlsZsdverberGRTHTYJbgbrtHYNRTGbdfbtryrtM2YyNTlkYTY0MmMyNDBkZDlkMA==",
-            "id": "13007abcdef01234567896d00f44a7dd4",
+            "confidence_indicator": "detected",
+            "created": "2024-10-14T07:02:11.229Z",
+            "customer_id": "exampletest",
+            "data": "#{\"entity_id\": \"a6d8674a04c30123456789e4d3ebd98\", \"entity_type\": \"google_mail_email\", \"label\": \"Shadow IT\"} - #{\"entity_id\": \"113012345678906535444\", \"entity_type\": \"google_user\", \"label\": \"john@example.com\"} is using #{\"entity_id\": \"google.com\", \"entity_type\": \"av_dns_info\", \"label\": \"google.com (Search Engine)\"}",
+            "description": "Shadow IT - john@example.com is using google.com (Search Engine)",
+            "entity_id": "25e0c50123456789e351b0dafa6aafa6",
+            "entity_link": "https://in.portal.checkpoint.com/dashboard/email&collaboration/CGS1?route=cHJvZmlsZS9nsfhvbksdvnjhvdfVBsdbdfFbdbdBDBBdbrtHyujYJNtnhtnhtnOTIxZTM1MWIwZGFmYTZhYWZhNg==",
+            "id": "a6d8674a04c30123456789e4d3ebd98",
             "saas": "google_mail",
-            "sender_address": "google-support@webnotifications.net",
-            "severity": 4,
-            "severity_enum": "High",
-            "state": "new",
-            "type": "phishing"
+            "sender_address": "google-workspace-alerts-noreply@google.com",
+            "severity": 3,
+            "severity_enum": "Medium",
+            "state": "pending",
+            "type": "shadow_it"
         }
     },
     "data_stream": {
         "dataset": "checkpoint_email.event",
-        "namespace": "61276",
+        "namespace": "76344",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "14d531c1-4237-458c-ae16-81de8a83f9df",
+        "id": "1af139f3-291e-487c-9ca6-540f323ca6d4",
         "snapshot": false,
         "version": "8.15.0"
     },
     "email": {
         "sender": {
-            "address": "google-support@webnotifications.net"
+            "address": "google-workspace-alerts-noreply@google.com"
         }
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "email"
+            "email",
+            "threat"
         ],
-        "created": "2024-10-15T09:47:06.592Z",
+        "created": "2024-10-14T07:02:11.229Z",
         "dataset": "checkpoint_email.event",
-        "id": "13007abcdef01234567896d00f44a7dd4",
-        "ingested": "2024-10-17T07:32:27Z",
+        "id": "a6d8674a04c30123456789e4d3ebd98",
+        "ingested": "2024-10-22T09:39:03Z",
         "kind": "alert",
-        "original": "{\"actions\":[],\"additionalData\":null,\"availableEventActions\":null,\"confidenceIndicator\":\"malicious\",\"customerId\":\"elasticteam\",\"data\":\"#{\\\"entity_id\\\": \\\"ad6ada66e6fabcdefabcdefc240dd9d0\\\", \\\"entity_type\\\": \\\"avanan_ap_scan\\\", \\\"label\\\": \\\"Phishing\\\"} attempt detected in an email from #{\\\"entity_id\\\": null, \\\"entity_type\\\": \\\"google_user\\\", \\\"disable_link\\\": true, \\\"label\\\": \\\"google-support@webnotifications.net\\\"} - '#{\\\"entity_id\\\": \\\"ad6ada66e6fabcdefabcdefc240dd9d0\\\", \\\"entity_type\\\": \\\"google_mail_email\\\", \\\"label\\\": \\\"Office Holiday Party - Folder Share\\\"}' (#{\\\"entity_id\\\": \\\"113310123456789535444\\\", \\\"entity_type\\\": \\\"google_user\\\", \\\"label\\\": \\\"team@example.com\\\"}'s mailbox)\",\"description\":\"Phishing attempt detected in an email from google-support@webnotifications.net - 'Office Holiday Party - Folder Share' (team@example.com's mailbox)\",\"entityId\":\"ad6ada66e6fabcdefabcdefc240dd9d0\",\"entityLink\":\"https://in.portal.checkpoint.com/dashboard/email\\u0026collaboration/CGS1?route=cHJvZmlsZsdverberGRTHTYJbgbrtHYNRTGbdfbtryrtM2YyNTlkYTY0MmMyNDBkZDlkMA==\",\"eventCreated\":\"2024-10-15T09:47:06.592720+00:00\",\"eventId\":\"13007abcdef01234567896d00f44a7dd4\",\"saas\":\"google_mail\",\"senderAddress\":\"google-support@webnotifications.net\",\"severity\":\"4\",\"state\":\"new\",\"type\":\"phishing\"}",
-        "severity": 4,
+        "original": "{\"actions\":[],\"additionalData\":null,\"availableEventActions\":null,\"confidenceIndicator\":\"detected\",\"customerId\":\"exampletest\",\"data\":\"#{\\\"entity_id\\\": \\\"a6d8674a04c30123456789e4d3ebd98\\\", \\\"entity_type\\\": \\\"google_mail_email\\\", \\\"label\\\": \\\"Shadow IT\\\"} - #{\\\"entity_id\\\": \\\"113012345678906535444\\\", \\\"entity_type\\\": \\\"google_user\\\", \\\"label\\\": \\\"john@example.com\\\"} is using #{\\\"entity_id\\\": \\\"google.com\\\", \\\"entity_type\\\": \\\"av_dns_info\\\", \\\"label\\\": \\\"google.com (Search Engine)\\\"}\",\"description\":\"Shadow IT - john@example.com is using google.com (Search Engine)\",\"entityId\":\"25e0c50123456789e351b0dafa6aafa6\",\"entityLink\":\"https://in.portal.checkpoint.com/dashboard/email\\u0026collaboration/CGS1?route=cHJvZmlsZS9nsfhvbksdvnjhvdfVBsdbdfFbdbdBDBBdbrtHyujYJNtnhtnhtnOTIxZTM1MWIwZGFmYTZhYWZhNg==\",\"eventCreated\":\"2024-10-14T07:02:11.229935+00:00\",\"eventId\":\"a6d8674a04c30123456789e4d3ebd98\",\"saas\":\"google_mail\",\"senderAddress\":\"google-workspace-alerts-noreply@google.com\",\"severity\":\"3\",\"state\":\"pending\",\"type\":\"shadow_it\"}",
+        "severity": 3,
         "type": [
-            "info"
+            "info",
+            "indicator"
         ],
-        "url": "https://in.portal.checkpoint.com/dashboard/email&collaboration/CGS1?route=cHJvZmlsZsdverberGRTHTYJbgbrtHYNRTGbdfbtryrtM2YyNTlkYTY0MmMyNDBkZDlkMA=="
+        "url": "https://in.portal.checkpoint.com/dashboard/email&collaboration/CGS1?route=cHJvZmlsZS9nsfhvbksdvnjhvdfVBsdbdfFbdbdBDBBdbrtHyujYJNtnhtnhtnOTIxZTM1MWIwZGFmYTZhYWZhNg=="
     },
     "input": {
         "type": "cel"
     },
-    "message": "Phishing attempt detected in an email from google-support@webnotifications.net - 'Office Holiday Party - Folder Share' (team@example.com's mailbox)",
+    "message": "Shadow IT - john@example.com is using google.com (Search Engine)",
     "observer": {
         "product": "Harmony Email & Collaboration",
-        "vendor": "Checkpoint"
+        "vendor": "Check Point"
     },
     "organization": {
-        "name": "elasticteam"
+        "name": "exampletest"
     },
     "related": {
         "user": [
-            "google-support@webnotifications.net"
+            "google-workspace-alerts-noreply@google.com"
         ]
     },
     "source": {
         "user": {
-            "email": "google-support@webnotifications.net"
+            "email": "google-workspace-alerts-noreply@google.com"
         }
     },
     "tags": [

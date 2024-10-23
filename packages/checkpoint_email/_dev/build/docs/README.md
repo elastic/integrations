@@ -1,8 +1,8 @@
-# Checkpoint Harmony Email & Collaboration
+# Check Point Harmony Email & Collaboration
 
 Check Point's [Harmony Email & Collaboration](https://www.checkpoint.com/harmony/email-security/) monitors traffic across email platforms (Office 365, Gmail), file sharing services (OneDrive, SharePoint, Google Drive, Dropbox, Box, and Citrix ShareFile), and messaging applications (Teams and Slack). It scans emails, files, and messages for malware, DLP, and phishing indicators, and intercepts & quarantines potentially malicious emails before they are delivered.
 
-The Checkpoint Harmony Email & Collaboration integration collects security event logs using REST API.
+The Check Point Harmony Email & Collaboration integration collects security event logs using REST API.
 
 ## Data streams
 
@@ -30,7 +30,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
 ## Setup
 
@@ -51,9 +51,9 @@ For more details, see [Documentation](https://sc1.checkpoint.com/documents/Infin
 ### Enabling the integration in Elastic:
 
 1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Checkpoint Harmony Email & Collaboration`.
-3. Select the "Checkpoint Harmony Email & Collaboration" integration from the search results.
-4. Select "Add Checkpoint Harmony Email & Collaboration" to add the integration.
+2. In "Search for integrations" top bar, search for `Check Point Harmony Email & Collaboration`.
+3. Select the "Check Point Harmony Email & Collaboration" integration from the search results.
+4. Select "Add Check Point Harmony Email & Collaboration" to add the integration.
 5. Add all the required integration configuration parameters, including the URL, Client ID, Client Secret, Interval, and Initial Interval, to enable data collection.
 6. Select "Save and continue" to save the integration.
 
