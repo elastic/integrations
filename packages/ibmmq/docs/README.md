@@ -28,7 +28,7 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`. The ibmmq `qmgr` data stream is compatible with a containerized distribution of IBM MQ (since version 9.1.0).
+This integration has been tested against IBM MQ v9.1 and IBM MQ v9.2. The ibmmq qmgr data stream is currently only compatible with a [containerized distribution of IBM MQ](https://hub.docker.com/r/ibmcom/mq). 
 
 ## Prerequisites
 
