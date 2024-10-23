@@ -550,7 +550,10 @@
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31",
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
-                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2"
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X5"
                                             ],
                                             "columns": {
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31": {
@@ -566,11 +569,11 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "last_value(haproxy.stat.session.total, kql='haproxy.stat.component_type : 0')/last_value(haproxy.stat.session.total,kql='haproxy.stat.session.total : * and NOT haproxy.stat.session.total : 0')",
+                                                        "formula": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)/pick_max((defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)),1)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2"
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X5"
                                                     ],
                                                     "scale": "ratio"
                                                 },
@@ -582,7 +585,7 @@
                                                         "query": "haproxy.stat.component_type : 0"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Frontend Sessions",
+                                                    "label": "Part of  ",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -595,10 +598,10 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "haproxy.stat.session.total : * and NOT haproxy.stat.session.total : 0"
+                                                        "query": "haproxy.stat.component_type : 0"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Frontend Sessions",
+                                                    "label": "Part of  ",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -609,27 +612,176 @@
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31X2": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 1"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of Frontend Sessions",
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 2"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 3"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
                                                             "args": [
-                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
-                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1"
+                                                                {
+                                                                    "args": [
+                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                                        0
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 88,
+                                                                        "min": 0
+                                                                    },
+                                                                    "name": "defaults",
+                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)",
+                                                                    "type": "function"
+                                                                },
+                                                                {
+                                                                    "args": [
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                                                                        0
+                                                                                                    ],
+                                                                                                    "location": {
+                                                                                                        "max": 187,
+                                                                                                        "min": 99
+                                                                                                    },
+                                                                                                    "name": "defaults",
+                                                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)",
+                                                                                                    "type": "function"
+                                                                                                },
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                                                                        0
+                                                                                                    ],
+                                                                                                    "location": {
+                                                                                                        "max": 276,
+                                                                                                        "min": 188
+                                                                                                    },
+                                                                                                    "name": "defaults",
+                                                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)",
+                                                                                                    "type": "function"
+                                                                                                }
+                                                                                            ],
+                                                                                            "name": "add",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        {
+                                                                                            "args": [
+                                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                                                                0
+                                                                                            ],
+                                                                                            "location": {
+                                                                                                "max": 365,
+                                                                                                "min": 277
+                                                                                            },
+                                                                                            "name": "defaults",
+                                                                                            "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)",
+                                                                                            "type": "function"
+                                                                                        }
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                {
+                                                                                    "args": [
+                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X4",
+                                                                                        0
+                                                                                    ],
+                                                                                    "location": {
+                                                                                        "max": 454,
+                                                                                        "min": 366
+                                                                                    },
+                                                                                    "name": "defaults",
+                                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)",
+                                                                                    "type": "function"
+                                                                                }
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 455,
+                                                                                "min": 98
+                                                                            },
+                                                                            "name": "add",
+                                                                            "text": "(defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0))",
+                                                                            "type": "function"
+                                                                        },
+                                                                        1
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 458,
+                                                                        "min": 89
+                                                                    },
+                                                                    "name": "pick_max",
+                                                                    "text": "pick_max((defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)),1)",
+                                                                    "type": "function"
+                                                                }
                                                             ],
                                                             "location": {
-                                                                "max": 192,
+                                                                "max": 458,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "last_value(haproxy.stat.session.total, kql='haproxy.stat.component_type : 0')/last_value(haproxy.stat.session.total,kql='haproxy.stat.session.total : * and NOT haproxy.stat.session.total : 0')",
+                                                            "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)/pick_max((defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)),1)",
                                                             "type": "function"
                                                         }
                                                     },
                                                     "references": [
                                                         "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
-                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1"
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X4"
                                                     ],
                                                     "scale": "ratio"
                                                 }
@@ -683,7 +835,12 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+                                "name": "indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "c8eb44c1-70db-4071-a0fb-78f1ce81d963",
                                 "type": "index-pattern"
                             }
                         ],
@@ -692,30 +849,29 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "90387c3b-e223-4e31-96f0-1e1d82ebccc3": {
+                                        "93f9026a-b7e6-4055-98c1-5c5a4462e13f": {
                                             "columnOrder": [
-                                                "db386114-db80-4bfe-a8fb-405ae524ba91",
-                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99",
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf",
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
                                             ],
                                             "columns": {
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf": {
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Sessions",
+                                                    "label": "Total Sessions",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "formula": "last_value(haproxy.stat.session.total, kql='\"haproxy.stat.session.total\": *')",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                                        "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
                                                     ],
                                                     "scale": "ratio"
                                                 },
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0": {
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
@@ -723,7 +879,7 @@
                                                         "query": "\"haproxy.stat.session.total\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Frontend Sessions",
+                                                    "label": "Part of Total Sessions",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -731,23 +887,11 @@
                                                     "scale": "ratio",
                                                     "sourceField": "haproxy.stat.session.total"
                                                 },
-                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": true,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "db386114-db80-4bfe-a8fb-405ae524ba91": {
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of haproxy.stat.proxy.name",
+                                                    "label": "Proxy Name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -764,7 +908,7 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 10
+                                                        "size": 5
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "haproxy.stat.proxy.name"
@@ -792,7 +936,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "haproxy.stat.component_type",
-                                        "index": "2f796a22-4db8-4070-98cc-0e6dd56cd2b6",
+                                        "index": "c8eb44c1-70db-4071-a0fb-78f1ce81d963",
                                         "key": "haproxy.stat.component_type",
                                         "negate": false,
                                         "params": {
@@ -813,63 +957,39 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
+                                "columns": [
                                     {
-                                        "accessors": [
-                                            "2d0e78c6-a236-4de1-bda4-051cea39afcf"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "90387c3b-e223-4e31-96f0-1e1d82ebccc3",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "splitAccessor": "db386114-db80-4bfe-a8fb-405ae524ba91",
-                                        "xAccessor": "9f0c7a11-267f-4a75-b227-aefba75d1c99"
+                                        "alignment": "left",
+                                        "columnId": "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "layerId": "93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 7,
-                    "i": "dbd56fd3-437c-4f70-b753-f591f4a7675d",
+                    "i": "e00b17af-9003-4b5a-ae7d-66880865a677",
                     "w": 38,
                     "x": 10,
                     "y": 0
                 },
-                "panelIndex": "dbd56fd3-437c-4f70-b753-f591f4a7675d",
-                "title": "Frontend sessions over time",
+                "panelIndex": "e00b17af-9003-4b5a-ae7d-66880865a677",
+                "title": "Total frontend sessions",
                 "type": "lens"
             },
             {
@@ -886,14 +1006,16 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "dbd66631-77e1-42c2-a45e-b5aee2124e6f": {
                                             "columnOrder": [
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31",
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
-                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2"
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X5"
                                             ],
                                             "columns": {
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31": {
@@ -909,11 +1031,11 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "last_value(haproxy.stat.session.total, kql='haproxy.stat.component_type : 1')/last_value(haproxy.stat.session.total,kql='haproxy.stat.session.total : * and NOT haproxy.stat.session.total : 0')",
+                                                        "formula": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)/pick_max((defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)),1)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2"
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X5"
                                                     ],
                                                     "scale": "ratio"
                                                 },
@@ -925,7 +1047,7 @@
                                                         "query": "haproxy.stat.component_type : 1"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Backend Sessions",
+                                                    "label": "Part of  ",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -938,10 +1060,10 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "haproxy.stat.session.total : * and NOT haproxy.stat.session.total : 0"
+                                                        "query": "haproxy.stat.component_type : 0"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Backend Sessions",
+                                                    "label": "Part of  ",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -952,34 +1074,182 @@
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31X2": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 1"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of Backend Sessions",
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 2"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 3"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
                                                             "args": [
-                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
-                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1"
+                                                                {
+                                                                    "args": [
+                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                                        0
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 88,
+                                                                        "min": 0
+                                                                    },
+                                                                    "name": "defaults",
+                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)",
+                                                                    "type": "function"
+                                                                },
+                                                                {
+                                                                    "args": [
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                                                                        0
+                                                                                                    ],
+                                                                                                    "location": {
+                                                                                                        "max": 187,
+                                                                                                        "min": 99
+                                                                                                    },
+                                                                                                    "name": "defaults",
+                                                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)",
+                                                                                                    "type": "function"
+                                                                                                },
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                                                                        0
+                                                                                                    ],
+                                                                                                    "location": {
+                                                                                                        "max": 276,
+                                                                                                        "min": 188
+                                                                                                    },
+                                                                                                    "name": "defaults",
+                                                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)",
+                                                                                                    "type": "function"
+                                                                                                }
+                                                                                            ],
+                                                                                            "name": "add",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        {
+                                                                                            "args": [
+                                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                                                                0
+                                                                                            ],
+                                                                                            "location": {
+                                                                                                "max": 365,
+                                                                                                "min": 277
+                                                                                            },
+                                                                                            "name": "defaults",
+                                                                                            "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)",
+                                                                                            "type": "function"
+                                                                                        }
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                {
+                                                                                    "args": [
+                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X4",
+                                                                                        0
+                                                                                    ],
+                                                                                    "location": {
+                                                                                        "max": 454,
+                                                                                        "min": 366
+                                                                                    },
+                                                                                    "name": "defaults",
+                                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)",
+                                                                                    "type": "function"
+                                                                                }
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 455,
+                                                                                "min": 98
+                                                                            },
+                                                                            "name": "add",
+                                                                            "text": "(defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0))",
+                                                                            "type": "function"
+                                                                        },
+                                                                        1
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 458,
+                                                                        "min": 89
+                                                                    },
+                                                                    "name": "pick_max",
+                                                                    "text": "pick_max((defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)),1)",
+                                                                    "type": "function"
+                                                                }
                                                             ],
                                                             "location": {
-                                                                "max": 192,
+                                                                "max": 458,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "last_value(haproxy.stat.session.total, kql='haproxy.stat.component_type : 1')/last_value(haproxy.stat.session.total,kql='haproxy.stat.session.total : * and NOT haproxy.stat.session.total : 0')",
+                                                            "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)/pick_max((defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)),1)",
                                                             "type": "function"
                                                         }
                                                     },
                                                     "references": [
                                                         "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
-                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1"
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X4"
                                                     ],
                                                     "scale": "ratio"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1027,12 +1297,12 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+                                "name": "indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "4ffeca0f-fa04-4243-95c6-7df79bb12c9d",
+                                "name": "56252758-15fc-4e82-9394-915dff0cc97a",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1041,30 +1311,29 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "90387c3b-e223-4e31-96f0-1e1d82ebccc3": {
+                                        "93f9026a-b7e6-4055-98c1-5c5a4462e13f": {
                                             "columnOrder": [
-                                                "db386114-db80-4bfe-a8fb-405ae524ba91",
-                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99",
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf",
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
                                             ],
                                             "columns": {
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf": {
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Sessions",
+                                                    "label": "Total Sessions",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "formula": "last_value(haproxy.stat.session.total, kql='\"haproxy.stat.session.total\": *')",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                                        "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
                                                     ],
                                                     "scale": "ratio"
                                                 },
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0": {
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
@@ -1072,7 +1341,7 @@
                                                         "query": "\"haproxy.stat.session.total\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Backend Sessions",
+                                                    "label": "Part of Total Sessions",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -1080,23 +1349,11 @@
                                                     "scale": "ratio",
                                                     "sourceField": "haproxy.stat.session.total"
                                                 },
-                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": true,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "db386114-db80-4bfe-a8fb-405ae524ba91": {
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of haproxy.stat.proxy.name",
+                                                    "label": "Proxy Name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1113,7 +1370,7 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 10
+                                                        "size": 5
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "haproxy.stat.proxy.name"
@@ -1141,7 +1398,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "haproxy.stat.component_type",
-                                        "index": "4ffeca0f-fa04-4243-95c6-7df79bb12c9d",
+                                        "index": "56252758-15fc-4e82-9394-915dff0cc97a",
                                         "key": "haproxy.stat.component_type",
                                         "negate": false,
                                         "params": {
@@ -1162,63 +1419,38 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
+                                "columns": [
                                     {
-                                        "accessors": [
-                                            "2d0e78c6-a236-4de1-bda4-051cea39afcf"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "90387c3b-e223-4e31-96f0-1e1d82ebccc3",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "splitAccessor": "db386114-db80-4bfe-a8fb-405ae524ba91",
-                                        "xAccessor": "9f0c7a11-267f-4a75-b227-aefba75d1c99"
+                                        "columnId": "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "layerId": "93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 7,
-                    "i": "c51823fc-5612-46fc-8ac5-fa63522a5bc9",
+                    "i": "7291ce7a-10fe-4e60-a18d-46f8bdafbc42",
                     "w": 38,
                     "x": 10,
                     "y": 7
                 },
-                "panelIndex": "c51823fc-5612-46fc-8ac5-fa63522a5bc9",
-                "title": "Backend sessions over time",
+                "panelIndex": "7291ce7a-10fe-4e60-a18d-46f8bdafbc42",
+                "title": "Total backend sessions ",
                 "type": "lens"
             },
             {
@@ -1241,7 +1473,11 @@
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31",
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
-                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2"
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X5",
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X6"
                                             ],
                                             "columns": {
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31": {
@@ -1257,11 +1493,11 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "last_value(haproxy.stat.session.total, kql='haproxy.stat.component_type : 2 or 3')/last_value(haproxy.stat.session.total,kql='haproxy.stat.session.total : * and NOT haproxy.stat.session.total : 0')",
+                                                        "formula": "(defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0))/pick_max((defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)),1)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2"
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X6"
                                                     ],
                                                     "scale": "ratio"
                                                 },
@@ -1270,7 +1506,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "haproxy.stat.component_type : 2 or 3"
+                                                        "query": "haproxy.stat.component_type : 2"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of  ",
@@ -1286,7 +1522,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "haproxy.stat.session.total : * and NOT haproxy.stat.session.total : 0"
+                                                        "query": "haproxy.stat.component_type : 3"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of  ",
@@ -1300,27 +1536,217 @@
                                                 "8b56f02f-04a0-4f62-94ce-b1b894831e31X2": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 0"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 1"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 2"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "haproxy.stat.component_type : 3"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "haproxy.stat.session.total"
+                                                },
+                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Part of  ",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
                                                             "args": [
-                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
-                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1"
+                                                                {
+                                                                    "args": [
+                                                                        {
+                                                                            "args": [
+                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
+                                                                                0
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 89,
+                                                                                "min": 1
+                                                                            },
+                                                                            "name": "defaults",
+                                                                            "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)",
+                                                                            "type": "function"
+                                                                        },
+                                                                        {
+                                                                            "args": [
+                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                                                0
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 178,
+                                                                                "min": 90
+                                                                            },
+                                                                            "name": "defaults",
+                                                                            "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)",
+                                                                            "type": "function"
+                                                                        }
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 178,
+                                                                        "min": 1
+                                                                    },
+                                                                    "name": "add",
+                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)",
+                                                                    "type": "function"
+                                                                },
+                                                                {
+                                                                    "args": [
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        {
+                                                                                            "args": [
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                                                                        0
+                                                                                                    ],
+                                                                                                    "location": {
+                                                                                                        "max": 278,
+                                                                                                        "min": 190
+                                                                                                    },
+                                                                                                    "name": "defaults",
+                                                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)",
+                                                                                                    "type": "function"
+                                                                                                },
+                                                                                                {
+                                                                                                    "args": [
+                                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                                                                        0
+                                                                                                    ],
+                                                                                                    "location": {
+                                                                                                        "max": 367,
+                                                                                                        "min": 279
+                                                                                                    },
+                                                                                                    "name": "defaults",
+                                                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)",
+                                                                                                    "type": "function"
+                                                                                                }
+                                                                                            ],
+                                                                                            "name": "add",
+                                                                                            "type": "function"
+                                                                                        },
+                                                                                        {
+                                                                                            "args": [
+                                                                                                "8b56f02f-04a0-4f62-94ce-b1b894831e31X4",
+                                                                                                0
+                                                                                            ],
+                                                                                            "location": {
+                                                                                                "max": 456,
+                                                                                                "min": 368
+                                                                                            },
+                                                                                            "name": "defaults",
+                                                                                            "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)",
+                                                                                            "type": "function"
+                                                                                        }
+                                                                                    ],
+                                                                                    "name": "add",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                {
+                                                                                    "args": [
+                                                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X5",
+                                                                                        0
+                                                                                    ],
+                                                                                    "location": {
+                                                                                        "max": 545,
+                                                                                        "min": 457
+                                                                                    },
+                                                                                    "name": "defaults",
+                                                                                    "text": "defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)",
+                                                                                    "type": "function"
+                                                                                }
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 546,
+                                                                                "min": 189
+                                                                            },
+                                                                            "name": "add",
+                                                                            "text": "(defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0))",
+                                                                            "type": "function"
+                                                                        },
+                                                                        1
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 549,
+                                                                        "min": 180
+                                                                    },
+                                                                    "name": "pick_max",
+                                                                    "text": "pick_max((defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)),1)",
+                                                                    "type": "function"
+                                                                }
                                                             ],
                                                             "location": {
-                                                                "max": 197,
+                                                                "max": 549,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "last_value(haproxy.stat.session.total, kql='haproxy.stat.component_type : 2 or 3')/last_value(haproxy.stat.session.total,kql='haproxy.stat.session.total : * and NOT haproxy.stat.session.total : 0')",
+                                                            "text": "(defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0))/pick_max((defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 0'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 1'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 2'),0)+defaults(last_value(haproxy.stat.session.total,kql='haproxy.stat.component_type : 3'),0)),1)",
                                                             "type": "function"
                                                         }
                                                     },
                                                     "references": [
                                                         "8b56f02f-04a0-4f62-94ce-b1b894831e31X0",
-                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1"
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X1",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X2",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X3",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X4",
+                                                        "8b56f02f-04a0-4f62-94ce-b1b894831e31X5"
                                                     ],
                                                     "scale": "ratio"
                                                 }
@@ -1374,12 +1800,12 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+                                "name": "indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "fc7fb006-9733-440c-bafa-249eed5c91a1",
+                                "name": "b3158f78-bc2e-425a-8d89-c9adb6f21bd4",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1388,30 +1814,29 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "90387c3b-e223-4e31-96f0-1e1d82ebccc3": {
+                                        "93f9026a-b7e6-4055-98c1-5c5a4462e13f": {
                                             "columnOrder": [
-                                                "db386114-db80-4bfe-a8fb-405ae524ba91",
-                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99",
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf",
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
                                             ],
                                             "columns": {
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcf": {
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225ea": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Sessions",
+                                                    "label": "Total Sessions",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "formula": "last_value(haproxy.stat.session.total, kql='\"haproxy.stat.session.total\": *')",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "2d0e78c6-a236-4de1-bda4-051cea39afcfX0"
+                                                        "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0"
                                                     ],
                                                     "scale": "ratio"
                                                 },
-                                                "2d0e78c6-a236-4de1-bda4-051cea39afcfX0": {
+                                                "e616d498-04ca-4c0e-95f8-8bdf4af225eaX0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
@@ -1419,7 +1844,7 @@
                                                         "query": "\"haproxy.stat.session.total\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Backend Sessions",
+                                                    "label": "Part of Total Sessions",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -1427,23 +1852,11 @@
                                                     "scale": "ratio",
                                                     "sourceField": "haproxy.stat.session.total"
                                                 },
-                                                "9f0c7a11-267f-4a75-b227-aefba75d1c99": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": true,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "db386114-db80-4bfe-a8fb-405ae524ba91": {
+                                                "f8808fc6-12f2-4293-a70f-69f44ba64bfc": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of haproxy.stat.proxy.name",
+                                                    "label": "Proxy Name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1460,7 +1873,7 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 10
+                                                        "size": 5
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "haproxy.stat.proxy.name"
@@ -1488,7 +1901,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "haproxy.stat.component_type",
-                                        "index": "fc7fb006-9733-440c-bafa-249eed5c91a1",
+                                        "index": "b3158f78-bc2e-425a-8d89-c9adb6f21bd4",
                                         "key": "haproxy.stat.component_type",
                                         "negate": false,
                                         "params": [
@@ -1526,63 +1939,38 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
+                                "columns": [
                                     {
-                                        "accessors": [
-                                            "2d0e78c6-a236-4de1-bda4-051cea39afcf"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "90387c3b-e223-4e31-96f0-1e1d82ebccc3",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "splitAccessor": "db386114-db80-4bfe-a8fb-405ae524ba91",
-                                        "xAccessor": "9f0c7a11-267f-4a75-b227-aefba75d1c99"
+                                        "columnId": "f8808fc6-12f2-4293-a70f-69f44ba64bfc",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "e616d498-04ca-4c0e-95f8-8bdf4af225ea",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "layerId": "93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+                                "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 7,
-                    "i": "a7906cad-ee41-4a7a-9a67-6155d4d1ccbb",
+                    "i": "2e62dc4b-ba99-4115-83af-b57e9d7dc00c",
                     "w": 38,
                     "x": 10,
                     "y": 14
                 },
-                "panelIndex": "a7906cad-ee41-4a7a-9a67-6155d4d1ccbb",
-                "title": "Server sessions over time",
+                "panelIndex": "2e62dc4b-ba99-4115-83af-b57e9d7dc00c",
+                "title": "Total server sessions ",
                 "type": "lens"
             },
             {
@@ -2000,9 +2388,9 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-10-11T06:01:04.337Z",
+    "created_at": "2024-10-22T09:01:34.019Z",
     "id": "haproxy-4b555c30-47dd-11e8-bc13-1397384faad3",
-    "managed": false,
+    "managed": true,
     "references": [
         {
             "id": "metrics-*",
@@ -2011,7 +2399,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "dbd56fd3-437c-4f70-b753-f591f4a7675d:indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+            "name": "e00b17af-9003-4b5a-ae7d-66880865a677:indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e00b17af-9003-4b5a-ae7d-66880865a677:c8eb44c1-70db-4071-a0fb-78f1ce81d963",
             "type": "index-pattern"
         },
         {
@@ -2021,12 +2414,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "c51823fc-5612-46fc-8ac5-fa63522a5bc9:indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+            "name": "7291ce7a-10fe-4e60-a18d-46f8bdafbc42:indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "c51823fc-5612-46fc-8ac5-fa63522a5bc9:4ffeca0f-fa04-4243-95c6-7df79bb12c9d",
+            "name": "7291ce7a-10fe-4e60-a18d-46f8bdafbc42:56252758-15fc-4e82-9394-915dff0cc97a",
             "type": "index-pattern"
         },
         {
@@ -2036,12 +2429,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "a7906cad-ee41-4a7a-9a67-6155d4d1ccbb:indexpattern-datasource-layer-90387c3b-e223-4e31-96f0-1e1d82ebccc3",
+            "name": "2e62dc4b-ba99-4115-83af-b57e9d7dc00c:indexpattern-datasource-layer-93f9026a-b7e6-4055-98c1-5c5a4462e13f",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "a7906cad-ee41-4a7a-9a67-6155d4d1ccbb:fc7fb006-9733-440c-bafa-249eed5c91a1",
+            "name": "2e62dc4b-ba99-4115-83af-b57e9d7dc00c:b3158f78-bc2e-425a-8d89-c9adb6f21bd4",
             "type": "index-pattern"
         },
         {
