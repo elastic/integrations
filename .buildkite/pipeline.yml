@@ -28,6 +28,8 @@ env:
   ELASTIC_PACKAGE_MAXIMUM_NUMBER_PARALLEL_TESTS: "5"
   # Enable/Disable the usage of wolfi images for Elastic Agent
   ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI: "${ELASTIC_PACKAGE_DISABLE_ELASTIC_AGENT_WOLFI:-false}"
+  # Disable checking for newer versions
+  ELASTIC_PACKAGE_CHECK_UPDATE_DISABLED: "true"
 
 steps:
   - label: "Get reference from target branch"
@@ -102,5 +104,8 @@ steps:
     # not fail build if this step fails
     soft_fail: true
     # run this step when if it is triggered by the daily job
-    if: >
-      build.source == "trigger_job" &&  build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == "integrations-schedule-daily"
+    # skipped for now notification for tests related to STACK_VERSION: 9
+    if: |
+      build.source == "trigger_job" &&
+      build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == "integrations-schedule-daily" &&
+      build.env('STACK_VERSION') !~ /^9/

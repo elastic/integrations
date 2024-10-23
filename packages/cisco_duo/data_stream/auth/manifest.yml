@@ -1,8 +1,24 @@
 type: logs
 title: Cisco Duo authentication logs
 streams:
-  - input: httpjson
+  - input: cel
+    enabled: false
     vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        show_user: false
+        required: true
+        default: 4320h
+        description: How far back to pull authentication logs from the Cisco Duo API. Maximum interval is 180 days (4320 hours). Supported units for this parameter are h/m/s.
+      - name: limit
+        type: integer
+        title: Limit
+        description: Maximum number of records to fetch on each request. Max is 1000.
+        show_user: false
+        required: true
+        default: 100
       - name: tags
         type: text
         title: Tags
@@ -28,6 +44,6 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-    template_path: httpjson.yml.hbs
+    template_path: cel.yml.hbs
     title: Cisco Duo authentication logs
     description: Collect Cisco Duo authentication logs

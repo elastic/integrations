@@ -252,7 +252,6 @@ An example event for `alert` looks as following:
         "name": "User"
     }
 }
-
 ```
 
 **Exported fields**
@@ -496,7 +495,6 @@ An example event for `event` looks as following:
         "name": "Lightning"
     }
 }
-
 ```
 
 **Exported fields**

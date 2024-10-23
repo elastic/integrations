@@ -140,7 +140,6 @@ An example event for `asset` looks as following:
         "rapid7_insightvm-asset"
     ]
 }
-
 ```
 
 **Exported fields**

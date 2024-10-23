@@ -21,8 +21,6 @@ The [CrowdStrike](https://www.crowdstrike.com/) Falcon integration allows you to
 This integration is compatible with both CrowdStrike Falcon SIEM-Connector-v2.0 and REST API.
 For Rest API support, this module has been tested against the **CrowdStrike API Version v1/v2**.
 
-The minimum **kibana.version** required is **8.12.0**.
-
 ## Setup
 ### To collect data from CrowdStrike REST API, the following parameters from your CrowdStrike instance are required:
 
@@ -51,9 +49,9 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-11-03T18:00:22.328Z",
     "agent": {
-        "ephemeral_id": "704de05c-668d-431b-8483-ed43ec6a5942",
-        "id": "8f7b87ad-2943-4c25-88be-4eaac013beb6",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "27ef9ebb-d201-4dce-a6fe-40de865e8c36",
+        "id": "03b4d78a-97e1-4c91-9b6f-c97feae33280",
+        "name": "elastic-agent-14353",
         "type": "filebeat",
         "version": "8.13.0"
     },
@@ -180,6 +178,9 @@ An example event for `alert` looks as following:
                     "type": "module"
                 }
             ],
+            "ioc_values": [
+                "b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd"
+            ],
             "is_synthetic_quarantine_disposition": true,
             "local_process_id": "17076",
             "logon_domain": "ABSYS",
@@ -270,17 +271,21 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.alert",
-        "namespace": "15119",
+        "namespace": "94431",
         "type": "logs"
     },
     "device": {
-        "id": "2ce412d17b334ad4adc8c1c54dbfec4b"
+        "id": "2ce412d17b334ad4adc8c1c54dbfec4b",
+        "manufacturer": "LENOVO",
+        "model": {
+            "name": "20VE"
+        }
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8f7b87ad-2943-4c25-88be-4eaac013beb6",
+        "id": "03b4d78a-97e1-4c91-9b6f-c97feae33280",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -288,7 +293,7 @@ An example event for `alert` looks as following:
         "agent_id_status": "verified",
         "dataset": "crowdstrike.alert",
         "id": "ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600",
-        "ingested": "2024-08-08T07:13:48Z",
+        "ingested": "2024-10-01T00:09:14Z",
         "kind": "alert",
         "original": "{\"agent_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"aggregate_id\":\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"alleged_filetype\":\"exe\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"cloud_indicator\":\"false\",\"cmdline\":\"\\\"C:\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\\\"\",\"composite_id\":\"92012896127c4a8236ba7601b886b0:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"confidence\":10,\"context_timestamp\":\"2023-11-03T18:00:31Z\",\"control_graph_id\":\"ctg:2ce4127b334ad4adc8c1c54dbfec4b:163208931778\",\"crawl_edge_ids\":{\"Sensor\":[\"KZcZ=__;K\\u0026cmqQ]Z=W,QK4W.9(rBfs\\\\gfmjTblqI^F-_oNnAWQ\\u0026-o0:dR/\\u003e\\u003e2J\\u003cd2T/ji6R\\u0026RIHe-tZSkP*q?HW;:leq.:kk)\\u003eIVMD36[+=kiQDRm.bB?;d\\\"V0JaQlaltC59Iq6nM?6`\\u003eZAs+LbOJ9p9A;9'WV9^H3XEMs8N\",\"KZcZA__;?\\\"cmott@m_k)MSZ^+C?.cg\\u003cLga#0@71X07*LY2teE56*16pL[=!bjF7g@0jOQE'jT6RX_F@sr#RP-U/d[#nm9A,A,W%cl/T@\\u003cW`alY1K_h%QDBBF;_e7S!!*'!\",\"KZd)iK2;s\\\\ckQl_P*d=Mo?^a7/JKc\\\\*L48169!7I5;0\\\\\\u003cH^hNG\\\"ZQ3#U3\\\"eo\\u003c\\u003e92t[f!\\u003e*b9WLY@H!V0N,BJsNSTD:?/+fY';e\\u003cOHh9AmlT?5\\u003cgGqK:*L99kat+P)eZ$HR\\\"Ql@Q!!!$!rr\",\"N6=Ks_B9Bncmur)?\\\\[fV$k/N5;:6@aB$P;R$2XAaPJ?E\\u003cG5,UfaP')8#2AY4ff+q?T?b0/RBi-YAeGmb\\u003c6Bqp[DZh#I(jObGkjJJaMf\\\\:#mb;BM\\\\L[g!\\\\F*M!!*'!\",\"N6B%O`'=_7d#%u\\u0026d[+LTNDs\\u003c3307?8n=GrFI:4YYGCL,cIt-Tuj!\\u0026\\u003c6:3RbC`uNjL#gW\\u0026=)E`4^/'fp*.bFX@p_$,R6.\\\"=lV*T*5Vf`c.:nkd$+YD:DJ,Ls0[sArC')K%YTc$:@kUQW5s8N\",\"N6B%s!\\\\k)ed$F6\\u003ea%iM\\\"\\u003cFTSe/eH8M:\\u003c9gf;$$.b??kpC*99aX!Lq:g6:Q3@Ga4Zrb@MaMa]L'YAt$IFBu])\\\"H^sF$r7gDPf6\\u0026CHpVKO3\\u003cDgK9,Y/e@V\\\"b\\u0026m!\\u003c\\u003c'\",\"N6CU\\u0026`%VT\\\"d$=67=h\\\\I)/BJH:8-lS!.%\\\\-!$1@bAhtVO?q4]9'9'haE4N0*-0Uh'-'f',YW3]T=jL3D#N=fJi]Pp-bWej+R9q[%h[p]p26NK8q3b50k9G:.\\u0026eM\\u003cQer\\u003e__\\\"59K'R?_=`'`rK/'hA\\\"r+L5i-*Ut5PI!!*'!\",\"N6CUF__;K!d$:[C93.?=/5(`5KnM]!L#UbnSY5HOHc#[6A\\u0026FE;(naXB4h/OG\\\"%MDAR=fo41Z]rXc\\\"J-\\\\\\u0026\\u0026V8UW.?I6V*G+,))Ztu_IuCMV#ZJ:QDJ_EjQmjiX#HENY'WD0rVAV$Gl6_+0e:2$8D)):.LUs+8-S$L!!!$!rr\",\"N6CUF__;K!d$:\\\\N43JV0AO56@6D0$!na(s)d.dQ'iI1*uiKt#j?r\\\"X'\\\\AtNML2_C__7ic6,8Dc[F\\u003c0NTUGtl%HD#?/Y)t8!1X.;G!*FQ9GP-ukQn`6I##\\u0026$^81(P+hN*-#rf/cUs)Wb\\\"\\u003c_/?I'[##WMh'H[Rcl+!!\\u003c\\u003c'\",\"N6L[G__;K!d\\\"qhT7k?[D\\\"Bk:5s%+=\\u003e#DM0j$_\\u003cr/JG0TCEQ!Ug(be3)\\u0026R2JnX+RSqorgC-NCjf6XATBWX(5\\u003cL1J1DV\\u003e44ZjO9q*d!YLuHhkq!3\\u003e3tpi\\u003eOPYZp9]5f1#/AlRZL06`/I6cl\\\"d.\\u0026=To@9kS!prs8N\"]},\"crawl_vertex_ids\":{\"Sensor\":[\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ctg:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ind:2ce412d17b34ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"mod:2ce412d17b334ad4adc8c1c54dbfec4b:caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"pid:2ce412d17b33d4adc8c1c54dbfec4b:392734873135\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993\",\"quf:2ce412d17b334ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\"]},\"crawled_timestamp\":\"2023-11-03T19:00:23.985020992Z\",\"created_timestamp\":\"2023-11-03T18:01:23.995794943Z\",\"data_domains\":[\"Endpoint\"],\"description\":\"ThisfilemeetstheAdware/PUPAnti-malwareMLalgorithm'slowest-confidencethreshold.\",\"device\":{\"agent_load_flags\":\"0\",\"agent_local_time\":\"2023-10-12T03:45:57.753Z\",\"agent_version\":\"7.04.17605.0\",\"bios_manufacturer\":\"ABC\",\"bios_version\":\"F8CN42WW(V2.05)\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"config_id_base\":\"65994763\",\"config_id_build\":\"17605\",\"config_id_platform\":\"3\",\"device_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"external_ip\":\"81.2.69.142\",\"first_seen\":\"2023-04-07T09:36:36Z\",\"groups\":[\"18704e21288243b58e4c76266d38caaf\"],\"hostinfo\":{\"active_directory_dn_display\":[\"WinComputers\",\"WinComputers\\\\ABC\"],\"domain\":\"ABC.LOCAL\"},\"hostname\":\"ABC709-1175\",\"last_seen\":\"2023-11-03T17:51:42Z\",\"local_ip\":\"81.2.69.142\",\"mac_address\":\"ab-21-48-61-05-b2\",\"machine_domain\":\"ABC.LOCAL\",\"major_version\":\"10\",\"minor_version\":\"0\",\"modified_timestamp\":\"2023-11-03T17:53:43Z\",\"os_version\":\"Windows11\",\"ou\":[\"ABC\",\"WinComputers\"],\"platform_id\":\"0\",\"platform_name\":\"Windows\",\"pod_labels\":null,\"product_type\":\"1\",\"product_type_desc\":\"Workstation\",\"site_name\":\"Default-First-Site-Name\",\"status\":\"normal\",\"system_manufacturer\":\"LENOVO\",\"system_product_name\":\"20VE\"},\"falcon_host_link\":\"https://falcon.us-2.crowdstrike.com/activity-v2/detections/dhjffg:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"filename\":\"openvpn-abc-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"grandparent_details\":{\"cmdline\":\"C:\\\\Windows\\\\system32\\\\userinit.exe\",\"filename\":\"userinit.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\userinit.exe\",\"local_process_id\":\"4328\",\"md5\":\"b07f77fd3f9828b2c9d61f8a36609741\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392734873135\",\"process_id\":\"392734873135\",\"sha256\":\"caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"timestamp\":\"2023-10-30T16:49:19Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"yuvraj.mahajan\"},\"has_script_or_module_ioc\":\"true\",\"id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"indicator_id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"ioc_context\":[{\"ioc_description\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"ioc_source\":\"library_load\",\"ioc_type\":\"hash_sha256\",\"ioc_value\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"type\":\"module\"}],\"ioc_values\":[],\"is_synthetic_quarantine_disposition\":true,\"local_process_id\":\"17076\",\"logon_domain\":\"ABSYS\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"name\":\"PrewittPupAdwareSensorDetect-Lowest\",\"objective\":\"FalconDetectionMethod\",\"parent_details\":{\"cmdline\":\"C:\\\\WINDOWS\\\\Explorer.EXE\",\"filename\":\"explorer.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\explorer.exe\",\"local_process_id\":\"1040\",\"md5\":\"8cc3fcdd7d52d2d5221303c213e044ae\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"process_id\":\"392736520876\",\"sha256\":\"0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"timestamp\":\"2023-11-03T18:00:32Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"},\"parent_process_id\":\"392736520876\",\"pattern_disposition\":2176,\"pattern_disposition_description\":\"Prevention/Quarantine,processwasblockedfromexecutionandquarantinewasattempted.\",\"pattern_disposition_details\":{\"blocking_unsupported_or_disabled\":false,\"bootup_safeguard_enabled\":false,\"critical_process_disabled\":false,\"detect\":false,\"fs_operation_blocked\":false,\"handle_operation_downgraded\":false,\"inddet_mask\":false,\"indicator\":false,\"kill_action_failed\":false,\"kill_parent\":false,\"kill_process\":false,\"kill_subprocess\":false,\"operation_blocked\":false,\"policy_disabled\":false,\"process_blocked\":true,\"quarantine_file\":true,\"quarantine_machine\":false,\"registry_operation_blocked\":false,\"rooting\":false,\"sensor_only\":false,\"suspend_parent\":false,\"suspend_process\":false},\"pattern_id\":5761,\"platform\":\"Windows\",\"poly_id\":\"AACSASiWEnxKlIIaw8LWC-8XINBatE2uYZaWqRAAATiEEfPFwhoY4opnh1CQjm0tvUQp4Lu5eOAx29ZVj-qrGrA==\",\"process_end_time\":\"1699034421\",\"process_id\":\"399748687993\",\"process_start_time\":\"1699034413\",\"product\":\"epp\",\"quarantined_files\":[{\"filename\":\"\\\\Device\\\\Volume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"id\":\"2ce412d17b334ad4adc8c1c54dbfec4b_b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"state\":\"quarantined\"}],\"scenario\":\"NGAV\",\"severity\":30,\"sha1\":\"0000000000000000000000000000000000000000\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"show_in_ui\":true,\"source_products\":[\"FalconInsight\"],\"source_vendors\":[\"CrowdStrike\"],\"status\":\"new\",\"tactic\":\"MachineLearning\",\"tactic_id\":\"CSTA0004\",\"technique\":\"Adware/PUP\",\"technique_id\":\"CST0000\",\"timestamp\":\"2023-11-03T18:00:22.328Z\",\"tree_id\":\"1931778\",\"tree_root\":\"38687993\",\"triggering_process_graph_id\":\"pid:2ce4124ad4adc8c1c54dbfec4b:399748687993\",\"type\":\"ldt\",\"updated_timestamp\":\"2023-11-03T19:00:23.985007341Z\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"}",
         "severity": 30
@@ -308,7 +313,8 @@ An example event for `alert` looks as following:
         ],
         "os": {
             "full": "Windows11",
-            "platform": "Windows"
+            "platform": "Windows",
+            "type": "windows"
         }
     },
     "input": {
@@ -317,12 +323,21 @@ An example event for `alert` looks as following:
     "message": "ThisfilemeetstheAdware/PUPAnti-malwareMLalgorithm'slowest-confidencethreshold.",
     "process": {
         "end": "2023-11-03T18:00:21.000Z",
+        "executable": "\\Device\\HarddiskVolume3\\Users\\yuvraj.mahajan\\AppData\\Local\\Temp\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\pfSenseFirewallOpenVPNClients\\Windows\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe",
+        "hash": {
+            "md5": "cdf9cfebb400ce89d5b6032bfcdc693b",
+            "sha1": "0000000000000000000000000000000000000000",
+            "sha256": "b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd"
+        },
+        "name": "openvpn-abc-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe",
         "parent": {
             "command_line": "C:\\WINDOWS\\Explorer.EXE",
+            "executable": "\\Device\\HarddiskVolume3\\Windows\\explorer.exe",
             "hash": {
                 "md5": "8cc3fcdd7d52d2d5221303c213e044ae",
                 "sha256": "0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4"
             },
+            "name": "explorer.exe",
             "pid": 392736520876
         },
         "pid": 399748687993,
@@ -392,157 +407,264 @@ An example event for `alert` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| crowdstrike.alert.agent_id | Unique identifier for the CrowdStrike agent. | keyword |
-| crowdstrike.alert.aggregate_id | An aggregate identifier associated with the agent. | keyword |
-| crowdstrike.alert.alleged_filetype | The alleged file type of the detected file. | keyword |
-| crowdstrike.alert.cid | CrowdStrike identifier associated with the device. | keyword |
-| crowdstrike.alert.cloud_indicator | Indicates whether the activity is related to the cloud. | boolean |
-| crowdstrike.alert.cmdline | The command line used to execute the file. | keyword |
-| crowdstrike.alert.composite_id | A composite identifier associated with the device. | keyword |
-| crowdstrike.alert.confidence | Confidence level associated with the detection. | long |
-| crowdstrike.alert.context_timestamp | Timestamp when the alert was generated. | date |
-| crowdstrike.alert.control_graph_id | Identifier associated with the control graph. | keyword |
-| crowdstrike.alert.crawl_edge_ids.Sensor | Edge identifiers associated with crawling. | keyword |
-| crowdstrike.alert.crawl_vertex_ids.Sensor | Vertex identifiers associated with crawling. | keyword |
-| crowdstrike.alert.crawled_timestamp | Timestamp indicating when crawling occurred. | date |
-| crowdstrike.alert.created_timestamp | Timestamp indicating when the alert was created. | date |
-| crowdstrike.alert.data_domains | Data domains associated with the alert. | keyword |
-| crowdstrike.alert.description | Description of the detected file or activity. | keyword |
-| crowdstrike.alert.device.agent_load_flags | Flags indicating the load status of the agent. | long |
-| crowdstrike.alert.device.agent_local_time | Local time of the agent. | date |
-| crowdstrike.alert.device.agent_version | Version of the CrowdStrike agent. | keyword |
-| crowdstrike.alert.device.bios_manufacturer | Manufacturer of the BIOS. | keyword |
-| crowdstrike.alert.device.bios_version | Version of the BIOS. | keyword |
-| crowdstrike.alert.device.cid | CrowdStrike identifier associated with the device. | keyword |
-| crowdstrike.alert.device.config_id_base | Base configuration identifier. | keyword |
-| crowdstrike.alert.device.config_id_build | Build configuration identifier. | keyword |
-| crowdstrike.alert.device.config_id_platform | Platform configuration identifier. | long |
-| crowdstrike.alert.device.external_ip | External IP address of the device. | ip |
-| crowdstrike.alert.device.first_seen | Timestamp indicating when the device was first seen. | date |
-| crowdstrike.alert.device.groups | Groups associated with the device. | keyword |
-| crowdstrike.alert.device.hostinfo.active_directory_dn_display | Display name for Active Directory. | keyword |
-| crowdstrike.alert.device.hostinfo.domain | Domain of the device. | keyword |
-| crowdstrike.alert.device.hostname | Hostname of the device. | keyword |
-| crowdstrike.alert.device.id | Unique identifier for the device. | keyword |
-| crowdstrike.alert.device.last_seen | Timestamp indicating when the device was last seen. | date |
-| crowdstrike.alert.device.local_ip | Local IP address of the device. | ip |
-| crowdstrike.alert.device.mac_address | MAC address of the device. | keyword |
-| crowdstrike.alert.device.machine_domain | Domain of the machine. | keyword |
-| crowdstrike.alert.device.major_version | Major version of the device. | keyword |
-| crowdstrike.alert.device.minor_version | Minor version of the device. | keyword |
-| crowdstrike.alert.device.modified_timestamp | Timestamp indicating when the device was last modified. | date |
-| crowdstrike.alert.device.os_version | Operating system version. | keyword |
-| crowdstrike.alert.device.ou | Organizational unit information. | keyword |
-| crowdstrike.alert.device.platform_id | Platform identifier. | keyword |
-| crowdstrike.alert.device.platform_name | Name of the platform. | keyword |
-| crowdstrike.alert.device.pod_labels | Labels associated with the device. | keyword |
-| crowdstrike.alert.device.product_type | Type of product associated with the device. | keyword |
-| crowdstrike.alert.device.product_type_desc | Description of the product type. | keyword |
-| crowdstrike.alert.device.site_name | Name of the site associated with the device. | keyword |
-| crowdstrike.alert.device.status | Status of the device. | keyword |
-| crowdstrike.alert.device.system_manufacturer | System manufacturer of the device. | keyword |
-| crowdstrike.alert.device.system_product_name | System product name. | keyword |
-| crowdstrike.alert.falcon_host_link | Link to CrowdStrike Falcon host activity. | keyword |
-| crowdstrike.alert.filename | Name of the detected file. | keyword |
-| crowdstrike.alert.filepath | Path to the detected file. | keyword |
-| crowdstrike.alert.grandparent_details.cmdline | Command line of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.filename | Filename of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.filepath | Filepath of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.local_process_id | Local process ID of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.md5 | grandparent_details.md5 MD5 hash of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.process_graph_id | Graph ID of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.process_id | Process ID of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.sha256 | grandparent_details.sha256 SHA256 hash of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.timestamp | Timestamp of the grandparent process. | date |
-| crowdstrike.alert.grandparent_details.user_graph_id | Graph ID of the grandparent process user. | keyword |
-| crowdstrike.alert.grandparent_details.user_id | User ID of the grandparent process. | keyword |
-| crowdstrike.alert.grandparent_details.user_name | Username of the grandparent process. | keyword |
-| crowdstrike.alert.has_script_or_module_ioc | Indicates if there is a script or module IOC (Indicator of Compromise). | boolean |
-| crowdstrike.alert.id | Identifier associated with the alert. | keyword |
-| crowdstrike.alert.indicator_id | Identifier of the detected indicator. | keyword |
-| crowdstrike.alert.ioc_context.cmdline | Command Line of the IOC context. | keyword |
-| crowdstrike.alert.ioc_context.ioc_description | Description of the IOC context. | keyword |
-| crowdstrike.alert.ioc_context.ioc_source | Source of the IOC. | keyword |
-| crowdstrike.alert.ioc_context.ioc_type | Type of IOC. | keyword |
-| crowdstrike.alert.ioc_context.ioc_value | Value of the IOC. | keyword |
-| crowdstrike.alert.ioc_context.md5 | ioc_context.md5 MD5 hash associated with the IOC. | keyword |
-| crowdstrike.alert.ioc_context.sha256 | ioc_context.sha256 SHA256 hash associated with the IOC. | keyword |
-| crowdstrike.alert.ioc_context.type | Type of IOC context. | keyword |
-| crowdstrike.alert.ioc_values | Values associated with the IOC. | keyword |
-| crowdstrike.alert.is_synthetic_quarantine_disposition | Indicates if the quarantine disposition is synthetic. | boolean |
-| crowdstrike.alert.local_process_id | Local process ID associated with the alert. | keyword |
-| crowdstrike.alert.logon_domain | Domain associated with the logon. | keyword |
-| crowdstrike.alert.md5 | md5 MD5 hash associated with the detected file. | keyword |
-| crowdstrike.alert.name | Name of the detection. | keyword |
-| crowdstrike.alert.objective | Objective of the detection. | keyword |
-| crowdstrike.alert.parent_details.cmdline | Command line of the parent process. | keyword |
-| crowdstrike.alert.parent_details.filename | Filename of the parent process. | keyword |
-| crowdstrike.alert.parent_details.filepath | Filepath of the parent process. | keyword |
-| crowdstrike.alert.parent_details.local_process_id | Local process ID of the parent process. | keyword |
-| crowdstrike.alert.parent_details.md5 | parent_details.md5 MD5 hash of the parent process. | keyword |
-| crowdstrike.alert.parent_details.process_graph_id | Graph ID of the parent process. | keyword |
-| crowdstrike.alert.parent_details.process_id | Process ID of the parent process. | keyword |
-| crowdstrike.alert.parent_details.sha256 | parent_details.sha256 SHA256 hash of the parent process. | keyword |
-| crowdstrike.alert.parent_details.timestamp | Timestamp of the parent process. | date |
-| crowdstrike.alert.parent_details.user_graph_id | Graph ID of the parent process user. | keyword |
-| crowdstrike.alert.parent_details.user_id | User ID of the parent process. | keyword |
-| crowdstrike.alert.parent_details.user_name | Username of the parent process. | keyword |
-| crowdstrike.alert.parent_process_id | Process ID of the parent process. | keyword |
-| crowdstrike.alert.pattern_disposition | Disposition of the pattern. | long |
-| crowdstrike.alert.pattern_disposition_description | Description of the pattern disposition. | keyword |
-| crowdstrike.alert.pattern_disposition_details.blocking_unsupported_or_disabled | Indicates if blocking is unsupported or disabled. | boolean |
-| crowdstrike.alert.pattern_disposition_details.bootup_safeguard_enabled | Indicates if the bootup safeguard is enabled. | boolean |
-| crowdstrike.alert.pattern_disposition_details.critical_process_disabled | Indicates if the critical process is disabled. | boolean |
-| crowdstrike.alert.pattern_disposition_details.detect | Indicates if the pattern detected the threat. | boolean |
-| crowdstrike.alert.pattern_disposition_details.fs_operation_blocked | Indicates if file system operation is blocked. | boolean |
-| crowdstrike.alert.pattern_disposition_details.handle_operation_downgraded | Indicates if handle operation is downgraded. | boolean |
-| crowdstrike.alert.pattern_disposition_details.inddet_mask | Indicates if the indicator detection mask is true. | boolean |
-| crowdstrike.alert.pattern_disposition_details.indicator | Indicates if the pattern detected an indicator. | boolean |
-| crowdstrike.alert.pattern_disposition_details.kill_action_failed | Indicates if the kill action failed. | boolean |
-| crowdstrike.alert.pattern_disposition_details.kill_parent | Indicates if the parent process was killed. | boolean |
-| crowdstrike.alert.pattern_disposition_details.kill_process | Indicates if the process was killed. | boolean |
-| crowdstrike.alert.pattern_disposition_details.kill_subprocess | Indicates if the subprocess was killed. | boolean |
-| crowdstrike.alert.pattern_disposition_details.operation_blocked | Indicates if the operation is blocked. | boolean |
-| crowdstrike.alert.pattern_disposition_details.policy_disabled | Indicates if the policy is disabled. | boolean |
-| crowdstrike.alert.pattern_disposition_details.process_blocked | Indicates if the process is blocked. | boolean |
-| crowdstrike.alert.pattern_disposition_details.quarantine_file | Indicates if the file is quarantined. | boolean |
-| crowdstrike.alert.pattern_disposition_details.quarantine_machine | Indicates if the machine is quarantined. | boolean |
-| crowdstrike.alert.pattern_disposition_details.registry_operation_blocked | Indicates if registry operation is blocked. | boolean |
-| crowdstrike.alert.pattern_disposition_details.rooting | Indicates if rooting is detected. | boolean |
-| crowdstrike.alert.pattern_disposition_details.sensor_only | Indicates if the detection is based on the sensor only. | boolean |
-| crowdstrike.alert.pattern_disposition_details.suspend_parent | Indicates if the parent process was suspended. | boolean |
-| crowdstrike.alert.pattern_disposition_details.suspend_process | Indicates if the process was suspended. | boolean |
-| crowdstrike.alert.pattern_id | Identifier associated with the pattern. | keyword |
-| crowdstrike.alert.platform | Platform associated with the alert. | keyword |
-| crowdstrike.alert.poly_id | Identifier associated with polymorphic behavior. | keyword |
-| crowdstrike.alert.process_end_time | Timestamp indicating when the process ended. | date |
-| crowdstrike.alert.process_id | Identifier associated with the process. | keyword |
-| crowdstrike.alert.process_start_time | Timestamp indicating when the process started. | date |
-| crowdstrike.alert.product | Product associated with the detection. | keyword |
-| crowdstrike.alert.quarantined_files.filename | Filename of quarantined files. | keyword |
-| crowdstrike.alert.quarantined_files.id | Identifier of quarantined files. | keyword |
-| crowdstrike.alert.quarantined_files.sha256 | quarantined_files.sha256 SHA256 hash of quarantined files. | keyword |
-| crowdstrike.alert.quarantined_files.state | State of quarantined files. | keyword |
-| crowdstrike.alert.scenario | Scenario associated with the detection. | keyword |
-| crowdstrike.alert.severity | Severity level associated with the detection. | long |
-| crowdstrike.alert.sha1 | sha1 SHA1 hash associated with the detected file. | keyword |
-| crowdstrike.alert.sha256 | sha256 SHA256 hash associated with the detected file. | keyword |
-| crowdstrike.alert.show_in_ui | Indicates if the alert should be displayed in the user interface. | boolean |
-| crowdstrike.alert.source_products | Products associated with the data source. | keyword |
-| crowdstrike.alert.source_vendors | Vendors associated with the data source. | keyword |
-| crowdstrike.alert.status | Status of the alert. | keyword |
-| crowdstrike.alert.tactic | Tactic associated with the detection. | keyword |
-| crowdstrike.alert.tactic_id | Identifier associated with the tactic. | keyword |
-| crowdstrike.alert.technique | Technique associated with the detection. | keyword |
-| crowdstrike.alert.technique_id | Identifier associated with the technique. | keyword |
-| crowdstrike.alert.timestamp | Timestamp associated with the alert. | date |
-| crowdstrike.alert.tree_id | Identifier associated with the tree. | keyword |
-| crowdstrike.alert.tree_root | Root identifier associated with the tree. | keyword |
-| crowdstrike.alert.triggering_process_graph_id | Graph ID of the triggering process. | keyword |
-| crowdstrike.alert.type | Type associated with the alert. | keyword |
-| crowdstrike.alert.updated_timestamp | Timestamp indicating when the alert was last updated. | date |
-| crowdstrike.alert.user_id | User ID associated with the alert. | keyword |
-| crowdstrike.alert.user_name | Username associated with the alert. | keyword |
+| crowdstrike.alert.active_directory_authentication_method |  | long |
+| crowdstrike.alert.activity.browser |  | keyword |
+| crowdstrike.alert.activity.device |  | keyword |
+| crowdstrike.alert.activity.id |  | keyword |
+| crowdstrike.alert.activity.os |  | keyword |
+| crowdstrike.alert.agent_id |  | keyword |
+| crowdstrike.alert.agent_scan_id |  | keyword |
+| crowdstrike.alert.aggregate_id |  | keyword |
+| crowdstrike.alert.alert_attributes |  | long |
+| crowdstrike.alert.alleged_filetype |  | keyword |
+| crowdstrike.alert.assigned_to.name |  | keyword |
+| crowdstrike.alert.assigned_to.uid |  | keyword |
+| crowdstrike.alert.assigned_to.uuid |  | keyword |
+| crowdstrike.alert.associated_files.filepath |  | keyword |
+| crowdstrike.alert.associated_files.sha256 |  | keyword |
+| crowdstrike.alert.child_process_ids |  | keyword |
+| crowdstrike.alert.cid |  | keyword |
+| crowdstrike.alert.cloud_indicator |  | boolean |
+| crowdstrike.alert.cmdline |  | keyword |
+| crowdstrike.alert.comment |  | keyword |
+| crowdstrike.alert.composite_id |  | keyword |
+| crowdstrike.alert.confidence |  | long |
+| crowdstrike.alert.context_timestamp |  | date |
+| crowdstrike.alert.control_graph_id |  | keyword |
+| crowdstrike.alert.crawl_edge_ids.Sensor |  | keyword |
+| crowdstrike.alert.crawl_vertex_ids.Sensor |  | keyword |
+| crowdstrike.alert.crawled_timestamp |  | date |
+| crowdstrike.alert.created_timestamp |  | date |
+| crowdstrike.alert.data_domains |  | keyword |
+| crowdstrike.alert.description |  | keyword |
+| crowdstrike.alert.device.agent_load_flags |  | long |
+| crowdstrike.alert.device.agent_local_time |  | date |
+| crowdstrike.alert.device.agent_version |  | keyword |
+| crowdstrike.alert.device.bios_manufacturer |  | keyword |
+| crowdstrike.alert.device.bios_version |  | keyword |
+| crowdstrike.alert.device.cid |  | keyword |
+| crowdstrike.alert.device.config_id_base |  | keyword |
+| crowdstrike.alert.device.config_id_build |  | keyword |
+| crowdstrike.alert.device.config_id_platform |  | long |
+| crowdstrike.alert.device.external_ip |  | ip |
+| crowdstrike.alert.device.first_seen |  | date |
+| crowdstrike.alert.device.groups |  | keyword |
+| crowdstrike.alert.device.hostinfo.active_directory_dn_display |  | keyword |
+| crowdstrike.alert.device.hostinfo.domain |  | keyword |
+| crowdstrike.alert.device.hostname |  | keyword |
+| crowdstrike.alert.device.id |  | keyword |
+| crowdstrike.alert.device.last_seen |  | date |
+| crowdstrike.alert.device.local_ip |  | ip |
+| crowdstrike.alert.device.mac_address |  | keyword |
+| crowdstrike.alert.device.machine_domain |  | keyword |
+| crowdstrike.alert.device.major_version |  | keyword |
+| crowdstrike.alert.device.minor_version |  | keyword |
+| crowdstrike.alert.device.modified_timestamp |  | date |
+| crowdstrike.alert.device.os_version |  | keyword |
+| crowdstrike.alert.device.ou |  | keyword |
+| crowdstrike.alert.device.platform_id |  | keyword |
+| crowdstrike.alert.device.platform_name |  | keyword |
+| crowdstrike.alert.device.pod_labels |  | keyword |
+| crowdstrike.alert.device.product_type |  | keyword |
+| crowdstrike.alert.device.product_type_desc |  | keyword |
+| crowdstrike.alert.device.site_name |  | keyword |
+| crowdstrike.alert.device.status |  | keyword |
+| crowdstrike.alert.device.system_manufacturer |  | keyword |
+| crowdstrike.alert.device.system_product_name |  | keyword |
+| crowdstrike.alert.device.tags |  | keyword |
+| crowdstrike.alert.display_name |  | keyword |
+| crowdstrike.alert.documents_accessed.filename |  | keyword |
+| crowdstrike.alert.documents_accessed.filepath |  | keyword |
+| crowdstrike.alert.documents_accessed.timestamp |  | date |
+| crowdstrike.alert.email_sent |  | boolean |
+| crowdstrike.alert.end_time |  | date |
+| crowdstrike.alert.event_id |  | keyword |
+| crowdstrike.alert.executables_written.filename |  | keyword |
+| crowdstrike.alert.executables_written.filepath |  | keyword |
+| crowdstrike.alert.executables_written.timestamp |  | date |
+| crowdstrike.alert.falcon_host_link |  | keyword |
+| crowdstrike.alert.file_writes.name |  | keyword |
+| crowdstrike.alert.file_writes.sha256 |  | keyword |
+| crowdstrike.alert.filename |  | keyword |
+| crowdstrike.alert.filepath |  | keyword |
+| crowdstrike.alert.files_accessed.filename |  | keyword |
+| crowdstrike.alert.files_accessed.filepath |  | keyword |
+| crowdstrike.alert.files_accessed.timestamp |  | date |
+| crowdstrike.alert.files_written.filename |  | keyword |
+| crowdstrike.alert.files_written.filepath |  | keyword |
+| crowdstrike.alert.files_written.timestamp |  | date |
+| crowdstrike.alert.global_prevalence |  | keyword |
+| crowdstrike.alert.grandparent_details.cmdline |  | keyword |
+| crowdstrike.alert.grandparent_details.filename |  | keyword |
+| crowdstrike.alert.grandparent_details.filepath |  | keyword |
+| crowdstrike.alert.grandparent_details.local_process_id |  | keyword |
+| crowdstrike.alert.grandparent_details.md5 |  | keyword |
+| crowdstrike.alert.grandparent_details.process_graph_id |  | keyword |
+| crowdstrike.alert.grandparent_details.process_id |  | keyword |
+| crowdstrike.alert.grandparent_details.sha256 |  | keyword |
+| crowdstrike.alert.grandparent_details.timestamp |  | date |
+| crowdstrike.alert.grandparent_details.user_graph_id |  | keyword |
+| crowdstrike.alert.grandparent_details.user_id |  | keyword |
+| crowdstrike.alert.grandparent_details.user_name |  | keyword |
+| crowdstrike.alert.has_script_or_module_ioc |  | boolean |
+| crowdstrike.alert.id |  | keyword |
+| crowdstrike.alert.idp_policy.enforced_externally |  | long |
+| crowdstrike.alert.idp_policy.mfa_factor_type |  | long |
+| crowdstrike.alert.idp_policy.mfa_provider |  | long |
+| crowdstrike.alert.idp_policy.rule_action |  | long |
+| crowdstrike.alert.idp_policy.rule_id |  | keyword |
+| crowdstrike.alert.idp_policy.rule_name |  | keyword |
+| crowdstrike.alert.idp_policy.rule_trigger |  | long |
+| crowdstrike.alert.incident.created |  | date |
+| crowdstrike.alert.incident.end |  | date |
+| crowdstrike.alert.incident.id |  | keyword |
+| crowdstrike.alert.incident.score |  | double |
+| crowdstrike.alert.incident.start |  | date |
+| crowdstrike.alert.indicator_id |  | keyword |
+| crowdstrike.alert.ioc_context.cmdline |  | keyword |
+| crowdstrike.alert.ioc_context.ioc_description |  | keyword |
+| crowdstrike.alert.ioc_context.ioc_source |  | keyword |
+| crowdstrike.alert.ioc_context.ioc_type |  | keyword |
+| crowdstrike.alert.ioc_context.ioc_value |  | keyword |
+| crowdstrike.alert.ioc_context.md5 |  | keyword |
+| crowdstrike.alert.ioc_context.sha256 |  | keyword |
+| crowdstrike.alert.ioc_context.type |  | keyword |
+| crowdstrike.alert.ioc_description |  | keyword |
+| crowdstrike.alert.ioc_source |  | keyword |
+| crowdstrike.alert.ioc_type |  | keyword |
+| crowdstrike.alert.ioc_value |  | keyword |
+| crowdstrike.alert.ioc_values |  | keyword |
+| crowdstrike.alert.is_synthetic_quarantine_disposition |  | boolean |
+| crowdstrike.alert.ldap_search_query_attack |  | long |
+| crowdstrike.alert.local_prevalence |  | keyword |
+| crowdstrike.alert.local_process_id |  | keyword |
+| crowdstrike.alert.location_country_code |  | keyword |
+| crowdstrike.alert.location_latitude_as_int |  | long |
+| crowdstrike.alert.location_longitude_as_int |  | long |
+| crowdstrike.alert.logon_domain |  | keyword |
+| crowdstrike.alert.md5 |  | keyword |
+| crowdstrike.alert.model_anomaly_indicators |  | keyword |
+| crowdstrike.alert.name |  | keyword |
+| crowdstrike.alert.network_accesses.access_timestamp |  | date |
+| crowdstrike.alert.network_accesses.access_type |  | long |
+| crowdstrike.alert.network_accesses.connection_direction |  | keyword |
+| crowdstrike.alert.network_accesses.isIPV6 |  | boolean |
+| crowdstrike.alert.network_accesses.local_address |  | ip |
+| crowdstrike.alert.network_accesses.local_port |  | long |
+| crowdstrike.alert.network_accesses.protocol |  | keyword |
+| crowdstrike.alert.network_accesses.remote_address |  | ip |
+| crowdstrike.alert.network_accesses.remote_port |  | long |
+| crowdstrike.alert.objective |  | keyword |
+| crowdstrike.alert.os_name |  | keyword |
+| crowdstrike.alert.parent_details.cmdline |  | keyword |
+| crowdstrike.alert.parent_details.filename |  | keyword |
+| crowdstrike.alert.parent_details.filepath |  | keyword |
+| crowdstrike.alert.parent_details.local_process_id |  | keyword |
+| crowdstrike.alert.parent_details.md5 |  | keyword |
+| crowdstrike.alert.parent_details.process_graph_id |  | keyword |
+| crowdstrike.alert.parent_details.process_id |  | keyword |
+| crowdstrike.alert.parent_details.sha256 |  | keyword |
+| crowdstrike.alert.parent_details.timestamp |  | date |
+| crowdstrike.alert.parent_details.user_graph_id |  | keyword |
+| crowdstrike.alert.parent_details.user_id |  | keyword |
+| crowdstrike.alert.parent_details.user_name |  | keyword |
+| crowdstrike.alert.parent_process_id |  | keyword |
+| crowdstrike.alert.pattern_disposition |  | long |
+| crowdstrike.alert.pattern_disposition_description |  | keyword |
+| crowdstrike.alert.pattern_disposition_details.blocking_unsupported_or_disabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.bootup_safeguard_enabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.containment_file_system |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.critical_process_disabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.detect |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.fs_operation_blocked |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.handle_operation_downgraded |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.inddet_mask |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.indicator |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.kill_action_failed |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.kill_parent |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.kill_process |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.kill_subprocess |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.mfa_required |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.operation_blocked |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.policy_disabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.prevention_provisioning_enabled |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.process_blocked |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.quarantine_file |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.quarantine_machine |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.registry_operation_blocked |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.response_action_already_applied |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.response_action_failed |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.response_action_triggered |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.rooting |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.sensor_only |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.suspend_parent |  | boolean |
+| crowdstrike.alert.pattern_disposition_details.suspend_process |  | boolean |
+| crowdstrike.alert.pattern_id |  | keyword |
+| crowdstrike.alert.platform |  | keyword |
+| crowdstrike.alert.poly_id |  | keyword |
+| crowdstrike.alert.process_end_time |  | date |
+| crowdstrike.alert.process_id |  | keyword |
+| crowdstrike.alert.process_start_time |  | date |
+| crowdstrike.alert.product |  | keyword |
+| crowdstrike.alert.protocol_anomaly_classification |  | long |
+| crowdstrike.alert.quarantined |  | boolean |
+| crowdstrike.alert.quarantined_files.filename |  | keyword |
+| crowdstrike.alert.quarantined_files.id |  | keyword |
+| crowdstrike.alert.quarantined_files.sha256 |  | keyword |
+| crowdstrike.alert.quarantined_files.state |  | keyword |
+| crowdstrike.alert.scan_id |  | keyword |
+| crowdstrike.alert.scenario |  | keyword |
+| crowdstrike.alert.seconds_to_resolved |  | long |
+| crowdstrike.alert.seconds_to_triaged |  | long |
+| crowdstrike.alert.severity |  | long |
+| crowdstrike.alert.severity_name |  | keyword |
+| crowdstrike.alert.sha1 |  | keyword |
+| crowdstrike.alert.sha256 |  | keyword |
+| crowdstrike.alert.show_in_ui |  | boolean |
+| crowdstrike.alert.source.account_azure_id |  | keyword |
+| crowdstrike.alert.source.account_domain |  | keyword |
+| crowdstrike.alert.source.account_name |  | keyword |
+| crowdstrike.alert.source.account_object_guid |  | keyword |
+| crowdstrike.alert.source.account_object_sid |  | keyword |
+| crowdstrike.alert.source.account_sam_account_name |  | keyword |
+| crowdstrike.alert.source.account_upn |  | keyword |
+| crowdstrike.alert.source.endpoint_account_object_guid |  | keyword |
+| crowdstrike.alert.source.endpoint_account_object_sid |  | keyword |
+| crowdstrike.alert.source.endpoint_address_ip4 |  | ip |
+| crowdstrike.alert.source.endpoint_host_name |  | keyword |
+| crowdstrike.alert.source.endpoint_ip_address |  | ip |
+| crowdstrike.alert.source.endpoint_ip_reputation |  | long |
+| crowdstrike.alert.source.endpoint_sensor_id |  | keyword |
+| crowdstrike.alert.source.ip_isp_classification |  | long |
+| crowdstrike.alert.source.ip_isp_domain |  | keyword |
+| crowdstrike.alert.source_products |  | keyword |
+| crowdstrike.alert.source_vendors |  | keyword |
+| crowdstrike.alert.start_time |  | date |
+| crowdstrike.alert.status |  | keyword |
+| crowdstrike.alert.tactic |  | keyword |
+| crowdstrike.alert.tactic_id |  | keyword |
+| crowdstrike.alert.tags |  | keyword |
+| crowdstrike.alert.target.account_name |  | keyword |
+| crowdstrike.alert.target.domain_controller_host_name |  | keyword |
+| crowdstrike.alert.target.domain_controller_object_guid |  | keyword |
+| crowdstrike.alert.target.domain_controller_object_sid |  | keyword |
+| crowdstrike.alert.target.endpoint_account_object_guid |  | keyword |
+| crowdstrike.alert.target.endpoint_account_object_sid |  | keyword |
+| crowdstrike.alert.target.endpoint_host_name |  | keyword |
+| crowdstrike.alert.target.endpoint_sensor_id |  | keyword |
+| crowdstrike.alert.target.service_access_identifier |  | keyword |
+| crowdstrike.alert.technique |  | keyword |
+| crowdstrike.alert.technique_id |  | keyword |
+| crowdstrike.alert.template_instance_id |  | keyword |
+| crowdstrike.alert.timestamp |  | date |
+| crowdstrike.alert.tree_id |  | keyword |
+| crowdstrike.alert.tree_root |  | keyword |
+| crowdstrike.alert.triggering_process_graph_id |  | keyword |
+| crowdstrike.alert.type |  | keyword |
+| crowdstrike.alert.updated_timestamp |  | date |
+| crowdstrike.alert.user_id |  | keyword |
+| crowdstrike.alert.user_name |  | keyword |
+| crowdstrike.alert.user_principal |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -550,6 +672,10 @@ An example event for `alert` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 
 
 ### Falcon
@@ -584,6 +710,10 @@ Current supported event types are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
+| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
+| agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
+| agent.version | Version of the agent. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | crowdstrike.event.AccountCreationTimeStamp | The timestamp of when the source account was created in Active Directory. | date |
 | crowdstrike.event.AccountId |  | keyword |
@@ -802,14 +932,103 @@ Current supported event types are:
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
+| device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
+| file.hash.md5 | MD5 hash. | keyword |
+| file.hash.sha1 | SHA1 hash. | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| observer.product | The product name of the observer. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
+| process.end | The time the process ended. | date |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.parent.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.parent.command_line.text | Multi-field of `process.parent.command_line`. | match_only_text |
+| process.parent.executable | Absolute path to the process executable. | keyword |
+| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
+| process.parent.pid | Process id. | long |
+| process.pid | Process id. | long |
+| process.start | The time the process started. | date |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.author | Name, organization, or pseudonym of the author or authors who created the rule used to generate this event. | keyword |
+| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
+| rule.description | The description of the rule generating the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
+| threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 An example event for `falcon` looks as following:
@@ -1057,6 +1276,8 @@ and/or `session_token`.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | crowdstrike.AccountType |  | keyword |
+| crowdstrike.ActiveDirectoryAuthenticationMethod |  | keyword |
+| crowdstrike.ActivityId |  | keyword |
 | crowdstrike.AgentIdString |  | keyword |
 | crowdstrike.AgentLoadFlags |  | keyword |
 | crowdstrike.AgentLocalTime |  | date |
@@ -1068,6 +1289,7 @@ and/or `session_token`.
 | crowdstrike.AsepWrittenCount |  | long |
 | crowdstrike.AssociatedFile |  | keyword |
 | crowdstrike.AttemptNumber |  | long |
+| crowdstrike.AuthenticationActivityId |  | keyword |
 | crowdstrike.AuthenticationId |  | keyword |
 | crowdstrike.AuthenticationPackage |  | keyword |
 | crowdstrike.AuthenticationUuid |  | keyword |
@@ -1090,6 +1312,8 @@ and/or `session_token`.
 | crowdstrike.ChasisManufacturer |  | keyword |
 | crowdstrike.ChassisType |  | keyword |
 | crowdstrike.ClientComputerName |  | keyword |
+| crowdstrike.CommandHistory |  | keyword |
+| crowdstrike.CommandHistory.text | Multi-field of `crowdstrike.CommandHistory`. | match_only_text |
 | crowdstrike.CompletionEventId |  | keyword |
 | crowdstrike.ConHostId |  | keyword |
 | crowdstrike.ConHostProcessId |  | keyword |
@@ -1164,6 +1388,7 @@ and/or `session_token`.
 | crowdstrike.GenericFileWrittenCount |  | long |
 | crowdstrike.GrandParentBaseFileName |  | keyword |
 | crowdstrike.GrandparentCommandLine |  | keyword |
+| crowdstrike.GrandparentCommandLine.text | Multi-field of `crowdstrike.GrandparentCommandLine`. | match_only_text |
 | crowdstrike.GrandparentImageFileName |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
@@ -1260,6 +1485,7 @@ and/or `session_token`.
 | crowdstrike.Parameter3 |  | keyword |
 | crowdstrike.ParentAuthenticationId |  | keyword |
 | crowdstrike.ParentCommandLine |  | keyword |
+| crowdstrike.ParentCommandLine.text | Multi-field of `crowdstrike.ParentCommandLine`. | match_only_text |
 | crowdstrike.ParentImageFileName |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PatternDispositionDescription |  | keyword |
@@ -1340,6 +1566,16 @@ and/or `session_token`.
 | crowdstrike.SiteName |  | keyword |
 | crowdstrike.Size |  | long |
 | crowdstrike.SnapshotFileOpenCount |  | long |
+| crowdstrike.SourceAccountDomain |  | keyword |
+| crowdstrike.SourceAccountObjectGuid |  | keyword |
+| crowdstrike.SourceAccountObjectSid |  | keyword |
+| crowdstrike.SourceAccountSamAccountName |  | keyword |
+| crowdstrike.SourceEndpointAccountObjectGuid |  | keyword |
+| crowdstrike.SourceEndpointAccountObjectSid |  | keyword |
+| crowdstrike.SourceEndpointAddressIP4 |  | keyword |
+| crowdstrike.SourceEndpointHostName |  | keyword |
+| crowdstrike.SourceEndpointNetworkTag |  | keyword |
+| crowdstrike.SourceEndpointNetworkType |  | keyword |
 | crowdstrike.SourceFileName |  | keyword |
 | crowdstrike.SourceProcessId |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
@@ -1360,6 +1596,8 @@ and/or `session_token`.
 | crowdstrike.SystemTableIndex |  | long |
 | crowdstrike.Tactic |  | keyword |
 | crowdstrike.Tags |  | keyword |
+| crowdstrike.TargetDomainControllerObjectGuid |  | keyword |
+| crowdstrike.TargetDomainControllerObjectSid |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
 | crowdstrike.Technique |  | keyword |
@@ -1427,24 +1665,165 @@ and/or `session_token`.
 | crowdstrike.__mv_aip |  | keyword |
 | crowdstrike.__mv_discoverer_aid |  | keyword |
 | crowdstrike.aipCount |  | integer |
+| crowdstrike.assessments.\* |  | flattened |
 | crowdstrike.cid |  | keyword |
 | crowdstrike.discovererCount |  | integer |
 | crowdstrike.discoverer_aid |  | keyword |
 | crowdstrike.eid |  | integer |
+| crowdstrike.hostname |  | keyword |
 | crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
 | crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
 | crowdstrike.localipCount |  | integer |
 | crowdstrike.monthsincereset |  | keyword |
 | crowdstrike.name |  | keyword |
+| crowdstrike.os_version |  | keyword |
+| crowdstrike.product_type_desc |  | keyword |
+| crowdstrike.scores.modified_time |  | date |
+| crowdstrike.scores.os |  | long |
+| crowdstrike.scores.overall |  | long |
+| crowdstrike.scores.sensor |  | long |
+| crowdstrike.scores.version |  | keyword |
 | crowdstrike.subnet |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
+| device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
+| dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| dns.question.type | The type of record being queried. | keyword |
+| dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.device | Device that is the source of the file. | keyword |
+| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
+| file.drive_letter | Drive letter where the file is located. This field is only relevant on Windows. The value should be uppercase, and not include the colon. | keyword |
+| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.inode | Inode representing the file in the filesystem. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
+| file.type | File type (file, dir, or symlink). | keyword |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.geo.city_name | City name. | keyword |
+| host.geo.continent_name | Name of the continent. | keyword |
+| host.geo.country_name | Country name. | keyword |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
 | input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.address |  | keyword |
+| observer.geo.city_name | City name. | keyword |
+| observer.geo.continent_name | Name of the continent. | keyword |
+| observer.geo.country_iso_code | Country ISO code. | keyword |
+| observer.geo.country_name | Country name. | keyword |
+| observer.geo.location | Longitude and latitude. | geo_point |
+| observer.geo.region_iso_code | Region ISO code. | keyword |
+| observer.geo.region_name | Region name. | keyword |
+| observer.ip | IP addresses of the observer. | ip |
+| observer.serial_number | Observer serial number. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+| observer.version | Observer version. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
+| process.end | The time the process ended. | date |
+| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
+| process.hash.md5 | MD5 hash. | keyword |
+| process.hash.sha256 | SHA256 hash. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
+| process.parent.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |
+| process.pgid | Deprecated for removal in next major version release. This field is superseded by `process.group_leader.pid`. Identifier of the group of processes the process belongs to. | long |
+| process.pid | Process id. | long |
+| process.start | The time the process started. | date |
+| process.thread.id | Thread ID. | long |
+| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
+| process.title.text | Multi-field of `process.title`. | match_only_text |
+| process.uptime | Seconds the process has been up. | long |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 An example event for `fdr` looks as following:
@@ -1994,4 +2373,5 @@ An example event for `host` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| tags | List of keywords used to tag each event. | keyword |
 

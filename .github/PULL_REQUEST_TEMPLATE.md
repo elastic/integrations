@@ -33,6 +33,7 @@ The text here and the PR title will be subject to the PR review process.
 - [ ] I have verified that all data streams collect metrics or logs.
 - [ ] I have added an entry to my package's `changelog.yml` file.
 - [ ] I have verified that Kibana version constraints are current according to [guidelines](https://github.com/elastic/elastic-package/blob/master/docs/howto/stack_version_support.md#when-to-update-the-condition).
+- [ ] I have verified that any added dashboard complies with Kibana's [Dashboard good practices](https://docs.elastic.dev/ux-guidelines/data-viz/dashboard-good-practices) 
 
 ## Author's Checklist
 

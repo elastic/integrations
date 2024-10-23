@@ -1,0 +1,50 @@
+---
+description: Pipeline for processing file STIX patterns
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_file_pattern
+      patterns:
+        - "(?i:^\\[?file:hashes\\.'?MD5'?%{SPACE}=%{SPACE}'%{DATA:_tmp.md5}'\\]?)"
+        - "(?i:^\\[?file:hashes\\.'?SHA-?1'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha1}'\\]?)"
+        - "(?i:^\\[?file:hashes\\.'?SHA-?256'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha256}'\\]?)"
+        - "^\\[?file:name%{SPACE}=%{SPACE}'%{DATA:_tmp.filename}'\\]?"
+      ignore_failure: true
+
+  # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
+  - append:
+      field: threat.indicator.file.hash.md5
+      value: '{{{ _tmp.md5 }}}'
+      if: ctx._tmp?.md5 != null
+  - append:
+      field: threat.indicator.file.hash.sha1
+      value: '{{{ _tmp.sha1 }}}'
+      if: ctx._tmp?.sha1 != null
+  - append:
+      field: threat.indicator.file.hash.sha256
+      value: '{{{ _tmp.sha256 }}}'
+      if: ctx._tmp?.sha256 != null
+  - append:
+      field: threat.indicator.file.name
+      value: '{{{ _tmp.filename }}}'
+      if: ctx._tmp?.filename != null
+
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.md5 }}}'
+      if: ctx._tmp?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.sha1 }}}'
+      if: ctx._tmp?.sha1 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.sha256 }}}'
+      if: ctx._tmp?.sha256 != null
+      allow_duplicates: false
+
+  - remove:
+      field: _tmp
+      ignore_missing: true
