@@ -605,6 +605,7 @@ An example event for `issue` looks as following:
 | wiz.issue.service_tickets.url |  | keyword |
 | wiz.issue.severity |  | keyword |
 | wiz.issue.source_rule.__typename |  | keyword |
+| wiz.issue.source_rule.cloud_configuration_rule_description |  | keyword |
 | wiz.issue.source_rule.control_description |  | keyword |
 | wiz.issue.source_rule.id |  | keyword |
 | wiz.issue.source_rule.name |  | keyword |
