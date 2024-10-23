@@ -1,0 +1,170 @@
+---
+description: Pipeline for parsing cisco_duo trust monitor logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+      tag: rename_event_original
+  - json:
+      field: event.original
+      target_field: json
+      tag: json_event_original
+      on_failure:
+        - set:
+            field: event.kind
+            value: pipeline_error
+        - append:
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - date:
+      field: json.surfaced_timestamp
+      tag: date_surfaced_timestamp
+      formats:
+        - UNIX_MS
+      on_failure:
+        - append:
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - fingerprint:
+      fields:
+        - json.sekey
+        - json.surfaced_timestamp
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_id
+
+  ## Custom fields
+  - rename:
+      field: json.bypass_status_enabled
+      target_field: cisco_duo.trust_monitor.bypass_status_enabled
+      ignore_missing: true
+      tag: rename_bypass_status_enabled
+  - rename:
+      field: json.enabled_by
+      target_field: cisco_duo.trust_monitor.enabled_by
+      ignore_missing: true
+      tag: rename_enabled_by
+  - rename:
+      field: json.enabled_for
+      target_field: cisco_duo.trust_monitor.enabled_for
+      ignore_missing: true
+      tag: rename_enabled_for
+  - rename:
+      field: json.explanations
+      target_field: cisco_duo.trust_monitor.explanations
+      ignore_missing: true
+      tag: rename_explanations
+  - rename:
+      field: json.from_common_netblock
+      target_field: cisco_duo.trust_monitor.from_common_netblock
+      ignore_missing: true
+      tag: rename_from_common_netblock
+  - rename:
+      field: json.from_new_user
+      target_field: cisco_duo.trust_monitor.from_new_user
+      ignore_missing: true
+      tag: rename_from_new_user
+  - rename:
+      field: json.low_risk_ip
+      target_field: cisco_duo.trust_monitor.low_risk_ip
+      ignore_missing: true
+      tag: rename_low_risk_ip
+  - rename:
+      field: json.priority_event
+      target_field: cisco_duo.trust_monitor.priority_event
+      ignore_missing: true
+      tag: rename_priority_event
+  - rename:
+      field: json.priority_reasons
+      target_field: cisco_duo.trust_monitor.priority_reasons
+      ignore_missing: true
+      tag: rename_priority_reasons
+  - rename:
+      field: json.sekey
+      target_field: cisco_duo.trust_monitor.sekey
+      ignore_missing: true
+      tag: rename_sekey
+  - rename:
+      field: json.state
+      target_field: cisco_duo.trust_monitor.state
+      ignore_missing: true
+      tag: rename_state
+  - rename:
+      field: json.state_updated_timestamp
+      target_field: cisco_duo.trust_monitor.state_updated_timestamp
+      ignore_missing: true
+      tag: rename_state_updated_timestamp
+  - rename:
+      field: json.surfaced_auth
+      target_field: cisco_duo.trust_monitor.surfaced_auth
+      ignore_missing: true
+      tag: rename_surfaced_auth
+  - rename:
+      field: json.triaged_as_interesting
+      target_field: cisco_duo.trust_monitor.triaged_as_interesting
+      ignore_missing: true
+      tag: rename_triaged_as_interesting
+  - rename:
+      field: json.triage_event_uri
+      target_field: cisco_duo.trust_monitor.triage_event_uri
+      ignore_missing: true
+      tag: rename_triage_event_uri
+  - rename:
+      field: json.type
+      target_field: cisco_duo.trust_monitor.type
+      ignore_missing: true
+      tag: rename_type
+
+  ## ECS fields
+  - set:
+      field: event.id
+      copy_from: cisco_duo.trust_monitor.sekey
+      ignore_failure: true
+      tag: set_event_id
+  - uri_parts:
+      field: cisco_duo.trust_monitor.triage_event_uri
+      tag: uri_parts_event_uri
+      ignore_missing: true
+      ignore_failure: true
+
+  ## Clean up
+  - script:
+      description: Drops null/empty values recursively
+      tag: drop_null_values
+      lang: painless
+      ignore_failure: true
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - remove:
+      field: json
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

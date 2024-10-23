@@ -6,8 +6,8 @@ toolchain go1.22.5
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/cli/go-gh/v2 v2.10.0
-	github.com/elastic/elastic-package v0.105.0
+	github.com/cli/go-gh/v2 v2.11.0
+	github.com/elastic/elastic-package v0.106.0
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/package-registry v1.25.0
 	github.com/magefile/mage v1.15.0
@@ -62,7 +62,7 @@ require (
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
 	github.com/elastic/kbncontent v0.1.4 // indirect
-	github.com/elastic/package-spec/v3 v3.2.3 // indirect
+	github.com/elastic/package-spec/v3 v3.3.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/evanphx/json-patch v5.9.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
