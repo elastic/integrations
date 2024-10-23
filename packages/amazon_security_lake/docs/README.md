@@ -90,9 +90,11 @@ This is the `Event` dataset.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
+| event.message | Log message optimized for viewing in a log viewer. | text |
 | event.module | Event module. | constant_keyword |
-| input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
+| input.type | Type of Filebeat input. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
 | ocsf.access_mask | The access mask in a platform-native format. | long |
 | ocsf.action | The normalized caption of action_id. | keyword |
 | ocsf.action_id | The action taken by a control or other policy-based system leading to an outcome or disposition. Dispositions conform to an action of 1 'Allowed' or 2 'Denied' in most cases. | integer |
