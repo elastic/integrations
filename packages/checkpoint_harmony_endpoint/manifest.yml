@@ -1,0 +1,103 @@
+format_version: 3.2.1
+name: checkpoint_harmony_endpoint
+title: "Check Point Harmony Endpoint"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect logs from Check Point Harmony Endpoint"
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: "^8.14.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/Screenshot_1.png
+    title: "Add Check Point Harmony Endpoint integration"
+    size: 849x682
+    type: image/png
+  - src: /img/Screenshot_2.png
+    title: "Dashboard: [Logs Check Point Harmony Endpoint] Overview"
+    size: 1898x1966
+    type: image/png
+icons:
+  - src: /img/checkpoint-logo.svg
+    title: Check Point logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: harmony
+    title: Check Point Harmony Endpoint Events Collector
+    description: Collect Check Point Harmony Endpoint Events
+    inputs:
+      - type: cel
+        title: Collect Check Point Harmony Endpoint logs via API
+        description: Collecting Check Point Harmony Endpoint logs via API.
+        vars:
+          - name: base_url
+            type: text
+            title: Server URL
+            description: Base URL of the Check Point Harmony Endpoint API. Defaults to https://cloudinfra-gw.portal.checkpoint.com
+            default: https://cloudinfra-gw.portal.checkpoint.com
+            multi: false
+            required: true
+            show_user: true
+          - name: client_id
+            type: text
+            title: Client ID
+            description: Client ID for the Check Point Harmony Endpoint.
+            multi: false
+            required: true
+            show_user: true
+          - name: access_key
+            type: password
+            title: Secret Key
+            description: Client Secret for the Check Point Harmony Endpoint.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            description: Initial interval at which the logs will be pulled. Supported units for this parameter are h/m/s.
+            default: 720h
+            multi: false
+            required: true
+            show_user: true
+          - name: interval
+            type: text
+            title: Interval
+            description: Interval at which the logs will be pulled. Recommended value between 10sec to 1 min. Supported units for this parameter are h/m/s.
+            default: 20s
+            multi: false
+            required: true
+            show_user: true
+          - name: limit
+            type: integer
+            title: Number of results per search
+            description: Sets the number of results to return per search. Limit should not be less than 'Page Limit'. Maximum allowed value 10000.
+            default: 10000
+            multi: false
+            required: true
+            show_user: true
+          - name: page_limit
+            type: integer
+            title: Number of results per page
+            description: Sets the number of results to return per page. Maximum allowed value 1000.
+            default: 1000
+            multi: false
+            required: true
+            show_user: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            default: false
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
