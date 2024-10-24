@@ -44,7 +44,7 @@ processors:
             # .+: Matches the rest of the log line (the message part, without needing specific timestamp or file format).
           - IsMatch(body, "^[EWF]\\d{4} .+")
         statements:
-          - merge_maps(attributes, ExtractGrokPatterns(body, "%{LOG_LEVEL:log.level}%{MONTHNUM}%{MONTHDAY} %{HOUR}:%{MINUTE}:%{SECOND}\\.%{MICROS}%{SPACE}%{NUMBER:nginx_ingress_controller.error.thread_id} %{SOURCE_FILE:nginx_ingress_controller.error.source.file}:%{NUMBER:nginx_ingress_controller.error.source.line_number}\\] %{GREEDYMULTILINE:message}", true, ["LOG_LEVEL=[A-Z]", "MONTHNUM=(0[1-9]|1[0-2])", "MONTHDAY=(0[1-9]|[12][0-9]|3[01])", "HOUR=([01][0-9]|2[0-3])", "MINUTE=[0-5][0-9]", "SECOND=[0-5][0-9]", "MICROS=[0-9]{6}", "SOURCE_FILE=[^:]+", "GREEDYMULTILINE=(.|\\n)*"]), "upsert")
+          - set(body, ExtractGrokPatterns(body, "%{LOG_LEVEL:log.level}%{MONTHNUM}%{MONTHDAY} %{HOUR}:%{MINUTE}:%{SECOND}\\.%{MICROS}%{SPACE}%{NUMBER:error.thread_id} %{SOURCE_FILE:error.source.file}:%{NUMBER:error.source.line_number}\\] %{GREEDYMULTILINE:message}", true, ["LOG_LEVEL=[A-Z]", "MONTHNUM=(0[1-9]|1[0-2])", "MONTHDAY=(0[1-9]|[12][0-9]|3[01])", "HOUR=([01][0-9]|2[0-3])", "MINUTE=[0-5][0-9]", "SECOND=[0-5][0-9]", "MICROS=[0-9]{6}", "SOURCE_FILE=[^:]+", "GREEDYMULTILINE=(.|\\n)*"]))
 
           - set(attributes["data_stream.dataset"], "nginx_ingress_controller.error")
 
@@ -63,63 +63,61 @@ processors:
         statements:
           # Log format: https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/docs/user-guide/nginx-configuration/log-format.md
           # Based on https://github.com/elastic/integrations/blob/main/packages/nginx_ingress_controller/data_stream/access/elasticsearch/ingest_pipeline/default.yml
-          - merge_maps(attributes, ExtractGrokPatterns(body, "(%{NGINX_HOST} )?\"?(?:%{NGINX_ADDRESS_LIST:nginx_ingress_controller.access.remote_ip_list}|%{NOTSPACE:source.address}) - (-|%{DATA:user.name}) \\[%{HTTPDATE:nginx_ingress_controller.access.time}\\] \"%{DATA:nginx_ingress_controller.access.info}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.size:long} \"(-|%{DATA:http.request.referrer})\" \"(-|%{DATA:user_agent.original})\" %{NUMBER:http.request.size:long} %{NUMBER:http.request.time:double} \\[%{DATA:upstream.name}\\] \\[%{DATA:upstream.alternative_name}\\] (%{UPSTREAM_ADDRESS_LIST:upstream.address}|-) (%{UPSTREAM_RESPONSE_SIZE_LIST:upstream.response.size_list}|-) (%{UPSTREAM_RESPONSE_TIME_LIST:upstream.response.time_list}|-) (%{UPSTREAM_RESPONSE_STATUS_CODE_LIST:upstream.response.status_code_list}|-) %{GREEDYDATA:http.request.id}", true, ["NGINX_HOST=(?:%{IP:destination.ip}|%{NGINX_NOTSEPARATOR:destination.domain})(:%{NUMBER:destination.port})?", "NGINX_NOTSEPARATOR=[^\t ,:]+", "NGINX_ADDRESS_LIST=(?:%{IP}|%{WORD}) (\"?,?\\s*(?:%{IP}|%{WORD}))*", "UPSTREAM_ADDRESS_LIST=(?:%{IP}(:%{NUMBER})?)(\"?,?\\s*(?:%{IP}(:%{NUMBER})?))*", "UPSTREAM_RESPONSE_SIZE_LIST=(?:%{NUMBER})(\"?,?\\s*(?:%{NUMBER}))*", "UPSTREAM_RESPONSE_TIME_LIST=(?:%{NUMBER})(\"?,?\\s*(?:%{NUMBER}))*", "UPSTREAM_RESPONSE_STATUS_CODE_LIST=(?:%{NUMBER})(\"?,?\\s*(?:%{NUMBER}))*", "IP=(?:\\[?%{IPV6}\\]?|%{IPV4})"]), "upsert")
-
-
-          - merge_maps(attributes, ExtractGrokPatterns(attributes["nginx_ingress_controller.access.info"], "%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}", true), "upsert")
-          - delete_key(attributes, "nginx_ingress_controller.access.info")
+          - set(body, ExtractGrokPatterns(body, "(%{NGINX_HOST} )?\"?(?:%{NGINX_ADDRESS_LIST:nginx_ingress_controller.access.remote_ip_list}|%{NOTSPACE:source.address}) - (-|%{DATA:user.name}) \\[%{HTTPDATE:nginx_ingress_controller.access.time}\\] \"%{DATA:nginx_ingress_controller.access.info}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.size:long} \"(-|%{DATA:http.request.referrer})\" \"(-|%{DATA:user_agent.original})\" %{NUMBER:http.request.size:long} %{NUMBER:http.request.time:double} \\[%{DATA:upstream.name}\\] \\[%{DATA:upstream.alternative_name}\\] (%{UPSTREAM_ADDRESS_LIST:upstream.address}|-) (%{UPSTREAM_RESPONSE_SIZE_LIST:upstream.response.size_list}|-) (%{UPSTREAM_RESPONSE_TIME_LIST:upstream.response.time_list}|-) (%{UPSTREAM_RESPONSE_STATUS_CODE_LIST:upstream.response.status_code_list}|-) %{GREEDYDATA:http.request.id}", true, ["NGINX_HOST=(?:%{IP:destination.ip}|%{NGINX_NOTSEPARATOR:destination.domain})(:%{NUMBER:destination.port})?", "NGINX_NOTSEPARATOR=[^\t ,:]+", "NGINX_ADDRESS_LIST=(?:%{IP}|%{WORD}) (\"?,?\\s*(?:%{IP}|%{WORD}))*", "UPSTREAM_ADDRESS_LIST=(?:%{IP}(:%{NUMBER})?)(\"?,?\\s*(?:%{IP}(:%{NUMBER})?))*", "UPSTREAM_RESPONSE_SIZE_LIST=(?:%{NUMBER})(\"?,?\\s*(?:%{NUMBER}))*", "UPSTREAM_RESPONSE_TIME_LIST=(?:%{NUMBER})(\"?,?\\s*(?:%{NUMBER}))*", "UPSTREAM_RESPONSE_STATUS_CODE_LIST=(?:%{NUMBER})(\"?,?\\s*(?:%{NUMBER}))*", "IP=(?:\\[?%{IPV6}\\]?|%{IPV4})"]))
+          - merge_maps(body, ExtractGrokPatterns(body["nginx_ingress_controller.access.info"], "%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}", true), "upsert")
+          - delete_key(body, "nginx_ingress_controller.access.info")
 
           # Extra URL parsing
-          - merge_maps(attributes, URL(attributes["url.original"]), "upsert")
-          - set(attributes["url.domain"], attributes["destination.domain"])
+          - merge_maps(body, URL(body["url.original"]), "upsert")
+          - set(body["url.domain"], body["destination.domain"])
 
-          # set protocol name
-          - set(attributes["network.protocol.name"], "http")
+          # set source.address as attribute for GeoIP processor
+          - set(attributes["source.address"], body["source.address"])
 
-          # tmp
           - set(attributes["data_stream.dataset"], "nginx_ingress_controller.access")
 
           # LogRecord event: https://github.com/open-telemetry/semantic-conventions/pull/982
           - set(attributes["event.name"], "nginx.ingress.controller.access")
-          - set(attributes["event.timestamp"], String(Time(attributes["nginx_ingress_controller.access.time"], "%d/%b/%Y:%H:%M:%S %z")))
-          - delete_key(attributes, "nginx_ingress_controller.access.time")
+          - set(attributes["event.timestamp"], String(Time(body["nginx_ingress_controller.access.time"], "%d/%b/%Y:%H:%M:%S %z")))
+
+          - delete_key(body, "nginx_ingress_controller.access.time")
 
       - context: log
         conditions:
             # Extract user agent when not empty
-          - attributes["user_agent.original"] != nil
+          - body["user_agent.original"] != nil
         statements:
           # Extract UserAgent
           # TODO: UserAgent OTTL function does not provide os specific metadata yet: https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/35458
-          - merge_maps(attributes, UserAgent(attributes["user_agent.original"]), "upsert")
+          - merge_maps(body, UserAgent(body["user_agent.original"]), "upsert")
 
       - context: log
         conditions:
-          - attributes["upstream.response.time_list"] != nil
+          - body["upstream.response.time_list"] != nil
         statements:
           # Extract comma separated list
           # TODO: We would like to get the sum over all upstream.response.time_list values instead of providing a slice with all the values
-          - set(attributes["upstream.response.time"], Split(attributes["upstream.response.time_list"], ","))
-          - delete_key(attributes, "upstream.response.time_list")
+          - set(body["upstream.response.time"], Split(body["upstream.response.time_list"], ","))
+          - delete_key(body, "upstream.response.time_list")
 
       - context: log
         conditions:
-          - attributes["upstream.response.size_list"] != nil
+          - body["upstream.response.size_list"] != nil
         statements:
           # Extract comma separated list
           # TODO: We would like to get the Last upstream.response.size_list value instead of providing a slice with all the values
           # See: https://github.com/elastic/integrations/blob/main/packages/nginx_ingress_controller/data_stream/access/elasticsearch/ingest_pipeline/default.yml#L94b
-          - set(attributes["upstream.response.size"], Split(attributes["upstream.response.size_list"], ","))
-          - delete_key(attributes, "upstream.response.size_list")
+          - set(body["upstream.response.size"], Split(body["upstream.response.size_list"], ","))
+          - delete_key(body, "upstream.response.size_list")
 
       - context: log
         conditions:
-          - attributes["upstream.response.status_code_list"] != nil
+          - body["upstream.response.status_code_list"] != nil
         statements:
           # Extract comma separated list
           # TODO: We would like to get the Last upstream.response.status_code_list value instead of providing a slice with all the values
-          - set(attributes["upstream.response.status_code"], Split(attributes["upstream.response.status_code_list"], ","))
-          - delete_key(attributes, "upstream.response.status_code_list")
+          - set(body["upstream.response.status_code"], Split(body["upstream.response.status_code_list"], ","))
+          - delete_key(body, "upstream.response.status_code_list")
 
   # TODO: add other detectors
   resourcedetection/system:
@@ -229,39 +227,39 @@ The `access` data stream collects the Nginx Ingress Controller access logs.
 | resource.attributes.host.name | | keyword |
 | resource.attributes.os.type | | keyword |
 | resource.attributes.os.description | | keyword |
-| attributes.http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
-| attributes.http.request.referrer | Referrer for this HTTP request. | keyword |
-| attributes.http.response.body.size | Size in bytes of the response body. | long |
-| attributes.http.response.status_code | HTTP response status code. | long |
-| attributes.http.version | HTTP version. | keyword |
-| attributes.log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
-| attributes.log.iostream |  | keyword |
-| attributes.access.http.request.id | The randomly generated ID of the request | text |
-| attributes.access.http.request.size | The request length (including request line, header, and request body) | long |
-| attributes.access.http.request.time | Time elapsed since the first bytes were read from the client | double |
-| attributes.upstream.address | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
-| attributes.upstream.name | The name of the upstream. | keyword |
-| attributes.upstream.response.size | The length of the response obtained from the upstream server | long |
-| attributes.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
-| attributes.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| attributes.geo.city_name | City name. | keyword |
-| attributes.geo.continent_name | Name of the continent. | keyword |
+| body.structured.http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
+| body.structured.http.request.referrer | Referrer for this HTTP request. | keyword |
+| body.structured.http.response.body.size | Size in bytes of the response body. | long |
+| body.structured.http.response.status_code | HTTP response status code. | long |
+| body.structured.http.version | HTTP version. | keyword |
+| attribute.log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| attribute.log.iostream |  | keyword |
+| body.structured.http.request.id | The randomly generated ID of the request | text |
+| body.structured.http.request.size | The request length (including request line, header, and request body) | long |
+| body.structured.http.request.time | Time elapsed since the first bytes were read from the client | double |
+| body.structured.upstream.address | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
+| body.structured.upstream.name | The name of the upstream. | keyword |
+| body.structured.upstream.response.size | The length of the response obtained from the upstream server | long |
+| body.structured.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
+| body.structured.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
+| attribute.source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| attribute.geo.city_name | City name. | keyword |
+| attribute.geo.continent_name | Name of the continent. | keyword |
 | attributes.geo.country_iso_code | Country ISO code. | keyword |
 | attributes.geo.country_name | Country name. | keyword |
 | attributes.geo.location.lat | Latitude. | geo_point |
 | attributes.geo.location.lon | Longitude. | geo_point |
 | attributes.geo.region_iso_code | Region ISO code. | keyword |
 | attributes.geo.region_name | Region name. | keyword |
-| attributes.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| attributes.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| attributes.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
-| attributes.url.path | Path of the request, such as "/search". | wildcard |
-| attributes.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| attributes.user.name | Short name or login of the user. | keyword |
-| attributes.user_agent.name | Name of the user agent. | keyword |
-| attributes.user_agent.original | Unparsed user_agent string. | keyword |
-| attributes.user_agent.version | Version of the user agent. | keyword |
+| body.structured.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| body.structured.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| body.structured.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| body.structured.url.path | Path of the request, such as "/search". | wildcard |
+| body.structured.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| body.structured.user.name | Short name or login of the user. | keyword |
+| body.structured.user_agent.name | Name of the user agent. | keyword |
+| body.structured.user_agent.original | Unparsed user_agent string. | keyword |
+| body.structured.user_agent.version | Version of the user agent. | keyword |
 
 
 ### Error Logs
@@ -304,10 +302,9 @@ The `error` data stream collects the Nginx Ingress Controller error logs.
 | resource.attributes.host.name | | keyword |
 | resource.attributes.os.type | | keyword |
 | resource.attributes.os.description | | keyword |
-| attributes.log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| attribute.log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | attributes.log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| attributes.message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| nginx_ingress_controller.error.source.file | Source file | keyword |
-| nginx_ingress_controller.error.source.line_number | Source line number | long |
-| nginx_ingress_controller.error.thread_id | Thread ID | long |
-| body_text | Raw log message | keyword |
+| body.structured.message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| body.structured.error.source.file | Source file | keyword |
+| body.structured.error.source.line_number | Source line number | long |
+| body.structured.error.thread_id | Thread ID | long |
