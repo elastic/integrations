@@ -1,0 +1,240 @@
+---
+description: Pipeline for CyberArk PAS monitor
+processors:
+  #
+  # Set ECS version.
+  #
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  #
+  # Set event.original from message, unless reindexing.
+  #
+  - rename:
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_missing: true
+
+  - json:
+      field: event.original
+      target_field: _tmp.json
+      on_failure:
+        - fail:
+            message: "malformed JSON event: {{{_ingest.on_failure_message}}}"
+
+  - rename:
+      field: _tmp.json.syslog.monitor_record
+      target_field: cyberarkpas.monitor
+      on_failure:
+        - fail:
+            message: "unexpected event structure: {{{_ingest.on_failure_message}}}"
+
+  #
+  # Remove all empty fields
+  #
+  - script:
+      lang: painless
+      description: 'Removes empty monitor fields'
+      source: >-
+        ctx.cyberarkpas.monitor.entrySet().removeIf(entry -> entry.getValue() == "");
+
+  - rename:
+      field: _tmp.json.raw
+      target_field: cyberarkpas.monitor.raw
+      ignore_missing: true
+
+  - date:
+      field: cyberarkpas.monitor.IsoTimestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to parse ISO timestamp field: {{{cyberarkpas.monitor.IsoTimestamp}}}: {{{_ingest.on_failure_message}}}"
+
+  #
+  # Convert field names from CamelCase to snake_case.
+  #
+  - script:
+      lang: painless
+      description: "Converts monitor field's names from CamelCase to snake_case"
+      source: >
+        String to_snake_case(String s) {
+          /* faster code path for strings that won't need an underscore */
+          if (s.chars().skip(1).noneMatch(Character::isUpperCase)) {
+            return s.toLowerCase();
+          }
+          int run = 0;
+          boolean first = true;
+          StringBuilder result = new StringBuilder();
+          for (char c : s.toCharArray()) {
+            char o = Character.toLowerCase(c);
+            if (c != o) {
+              if (run == 0 && !first) {
+                result.append('_');
+              }
+              run ++;
+            } else {
+              if (run > 1) {
+                char prev = result.charAt(result.length()-1);
+                result.setCharAt(result.length()-1, (char)'_');
+                result.append(prev);
+              }
+              run = 0;
+              first = false;
+            }
+            result.append(o);
+          }
+          return result.toString();
+        }
+        def keys_to_snake_case_recursive(Map object) {
+          return object.entrySet().stream().collect(
+            Collectors.toMap(
+              e -> to_snake_case(e.getKey()),
+              e -> e.getValue() instanceof Map ? keys_to_snake_case_recursive(e.getValue()) : e.getValue()
+            )
+          );
+        }
+        ctx.cyberarkpas.monitor = keys_to_snake_case_recursive(ctx.cyberarkpas.monitor);
+
+  ########################################################
+  # All processors from this point use the snake_case form
+  # to access CyberArk fields.
+  ########################################################
+
+  #
+  # Parse ingegers
+  #
+  - convert:
+      field: cyberarkpas.monitor.average_execution_time
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.max_execution_time
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.average_queue_time
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.max_queue_time
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.number_of_parallel_tasks
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.max_parallel_tasks
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.transaction_count
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.cpu_usage
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.memory_usage
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.drive_free_space_in_gb
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.drive_total_space_in_gb
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: cyberarkpas.monitor.syslog_queue_size
+      type: integer
+      ignore_missing: true
+
+  ########################################################
+  # ECS enrichment
+  ########################################################
+
+  - set:
+      field: event.kind
+      value: metric
+
+  #
+  # Rewrite the default tag
+  #
+  - script:
+      lang: painless
+      description: 'Rewrite the default tag'
+      if: ctx.tags instanceof List
+      source: >-
+        def i = ctx.tags.indexOf("cyberarkpas-audit");
+        if (i != -1) ctx.tags.set(i, "cyberarkpas-monitor");
+
+  #
+  # Observer fields
+  #
+  - rename:
+      field: cyberarkpas.monitor.vendor
+      target_field: observer.vendor
+      ignore_missing: true
+  - rename:
+      field: cyberarkpas.monitor.product
+      target_field: observer.product
+      ignore_missing: true
+  - set:
+      field: observer.version
+      copy_from: cyberarkpas.monitor.version
+      ignore_empty_value: true
+  - rename:
+      field: cyberarkpas.monitor.hostname
+      target_field: observer.hostname
+      ignore_missing: true
+
+  #
+  # Populate related.hosts
+  #
+  - append:
+      field: related.hosts
+      value: '{{{observer.hostname}}}'
+      if: ctx.observer?.hostname != null
+      allow_duplicates: false
+
+  #
+  # Set host fields, unless already set
+  #
+  - script:
+      lang: painless
+      description: 'Set host.cpu.usage'
+      if: ctx.host?.cpu?.usage == null
+      source: >-
+        if (ctx.host == null) ctx.host = [:];
+        if (ctx.host.cpu == null) ctx.host.cpu = [:];
+        ctx.host.cpu.usage = ctx.cyberarkpas.monitor.cpu_usage/100.0;
+  - set:
+      field: host.name
+      value: '{{{observer.hostname}}}'
+      ignore_empty_value: true
+      if: ctx.host?.name == null
+
+  #
+  # Cleanup
+  #
+  - remove:
+      field: _tmp
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: _tmp
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
