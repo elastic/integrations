@@ -1193,22 +1193,6 @@ processors:
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
 
   #
-  # In some cases, the ctx._temp_.cisco.message_id field is created as an empty string. This generally
-  # indicates a security event in an older FTD version.
-  #
-  # However, if misconfigured and/or incorrect data is sent through this pipeline, it is important to
-  # throw an error that is explanatory to the failure condition.
-  #
-  # Note: If this case exists in this pipeline, there WILL be an error and failure! It is helpful to
-  # users that the error message indicate the exact reason.
-  - fail:
-      if: '[""].contains(ctx._temp_.cisco.message_id) && !ctx.message.contains(":")'
-      message:  >
-          The message_id ( "{{{ctx._temp_.cisco.message_id}}}" ) indicates this to be a security event, but the message field is not formatted appropriately.
-          Expected a comma-separated sequence of 'key: value' pairs.
-      tag: security_event_missing_data
-
-  #
   # Decode FTD's Security Event Syslog Messages
   #
   # 43000x messages are security event syslog messages specific to FTD.
@@ -1216,7 +1200,7 @@ processors:
   #
   # The result of this decoding is saved as _temp_.orig_security.{Key}: {Value}
   - kv:
-      if: '["430001", "430002", "430003", "430004", "430005", ""].contains(ctx._temp_.cisco.message_id)'
+      if: '["430001", "430002", "430003", "430004", "430005", ""].contains(ctx._temp_.cisco.message_id) && ctx.cisco?.message != null && ctx.cisco.message'
       field: "message"
       tag: "kv_message_43000x"
       description: "430001, 430002, 430003, 430004, 430005"
