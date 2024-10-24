@@ -72,19 +72,6 @@ processors:
         FTD_PREFIX: "%{DATA}%(?:[A-Z]+)"
 
   #
-  # If there is no message at all to process, then fail.
-  #
-  # This has been seen in misconfigured integration scenarios.
-  - remove:
-      field: _temp_.full_message
-      if: ctx._temp_.cisco.message_id == "8675309666"
-      tag: remove_for_testing
-  - remove:
-      field: _temp_.cisco.message_id
-      if: ctx._temp_.cisco.message_id == "8675309666"
-      tag: remove_for_testing
-
-  #
   # Create missing fields when no %FTD label is present
   #
   # message_id is needed in order for some processors below to work.
@@ -1209,8 +1196,11 @@ processors:
   # In some cases, the ctx._temp_.cisco.message_id field is created as an empty string. This generally
   # indicates a security event in an older FTD version.
   #
-  # However, if misconfigured and incorrect data is sent through this pipeline, it is important to
+  # However, if misconfigured and/or incorrect data is sent through this pipeline, it is important to
   # throw an error that is explanatory to the failure condition.
+  #
+  # Note: If this case exists in this pipeline, there WILL be an error and failure! It is helpful to
+  # users that the error message indicate the exact reason.
   - fail:
       if: '[""].contains(ctx._temp_.cisco.message_id) && !ctx.message.contains(":")'
       message:  >
