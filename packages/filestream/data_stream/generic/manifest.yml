@@ -42,8 +42,8 @@ streams:
           #    target: ""
           #    message_key: msg
           #- multiline:
-          #    type: counter
-          #    lines_count: 3
+          #    type: count
+          #    count_lines: 3
       - name: exclude_files
         type: text
         title: Exclude Files
@@ -188,6 +188,15 @@ streams:
           ** You must disable this option if you also disable Close Removed. **
         required: false
         show_user: false
+      - name: harvester_limit
+        title: Harvester Limit
+        type: integer
+        default: 0
+        description: |
+          The harvester_limit option limits the number of harvesters
+          that are started in parallel for one input. This directly
+          relates to the maximum number of file handlers that are
+          opened. The default is 0 (no limit).
       - name: backoff_init
         type: text
         title: Backoff Init
@@ -203,28 +212,18 @@ streams:
           ** Requirement: Set Backoff Max to be greater than or equal to Backoff Init and less than or equal to Check Interval (Backoff Init <= Backoff Max <= Check Interval). **
         required: false
         show_user: false
-      # - name: file_identity
-      #   title: File identity
-      #   type: select
-      #   options:
-      #     - value: fingerprint
-      #       text: Fingerprint
-      #     - value: native
-      #       text: Native (inode + device ID)
-      #     - value: path
-      #       text: Path
-      #   default: fingerprint
-      #   description: |
-      #     ** Changing file_identity methods between runs may result in
-      #     duplicated events in the output. **
-      #     Defines how the Elastic-Agent will identify files.
-      #     Refer to https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_file_identity_2
-      #     for a detailed description.
-
-      #     The file identity:
-      #       - Fingerprint: calculates a from the beginning of the file (default)
-      #       - Native: used inode + device ID
-      #       - Path: user the filepath as identifier
+      - name: fingerprint
+        title: Fingerprint file identity
+        type: bool
+        default: false
+        description: |
+          ** Changing file_identity methods between runs may result in
+          duplicated events in the output. **
+          Uses a fingerprint generated from the first few bytes (1k is
+          the default) to identify a file instead the default inode +
+          device ID
+          Refer to https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_file_identity_2
+          for more details.
       - name: fingerprint_offset
         title: Fingerprint offset
         type: integer
@@ -246,30 +245,6 @@ streams:
         required: false
         show_user: false
       - name: rotation_external_strategy_copytruncate
-        # - name: file_identity_native
-        #   type: text
-        #   title: File Identity Native
-        #   description: |
-        #     ** Changing file_identity methods between runs may result in duplicated events in the output. **
-        #     The default behaviour of Elastic Agent is to differentiate between files using their inodes and device ids.
-        #   required: false
-        #   show_user: false
-        # - name: file_identity_path
-        #   type: text
-        #   title: File Identity Path
-        #   description: |
-        #     ** Changing file_identity methods between runs may result in duplicated events in the output. Only use this strategy if your log files are rotated to a folder outside of the scope of your input or not at all. Otherwise you end up with duplicated events. **
-        #     To identify files based on their paths use this strategy.
-        #   required: false
-        #   show_user: false
-        # - name: file_identity_inode_marker_path
-        #   type: text
-        #   title: File Identity Inode Marker Path
-        #   description: |
-        #     If the device id changes from time to time, you must use this method to distinguish files. This option is not supported on Windows.
-        #   required: false
-        #   show_user: false
-
         type: yaml
         title: Rotation Strategy
         description: "If the log rotating application copies the contents of the active file and then truncates the original file, use these options to help Elastic Agent to read files correctly.\nSet the option suffix_regex so Elastic Agent can tell active and rotated files apart. \nThere are two supported suffix types in the input: numberic and date.\n"
