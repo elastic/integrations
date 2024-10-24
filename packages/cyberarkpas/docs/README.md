@@ -285,10 +285,7 @@ An example event for `monitor` looks as following:
         "file": {
             "path": "/tmp/service_logs/monitor.log"
         },
-        "offset": 15547,
-        "syslog": {
-            "priority": 5
-        }
+        "offset": 15547
     },
     "observer": {
         "product": "VaultMonitor",
