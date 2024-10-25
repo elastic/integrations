@@ -5,12 +5,14 @@ processors:
   # Set ECS version.
   #
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
   #
   # Set event.original from message, unless reindexing.
   #
   - rename:
+      tag: rename_message
       field: message
       target_field: event.original
       if: ctx.event?.original == null
@@ -19,6 +21,7 @@ processors:
   # Parse syslog headers (if any) and extract JSON payload.
   #
   - grok:
+      tag: grok_event_original
       field: event.original
       patterns:
         # RFC5424 from CyberArk.
@@ -40,6 +43,7 @@ processors:
             message: "unexpected event format: {{{_ingest.on_failure_message}}}"
 
   - json:
+      tag: json_tmp_payload
       field: _tmp.payload
       target_field: _tmp.json
       on_failure:
@@ -47,6 +51,7 @@ processors:
             message: "malformed JSON event: {{{_ingest.on_failure_message}}}"
 
   - rename:
+      tag: rename_tmp_json_syslog_audit_record
       field: _tmp.json.syslog.audit_record
       target_field: cyberarkpas.audit
       on_failure:
@@ -58,12 +63,14 @@ processors:
   # Remove all empty fields
   #
   - script:
+      tag: script_removes_empty_audit_fields
       lang: painless
       description: 'Removes empty audit fields'
       source: >-
         ctx.cyberarkpas.audit.entrySet().removeIf(entry -> entry.getValue() == "");
 
   - rename:
+      tag: rename_tmp_json_raw
       field: _tmp.json.raw
       target_field: cyberarkpas.audit.raw
       ignore_missing: true
@@ -75,6 +82,7 @@ processors:
   # - Syslog header timestamp. Either ISO8601 or legacy MMM dd HH:mm:ss, depending on the syslog format in use.
   # - Original @timestamp from Filebeat.
   - date:
+      tag: date_cyberarkpas_audit_isotimestamp
       if: ctx.cyberarkpas.audit.IsoTimestamp != null
       field: cyberarkpas.audit.IsoTimestamp
       target_field: _tmp.timestamp
@@ -86,6 +94,7 @@ processors:
             value: "failed to parse ISO timestamp field: {{{cyberarkpas.audit.IsoTimestamp}}}: {{{_ingest.on_failure_message}}}"
 
   - date:
+      tag: date_cyberarkpas_audit_timestamp
       if: 'ctx._tmp.timestamp == null && ctx.cyberarkpas.audit.Timestamp != null'
       field: cyberarkpas.audit.Timestamp
       target_field: _tmp.timestamp
@@ -115,6 +124,7 @@ processors:
             value: "failed to parse timestamp field: {{{cyberarkpas.audit.Timestamp}}}: {{{_ingest.on_failure_message}}}"
 
   - date:
+      tag: date_tmp_syslog_ts
       if: ctx._tmp.timestamp == null && ctx._tmp.syslog_ts != null && ctx.event?.timezone == null
       field: _tmp.syslog_ts
       target_field: _tmp.timestamp
@@ -144,6 +154,7 @@ processors:
             value: "failed to parse legacy syslog timestamp: {{{_tmp.syslog_ts}}}: {{{_ingest.on_failure_message}}}"
 
   - date:
+      tag: date_tmp_syslog_ts_2
       if: ctx._tmp.timestamp == null && ctx._tmp.syslog_ts != null && ctx.event?.timezone != null
       field: _tmp.syslog_ts
       target_field: _tmp.timestamp
@@ -174,6 +185,7 @@ processors:
             value: "failed to parse legacy syslog timestamp: {{{_tmp.syslog_ts}}}: {{{_ingest.on_failure_message}}}"
 
   - set:
+      tag: set_timestamp
       field: '@timestamp'
       value: '{{{_tmp.timestamp}}}'
       ignore_empty_value: true
@@ -183,6 +195,7 @@ processors:
   # When there's a single property, it is serialised as an object instead
   # of a single element array.
   - script:
+      tag: script_converts_caproperties_into_an_array_if_necessary
       lang: painless
       description: "Converts CAProperties into an array if necessary"
       source: >
@@ -211,10 +224,12 @@ processors:
   #                "UserName": "test12"
   #            }
   - foreach:
+      tag: foreach_cyberarkpas_audit_caproperties_caproperty
       field: cyberarkpas.audit.CAProperties.CAProperty
       ignore_missing: true
       processor:
         set:
+          tag: set_cyberarkpas_audit_caproperties_ingest_value_name
           field: 'cyberarkpas.audit.CAProperties.{{{_ingest._value.Name}}}'
           value: '{{{_ingest._value.Value}}}'
       on_failure:
@@ -222,6 +237,7 @@ processors:
             field: error.message
             value: "failed to process CAProperties array: {{{_ingest.on_failure_message}}}"
   - remove:
+      tag: remove_cyberarkpas_audit_caproperties_caproperty
       field: cyberarkpas.audit.CAProperties.CAProperty
       ignore_missing: true
 
@@ -238,6 +254,7 @@ processors:
   #
   # The original string can contain escaped separators, \= and \;
   - kv:
+      tag: kv_cyberarkpas_audit_extradetails
       field: cyberarkpas.audit.ExtraDetails
       field_split: '(?<!\\);' # unescaped ;
       value_split: '(?<!\\)=' # unescaped =
@@ -248,10 +265,12 @@ processors:
             field: error.message
             value: "failed to process ExtraDetails expression '{{{cyberarkpas.audit.ExtraDetails}}}': {{{_ingest.on_failure_message}}}"
   - remove:
+      tag: remove_cyberarkpas_audit_extradetails
       field: cyberarkpas.audit.ExtraDetails
       ignore_missing: true
 
   - rename:
+      tag: rename_tmp_kv
       field: _tmp.kv
       target_field: cyberarkpas.audit.ExtraDetails
       ignore_missing: true
@@ -260,6 +279,7 @@ processors:
   # Convert field names from CamelCase to snake_case.
   #
   - script:
+      tag: script_converts_audit_field_s_names_from_camelcase_to_snake_case
       lang: painless
       description: "Converts audit field's names from CamelCase to snake_case"
       source: >
@@ -305,6 +325,7 @@ processors:
   # Convert rfc5424 field to boolean.
   #
   - script:
+      tag: script_converts_the_rfc5424_audit_field_to_a_boolean
       description: 'Converts the rfc5424 audit field to a boolean'
       lang: painless
       source: >
@@ -319,10 +340,12 @@ processors:
   ########################################################
 
   - set:
+      tag: set_event_kind
       field: event.kind
       value: event
 
   - lowercase:
+      tag: lowercase_cyberarkpas_audit_action
       field: cyberarkpas.audit.action
       target_field: event.action
       ignore_missing: true
@@ -334,38 +357,46 @@ processors:
   # Error -> 7
   # Critical -> 10
   - set:
+      tag: set_event_severity
       field: event.severity
       value: 2
       if: 'ctx.cyberarkpas.audit.severity == "Info"'
   - set:
+      tag: set_event_severity_2
       field: event.severity
       value: 7
       if: 'ctx.cyberarkpas.audit.severity == "Error"'
   - set:
+      tag: set_event_severity_3
       field: event.severity
       value: 10
       if: 'ctx.cyberarkpas.audit.severity == "Critical"'
   - set:
+      tag: set_event_type
       field: event.type
       value: [error]
       if: ctx.event?.severity != null && ctx.event.severity > 6
 
   - rename:
+      tag: rename_cyberarkpas_audit_message_id
       field: cyberarkpas.audit.message_id
       target_field: event.code
       ignore_missing: true
 
   - set:
+      tag: set_source_address
       field: source.address
       value: '{{{cyberarkpas.audit.station}}}'
       ignore_empty_value: true
 
   - set:
+      tag: set_destination_address
       field: destination.address
       value: '{{{cyberarkpas.audit.gateway_station}}}'
       ignore_empty_value: true
 
   - set:
+      tag: set_file_path
       field: file.path
       value: '{{{cyberarkpas.audit.file}}}'
       if: ctx.cyberarkpas.audit?.file != null
@@ -374,23 +405,28 @@ processors:
   # Observer fields
   #
   - rename:
+      tag: rename_cyberarkpas_audit_vendor
       field: cyberarkpas.audit.vendor
       target_field: observer.vendor
       ignore_missing: true
   - rename:
+      tag: rename_cyberarkpas_audit_product
       field: cyberarkpas.audit.product
       target_field: observer.product
       ignore_missing: true
   - rename:
+      tag: rename_cyberarkpas_audit_version
       field: cyberarkpas.audit.version
       target_field: observer.version
       ignore_missing: true
   - rename:
+      tag: rename_cyberarkpas_audit_hostname
       field: cyberarkpas.audit.hostname
       target_field: observer.hostname
       ignore_missing: true
   # Use hostname from syslog if audit record's Hostname field is missing.
   - rename:
+      tag: rename_tmp_hostname
       field: _tmp.hostname
       target_field: observer.hostname
       ignore_missing: true
@@ -412,6 +448,7 @@ processors:
   # for value-to pairs, another for value-from pairs.
   #
   - script:
+      tag: script_ecs_enrichment_based_on_message_id
       lang: painless
       description: 'ECS enrichment based on message_id'
       params:
@@ -950,10 +987,12 @@ processors:
         if (!values.isEmpty()) ctx._tmp["values"] = values;
 
   - foreach:
+      tag: foreach_tmp_values
       field: _tmp.values
       ignore_missing: true
       processor:
         set:
+          tag: set_ingest_value_to
           field: '{{{_ingest._value.to}}}'
           copy_from: '_ingest._value.value'
           ignore_empty_value: true
@@ -963,6 +1002,7 @@ processors:
   # Force event.outcome: unknown in case it gets a value other than one of the allowed.
   #
   - set:
+      tag: set_event_outcome
       field: event.outcome
       value: 'unknown'
       if: 'ctx.event?.outcome != null && !["success", "failure"].contains(ctx.event.outcome)'
@@ -972,6 +1012,7 @@ processors:
   # Set event.duration from the session duration ("hh:mm:ss") present in some messages.
   #
   - script:
+      tag: script_set_event_duration_from_the_session_duration_hh_mm_ss
       lang: painless
       description: 'Set event.duration from the session duration ("hh:mm:ss")'
       if: ctx._tmp?.duration_hms != null
@@ -998,6 +1039,7 @@ processors:
   # Populate ip/domain fields from address.
   #
   - convert:
+      tag: convert_source_address
       field: source.address
       target_field: source.ip
       type: ip
@@ -1007,6 +1049,7 @@ processors:
             field: source.domain
             copy_from: source.address
   - convert:
+      tag: convert_destination_address
       field: destination.address
       target_field: destination.ip
       type: ip
@@ -1020,21 +1063,25 @@ processors:
   # Populate related.ip
   #
   - append:
+      tag: append_related_ip
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_2
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_3
       field: related.ip
       value: '{{{cyberarkpas.audit.station}}}'
       if: ctx.cyberarkpas.audit.station != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_4
       field: related.ip
       value: '{{{cyberarkpas.audit.gateway_station}}}'
       if: ctx.cyberarkpas.audit.gateway_station != null
@@ -1044,21 +1091,25 @@ processors:
   # Populate related.user
   #
   - append:
+      tag: append_related_user
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_2
       field: related.user
       value: '{{{source.user.name}}}'
       if: ctx.source?.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_3
       field: related.user
       value: '{{{destination.user.name}}}'
       if: ctx.destination?.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_4
       field: related.user
       value: '{{{user.target.name}}}'
       if: ctx.user?.target?.name != null
@@ -1068,15 +1119,18 @@ processors:
   # sometimes application is capitalized.
   #
   - lowercase:
+      tag: lowercase_network_application
       field: network.application
       ignore_missing: true
 
   - geoip:
+      tag: geoip_source_ip
       field: source.ip
       target_field: source.geo
       ignore_missing: true
 
   - geoip:
+      tag: geoip_destination_ip
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
@@ -1087,12 +1141,14 @@ processors:
   # have a host.name. This is the case of forwarded events (the tag "forwarded" is present).
   #
   - set:
+      tag: set_host_name
       field: host.name
       value: '{{{observer.hostname}}}'
       ignore_empty_value: true
       if: ctx.host?.name == null
 
   - network_direction:
+      tag: network_direction
       ignore_missing: true
       internal_networks:
         - loopback
@@ -1100,6 +1156,7 @@ processors:
         - unspecified
 
   - convert:
+      tag: convert_process_pid
       field: process.pid
       type: long
       ignore_missing: true
@@ -1109,6 +1166,7 @@ processors:
   # to prevent mapping explosion. Keep the rest under .other (type flattened).
   #
   - script:
+      tag: script_map_interesting_fields_from_ca_properties_and_extra_details
       lang: painless
       description: Map interesting fields from ca_properties and extra_details.
       params:
@@ -1173,15 +1231,20 @@ processors:
   # Cleanup
   #
   - remove:
+      tag: remove_tmp
       field: _tmp
       ignore_missing: true
+
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_tmp_on_falure
       field: _tmp
       ignore_missing: true
   - set:
+      tag: set_event_kind_on_failure
       field: event.kind
       value: pipeline_error

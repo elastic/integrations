@@ -3,14 +3,17 @@ description: Pipeline for CyberArk PAS audit, wrapper
 processors:
 
   - pipeline:
+      tag: pipeline_audit
       name: '{{ IngestPipeline "audit" }}'
       if: |
         !ctx.message.contains('"Product":"VaultMonitor"')
 
 on_failure:
   - append:
+      tag: append_error_message
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
