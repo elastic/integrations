@@ -1,31 +1,52 @@
-# TODO: placeholder
 source:
   index: "logs-*"
   query:
     bool:
-      must_not:
-        term:
-          'user.name':
-            value: system
       filter:
+        - range:
+              '@timestamp':
+                gte: now-1M
         - exists:
-            field: 
-        
-  runtime_mappings:
-        
+            field: winlog.event_data.PrivilegeList
+        - terms:
+            'host.os.type': ["windows","Windows"]
+        - terms:
+            'event.action': ["logged-in-special","privileged-service-called","privileged-operation"]
+        - terms:
+            'winlog.event_data.PrivilegeList': ["SeDebugPrivilege","SeTakeOwnershipPrivilege","SeBackupPrivilege", "SeRestorePrivilege","SeImpersonatePrivilege","SeAssignPrimaryTokenPrivilege"]
 dest:
-  index: ""
-  # TODO: Placeholder
-description: This transform runs hourly.
+  index: ml_privilege_type_ped-0.0.1
+  aliases:
+    - alias: ml_privilege_type_ped.latest
+      move_on_creation: true
+    - alias: ml_privilege_type_ped.all
+      move_on_creation: false
+description: This transform runs hourly and collects special privileges assigned to an user in Windows events for Privilege Escalation Detection package.
 frequency: 1h
 pivot:
   aggregations:
-    # TODO: Placeholder
+    '@timestamp':
+      max:
+        field: '@timestamp'
   group_by:
     'host.name':
       terms:
         field: host.name
-
+    'user.name':
+      terms:
+        field: user.name
+    'privilege_type':
+      terms:
+        field: winlog.event_data.PrivilegeList
+    'event.action':
+      terms:
+        field: event.action
+    'event.category':
+      terms:
+        field: event.category
+    'event.code':
+      terms:
+        field: event.code
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.
   deduce_mappings: false
@@ -35,5 +56,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: # TODO
+  fleet_transform_version: 0.0.1
   run_as_kibana_system: false
