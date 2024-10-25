@@ -1,0 +1,227 @@
+config_version: 3
+resource.rate_limit.limit: 0.2
+resource.rate_limit.burst: 5
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+resource.url: {{base_url}}
+interval: {{interval}}
+state:
+  auth_client_id: {{client_id}}
+  auth_access_key: {{access_key}}
+  initial_interval: {{initial_interval}}
+  limit: {{limit}}
+  page_limit: {{page_limit}}
+  filter: {{filter}}
+program: |-
+  (!has(state.cursor) || has(state.cursor) && has(state.cursor.auth_token) && state.cursor.auth_token == null) ?
+  	(
+  		// Authenticating using API to retrieve auth token
+  		request("POST", state.url.trim_right("/") + "/auth/external").with(
+  			{
+  				"Header": {
+  					"Accept": ["application/json"],
+  					"Content-Type": ["application/json"],
+  				},
+  				"Body": {
+  					"clientId": state.auth_client_id,
+  					"accessKey": state.auth_access_key,
+  				}.encode_json(),
+  			}
+  		).do_request().as(resp,
+  			(resp.StatusCode == 200) ?
+  				bytes(resp.Body).decode_json().as(body,
+  					body.data.token
+  				)
+  			:
+  				bytes(resp.Body).decode_json().as(body,
+  					body.message
+  				)
+  		).as(auth_token,
+  			// submit logs query to search security event logs
+  			request("POST", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query").with(
+  				{
+  					"Header": {
+  						"Accept": ["application/json"],
+  						"Content-Type": ["application/json"],
+  						"Authorization": ["Bearer " + auth_token],
+  					},
+  					"Body": {
+  						"filter": state.filter,
+  						"limit": state.limit,
+  						"pageLimit": state.page_limit,
+  						"cloudService": "Harmony Endpoint",
+  						"timeframe": {
+  							"startTime": (state.?cursor.next_startTime.orValue(null) == null) ?
+  								timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)
+  							:
+  								timestamp(state.cursor.next_startTime).format(time_layout.RFC3339),
+  							"endTime": timestamp(now().format(time_layout.RFC3339)),
+  						},
+  					}.encode_json(),
+  				}
+  			).do_request().as(resp,
+  				(resp.StatusCode == 200) ?
+  					bytes(resp.Body).decode_json().as(body,
+  						state.with(
+  							{
+  								"events": [{ "message": { "event": { "reason": "polling" }}.encode_json() }],
+  								"want_more": true,
+  								"cursor": {
+  									"auth_token": auth_token,
+  									"task_id": body.data.taskId,
+  									"task_ready": false,
+  									"page_token": null,
+  									"next_startTime": (has(state.cursor) && has(state.cursor.next_startTime)) ? state.cursor.next_startTime : null,
+  									"last_page": false,
+  								},
+  							}
+  						)
+  					)
+  				:
+  					state.with(
+  						{
+  							"events": {
+  								"error": {
+  									"message": "Error " + bytes(resp.Body).decode_json().as(body, body.message),
+  								},
+  							},
+  							"want_more": false,
+  							"cursor": state.cursor.with(
+  								{
+  									"auth_token": null,
+  									"task_id": null,
+  									"task_ready": false,
+  									"page_token": null,
+  									"last_page": false,
+  								}
+  							),
+  						}
+  					)
+  			)
+  		)
+  	)
+  : (has(state.cursor) && has(state.cursor.task_ready) && state.cursor.task_ready == false) ?
+  	(
+  		// submit task ID to Check the progress of specific search event logs task and get the pageTokens
+  		request("GET", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query/" + state.cursor.task_id).with(
+  			{
+  				"Header": {
+  					"Accept": ["application/json"],
+  					"Content-Type": ["application/json"],
+  					"Authorization": ["Bearer " + state.cursor.auth_token],
+  				},
+  			}
+  		).do_request().as(resp,
+  			bytes(resp.Body).decode_json().as(body,
+  				// 'Ready' - Found results. Ready to retrieve event logs records on the 1st page
+  				(body.data.state == "Ready") ?
+  					state.with(
+  						{
+  							"events": [{ "message": { "event": { "reason": "polling" }}.encode_json() }],
+  							"want_more": true,
+  							"cursor": state.cursor.with(
+  								{
+  									"task_ready": true,
+  									"page_token": body.data.pageTokens[0],
+  									"last_page": null,
+  								}
+  							),
+  						}
+  					)
+  				: (body.data.state == "Done") ?
+  					// 'Done' - The entire specified time range of request has been covered / No results have been found for specified request
+  					state.with(
+  						{
+  							"events": [],
+  							"want_more": false,
+  							"cursor": state.cursor.with(
+  								{
+  									"auth_token": null,
+  									"task_ready": null,
+  									"page_token": null,
+  									"last_page": null,
+  								}
+  							),
+  						}
+  					)
+  				:
+  					state.with(
+  						{
+  							"events": [{ "message": { "event": { "reason": "polling" }}.encode_json() }],
+  							"want_more": true,
+  							"cursor": state.cursor.with(
+  								{
+  									"task_ready": false,
+  									"page_token": null,
+  									"last_page": null,
+  								}
+  							),
+  						}
+  					)
+  			)
+  		)
+  	)
+  :
+  	// use task ID and pageToken to retrieve event logs results on a specific page
+  	request("POST", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query/retrieve").with(
+  		{
+  			"Header": {
+  				"Accept": ["application/json"],
+  				"Content-Type": ["application/json"],
+  				"Authorization": ["Bearer " + state.cursor.auth_token],
+  			},
+  			"Body": {
+  				"taskId": state.cursor.task_id,
+  				"pageToken": state.cursor.page_token,
+  			}.encode_json(),
+  		}
+  	).do_request().as(resp,
+  		bytes(resp.Body).decode_json().as(body,
+  			(body.data.nextPageToken == "NULL") ?
+  				state.with(
+  					{
+  						"events": body.data.records.map(e, {"message": e.encode_json()}),
+  						"want_more": false,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_token": null,
+  								"task_id": null,
+  								"task_ready": null,
+  								"page_token": null,
+  								"last_page": null,
+  							}
+  						),
+  					}
+  				)
+  			:
+  				state.with(
+  					{
+  						"events": body.data.records.map(e, {"message": e.encode_json()}),
+  						"want_more": true,
+  						"cursor": state.cursor.with(
+  							{
+  								"task_ready": true,
+  								"page_token": body.data.nextPageToken,
+  								"last_page": false,
+  							}
+  						),
+  					}
+  				)
+  		)
+  	)
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
