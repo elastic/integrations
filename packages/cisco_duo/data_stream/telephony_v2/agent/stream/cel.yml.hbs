@@ -1,6 +1,8 @@
 config_version: 2
 interval: {{interval}}
 resource.url: {{hostname}}
+resource.rate_limit.burst: 1
+resource.rate_limit.limit: {{rate_limit}}
 
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
@@ -20,6 +22,7 @@ state:
   want_more: false
 redact:
   fields:
+    - integration_key
     - secret_key
 
 program: |
@@ -89,11 +92,11 @@ program: |
                     "maxtime": state.maxtime,
                     "date": now.format(time_layout.RFC1123Z),
                     "want_more": has(body.?response.?metadata.next_offset),
-                    ?"next_offset": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
-                                        optional.of(string(body.response.metadata.next_offset))
-                                    :
-                                        optional.none(),
-                    "next_url": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
+                    ?"next_offset": (body.?response.metadata.next_offset.orValue(null) != null) ?
+                        optional.of(string(body.response.metadata.next_offset))
+                    :
+                        optional.none(),
+                    "next_url": (body.?response.metadata.next_offset.orValue(null) != null) ?
                         (
                             state.url.trim_right("/") + "/admin/v2/logs/telephony?" + {
                                 "limit": [string(int(state.limit))],
@@ -106,7 +109,7 @@ program: |
                     :
                         state.url,
                     "cursor": {
-                        ?"last_published": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
+                        ?"last_published": (body.?response.metadata.next_offset.orValue(null) != null) ?
                             optional.of(body.response.metadata.next_offset.re_find("next_offset_timestamp"))
                         :
                             optional.none(),
@@ -126,17 +129,11 @@ program: |
                         "error": {
                             "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
                             "id": string(resp.Status),
-                            "message": "GET: " +
-                            (
-                                (has(body.message) && body.message != "") ?
-                                    string(body.message) +
-                                        (has(body.message_detail) ?
-                                            ": " + string(body.message_detail)
-                                        :
-                                            ""
-                                        )
+                            "message": "GET:"+(
+                                size(resp.Body) != 0 ?
+                                    string(resp.Body)
                                 :
-                                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                             ),
                         },
                     },
