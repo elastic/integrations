@@ -56,9 +56,9 @@ An example event for `antibot` looks as following:
 {
     "@timestamp": "2024-09-02T08:53:44.000Z",
     "agent": {
-        "ephemeral_id": "a22f8dc3-1126-463a-895a-0d645369539c",
-        "id": "8c588b7d-ec50-491f-a04a-660fc1d85796",
-        "name": "elastic-agent-63373",
+        "ephemeral_id": "cebc2bcd-9723-4948-bfd6-fc0e0dfd5784",
+        "id": "d4e5bf31-1f9a-4721-9f32-d3d87eca6898",
+        "name": "elastic-agent-88462",
         "type": "filebeat",
         "version": "8.15.1"
     },
@@ -97,7 +97,7 @@ An example event for `antibot` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.antibot",
-        "namespace": "59697",
+        "namespace": "78732",
         "type": "logs"
     },
     "destination": {
@@ -110,7 +110,7 @@ An example event for `antibot` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8c588b7d-ec50-491f-a04a-660fc1d85796",
+        "id": "d4e5bf31-1f9a-4721-9f32-d3d87eca6898",
         "snapshot": false,
         "version": "8.15.1"
     },
@@ -122,10 +122,9 @@ An example event for `antibot` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.antibot",
         "id": "a4640108-91b1-0f19-66d5-7d9d00000000",
-        "ingested": "2024-10-16T12:45:30Z",
+        "ingested": "2024-10-24T05:31:25Z",
         "kind": "event",
         "module": "checkpoint_harmony_endpoint",
-        "original": "{\"action\":\"Detect\",\"advanced_info\":\"\\\"exclusions\\\":[{\\\"exclusion_engine_type\\\":\\\"Anti Bot exclusions\\\",\\\"exclusion_type\\\":\\\"URL\\\",\\\"exclusion_value\\\":{\\\"default_value\\\":\\\"http://www.threat-cloud.com/test/files/MediumConfidenceBot.html\\\",\\\"md5\\\":\\\"\\\",\\\"original_name\\\":\\\"\\\",\\\"signer\\\":\\\"\\\",\\\"process\\\":\\\"\\\",\\\"protection\\\":\\\"\\\",\\\"comment\\\":\\\"\\\"}}]\",\"client_name\":\"Check Point Endpoint Security Client\",\"client_version\":[\"88.50.0213\"],\"confidence_level\":\"Medium\",\"description\":\"Detected bot activity [Anti-Bot test.TC.e]. To exclude: On the Harmony Endpoint Management add an exclusion of type \\\"URL\\\" with value: \\\"http://www.threat-cloud.com/test/files/MediumConfidenceBot.html\\\"\",\"domain\":\"SMC User\",\"dst\":\"89.160.20.128\",\"dst_country\":[\"UnitedStates\"],\"event_type\":\"Anti Bot Event\",\"file_md5\":\"bd075be9d011daaa82c3f9ff2572076e\",\"file_name\":[\"chrome.exe\"],\"file_size\":2742376,\"file_type\":\"exe\",\"host_type\":[\"Desktop\"],\"id\":\"a4640108-91b1-0f19-66d5-7d9d00000000\",\"installed_products\":\"Full Disk Encryption; Media Encryption \\u0026 Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation\",\"malware_action\":[\"Communication with C\\u0026C\"],\"orig\":\"164.100.1.8\",\"os_name\":[\"Microsoft Windows 10 Pro\"],\"os_version\":[\"10.0-19045-SP0.0-SMP\"],\"packet_capture\":\"Packet Capture\",\"packet_capture_unique_id\":\"6c239c74-89a9-4797-ab6b-75a2b2a6afd7\",\"policy_date\":\"2024-08-29T13:12:51.0000000Z\",\"policy_name\":\"Default Anti-Bot settings\",\"policy_number\":2,\"process_username\":\"admin\",\"product\":\"Anti-Bot\",\"product_family\":\"Endpoint\",\"protection_name\":\"Anti-Bot test.TC.e\",\"protection_type\":\"URL Reputation\",\"proxy_src_ip\":\"89.160.20.128\",\"resource\":[\"www.threat-cloud.com\"],\"sequencenum\":16777215,\"severity\":\"Critical\",\"src\":\"10.35.38.102\",\"src_machine_name\":\"DESKTOP-E2P4OL0\",\"src_user_name\":[\"admin\"],\"tenant_id\":\"3e15ed24-89ff-4986-a204-c425cee4ba48\",\"time\":\"2024-09-02T08:53:44Z\",\"type\":\"Log\",\"user_sid\":\"S-1-5-21-3766288932-3295778425-2939962592-1001\"}",
         "type": [
             "info"
         ]
@@ -179,7 +178,6 @@ An example event for `antibot` looks as following:
         "name": "Anti-Bot test.TC.e"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded"
     ],
     "url": {
@@ -245,9 +243,9 @@ An example event for `antimalware` looks as following:
 {
     "@timestamp": "2024-09-02T09:09:07.000Z",
     "agent": {
-        "ephemeral_id": "6f9b1904-b131-4c5d-a8f4-cfc55ae7bd63",
-        "id": "996d5a3b-a04b-456d-bdc4-556e57cbf338",
-        "name": "elastic-agent-41900",
+        "ephemeral_id": "972620ca-77a9-4305-991a-5bd475860580",
+        "id": "4cdb965a-db2a-4ec3-9abf-6e20dbb120c9",
+        "name": "elastic-agent-21918",
         "type": "filebeat",
         "version": "8.15.1"
     },
@@ -289,14 +287,14 @@ An example event for `antimalware` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.antimalware",
-        "namespace": "52368",
+        "namespace": "85578",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "996d5a3b-a04b-456d-bdc4-556e57cbf338",
+        "id": "4cdb965a-db2a-4ec3-9abf-6e20dbb120c9",
         "snapshot": false,
         "version": "8.15.1"
     },
@@ -308,10 +306,9 @@ An example event for `antimalware` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.antimalware",
         "id": "a4640108-91b1-0f19-66d5-815d0000000f",
-        "ingested": "2024-10-16T12:46:47Z",
+        "ingested": "2024-10-24T05:32:25Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
-        "original": "{\"action\":\"Detect\",\"action_details\":\"Infected\",\"advanced_info\":\"\\\"exclusions\\\":[{\\\"exclusion_engine_type\\\":\\\"File \\u0026 Folder exclusions (system, scheduled and on-demand)\\\",\\\"exclusion_type\\\":\\\"Path\\\",\\\"exclusion_value\\\":{\\\"default_value\\\":\\\"md5:\\\",\\\"md5\\\":\\\"\\\",\\\"original_name\\\":\\\"\\\",\\\"signer\\\":\\\"\\\",\\\"process\\\":\\\"\\\",\\\"protection\\\":\\\"\\\",\\\"comment\\\":\\\"md5 taken from file C:\\\\\\\\Users\\\\\\\\admin\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\9e68140d-22bb-4e96-8aaa-70ec80eb2dc4.tmp\\\"}}]\",\"client_name\":\"Check Point Endpoint Security Client\",\"client_version\":[\"88.50.0213\"],\"confidence_level\":\"High\",\"connectivity_state\":\"Connected\",\"domain\":\"SMC User\",\"engine_ver\":\"3.90\",\"event_type\":\"Infection\",\"file_name\":[\"9e68140d-22bb-4e96-8aaa-70ec80eb2dc4.tmp\"],\"host_type\":[\"Desktop\"],\"id\":\"a4640108-91b1-0f19-66d5-815d0000000f\",\"infection_category\":\"Malware\",\"installed_products\":\"Full Disk Encryption; Media Encryption \\u0026 Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation\",\"orig\":\"164.100.1.8\",\"os_name\":[\"Microsoft Windows 10 Pro\"],\"os_version\":[\"10.0-19045-SP0.0-SMP\"],\"packet_capture\":\"Packet Capture\",\"packet_capture_unique_id\":\"31dc576b-7192-49bf-b2fc-b40c93f84b7c\",\"policy_date\":\"2024-08-29T13:12:46.0000000Z\",\"policy_name\":\"Default Anti-Malware settings for the entire organization\",\"policy_number\":3,\"product\":\"Anti-Malware\",\"product_family\":\"Endpoint\",\"protection_name\":\"Mal/ShellDl-A\",\"protection_type\":\"Protection\",\"sequencenum\":16777215,\"severity\":\"High\",\"sig_ver\":\"202409011444\",\"src\":\"10.35.38.102\",\"src_machine_name\":\"DESKTOP-E2P4OL0\",\"src_user_name\":[\"admin\"],\"tenant_id\":\"3e15ed24-89ff-4986-a204-c425cee4ba48\",\"time\":\"2024-09-02T09:09:07Z\",\"type\":\"Log\",\"user_sid\":\"S-1-5-21-3766288932-3295778425-2939962592-1001\"}",
         "type": [
             "info"
         ]
@@ -356,7 +353,6 @@ An example event for `antimalware` looks as following:
         ]
     },
     "tags": [
-        "preserve_original_event",
         "forwarded"
     ],
     "user": {
@@ -429,9 +425,9 @@ An example event for `forensics` looks as following:
 {
     "@timestamp": "2024-09-03T08:53:12.000Z",
     "agent": {
-        "ephemeral_id": "044d2eb6-c360-4fd2-b538-6f4e02a47e55",
-        "id": "13ca61fe-0b3c-4f6f-917b-94f0c50d0869",
-        "name": "elastic-agent-53231",
+        "ephemeral_id": "76820ab1-9086-4fc7-975c-2e7cda1f601c",
+        "id": "3df1f948-9917-4dc4-a724-f2b5934a6652",
+        "name": "elastic-agent-71957",
         "type": "filebeat",
         "version": "8.15.1"
     },
@@ -472,14 +468,14 @@ An example event for `forensics` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.forensics",
-        "namespace": "81720",
+        "namespace": "38429",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "13ca61fe-0b3c-4f6f-917b-94f0c50d0869",
+        "id": "3df1f948-9917-4dc4-a724-f2b5934a6652",
         "snapshot": false,
         "version": "8.15.1"
     },
@@ -491,10 +487,9 @@ An example event for `forensics` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.forensics",
         "id": "a4640108-91b1-0f19-66d6-ceb500000000",
-        "ingested": "2024-10-16T12:48:05Z",
+        "ingested": "2024-10-24T05:33:21Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
-        "original": "{\"action\":\"Detect\",\"attack_status\":\"Dormant\",\"client_name\":\"Check Point Endpoint Security Client\",\"client_version\":[\"88.50.0213\"],\"confidence_level\":\"High\",\"description\":\"To exclude the file: On the Harmony Endpoint Management add this sha1 exclusion: 62f0bd56-b0e1235b-99940b34-916c19ec-fac8e80c Attack status: Dormant.\",\"detected_by\":\"Endpoint File Reputation\",\"domain\":\"SMC User\",\"event_type\":\"Forensics Case Analysis\",\"file_md5\":\"1468c1908845ef238f7f196809946288\",\"file_name\":[\"malz5.zip\"],\"file_sha1\":\"62f0bd56b0e1235b99940b34916c19ecfac8e80c\",\"file_size\":12707198,\"file_type\":\"zip\",\"host_type\":[\"Desktop\"],\"id\":\"a4640108-91b1-0f19-66d6-ceb500000000\",\"installed_products\":\"Full Disk Encryption; Media Encryption \\u0026 Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation\",\"malware_action\":[\" \"],\"orig\":\"164.100.1.8\",\"os_name\":[\"Microsoft Windows 10 Pro\"],\"os_version\":[\"10.0-19045-SP0.0-SMP\"],\"packet_capture\":\"Packet Capture\",\"packet_capture_unique_id\":\"0acd55a9-f241-4097-a699-6b7e41cd26af\",\"policy_date\":\"2024-09-02T06:23:25.0000000Z\",\"policy_name\":\"Default Forensics settings\",\"policy_number\":3,\"product\":\"Forensics\",\"product_family\":\"Endpoint\",\"protection_name\":\"Gen.Rep.zip\",\"protection_type\":\"File Reputation\",\"remediated_files\":\"malz5.zip(Remediation disabled in policy)\",\"resource\":[\"c:\\\\users\\\\admin\\\\downloads\\\\malz5.zip\"],\"sequencenum\":1,\"service_domain\":\"ep-demo\",\"severity\":\"Critical\",\"src\":\"10.35.38.102\",\"src_machine_name\":\"DESKTOP-E2P4OL0\",\"src_user_name\":[\"admin\"],\"suspicious_events\":\"System Shutdown / Reboot: ; \",\"tenant_id\":\"3e15ed24-89ff-4986-a204-c425cee4ba48\",\"time\":\"2024-09-03T08:53:12.000001Z\",\"type\":\"Log\",\"user_sid\":\"S-1-5-21-3766288932-3295778425-2939962592-1001\"}",
         "type": [
             "info"
         ]
@@ -545,7 +540,6 @@ An example event for `forensics` looks as following:
         "name": "Gen.Rep.zip"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded"
     ],
     "user": {
@@ -605,9 +599,9 @@ An example event for `threatemulation` looks as following:
 {
     "@timestamp": "2024-09-02T09:04:54.000Z",
     "agent": {
-        "ephemeral_id": "cd80a7d2-1abd-4303-94ed-446dc88b0aec",
-        "id": "d3599781-3b5b-4b42-8fa1-55c02f518a12",
-        "name": "elastic-agent-22343",
+        "ephemeral_id": "8723e6bf-0b1a-4a95-95b6-d5e11a0380a7",
+        "id": "9f7d3384-0b1f-462c-9d71-0e0580545765",
+        "name": "elastic-agent-95748",
         "type": "filebeat",
         "version": "8.15.1"
     },
@@ -649,14 +643,14 @@ An example event for `threatemulation` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.threatemulation",
-        "namespace": "88153",
+        "namespace": "43839",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d3599781-3b5b-4b42-8fa1-55c02f518a12",
+        "id": "9f7d3384-0b1f-462c-9d71-0e0580545765",
         "snapshot": false,
         "version": "8.15.1"
     },
@@ -668,10 +662,9 @@ An example event for `threatemulation` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.threatemulation",
         "id": "a4640108-91b1-0f19-66d5-803100000012",
-        "ingested": "2024-10-16T12:49:21Z",
+        "ingested": "2024-10-24T05:34:17Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
-        "original": "{\"action\":\"Detect\",\"advanced_info\":\"\\\"exclusions\\\":[{\\\"exclusion_engine_type\\\":\\\"Threat Emulation, Extraction and Zero Phishing Exclusions\\\",\\\"exclusion_type\\\":\\\"SHA1\\\",\\\"exclusion_value\\\":{\\\"default_value\\\":\\\"9d3395d94c6bbba52abf0e6afcbf4ca312597c21\\\",\\\"md5\\\":\\\"\\\",\\\"original_name\\\":\\\"\\\",\\\"signer\\\":\\\"\\\",\\\"process\\\":\\\"\\\",\\\"protection\\\":\\\"\\\",\\\"comment\\\":\\\"\\\"}}]\",\"analyzed_on\":\"Check Point Threat Emulation Cloud\",\"client_name\":\"Check Point Endpoint Security Client\",\"client_version\":[\"88.50.0213\"],\"confidence_level\":\"High\",\"description\":\"Endpoint TE detected malicious file (681573a2-414a-4f7d-9683-177df4f8ca7f.tmp) . To exclude the file: On the Harmony Endpoint Management add this sha1 exclusion: 9d3395d9-4c6bbba5-2abf0e6a-fcbf4ca3-12597c21\",\"domain\":\"SMC User\",\"event_type\":\"TE Event\",\"file_md5\":\"ebe8b633d231bbfee9543d744a2ab59d\",\"file_name\":[\"681573a2-414a-4f7d-9683-177df4f8ca7f.tmp\"],\"file_sha1\":\"9d3395d94c6bbba52abf0e6afcbf4ca312597c21\",\"file_size\":139648,\"file_type\":\"zip\",\"host_type\":[\"Desktop\"],\"id\":\"a4640108-91b1-0f19-66d5-803100000012\",\"incident_uid\":\"74a33ecb-1b91-4c25-a136-1989eb175638\",\"installed_products\":\"Full Disk Encryption; Media Encryption \\u0026 Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation\",\"malware_action\":[\"Adware\\\",\\\"Solimba\\\",\\\"Trojan\\\",\\\"behavior\"],\"orig\":\"164.100.1.8\",\"os_name\":[\"Microsoft Windows 10 Pro\"],\"os_version\":[\"10.0-19045-SP0.0-SMP\"],\"packet_capture\":\"Packet Capture\",\"packet_capture_unique_id\":\"5e3302e5-3f73-4b77-beec-2849003e9d47\",\"policy_date\":\"2024-08-29T13:12:50.0000000Z\",\"policy_name\":\"Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization\",\"policy_number\":3,\"product\":\"Threat Emulation\",\"product_family\":\"Endpoint\",\"protection_name\":\"Gen.SB.zip\",\"protection_type\":\"File System Emulation\",\"resource\":[\"C:\\\\Users\\\\admin\\\\Downloads\\\\681573a2-414a-4f7d-9683-177df4f8ca7f.tmp\"],\"sequencenum\":16777215,\"severity\":\"Critical\",\"src\":\"10.35.38.102\",\"src_machine_name\":\"DESKTOP-E2P4OL0\",\"src_user_name\":[\"admin\"],\"tenant_id\":\"3e15ed24-89ff-4986-a204-c425cee4ba48\",\"time\":\"2024-09-02T09:04:54Z\",\"type\":\"Log\",\"user_sid\":\"S-1-5-21-3766288932-3295778425-2939962592-1001\",\"verdict\":\"Malicious\",\"web_client_type\":[\" \"]}",
         "type": [
             "info"
         ]
@@ -722,7 +715,6 @@ An example event for `threatemulation` looks as following:
         "name": "Gen.SB.zip"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded"
     ],
     "user": {
@@ -784,9 +776,9 @@ An example event for `threatextraction` looks as following:
 {
     "@timestamp": "2024-09-02T09:21:42.000Z",
     "agent": {
-        "ephemeral_id": "0f7bce95-f77d-4d0b-bf57-9cef8e83c07e",
-        "id": "0d7c3d9f-9fc6-454b-a8a5-9a78c0a58e10",
-        "name": "elastic-agent-98892",
+        "ephemeral_id": "b2ca27d2-5544-4cc2-9491-f91097060c1c",
+        "id": "82b03ad0-7025-436d-9e81-8a39705e0152",
+        "name": "elastic-agent-30042",
         "type": "filebeat",
         "version": "8.15.1"
     },
@@ -824,14 +816,14 @@ An example event for `threatextraction` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.threatextraction",
-        "namespace": "10676",
+        "namespace": "81720",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0d7c3d9f-9fc6-454b-a8a5-9a78c0a58e10",
+        "id": "82b03ad0-7025-436d-9e81-8a39705e0152",
         "snapshot": false,
         "version": "8.15.1"
     },
@@ -843,10 +835,9 @@ An example event for `threatextraction` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.threatextraction",
         "id": "a4640108-91b1-0f19-66d5-83f100000019",
-        "ingested": "2024-10-16T12:50:41Z",
+        "ingested": "2024-10-24T05:35:11Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
-        "original": "{\"action\":\"Extract\",\"advanced_info\":\" \\\"disable_exclusion\\\": true \",\"client_name\":\"Check Point Endpoint Security Client\",\"client_version\":[\"88.50.0213\"],\"confidence_level\":\"High\",\"description\":\"File is not supported for extraction\",\"domain\":\"SMC User\",\"event_type\":\"TEX Event\",\"extension_version\":\" 990.97.911 \",\"file_name\":[\"mirai.sh4\"],\"file_sha1\":\"no-sha1\",\"file_size\":0,\"file_type\":\"sh4\",\"host_type\":[\"Desktop\"],\"id\":\"a4640108-91b1-0f19-66d5-83f100000019\",\"installed_products\":\"Full Disk Encryption; Media Encryption \\u0026 Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation\",\"malware_action\":[\"Not Supported\"],\"orig\":\"164.100.1.8\",\"os_name\":[\"Microsoft Windows 10 Pro\"],\"os_version\":[\"10.0-19045-SP0.0-SMP\"],\"policy_date\":\"2024-08-29T13:12:50.0000000Z\",\"policy_name\":\"Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization\",\"policy_number\":3,\"product\":\"Threat Extraction\",\"product_family\":\"Endpoint\",\"protection_name\":\"Extract potentially malicious content\",\"protection_type\":\"Content Removal\",\"resource\":[\"blob:https://github.com/6bd30ea7-29a8-4dd2-9056-f5077632e110\"],\"sequencenum\":1,\"severity\":\"Informational\",\"src\":\"10.35.38.102\",\"src_machine_name\":\"DESKTOP-E2P4OL0\",\"src_user_name\":[\"admin\"],\"tenant_id\":\"3e15ed24-89ff-4986-a204-c425cee4ba48\",\"time\":\"2024-09-02T09:21:42.000001Z\",\"type\":\"Log\",\"user_sid\":\"S-1-5-21-3766288932-3295778425-2939962592-1001\",\"web_client_type\":[\"Chrome\"]}",
         "type": [
             "info"
         ]
@@ -895,7 +886,6 @@ An example event for `threatextraction` looks as following:
         "name": "Extract potentially malicious content"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded"
     ],
     "user": {
@@ -954,9 +944,9 @@ An example event for `urlfiltering` looks as following:
 {
     "@timestamp": "2024-09-06T10:07:43.000Z",
     "agent": {
-        "ephemeral_id": "8056b591-3e57-49e0-a4b9-4b6e8ff13bc5",
-        "id": "9e8852c9-618f-4e4f-9c29-b1c984d05986",
-        "name": "elastic-agent-13355",
+        "ephemeral_id": "95fc55ec-9d54-4116-87cc-a4fe3767eba0",
+        "id": "3c23eeec-fde0-4811-91a1-6bc5b403c95e",
+        "name": "elastic-agent-18777",
         "type": "filebeat",
         "version": "8.15.1"
     },
@@ -998,14 +988,14 @@ An example event for `urlfiltering` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.urlfiltering",
-        "namespace": "31738",
+        "namespace": "69408",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9e8852c9-618f-4e4f-9c29-b1c984d05986",
+        "id": "3c23eeec-fde0-4811-91a1-6bc5b403c95e",
         "snapshot": false,
         "version": "8.15.1"
     },
@@ -1017,10 +1007,9 @@ An example event for `urlfiltering` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.urlfiltering",
         "id": "a4640108-91b1-0f19-66da-d62100000013",
-        "ingested": "2024-10-16T12:52:00Z",
+        "ingested": "2024-10-24T05:36:11Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
-        "original": "{\"action\":\"Detect\",\"advanced_info\":\"\\\"exclusions\\\":[{\\\"exclusion_engine_type\\\":\\\"URL Filtering exclusions\\\",\\\"exclusion_type\\\":\\\"Domain\\\",\\\"exclusion_value\\\":{\\\"default_value\\\":\\\"secure.indeed.com\\\",\\\"md5\\\":\\\"\\\",\\\"original_name\\\":\\\"\\\",\\\"signer\\\":\\\"\\\",\\\"process\\\":\\\"\\\",\\\"protection\\\":\\\"\\\",\\\"comment\\\":\\\"\\\"}}]\",\"app_id\":\"0\",\"app_properties\":[\"Job Search / Careers, Business / Economy\"],\"appi_name\":\"secure.indeed.com\",\"client_name\":\"Check Point Endpoint Security Client\",\"client_version\":[\"88.50.0213\"],\"description\":\"URLF Info Event\",\"domain\":\"SMC User\",\"dst\":\"0.0.0.0\",\"event_type\":\"URLF Info Event\",\"host_type\":[\"Desktop\"],\"id\":\"a4640108-91b1-0f19-66da-d62100000013\",\"installed_products\":\"Full Disk Encryption; Media Encryption \\u0026 Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation\",\"matched_category\":\"Job Search / Careers\",\"orig\":\"164.100.1.8\",\"os_name\":[\"Microsoft Windows 10 Pro\"],\"os_version\":[\"10.0-19045-SP0.0-SMP\"],\"policy_date\":\"2024-09-06T09:57:28.0000000Z\",\"policy_name\":\"Default Anti-Bot settings\",\"policy_number\":4,\"process_exe_path\":\"C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\",\"product\":\"URL Filtering\",\"product_family\":\"Endpoint\",\"protection_name\":\"gen.urlf\",\"protection_type\":\"URL Filtering\",\"resource\":[\"https://secure.indeed.com/auth?branding=save-profile-modal\\u0026tmpl=inline\\u0026from=act_zeroauth_profile_tst\\u0026iframe_tk=9a019527-a6f1-4b3d-b803-2b25bb46b1db\\u0026hl=en_IN\\u0026co=IN\"],\"sequencenum\":16777215,\"severity\":\"Informational\",\"src\":\"10.35.38.102\",\"src_machine_name\":\"DESKTOP-E2P4OL0\",\"src_user_name\":[\"admin\"],\"tenant_id\":\"3e15ed24-89ff-4986-a204-c425cee4ba48\",\"time\":\"2024-09-06T10:07:43Z\",\"type\":\"Log\",\"user_sid\":\"S-1-5-21-3766288932-3295778425-2939962592-1001\",\"usercheck_incident_uid\":\"b04d8940\",\"web_client_type\":[\"Chrome\"]}",
         "type": [
             "info"
         ]
@@ -1057,7 +1046,6 @@ An example event for `urlfiltering` looks as following:
         "name": "gen.urlf"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded"
     ],
     "url": {
@@ -1129,9 +1117,9 @@ An example event for `zerophishing` looks as following:
 {
     "@timestamp": "2024-09-02T08:51:08.000Z",
     "agent": {
-        "ephemeral_id": "ff6dd918-7ac7-468d-aa2e-f84571b60ff0",
-        "id": "c4799924-77f2-44bb-a25e-780cdda57625",
-        "name": "elastic-agent-42453",
+        "ephemeral_id": "9fc6c363-e390-492c-bfdf-684e4d20aff8",
+        "id": "64f03e47-f005-4ecd-8d91-e63af37617a3",
+        "name": "elastic-agent-34074",
         "type": "filebeat",
         "version": "8.15.1"
     },
@@ -1168,14 +1156,14 @@ An example event for `zerophishing` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.zerophishing",
-        "namespace": "91051",
+        "namespace": "39288",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c4799924-77f2-44bb-a25e-780cdda57625",
+        "id": "64f03e47-f005-4ecd-8d91-e63af37617a3",
         "snapshot": false,
         "version": "8.15.1"
     },
@@ -1187,10 +1175,9 @@ An example event for `zerophishing` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.zerophishing",
         "id": "a4640108-91b1-0f19-66d5-7d6100000004",
-        "ingested": "2024-10-16T12:53:20Z",
+        "ingested": "2024-10-24T05:37:11Z",
         "kind": "alert",
         "module": "checkpoint_harmony_endpoint",
-        "original": "{\"action\":\"Detect\",\"advanced_info\":\"\\\"exclusions\\\":[{\\\"exclusion_engine_type\\\":\\\"Threat Emulation, Extraction and Zero Phishing Exclusions\\\",\\\"exclusion_type\\\":\\\"Domain\\\",\\\"exclusion_value\\\":{\\\"default_value\\\":\\\"main.sbm-demo.xyz\\\",\\\"md5\\\":\\\"\\\",\\\"original_name\\\":\\\"\\\",\\\"signer\\\":\\\"\\\",\\\"process\\\":\\\"\\\",\\\"protection\\\":\\\"\\\",\\\"comment\\\":\\\"\\\"}}]\",\"client_name\":\"Check Point Endpoint Security Client\",\"client_version\":[\"88.50.0213\"],\"confidence_level\":\"High\",\"description\":\"Deceptive site (https://main.sbm-demo.xyz/zero-phishing) was detected.\",\"domain\":\"SMC User\",\"event_type\":\"Phishing Event\",\"extension_version\":\"Check Point Endpoint Security Client\",\"host_type\":[\"Desktop\"],\"id\":\"a4640108-91b1-0f19-66d5-7d6100000004\",\"installed_products\":\"Full Disk Encryption; Media Encryption \\u0026 Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation\",\"malware_action\":[\" \"],\"orig\":\"164.100.1.8\",\"os_name\":[\"Microsoft Windows 10 Pro\"],\"os_version\":[\"10.0-19045-SP0.0-SMP\"],\"policy_date\":\"2024-08-29T13:12:50.0000000Z\",\"policy_name\":\"Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization\",\"policy_number\":3,\"product\":\"Zero Phishing\",\"product_family\":\"Endpoint\",\"protection_name\":\"gen.ba.phishing\",\"protection_type\":\"Phishing\",\"resource\":[\"https://main.sbm-demo.xyz/zero-phishing\"],\"sequencenum\":16777215,\"severity\":\"High\",\"src\":\"10.35.38.102\",\"src_machine_name\":\"DESKTOP-E2P4OL0\",\"src_user_name\":[\"admin\"],\"tenant_id\":\"3e15ed24-89ff-4986-a204-c425cee4ba48\",\"time\":\"2024-09-02T08:51:08Z\",\"type\":\"Log\",\"user_sid\":\"S-1-5-21-3766288932-3295778425-2939962592-1001\",\"web_client_type\":[\"Chrome\"]}",
         "type": [
             "info"
         ]
@@ -1227,7 +1214,6 @@ An example event for `zerophishing` looks as following:
         "name": "gen.ba.phishing"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded"
     ],
     "url": {
