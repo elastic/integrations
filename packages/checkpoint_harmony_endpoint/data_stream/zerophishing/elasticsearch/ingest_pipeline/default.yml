@@ -1,0 +1,275 @@
+---
+description: Pipeline for processing Harmony Endpoint Zero Phishing logs
+processors:
+
+#################### Event ECS fields ####################
+
+  - set:
+      field: event.module
+      value: checkpoint_harmony_endpoint
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - set:
+      field: event.kind
+      value: alert
+  - set:
+      field: event.type
+      value: ['info']
+  - set:
+      field: event.category
+      value: ['malware']
+  - set:
+      field: event.dataset
+      value: checkpoint_harmony_endpoint.zerophishing
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - drop:
+      if: ctx.json?.event?.reason == 'polling'      
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+
+#################### Related fields ####################
+
+  - append:
+      field: related.user
+      value: '{{{json.src_user_name}}}'
+      allow_duplicates: false
+      if: ctx.json?.src_user_name instanceof String
+  - foreach:
+      field: json.src_user_name
+      if: ctx.json?.src_user_name instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_src_user_name_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{json.process_username}}}'
+      allow_duplicates: false
+      if: ctx.json?.process_username != null
+  - append:
+      field: related.ip
+      value: '{{{json.src}}}'
+      if: ctx.json?.src != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{json.dst}}}'
+      if: ctx.json?.dst != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{json.proxy_src_ip}}}'
+      if: ctx.json?.proxy_src_ip != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{json.src_machine_name}}}'
+      if: ctx.json?.src_machine_name != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{json.file_md5}}}'
+      if: ctx.json?.file_md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{json.file_sha1}}}'
+      if: ctx.json?.file_sha1 != null
+      allow_duplicates: false
+
+####################### ECS fields #####################
+
+  - date:
+      field: json.time
+      target_field: "@timestamp"
+      formats:
+        - strict_date_optional_time_nanos
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.host_type
+      target_field: host.type
+      ignore_missing: true
+  - append:
+      field: host.ip
+      value: '{{{json.src}}}'
+      if: ctx.json?.src != null
+      allow_duplicates: false
+  - rename:
+      field: json.src_machine_name
+      target_field: host.hostname
+      override: true
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: host.hostname
+      ignore_empty_value: true
+  - rename:
+      field: json.os_name
+      target_field: host.os.name
+      if: ctx.json?.os_name != null
+      override: true
+  - rename:
+      field: json.os_version
+      target_field: host.os.version
+      if: ctx.json?.os_version != null
+      override: true
+  - script:
+      lang: painless
+      if: ctx.host?.os?.name != null && ctx.host?.os?.version != null
+      source: |-
+        if (ctx.host.os.name instanceof List && ctx.host.os.name.size() == 1)
+            ctx.host.os.name = ctx.host.os.name[0];
+        if (ctx.host.os.version instanceof List && ctx.host.os.version.size() == 1)
+            ctx.host.os.version = ctx.host.os.version[0];
+  - rename:
+      field: json.domain
+      target_field: user.domain
+      ignore_missing: true
+  - rename:
+      field: json.src_user_name
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: json.user_sid
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: json.resource
+      target_field: url.original
+      if: ctx.json?.resource != null && ["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
+  - script:
+      lang: painless
+      if: ctx.url?.original != null
+      source: |-
+        if (ctx.url.original instanceof List && ctx.url.original.size() == 1)
+            ctx.url.original = ctx.url.original[0];
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_harmony_endpoint_zerophishing
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.protection_name
+      target_field: rule.name
+      ignore_missing: true
+
+#################### Zero Phishing Log fields ####################
+
+  - rename:
+      field: json
+      target_field: checkpoint_harmony_endpoint.zerophishing
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.zerophishing.policy_date
+      target_field: checkpoint_harmony_endpoint.zerophishing.policy.date
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.zerophishing.policy_name
+      target_field: checkpoint_harmony_endpoint.zerophishing.policy.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.zerophishing.policy_number
+      target_field: checkpoint_harmony_endpoint.zerophishing.policy.number
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.zerophishing.client_name
+      target_field: checkpoint_harmony_endpoint.zerophishing.client.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.zerophishing.client_version
+      target_field: checkpoint_harmony_endpoint.zerophishing.client.version
+      if: ctx.checkpoint_harmony_endpoint.zerophishing?.client_version != null
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.client?.version != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.zerophishing.client.version instanceof List && ctx.checkpoint_harmony_endpoint.zerophishing.client.version.size() == 1)
+            ctx.checkpoint_harmony_endpoint.zerophishing.client.version = ctx.checkpoint_harmony_endpoint.zerophishing.client.version[0];
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.web_client_type != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.zerophishing.web_client_type instanceof List && ctx.checkpoint_harmony_endpoint.zerophishing.web_client_type.size() == 1)
+            ctx.checkpoint_harmony_endpoint.zerophishing.web_client_type = ctx.checkpoint_harmony_endpoint.zerophishing.web_client_type[0];
+  - remove:
+      field: checkpoint_harmony_endpoint.zerophishing.web_client_type
+      ignore_missing: true
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.web_client_type == " "
+  - rename:
+      field: checkpoint_harmony_endpoint.zerophishing.malware_action
+      target_field: checkpoint_harmony_endpoint.zerophishing.malware.action
+      if: ctx.checkpoint_harmony_endpoint.zerophishing?.malware_action != null
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.malware?.action != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.zerophishing.malware.action instanceof List && ctx.checkpoint_harmony_endpoint.zerophishing.malware.action.size() == 1)
+            ctx.checkpoint_harmony_endpoint.zerophishing.malware.action = ctx.checkpoint_harmony_endpoint.zerophishing.malware.action[0];
+  - remove:
+      field: checkpoint_harmony_endpoint.zerophishing.malware.action
+      ignore_missing: true
+      if: ctx.checkpoint_harmony_endpoint?.zerophishing?.malware?.action == " "
+  - rename:
+      field: checkpoint_harmony_endpoint.zerophishing.product
+      target_field: checkpoint_harmony_endpoint.zerophishing.product.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.zerophishing.product_family
+      target_field: checkpoint_harmony_endpoint.zerophishing.product.family
+      ignore_missing: true
+
+##################################### Clean Up ###########################################
+
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+  - remove:
+      field:
+        - checkpoint_harmony_endpoint.zerophishing.client_version
+        - checkpoint_harmony_endpoint.zerophishing.malware_action
+        - checkpoint_harmony_endpoint.zerophishing.os_name
+        - checkpoint_harmony_endpoint.zerophishing.os_version
+        - checkpoint_harmony_endpoint.zerophishing.product_family
+        - checkpoint_harmony_endpoint.zerophishing.orig
+        - checkpoint_harmony_endpoint.zerophishing.time
+      ignore_missing: true
+      tag: remove_custom_duplicate_fields
+
+############################## Handle failures ########################################
+
+on_failure:
+  - append:
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+
+############################################################################
