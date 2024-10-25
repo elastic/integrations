@@ -10,14 +10,14 @@ This integration includes only the Corelight dashboards mentioned below:
 
 ## Prerequisites:
 
-**Add ECS Mappings**: Start by adding the ECS (Elastic Common Schema) mappings from the [Corelight GitHub repository](https://github.com/corelight). You can find the required templates here: [Corelight ECS Templates](https://github.com/corelight/ecs-templates). These mappings will ensure that Corelight data is correctly formatted and aligned with Elastic's schema.
+**Add ECS Mappings**: Start by adding the ECS (Elastic Common Schema) mappings from the [Corelight GitHub organization](https://github.com/corelight). You can find the required templates here: [Corelight ECS Templates](https://github.com/corelight/ecs-templates). The script within the repository installs the necessary components, including index settings, index templates, ILM policies, and ingest pipelines etc. These components will ensure that Corelight data is correctly formatted and aligned with Elastic's schema.
 
 **Send Data from Corelight to Elastic**: Once the ECS mappings are in place, configure Elasticsearch in the web interface under Sensor > Export > Export to Elastic. It will require below parameters:
 - **Server:** The HTTP or HTTPS URL (including the port).
 - **Prefix:** The Elasticsearch index, alias, and template prefix (e.g. logs-corelight-*).
-- **Username:** The Username to authentic to Elasticsearch.
-- **Password:** The Password to authentic to Elasticsearch.
-- **Zeek logs to exclude:** Logs that you don't want to export to elasticsearch. if blank, Sensor will exports all log types.
+- **Username:** The Username to authenticate to Elasticsearch.
+- **Password:** The Password to authenticate to Elasticsearch.
+- **Zeek logs to exclude:** Logs that you don't want to export to Elasticsearch. If blank, sensor will export all log types.
 - **Elasticsearch log filter:** Logs to exclude using the Corelight Filtering Language.
 
 **Note**: Use the index prefix name (logs-*) instead of a custom index prefix.
