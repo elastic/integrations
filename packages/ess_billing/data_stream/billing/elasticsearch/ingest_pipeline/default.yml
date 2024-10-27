@@ -42,7 +42,9 @@ processors:
   - grok:
       field: "ess.billing.sku"
       patterns:
-        - "(?:Cloud-Enterprise_)?%{NOTSPACE:cloud.provider}\\.%{NOTSPACE:cloud.machine.type}_%{NOTSPACE:cloud.region}_%{NUMBER:ess.billing.ram_per_zone:int}_%{NUMBER:ess.billing.zone_count:int}"
+        - "(?:Cloud-Enterprise_)?%{CLOUD_PROVIDER:cloud.provider}\\.%{NOTSPACE:cloud.machine.type}_%{NOTSPACE:cloud.region}_%{NUMBER:ess.billing.ram_per_zone:int}_%{NUMBER:ess.billing.zone_count:int}"
+      pattern_definitions:
+        CLOUD_PROVIDER: "aws|gcp|azure|global"
       if: "ctx.ess.billing.type == 'capacity'"
       ignore_failure: true
       tag: grok_sku
@@ -63,7 +65,7 @@ processors:
       ignore_missing: true
       tag: convert_zone_count
   - set:
-      field: "geo"
+      field: "cloud.geo"
       value: {}
   - script:
       lang: "painless"
@@ -131,12 +133,12 @@ processors:
         ];
         String region = ctx.cloud.region;
         if (regionGeo.containsKey(region)) {
-          ctx.geo = regionGeo[region];
+          ctx.cloud.geo = regionGeo[region];
         }
   - set:
-      if: "ctx.geo.name == null"
+      if: "ctx.cloud.geo.name == null"
       tag: set_unknown_geo
-      field: "geo"
+      field: "cloud.geo"
       value:
         name: "unknown"
         location:
