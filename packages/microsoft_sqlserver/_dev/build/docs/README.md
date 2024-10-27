@@ -38,7 +38,7 @@ If you browse Microsoft Developer Network (MSDN) for the following tables, you w
 1. `transaction_log`:
     - [sys.databases](https://learn.microsoft.com/en-us/sql/relational-databases/system-compatibility-views/sys-sysdatabases-transact-sql?view=sql-server-ver16)
     - [sys.dm_db_log_space_usage](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-space-usage-transact-sql?view=sql-server-ver16)
-    - [sys.dm_db_log_stats (DB_ID)](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-stats-transact-sql?view=sql-server-ver16)
+    - [sys.dm_db_log_stats (DB_ID)](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-stats-transact-sql?view=sql-server-ver16) (Available on SQL Server (MSSQL) 2016 (13.x) SP 2 and later)
 2. `performance`:
     - [sys.dm_os_performance_counters](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16)
 
@@ -112,8 +112,7 @@ Read more in [instructions about each performance counter metrics](https://docs.
 
 #### Transaction log metrics
 
-Collects system level `transaction_log` metrics information for SQL Server instance.
-Metrics for user-level databases can be collected by providing a list of user databases for which metrics are to be collected.
+The system-level database `transaction_log` metrics for SQL Server instances are collected by default. Metrics for user-level databases can be collected by specifying a list of user databases or by enabling the `Fetch from all databases` toggle to collect metrics from all databases on the server.
 
 Read more in [instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15).
 
@@ -133,6 +132,10 @@ When the password contains special characters, pass these special characters usi
 
 The SQL Server audit dataset provides events from the configured Windows event log channel. All SQL Server audit-specific fields are available in the `sqlserver.audit` field group.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "audit"}}
 
 ### log
@@ -140,6 +143,10 @@ The SQL Server audit dataset provides events from the configured Windows event l
 The Microsoft SQL Server `log` dataset parses error logs created by the Microsoft SQL server.
 
 {{event "log"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "log"}}
 
@@ -151,12 +158,20 @@ The Microsoft SQL Server `performance` dataset provides metrics from the perform
 
 {{event "performance"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "performance"}}
 
 ### transaction_log
 
-The Microsoft SQL Server `transaction_log` dataset provides metrics from the log space usage and log stats tables of the system databases. All `transaction_log` metrics will be available in the `sqlserver.metrics` field group.
+The Microsoft SQL Server `transaction_log` dataset provides metrics from the log space usage and log stats tables. All `transaction_log` metrics will be available in the `sqlserver.metrics` field group.
 
 {{event "transaction_log"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "transaction_log"}}

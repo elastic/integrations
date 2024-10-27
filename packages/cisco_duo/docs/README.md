@@ -1,6 +1,6 @@
 # Cisco Duo
 
-The Cisco Duo integration collects and parses data from the [Cisco Duo Admin APIs](https://duo.com/docs/adminapi).
+The Cisco Duo integration collects and parses data from the [Cisco Duo Admin APIs](https://duo.com/docs/adminapi). The Duo Admin API provides programmatic access to the administrative functionality of Duo Security's two-factor authentication platform.
 
 ## Compatibility
 
@@ -16,13 +16,235 @@ In order to ingest data from the Cisco Duo Admin API you must:
 - For this integration you will require **Grant read information** and **Grant read log** permissions.
 - Make sure you have whitelisted your IP Address.
 
-## Note
+More details for each step can be found at [First steps](https://duo.com/docs/adminapi#first-steps).
 
-While setting up the interval take care of following.
-- `Interval has to be greater than 1m.`
-- `Larger values of interval might cause delay in data ingestion.`
+## Data streams
+
+The Cisco Duo integration collects logs for the following types of events.
+
+- [**Activity Logs**](https://duo.com/docs/adminapi#activity-logs)
+- [**Administrator Logs**](https://duo.com/docs/adminapi#administrator-logs)
+- [**Authentication Logs**](https://duo.com/docs/adminapi#authentication-logs)
+- [**Offline Enrollment Logs**](https://duo.com/docs/adminapi#offline-enrollment-logs)
+- [**Summary**](https://duo.com/docs/adminapi#retrieve-summary)
+- [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
+- [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
+- [**Trust Monitor**](https://duo.com/docs/adminapi#trust-monitor)
+
+## V2 Handlers
+
+Cisco Duo has implemented v2 handlers for some endpoints. In these cases, the API v1 handler remains supported, but will be limited or deprecated in the future.
+
+From data streams listed above, v2 handlers are supported for Activity, Authentication and Telephony Logs at the moment. It is recommended to migrate data streams to the v2 endpoints when they become available.
+
+## Configuration
+
+The following considerations should be taken into account when configuring the integration.
+
+- Interval has to be greater or equal than `1m`.
+- The Duo Admin API retrieves records from the last 180 days up to as recently as two minutes before the API request. Consider this when configuring the `Initial interval` parameter for the v2 API endpoints, as it doesn't support `d` as a suffix, its maximum value is `4320h` which corresponds to that 180 days.
+- For v2 API endpoints, a new parameter `limit` has been added to control the number of records per response. Default value is 100 and can be incresead until 1000.
+- Larger values of interval might cause delay in data ingestion.
 
 ## Logs
+
+### Activity
+
+This is the `activity` dataset.
+
+An example event for `activity` looks as following:
+
+```json
+{
+    "@timestamp": "2023-03-21T15:51:22.591Z",
+    "agent": {
+        "ephemeral_id": "a2607e25-642e-478e-ae8e-189c5fa6a9b5",
+        "id": "2f6f5efc-3ffe-45bc-960e-d7ddeea449ac",
+        "name": "elastic-agent-79912",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "cisco_duo": {
+        "activity": {
+            "access_device": {
+                "browser": "Chrome",
+                "browser_version": "111.0.0.0",
+                "epkey": "EP123456789012345678",
+                "ip": {
+                    "address": "172.34.40.116"
+                },
+                "location": {
+                    "city": "Ann Arbor",
+                    "country": "United States",
+                    "state": "Michigan"
+                },
+                "os": "Mac OS X",
+                "os_version": "10.15.7"
+            },
+            "action": {
+                "name": "webauthncredential_create"
+            },
+            "actor": {
+                "details": {
+                    "created": "2015-09-25T23:17:40.000000+00:00",
+                    "groups": [
+                        {
+                            "key": "DGAZ172QBWDM26AK8ITK",
+                            "name": "CorpHQ_Users"
+                        },
+                        {
+                            "key": "DGK3B7XTSIP00LKHK1RD",
+                            "name": "ITAdmins"
+                        },
+                        {
+                            "key": "DGKZWSBCDADEVFGFK5NR",
+                            "name": "yee"
+                        }
+                    ],
+                    "last_login": "2023-03-21T19:51:09.000000+00:00",
+                    "status": "Active"
+                },
+                "key": "DU64TKJPJ0SHFWKO2LNBC",
+                "name": "sogilby",
+                "type": "user"
+            },
+            "akey": "DAAR5FO0OZ4VYZA0WOB2",
+            "application": {
+                "key": "DILSVDEYH66TBHKIXGR9",
+                "name": "Acme Corp",
+                "type": "websdk"
+            },
+            "id": "720b8360-078b-47c4-adc7-7968df1caef0",
+            "outcome": "FAILURE",
+            "target": {
+                "details": {
+                    "authenticator_type": "Security key",
+                    "browser": "Chrome",
+                    "browser_version": "111.0.0.0",
+                    "credential_name": "Security key",
+                    "os": "Mac OS X",
+                    "os_version": "10.15.7",
+                    "passwordless_authorized": false,
+                    "transport_types": "usb",
+                    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
+                },
+                "key": "WAUKH0IMTGP00L90LT4KM",
+                "name": "WAUKH0IMTG3EDD4DT4KM",
+                "type": "webauthn_credential"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_duo.activity",
+        "namespace": "97942",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "2f6f5efc-3ffe-45bc-960e-d7ddeea449ac",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "action": "webauthncredential_create",
+        "agent_id_status": "verified",
+        "dataset": "cisco_duo.activity",
+        "id": "720b8360-078b-47c4-adc7-7968df1caef0",
+        "ingested": "2024-10-15T16:21:02Z",
+        "kind": "event",
+        "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"111.0.0.0\",\"epkey\":\"EP123456789012345678\",\"ip\":{\"address\":\"172.34.40.116\"},\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.15.7\"},\"action\":{\"details\":null,\"name\":\"webauthncredential_create\"},\"activity_id\":\"720b8360-078b-47c4-adc7-7968df1caef0\",\"actor\":{\"details\":{\"created\":\"2015-09-25T23:17:40.000000+00:00\",\"groups\":[{\"key\":\"DGAZ172QBWDM26AK8ITK\",\"name\":\"CorpHQ_Users\"},{\"key\":\"DGK3B7XTSIP00LKHK1RD\",\"name\":\"ITAdmins\"},{\"key\":\"DGKZWSBCDADEVFGFK5NR\",\"name\":\"yee\"}],\"last_login\":\"2023-03-21T19:51:09.000000+00:00\",\"status\":\"Active\"},\"key\":\"DU64TKJPJ0SHFWKO2LNBC\",\"name\":\"sogilby\",\"type\":\"user\"},\"akey\":\"DAAR5FO0OZ4VYZA0WOB2\",\"application\":{\"key\":\"DILSVDEYH66TBHKIXGR9\",\"name\":\"Acme Corp\",\"type\":\"websdk\"},\"old_target\":null,\"outcome\":{\"result\":\"FAILURE\"},\"target\":{\"details\":{\"authenticator_type\":\"Security key\",\"browser\":\"Chrome\",\"browser_version\":\"111.0.0.0\",\"credential_name\":\"Security key\",\"os\":\"Mac OS X\",\"os_version\":\"10.15.7\",\"passwordless_authorized\":false,\"transport_types\":\"usb\",\"user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36\"},\"key\":\"WAUKH0IMTGP00L90LT4KM\",\"name\":\"WAUKH0IMTG3EDD4DT4KM\",\"type\":\"webauthn_credential\"},\"ts\":\"2023-03-21T15:51:22.591015+00:00\"}",
+        "outcome": "failure"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "ip": [
+            "172.34.40.116"
+        ],
+        "user": [
+            "sogilby"
+        ]
+    },
+    "source": {
+        "ip": "172.34.40.116"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cisco_duo-activity"
+    ],
+    "user": {
+        "name": "sogilby"
+    },
+    "user_agent": {
+        "name": "Chrome",
+        "os": {
+            "name": "Mac OS X",
+            "version": "10.15.7"
+        },
+        "version": "111.0.0.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cisco_duo.activity.access_device.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| cisco_duo.activity.access_device.as.organization.name | Organization name. | keyword |
+| cisco_duo.activity.access_device.browser | The web browser used for access. | keyword |
+| cisco_duo.activity.access_device.browser_version | The web browser version. | keyword |
+| cisco_duo.activity.access_device.epkey | The device's unique identifier or epkey. | keyword |
+| cisco_duo.activity.access_device.geo.city_name | City name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.continent_name | Name of the continent (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.country_iso_code | Country ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.country_name | Country name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.location | Longitude and latitude (geo enrichment based on the IP address). | geo_point |
+| cisco_duo.activity.access_device.geo.region_iso_code | Region ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.geo.region_name | Region name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.activity.access_device.ip.address | IP address of access device. | ip |
+| cisco_duo.activity.access_device.location.city | The city name provided by Cisco Duo. | keyword |
+| cisco_duo.activity.access_device.location.country | The country code provided by Cisco Duo. Refer to ISO 3166 for a list of possible countries. | keyword |
+| cisco_duo.activity.access_device.location.state | The state, county, province, or prefecture provided by Cisco Duo. | keyword |
+| cisco_duo.activity.access_device.os | The device operating system name. | keyword |
+| cisco_duo.activity.access_device.os_version | The device operating system version. | keyword |
+| cisco_duo.activity.action.details | Provides additional information about the action. Details is optional. | keyword |
+| cisco_duo.activity.action.name | The name is a string representing the action the actor performed. If a target is present, the action was performed on that target. | keyword |
+| cisco_duo.activity.actor.details | Details about the actor. | flattened |
+| cisco_duo.activity.actor.key | Identifier of the actor. | keyword |
+| cisco_duo.activity.actor.name | Name of the actor. | keyword |
+| cisco_duo.activity.actor.type | Type of actor. One of: admin, adminapi, admin_sync, azure_sync, deviceapi, ldapsync, system, or user. | keyword |
+| cisco_duo.activity.akey | Unique identifier of entity associated with the activity log. | keyword |
+| cisco_duo.activity.application.key | The application's integration key. | keyword |
+| cisco_duo.activity.application.name | The application's name. | keyword |
+| cisco_duo.activity.application.type | The application's type. | keyword |
+| cisco_duo.activity.id | Transaction ID of the event. | keyword |
+| cisco_duo.activity.old_target.details | Key-value pair of properties about the target. The properties for a given target may vary by target type, but should be consistent for the same type. | flattened |
+| cisco_duo.activity.old_target.key | Key of the target that corresponds to the target type. | keyword |
+| cisco_duo.activity.old_target.name | Name of the target. | keyword |
+| cisco_duo.activity.old_target.type | The target type. One of: admin, adminap_integrations, authproxy, computer_registration, device_registration, enroll_code, group, log_export, login_settings, hardtoken, integration, phone, policy, trusted_endpoints_integration, u2f_token, user, user_bypass, or webauthn_credentials. | keyword |
+| cisco_duo.activity.outcome | Result of the ADMIN_ACTION_ADMIN_LOGIN action. By default, the outcome field is "SUCCESS". On failure, the outcome field is "FAILURE". | keyword |
+| cisco_duo.activity.target.details | Key-value pair of properties about the target. The properties for a given target may vary by target type, but should be consistent for the same type. | flattened |
+| cisco_duo.activity.target.key | Key of the target that corresponds to the target type. | keyword |
+| cisco_duo.activity.target.name | Name of the target. | keyword |
+| cisco_duo.activity.target.type | The target type. One of: admin, adminap_integrations, authproxy, computer_registration, device_registration, enroll_code, group, log_export, login_settings, hardtoken, integration, phone, policy, trusted_endpoints_integration, u2f_token, user, user_bypass, or webauthn_credentials. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+
 
 ### Administrator
 
@@ -90,7 +312,6 @@ An example event for `admin` looks as following:
         "name": "narroway"
     }
 }
-
 ```
 
 **Exported fields**
@@ -100,69 +321,21 @@ An example event for `admin` looks as following:
 | @timestamp | Event timestamp. | date |
 | cisco_duo.admin.action | The type of change that was performed | keyword |
 | cisco_duo.admin.action_performed_on | The object that was acted on. | keyword |
+| cisco_duo.admin.errors | The set of error reported for the event. | match_only_text |
 | cisco_duo.admin.flattened | ES flattened datatype for objects where the subfields aren't known in advance. | flattened |
+| cisco_duo.admin.status | The status of the event. | keyword |
 | cisco_duo.admin.user.name | The full name of the administrator who performed the action in the Duo Admin Panel. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| tags | List of keywords used to tag each event. | keyword |
-| user.changes.email | User email address. | keyword |
-| user.changes.name | Short name or login of the user. | keyword |
-| user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
-| user.email | User email address. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| user.target.name | Short name or login of the user. | keyword |
-| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
 ### Authentication
@@ -175,16 +348,34 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2020-02-13T18:56:20.000Z",
     "agent": {
-        "ephemeral_id": "d12366d8-e76c-4b7a-a521-cf8f709b7fd3",
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "59577463-d70a-4e8d-b98a-f19259ea5754",
+        "id": "58df2bd8-08b5-427c-9e9f-5bd330eaff86",
+        "name": "elastic-agent-17284",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.13.0"
     },
     "cisco_duo": {
         "auth": {
             "access_device": {
+                "as": {
+                    "number": 29518,
+                    "organization": {
+                        "name": "Bredband2 AB"
+                    }
+                },
                 "flash_version": "uninstalled",
+                "geo": {
+                    "city_name": "Linköping",
+                    "continent_name": "Europe",
+                    "country_iso_code": "SE",
+                    "country_name": "Sweden",
+                    "location": {
+                        "lat": 58.4167,
+                        "lon": 15.6167
+                    },
+                    "region_iso_code": "SE-E",
+                    "region_name": "Östergötland County"
+                },
                 "ip": "89.160.20.156",
                 "is_encryption_enabled": "true",
                 "is_firewall_enabled": "true",
@@ -220,25 +411,24 @@ An example event for `auth` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_duo.auth",
-        "namespace": "ep",
+        "namespace": "35756",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "58df2bd8-08b5-427c-9e9f-5bd330eaff86",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
-        "created": "2023-05-10T14:55:22.717Z",
         "dataset": "cisco_duo.auth",
-        "ingested": "2023-05-10T14:55:23Z",
+        "ingested": "2024-10-10T16:29:11Z",
         "kind": "event",
         "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"67.0.3396.99\",\"flash_version\":\"uninstalled\",\"hostname\":null,\"ip\":\"89.160.20.156\",\"is_encryption_enabled\":true,\"is_firewall_enabled\":true,\"is_password_set\":true,\"java_version\":\"uninstalled\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.14.1\",\"security_agents\":null},\"alias\":\"\",\"application\":{\"key\":\"DIY231J8BR23QK4UKBY8\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":\"192.168.225.254\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"name\":\"My iPhone X (734-555-2342)\"},\"email\":\"narroway@example.com\",\"event_type\":\"authentication\",\"factor\":\"duo_push\",\"isotimestamp\":\"2020-02-13T18:56:20.351346+00:00\",\"ood_software\":null,\"reason\":\"user_approved\",\"result\":\"success\",\"timestamp\":1581620180,\"trusted_endpoint_status\":\"not trusted\",\"txid\":\"340a23e3-23f3-23c1-87dc-1491a23dfdbb\",\"user\":{\"groups\":[\"Duo Users\",\"CorpHQ Users\"],\"key\":\"DU3KC77WJ06Y5HIV7XKQ\",\"name\":\"narroway@example.com\"}}",
         "outcome": "success",
@@ -248,12 +438,9 @@ An example event for `auth` looks as following:
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "related": {
-        "hosts": [
-            "89.160.20.156"
-        ],
         "ip": [
             "89.160.20.156",
             "192.168.225.254"
@@ -263,7 +450,6 @@ An example event for `auth` looks as following:
         ]
     },
     "source": {
-        "address": "89.160.20.156",
         "as": {
             "number": 29518,
             "organization": {
@@ -314,7 +500,6 @@ An example event for `auth` looks as following:
         "version": "67.0.3396.99"
     }
 }
-
 ```
 
 **Exported fields**
@@ -322,16 +507,25 @@ An example event for `auth` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cisco_duo.auth.access_device.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| cisco_duo.auth.access_device.as.organization.name | Organization name. | keyword |
 | cisco_duo.auth.access_device.flash_version | The Flash plugin version used, if present. | keyword |
+| cisco_duo.auth.access_device.geo.city_name | City name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.continent_name | Name of the continent (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.country_iso_code | Country ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.country_name | Country name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.location | Longitude and latitude (geo enrichment based on the IP address). | geo_point |
+| cisco_duo.auth.access_device.geo.region_iso_code | Region ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.access_device.geo.region_name | Region name (geo enrichment based on the IP address). | keyword |
 | cisco_duo.auth.access_device.hostname | The hostname, if present. | keyword |
 | cisco_duo.auth.access_device.ip | The access device's IP address. | ip |
 | cisco_duo.auth.access_device.is_encryption_enabled | Reports the disk encryption state as detected by the Duo Device Health app. | keyword |
 | cisco_duo.auth.access_device.is_firewall_enabled | Reports the firewall state as detected by the Duo Device Health app. | keyword |
 | cisco_duo.auth.access_device.is_password_set | Reports the system password state as detected by the Duo Device Health app | keyword |
 | cisco_duo.auth.access_device.java_version | The Java plugin version used. | keyword |
-| cisco_duo.auth.access_device.location.city | The city name of the access device using geoip location. | keyword |
-| cisco_duo.auth.access_device.location.country | The country of the access device using geoip location. | keyword |
-| cisco_duo.auth.access_device.location.state | The state name of the access device using geoip location. | keyword |
+| cisco_duo.auth.access_device.location.city | The city name of the access device provided by Cisco Duo. | keyword |
+| cisco_duo.auth.access_device.location.country | The country of the access device provided by Cisco Duo. | keyword |
+| cisco_duo.auth.access_device.location.state | The state name of the access device provided by Cisco Duo. | keyword |
 | cisco_duo.auth.access_device.port | The access device's port number. | long |
 | cisco_duo.auth.access_device.security_agents | Reports the security agents present on the endpoint as detected by the Duo Device Health app. | flattened |
 | cisco_duo.auth.alias | The username alias used to log in. | keyword |
@@ -339,17 +533,17 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.application.name | The application's name. | keyword |
 | cisco_duo.auth.auth_device.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | cisco_duo.auth.auth_device.as.organization.name | Organization name. | keyword |
-| cisco_duo.auth.auth_device.geo.city_name | City name. | keyword |
-| cisco_duo.auth.auth_device.geo.continent_name | Name of the continent. | keyword |
-| cisco_duo.auth.auth_device.geo.country_iso_code | Country ISO code. | keyword |
-| cisco_duo.auth.auth_device.geo.country_name | Country name. | keyword |
-| cisco_duo.auth.auth_device.geo.location | Longitude and latitude. | geo_point |
-| cisco_duo.auth.auth_device.geo.region_iso_code | Region ISO code. | keyword |
-| cisco_duo.auth.auth_device.geo.region_name | Region name. | keyword |
+| cisco_duo.auth.auth_device.geo.city_name | City name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.continent_name | Name of the continent (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.country_iso_code | Country ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.country_name | Country name (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.location | Longitude and latitude (geo enrichment based on the IP address). | geo_point |
+| cisco_duo.auth.auth_device.geo.region_iso_code | Region ISO code (geo enrichment based on the IP address). | keyword |
+| cisco_duo.auth.auth_device.geo.region_name | Region name (geo enrichment based on the IP address). | keyword |
 | cisco_duo.auth.auth_device.ip | The IP address of the authentication device. | ip |
-| cisco_duo.auth.auth_device.location.city | The city name of the authentication device using geoip location. | keyword |
-| cisco_duo.auth.auth_device.location.country | The country of the authentication device using geoip location. | keyword |
-| cisco_duo.auth.auth_device.location.state | The state name of the authentication device using geoip location. | keyword |
+| cisco_duo.auth.auth_device.location.city | The city name of the authentication device provided by Cisco Duo. | keyword |
+| cisco_duo.auth.auth_device.location.country | The country of the authentication device provided by Cisco Duo. | keyword |
+| cisco_duo.auth.auth_device.location.state | The state name of the authentication device provided by Cisco Duo. | keyword |
 | cisco_duo.auth.auth_device.name | The name of the authentication device. | keyword |
 | cisco_duo.auth.auth_device.port | The network port of the authentication device. | long |
 | cisco_duo.auth.email | The email address of the user, if known to Duo, otherwise none. | keyword |
@@ -360,83 +554,17 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.result | The result of the authentication attempt. | keyword |
 | cisco_duo.auth.trusted_endpoint_status | Status of Trusted Endpoint. | keyword |
 | cisco_duo.auth.txid | The transaction ID of the event. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
-| source.user.email | User email address. | keyword |
-| source.user.group.name | Name of the group. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | keyword |
-| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
-| tags | List of keywords used to tag each event. | keyword |
-| user.email | User email address. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| user_agent.name | Name of the user agent. | keyword |
-| user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
-| user_agent.os.version | Operating system version as a raw string. | keyword |
-| user_agent.version | Version of the user agent. | keyword |
 
 
 ### Offline Enrollment
@@ -509,7 +637,6 @@ An example event for `offline_enrollment` looks as following:
         "name": "narroway"
     }
 }
-
 ```
 
 **Exported fields**
@@ -523,51 +650,17 @@ An example event for `offline_enrollment` looks as following:
 | cisco_duo.offline_enrollment.description.user_agent | The Duo Windows Logon application version information and the Windows OS version and platform information. | keyword |
 | cisco_duo.offline_enrollment.object | The Duo Windows Logon integration's name. | keyword |
 | cisco_duo.offline_enrollment.user.name | The Duo username | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### Summary
@@ -623,7 +716,6 @@ An example event for `summary` looks as following:
         "cisco_duo-summary"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -635,47 +727,17 @@ An example event for `summary` looks as following:
 | cisco_duo.summary.integration_count | Current number of integrations in the account. | integer |
 | cisco_duo.summary.telephony_credits_remaining | Current total number of telephony credits available in the account. This is the sum of all types of telephony credits. | integer |
 | cisco_duo.summary.user_count | Current number of users in the account. | integer |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 ### Telephony
@@ -688,11 +750,11 @@ An example event for `telephony` looks as following:
 {
     "@timestamp": "2020-03-20T15:38:12.000Z",
     "agent": {
-        "ephemeral_id": "fc6cd027-e67d-45f2-81f3-547c668998c6",
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e8ad4b18-fbaa-4216-91a3-4607968d61f3",
+        "id": "0e034435-4ea5-4a95-9f07-151a1467f7d9",
+        "name": "elastic-agent-20659",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.13.0"
     },
     "cisco_duo": {
         "telephony": {
@@ -704,22 +766,22 @@ An example event for `telephony` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_duo.telephony",
-        "namespace": "ep",
+        "namespace": "52653",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "0e034435-4ea5-4a95-9f07-151a1467f7d9",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-05-10T14:57:17.933Z",
+        "created": "2024-09-30T16:13:10.700Z",
         "dataset": "cisco_duo.telephony",
-        "ingested": "2023-05-10T14:57:18Z",
+        "ingested": "2024-09-30T16:13:11Z",
         "kind": "event",
         "original": "{\"context\":\"authentication\",\"credits\":1,\"isotimestamp\":\"2020-03-20T15:38:12+00:00\",\"phone\":\"+121234512345\",\"timestamp\":1584718692,\"type\":\"sms\"}"
     },
@@ -732,7 +794,6 @@ An example event for `telephony` looks as following:
         "cisco_duo-telephony"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -744,45 +805,260 @@ An example event for `telephony` looks as following:
 | cisco_duo.telephony.event_type | How this telephony event was initiated. | keyword |
 | cisco_duo.telephony.phone_number | The phone number that initiated this event. | keyword |
 | cisco_duo.telephony.type | This type of telephony Event. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| tags | List of keywords used to tag each event. | keyword |
+
+
+### Telephony v2
+
+This is the `telephony_v2` dataset.
+
+An example event for `telephony_v2` looks as following:
+
+```json
+{
+    "@timestamp": "2022-10-25T16:07:45.304Z",
+    "agent": {
+        "ephemeral_id": "cfc63710-9c78-4d83-acc6-cc1f17ea61ae",
+        "id": "04bc48e2-1bc2-4745-baec-658738d836f3",
+        "name": "elastic-agent-56970",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "cisco_duo": {
+        "telephony_v2": {
+            "credits": 0,
+            "event_type": "administrator login",
+            "id": "5bf1a860-fe39-49e3-be29-217659663a74",
+            "phone_number": "+13135559542",
+            "txid": "fb0c129b-f994-4d3d-953b-c3e764272eb7",
+            "type": "sms"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_duo.telephony_v2",
+        "namespace": "98588",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "04bc48e2-1bc2-4745-baec-658738d836f3",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "cisco_duo.telephony_v2",
+        "id": "5bf1a860-fe39-49e3-be29-217659663a74",
+        "ingested": "2024-09-30T16:14:08Z",
+        "kind": "event",
+        "original": "{\"context\":\"administrator login\",\"credits\":0,\"phone\":\"+13135559542\",\"telephony_id\":\"5bf1a860-fe39-49e3-be29-217659663a74\",\"ts\":\"2022-10-25T16:07:45.304526+00:00\",\"txid\":\"fb0c129b-f994-4d3d-953b-c3e764272eb7\",\"type\":\"sms\"}"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cisco_duo-telephony_v2"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cisco_duo.telephony_v2.credits | How many telephony credits this event used. | integer |
+| cisco_duo.telephony_v2.event_type | The context under which this telephony event was used (e.g. Administrator Login). | keyword |
+| cisco_duo.telephony_v2.id | A unique identifier for the telephony event. | keyword |
+| cisco_duo.telephony_v2.phone_number | The phone number that initiated this event. | keyword |
+| cisco_duo.telephony_v2.txid | A unique identifier that relates to the successful authentication attempt using this telephony event. | keyword |
+| cisco_duo.telephony_v2.type | The event type. Either "sms" or "phone". | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+
+
+### Trust Monitor
+
+This is the `trust_monitor` dataset.
+
+An example event for `trust_monitor` looks as following:
+
+```json
+{
+    "@timestamp": "2020-11-17T08:48:31.680Z",
+    "agent": {
+        "ephemeral_id": "6425e1a1-6171-4b20-ba87-65bf63231ef4",
+        "id": "a2c45cbf-69cf-4bf5-93e2-df91aa0f8eae",
+        "name": "elastic-agent-51366",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "cisco_duo": {
+        "trust_monitor": {
+            "explanations": [
+                {
+                    "summary": "amanda_tucker has not logged in from this location recently.",
+                    "type": "NEW_COUNTRY_CODE"
+                },
+                {
+                    "summary": "amanda_tucker has not logged in from this IP recently.",
+                    "type": "NEW_NETBLOCK"
+                },
+                {
+                    "summary": "amanda_tucker has not accessed this application recently.",
+                    "type": "NEW_IKEY"
+                }
+            ],
+            "from_common_netblock": true,
+            "from_new_user": false,
+            "low_risk_ip": false,
+            "priority_event": true,
+            "priority_reasons": [
+                {
+                    "label": "CN",
+                    "type": "country"
+                }
+            ],
+            "sekey": "SEDOR9BP00L23C6YUH5",
+            "state": "new",
+            "surfaced_auth": {
+                "access_device": {
+                    "browser": "Chrome",
+                    "browser_version": "86.0.4240.198",
+                    "epkey": "EP18JX1A10AB102M2T2X",
+                    "ip": "17.88.232.83",
+                    "is_encryption_enabled": "unknown",
+                    "is_firewall_enabled": "unknown",
+                    "is_password_set": "unknown",
+                    "location": {
+                        "city": "Shanghai",
+                        "country": "China",
+                        "state": "Shanghai"
+                    },
+                    "os": "Windows",
+                    "os_version": "10",
+                    "security_agents": "unknown"
+                },
+                "alias": "unknown",
+                "application": {
+                    "key": "DIUD2X62LHMPDP00LXS3",
+                    "name": "Microsoft Azure Active Directory"
+                },
+                "factor": "not_available",
+                "isotimestamp": "2020-11-17T03:19:13.092+00:00",
+                "reason": "location_restricted",
+                "result": "denied",
+                "timestamp": 1605583153,
+                "txid": "436694ad-467c-4aed-b048-8ad--f58e04c",
+                "user": {
+                    "groups": [
+                        "crazy"
+                    ],
+                    "key": "DUN73JE5M92DP00L4ZYS",
+                    "name": "amanda_tucker"
+                }
+            },
+            "triage_event_uri": "https://admin-xxxxxxxx.duosecurity.com/trust-monitor?sekey=SEDOR9BP00L23C6YUH5",
+            "triaged_as_interesting": false,
+            "type": "auth"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_duo.trust_monitor",
+        "namespace": "54506",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "a2c45cbf-69cf-4bf5-93e2-df91aa0f8eae",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "cisco_duo.trust_monitor",
+        "id": "SEDOR9BP00L23C6YUH5",
+        "ingested": "2024-10-04T07:55:31Z",
+        "kind": "event",
+        "original": "{\"explanations\":[{\"summary\":\"amanda_tucker has not logged in from this location recently.\",\"type\":\"NEW_COUNTRY_CODE\"},{\"summary\":\"amanda_tucker has not logged in from this IP recently.\",\"type\":\"NEW_NETBLOCK\"},{\"summary\":\"amanda_tucker has not accessed this application recently.\",\"type\":\"NEW_IKEY\"}],\"from_common_netblock\":true,\"from_new_user\":false,\"low_risk_ip\":false,\"priority_event\":true,\"priority_reasons\":[{\"label\":\"CN\",\"type\":\"country\"}],\"sekey\":\"SEDOR9BP00L23C6YUH5\",\"state\":\"new\",\"state_updated_timestamp\":null,\"surfaced_auth\":{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"86.0.4240.198\",\"epkey\":\"EP18JX1A10AB102M2T2X\",\"flash_version\":null,\"hostname\":null,\"ip\":\"17.88.232.83\",\"is_encryption_enabled\":\"unknown\",\"is_firewall_enabled\":\"unknown\",\"is_password_set\":\"unknown\",\"java_version\":null,\"location\":{\"city\":\"Shanghai\",\"country\":\"China\",\"state\":\"Shanghai\"},\"os\":\"Windows\",\"os_version\":\"10\",\"security_agents\":\"unknown\"},\"alias\":\"unknown\",\"application\":{\"key\":\"DIUD2X62LHMPDP00LXS3\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":null,\"key\":null,\"location\":{\"city\":null,\"country\":null,\"state\":null},\"name\":null},\"email\":\"\",\"event_type\":null,\"factor\":\"not_available\",\"isotimestamp\":\"2020-11-17T03:19:13.092+00:00\",\"ood_software\":\"\",\"reason\":\"location_restricted\",\"result\":\"denied\",\"timestamp\":1605583153,\"trusted_endpoint_status\":null,\"txid\":\"436694ad-467c-4aed-b048-8ad--f58e04c\",\"user\":{\"groups\":[\"crazy\"],\"key\":\"DUN73JE5M92DP00L4ZYS\",\"name\":\"amanda_tucker\"}},\"surfaced_timestamp\":1605602911680,\"triage_event_uri\":\"https://admin-xxxxxxxx.duosecurity.com/trust-monitor?sekey=SEDOR9BP00L23C6YUH5\",\"triaged_as_interesting\":false,\"type\":\"auth\"}"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cisco_duo-trust_monitor"
+    ],
+    "url": {
+        "domain": "admin-xxxxxxxx.duosecurity.com",
+        "original": "https://admin-xxxxxxxx.duosecurity.com/trust-monitor?sekey=SEDOR9BP00L23C6YUH5",
+        "path": "/trust-monitor",
+        "query": "sekey=SEDOR9BP00L23C6YUH5",
+        "scheme": "https"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cisco_duo.trust_monitor.bypass_status_enabled | The Unix timestamp in milliseconds when bypass status was enabled for the user or group. Returned for events with type=bypass_status. | long |
+| cisco_duo.trust_monitor.enabled_by.key | Key of the application or the administrator that enabled bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.enabled_by.name | Name of the application or the administrator that enabled bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.enabled_for.key | Key of the user or group with bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.enabled_for.name | Name of the user or group with bypass status. Returned for events with type=bypass_status. | keyword |
+| cisco_duo.trust_monitor.explanations.summary | Description of why Trust Monitor surfaced the event. | keyword |
+| cisco_duo.trust_monitor.explanations.type | Type of reason why Trust Monitor surfaced the event. | keyword |
+| cisco_duo.trust_monitor.from_common_netblock | A boolean describing if this event was created from a common IP netblock. Returned for events with type=auth. | boolean |
+| cisco_duo.trust_monitor.from_new_user | A boolean describing if this event was created for a new user. Returned for events with type=auth or type=device_registration. | boolean |
+| cisco_duo.trust_monitor.low_risk_ip | A boolean describing if this event was created from an IP address identified in the Risk Profile configuration as a low risk IP address. Returned for events with type=auth. | boolean |
+| cisco_duo.trust_monitor.priority_event | A boolean describing if the event matches the Risk Profile configuration. | boolean |
+| cisco_duo.trust_monitor.priority_reasons.label | The label of the priority reason describing how the event matches the Trust Monitor Risk Profile configuration for the event's match. Returned for events with type=auth or type=device_registration. | keyword |
+| cisco_duo.trust_monitor.priority_reasons.type | The type of priority reason describing how the event matches the Trust Monitor Risk Profile configuration for the event's match. Returned for events with type=auth or type=device_registration. | keyword |
+| cisco_duo.trust_monitor.sekey | The unique identifier for this event as a 20 character string. This is unique across all different event types. | keyword |
+| cisco_duo.trust_monitor.state | A string describing the state of the event. One of statenew or stateprocessed. | keyword |
+| cisco_duo.trust_monitor.state_updated_timestamp | The Unix timestamp in milliseconds of the last change to the state of the event. | long |
+| cisco_duo.trust_monitor.surfaced_auth | An object which represents the actual authentication. Returned for events with type=auth. | flattened |
+| cisco_duo.trust_monitor.triage_event_uri | A string representing the URI of the security event, which a Duo administrator can use to view and process the surfaced event in the Duo Admin Panel. Returned for events with type=auth. | keyword |
+| cisco_duo.trust_monitor.triaged_as_interesting | A boolean describing if this event was triaged as being interesting or not interesting. | boolean |
+| cisco_duo.trust_monitor.type | The type of event, as a string. One of auth, bypass_status, or device_registration. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+

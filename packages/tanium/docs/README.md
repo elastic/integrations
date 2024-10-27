@@ -149,7 +149,6 @@ An example event for `action_history` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -165,7 +164,6 @@ An example event for `action_history` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | tanium.action_history.action.id | Action Id. | long |
 | tanium.action_history.action.name | Action Name. | keyword |
 | tanium.action_history.approver | Approver of the action. | keyword |
@@ -254,7 +252,6 @@ An example event for `client_status` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -270,7 +267,6 @@ An example event for `client_status` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | tanium.client_status.client_network_location | Network location of client. | ip |
 | tanium.client_status.computer_id | Computer ID of client. | keyword |
 | tanium.client_status.full_version | Full version of client. | version |
@@ -358,7 +354,6 @@ An example event for `discover` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -374,7 +369,6 @@ An example event for `discover` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | tanium.discover.arp | Address Resolution Protocol. | double |
 | tanium.discover.aws_api | Aws Api version. | double |
 | tanium.discover.centralized_nmap | Centralized Nmap. | double |
@@ -493,7 +487,6 @@ An example event for `endpoint_config` looks as following:
         "id": "1"
     }
 }
-
 ```
 
 **Exported fields**
@@ -509,12 +502,12 @@ An example event for `endpoint_config` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | tanium.endpoint_config.action | Name of event's action. | keyword |
 | tanium.endpoint_config.item.data_category | Data category of the config item. | keyword |
 | tanium.endpoint_config.item.domain | Domain of the config item. | keyword |
 | tanium.endpoint_config.item.id | Id of the config item. | long |
 | tanium.endpoint_config.manifest.item_count | Item count of the manifest. | long |
+| tanium.endpoint_config.manifest.items |  | nested |
 | tanium.endpoint_config.manifest.items.data_category | Data category of the items of manifest. | keyword |
 | tanium.endpoint_config.manifest.items.domain | Items domain of the manifest. | keyword |
 | tanium.endpoint_config.manifest.items.ids | Item Ids of the manifest. | long |
@@ -615,7 +608,6 @@ An example event for `reporting` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -631,7 +623,6 @@ An example event for `reporting` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | tanium.reporting.computer_name | Name of the computer. | keyword |
 | tanium.reporting.count | Count of report on the computer system. | long |
 | tanium.reporting.is_virtual | Boolean flag mentions if computer is virtualise or not. | keyword |
@@ -960,7 +951,6 @@ An example event for `threat_response` looks as following:
         "domain": "xyz"
     }
 }
-
 ```
 
 **Exported fields**
@@ -976,7 +966,6 @@ An example event for `threat_response` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | tanium.threat_response.action | Action for the threat response. | keyword |
 | tanium.threat_response.computer.ip | Computer ip of the threat response. | ip |
 | tanium.threat_response.computer.name | Computer name of the threat response. | keyword |
@@ -1002,6 +991,7 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.version | OS version. | version |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.platform | OS type. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.threat_id | Threat id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats |  | nested |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.artifact_hash | Artifact hash of activity. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.instance_hash | Instance hash of activity. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.is_intel_target | Intel target or not. | boolean |
@@ -1046,6 +1036,7 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.group_id | User group id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.id | User id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.name | User name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions |  | nested |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.file_create.path | Path of file. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.timestamp_ms | Timestamp in milliseconds. | date |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.file.unique_event_id | Unique event id. | keyword |
@@ -1063,9 +1054,11 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.instance_hash | Instance hash. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.timestamp | Timestamp. | date |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.verb | Verb. | long |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.intel_intra_ids |  | nested |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.intel_intra_ids.id | Array of intel intra id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.source_name | Source name. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.intel_id | Intel id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts |  | nested |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.event.file_create.path | Path of file. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.event.timestampMs | Timestamp in milliseconds. | date |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.file.unique_event_id | Unique event id of file. | keyword |

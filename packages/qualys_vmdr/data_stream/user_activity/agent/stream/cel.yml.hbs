@@ -1,0 +1,113 @@
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  user: {{escape_string username}}
+  password: {{escape_string password}}
+  initial_interval: {{escape_string initial_interval}}
+{{#if batch_size}}
+  batch_size: {{batch_size}}
+{{/if}}
+redact:
+  fields:
+    - password
+program: |
+  state.with(
+    request("GET",
+      state.?want_more.orValue(false) ?
+        state.pagination_url
+      :
+        state.url.trim_right("/") + "/api/2.0/fo/activity_log/?" + {
+          "action": ["list"],
+          "since_datetime": [state.?cursor.latest_ts.orValue(
+            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+          )],
+          ?"truncation_limit": has(state.batch_size) ? optional.of([string(state.batch_size)]) : optional.none(),
+        }.format_query()
+    ).with({
+      "Header":{
+        "Authorization": ["Basic " + (state.user + ":" + state.password).base64()],
+        "X-Requested-With": ["curl"],
+      }
+    }).do_request().as(resp,
+      resp.StatusCode == 200
+      ?
+        string(resp.Body).as(text, {
+          "csv": (
+            text.contains_substr("----BEGIN_RESPONSE_BODY_CSV") ?
+              bytes(text.substring(
+                text.index("----BEGIN_RESPONSE_BODY_CSV")+size("----BEGIN_RESPONSE_BODY_CSV\n"),
+                text.index("----END_RESPONSE_BODY_CSV")
+              ))
+            :
+              resp.Body
+            ).mime("text/csv; header=present"),
+          ?"next": text.contains_substr("----BEGIN_RESPONSE_FOOTER_CSV") ?
+            bytes(text.substring(
+              text.index("----BEGIN_RESPONSE_FOOTER_CSV")+size("----BEGIN_RESPONSE_FOOTER_CSV\n"),
+              text.index("----END_RESPONSE_FOOTER_CSV")
+            ).trim_prefix("WARNING\n")).mime("text/csv; header=present")[?0]
+          :
+            optional.none(),
+        }).as(data, {
+            "events": data.csv.map(e, {"message": e.encode_json()}),
+            "want_more": data.?next.URL.hasValue(),
+            "pagination_url": data.?next.URL.orValue(null),
+            "cursor": {
+                // The API roughly returns data from newest to oldest. For simplicity
+                // only update the cursor for the non-pagination response which
+                // should hold newer data than any of the pagination responses.
+                ?"latest_ts": !state.?want_more.orValue(false) && size(data.csv) > 0 ?
+                  optional.of(data.csv.map(e, e.Date.parse_time(time_layout.RFC3339)).max())
+                :
+                  state.?cursor.latest_ts,
+            },
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+    )
+  )
+tags:
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

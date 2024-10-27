@@ -1,0 +1,21 @@
+---
+description: Pipeline for parsing specific fields related to settime events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: The system time was attempted to be set
+    - append:
+        field: event.type
+        value: change
+    - append:
+        field: event.category
+        value: configuration  
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

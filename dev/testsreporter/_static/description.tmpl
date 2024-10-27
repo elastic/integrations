@@ -1,0 +1,30 @@
+{{ .summary }}
+{{ if ne .failure "" -}}
+Failure:
+```
+{{ .failure }}
+```
+{{- end }}
+{{- if ne .error "" -}}
+Error:
+```
+{{ .error }}
+```
+{{- end }}
+{{- if ne .closedIssueURL "" }}
+
+Latest issue closed for the same test: {{ .closedIssueURL }}
+{{- end }}
+
+First build failed: {{ .firstBuild }}
+
+{{ if ne (len .previousBuilds) 0 -}}
+{{ if eq .maxPreviousLinks (len .previousBuilds) -}}
+Latest {{ .maxPreviousLinks }} failed builds:
+{{ else -}}
+Latest failed builds:
+{{ end -}}
+{{ range .previousBuilds -}}
+- {{ . }}
+{{ end -}}
+{{ end -}}

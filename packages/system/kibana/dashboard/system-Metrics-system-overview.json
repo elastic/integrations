@@ -399,10 +399,9 @@
                         "state": {
                             "adHocDataViews": {
                                 "91f312ca-9d5c-4b33-ac61-9f5405d1f393": {
+                                    "allowHidden": false,
                                     "allowNoIndex": false,
-                                    "fieldAttrs": {
-                                        "host.name": {}
-                                    },
+                                    "fieldAttrs": {},
                                     "fieldFormats": {
                                         "host.name": {
                                             "id": "url",
@@ -482,7 +481,7 @@
                                                         },
                                                         "sortField": "@timestamp"
                                                     },
-                                                    "reducedTimeRange": "10s",
+                                                    "reducedTimeRange": "15m",
                                                     "scale": "ratio",
                                                     "sourceField": "system.memory.actual.used.pct"
                                                 },
@@ -502,7 +501,7 @@
                                                         },
                                                         "sortField": "@timestamp"
                                                     },
-                                                    "reducedTimeRange": "10s",
+                                                    "reducedTimeRange": "15m",
                                                     "scale": "ratio",
                                                     "sourceField": "system.process.cpu.total.norm.pct"
                                                 }
@@ -600,31 +599,32 @@
                                                     },
                                                     {
                                                         "color": "#d6bf57",
-                                                        "stop": 70
+                                                        "stop": 0.7
                                                     },
                                                     {
                                                         "color": "#cc5642",
-                                                        "stop": 85
+                                                        "stop": 0.85
                                                     }
                                                 ],
                                                 "continuity": "above",
                                                 "name": "custom",
                                                 "rangeMax": null,
                                                 "rangeMin": 0,
+                                                "rangeType": "number",
                                                 "reverse": false,
                                                 "steps": 5,
                                                 "stops": [
                                                     {
                                                         "color": "#209280",
-                                                        "stop": 70
+                                                        "stop": 0.7
                                                     },
                                                     {
                                                         "color": "#d6bf57",
-                                                        "stop": 85
+                                                        "stop": 0.85
                                                     },
                                                     {
                                                         "color": "#cc5642",
-                                                        "stop": 100
+                                                        "stop": 1.85
                                                     }
                                                 ]
                                             },
@@ -645,31 +645,32 @@
                                                     },
                                                     {
                                                         "color": "#d6bf57",
-                                                        "stop": 70
+                                                        "stop": 0.7
                                                     },
                                                     {
                                                         "color": "#cc5642",
-                                                        "stop": 85
+                                                        "stop": 0.85
                                                     }
                                                 ],
                                                 "continuity": "above",
                                                 "name": "custom",
                                                 "rangeMax": null,
                                                 "rangeMin": 0,
+                                                "rangeType": "number",
                                                 "reverse": false,
                                                 "steps": 5,
                                                 "stops": [
                                                     {
                                                         "color": "#209280",
-                                                        "stop": 70
+                                                        "stop": 0.7
                                                     },
                                                     {
                                                         "color": "#d6bf57",
-                                                        "stop": 85
+                                                        "stop": 0.85
                                                     },
                                                     {
                                                         "color": "#cc5642",
-                                                        "stop": 100
+                                                        "stop": 1.85
                                                     }
                                                 ]
                                             },
@@ -746,7 +747,8 @@
                                                     "sourceField": "host.name"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 }
@@ -1392,7 +1394,8 @@
                                                     "scale": "ratio"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 }
@@ -1436,6 +1439,11 @@
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-13084d12-8f45-4ff7-84ff-1aa82f6e91d4",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "a1a6b9e1-d3d2-4bf5-b91a-2081fee59c6f",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1508,7 +1516,30 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "a1a6b9e1-d3d2-4bf5-b91a-2081fee59c6f",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "system.cpu"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "system.cpu"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1624,6 +1655,11 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-13084d12-8f45-4ff7-84ff-1aa82f6e91d4",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "bd660974-ce01-40f6-b7e3-8fc6ef97d52f",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -1700,6 +1736,9 @@
                                                     "isBucketed": false,
                                                     "label": "Part of Memory Usage",
                                                     "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "system.memory.actual.used.pct"
                                                 }
@@ -1709,7 +1748,30 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "bd660974-ce01-40f6-b7e3-8fc6ef97d52f",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "system.memory"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "system.memory"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1823,7 +1885,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-04-10T06:27:24.664Z",
+    "created_at": "2024-05-08T14:42:38.272Z",
     "id": "system-Metrics-system-overview",
     "managed": false,
     "references": [
@@ -1868,6 +1930,11 @@
             "type": "index-pattern"
         },
         {
+            "id": "metrics-*",
+            "name": "e6f8fdab-5f7e-42b1-9093-36c017e0d26d:a1a6b9e1-d3d2-4bf5-b91a-2081fee59c6f",
+            "type": "index-pattern"
+        },
+        {
             "id": "system-79ffd6e0-faa0-11e6-947f-177f697178b8",
             "name": "e6f8fdab-5f7e-42b1-9093-36c017e0d26d:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:19bf22c3-97f5-4a71-8752-74cd3d5ec6f9:dashboardId",
             "type": "dashboard"
@@ -1875,6 +1942,11 @@
         {
             "id": "metrics-*",
             "name": "e6f6cabf-ecec-482f-b7b5-634e323e9a15:indexpattern-datasource-layer-13084d12-8f45-4ff7-84ff-1aa82f6e91d4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e6f6cabf-ecec-482f-b7b5-634e323e9a15:bd660974-ce01-40f6-b7e3-8fc6ef97d52f",
             "type": "index-pattern"
         },
         {

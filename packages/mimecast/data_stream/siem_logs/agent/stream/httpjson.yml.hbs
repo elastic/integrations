@@ -30,11 +30,12 @@ request.transforms:
       value: '*/*'
 response.decode_as: application/zip
 response.split:
-   transforms:
-   - set:
+  transforms:
+  - set:
       target: body.Content-Disposition
       value: '[[.last_response.header.Get "Content-Disposition"]]'
-   target: body.data
+  target: body.data
+  ignore_empty_value: true
 cursor:
    next_token:
       value: '[[.last_response.header.Get "mc-siem-token"]]'

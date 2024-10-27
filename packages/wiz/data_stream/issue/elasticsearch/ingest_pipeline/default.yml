@@ -5,6 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: '8.11.0'
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
   - rename:
       field: message
       tag: rename_message
@@ -94,16 +98,6 @@ processors:
       field: event.kind
       value: event
       tag: set_event_kind
-  - rename:
-      field: json.sourceRule.controlDescription
-      tag: rename_control_description
-      target_field: wiz.issue.source_rule.control_description
-      ignore_missing: true
-  - set:
-      field: message
-      tag: set_message
-      copy_from: wiz.issue.source_rule.control_description
-      ignore_empty_value: true
   - date:
       field: json.dueAt
       tag: set_dueAt
@@ -324,6 +318,28 @@ processors:
       target_field: wiz.issue.source_rule.id
       ignore_missing: true
   - rename:
+      field: json.sourceRule.controlDescription
+      tag: rename_control_description
+      target_field: wiz.issue.source_rule.control_description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: wiz.issue.source_rule.control_description
+      ignore_empty_value: true
+      if: ctx.message == null
+  - rename:
+      field: json.sourceRule.cloudConfigurationRuleDescription
+      tag: rename_source_rule_cloud_configuration_rule_description
+      target_field: wiz.issue.source_rule.cloud_configuration_rule_description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: wiz.issue.source_rule.cloud_configuration_rule_description
+      ignore_empty_value: true
+      if: ctx.message == null
+  - rename:
       field: json.sourceRule.name
       tag: rename_source_rule_name
       target_field: wiz.issue.source_rule.name
@@ -357,6 +373,11 @@ processors:
       field: json.status
       tag: rename_status
       target_field: wiz.issue.status.value
+      ignore_missing: true
+  - rename:
+      field: json.type
+      tag: rename_issuetype
+      target_field: wiz.issue.type
       ignore_missing: true
   - remove:
       field: json
@@ -402,7 +423,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:

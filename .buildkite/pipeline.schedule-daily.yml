@@ -2,7 +2,7 @@
 name: integrations-schedule-daily
 
 env:
-  SETUP_GVM_VERSION: "v0.5.1"
+  SETUP_GVM_VERSION: "v0.5.2"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
 
 # The pipeline is triggered by the scheduler every day
@@ -20,23 +20,45 @@ steps:
     build:
       env:
         SERVERLESS: "false"
-        SKIP_PUBLISHING: "true"
         FORCE_CHECK_ALL: "true"
-        # STACK_VERSION: 7.17-SNAPSHOT # Using 7.17.19 till https://github.com/elastic/fleet-server/issues/3435 is solved.
-        STACK_VERSION: 7.17.19
+        STACK_VERSION: 7.17.26-SNAPSHOT
     depends_on:
       - step: "check"
         allow_failure: false
 
-  - label: "Check integrations local stacks - Stack Version v8.14"
+  - label: "Check integrations local stacks - Stack Version v8.16"
     trigger: "integrations"
     build:
       env:
         SERVERLESS: "false"
-        SKIP_PUBLISHING: "true"
         FORCE_CHECK_ALL: "true"
-        STACK_VERSION: 8.14.0-SNAPSHOT
+        STACK_VERSION: 8.16.0-SNAPSHOT
         PUBLISH_COVERAGE_REPORTS: "true"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+
+  - label: "Check integrations local stacks - Stack Version v8.16 - LogsDB"
+    trigger: "integrations"
+    build:
+      env:
+        SERVERLESS: "false"
+        FORCE_CHECK_ALL: "true"
+        STACK_VERSION: 8.16.0-SNAPSHOT
+        STACK_LOGSDB_ENABLED: "true"
+        PUBLISH_COVERAGE_REPORTS: "false"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+
+  - label: "Check integrations local stacks - Stack Version v9.0"
+    trigger: "integrations"
+    build:
+      env:
+        SERVERLESS: "false"
+        FORCE_CHECK_ALL: "true"
+        STACK_VERSION: 9.0.0-SNAPSHOT
+        PUBLISH_COVERAGE_REPORTS: "false"
     depends_on:
       - step: "check"
         allow_failure: false

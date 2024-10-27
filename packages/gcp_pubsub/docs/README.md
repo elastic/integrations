@@ -1,10 +1,10 @@
 # Custom Google Pub/Sub Integration
 
-The custom Google Pub/Sub input integration is used to ingest data from a Google Pub/Sub topic subscription that is not covered by our [GCP Integration](https://docs.elastic.co/en/integrations/gcp).
+The custom Google Pub/Sub input package is used to ingest data from a Google Pub/Sub topic subscription that is not covered by our [GCP Integration](https://docs.elastic.co/en/integrations/gcp).
 
-This integration could for example be used to receive Stackdriver logs that have been exported to a Google Pub/Sub topic.
+This integration could, for example, be used to receive Stackdriver logs that have been exported to a Google Pub/Sub topic.
 
-Multiple Elastic Agent instances can be configured to read from the same subscription to achieve high-availability or increased throughput.
+Multiple Elastic Agent instances can be configured to read from the same subscription to achieve high availability or increased throughput.
 
 ## Configuring
 

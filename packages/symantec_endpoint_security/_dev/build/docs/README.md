@@ -1,103 +1,87 @@
 # Symantec Endpoint Security
 
-This Symantec Endpoint Security integration enables your security team to securely stream event data to Elastic Security, via AWS S3, AWS SQS or GCS. When integrated with Elastic Security, this valuable data can be leveraged within Elastic.
-Symantec Endpoint Security (SES) delivers comprehensive protection for all your traditional and mobile devices across the entire attack chain. Symantec endpoint innovations include behavioral isolation, Active Directory security, and Threat Hunter technologies to protect your endpoints against sophisticated threats and targeted attacks.
+Symantec Endpoint Security (SES), is fully cloud-managed version of the on-premises Symantec Endpoint Protection (SEP), which delivers multilayer protection to stop threats regardless of how they attack your endpoints. You manage SES through a unified cloud console that provides threat visibility across your endpoints and uses multiple technologies to manage the security of your organization.
 
-The Symantec Endpoint Security integration can be used in three different modes to collect data:
-- AWS S3 polling mode: Symantec Endpoint Security writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
-- AWS S3 SQS mode: Symantec Endpoint Security writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
-- GCS polling mode: Symantec Endpoint Security writes data to GCS bucket, and Elastic Agent polls the GCS bucket by listing its contents and reading new files.
+This SES Integration enables user to stream Events and EDR incidents data to Elastic, via Data Storage(AWS S3, AWS SQS or GCS) and API endpoint respectively.
 
 ## Data streams
 
-The Symantec Endpoint Security integration collects logs for different events that Integrated Cyber Defense Schema organizes into following categories:
+The Symantec Endpoint Security integration collects logs via Amazon S3 and SQS, and Google GCP for different events that The Integrated Cyber Defense Schema organizes into following categories:
 
 **Security [1]**
 
-| Event Type                                         |
-|----------------------------------------------------|
-| 8020 - Scan                                        |
-| 8025 - Boot Record Detection                       |
-| 8026 - User Session Detection                      |
-| 8027 - Process Detection                           |
-| 8028 - Module Detection                            |
-| 8030 - Kernel Detection                            |
-| 8031 - File Detection                              |
-| 8032 - Registry Key Detection                      |
-| 8033 - Registry Value Detection                    |
-| 8038 - Peripheral Device Detection                 |
-| 8040 - Host Network Detection                      |
-| 8061 - Entity Change                               |
-| 8070 - Compliance Scan                             |
-| 8071 - Compliance                                  |
-| 8075 - Incident Creation                           |
-| 8076 - Incident Update                             |
-| 8077 - Incident Closure                            |
-| 8078 - Incident Associate                          |
+- **8020 - Scan**                     
+- **8025 - Boot Record Detection**       
+- **8026 - User Session Detection**      
+- **8027 - Process Detection**           
+- **8028 - Module Detection**            
+- **8030 - Kernel Detection**            
+- **8031 - File Detection**              
+- **8032 - Registry Key Detection**      
+- **8033 - Registry Value Detection**    
+- **8038 - Peripheral Device Detection** 
+- **8040 - Host Network Detection**      
+- **8061 - Entity Change**               
+- **8070 - Compliance Scan**             
+- **8071 - Compliance**                  
+- **8075 - Incident Creation**           
+- **8076 - Incident Update**             
+- **8077 - Incident Closure**            
+- **8078 - Incident Associate**          
 
 **License [2]**
 
-| Event Type                                         |
-|----------------------------------------------------|
-| 30 - License Lifecycle                             |
-| 31 - License Expiry                                |
+
+- **30 - License Lifecycle**                            
+- **31 - License Expiry**                               
 
 **Application Activity [3]**
 
-| Event Type                                         |
-|----------------------------------------------------|
-| 2 - Application Lifecycle                          |
-| 3 - Update                                         |
-| 4 - Policy Change                                  |
-| 5 - File Reputation                                |
-| 11 - Command Activity                              |
-| 12 - Action Request                                |
-| 13 - Action Response                               |
-| 42 - URL Reputation                                |
+
+- **2 - Application Lifecycle**                   
+- **3 - Update**                                  
+- **4 - Policy Change**                           
+- **5 - File Reputation**                         
+- **11 - Command Activity**                       
+- **12 - Action Request**                         
+- **13 - Action Response**                        
+- **42 - URL Reputation**                         
 
 **Audit [4]**
 
-| Event Type                                         |
-|----------------------------------------------------|
-| 20 - User Session Audit                            |
-| 21 - Entity Audit                                  |
-| 22 - Policy Override Audit                         |
+- **20 - User Session Audit**                         
+- **21 - Entity Audit**                                
+- **22 - Policy Override Audit**                       
 
 **System Activity [5]**
 
-| Event Type                                         |
-|----------------------------------------------------|
-| 8000 - User Session Activity                       |
-| 8001 - Process Activity                            |
-| 8002 - Module Activity                             |
-| 8003 - File Activity                               |
-| 8004 - Directory Activity                          |
-| 8005 - Registry Key Activity                       |
-| 8006 - Registry Value Activity                     |
-| 8007 - Host Network Activity                       |
-| 8009 - Kernel Activity                             |
-| 8011 - Email Activity                              |
-| 8015 - Monitored Source                            |
-| 8016 - Startup Application Configuration Change    |
-| 8018 - AMSI Activity                               |
+- **8000 - User Session Activity**           
+- **8001 - Process Activity**                
+- **8002 - Module Activity**                 
+- **8003 - File Activity**                   
+- **8004 - Directory Activity**              
+- **8005 - Registry Key Activity**           
+- **8006 - Registry Value Activity**         
+- **8007 - Host Network Activity**           
+- **8009 - Kernel Activity**                 
+- **8011 - Email Activity**                  
+- **8015 - Monitored Source**                
+- **8016 - Startup Application Configuration Change** 
+- **8018 - AMSI Activity**                   
 
 **Diagnostic [6]**
 
-| Event Type                                         |
-|----------------------------------------------------|
-| 1000 - Status                                      |
+- **1000 - Status**                                      
 
-**NOTE**: The Symantec Endpoint Security integration collects logs for the above mentioned events, but we have combined all of those in one data stream named `event`.
+The Symantec Endpoint Security integration can also retrieve **EDR incidents** via a REST API. See more details in the API documentation [here](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the S3 bucket or GCS and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
-You have a few options for installing and managing an Elastic Agent:
+There are several options for installing and managing Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
@@ -111,9 +95,9 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
-The minimum **kibana.version** required is **8.12.0**.
+This module has been tested against **Symantec Integrated Cyber Defense Exchange 1.4.7** for events, and **Symantec Endpoint Security API Version v1** for EDR Incidents.   
 
 ## Setup
 
@@ -121,11 +105,21 @@ The minimum **kibana.version** required is **8.12.0**.
 
 - Considering you already have an AWS S3 bucket setup, to configure it with Symantec Endpoint Security, follow the steps mentioned [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html) to enable the Symantec Endpoint Streaming.
 
+### To collect data from Azure Blob Storage, follow the below steps:
+
+- Considering you already have an Azure storage container setup, configure it with Symantec Endpoint Security.
+- Enable the Symantec Endpoint Streaming as mentioned [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html).
+- Configure the integration with your Azure Storage account name, Container name and Service Account Key/Service Account URI.
+
+**For more details about the Azure Blob Storage input settings please see the documentation [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).**
+
 ### To collect data from a GCS bucket, follow the below steps:
 
 - Considering you already have a GCS bucket setup, configure it with Symantec Endpoint Security.
 - Enable the Symantec Endpoint Streaming as mentioned [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html).
 - Configure the integration with your GCS project ID, Bucket name and Service Account Key/Service Account Credentials File.
+
+**For more details about the GCS input settings please see the documentation [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html).**
 
 ### The GCS credentials key file:
 Once you have added a key to GCP service account, you will get a JSON key file that can only be downloaded once.
@@ -168,12 +162,23 @@ A sample JSON Credentials file looks as follows:
 3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
+**For more details about the AWS-S3 input settings please see the documentation [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).**
+
+### Steps to obtain Client ID and Client Secret to collect data from EDR Incident API:
+
+1. Login to your [Symantec EDR Cloud console](https://sep.securitycloud.symantec.com/v2/landing).
+2. Click Integration > Client Applications.
+3. Click Add for adding Client Application.
+4. Enter Client Application Name and press the Add button.
+5. Select Client Secret from the top.
+6. Copy the Client ID and Client Secret.
+
 ### Enabling the integration in Elastic:
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Symantec Endpoint Security
-3. Click on the "Symantec Endpoint Security" integration from the search results.
-4. Click on the Add Symantec Endpoint Security Integration button to add the integration.
+1. In Kibana navigate to Management > Integrations
+2. In "Search for integrations" top bar, search for `Symantec Endpoint Security`.
+3. Select the "Symantec Endpoint Security" integration from the search results.
+4. Select "Add Symantec Endpoint Security Integration" to add the integration.
 5. While adding the integration, if you want to collect logs via AWS S3, then you have to put the following details:
    - Collect logs via S3 Bucket toggled on
    - Access Key ID
@@ -191,12 +196,23 @@ A sample JSON Credentials file looks as follows:
    - Project ID
    - Buckets
    - Service Account Key/Service Account Credentials File
+
+   or if you want to collect logs via the REST API, then you have to put the following details:
+   - Client ID
+   - Client Secret
+   - URL
+   - Token URL
+
 6. Save the integration.
 
 **NOTE**:
 
 1. There are other input combination options available for the AWS S3 and AWS SQS, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
 2. There are other input combination options available for the GCS, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html).
+
+### Troubleshooting
+
+If the user stops integration and starts integration again after 30 days, then user will not be able to collect data and will get an error as Symantec EDR Cloud only collects data for the last 30 days. To avoid this issue, create a new integration instead of restarting it after 30 days.
 
 ## Logs reference
 
@@ -209,3 +225,13 @@ This is the `Event` dataset.
 {{event "event"}}
 
 {{fields "event"}}
+
+### Incident
+
+This is the `Incident` dataset.
+
+#### Example
+
+{{event "incident"}}
+
+{{fields "incident"}}

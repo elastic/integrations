@@ -1,0 +1,44 @@
+---
+description: Pipeline for parsing specific fields related to login using /usr/bin/login events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user attempted to log in using /usr/bin/login
+    - append:
+        field: event.type
+        value: start
+    - append:
+        field: event.category
+        value: authentication 
+    - script:
+        lang: painless
+        source: >
+            ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            if (ctx.jamf_protect?.telemetry?.event?.login_login?.success instanceof boolean) {
+              if (ctx.jamf_protect.telemetry.event.login_login.success) {
+                ctx.event.outcome = 'success';
+              } else {
+                ctx.event.outcome = 'failure';
+              }
+            }
+            if (ctx.event.outcome == null) {
+              ctx.event.outcome = 'unknown';
+            }
+    - rename:
+        field: jamf_protect.telemetry.event.login_login.username
+        target_field: user.name
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.login_login.uid
+        target_field: user.id
+        type: string
+        ignore_missing: true
+##########################
+## ECS Process ##
+########################## 
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

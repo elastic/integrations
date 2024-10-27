@@ -1,12 +1,10 @@
 # BBOT integration
 
-Please read this page in its entirety as this integration requires some setup.
+The Bighuge BLS OSINT Tool (BBOT) integration is intended for [BBOT](https://www.blacklanternsecurity.com/bbot/) installations, an Attack Surface Management (ASM) Open Source Inteligence (OSINT) Tool.
 
-This integration is for [BBOT](https://www.blacklanternsecurity.com/bbot/), an Attack Surface Management (ASM) Open Source Inteligence (OSINT) Tool. BBOT itself stands for Bighuge BLS OSINT Tool (BBOT).
+Once the BBOT scan is complete, the integration will ingest the results into Elastic.
 
-This integration requires the external use of BBOT. You will have to download and run the tool apart from this integration. Once your scan is complete, this integration will ingest the results into Elastic.
-
-This tool is used to enhance your external knowledge of your environment. This is done through the integration of many tools into BBOT providing a overview of your attack surface. Here is [how it works](https://www.blacklanternsecurity.com/bbot/how_it_works/).
+This tool is used to enhance your external knowledge of your environment. This is done through the integration of many tools into BBOT providing a overview of your attack surface. Here is [how it works](https://www.blacklanternsecurity.com/bbot/Stable/how_it_works/).
 
 **Important Note** - You will have to provide the following parameter in your BBOT scan for your output.ndjson to be formatted correctly.
 ```
@@ -26,7 +24,43 @@ You will have to configure the path for the output file within the integration s
 
 BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/scanning/).
 
-- `bbot` dataset: Made up of the findings found in the BBOT Scans.
+## Data streams
+
+This integration collects the following logs:
+
+- **asm_intel** Made up of the findings found in the BBOT Scans.
+
+## Requirements
+
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+
+### Installing and managing an Elastic Agent:
+
+There are several options for installing and managing Elastic Agent:
+
+### Install a Fleet-managed Elastic Agent (recommended):
+
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+
+### Install Elastic Agent in standalone mode (advanced users):
+
+With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
+
+### Install Elastic Agent in a containerized environment:
+
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
+
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+
+
+### Enabling the integration in Elastic:
+
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `BBOT`.
+3. Select the "BBOT" integration from the search results.
+4. Select "Add BBOT" to add the integration.
+5. Add all the required integration configuration parameters including the Path to ndjson output file.
+6. Save the integration.
 
 ## Logs
 
@@ -66,7 +100,7 @@ An example event for `asm_intel` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.12.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "bcb4b946-41b8-4916-9308-849b3bf23f46",
@@ -167,16 +201,6 @@ An example event for `asm_intel` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| tags | User defined tags. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| url.full.text | Multi-field of `url.full`. | match_only_text |
-| url.port | Port of the request, such as 443. | long |
-| vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 

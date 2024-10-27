@@ -1,35 +1,69 @@
 ---
-description: Pipeline for Zscaler dns logs.
+description: Pipeline for processing DNS logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      tag: set_ecs_version
+      value: 8.11.0
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
+      tag: json_event_original
       target_field: resp
-      ignore_failure: true
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: json
+      tag: remove_json_if_input_type_http_endpoint
       if: ctx.input?.type == 'http_endpoint'
       ignore_missing: true
   - rename:
       field: resp.event
+      tag: rename_resp_event
       target_field: json
       ignore_missing: true
   - remove:
       field: resp
+      tag: remove_resp
       ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol
+      value: dns
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: network
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
   - script:
-      description: Drops null/empty values recursively.
+      description: Drops null/empty/na values recursively.
+      tag: script_to_remove_na_values
       lang: painless
-      source: |
+      source: |-
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == '' || object == "NA") {
+          if (object == null || object == '' || object == 'NA' || object == 'None') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -41,323 +75,737 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - convert:
+      field: json.clt_sip
+      tag: convert_clt_sip_to_ip
+      target_field: zscaler_zia.dns.client.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.clt_sip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_dns_client_ip
+      copy_from: zscaler_zia.dns.client.ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
+  - rename:
+      field: json.cloudname
+      tag: rename_cloudname
+      target_field: zscaler_zia.dns.cloud.name
+      ignore_missing: true
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_from_dns_cloud_name
+      copy_from: zscaler_zia.dns.cloud.name
+      ignore_empty_value: true
+  - rename:
+      field: json.company
+      tag: rename_company
+      target_field: zscaler_zia.dns.company
+      ignore_missing: true
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_dns_company
+      copy_from: zscaler_zia.dns.company
+      ignore_empty_value: true
+  - rename:
+      field: json.datacentercity
+      tag: rename_datacentercity
+      target_field: zscaler_zia.dns.datacenter.city
+      ignore_missing: true
+  - rename:
+      field: json.datacentercountry
+      tag: rename_datacentercountry
+      target_field: zscaler_zia.dns.datacenter.country
+      ignore_missing: true
+  - rename:
+      field: json.datacenter
+      tag: rename_datacenter
+      target_field: zscaler_zia.dns.datacenter.name
+      ignore_missing: true
+  - rename:
+      field: json.day
+      tag: rename_day
+      target_field: zscaler_zia.dns.day
+      ignore_missing: true
+  - convert:
+      field: json.day_of_month
+      tag: convert_day_of_month_to_long
+      target_field: zscaler_zia.dns.day_of_month
+      type: long
+      ignore_missing: true
+      if: ctx.json?.day_of_month != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.dept
+      tag: rename_dept
+      target_field: zscaler_zia.dns.dept
+      ignore_missing: true
+  - rename:
+      field: json.deviceappversion
+      tag: rename_deviceappversion
+      target_field: zscaler_zia.dns.device.appversion
+      ignore_missing: true
+  - rename:
+      field: json.devicehostname
+      tag: rename_devicehostname
+      target_field: zscaler_zia.dns.device.hostname
+      ignore_missing: true
+  - lowercase:
+      field: zscaler_zia.dns.device.hostname
+      target_field: host.name
+      ignore_missing: true
+      tag: lowercase_host_name
+      if: ctx.zscaler_zia?.dns?.device?.hostname != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      tag: set_related_hosts_from_host_name
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - rename:
+      field: json.devicemodel
+      tag: rename_devicemodel
+      target_field: zscaler_zia.dns.device.model
+      ignore_missing: true
+  - set:
+      field: device.model.name
+      tag: set_device_model_name_from_dns_device_model
+      copy_from: zscaler_zia.dns.device.model
+      ignore_empty_value: true
+  - rename:
+      field: json.devicename
+      tag: rename_devicename
+      target_field: zscaler_zia.dns.device.name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_dns_device_name
+      copy_from: zscaler_zia.dns.device.name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: set_related_hosts_from_host_hostname
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - rename:
+      field: json.deviceostype
+      tag: rename_deviceostype
+      target_field: zscaler_zia.dns.device.os.type
+      ignore_missing: true
+  - rename:
+      field: json.deviceosversion
+      tag: rename_deviceosversion
+      target_field: zscaler_zia.dns.device.os.version
+      ignore_missing: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_from_dns_device_os_version
+      copy_from: zscaler_zia.dns.device.os.version
+      ignore_empty_value: true
+  - rename:
+      field: json.deviceowner
+      tag: rename_deviceowner
+      target_field: zscaler_zia.dns.device.owner
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: set_related_user_from_device_owner
+      value: '{{{zscaler_zia.dns.device.owner}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.device?.owner != null
+  - rename:
+      field: json.devicetype
+      tag: rename_devicetype
+      target_field: zscaler_zia.dns.device.type
+      ignore_missing: true
+  - set:
+      field: host.type
+      tag: set_host_type_from_dns_device_type
+      copy_from: zscaler_zia.dns.device.type
+      ignore_empty_value: true
+  - rename:
+      field: json.dnsappcat
+      tag: rename_dnsappcat
+      target_field: zscaler_zia.dns.dns.category
+      ignore_missing: true
+  - rename:
+      field: json.dns_gateway_rule
+      tag: rename_dns_gateway_rule
+      target_field: zscaler_zia.dns.dns.gateway.rule
+      ignore_missing: true
+  - rename:
+      field: json.dns_gateway_server_protocol
+      tag: rename_dns_gateway_server_protocol
+      target_field: zscaler_zia.dns.dns.gateway.server_protocol
+      ignore_missing: true
+  - append:
+      field: network.transport
+      tag: append_network_transport_from_dns_dns_gateway_server_protocol
+      value: '{{{zscaler_zia.dns.dns.gateway.server_protocol}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.dns?.gateway?.server_protocol != null
+  - rename:
+      field: json.dns_gateway_status
+      tag: rename_dns_gateway_status
+      target_field: zscaler_zia.dns.dns.gateway.status
+      ignore_missing: true
+  - rename:
+      field: json.dnsapp
+      tag: rename_dnsapp
+      target_field: zscaler_zia.dns.dns.type
+      ignore_missing: true
+  - lowercase:
+      field: zscaler_zia.dns.dns.type
+      target_field: network.application
+      ignore_missing: true
+      tag: lowercase_dns_type
+      if: ctx.zscaler_zia?.dns?.dns?.type != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.category
+      tag: rename_category
+      target_field: zscaler_zia.dns.dom.category
+      ignore_missing: true
+  - convert:
+      field: json.durationms
+      tag: convert_duration_milliseconds_to_long
+      type: long
+      target_field: zscaler_zia.dns.duration.milliseconds
+      ignore_missing: true
+      if: ctx.json?.durationms != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Convert duration from milliseconds to nanoseconds.
+      tag: script_duration_ms_to_ns
+      lang: painless
+      if: ctx.zscaler_zia?.dns?.duration?.milliseconds != null
+      source: >-
+        if (ctx.event == null) {
+          ctx.put('event', new HashMap());
+        }
+        ctx.event.duration = ctx.zscaler_zia.dns.duration.milliseconds * 1000000;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ecs_prefix
+      tag: rename_ecs_prefix
+      target_field: zscaler_zia.dns.ecs.prefix
+      ignore_missing: true
+  - rename:
+      field: json.ecs_slot
+      tag: rename_ecs_slot
+      target_field: zscaler_zia.dns.ecs.slot
+      ignore_missing: true
+  - rename:
+      field: json.eedone
+      tag: rename_eedone
+      target_field: zscaler_zia.dns.eedone
+      ignore_missing: true
+  - date:
+      field: json.epochtime
+      tag: date_epochtime
+      target_field: zscaler_zia.dns.epochtime
+      formats:
+        - UNIX
+      if: ctx.json?.epochtime != null && ctx.json.epochtime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.error
+      tag: rename_error
+      target_field: zscaler_zia.dns.error
+      ignore_missing: true
+  - set:
+      field: dns.response_code
+      tag: set_dns_response_code_from_dns_error
+      copy_from: zscaler_zia.dns.error
+      ignore_empty_value: true
+  - convert:
+      field: json.hour
+      tag: convert_hour_to_long
+      target_field: zscaler_zia.dns.hour
+      type: long
+      ignore_missing: true
+      if: ctx.json?.hour != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.http_code
+      tag: rename_http_code
+      target_field: zscaler_zia.dns.http_code
+      ignore_missing: true
+  - rename:
+      field: json.istcp
+      tag: rename_istcp
+      target_field: zscaler_zia.dns.istcp
+      ignore_missing: true
+  - rename:
+      field: json.loc
+      tag: rename_loc
+      target_field: zscaler_zia.dns.loc
+      ignore_missing: true
+  - urldecode:
+      field: json.user
+      tag: urldecode_user
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.user
+      tag: rename_user
+      target_field: zscaler_zia.dns.user
+      if: ctx.json?.user != null && ctx.json.user.contains('@')
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_dns_user
+      copy_from: zscaler_zia.dns.user
+      ignore_empty_value: true
+  - dissect:
+      field: user.email
+      tag: create_user_name_and_user_domain
+      pattern: '%{user.name}@%{user.domain}'
+      ignore_missing: true
+      if: ctx.user?.email != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: set_related_user_from_user_name
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: set_related_user_from_user_email
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - convert:
+      field: json.minutes
+      tag: convert_minutes_to_long
+      target_field: zscaler_zia.dns.minutes
+      type: long
+      ignore_missing: true
+      if: ctx.json?.minutes != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.month
+      tag: rename_month
+      target_field: zscaler_zia.dns.month
+      ignore_missing: true
+  - convert:
+      field: json.month_of_year
+      tag: convert_month_of_year_to_long
+      target_field: zscaler_zia.dns.month_of_year
+      type: long
+      ignore_missing: true
+      if: ctx.json?.month_of_year != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.oclientsourceip
+      tag: rename_oclientsourceip
+      target_field: zscaler_zia.dns.obfuscated.client_source_ip
+      ignore_missing: true
+  - rename:
+      field: json.odevicename
+      tag: rename_odevicename
+      target_field: zscaler_zia.dns.obfuscated.device.name
+      ignore_missing: true
+  - rename:
+      field: json.odeviceowner
+      tag: rename_odeviceowner
+      target_field: zscaler_zia.dns.obfuscated.device.owner
+      ignore_missing: true
+  - rename:
+      field: json.odomcat
+      tag: rename_odomcat
+      target_field: zscaler_zia.dns.obfuscated.dom.category
+      ignore_missing: true
+  - rename:
+      field: json.odevicehostname
+      tag: rename_odevicehostname
+      target_field: zscaler_zia.dns.obfuscated.host_name
+      ignore_missing: true
+  - rename:
+      field: json.protocol
+      tag: rename_protocol
+      target_field: zscaler_zia.dns.protocol
+      ignore_missing: true
+  - append:
+      field: network.transport
+      tag: append_zscaler_zia_dns_protocol_into_network_transport
+      value: '{{{zscaler_zia.dns.protocol}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.protocol != null
+  - foreach:
+      field: network.transport
+      tag: foreach_network_transport
+      if: ctx.network?.transport != null
+      processor:
+        lowercase:
+          field: _ingest._value
+          tag: lowercase_network_transport
+          ignore_missing: true
+  - convert:
+      field: json.recordid
+      tag: convert_recordid_to_string
+      type: string
+      target_field: zscaler_zia.dns.record.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_dns_record_id
+      copy_from: zscaler_zia.dns.record.id
+      ignore_empty_value: true
+  - rename:
+      field: json.reqaction
+      tag: rename_reqaction
+      target_field: zscaler_zia.dns.request.action
+      ignore_missing: true
+  - rename:
+      field: json.dns_req
+      tag: rename_dns_req
+      target_field: zscaler_zia.dns.request.name
+      ignore_missing: true
+  - set:
+      field: dns.question.name
+      tag: set_dns_question_name_from_dns_request_name
+      copy_from: zscaler_zia.dns.request.name
+      ignore_empty_value: true
+  - urldecode:
+      field: json.reqrulelabel
+      target_field: zscaler_zia.dns.request.rule.label
+      tag: urldecode_reqrulelabel
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: rule.name
+      tag: append_zscaler_zia_dns_request_rule_label_into_rule_name
+      value: '{{{zscaler_zia.dns.request.rule.label}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.request?.rule?.label != null
+  - rename:
+      field: json.dns_reqtype
+      tag: rename_dns_reqtype
+      target_field: zscaler_zia.dns.request.type
+      ignore_missing: true
+  - set:
+      field: dns.question.type
+      tag: set_dns_question_type_from_dns_request_type
+      copy_from: zscaler_zia.dns.request.type
+      ignore_empty_value: true
+  - rename:
+      field: json.resaction
+      tag: rename_resaction
+      target_field: zscaler_zia.dns.response.action
+      ignore_missing: true
+  - rename:
+      field: json.respipcategory
+      tag: rename_respipcategory
+      target_field: zscaler_zia.dns.response.category
+      ignore_missing: true
+  - convert:
+      field: json.dns_resp
+      tag: convert_dns_resp_to_ip
+      type: ip
+      target_field: zscaler_zia.dns.response.ip
+      ignore_missing: true
+      if: ctx.json?.dns_resp != null && ctx.json.dns_resp != ''
+      on_failure:
+        - rename:
+            field: json.dns_resp
+            tag: rename_dns_resp
+            target_field: zscaler_zia.dns.response.name
+            ignore_missing: true
+  - append:
+      field: dns.answers
+      tag: append_zscaler_zia_dns_response_ip_into_dns_answers
+      value: '{{{zscaler_zia.dns.response.ip}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.response?.ip != null
+  - append:
+      field: dns.answers
+      tag: append_zscaler_zia_dns_response_name_into_dns_answers
+      value: '{{{zscaler_zia.dns.response.name}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.response?.name != null
+  - foreach:
+      field: dns.answers
+      tag: foreach_dns_answers
+      if: ctx.dns?.answers instanceof List
+      processor:
+        rename:
+          field: _ingest._value
+          tag: rename_dns_resp
+          target_field: _ingest._value.data
+          ignore_missing: true
+  - append:
+      field: dns.resolved_ip
+      tag: append_zscaler_zia_dns_response_ip_into_dns_resolved_ip
+      value: '{{{zscaler_zia.dns.response.ip}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.response?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{zscaler_zia.dns.response.ip}}}'
+      tag: append_related_ip_from_source_ip
+      if: ctx.zscaler_zia?.dns?.response?.ip != null
+      allow_duplicates: false
+  - urldecode:
+      field: json.resrulelabel
+      target_field: zscaler_zia.dns.response.rule.label
+      tag: urldecode_resrulelabel
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: rule.name
+      tag: append_zscaler_zia_dns_response_rule_label_into_rule_name
+      value: '{{{zscaler_zia.dns.response.rule.label}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.response?.rule?.label != null
+  - rename:
+      field: json.restype
+      tag: rename_restype
+      target_field: zscaler_zia.dns.response.type
+      ignore_missing: true
+  - foreach:
+      field: dns.answers
+      tag: foreach_dns_answers
+      if: ctx.dns?.answers instanceof List
+      processor:
+        set:
+          field: _ingest._value.type
+          tag: set_dns_response_type
+          copy_from: zscaler_zia.dns.response.type
+          ignore_empty_value: true
+  - convert:
+      field: json.second
+      tag: convert_second_to_long
+      target_field: zscaler_zia.dns.second
+      type: long
+      ignore_missing: true
+      if: ctx.json?.second != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.srv_dip
+      tag: convert_srv_dip_to_ip
+      target_field: zscaler_zia.dns.server.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.srv_dip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_dns_server_ip
+      copy_from: zscaler_zia.dns.server.ip
+      ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      tag: append_related_ip_from_source_ip
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      tag: append_related_ip_from_destination_ip
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - convert:
+      field: json.srv_dport
+      tag: convert_srv_dport_to_long
+      target_field: zscaler_zia.dns.server.port
+      type: long
+      ignore_missing: true
+      if: ctx.json?.srv_dport != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_dns_server_port
+      copy_from: zscaler_zia.dns.server.port
+      ignore_empty_value: true
+  - rename:
+      field: json.tz
+      tag: rename_tz
+      target_field: zscaler_zia.dns.timezone
+      ignore_missing: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_dns_timezone
+      copy_from: zscaler_zia.dns.timezone
+      ignore_empty_value: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_to_utc
+      value: UTC
+      if: ctx.event?.timezone == null
   - date:
       field: json.datetime
+      tag: date_time
+      target_field: zscaler_zia.dns.time
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
         - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{event.timezone}}}'
       if: ctx.json?.datetime != null && ctx.json.datetime != ''
       on_failure:
-        - remove:
-            field: json.datetime
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - date:
-      field: json.time
-      formats:
-        - E MMM dd HH:mm:ss yyyy
-        - E MMM  d HH:mm:ss yyyy
-        - E MMM d HH:mm:ss yyyy
-        - yyyy-MM-dd HH:mm:ss'
-      if: ctx.json?.time != null && ctx.json.time != ''
-      on_failure:
-        - remove:
-            field: json.time
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: network.protocol
-      value: dns
-  - append:
-      field: event.category
-      value: network
-  - set:
-      field: event.kind
-      value: event
-  - append:
-      field: event.type
-      value: info
+      field: '@timestamp'
+      tag: set_@timestamp_from_dns_time
+      copy_from: zscaler_zia.dns.time
+      ignore_empty_value: true
   - convert:
-      field: json.clt_sip
-      target_field: source.ip
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.clt_sip
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-  - append:
-      field: related.ip
-      value: '{{{source.ip}}}'
-      if: ctx.source?.ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - rename:
-      field: json.dns_req
-      target_field: dns.question.name
-      ignore_missing: true
-  - rename:
-      field: json.dns_reqtype
-      target_field: dns.question.type
-      ignore_missing: true
-  - convert:
-      field: json.dns_resp
-      target_field: _tmp.ip
-      type: ip
-      ignore_failure: true
-      ignore_missing: true
-  - rename:
-      field: json.dns_resp
-      target_field: dns.answers.data
-      if: ctx._tmp?.ip != null
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{_tmp.ip}}}'
-      if: ctx._tmp?.ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - rename:
-      field: json.dns_resp
-      target_field: dns.answers.name
-      if: ctx._tmp?.ip == null && ctx.json?.dns_resp != ctx.json?.dns_req
-      ignore_missing: true
-  - convert:
-      field: json.srv_dip
-      target_field: destination.ip
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.srv_dip
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - geoip:
-      field: destination.ip
-      target_field: destination.geo
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: destination.ip
-      target_field: destination.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: destination.as.asn
-      target_field: destination.as.number
-      ignore_missing: true
-  - rename:
-      field: destination.as.organization_name
-      target_field: destination.as.organization.name
-      ignore_missing: true
-  - append:
-      field: related.ip
-      value: '{{{destination.ip}}}'
-      if: ctx.destination?.ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - convert:
-      field: json.srv_dport
-      target_field: destination.port
+      field: json.year
+      tag: convert_year_to_long
+      target_field: zscaler_zia.dns.year
       type: long
       ignore_missing: true
+      if: ctx.json?.year != ''
       on_failure:
-        - remove:
-            field: json.srv_dport
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: user.id
-      copy_from: json.user
-      ignore_empty_value: true
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - urldecode:
-      field: json.user
-      target_field: user.email
-      if: ctx.json?.user != null && ctx.json.user.contains('@')
+      field: json.login
+      tag: urldecode_login
       ignore_missing: true
       ignore_failure: true
-  - append:
-      field: user.name
-      value: '{{{json.user}}}'
-      if: ctx.user?.email == null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: user.name
-      value: '{{{json.deviceowner}}}'
-      if: ctx.json?.deviceowner != null
-      allow_duplicates: false
-      ignore_failure: true
-  - foreach:
-      field: user.name
-      if: ctx.user?.name instanceof List
-      processor:
-        append:
-          field: related.user
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
+  - rename:
+      field: json.login
+      tag: rename_login
+      target_field: zscaler_zia.dns.login
+      if: ctx.json?.login != null && ctx.json.login.contains('@')
       ignore_missing: true
-  - append:
-      field: related.user
-      value: '{{{user.id}}}'
-      allow_duplicates: false
-      if: ctx.user?.id != null
   - urldecode:
       field: json.department
       target_field: zscaler_zia.dns.department
+      tag: urldecode_department
       ignore_missing: true
       ignore_failure: true
   - urldecode:
       field: json.location
       target_field: zscaler_zia.dns.location
+      tag: urldecode_location
       ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.reqaction
-      target_field: zscaler_zia.dns.request.action
-      ignore_missing: true
-  - rename:
-      field: json.resaction
-      target_field: zscaler_zia.dns.response.action
-      ignore_missing: true
-  - urldecode:
-      field: json.reqrulelabel
-      target_field: zscaler_zia.dns.request.rule.label
-      ignore_missing: true
-      ignore_failure: true
-  - urldecode:
-      field: json.resrulelabel
-      target_field: zscaler_zia.dns.response.rule.label
-      ignore_missing: true
-      ignore_failure: true
-  - convert:
-      field: json.durationms
-      target_field: zscaler_zia.dns.duration.milliseconds
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.durationms
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.category
-      target_field: zscaler_zia.dns.dom.category
-      ignore_missing: true
-  - rename:
-      field: json.devicehostname
-      target_field: zscaler_zia.dns.hostname
-      ignore_missing: true
-  - set:
-      field: host.hostname
-      value: '{{{zscaler_zia.dns.hostname}}}'
-      ignore_empty_value: true
-  - append:
-      field: related.hosts
-      value: '{{{zscaler_zia.dns.hostname}}}'
-      if: ctx.zscaler_zia?.dns?.hostname != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: related.hosts
-      value: '{{{dns.question.name}}}'
-      if: ctx.dns?.question?.name != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: related.hosts
-      value: '{{{dns.answers.name}}}'
-      if: ctx.dns?.answers?.name != null && ctx._tmp?.ip == null
-      allow_duplicates: false
       ignore_failure: true
   - remove:
       field:
-        - json.clt_sip
-        - json.srv_dip
-        - json.time
-        - json.datetime
-        - json.srv_dport
-        - json.user
-        - json.department
-        - json.location
-        - json.reqrulelabel
-        - json.resrulelabel
-        - json.durationms
-        - json.deviceowner
-        - _tmp
+        - zscaler_zia.dns.client.ip
+        - zscaler_zia.dns.cloud.name
+        - zscaler_zia.dns.company
+        - zscaler_zia.dns.device.hostname
+        - zscaler_zia.dns.device.model
+        - zscaler_zia.dns.device.name
+        - zscaler_zia.dns.device.os.version
+        - zscaler_zia.dns.device.type
+        - zscaler_zia.dns.dns.gateway.server_protocol
+        - zscaler_zia.dns.dns.type
+        - zscaler_zia.dns.error
+        - zscaler_zia.dns.user
+        - zscaler_zia.dns.protocol
+        - zscaler_zia.dns.response.name
+        - zscaler_zia.dns.response.ip
+        - zscaler_zia.dns.response.type
+        - zscaler_zia.dns.record.id
+        - zscaler_zia.dns.request.name
+        - zscaler_zia.dns.request.rule.label
+        - zscaler_zia.dns.request.type
+        - zscaler_zia.dns.response.rule.label
+        - zscaler_zia.dns.duration.milliseconds
+        - zscaler_zia.dns.server.ip
+        - zscaler_zia.dns.server.port
+        - zscaler_zia.dns.time
+      tag: remove_custom_duplicate_fields
       ignore_missing: true
-  - script:
-      description: Adds all the remaining fields in fields under zscaler_zia.dns.
-      lang: painless
-      if: ctx.json != null
-      source: |
-        for (Map.Entry m : ctx.json.entrySet()) {
-          ctx.zscaler_zia.dns[m.getKey()] = m.getValue();
-        }
-  - script:
-      lang: painless
-      if: ctx.zscaler_zia?.dns?.duration?.milliseconds != null
-      source: |
-        ctx.event.duration = ctx.zscaler_zia?.dns?.duration?.milliseconds * 1000000;
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      ignore_failure: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
+      tag: remove_json
       ignore_missing: true
-on_failure:
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
   - set:
       field: event.kind
       value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

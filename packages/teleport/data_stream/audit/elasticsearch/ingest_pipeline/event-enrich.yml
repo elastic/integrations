@@ -1,0 +1,271 @@
+---
+description: >
+  Pipeline to enrich Teleport audit fields with additional information.
+
+processors:
+  # Enrich address fields.
+  - grok:
+      field: client.address
+      ignore_missing: true
+      patterns:
+        - ^(%{IP:client.ip}|%{HOSTNAME:client.domain})$
+  - geoip:
+      field: client.ip
+      tag: geoip_client_ip
+      target_field: client.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      tag: geoip_client_asn
+      target_field: client.as
+      ignore_failure: true
+      properties:
+        - asn
+        - organization_name
+  - rename:
+      field: client.as.asn
+      tag: rename_client_as_asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      tag: rename_client_as_organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - grok:
+      field: server.address
+      ignore_missing: true
+      patterns:
+        - ^(%{IP:server.ip}|%{HOSTNAME:server.domain})$
+  - geoip:
+      field: server.ip
+      tag: geoip_server_ip
+      target_field: server.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: server.ip
+      tag: geoip_server_asn
+      target_field: server.as
+      ignore_failure: true
+      properties:
+        - asn
+        - organization_name
+  - rename:
+      field: server.as.asn
+      tag: rename_server_as_asn
+      target_field: server.as.number
+      ignore_missing: true
+  - rename:
+      field: server.as.organization_name
+      tag: rename_server_as_organization_name
+      target_field: server.as.organization.name
+      ignore_missing: true
+  - grok:
+      field: source.address
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_asn
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - grok:
+      field: destination.address
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})$
+  - geoip:
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      tag: geoip_destination_asn
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: destination.as.asn
+      tag: rename_destination_as_asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      tag: rename_destination_as_organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  # Add related fields.
+  - append:
+      field: related.ip
+      value:
+        - '{{{client.ip}}}'
+      allow_duplicates: false
+      if: ctx?.client?.ip != null
+  - append:
+      field: related.ip
+      value:
+        - '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx?.destination?.ip != null
+  - append:
+      field: related.ip
+      value:
+        - '{{{server.ip}}}'
+      allow_duplicates: false
+      if: ctx?.server?.ip != null
+  - append:
+      field: related.ip
+      value:
+        - '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx?.source?.ip != null
+  - append:
+      field: related.ip
+      value:
+        - '{{{teleport.audit.certificate.identity.client_ip}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.certificate?.identity?.client_ip != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx?.host?.hostname != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{client.domain}}}'
+      allow_duplicates: false
+      if: ctx?.client?.domain != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{destination.domain}}}'
+      allow_duplicates: false
+      if: ctx?.destination?.domain != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{server.domain}}}'
+      allow_duplicates: false
+      if: ctx?.server?.domain != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{source.domain}}}'
+      allow_duplicates: false
+      if: ctx?.source?.domain != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{url.domain}}}'
+      allow_duplicates: false
+      if: ctx?.url?.domain != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{teleport.audit.app.public_address}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.app?.public_address != null
+  - set:
+      field: related.user
+      value: ""
+  - append:
+      field: related.user
+      value:
+        - '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx?.user?.name != null
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.resource.name}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.resource?.name != null && ctx.event.action.startsWith("user.")
+  - append:
+      field: related.user
+      value:
+        - '{{{process.user.name}}}'
+      allow_duplicates: false
+      if: ctx?.process?.user?.name != null
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.database.user}}}'
+      allow_duplicates: false
+      if: ctx?.teleport.audit.database?.user != null
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.database.user_change.username}}}'
+      allow_duplicates: false
+      if: ctx?.teleport.audit.database?.user_change?.username != null
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.certificate.identity.user}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.certificate?.identity?.user != null
+  - script:
+      description: >
+        Add lists of related users.
+      tag: script_add_related_user_lists
+      lang: painless
+      source: |
+        if (ctx.teleport?.audit?.certificate?.identity?.logins != null) {
+          ctx.related.user.addAll(ctx.teleport.audit.certificate.identity.logins);
+        }
+        if (ctx.teleport?.audit?.certificate?.identity?.participants != null) {
+          ctx.related.user.addAll(ctx.teleport.audit.certificate.identity.participants);
+        }
+        if (ctx.teleport?.audit?.certificate?.identity?.database_users != null) {
+          ctx.related.user.addAll(ctx.teleport.audit.certificate.identity.database_users);
+        }
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.certificate.identity.impersonator}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.certificate?.identity?.impersonator != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{teleport.audit.server.labels.hostname}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.server?.labels?.hostname != null

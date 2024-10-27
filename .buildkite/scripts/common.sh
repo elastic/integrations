@@ -126,8 +126,6 @@ with_mage() {
 
     local install_packages=(
             "github.com/magefile/mage"
-            "github.com/elastic/go-licenser"
-            "golang.org/x/tools/cmd/goimports"
             "github.com/jstemmer/go-junit-report"
             "gotest.tools/gotestsum"
     )
@@ -164,7 +162,7 @@ with_docker() {
     sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce=${debian_version}"
     sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce-cli=${debian_version}"
-    sudo systemctl start docker
+    retry 3 sudo systemctl restart docker
 
     echo "- Installed docker client version:"
     docker version -f json  | jq -r '.Client.Version'
@@ -399,7 +397,11 @@ packages_excluded() {
     echo "${excluded_packages}"
 }
 
-is_package_excluded() {
+package_name_manifest() {
+    cat manifest.yml | yq -r '.name'
+}
+
+is_package_excluded_in_config() {
     local package=$1
     local config_file_path=$2
     local excluded_packages=""
@@ -408,7 +410,10 @@ is_package_excluded() {
     if [[ "${excluded_packages}" == "null" ]]; then
         return 1
     fi
-    if echo "${excluded_packages}" | grep -q -E "\"${package}\""; then
+    local package_name=""
+    package_name=$(package_name_manifest)
+
+    if echo "${excluded_packages}" | grep -q -E "\"${package_name}\""; then
         return 0
     fi
     return 1
@@ -422,7 +427,7 @@ is_supported_capability() {
     local capabilities=""
     capabilities=$(capabilities_manifest)
 
-    # if no capabilities defined, it is available iavailable all projects
+    # if no capabilities defined, it is available in all projects
     if [[  "${capabilities}" == "null" ]]; then
         return 0
     fi
@@ -457,12 +462,19 @@ is_supported_stack() {
     if [ "${kibana_version}" == "null" ]; then
         return 0
     fi
-    if [[ ! "${kibana_version}" =~ \^7\. && "${STACK_VERSION}" =~ ^7\. ]]; then
+    if [[ ( ! "${kibana_version}" =~ \^7\. ) && "${STACK_VERSION}" =~ ^7\. ]]; then
         return 1
     fi
-    if [[ ! "${kibana_version}" =~ \^8\. && "${STACK_VERSION}" =~ ^8\. ]]; then
+    if [[ ( ! "${kibana_version}" =~ \^8\. ) && "${STACK_VERSION}" =~ ^8\. ]]; then
         return 1
     fi
+
+    # TODO: Allowed temporarily to test packages with stack version 9.0 if they have as constraint ^8.0 defined too.
+    # This workaround should be removed once packages have been updated their constraints for 9.0 stack.
+    if [[ ( ! ( "${kibana_version}" =~ \^9\. || "${kibana_version}" =~ \^8\. ) ) && "${STACK_VERSION}" =~ ^9\. ]]; then
+        return 1
+    fi
+
     return 0
 }
 
@@ -494,6 +506,10 @@ prepare_stack() {
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
         fi
+    fi
+
+    if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+        args="${args} -U stack.logsdb_enabled=true"
     fi
 
     echo "Boot up the Elastic stack"
@@ -591,7 +607,7 @@ get_commit_from_build() {
 get_previous_commit() {
     local pipeline="$1"
     local branch="$2"
-    # Not using state=finished because it implies also skip and cancelled builds https://buildkite.com/docs/pipelines/notifications#build-states
+    # Not using state=finished because it implies also skip and canceled builds https://buildkite.com/docs/pipelines/notifications#build-states
     local status="state[]=failed&state[]=passed"
     local previous_commit
     previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
@@ -659,7 +675,7 @@ is_pr_affected() {
     fi
 
     if is_serverless; then
-        if is_package_excluded "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
+        if is_package_excluded_in_config "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
             echo "[${package}] PR is not affected: package ${package} excluded in Kibana config for ${SERVERLESS_PROJECT}"
             return 1
         fi
@@ -685,7 +701,7 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
@@ -810,6 +826,9 @@ test_package_in_serverless() {
     # FIXME: adding test-coverage for serverless results in errors like this:
     # Error: error running package pipeline tests: could not complete test run: error calculating pipeline coverage: error fetching pipeline stats for code coverage calculations: need exactly one ES node in stats response (got 4)
     if ! ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS} ; then
+        return 1
+    fi
+    if ! ${ELASTIC_PACKAGE_BIN} test policy ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
     echo ""

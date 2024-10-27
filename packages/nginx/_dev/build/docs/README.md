@@ -60,6 +60,10 @@ The Nginx access logs stream was tested with Nginx 1.19.5.
 
 {{event "access"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "access"}}
 
 ### Error Logs
@@ -71,6 +75,10 @@ Error logs collects the Nginx error logs.
 The Nginx error logs stream was tested with Nginx 1.19.5.
 
 {{event "error"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "error"}}
 
@@ -98,9 +106,13 @@ The Nginx `stubstatus` stream was tested with Nginx 1.19.5 and is expected to wo
 
 {{event "stubstatus"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "stubstatus"}}
 
-## ML Modules
+## Anomaly Detection Configurations
 
 These anomaly detection jobs are available in the Machine Learning app in Kibana
 when you have data that matches the query specified in the

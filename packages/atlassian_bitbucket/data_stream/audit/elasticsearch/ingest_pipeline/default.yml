@@ -20,7 +20,7 @@ processors:
       if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
   - set:
       field: _tmp.timestamp
-      value: "{{json.timestamp.epochSecond}}.{{json.timestamp.nano}}"
+      value: "{{{json.timestamp.epochSecond}}}.{{{json.timestamp.nano}}}"
       if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
   - date:
       field: _tmp.timestamp
@@ -177,113 +177,95 @@ processors:
             - iam
             - configuration
           type:
-            - admin
             - creation
         bitbucket.access.tokens.audit.action.accesstokencreated.personal:
           category:
             - iam
           type:
-            - admin
             - creation
         bitbucket.access.tokens.audit.action.accesstokendeleted.personal:
           category:
             - iam
           type:
-            - admin
             - deletion
         bitbucket.access.tokens.audit.action.accesstokenmodified.personal:
           category:
             - iam
           type:
-            - admin
             - change
         bitbucket.access.tokens.audit.action.accesstokencreated.repository:
           category:
             - iam
           type:
-            - admin
             - creation
         bitbucket.access.tokens.audit.action.accesstokendeleted.repository:
           category:
             - iam
           type:
-            - admin
             - deletion
         bitbucket.access.tokens.audit.action.accesstokenmodified.repository:
           category:
             - iam
           type:
-            - admin
             - change
         bitbucket.ssh.audit.action.sshkeycreated:
           category:
             - iam
           type:
-            - admin
             - creation
         bitbucket.ssh.audit.action.sshkeydeleted:
           category:
             - iam
           type:
-            - admin
             - deletion
         bitbucket.ssh.audit.action.sshaccesskeygranted.repository:
           category:
             - iam
           type:
-            - admin
             - creation
         bitbucket.ssh.audit.action.sshaccesskeyrevoked.repository:
           category:
             - iam
           type:
-            - admin
             - deletion
         bitbucket.plugins.gpg.audit.action.gpgevent.created:
           category:
             - iam
           type:
-            - admin
             - creation
         bitbucket.plugins.gpg.audit.action.gpgevent.deleted:
           category:
             - iam
           type:
-            - admin
             - deletion
         bitbucket.service.user.audit.action.repositorypermissiongranted:
           category:
             - iam
             - configuration
           type:
-            - admin
             - creation
         bitbucket.service.user.audit.action.repositorypermissiongrantrequested:
           category:
             - iam
             - configuration
           type:
-            - admin
             - creation
         bitbucket.service.user.audit.action.repositorypermissionrevoked:
           category:
             - iam
             - configuration
           type:
-            - admin
             - deletion
         bitbucket.service.user.audit.action.repositorypermissionrevocationrequested:
           category:
             - iam
             - configuration
           type:
-            - admin
             - deletion
         atlassian.audit.event.action.audit.config.updated:
           category:
             - configuration
           type:
-            - admin
             - change
         bitbucket.service.repository.audit.action.repositoryaccessed:
           category:
@@ -332,7 +314,7 @@ processors:
             - change
       source: >-
         ctx.event.kind = 'event';
-        ctx.event.type = 'info';
+        ctx.event.type = ['info'];
 
         if (ctx?.event?.action == null) {
             return;
@@ -404,38 +386,33 @@ processors:
         }
   - append:
       field: related.user
-      value: '{{user.name}}'
+      value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      value: '{{user.target.name}}'
+      value: '{{{user.target.name}}}'
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
       field: related.user
-      value: '{{user.changes.name}}'
+      value: '{{{user.changes.name}}}'
       allow_duplicates: false
       if: ctx.user?.changes?.name != null
   - append:
       field: related.ip
-      value: '{{source.ip}}'
+      value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.hosts
-      value: '{{_tmp.service.domain}}'
+      value: '{{{_tmp.service.domain}}}'
       allow_duplicates: false
       if: ctx._tmp?.service?.domain != null
   - remove:
       field:
         - json
         - _tmp
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
       ignore_missing: true
   - script:
       lang: painless

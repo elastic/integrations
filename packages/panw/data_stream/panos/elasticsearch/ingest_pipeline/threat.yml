@@ -279,16 +279,25 @@ processors:
       field: source.user.email
       copy_from: panw.panos.sender
       ignore_failure: true
-
+  - set:
+      if: 'ctx.panw?.panos?.sub_type == "url" && ctx.panw?.panos?.misc instanceof String'
+      tag: set_url
+      field: url.original
+      copy_from: panw.panos.misc
+  - set:
+      if: 'ctx.panw?.panos?.sub_type == "virus" && ctx.panw?.panos?.misc instanceof String && ctx.panw.panos.misc.contains("/")'
+      tag: set_virus_url
+      field: url.original
+      copy_from: panw.panos.misc
   # Crude implementation of `uri_parts` as its not working well due to lack of scheme.
   # When the scheme of the URL is absent, this script parses the URL in `ctx.panw.panos.misc` into components namely 
   # `url.original`, `url.domain`, `url.port`, `url.path`, `url.query`, `url.extension`
   - script:
-      if: "ctx.url?.scheme == null && ctx.panw?.panos?.sub_type == 'url' && ctx.panw?.panos?.misc instanceof String"
+      if: "ctx.url?.original != null"
       lang: painless
       source: |-
         Map url = new HashMap();
-        String url_original = ctx.panw.panos.misc;
+        String url_original = ctx.url.original;
         String domainPort = url_original;
         url.original = url_original;
 
@@ -304,7 +313,7 @@ processors:
                 url.path = afterDomain.substring(0, idxQuery);
                 url.query = afterDomain.substring(idxQuery + 1);
             }
-            int idxExtn = url.path.indexOf(".");
+            int idxExtn = url.path.lastIndexOf(".");
             if (idxExtn != -1) {
                 url.extension = url.path.substring(idxExtn+1);
             }
@@ -347,7 +356,7 @@ processors:
         }
         ctx.file["name"] = ctx.file.path.substring(idx+1);
   - set:
-      if: ctx.panw?.panos?.sub_type == 'file' && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains('/') || ctx.panw.panos.misc.contains('\\'))
+      if: '["file", "virus"].contains(ctx.panw?.panos?.sub_type) && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains("/") || ctx.panw.panos.misc.contains("\\"))'
       field: file.name
       copy_from: panw.panos.misc
       ignore_failure: true

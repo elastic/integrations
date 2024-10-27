@@ -9,42 +9,133 @@ processors:
       field: temp.time
       target_field: "@timestamp"
       ignore_missing: true
+  - set:
+      field: "@timestamp"
+      copy_from: temp.StartUTC
+      if: 'ctx?.temp?.StartUTC != null'
+      override: true
+  - set:
+      field: "@timestamp"
+      copy_from: temp.StartLocal
+      override: true
+      if: 'ctx?.temp?.StartUTC == null && ctx?.temp?.StarLocal != null'
+  - rename:
+      field: temp.Duration
+      target_field: event.duration
+      ignore_missing: true
+  - rename:
+      field: temp.RouterName
+      target_field: traefik.access.router.name
+      ignore_missing: true
+  - rename:
+      field: temp.FrontendName
+      target_field: traefik.access.router.name
+      ignore_missing: true
+      description: traefik 1.x backwards compatibility
+      if: 'ctx?.traefik?.access?.router?.name == null'
   - rename:
       field: temp.ClientUsername
       target_field: user.name
       ignore_missing: true
   - rename:
-      field: temp.FrontendName
-      target_field: traefik.access.frontend_name
+      field: temp.ServiceName
+      target_field: observer.egress.interface.name
       ignore_missing: true
   - rename:
-      field: temp.BackendAddr
-      target_field: traefik.access.backend_url
+      field: temp.BackendName
+      target_field: observer.egress.interface.name
+      ignore_missing: true
+      description: traefik 1.x backwards compatibility
+      if: 'ctx?.observer?.egress?.interface?.name == null'
+  - rename:
+      field: temp.BackendURL
+      target_field: temp.ServiceURL
+      ignore_missing: true
+      if: 'ctx?.temp?.ServiceURL == null'
+  - rename:
+      field: temp.ServiceURL.Opaque
+      target_field: traefik.access.service.url.opaque
+      ignore_missing: true
+  - rename:
+      field: temp.ServiceURL.User
+      target_field: traefik.access.service.url.user
+      ignore_missing: true
+  - rename:
+      field: temp.ServiceURL.Host
+      target_field: traefik.access.service.url.domain
+      ignore_missing: true
+  - rename:
+      field: temp.ServiceURL.Path
+      target_field: traefik.access.service.url.path
+      ignore_missing: true
+  - rename:
+      field: temp.ServiceURL.RawPath
+      target_field: traefik.access.service.url.raw_path
+      ignore_missing: true
+  - rename:
+      field: temp.ServiceURL.ForceQuery
+      target_field: traefik.access.service.url.force_query
+      ignore_missing: true
+  - rename:
+      field: temp.ServiceURL.RawQuery
+      target_field: traefik.access.service.url.raw_query
+      ignore_missing: true
+  - rename:
+      field: temp.ServiceURL.Fragment
+      target_field: traefik.access.service.url.fragment
       ignore_missing: true
   - rename:
       field: temp.RequestCount
       target_field: traefik.access.request_count
       ignore_missing: true
   - rename:
+      field: temp.ClientAddr
+      target_field: source.address
+      ignore_missing: true
+  - grok:
+      description: IPv6 '[]' notation must be removed to avoid ip field mapping errors.
+      field: source.address
+      patterns:
+        - '^\\[?%{IP:source.ip}\\]?:%{POSINT:source.port}$'
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
       field: temp.ClientHost
       target_field: source.ip
+      type: ip
       ignore_missing: true
-  - set:
-      field: source.address
-      copy_from: source.ip
-      if: ctx.source?.ip != null
+      ignore_failure: true
+      if: 'ctx?.source?.ip == null'
+  - convert:
+      field: temp.ClientHost
+      target_field: network.forwarded_ip
+      type: ip
+      ignore_missing: true
+      if: 'ctx?.source?.ip != null && ctx?.source?.ip != ctx?.temp?.ClientHost'
+  - append:
+      field: related.ip
+      value: "{{{network.forwarded_ip}}}"
+      if: 'ctx?.network?.forwarded_ip != null'
   - rename:
       field: temp.ClientPort
       target_field: source.port
       ignore_missing: true
+      if: 'ctx?.source?.port == null'
   - convert:
       field: source.port
       type: long
       ignore_missing: true
   - dissect:
-      field: traefik.access.backend_url
+      field: temp.ServiceAddr
       pattern: "%{destination.ip}:%{destination.port}"
-      if: 'ctx?.traefik?.access?.backend_url != ""'
+      ignore_missing: true
+      ignore_failure: true
+  - dissect:
+      field: temp.BackendAddr
+      pattern: "%{destination.ip}:%{destination.port}"
+      ignore_missing: true
+      ignore_failure: true
+      if: 'ctx?.temp.SourceAddr == null'
   - convert:
       field: destination.port
       type: long
@@ -55,35 +146,190 @@ processors:
       if: "ctx?.destination?.ip != null"
   - rename:
       field: temp.RequestPath
-      target_field: url.original
+      target_field: url.path
       ignore_missing: true
   - rename:
       field: temp.RequestMethod
       target_field: http.request.method
       ignore_missing: true
   - rename:
-      field: temp.RequestAddr
+      field: temp.RequestHost
       target_field: url.domain
       ignore_missing: true
   - rename:
+      field: temp.RequestAddr
+      target_field: url.domain
+      ignore_missing: true
+      if: 'ctx?.url?.domain == null'
+  - convert:
+      field: temp.RequestPort
+      target_field: url.port
+      type: long
+      if: 'ctx?.temp?.RequestPort != null && ctx?.temp?.RequestPort != "-"'
+  - dissect:
+      field: temp.RequestProtocol
+      pattern: "HTTP/%{http.version}"
+  - rename:
+      field: temp.RequestScheme
+      target_field: url.scheme
+      ignore_missing: true
+  - append:
+      field: url.original
+      value: "{{{url.scheme}}}://"
+      if: 'ctx?.url?.scheme != null'
+  - append:
+      field: url.original
+      value: "{{{url.domain}}}"
+      if: 'ctx?.url?.domain != null'
+  - append:
+      field: url.original
+      value: ":{{{url.port}}}"
+      if: 'ctx?.url?.port != null'
+  - append:
+      field: url.original
+      value: "{{{url.path}}}"
+      if: 'ctx?.url?.path != null'
+  - join:
+      field: url.original
+      separator: ""
+  - remove:
+      field: url.original
+      if: 'ctx?.url?.original == ""'
+  - rename:
       field: temp.DownstreamStatus
       target_field: http.response.status_code
-      ignore_missing: true
+      if: 'ctx?.temp?.DownstreamStatus != null && ctx?.temp?.DownstreamStatus != "-"'
   - rename:
       field: temp.DownstreamContentSize
       target_field: http.response.body.bytes
       ignore_missing: true
-  - dissect:
-      field: temp.RequestProtocol
-      pattern: "HTTP/%{http.version}"
   - rename:
       field: temp.request_User-Agent
       target_field: user_agent.original
       ignore_missing: true
   - rename:
-      field: temp.Duration
-      target_field: event.duration
+      field: temp.OriginContentSize
+      target_field: traefik.access.origin.content_size
       ignore_missing: true
+  - rename:
+      field: temp.OriginDuration
+      target_field: traefik.access.origin.duration
+      ignore_missing: true
+  - rename:
+      field: temp.OriginStatus
+      target_field: traefik.access.origin.status_code
+      if: 'ctx?.temp?.OriginStatus != null && ctx?.temp?.OriginStatus != "-"'
+  - rename:
+      field: temp.Overhead
+      target_field: traefik.access.overhead
+      ignore_missing: true
+  - rename:
+      field: temp.RequestContentSize
+      target_field: http.request.body.bytes
+      ignore_missing: true
+  - rename:
+      field: temp.RetryAttempts
+      target_field: traefik.access.retry_attempts
+      ignore_missing: true
+  - user_agent:
+        field : temp.request_User-Agent
+        ignore_missing: true
+        extract_device_type: true
+  - script:
+      source: |
+        Map downstream_headers = new HashMap();
+        Map origin_headers = new HashMap();
+        Map request_headers = new HashMap();
+
+        // Get the headers
+        for (fieldname in ctx?.temp?.keySet()){
+          if (fieldname.startsWith('downstream_')){
+            downstream_headers.put(fieldname.replace('downstream_', '').toLowerCase(), ctx.temp[fieldname]);
+          }
+          else if (fieldname.startsWith('request_')){
+            request_headers.put(fieldname.replace('request_', '').toLowerCase(), ctx.temp[fieldname]);
+          }
+          else if (fieldname.startsWith('origin_')){
+            origin_headers.put(fieldname.replace('origin_', '').toLowerCase(), ctx.temp[fieldname]);
+          }
+        }
+
+        if (!request_headers.isEmpty()){
+          // Make sure http.request object exists
+          if (ctx.http == null){
+            ctx.put('http', new HashMap());
+          }
+          if (ctx.http.request == null){
+            ctx.http.put('request', new HashMap());
+          }
+
+          // Add headers
+          ctx.http.request.put('headers', request_headers);
+        }
+
+        if (!downstream_headers.isEmpty()){
+          // Make sure http.response object exists
+          if (ctx.http == null){
+            ctx.put('http', new HashMap());
+          }
+          if (ctx.http.response == null){
+            ctx.http.put('response', new HashMap());
+          }
+          // Add headers
+          ctx.http.response.put('headers', downstream_headers);
+        }
+
+        if (!origin_headers.isEmpty()){
+          // Make sure traefik.access.origin object exists
+          if (ctx.traefik == null){
+            ctx.put('traefik', new HashMap());
+          }
+          if (ctx.traefik.access == null){
+            ctx.traefik.put('access', new HashMap());
+          }
+          if (ctx.traefik.access.origin == null){
+            ctx.traefik.access.put('origin', new HashMap());
+          }
+          // Add headers
+          ctx.traefik.access.origin.put('headers', origin_headers);
+        }
+
+  - rename:
+      field: temp.TLSCipher
+      target_field: tls.cipher
+      ignore_missing: true
+  - rename:
+      field: temp.TLSVersion
+      target_field: tls.version
+      ignore_missing: true
+  - rename:
+      field: temp.GzipRatio
+      target_field: traefik.access.gzip_ratio
+      ignore_missing: true
+  - rename:
+      field: temp.entryPointName
+      target_field: observer.ingress.interface.name
+      ignore_missing: true
+  - set:
+      field: log.level
+      copy_from: temp.level
+      override: true
+      ignore_empty_value: true
+  - set:
+      field: message
+      copy_from: temp.msg
+      override: true
+      ignore_empty_value: true
+  - set:
+      field: observer.vendor
+      value: traefik
+  - set:
+      field: observer.product
+      value: traefik
+  - set:
+      field: observer.type
+      value: proxy
+
 on_failure:
   - set:
       field: error.message

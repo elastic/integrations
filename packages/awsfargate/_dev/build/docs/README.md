@@ -1,12 +1,14 @@
-# AWS Fargate Integration
+# AWS Fargate Integration (for ECS clusters)
 
 ## Overview
 
 The AWS Fargate integration helps to retrieve metadata, network metrics, and Docker stats about your containers and the tasks that are part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
 
+The AWS Fargate integration currently supports ECS clusters only. It does not support EKS clusters. 
+
 ## Credentials
 
-No AWS credentials are required for this integration. The ECS task metadata endpoint is accessible inside the cluster only.
+This integration does not require AWS credentials. The ECS task metadata endpoint is accessible only inside the cluster.
 
 ## Setup
 
@@ -292,6 +294,10 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 ## Metrics
 
 ### Task Stats
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "task_stats"}}
 

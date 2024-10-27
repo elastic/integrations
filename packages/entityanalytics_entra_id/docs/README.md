@@ -217,7 +217,6 @@ An example event for `entity` looks as following:
         "entityanalytics_entra_id-entity"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -332,10 +331,8 @@ An example event for `entity` looks as following:
 | event.provider | The event kind. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | labels.identity_source |  | keyword |
-| log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| tags | User defined tags. | keyword |
 | user.enabled |  | boolean |
 | user.first_name |  | keyword |
 | user.group.id |  | keyword |

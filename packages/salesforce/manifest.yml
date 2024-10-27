@@ -1,8 +1,9 @@
 format_version: 3.0.2
 name: salesforce
 title: Salesforce
-version: "0.14.1"
-description: Collect logs from Salesforce with Elastic Agent.
+version: "0.15.1"
+description: |
+  Collect logs from Salesforce instances using the Elastic Agent. This integration enables monitoring and analysis of various Salesforce logs, including Login, Logout, Setup Audit Trail, and Apex execution logs. Gain insights into user activity, security events, and application performance.
 type: integration
 categories:
   - observability
@@ -10,56 +11,55 @@ conditions:
   elastic:
     subscription: basic
   kibana:
-    version: ^8.12.0
-screenshots:
-  - src: /img/salesforce-login.png
-    title: Salesforce Login Dashboard
-    size: 1366x1912
-    type: image/png
-  - src: /img/salesforce-logout.png
-    title: Salesforce Logout Dashboard
-    size: 1366x1912
-    type: image/png
-  - src: /img/salesforce-setupaudittrail.png
-    title: Salesforce SetupAuditTrail Dashboard
-    size: 1366x1912
-    type: image/png
-  - src: /img/salesforce-apex.png
-    title: Salesforce Apex Dashboard
-    size: 1366x1912
-    type: image/png
+    version: ^8.16.0
 icons:
   - src: /img/salesforce.svg
     title: Salesforce
     size: 32x32
     type: image/svg+xml
+screenshots:
+  - src: /img/salesforce-apex-dashboard.png
+    title: Salesforce Apex Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/salesforce-login-dashboard.png
+    title: Salesforce Login Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/salesforce-logout-dashboard.png
+    title: Salesforce Logout Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/salesforce-setupaudittrail-dashboard.png
+    title: Salesforce SetupAuditTrail Dashboard
+    size: 600x600
+    type: image/png
 vars:
   - name: instance_url
     type: text
     title: Instance URL
-    description: The Instance URL of the Salesforce instance.
+    description: |
+      The Instance URL of your Salesforce instance. For production organizations, this is typically https://yourinstance.salesforce.com. For sandboxes or custom domains, it may differ. See the [Salesforce documentation](https://www.elastic.co/docs/current/integrations/salesforce#configuration) for more details.
     required: true
     show_user: true
     default: https://instance-url.salesforce.com
-  - name: client_id
-    type: text
-    title: Client ID
-    description: OAuth 2.0 client ID.
+  - name: jwt_enabled
+    type: bool
+    title: Enable JWT Authentication
+    description: |
+      Enable JWT-based authentication for secure communication with Salesforce APIs. If disabled, the integration will use the Username-Password authentication flow.
+
+      **Required fields for JWT Authentication**: "JWT Authentication Audience URL", "JWT Authentication Client Key Path", "Username", "Client ID"
+
+      **Required fields for Username-Password Authentication**: "Username", "Password", "Client ID", "Client Secret", "Token URL"
     required: true
     show_user: true
-    default: client_id
-  - name: client_secret
-    type: password
-    title: Client Secret
-    description: OAuth 2.0 client secret.
-    required: true
-    secret: true
-    show_user: true
-    default: client_secret
+    default: false
   - name: username
     type: text
     title: Username
-    description: Email Id used while registering salesforce, (i.e. my.email@here.com).
+    description: |
+      The email address or username associated with your Salesforce account, used for OAuth 2.0 Username-Password authentication flow.
     required: true
     show_user: true
     default: username
@@ -67,37 +67,58 @@ vars:
     type: password
     title: Password
     secret: true
-    description: The password used as part of the authentication flow.
-    required: true
+    description: The password associated with your Salesforce account, used for OAuth 2.0 Username-Password authentication flow.
+    required: false
     show_user: true
     default: password
+  - name: client_id
+    type: text
+    title: Client ID
+    description: |
+      The client ID obtained from your Salesforce connected app, used for OAuth 2.0 authentication flows (required for both Username-Password and JWT authentication). See the [Salesforce documentation](https://www.elastic.co/docs/current/integrations/salesforce#configuration) for more details.
+    required: true
+    show_user: true
+  - name: client_secret
+    type: password
+    title: Client Secret
+    description: |
+      The client secret obtained from your Salesforce connected app, used for OAuth 2.0 Username-Password authentication flow. See the [Salesforce documentation](https://www.elastic.co/docs/current/integrations/salesforce#configuration) for more details.
+    required: false
+    secret: true
+    show_user: true
   - name: token_url
     type: text
     title: Token URL
     secret: false
-    description: The OAuth 2.0 token URL for Salesforce.
+    description: |
+      The base URL for the token endpoint used in OAuth 2.0 Username-Password authentication flow. Do not append `/services/oauth2/token` as it will be added automatically internally. See the [Salesforce documentation](https://www.elastic.co/docs/current/integrations/salesforce#configuration) for more details.
     required: true
-    show_user: false
-    default: https://login.salesforce.com/services/oauth2/token
+    show_user: true
+    default: https://login.salesforce.com
+  - name: client_key_path
+    type: text
+    title: JWT Authentication Client Key Path
+    description: |
+      The full path to the private key file used for JWT authentication (required for JWT authentication). The key file must be in PEM format (PEM encoded PKCS1 or PKCS8 private key). Ensure the Elastic Agent has read access to this file.
+    required: false
+    show_user: true
+    default: client-key.pem
+  - name: jwt_url
+    type: text
+    title: JWT Authentication Audience URL
+    description: |
+      The audience URL, typically set to https://login.salesforce.com, used for OAuth 2.0 JWT authentication flow. For Sandbox environments, use https://test.salesforce.com.
+    required: false
+    show_user: true
+    default: https://login.salesforce.com
 policy_templates:
   - name: salesforce
-    title: Salesforce logs
-    description: Collect logs from Salesforce instances.
+    title: Salesforce Logs
+    description: Collect logs from Salesforce instances using the Elastic Agent. This policy template configures the necessary inputs and settings to ingest Salesforce Login, Logout, SetupAuditTrail, and Apex logs into Elastic.
     inputs:
-      - type: httpjson
-        title: Collect Salesforce logs using REST API
-        description: Collecting logs from Salesforce instances using REST API.
-        vars:
-          - name: enable_request_tracer
-            type: bool
-            title: Enable request tracing
-            multi: false
-            required: false
-            show_user: false
-            description: The request tracer logs requests and responses to the agent's local filesystem for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
-      - type: cometd
-        title: Collect Salesforce logs using Streaming API
-        description: Collecting logs from Salesforce instances using Streaming API.
+      - type: salesforce
+        title: Collect Salesforce Logs
+        description: Collect logs from Salesforce instances using REST API.
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic

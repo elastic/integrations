@@ -1,42 +1,194 @@
 # Anomali Integration
 
-The Anomali integration supports the following datasets.
+The Anomali integration can fetch indicators from [Anomali ThreatStream](https://www.anomali.com/products/threatstream), a commercial Threat Intelligence service.
 
-- `threatstream` dataset: Support for [Anomali ThreatStream](https://www.anomali.com/products/threatstream), a commercial Threat Intelligence service.
+It has the following data streams:
+
+- **`intelligence`** Indicators retrieved from the Anomali ThreatStream API's intelligence endpoint.
+- **`threatstream`** Indicators received from the Anomali ThreatStream Elastic Extension, which is additional software. This is deprecated.
 
 ## Logs
 
-### Anomali Threatstream
-
-This integration requires additional software, the _Elastic_ _Extension,_
-to connect the Anomali ThreatStream with this integration. It's available
-at the [ThreatStream download page.](https://ui.threatstream.com/downloads)
-
-Please refer to the documentation included with the Extension for a detailed
-explanation on how to configure the Anomali ThreatStream to send indicator
-to this integration.
-
 ### Expiration of Indicators of Compromise (IOCs)
-The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `logs-ti_anomali_latest.threatstream-2` which only contains active and unexpired IOCs. The destination index also has an alias `logs-ti_anomali_latest.threatstream`. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_anomali.threatstream-*` indices.
+
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to provide a view of active indicators for end users. The transform creates destination indices that are accessible via the alias of the form `logs-ti_anomali_latest.<datastreamname>`. When querying for active indicators or setting up indicator match rules, use the alias to avoid false positives from expired indicators. The dashboards show only the latest indicators.
 
 #### Handling Orphaned IOCs
-When an IOC expires, Anomali feed contains information about all IOCs that got `deleted`. However, some Anomali IOCs may never expire and will continue to stay in the latest destination index `logs-ti_anomali_latest.threatstream`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_anomali_latest.threatstream` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset. 
 
-**NOTE:** `IOC Expiration Duration` parameter does not override the expiration provided by the Anomali for their IOCs. So, if Anomali IOC is expired and subsequently such `deleted` IOCs are sent into the feed, they are deleted immediately. `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case Anomali IOCs never expire.
+Indicator data from Anomali can contain information about deletion or expiry times. However, some Anomali IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure an "IOC Expiration Duration" or "IOC Duration Before Deletion" parameter while setting up a policy. The value set there will limit the time that indicators are retained before deletion, but indicators may be removed earlier based on information from Anomali.
 
 ### Destination index versioning and deleting older versions
-The destination indices created by the transform are versioned with an integer suffix such as `-1`, `-2`. Example index name - `logs-ti_anomali_latest.threatstream-1`. 
 
-Due to schema changes on destination index, the versioning on it could be bumped. For example, in integration version `1.15.1`, the destination index  is changed to `logs-ti_anomali_latest.threatstream-2` from `logs-ti_anomali_latest.threatstream-1`. 
+The destination indices created by the transform are versioned with an integer suffix such as `-1`, `-2`, for example, `logs-ti_anomali_latest.intelligence-1`.
 
-Since the transform does not have the functionality to auto-delete the old index, users must to delete this old index manually. This is to ensure duplicates are not present when using wildcard queries such as `logs-ti_anomali_latest.threatstream-*`. Please follow below steps:
-1. After upgrading the integration to latest, check the current transform's destination index version by navigating via: `Stack Management -> Transforms -> logs-ti_anomali.latest_ioc-default -> Details`. Check `destination_index` value.
-2. Run `GET _cat/indices?v` and check if any older versions exist. Such as `logs-ti_anomali_latest.threatstream-1`
-3. Run `DELETE logs-ti_anomali_latest.threatstream-<OLDVERSION>` to delete the old index.
+Due to schema changes in the destination index, its version number may be incremented.
 
-### ILM Policy
-To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_anomali.threat-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+When this happens, the transform does not have the functionality to auto-delete the old index, so users must delete this old index manually. This is to ensure that duplicates are not present when using wildcard queries such as `logs-ti_anomali_latest.intelligence-*`. To delete an old index, follow the steps below (either for `intelligence` as below, or for the older `threatstream` equivalents):
 
+1. After upgrading the integration to the latest version, check the current transform's destination index version by navigating to: `Stack Management -> Transforms -> logs-ti_anomali.latest_intelligence-default -> Details`. Check the `destination_index` value.
+2. Run `GET _cat/indices?v` and check if any older versions exist. Such as `logs-ti_anomali_latest.intelligence-1`
+3. Run `DELETE logs-ti_anomali_latest.intelligence-<OLDVERSION>` to delete the old index.
+
+### ILM Policies
+
+To prevent unbounded growth of the source data streams `logs-ti_opencti.<datastreamname>-*`, index lifecycle management (ILM) policies will deletes records 5 days after ingestion.
+
+### Anomali ThreatStream API
+
+The Anomali ThreatStream API's intelligence endpoint is the preferred source of indicators. This data will be be accessible using the alias `logs-ti_anomali_latest.intelligence`.
+
+An example event for `intelligence` looks as following:
+
+```json
+{
+    "@timestamp": "2024-10-02T16:04:31.789615115Z",
+    "agent": {
+        "ephemeral_id": "bfe2b7b4-003a-49a1-b51b-e41ece98943b",
+        "id": "72cb3ab8-2baa-4ae5-9a62-ee752a56df42",
+        "name": "elastic-agent-85520",
+        "type": "filebeat",
+        "version": "8.14.3"
+    },
+    "anomali": {
+        "threatstream": {
+            "can_add_public_tags": true,
+            "confidence": 60,
+            "deletion_scheduled_at": "2024-10-09T16:04:31.789615115Z",
+            "expiration_ts": "9999-12-31T00:00:00.000Z",
+            "feed_id": 0,
+            "id": "232020126",
+            "is_anonymous": false,
+            "is_editable": false,
+            "is_public": true,
+            "itype": "apt_domain",
+            "meta": {
+                "severity": "very-high"
+            },
+            "owner_organization_id": 67,
+            "retina_confidence": -1,
+            "source_reported_confidence": 60,
+            "status": "active",
+            "threat_type": "apt",
+            "type": "domain",
+            "update_id": 100000001,
+            "uuid": "0921be47-9cc2-4265-b896-c62a7cb91042",
+            "value": "gen1xyz.com"
+        }
+    },
+    "data_stream": {
+        "dataset": "ti_anomali.intelligence",
+        "namespace": "49937",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "72cb3ab8-2baa-4ae5-9a62-ee752a56df42",
+        "snapshot": false,
+        "version": "8.14.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "created": "2021-04-06T09:56:22.915Z",
+        "dataset": "ti_anomali.intelligence",
+        "ingested": "2024-10-02T16:04:31Z",
+        "kind": "enrichment",
+        "original": "{\"asn\":\"\",\"can_add_public_tags\":true,\"confidence\":60,\"created_by\":null,\"created_ts\":\"2021-04-06T09:56:22.915Z\",\"description\":null,\"expiration_ts\":\"9999-12-31T00:00:00.000Z\",\"feed_id\":0,\"id\":232020126,\"is_anonymous\":false,\"is_editable\":false,\"is_public\":true,\"itype\":\"apt_domain\",\"locations\":[],\"meta\":{\"detail2\":\"imported by user 136\",\"severity\":\"very-high\"},\"modified_ts\":\"2021-04-06T09:56:22.915Z\",\"org\":\"\",\"owner_organization_id\":67,\"rdns\":null,\"resource_uri\":\"/api/v2/intelligence/232020126/\",\"retina_confidence\":-1,\"sort\":[455403032],\"source\":\"Analyst\",\"source_locations\":[],\"source_reported_confidence\":60,\"status\":\"active\",\"subtype\":null,\"tags\":null,\"target_industry\":[],\"threat_type\":\"apt\",\"threatscore\":54,\"tlp\":null,\"trusted_circle_ids\":null,\"type\":\"domain\",\"update_id\":100000001,\"uuid\":\"0921be47-9cc2-4265-b896-c62a7cb91042\",\"value\":\"gen1xyz.com\",\"workgroups\":[]}",
+        "severity": 9,
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "anomali-intelligence"
+    ],
+    "threat": {
+        "indicator": {
+            "confidence": "Medium",
+            "marking": {
+                "tlp": "WHITE"
+            },
+            "modified_at": "2021-04-06T09:56:22.915Z",
+            "provider": "Analyst",
+            "type": "domain-name",
+            "url": {
+                "domain": "gen1xyz.com"
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| anomali.threatstream.can_add_public_tags | Indicates whether a user can add public tags to a Threat Model entity. | boolean |
+| anomali.threatstream.confidence | Level of certainty that an observable is of the reported indicator type. Confidence scores range from 0-100, in increasing order of confidence, and is assigned by ThreatStream based on several factors. | long |
+| anomali.threatstream.deletion_scheduled_at | At this time the IOC will be deleted by the transform. | date |
+| anomali.threatstream.expiration_ts | Time stamp of when intelligence will expire on ThreatStream, in UTC time. Note: expiration_ts can only be specified in an advanced search query. | date |
+| anomali.threatstream.feed_id | Numeric ID of the threat feed that generated the indicator. feed_id = 0 for user-created indicators. | long |
+| anomali.threatstream.id | Unique ID for the indicator. This identifier is assigned to the indicator when it is first created on ThreatStream. Unlike update_id, this identifier never changes as long as the indicator is available on ThreatStream. | keyword |
+| anomali.threatstream.import_session_id | ID of import session in which the indicator was imported. import_session_id=0 if the indicator came in through a threat feed. | long |
+| anomali.threatstream.is_anonymous | Whether the organization and user information is anonymized when the observable is accessed by users outside of the owner organization. | boolean |
+| anomali.threatstream.is_editable | Indicates whether the imported entity can be updated by an intelligence source. This attribute is reserved for intelligence source providers and can be ignored. | boolean |
+| anomali.threatstream.is_public | Visibility of the indicator—public or private. 0/False—if the indicator is private or belongs to a Trusted Circle 1/True—if the indicator is public Default: 0/False | boolean |
+| anomali.threatstream.itype | Indicator type. | keyword |
+| anomali.threatstream.meta.maltype | Tag that specifies the malware associated with an indicator. | keyword |
+| anomali.threatstream.meta.registrant.address | Indicator domain WHOIS registrant address. | keyword |
+| anomali.threatstream.meta.registrant.email | Indicator domain WHOIS registrant email. | keyword |
+| anomali.threatstream.meta.registrant.name | Indicator domain WHOIS registrant name. | keyword |
+| anomali.threatstream.meta.registrant.org | Indicator domain WHOIS registrant org. | keyword |
+| anomali.threatstream.meta.registrant.phone | Indicator domain WHOIS registrant phone. | keyword |
+| anomali.threatstream.meta.registration_created | Registration created. | date |
+| anomali.threatstream.meta.registration_updated | Registration updated. | date |
+| anomali.threatstream.meta.severity | Severity assigned to the indicator through machine-learning algorithms ThreatStream deploys. Possible values: low, medium, high, very-high | keyword |
+| anomali.threatstream.owner_organization_id | ID of the (ThreatStream) organization that brought in the indicator, either through a threat feed or through the import process. | long |
+| anomali.threatstream.rdns | Domain name (obtained through reverse domain name lookup) associated with the IP address that is associated with the indicator. | keyword |
+| anomali.threatstream.retina_confidence | Confidence score assigned to the observable by Anomali machine learning algorithms. | long |
+| anomali.threatstream.source_created | Time stamp of when the entity was created by its original source. | date |
+| anomali.threatstream.source_modified | Time stamp of when the entity was last updated by its original source. | date |
+| anomali.threatstream.source_reported_confidence | A risk score from 0 to 100, provided by the source of the indicator. | long |
+| anomali.threatstream.status | Status assigned to the indicator. For example, active, inactive, falsepos. | keyword |
+| anomali.threatstream.threat_type | Summarized threat type of the indicator. For example, malware, compromised, apt, c2, and so on. | keyword |
+| anomali.threatstream.threatscore | Deprecated. | keyword |
+| anomali.threatstream.trusted_circle_ids | IDs of the trusted circles with which the indicator is shared. | long |
+| anomali.threatstream.type | Type of indicator—domain, email, ip, md5, string, url. | keyword |
+| anomali.threatstream.update_id | An incrementing numeric identifier associated with each update to intelligence on ThreatStream. | long |
+| anomali.threatstream.uuid | UUID (universally unique identifier) assigned to the observable for STIX compliance. | keyword |
+| anomali.threatstream.value | Value of the observable. For example, 192.168.0.10 or http://www.google.com. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
+
+
+### Anomali ThreatStream via the Elastic Extension
+
+This source of indicators is deprecated. New users should instead use the API source above. This source requires additional software, the _Elastic_ _Extension,_ to connect Anomali ThreatStream to this integration. It's available on the [ThreatStream download page](https://ui.threatstream.com/downloads).
+
+Please refer to the documentation included with the extension for a detailed explanation on how to configure Anomali ThreatStream to send indicators to this integration.
+
+Indicators ingested in this way will become accessible using the alias `logs-ti_anomali_latest.threatstream`.
 
 An example event for `threatstream` looks as following:
 
@@ -44,11 +196,11 @@ An example event for `threatstream` looks as following:
 {
     "@timestamp": "2020-10-08T12:22:11.000Z",
     "agent": {
-        "ephemeral_id": "5f5fdd12-5b96-4370-aae2-3f4ca99136eb",
-        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
+        "ephemeral_id": "2f4f6445-5077-4a66-8582-2c74e071b6dd",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "anomali": {
         "threatstream": {
@@ -73,16 +225,16 @@ An example event for `threatstream` looks as following:
     },
     "data_stream": {
         "dataset": "ti_anomali.threatstream",
-        "namespace": "ep",
+        "namespace": "44735",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -90,7 +242,7 @@ An example event for `threatstream` looks as following:
             "threat"
         ],
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2023-12-22T11:03:22Z",
+        "ingested": "2024-08-01T07:49:22Z",
         "kind": "enrichment",
         "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
@@ -163,85 +315,22 @@ An example event for `threatstream` looks as following:
 | anomali.threatstream.update_id | Update ID. | keyword |
 | anomali.threatstream.url | URL for the indicator. | keyword |
 | anomali.threatstream.value_type | Data type of the indicator. Possible values: ip, domain, url, email, md5. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
-| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
-| log.file.path | Path to the log file. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
-| threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| threat.indicator.as.organization.name | Organization name. | keyword |
-| threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
-| threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
-| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
-| threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
-| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
-| threat.indicator.file.hash.sha512 | SHA512 hash. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
-| threat.indicator.geo.location | Longitude and latitude. | geo_point |
-| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
-| threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
-| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| threat.indicator.url.full.text | Multi-field of `threat.indicator.url.full`. | match_only_text |
-| threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
-| threat.indicator.url.original.text | Multi-field of `threat.indicator.url.original`. | match_only_text |
-| threat.indicator.url.path | Path of the request, such as "/search". | wildcard |
-| threat.indicator.url.port | Port of the request, such as 443. | long |
-| threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
-| threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 

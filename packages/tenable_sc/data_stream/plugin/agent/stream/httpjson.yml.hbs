@@ -20,7 +20,7 @@ request.transforms:
       # Follow Tenable's format: https://developer.tenable.com/docs/user-agent-header
       # NOTE: The "Build" version must be kept in sync with this package's version.
       target: header.User-Agent
-      value: '[[userAgent "Integration/1.0 (Elastic; Tenable.sc; Build/1.13.0)"]]'
+      value: '[[userAgent "Integration/1.0 (Elastic; Tenable.sc; Build/1.22.0)"]]'
   - set:
       target: url.params.fields
       value: id,name,description,family,type,copyright,version,sourceFile,dependencies,requiredPorts,requiredUDPPorts,cpe,srcPort,dstPort,protocol,riskFactor,solution,seeAlso,synopsis,checkType,exploitEase,exploitAvailable,exploitFrameworks,cvssVector,cvssVectorBF,baseScore,temporalScore,cvssV3Vector,cvssV3VectorBF,cvssV3BaseScore,cvssV3TemporalScore,vprScore,vprContext,stigSeverity,pluginPubDate,pluginModDate,patchPubDate,patchModDate,vulnPubDate,modifiedTime,md5,xrefs
@@ -60,6 +60,7 @@ response.pagination:
       fail_on_template_error: true
 response.split:
   target: body.response
+  ignore_empty_value: true
 cursor:
   last_event_ts:
     value: '[[if (lt (len .last_response.body.response) {{batch_size}})]][[.last_event.pluginModDate]][[end]]'
