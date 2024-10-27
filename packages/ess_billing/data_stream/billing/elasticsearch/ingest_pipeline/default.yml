@@ -4,16 +4,23 @@ processors:
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
+      tag: ingest_timestamp
   - set:
       field: event.created
       value: "{{@timestamp}}"
+      tag: created_timestamp
   - date:
       field: ess.billing.from
       formats:
         - ISO8601
+      tag: timestamp
   - fingerprint:
       fields:
-        - ess.billing
+        - ess.billing.deployment_id
+        - ess.billing.from
+        - ess.billing.to
+        - ess.billing.sku
+        - ess.billing.total_ecu
       tag: fingerprint_event
       target_field: _id
       ignore_missing: true
@@ -21,32 +28,40 @@ processors:
       field: cloud.account.id
       copy_from: ess.billing.organization_id
       ignore_empty_value: true
+      tag: cloud_account_id
   - set:
       field: cloud.instance.id
       copy_from: ess.billing.deployment_id
       ignore_empty_value: true
+      tag: cloud_instance_id
   - set:
       field: cloud.instance.name
       copy_from: ess.billing.deployment_name
       ignore_empty_value: true
-  - dissect:
+      tag: cloud_instance_name
+  - grok:
       field: "ess.billing.sku"
-      pattern: "%{cloud.machine.type}_%{cloud.provider}-%{cloud.availability_zone}_%{ess.billing.ram_per_zone}_%{ess.billing.zone_count}"
+      patterns:
+        - "(?:Cloud-Enterprise_)?%{NOTSPACE:cloud.machine.type}_%{NOTSPACE:cloud.provider}-%{NOTSPACE:cloud.availability_zone}_%{NUMBER:ess.billing.ram_per_zone:int}_%{NUMBER:ess.billing.zone_count:int}"
       if: "ctx.ess.billing.type == 'capacity'"
       ignore_failure: true
-  - convert:
-      field: ess.billing.ram_per_zone
-      type: "integer"
-      ignore_missing: true
-  - convert:
-    field: ess.billing.zone_count
-    type: "integer"
-    ignore_missing: true
+      tag: grok_sku
   - dissect:
       field: "ess.billing.sku"
       pattern: "%{cloud.provider}.%{}"
       if: "ctx.ess.billing.type != 'capacity'"
       ignore_failure: true
+      tag: dissect_sku
+  - convert:
+      field: ess.billing.ram_per_zone
+      type: "integer"
+      ignore_missing: true
+      tag: convert_ram_per_zone
+  - convert:
+      field: ess.billing.zone_count
+      type: "integer"
+      ignore_missing: true
+      tag: convert_zone_count
 on_failure:
   - set:
       field: event.kind

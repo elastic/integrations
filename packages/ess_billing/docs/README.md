@@ -9,7 +9,7 @@ Using this integration, you could for instance create alerts whenever a new depl
 The Elasticsearch Service Billing integration collects the following data streams:
 
 * Your daily spending in the `metrics-ess_billing.billing` data stream.
-* For customers with a yearly commitment with Elastic, your credit status in the `metrics-ess_billing.credit` data stream.
+* For customers with a yearly commitment with Elastic, your credit status in the `metrics-ess_billing.credit` data stream (__coming soon__).
 
 By default, the last year of data of billing data is collected upon first execution of the integration. The data is then collected daily, the integration will automatically collect the latest data every day.
 

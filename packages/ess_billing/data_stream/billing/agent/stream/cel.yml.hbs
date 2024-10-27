@@ -18,6 +18,7 @@ resource.url: {{url}}
 state:
   api_key: {{api_key}}
   organization_id: {{organization_id}}
+  lookbehind: {{lookbehind}}
 redact:
   fields:
     - api_key
@@ -30,14 +31,14 @@ program: |
         ?
           state.cursor.last_to
         :
-          (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration("8760h")).format(time_layout.RFC3339)
+          (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind + "h")).format(time_layout.RFC3339)
       ),
       "to": (
         has(state.?cursor.last_to)
         ?
           (state.cursor.last_to.parse_time(time_layout.RFC3339) + duration("24h")).format(time_layout.RFC3339)
         :
-          (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration("8736h")).format(time_layout.RFC3339)
+          (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind + "h") + duration("24h")).format(time_layout.RFC3339)
       )
     }).as(state,
       // Check if we would try to fetch data in the future, in which case we back off
@@ -59,6 +60,7 @@ program: |
           "Authorization": ["ApiKey " + state.api_key]
         }
       }).do_request().as(resp, bytes(resp.Body).decode_json().as(body,
+        // TODO: Add error handling / non-200 status code handling
         {
           "events": body.instances.map(instance, instance.product_line_items.map(line_item,
             {
