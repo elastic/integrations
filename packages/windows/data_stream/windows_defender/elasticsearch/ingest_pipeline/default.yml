@@ -157,17 +157,15 @@ processors:
 
     ## File Fields
 
-  - gsub:
-      field: "winlog.event_data.Path"
-      pattern: ".*:_"
-      replacement: ""
-      target_field: "file.path"
+  - grok:
+      field: winlog.event_data.Path
+      patterns:
+        - "file:_(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?"
       ignore_missing: true
-  - gsub:
-      field: "winlog.event_data.FileName"
-      pattern: ".*:_"
-      replacement: ""
-      target_field: "file.path"
+  - grok:
+      field: winlog.event_data.FileName
+      patterns:
+        - 'file:_(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?'
       ignore_missing: true
   - set:
       field: "file.path"
