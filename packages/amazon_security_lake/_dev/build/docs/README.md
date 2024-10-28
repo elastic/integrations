@@ -10,7 +10,7 @@ The Amazon Security Lake integration can be used in two different modes to colle
 
 ## Compatibility
 
-This module follows the latest OCSF Schema Version **v1.0.0**.
+This module follows the OCSF Schema Version **v1.1.0**.
 
 ## Data streams
 
@@ -18,6 +18,8 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
 
 ### **NOTE**:
 - The Amazon Security Lake integration supports events collected from [AWS services](https://docs.aws.amazon.com/security-lake/latest/userguide/internal-sources.html) and [third-party services](https://docs.aws.amazon.com/security-lake/latest/userguide/custom-sources.html).
+
+- Due to the nature and structure of the OCSF schema, this integration has limitations on how deep the mappings run. Some important objects like 'Actor', 'User' and 'Product' have more fleshed-out mappings compared to others which get flattened after the initial 2-3 levels of nesting to keep them maintainable and stay within field mapping [limits](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-settings-limit.html). This will evolve as needed.
 
 ## Requirements
 
