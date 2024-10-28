@@ -1,15 +1,14 @@
 config_version: 2
 interval: {{interval}}
 resource.url: {{hostname}}
+resource.rate_limit.burst: 1
+resource.rate_limit.limit: {{rate_limit}}
 
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
 resource.tracer.maxsize: 5
 {{/if}}
-
-regexp:
-  "next_offset_timestamp": '^\d+'
 
 state:
   url: {{hostname}}
@@ -28,120 +27,84 @@ program: |
             state
         :
             state.with({
-                "mintime": state.?cursor.last_published.orValue(int(now - duration(state.initial_interval)) * 1000),
-                "maxtime": int(now - duration("2m")) * 1000,
-                "date": now.format(time_layout.RFC1123Z),
+                "mintime": state.?cursor.last_timestamp_ms.orValue(string(int(now - duration(state.initial_interval)) * 1000)),
+                "maxtime": string(int(now - duration("2m")) * 1000),
             })
     ).as(state, state.with(
-        request(
-            "GET",
-            state.?want_more.orValue(false) ?
-                state.next_url
-            :
-                state.url.trim_right("/") + "/admin/v2/logs/authentication?" + {
-                    "limit": [string(int(state.limit))],
-                    "maxtime": [string(int(state.maxtime))],
-                    "mintime": [string(int(state.mintime))],
-                    "sort": ["ts:asc"],
-                }.format_query()
-        ).with(
-            {
+        {
+            // prepare request data
+            "date": now.format(time_layout.RFC1123Z),
+            "method": "GET",
+            "url_base": state.url.trim_right("/"),
+            "url_path": "/admin/v2/logs/authentication",
+            "query_string": {
+                 "limit": [string(int(state.limit))],
+                 "maxtime": [state.maxtime],
+                 "mintime": [state.mintime],
+                 ?"next_offset": state.?next_offset_joined.optMap(v, [v]),
+                 "sort": ["ts:asc"],
+            }.format_query(),
+        }.as(r, r.with({
+            // add an authorization header value
+            "authorization": "Basic " + (
+                state.integration_key + ":" + (
+                    [
+                        r.date,
+                        r.method,
+                        r.url_base.trim_prefix("https://"),
+                        r.url_path,
+                        r.query_string,
+                    ].join("\n")
+                    .hmac("sha1", bytes(state.secret_key))
+                    .hex()
+                )
+            ).base64(),
+        })).as(r,
+            // now do the request using the prepared data
+            request(
+                r.method,
+                [r.url_base, r.url_path, "?", r.query_string].join("")
+            ).with({
                 "Header": {
                     "Content-Type": ["application/x-www-form-urlencoded"],
-                    "Date": [state.date],
-                    "Authorization": ["Basic " + (
-                        state.integration_key + ":" + (
-                            [
-                                state.date,
-                                "GET",
-                                state.url.trim_prefix("https://"),
-                                "/admin/v2/logs/authentication",
-                                {
-                                    "limit": [string(int(state.limit))],
-                                    "maxtime": [string(int(state.maxtime))],
-                                    "mintime": [string(int(state.mintime))],
-                                    ?"next_offset": has(state.next_offset) ?
-                                        optional.of([string(state.next_offset)])
-                                    :
-                                        optional.none(),
-                                    "sort": ["ts:asc"],
-                                }.format_query()
-                            ].join("\n")
-                            .hmac("sha1", bytes(state.secret_key))
-                            .hex()
-                        )
-                    ).base64()],
+                    "Date": [r.date],
+                    "Authorization": [r.authorization],
                 },
-            }
-        ).do_request().as(resp, (resp.StatusCode == 200) ?
-            bytes(resp.Body).decode_json().as(body, has(body.?response.authlogs) && size(body.response.authlogs) > 0 ?
-                {
-                    "events": body.response.authlogs.map(item,
-                        {
-                            "message": item.encode_json(),
+            }).do_request().as(resp, (resp.StatusCode == 200) ?
+                bytes(resp.Body).decode_json().as(body, has(body.?response.authlogs) && size(body.response.authlogs) > 0 ?
+                    body.response.as(r, {
+                        "events": r.authlogs.map(item, { "message": item.encode_json() }),
+                        "want_more": r.?metadata.next_offset.hasValue(),
+                        ?"next_offset_joined": r.?metadata.next_offset.optMap(v, [v].flatten().join(",")),
+                        "cursor": {
+                            "last_timestamp_ms": string(int(r.authlogs[size(r.authlogs) - 1].timestamp) * 1000),
                         }
-                    ),
-                    "url": state.url,
-                    "integration_key": state.integration_key,
-                    "secret_key": state.secret_key,
-                    "limit": state.limit,
-                    "mintime": state.mintime,
-                    "maxtime": state.maxtime,
-                    "date": now.format(time_layout.RFC1123Z),
-                    "want_more": has(body.?response.?metadata.next_offset),
-                    ?"next_offset": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
-                                        optional.of(string(body.response.metadata.next_offset))
-                                    :
-                                        optional.none(),
-                    "next_url": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
-                        (
-                            state.url.trim_right("/") + "/admin/v2/logs/authentication?" + {
-                                "limit": [string(int(state.limit))],
-                                "maxtime": [string(int(state.maxtime))],
-                                "mintime": [string(int(state.mintime))],
-                                "next_offset": [string(body.response.metadata.next_offset)],
-                                "sort": ["ts:asc"],
-                            }.format_query()
-                        )
-                    :
-                        state.url,
-                    "cursor": {
-                        ?"last_published": (has(body.?response.?metadata.next_offset) && body.response.metadata.next_offset != null) ?
-                            optional.of(body.response.metadata.next_offset.re_find("next_offset_timestamp"))
-                        :
-                            optional.none(),
+                    })
+                :
+                    {
+                        "events":[],
+                        "want_more": false,
                     }
-                }
-            :
-                {
-                    "events":[],
-                    "want_more": false,
-                }
 
-            )
-        :
-            bytes(resp.Body).decode_json().as(body,
-                {
-                    "events": {
-                        "error": {
-                            "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
-                            "id": string(resp.Status),
-                            "message": "GET: " +
-                            (
-                                (has(body.message) && body.message != "") ?
-                                    string(body.message) +
-                                        (has(body.message_detail) ?
-                                            ": " + string(body.message_detail)
-                                        :
-                                            ""
-                                        )
-                                :
-                                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                            ),
+                )
+            :
+                bytes(resp.Body).decode_json().as(body,
+                    {
+                        "events": {
+                            "error": {
+                                "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
+                                "id": string(resp.Status),
+                                "message": "GET:"+(
+                                    size(resp.Body) != 0 ?
+                                        string(resp.Body)
+                                    :
+                                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                                ),
+                            },
                         },
-                    },
-                    "want_more": false,
-                }
+                        "want_more": false,
+                    }
+                )
             )
         )
     ))

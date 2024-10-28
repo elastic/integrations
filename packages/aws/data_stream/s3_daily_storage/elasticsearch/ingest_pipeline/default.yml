@@ -27,3 +27,13 @@ processors:
         - aws.s3.metrics
       if: ctx.agent?.type != "firehose"
       ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

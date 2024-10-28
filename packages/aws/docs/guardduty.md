@@ -578,6 +578,44 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.guardduty.service.evidence.threat_intelligence_details.threat.names | A list of names of the threats in the threat intelligence list that triggered the finding. | keyword |
 | aws.guardduty.service.feature_name | The name of the feature that generated a finding. | keyword |
 | aws.guardduty.service.resource_role | The resource role information for this finding. | keyword |
+| aws.guardduty.service.runtime_details.context.address_family | Represents the communication protocol associated with the address. For example, the address family AF_INET is used for IP version of 4 protocol. | keyword |
+| aws.guardduty.service.runtime_details.context.command_line_example | Example of the command line involved in the suspicious activity. | keyword |
+| aws.guardduty.service.runtime_details.context.file_system_type | Represents the type of mounted fileSystem. | keyword |
+| aws.guardduty.service.runtime_details.context.flags | Represents options that control the behavior of a runtime operation or action. For example, a filesystem mount operation may contain a read-only flag. | keyword |
+| aws.guardduty.service.runtime_details.context.iana_protocol_number | Specifies a particular protocol within the address family. Usually there is a single protocol in address families. For example, the address family AF_INET only has the IP protocol. | keyword |
+| aws.guardduty.service.runtime_details.context.ld_preload | The value of the LD_PRELOAD environment variable. | keyword |
+| aws.guardduty.service.runtime_details.context.library_path | The path to the new library that was loaded. | keyword |
+| aws.guardduty.service.runtime_details.context.memory_regions | Specifies the Region of a process's address space such as stack and heap. | keyword |
+| aws.guardduty.service.runtime_details.context.modified_at | The timestamp at which the process modified the current process. The timestamp is in UTC date string format. | date |
+| aws.guardduty.service.runtime_details.context.modifying_process | Information about the process that modified the current process. This is available for multiple finding types. | flattened |
+| aws.guardduty.service.runtime_details.context.module_file_path | The path to the module loaded into the kernel. | keyword |
+| aws.guardduty.service.runtime_details.context.module_name | The name of the module loaded into the kernel. | keyword |
+| aws.guardduty.service.runtime_details.context.module_sha256 | The SHA256 hash of the module. | keyword |
+| aws.guardduty.service.runtime_details.context.mount_source | The path on the host that is mounted by the container. | keyword |
+| aws.guardduty.service.runtime_details.context.mount_target | The path in the container that is mapped to the host directory. | keyword |
+| aws.guardduty.service.runtime_details.context.release_agent_path | The path in the container that modified the release agent file. | keyword |
+| aws.guardduty.service.runtime_details.context.runc_binary_path | The path to the leveraged runc implementation. | keyword |
+| aws.guardduty.service.runtime_details.context.script_path | The path to the script that was executed. | keyword |
+| aws.guardduty.service.runtime_details.context.service_name | Name of the security service that has been potentially disabled. | keyword |
+| aws.guardduty.service.runtime_details.context.shell_history_file_path | The path to the modified shell history file. | keyword |
+| aws.guardduty.service.runtime_details.context.socket_path | The path to the socket that was accessed. | keyword |
+| aws.guardduty.service.runtime_details.context.target_process | Information about the process that had its memory overwritten by the current process. | flattened |
+| aws.guardduty.service.runtime_details.context.threat_file_path | The suspicious file path for which the threat intelligence details were found. | keyword |
+| aws.guardduty.service.runtime_details.context.tool_category | Category that the tool belongs to. Some of the examples are Backdoor Tool, Pentest Tool, Network Scanner, and Network Sniffer. | keyword |
+| aws.guardduty.service.runtime_details.context.tool_name | Name of the potentially suspicious tool. | keyword |
+| aws.guardduty.service.runtime_details.process.euid | The effective user ID of the user that executed the process. | long |
+| aws.guardduty.service.runtime_details.process.executable_path | The absolute path of the process executable file. | keyword |
+| aws.guardduty.service.runtime_details.process.executable_sha256 | The SHA256 hash of the process executable. | keyword |
+| aws.guardduty.service.runtime_details.process.lineage | Information about the process's lineage. | flattened |
+| aws.guardduty.service.runtime_details.process.name | The name of the process. | keyword |
+| aws.guardduty.service.runtime_details.process.namespace_pid | The ID of the child process. | long |
+| aws.guardduty.service.runtime_details.process.parent_uuid | The unique ID of the parent process. This ID is assigned to the parent process by GuardDuty. | keyword |
+| aws.guardduty.service.runtime_details.process.pid | The ID of the process. | long |
+| aws.guardduty.service.runtime_details.process.pwd | The present working directory of the process. | keyword |
+| aws.guardduty.service.runtime_details.process.start_time | The time when the process started. This is in UTC format. | date |
+| aws.guardduty.service.runtime_details.process.user | The user that executed the process. | keyword |
+| aws.guardduty.service.runtime_details.process.user_id | The unique ID of the user that executed the process. | long |
+| aws.guardduty.service.runtime_details.process.uuid | The unique ID assigned to the process by GuardDuty. | keyword |
 | aws.guardduty.service.service_name | The AWS service name whose API was invoked. | keyword |
 | aws.guardduty.service.user_feedback | Feedback that was submitted about the finding. | keyword |
 | aws.guardduty.severity.code | The severity of the finding in double. | double |
