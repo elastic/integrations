@@ -137,14 +137,9 @@ The User ID of the registered user.
 
 ### Password
 
-The password used to authenticate the user.
-If your Salesforce instance uses a security token, it should be appended at the end of the password without spaces or any characters.
-For example:
-```
-password = pass123
-security_token = sectoken321
-```
-This field should be filled as `pass123sectoken321`
+The password used to authenticate the user with your Salesforce instance.
+
+When using a Salesforce instance with a security token, append the token directly to your password without spaces or special characters. For example, if your password is `password` and your security token is `12345`, enter: `password12345`.
 
 ### Token URL
 
