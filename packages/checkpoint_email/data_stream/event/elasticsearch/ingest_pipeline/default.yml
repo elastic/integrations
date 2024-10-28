@@ -74,7 +74,11 @@ processors:
       field: event.type
       tag: append_indicator_into_event_type
       value: indicator
-      if: ctx.json?.type != null && ['anomaly', 'shadow_it'].contains(ctx.json.type.toLowerCase())
+      if: >-
+        ctx.json?.type != null && (
+          ctx.json.type.equalsIgnoreCase('anomaly') ||
+          ctx.json.type.equalsIgnoreCase('shadow_it')
+        )
   - set:
       field: observer.vendor
       tag: set_observer_vendor

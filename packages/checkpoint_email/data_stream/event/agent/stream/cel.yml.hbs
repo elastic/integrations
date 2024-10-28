@@ -25,59 +25,63 @@ redact:
 program: |
   (
     has(state.expiry) && timestamp(state.expiry) > now ?
-      state
+      {
+        "access_token": state.access_token,
+        "expiry": state.expiry,
+      }
     :
-      state.with(
-        post_request(
-          state.url.trim_right("/") + "/auth/external", "application/json", {
-            "clientId": state.client_id,
-            "accessKey": state.client_secret
-          }.encode_json()
-        ).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body, {
-            "access_token": body.data.token,
-            "expiry": body.data.expires.parse_time(time_layout.RFC1123),
-          })
-        :
-          {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "POST:"+(
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                ),
-              },
+      post_request(
+        state.url.trim_right("/") + "/auth/external", "application/json", {
+          "clientId": state.client_id,
+          "accessKey": state.client_secret
+        }.encode_json()
+      ).do_request().as(resp, resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body, {
+          "access_token": body.data.token,
+          "expiry": body.data.expires.parse_time(time_layout.RFC1123),
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
             },
-            "want_more": false,
-          }
-        )
+          },
+          "want_more": false,
+        }
       )
-  ).as(state,
+  ).as(token,
     state.?want_more.orValue(false) ?
-      state
+      token.with({
+        "start_date": state.start_date,
+        "end_date": state.end_date
+      })
     :
-      state.with({
+      token.with({
         "start_date": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
         "end_date": now.format(time_layout.RFC3339),
       })
-  ).as(state,
-    type(state.?events.orValue(null)) == type({}) ? state : // Exit early due to POST failure.
+  ).as(token,
+    has(token.events) ? token : // Exit early due to POST failure.
       state.with(
         post_request(
           state.url.trim_right("/") + "/app/hec-api/v1.0/event/query", "application/json", {
             "requestData": {
-              "startDate": state.start_date,
-              "endDate": state.end_date,
+              "startDate": token.start_date,
+              "endDate": token.end_date,
               ?"scrollId": state.?scroll_id.orValue(null) == null ? optional.none() : optional.of(state.scroll_id),
             }
           }.encode_json()
         ).with({
           "Header":{
-            "Authorization": ["Bearer " + string(state.access_token)],
+            "Authorization": ["Bearer " + string(token.access_token)],
             "x-av-req-id": [uuid()],
             "Content-Type": ["application/json"],
           }
@@ -88,6 +92,10 @@ program: |
             }),
             "want_more": body.?responseEnvelope.scrollId.orValue(null) != null,
             "scroll_id": body.?responseEnvelope.scrollId.orValue(null),
+            "start_date": token.start_date,
+            "end_date": token.end_date,
+            "access_token": token.access_token,
+            "expiry": token.expiry,
             "cursor": (
               size(body.responseData) > 0 ?
                 body.responseData.map(e, e.eventCreated).map(t, timestamp(t)).max().as(batch_max_time, (
@@ -102,11 +110,11 @@ program: |
                     batch_max_time
                 ))
               :
-                state.end_date
+                token.end_date
             ).as(max_time, {
               "last_timestamp": (
                 body.?responseEnvelope.scrollId.orValue(null) != null ?
-                  state.start_date
+                  token.start_date
                 :
                   max_time
               ),

@@ -73,9 +73,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-10-14T07:02:11.229Z",
     "agent": {
-        "ephemeral_id": "f78244ff-f95d-4db7-a44a-8fbd2ee09f05",
-        "id": "1af139f3-291e-487c-9ca6-540f323ca6d4",
-        "name": "elastic-agent-93190",
+        "ephemeral_id": "d813d5b1-cfe7-4ac4-aaa0-e7650b900f93",
+        "id": "827f87b2-02ca-4b27-832d-71d5d68dca7b",
+        "name": "elastic-agent-99857",
         "type": "filebeat",
         "version": "8.15.0"
     },
@@ -99,14 +99,14 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_email.event",
-        "namespace": "76344",
+        "namespace": "17695",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1af139f3-291e-487c-9ca6-540f323ca6d4",
+        "id": "827f87b2-02ca-4b27-832d-71d5d68dca7b",
         "snapshot": false,
         "version": "8.15.0"
     },
@@ -124,7 +124,7 @@ An example event for `event` looks as following:
         "created": "2024-10-14T07:02:11.229Z",
         "dataset": "checkpoint_email.event",
         "id": "a6d8674a04c30123456789e4d3ebd98",
-        "ingested": "2024-10-22T09:39:03Z",
+        "ingested": "2024-10-28T10:57:08Z",
         "kind": "alert",
         "original": "{\"actions\":[],\"additionalData\":null,\"availableEventActions\":null,\"confidenceIndicator\":\"detected\",\"customerId\":\"exampletest\",\"data\":\"#{\\\"entity_id\\\": \\\"a6d8674a04c30123456789e4d3ebd98\\\", \\\"entity_type\\\": \\\"google_mail_email\\\", \\\"label\\\": \\\"Shadow IT\\\"} - #{\\\"entity_id\\\": \\\"113012345678906535444\\\", \\\"entity_type\\\": \\\"google_user\\\", \\\"label\\\": \\\"john@example.com\\\"} is using #{\\\"entity_id\\\": \\\"google.com\\\", \\\"entity_type\\\": \\\"av_dns_info\\\", \\\"label\\\": \\\"google.com (Search Engine)\\\"}\",\"description\":\"Shadow IT - john@example.com is using google.com (Search Engine)\",\"entityId\":\"25e0c50123456789e351b0dafa6aafa6\",\"entityLink\":\"https://in.portal.checkpoint.com/dashboard/email\\u0026collaboration/CGS1?route=cHJvZmlsZS9nsfhvbksdvnjhvdfVBsdbdfFbdbdBDBBdbrtHyujYJNtnhtnhtnOTIxZTM1MWIwZGFmYTZhYWZhNg==\",\"eventCreated\":\"2024-10-14T07:02:11.229935+00:00\",\"eventId\":\"a6d8674a04c30123456789e4d3ebd98\",\"saas\":\"google_mail\",\"senderAddress\":\"google-workspace-alerts-noreply@google.com\",\"severity\":\"3\",\"state\":\"pending\",\"type\":\"shadow_it\"}",
         "severity": 3,
