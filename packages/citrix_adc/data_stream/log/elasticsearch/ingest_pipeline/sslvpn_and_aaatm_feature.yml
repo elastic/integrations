@@ -24,6 +24,10 @@ processors:
         - '^Context %{USERNAME:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip} - SessionId: %{NUMBER:citrix_adc.log.session_id} - %{HOSTNAME:citrix_adc.log.hostname} User %{USERNAME:citrix_adc.log.user}%{SPACE}?: Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:citrix_adc.log.timestamp} : SSO is %{WORD:citrix_adc.log.sso_status} : %{WORD:citrix_adc.log.method} %{URIPATHPARAM:citrix_adc.log.request.path} - -$'
         - '^Context %{DATA:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip}%{SPACE}- SessionId: %{NUMBER:citrix_adc.log.session_id}%{SPACE}?- %{HOSTNAME:citrix_adc.log.hostname} User %{DATA:citrix_adc.log.user} : Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:citrix_adc.log.timestamp} %{DATA:citrix_adc.log.timezone} %{WORD:citrix_adc.log.method} %{DATA:citrix_adc.log.request.path} - -$'
       ignore_failure: false
+  - trim:
+      field: citrix_adc.log.timestamp
+      tag: trim_timestamp
+      if: ctx.citrix_adc?.log?.timestamp != null && ctx.citrix_adc.log.timestamp != ''
   - date:
       field: citrix_adc.log.timestamp
       tag: date_timestamp
@@ -107,6 +111,10 @@ processors:
       tag: set_error_message_from_errmsg
       copy_from: citrix_adc.log.errmsg
       ignore_empty_value: true
+  - trim:
+      field: citrix_adc.log.end_time
+      tag: trim_end_time
+      if: ctx.citrix_adc?.log?.end_time != null && ctx.citrix_adc.log.end_time != ''
   - date:
       field: citrix_adc.log.end_time
       tag: date_end_time
@@ -125,6 +133,10 @@ processors:
       tag: set_event_end_from_end_time
       copy_from: citrix_adc.log.end_time
       ignore_empty_value: true
+  - trim:
+      field: citrix_adc.log.start_time
+      tag: date_start_time
+      if: ctx.citrix_adc?.log?.start_time != null && ctx.citrix_adc.log.start_time != ''
   - date:
       field: citrix_adc.log.start_time
       tag: date_start_time

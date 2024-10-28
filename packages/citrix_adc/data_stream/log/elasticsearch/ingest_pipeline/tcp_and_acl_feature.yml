@@ -13,6 +13,10 @@ processors:
         - '^Source %{IP:citrix_adc.log.source.ip} --> Destination %{IP:citrix_adc.log.destination.ip} - Protocol %{WORD:citrix_adc.log.protocol} - Type %{INT:citrix_adc.log.type} - Code %{INT:citrix_adc.log.code} - Time%{SPACE}Stamp %{DATA:citrix_adc.log.timestamp}%{SPACE}\(ms\) - Hitcount %{INT:citrix_adc.log.hit.count:int} - Hit%{SPACE}Rule %{GREEDYDATA:citrix_adc.log.hit.rule} - Action %{WORD:citrix_adc.log.action} - Data$'
         - '%{GREEDYDATA:citrix_adc.log.message}'
       ignore_failure: true
+  - trim:
+      field: citrix_adc.log.timestamp
+      tag: trim_timestamp
+      if: ctx.citrix_adc?.log?.timestamp != null && ctx.citrix_adc.log.timestamp != '' && ctx?._conf?.custom_date_format == null
   - date:
       field: citrix_adc.log.timestamp
       tag: date_timestamp
@@ -161,6 +165,10 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}. Offending format: {{{_conf.custom_date_format}}}.'
+  - trim:
+      field: citrix_adc.log.delink_time
+      tag: trim_delink_time
+      if: ctx.citrix_adc?.log?.delink_time != null && ctx.citrix_adc.log.delink_time != ''
   - date:
       field: citrix_adc.log.delink_time
       tag: date_delink_time
@@ -180,6 +188,10 @@ processors:
       tag: set_event_end_from_delink_time
       copy_from: citrix_adc.log.delink_time
       ignore_empty_value: true
+  - trim:
+      field: citrix_adc.log.end_time
+      tag: trim_end_time
+      if: ctx.citrix_adc?.log?.end_time != null && ctx.citrix_adc.log.end_time != ''
   - date:
       field: citrix_adc.log.end_time
       tag: date_end_time
@@ -203,6 +215,10 @@ processors:
       tag: set_event_reason_from_closure_reason
       copy_from: citrix_adc.log.closure_reason
       ignore_empty_value: true
+  - trim:
+      field: citrix_adc.log.start_time
+      tag: trim_start_time
+      if: ctx.citrix_adc?.log?.start_time != null && ctx.citrix_adc.log.start_time != ''
   - date:
       field: citrix_adc.log.start_time
       tag: date_start_time

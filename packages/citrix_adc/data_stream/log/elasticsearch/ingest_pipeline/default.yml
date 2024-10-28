@@ -58,6 +58,10 @@ processors:
       tag: set_event_timezone_from_tz_offset
       copy_from: _conf.tz_offset
       if: ctx.event?.timezone == null || ctx.event?.timezone == ""
+  - trim:
+      if: ctx._tmp?.timestamp8601 != null
+      tag: trim_tmp_timestamp8601
+      field: _tmp.timestamp8601
   - date:
       if: ctx._tmp?.timestamp8601 != null
       tag: date_tmp_timestamp8601
@@ -70,6 +74,10 @@ processors:
       tag: set_tmp_timestamp
       if: ctx._tmp?.timestamp != null && ctx.citrix?.event_year != null
       value: "{{{citrix.event_year}}} {{{_tmp.timestamp}}}"
+  - trim:
+      if: ctx._tmp?.timestamp != null
+      tag: trim_tmp_timestamp
+      field: _tmp.timestamp
   - date:
       if: ctx._tmp?.timestamp != null
       tag: date_tmp_timestamp
@@ -95,7 +103,7 @@ processors:
       source: >-
         def dateFormat = ctx["_conf"]["custom_date_format"];
         def formatter = DateTimeFormatter.ofPattern(dateFormat);
-        def text = ctx["_tmp"]["timestamp_native"];
+        def text = ctx["_tmp"]["timestamp_native"].trim();
         def parsedDate = LocalDateTime.parse(text, formatter);
         ctx["_tmp"]["timestamp_native"] = parsedDate.toString();
 
@@ -104,6 +112,10 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}. Offending format: {{{_conf.custom_date_format}}}.'
+  - trim:
+      if: ctx._tmp?.timestamp_native != null && ctx?._conf?.custom_date_format == null
+      tag: trim_tmp_timestamp_native
+      field: _tmp.timestamp_native
   - date:
       if: ctx._tmp?.timestamp_native != null && ctx?._conf?.custom_date_format == null
       tag: date_tmp_timestamp_native
