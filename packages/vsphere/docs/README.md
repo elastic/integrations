@@ -288,13 +288,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.cluster.alert.names | List of all the alerts on this Cluster. | keyword |  |
 | vsphere.cluster.das_config.admission.control.enabled | Indicates whether strict admission control is enabled. | boolean |  |
 | vsphere.cluster.das_config.enabled | Indicates whether vSphere HA feature is enabled. | boolean |  |
-| vsphere.cluster.datastore.count | Number of Datastores associated with the cluster. | long | gauge |
-| vsphere.cluster.datastore.names | List of all the Datastore names associated with the cluster. | keyword |  |
-| vsphere.cluster.host.count | Number of Hosts associated with the cluster. | long | gauge |
+| vsphere.cluster.datastore.count | Number of datastores associated with the cluster. | long | gauge |
+| vsphere.cluster.datastore.names | List of all the datastore names associated with the cluster. | keyword |  |
+| vsphere.cluster.host.count | Number of hosts associated with the cluster. | long | gauge |
 | vsphere.cluster.host.names | List of all the host names associated with the cluster. | keyword |  |
+| vsphere.cluster.id | Unique cluster ID. | keyword |  |
 | vsphere.cluster.name | Cluster name. | keyword |  |
-| vsphere.cluster.network.count | Number of Networks associated with the cluster. | long | gauge |
-| vsphere.cluster.network.names | List of all the Network names associated with the cluster. | keyword |  |
+| vsphere.cluster.network.count | Number of networks associated with the cluster. | long | gauge |
+| vsphere.cluster.network.names | List of all the network names associated with the cluster. | keyword |  |
 | vsphere.cluster.triggered_alarms.description | Description of the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |
@@ -461,6 +462,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.fstype | Filesystem type. | keyword |  |  |
 | vsphere.datastore.host.count | Number of hosts associated with the datastore. | long |  | gauge |
 | vsphere.datastore.host.names | List of all the host names associated with the datastore. | keyword |  |  |
+| vsphere.datastore.id | Unique datastore ID. | keyword |  |  |
 | vsphere.datastore.name | Datastore name. | keyword |  |  |
 | vsphere.datastore.read.bytes | Rate of reading data from the datastore. | long | byte | gauge |
 | vsphere.datastore.status | Status of the datastore. | keyword |  |  |
@@ -589,10 +591,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | vsphere.datastorecluster.alert.names | List of all the alerts on this Datastore Cluster. | keyword |  |  |
 | vsphere.datastorecluster.capacity.bytes | Total capacity of this storage pod, in bytes. | long | byte | gauge |
-| vsphere.datastorecluster.datastore.count | Number of datastores in the Datastore Cluster. | long |  | gauge |
-| vsphere.datastorecluster.datastore.names | List of all the Datastore names associated with the Datastore Cluster. | keyword |  |  |
+| vsphere.datastorecluster.datastore.count | Number of datastores in the datastore cluster. | long |  | gauge |
+| vsphere.datastorecluster.datastore.names | List of all the datastore names associated with the datastore cluster. | keyword |  |  |
 | vsphere.datastorecluster.free_space.bytes | Total free space on this storage pod, in bytes. | long | byte | gauge |
-| vsphere.datastorecluster.name | The Datastore Cluster name. | keyword |  |  |
+| vsphere.datastorecluster.id | Unique datastore cluster ID. | keyword |  |  |
+| vsphere.datastorecluster.name | The datastore cluster name. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.description | Description of the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |  |
@@ -610,50 +613,50 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-10-03T04:09:10.462Z",
+    "@timestamp": "2024-09-02T06:04:26.077Z",
     "agent": {
-        "ephemeral_id": "c13fd262-b655-4a62-a5f7-dda2f497332f",
-        "id": "036bbeff-9b4f-497d-846d-d5562d328109",
+        "ephemeral_id": "1acd79f0-0361-47dd-8d47-32064268713f",
+        "id": "958125fc-776b-4be3-b0ce-2762148f5f6d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.15.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "vsphere.host",
-        "namespace": "default",
+        "namespace": "50835",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "036bbeff-9b4f-497d-846d-d5562d328109",
-        "snapshot": true,
-        "version": "8.15.2"
+        "id": "958125fc-776b-4be3-b0ce-2762148f5f6d",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.host",
-        "duration": 83416967,
-        "ingested": "2024-10-03T04:09:20Z",
+        "duration": 32951837,
+        "ingested": "2024-09-02T06:04:38Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "57723763cd1b4ff48e54a505de4ebe6c",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.18.0.7"
+            "192.168.253.6"
         ],
         "mac": [
-            "02-42-AC-12-00-07"
+            "02-42-C0-A8-FD-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.153.1-microsoft-standard",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -662,15 +665,12 @@ An example event for `host` looks as following:
     },
     "metricset": {
         "name": "host",
-        "period": 20000
+        "period": 10000
     },
     "service": {
-        "address": "https://172.18.0.4:8989/sdk",
+        "address": "https://svc-vsphere-metrics:8989/sdk",
         "type": "vsphere"
     },
-    "tags": [
-        "vsphere-host"
-    ],
     "vsphere": {
         "host": {
             "cpu": {
@@ -683,26 +683,6 @@ An example event for `host` looks as following:
                 "used": {
                     "mhz": 67,
                     "pct": 0.015
-                }
-            },
-            "datastore": {
-                "count": 4,
-                "names": [
-                    "LocalDS_0",
-                    "LocalDS_1",
-                    "LocalDS_2",
-                    "LocalDS_3"
-                ]
-            },
-            "disk": {
-                "read": {
-                    "bytes": 142336
-                },
-                "total": {
-                    "bytes": 1492992
-                },
-                "write": {
-                    "bytes": 1895424
                 }
             },
             "memory": {
@@ -718,52 +698,7 @@ An example event for `host` looks as following:
                 }
             },
             "name": "DC0_H0",
-            "network": {
-                "bandwidth": {
-                    "received": {
-                        "bytes": 702464
-                    },
-                    "total": {
-                        "bytes": 1538048
-                    },
-                    "transmitted": {
-                        "bytes": 564224
-                    }
-                },
-                "count": 3,
-                "names": [
-                    "DC0_DVPG0",
-                    "DVS0-DVUplinks-10",
-                    "VM Network"
-                ],
-                "packets": {
-                    "multicast": {
-                        "received": {
-                            "count": 97
-                        }
-                    },
-                    "received": {
-                        "count": 11933
-                    },
-                    "transmitted": {
-                        "count": 8801
-                    }
-                }
-            },
-            "network_names": [
-                "DC0_DVPG0",
-                "DVS0-DVUplinks-10",
-                "VM Network"
-            ],
-            "status": "gray",
-            "uptime": 77229,
-            "vm": {
-                "count": 2,
-                "names": [
-                    "DC0_H0_VM0",
-                    "DC0_H0_VM1"
-                ]
-            }
+            "network_names": "VM Network"
         }
     }
 }
@@ -805,6 +740,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.host.disk.read.bytes | Average number of bytes read from the disk each second. | long | byte | gauge |
 | vsphere.host.disk.total.bytes | Sum of disk read and write rates each second in bytes. | long | byte | gauge |
 | vsphere.host.disk.write.bytes | Average number of bytes written to the disk each second. | long | byte | gauge |
+| vsphere.host.id | Unique host ID. | keyword |  |  |
 | vsphere.host.memory.free.bytes | Free Memory in bytes. | long | byte | gauge |
 | vsphere.host.memory.total.bytes | Total Memory in bytes. | long | byte | gauge |
 | vsphere.host.memory.used.bytes | Used Memory in bytes. | long | byte | gauge |
@@ -954,6 +890,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.network.config.status | Indicates whether the system has detected a configuration issue. | keyword |  |
 | vsphere.network.host.count | Number of hosts connected to this network. | long | gauge |
 | vsphere.network.host.names | List of all the hosts connected to this network. | keyword |  |
+| vsphere.network.id | Unique network ID. | keyword |  |
 | vsphere.network.name | Name of the network. | keyword |  |
 | vsphere.network.status | General health of the network. | keyword |  |
 | vsphere.network.triggered_alarms.description | Description of the alarm. | keyword |  |
@@ -975,59 +912,61 @@ An example event for `resourcepool` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-12T05:55:54.148Z",
+    "@timestamp": "2024-10-21T09:31:54.201Z",
     "agent": {
-        "ephemeral_id": "54ea1b28-d61c-4277-b98b-e33e38c7f1b5",
-        "id": "36c6eb08-679d-4a9f-b436-fe550cb77ad2",
-        "name": "elastic-agent-85448",
+        "ephemeral_id": "f0138ef6-8fb9-4fb0-bf8f-002379e3e876",
+        "id": "93deaee2-10b7-426a-a4b2-e4aca31a244f",
+        "name": "elastic-agent-36652",
         "type": "metricbeat",
-        "version": "8.16.0"
+        "version": "8.15.2"
     },
     "data_stream": {
         "dataset": "vsphere.resourcepool",
-        "namespace": "63631",
+        "namespace": "65031",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "36c6eb08-679d-4a9f-b436-fe550cb77ad2",
-        "snapshot": true,
-        "version": "8.16.0"
+        "id": "93deaee2-10b7-426a-a4b2-e4aca31a244f",
+        "snapshot": false,
+        "version": "8.15.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.resourcepool",
-        "duration": 21732347,
-        "ingested": "2024-09-12T05:55:57Z",
+        "duration": 9922374,
+        "ingested": "2024-10-21T09:31:57Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-85448",
+        "hostname": "elastic-agent-36652",
+        "id": "93db770e92a444c98362aee1860ae326",
         "ip": [
-            "192.168.249.6",
-            "192.168.251.2"
+            "192.168.243.2",
+            "192.168.247.4"
         ],
         "mac": [
-            "02-42-C0-A8-F9-06",
-            "02-42-C0-A8-FB-02"
+            "02-42-C0-A8-F3-02",
+            "02-42-C0-A8-F7-04"
         ],
-        "name": "elastic-agent-85448",
+        "name": "elastic-agent-36652",
         "os": {
-            "family": "",
-            "kernel": "4.18.0-348.7.1.el8_5.x86_64",
-            "name": "Wolfi",
-            "platform": "wolfi",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "20230201"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
         "name": "resourcepool",
-        "period": 10000
+        "period": 20000
     },
     "service": {
         "address": "https://svc-vsphere-metrics:8989/sdk",
@@ -1038,7 +977,6 @@ An example event for `resourcepool` looks as following:
     ],
     "vsphere": {
         "resourcepool": {
-            "fingerprint": "IqGup33ooQgbWIgSs7+sAcX4MDo=",
             "name": "Resources",
             "status": "green"
         }
@@ -1072,7 +1010,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.resourcepool.cpu.entitlement.mhz | The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS. | long |  | gauge |
 | vsphere.resourcepool.cpu.entitlement.static.mhz | The static CPU resource entitlement for a virtual machine. | long |  | gauge |
 | vsphere.resourcepool.cpu.usage.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
-| vsphere.resourcepool.fingerprint | Unique ID to avoid duplications and to identify the unique resourcepool. | keyword |  |  |
+| vsphere.resourcepool.id | Unique resource pool ID. | keyword |  |  |
 | vsphere.resourcepool.memory.ballooned.bytes | The size of the balloon driver in a virtual machine, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.compressed.bytes | The amount of compressed memory currently consumed by VM, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.entitlement.bytes | The amount of memory, in bytes, that this VM is entitled to, as calculated by DRS. | long | byte | gauge |
@@ -1280,15 +1218,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.datastore.names | Names of the datastore associated to this virtualmachine. | keyword |  |  |
 | vsphere.virtualmachine.host.hostname | Hostname of the host. | keyword |  |  |
 | vsphere.virtualmachine.host.id | Host id. | keyword |  |  |
-| vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes. | long | byte | gauge |
-| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes. | long | byte | gauge |
-| vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes. | long | byte | gauge |
-| vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes. | long | byte | gauge |
-| vsphere.virtualmachine.name | Virtual Machine name. | keyword |  |  |
+| vsphere.virtualmachine.id | Unique virtual machine ID. | keyword |  |  |
+| vsphere.virtualmachine.memory.free.guest.bytes | Free memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.total.guest.bytes | Total memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.guest.bytes | Used memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.host.bytes | Used memory of Host in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.name | Virtual machine name. | keyword |  |  |
 | vsphere.virtualmachine.network.count | Number of networks associated to this virtualmachine. | long |  | gauge |
 | vsphere.virtualmachine.network.names | Names of the networks associated to this virtualmachine. | keyword |  |  |
 | vsphere.virtualmachine.network_names | Network names. | keyword |  |  |
-| vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |  |  |
+| vsphere.virtualmachine.os | Virtual machine Operating System name. | keyword |  |  |
 | vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  | gauge |
 | vsphere.virtualmachine.snapshot.info.createtime | Snapshot creation time. | date |  |  |
 | vsphere.virtualmachine.snapshot.info.description | Snapshot description. | keyword |  |  |
