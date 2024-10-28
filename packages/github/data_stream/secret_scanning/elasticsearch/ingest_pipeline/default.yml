@@ -5,6 +5,9 @@ processors:
       field: ecs.version
       value: '8.11.0'
   - set:
+      field: event.kind
+      value: alert
+  - set:
       field: event.action
       value: "secret_scanning"
   - rename:
@@ -18,6 +21,14 @@ processors:
   - fail:
       if: "!(ctx.github.secret_scanning instanceof Map)"
       message: Missing JSON object
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.github?.secret_scanning?.resolved_at == null
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.github?.secret_scanning?.resolved_at != null
   - fingerprint:
       fields:
         - github.secret_scanning.number

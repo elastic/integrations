@@ -21,6 +21,14 @@ processors:
   - fail:
       if: "!(ctx.github.code_scanning instanceof Map)"
       message: Missing JSON object
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.github?.code_scanning?.fixed_at == null && ctx.github?.code_scanning?.dismissed_at == null
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.github?.code_scanning?.fixed_at != null || ctx.github?.code_scanning?.dismissed_at != null
   - date:
       field: github.code_scanning.created_at
       formats:
