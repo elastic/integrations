@@ -23,8 +23,7 @@ state:
 regexp:
   next_link: '<([^,]*)>;rel="next"'
 redact:
-  fields:
-    - password
+  fields: ~
 program: |
   state.with(
     state.?cursor.last_event.orValue((now - duration(state.initial_interval)).format("2006-01-02 15:04:05")).as(start, get(
@@ -35,7 +34,7 @@ program: |
           "sysparm_display_value": ["all"],
           "sysparm_exclude_reference_link": ["true"],
           "sysparm_limit": [string(state.batch_size)],
-          "sysparm_query": ["ORDERBYsys_updated_on^sys_updated_on>"+string(start)],
+          "sysparm_query": ["ORDERBYsys_updated_on^sys_updated_on>"+start],
         }.format_query()
     )).as(resp, resp.StatusCode == 200 ?
       (
@@ -55,7 +54,7 @@ program: |
               has(body.result) && size(body.result) > 0 ?
                 (
                   has(state.?cursor.last_event) ?
-                    max([body.result.map(e, e.sys_updated_on.value).max(),state.cursor.last_event])
+                    max([body.result.map(e, e.sys_updated_on.value).max(), state.cursor.last_event])
                   :
                     body.result.map(e, e.sys_updated_on.value).max()
                 )
