@@ -72,10 +72,6 @@ processors:
       field: github.repository.owner.login
       value: "{{{_temp_.owner}}}"
       if: ctx._temp_?.owner != null
-  - set:
-      field: github.state
-      value: "{{{github.issues.state}}}"
-      if: ctx.github.issues.state != null
   - foreach:
       field: github.issues.assignees
       ignore_missing: true
@@ -196,11 +192,10 @@ processors:
   - remove:
       field:
         - _temp_
-        - github.issues.repository
       ignore_missing: true
   - remove:
       field:
-        - github.issues.state
+        - github.issues.repository
       if: ctx.tags?.contains('preserve_duplicate_custom_fields') != true
       ignore_missing: true
   - remove:
