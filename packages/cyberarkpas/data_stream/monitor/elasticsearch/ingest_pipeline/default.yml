@@ -259,15 +259,18 @@ processors:
       ignore_missing: true
 
 on_failure:
-  - append:
-      tag: append_error_message
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - remove:
-      tag: remove_tmp_on_failure
-      field: _tmp
-      ignore_missing: true
   - set:
       tag: set_event_kind_on_failure
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - remove:
+      tag: remove_tmp_on_failure
+      field: _tmp
+      ignore_missing: true

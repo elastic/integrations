@@ -9,11 +9,14 @@ processors:
         !ctx.message.contains('"Product":"VaultMonitor"')
 
 on_failure:
+  - set:
+      tag: set_event_kind_on_failure
+      field: event.kind
+      value: pipeline_error
   - append:
       tag: append_error_message
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      tag: set_event_kind
-      field: event.kind
-      value: pipeline_error
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
