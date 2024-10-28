@@ -24,16 +24,6 @@ processors:
   - set:
       field: _temp.updated_at
       value: "{{{_ingest.timestamp}}}"
-  - fingerprint:
-      fields:
-        - github.dependabot.repository.owner.login
-        - github.dependabot.repository.name
-        - github.dependabot.number
-        - github.dependabot.created_at
-        - github.dependabot.dismissed_at
-        - github.dependabot.fixed_at
-      target_field: "_id"
-      ignore_missing: true
   - rename:
       field: github.dependabot.createdAt
       target_field: github.dependabot.created_at
@@ -266,6 +256,16 @@ processors:
   - rename:
       field: github.dependabot.repository
       target_field: github.repository
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - github.repository.owner.login
+        - github.repository.name
+        - github.dependabot.number
+        - github.dependabot.created_at
+        - github.dependabot.dismissed_at
+        - github.dependabot.fixed_at
+      target_field: "_id"
       ignore_missing: true
       ###########
       # Cleanup #

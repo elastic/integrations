@@ -526,6 +526,9 @@ To use this integration, you must be an administrator for the repository or for 
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log Offset. | long |
 
 
 An example event for `dependabot` looks as following:
