@@ -26,4 +26,6 @@ The `log` writes the complete file state.
 
 7. Stale entries can be removed from the registry, even if there is no active input.
 
+8. The fingerprint file identity is used by default.
+
 More information can be found on the {{ url "filebeat-input-filestream" "Filestream documentation page" }}
