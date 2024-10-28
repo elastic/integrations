@@ -80,6 +80,14 @@ processors:
       timezone: UTC
       target_field: "@timestamp"
       if: ctx.github.dependabot.fixed_at != null
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.github?.dependabot?.fixed_at == null && ctx.github?.dependabot?.dismissed_at == null
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.github?.dependabot?.fixed_at != null || ctx.github?.dependabot?.dismissed_at != null
   - rename:
       field: github.dependabot.repository.isInOrganization
       target_field: github.dependabot.repository.is_in_organization
