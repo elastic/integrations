@@ -150,7 +150,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ## Metrics reference
 
-## Disk
+### Disk
 
 This is the `disk` data stream. This data stream collects a detailed overview of disk usage and captures important data about I/O operations, read and write latency, and space utilization. To collect disk metrics, the API Key making the request must have the `Project Read Only` role.
 
