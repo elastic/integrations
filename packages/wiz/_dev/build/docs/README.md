@@ -4,7 +4,7 @@ Wiz continuously prioritizes critical risks based on a deep cloud analysis acros
 
 ## Data streams
 
-The Wiz integration collects three types of data: Audit, Issue and Vulnerability.
+The Wiz integration collects four types of data: Audit, Cloud Configuration Finding, Issue and Vulnerability.
 
 Reference for [Graph APIs](https://integrate.wiz.io/reference/prerequisites) of Wiz.
 
