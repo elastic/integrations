@@ -15,6 +15,7 @@ processors:
       ignore_failure: true
   - trim:
       field: citrix_adc.log.timestamp
+      target_field: _tmp.citrix_adc.log.timestamp
       tag: trim_timestamp
       if: ctx.citrix_adc?.log?.timestamp != null && ctx.citrix_adc.log.timestamp != '' && ctx?._conf?.custom_date_format == null
   - date:
@@ -139,34 +140,60 @@ processors:
       copy_from: citrix_adc.log.action
       ignore_empty_value: true
   - script:
-      description: Convert delink_time via custom format
-      tag: date_delink_time_custom_format
+      description: Convert several fields via custom format
+      tag: date_tmp_timestamp_native_custom_format
       lang: painless
+      params:
+        fields:
+          - delink_time
+          - start_time
+          - end_time
+          - timestamp
+        formats:
+          - yyyy/MM/dd:HH:mm:ss
+          - MM/dd/yyyy:HH:mm:ss
+          - ISO8601
+          - dd/MM/yyyy:HH:mm:ss
       source: >-
-        def dateFormat = ctx["_conf"]["custom_date_format"];
-        def formatter = DateTimeFormatter.ofPattern(dateFormat);
-
-        ["delink_time", "start_time", "end_time", "timestamp"].forEach(l -> {
-
-            if (ctx.containsKey("citrix_adc")) {
-                if (ctx.citrix_adc.containsKey("log")) {
-                    if (ctx.citrix_adc.log.containsKey(l)) {
-                        def text = ctx.citrix_adc.log[l];
-                        def parsedDate = LocalDateTime.parse(text, formatter);
-                        ctx.citrix_adc.log[l] = parsedDate.toString();
+        def printer = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        def formats = [];
+        def tz = ZoneOffset.UTC;
+        def locale = Locale.ENGLISH;
+        if (ctx.containsKey("_conf") && ctx._conf.containsKey("custom_date_format")) {
+            formats.add(ctx._conf.custom_date_format);
+        }
+        formats.addAll(params.formats);
+        for (field in params.fields) {
+            if (ctx.citrix_adc.log.containsKey(field)) {
+                def text = ctx.citrix_adc.log[field].trim();
+                ctx.citrix_adc.log[field] = text;
+                def parsedDate;
+                for (fmt in formats) {
+                    def dateFormat = fmt.trim();
+                    try { 
+                        if (dateFormat == "ISO8601") {
+                            parsedDate = ZonedDateTime.parse(text);
+                        } else {
+                            def formatter = DateTimeFormatter.ofPattern(dateFormat);
+                            parsedDate = ZonedDateTime.parse(text, formatter);
+                        }
+                        ctx.citrix_adc.log[field] = printer.format(parsedDate);
+                    } catch (DateTimeParseException e) {
+                        // we just go to the next one
                     }
                 }
             }
-            return true;
-        });
+        }
 
-      if: ctx?._conf?.custom_date_format != null && ctx?._conf?.custom_date_format != ''
+      if: ctx.citrix_adc?.log != null
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}. Offending format: {{{_conf.custom_date_format}}}.'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}.'
+
   - trim:
       field: citrix_adc.log.delink_time
+      target_field: citrix_adc.log.delink_time
       tag: trim_delink_time
       if: ctx.citrix_adc?.log?.delink_time != null && ctx.citrix_adc.log.delink_time != ''
   - date:
@@ -190,6 +217,7 @@ processors:
       ignore_empty_value: true
   - trim:
       field: citrix_adc.log.end_time
+      target_field: _tmp.citrix_adc.log.end_time
       tag: trim_end_time
       if: ctx.citrix_adc?.log?.end_time != null && ctx.citrix_adc.log.end_time != ''
   - date:
@@ -217,6 +245,7 @@ processors:
       ignore_empty_value: true
   - trim:
       field: citrix_adc.log.start_time
+      target_field: citrix_adc.log.start_time
       tag: trim_start_time
       if: ctx.citrix_adc?.log?.start_time != null && ctx.citrix_adc.log.start_time != ''
   - date:
