@@ -1,42 +1,138 @@
-# cilium_tetragon Integration
+# Cilium Tetragon
 
 ## Overview
 
-Explain what the integration is, define the third-party product that is providing data, establish its relationship to the larger ecosystem of Elastic products, and help the reader understand how it can be used to solve a tangible problem.
-Check the [overview guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-overview) for more information.
+The **Cilium Tetragon** integration enables you to monitor and analyze events from [Tetragon](https://tetragon.io/), a Kubernetes-aware security observability and runtime enforcement tool supported by the CNCF. This integration provides insight into Tetragon's security event logs, allowing you to visualize data in Kibana, set up alerts, and quickly respond to security events within your Kubernetes environment.
 
 ## Datastreams
 
-Provide a high-level overview of the kind of data that is collected by the integration. 
-Check the [datastreams guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-datastreams) for more information.
+The Cilium Tetragon integration collects security event logs from Tetragon into a **logs** datastream in Elasticsearch.
 
 ## Requirements
 
-The requirements section helps readers to confirm that the integration will work with their systems.
-Check the [requirements guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-requirements) for more information.
+To use the Cilium Tetragon integration, ensure the following:
+
+- **Elastic Stack**: Elasticsearch and Kibana are required for data storage, search, and visualization. You can use the hosted **Elasticsearch Service on Elastic Cloud** (recommended) or deploy the Elastic Stack on your own hardware.
+- **Kubernetes Environment**: Tetragon must be running in a Kubernetes cluster.
 
 ## Setup
 
-Point the reader to the [Observability Getting started guide](https://www.elastic.co/guide/en/observability/master/observability-get-started.html) for generic, step-by-step instructions. Include any additional setup instructions beyond what’s included in the guide, which may include instructions to update the configuration of a third-party service.
-Check the [setup guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-setup) for more information.
+### Step 1: Install Integration Assets
 
-## Troubleshooting (optional)
+Before collecting data from Tetragon, install the required assets for this integration in Kibana:
 
-Provide information about special cases and exceptions that aren’t necessary for getting started or won’t be applicable to all users. Check the [troubleshooting guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-troubleshooting) for more information.
+1. In Kibana, navigate to **Settings** > **Install Cilium Tetragon Integration**.
+2. Alternatively, go to **⊕ Add Cilium Tetragon** > **Add Integration Only** (skip Elastic Agent installation, which is unsupported for this integration).
+
+### Step 2: Configure Tetragon for JSON Export
+
+Tetragon needs to be configured to export its event data as JSON logs. You’ll then use **Filebeat** to send these logs to Elasticsearch. The simplest approach is to use the Tetragon Helm chart along with an override file.
+
+Refer to the [Tetragon Documentation](https://tetragon.io/docs/installation/kubernetes/) for general Helm installation guidance.
+
+#### 2.1: Set Up Filebeat Config Map
+
+First, create a ConfigMap with Filebeat configuration in the `kube-system` namespace. Update the Elasticsearch username and password in the provided configuration file.
+
+Save the following as `filebeat-cfgmap.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-configmap
+  namespace: kube-system
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+      - type: filestream
+        id: tetragon-log
+        enabled: true
+        paths:
+          - /var/run/cilium/tetragon/*.log
+    path.data: /usr/share/filebeat/data
+    processors:
+      - timestamp:
+          field: "time"
+          layouts:
+            - '2006-01-02T15:04:05Z'
+            - '2006-01-02T15:04:05.999Z'
+            - '2006-01-02T15:04:05.999-07:00'
+          test:
+            - '2019-06-22T16:33:51Z'
+            - '2019-11-18T04:59:51.123Z'
+            - '2020-08-03T07:10:20.123456+02:00'
+    setup.template.name: logs
+    setup.template.pattern: "logs-cilium_tetragon.*"
+    output.elasticsearch:
+      hosts: ["https://<elasticsearch host>"]
+      username: "<elasticsearch username>"
+      password: "<elasticsearch password>"
+      index: logs-cilium_tetragon.log-default
+```
+
+To apply this configuration, run:
+
+```shell
+kubectl create -f filebeat-cfgmap.yaml
+```
+
+#### 2.2: Install Tetragon with Filebeat Sidecar
+
+Next, install Tetragon with Helm, using an override file to configure a Filebeat sidecar to export logs. Save the following configuration as `filebeat-helm-values.yaml`:
+
+```yaml
+export:
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+  stdout:
+    enabledCommand: false
+    enabledArgs: false
+    image:
+      override: "docker.elastic.co/beats/filebeat:8.15.3"
+    extraVolumeMounts:
+      - name: filebeat-config
+        mountPath: /usr/share/filebeat/filebeat.yml
+        subPath: filebeat.yml
+      - name: filebeat-data
+        mountPath: /usr/share/filebeat/data
+extraVolumes:
+  - name: filebeat-data
+    hostPath:
+      path: /var/run/cilium/tetragon/filebeat
+      type: DirectoryOrCreate
+  - name: filebeat-config
+    configMap:
+      name: filebeat-configmap
+      items:
+        - key: filebeat.yml
+          path: filebeat.yml
+```
+
+Then, install Tetragon with:
+
+```shell
+helm repo add cilium https://helm.cilium.io
+helm repo update
+helm install tetragon -f filebeat-helm-values.yaml ${EXTRA_HELM_FLAGS[@]} cilium/tetragon -n kube-system
+```
+
+## Troubleshooting
+
+If expected events are not appearing in Elasticsearch, ensure that Tetragon is configured to export the right events:
+
+- Check the `tetragon.exportAllowList` and `tetragon.exportDenyList` Helm values. These can be adjusted by adding them to `filebeat-helm-values.yaml` to control which events are included in the JSON export.
 
 ## Reference
 
-Provide detailed information about the log or metric types we support within the integration. Check the [reference guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-reference) for more information.
+For additional guidance on installing or configuring Tetragon, visit the [Tetragon documentation](https://tetragon.io/docs/).
 
 ## Logs
 
-### log
+### Log Datastream
 
-Insert a description of the datastream here.
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+The `log` datastream captures event logs from Tetragon. These events are indexed as `logs-cilium_tetragon.log-default` in Elasticsearch.
 
 **Exported fields**
 
@@ -146,4 +242,3 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-
