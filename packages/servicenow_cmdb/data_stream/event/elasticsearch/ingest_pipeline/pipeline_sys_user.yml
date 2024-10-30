@@ -9,7 +9,11 @@ processors:
       field: event.type
       tag: append_event_type_sys_user_group_member
       value: group
-      if: ctx.servicenow_cmdb?.event?.table_name != null && ['sys_user_grmember','sys_user_group'].contains(ctx.servicenow_cmdb.event.table_name)
+      if: >-
+        ctx.servicenow_cmdb?.event?.table_name != null && (
+          ctx.servicenow_cmdb.event.table_name == 'sys_user_grmember' ||
+          ctx.servicenow_cmdb.event.table_name == 'sys_user_group'
+        )
   - append:
       field: event.type
       tag: append_event_type_sys_user_group_member

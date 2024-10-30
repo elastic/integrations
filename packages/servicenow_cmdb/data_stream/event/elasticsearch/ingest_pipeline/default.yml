@@ -66,17 +66,42 @@ processors:
       field: event.kind
       tag: set_event_kind_to_event
       value: event
-      if: ctx.servicenow_cmdb?.event?.table_name != null && ['cmdb_ci_service','change_task','cmdb_rel_ci','cmdb_ci_infra_service','cmdb_ci','cmdb','cmdb_ci_vm','cmdb_ci_db_instance','cmdb_ci_appl','cmdb_ci_esx_server'].contains(ctx.servicenow_cmdb.event.table_name)
+      if: >-
+        ctx.servicenow_cmdb?.event?.table_name != null && (
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_service' ||
+          ctx.servicenow_cmdb.event.table_name == 'change_task' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_rel_ci' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_infra_service' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_vm' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_db_instance' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_appl' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_esx_server'
+        )
   - set:
       field: event.kind
       tag: set_event_kind_to_asset
       value: asset
-      if: ctx.servicenow_cmdb?.event?.table_name != null && ['cmdb_ci_server','cmdb_ci_app_server','cmdb_ci_computer','cmdb_ci_hardware','cmdb_ci_linux_server','cmdb_ci_win_server','cmdb_ci_hyper_v_server'].contains(ctx.servicenow_cmdb.event.table_name)
+      if: >-
+        ctx.servicenow_cmdb?.event?.table_name != null && (
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_app_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_computer' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_hardware' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_linux_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_win_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_hyper_v_server'
+        )
   - append:
       field: event.type
       tag: append_event_type_info
       value: info
-      if: (ctx.servicenow_cmdb?.event?.table_name != null && (['cmdb','cmdb_rel_ci'].contains(ctx.servicenow_cmdb.event.table_name)) || ctx.servicenow_cmdb?.event?.table_name != null && ctx.servicenow_cmdb?.event?.table_name.contains("cmdb_ci"))
+      if: >-
+        ctx.servicenow_cmdb?.event?.table_name != null && (
+          ctx.servicenow_cmdb.event.table_name == 'cmdb' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_rel_ci'
+        ) || ctx.servicenow_cmdb?.event?.table_name.contains("cmdb_ci")
   - append:
       field: event.type
       tag: append_event_type_change
@@ -86,7 +111,19 @@ processors:
       field: event.category
       tag: append_event_category_host
       value: host
-      if: ctx.servicenow_cmdb?.event?.table_name != null && ['cmdb_ci_server','cmdb_ci_app_server','cmdb_ci_infra_service','cmdb_ci_vm','cmdb_ci_computer','cmdb_ci_hardware','cmdb_ci_linux_server','cmdb_ci_win_server','cmdb_ci_hyper_v_server','cmdb_ci_esx_server'].contains(ctx.servicenow_cmdb.event.table_name)
+      if: >-
+        ctx.servicenow_cmdb?.event?.table_name != null && (
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_app_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_infra_service' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_vm' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_computer' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_hardware' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_linux_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_win_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_hyper_v_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_esx_server'
+        )
   - append:
       field: event.category
       tag: append_event_category_database
@@ -101,7 +138,16 @@ processors:
       field: event.category
       tag: append_event_category_configuration
       value: configuration
-      if: ctx.servicenow_cmdb?.event?.table_name != null && ['cmdb','change_task','cmdb_rel_ci','cmdb_ci_service','cmdb_ci','cmdb_ci_esx_server','cmdb_ci_hyper_v_server'].contains(ctx.servicenow_cmdb.event.table_name)
+      if: >-
+        ctx.servicenow_cmdb?.event?.table_name != null && (
+          ctx.servicenow_cmdb.event.table_name == 'cmdb' ||
+          ctx.servicenow_cmdb.event.table_name == 'change_task' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_rel_ci' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_service' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_esx_server' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmdb_ci_hyper_v_server'
+        )
   - rename:
       field: _conf.timezone
       tag: rename_timezone
@@ -3131,7 +3177,12 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_sys_user" }}'
       tag: pipeline_sys_user
-      if: ctx.servicenow_cmdb?.event?.table_name != null && ['sys_user','sys_user_grmember','sys_user_group'].contains(ctx.servicenow_cmdb.event.table_name)
+      if: >-
+        ctx.servicenow_cmdb?.event?.table_name != null && (
+          ctx.servicenow_cmdb.event.table_name == 'sys_user' ||
+          ctx.servicenow_cmdb.event.table_name == 'sys_user_grmember' ||
+          ctx.servicenow_cmdb.event.table_name == 'sys_user_group'
+        )
   - pipeline:
       name: '{{ IngestPipeline "pipeline_cmdb_ci_business_app" }}'
       tag: pipeline_cmdb_ci_business_app
@@ -3139,7 +3190,11 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_cmn_location" }}'
       tag: pipeline_cmn_location
-      if: ctx.servicenow_cmdb?.event?.table_name != null && ['cmn_department','cmn_location'].contains(ctx.servicenow_cmdb.event.table_name)
+      if: >-
+        ctx.servicenow_cmdb?.event?.table_name != null && (
+          ctx.servicenow_cmdb.event.table_name == 'cmn_department' ||
+          ctx.servicenow_cmdb.event.table_name == 'cmn_location'
+        )
   - pipeline:
       name: '{{ IngestPipeline "pipeline_alm_hardware" }}'
       tag: pipeline_alm_hardware

@@ -2,12 +2,12 @@
 
 ## Overview
 
-[ServiceNow CMDB](https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html#benefits) integration helps organizations keep track of all their IT assets, like computers, software, and network devices. It shows how these items are related to each other. By having this information in one place, it makes it easier to manage changes, fix problems, and ensure everything is compliant with regulations. Essentially, it's a way to stay organized and know exactly what IT resources are available and how they work together.
+The [ServiceNow CMDB](https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html#benefits) integration helps organizations keep track of all their IT assets: computers, software and network devices, and shows how these items are related to each other. By having this information in one place, it is easier to manage changes, fix problems, and ensure everything is compliant with regulations. Essentially, it's a way to stay organized and know exactly what IT resources are available and how they work together.
 
 The ServiceNow CMDB integration can be used in three different modes to collect logs:
-- AWS S3 polling mode: ServiceNow CMDB writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files. Refer this [link](https://www.servicenow.com/community/now-platform-forum/aws-s3-integration-with-servicenow/td-p/1121852) to integrate AWS S3 with ServiceNow for retrieving logs into an S3 bucket.
-- AWS S3 SQS mode: ServiceNow CMDB writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
-- REST API mode: ServiceNow CMDB offers table APIs to retrieve data from its tables, the Elastic Agent polls these APIs to list their contents and read any new data. Visit this [link](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET) for additional information about REST APIs.
+- AWS S3 polling mode: ServiceNow CMDB writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files. Refer to the [ServiceNow documentation](https://www.servicenow.com/community/now-platform-forum/aws-s3-integration-with-servicenow/td-p/1121852) for how to integrate AWS S3 with ServiceNow for retrieving logs into an S3 bucket.
+- AWS S3 SQS mode: ServiceNow CMDB writes data to S3; S3 sends a notification of a new object to SQS; the Elastic Agent receives the notification from SQS and then reads the S3 object. Multiple agents can be used in this mode.
+- REST API mode: ServiceNow CMDB offers table APIs to retrieve data from its tables; the Elastic Agent polls these APIs to list their contents and read any new data. Visit this [link](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET) for additional information about REST APIs.
 
 ## Compatibility
 
@@ -52,7 +52,7 @@ Below is a list of the default ones.
 
 **Note**:
 
-1. This integration currently supports ECS mapping for default ServiceNow tables listed above. For custom tables created by users, ECS mapping is not automatically provided. If you want to add mappings for custom tables, please refer to this [tutotial guide](https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
+1. This integration currently supports ECS mapping for default ServiceNow tables listed above. For custom tables created by users, ECS mapping is not automatically provided. If you want to add mappings for custom tables, please refer to this [tutorial guide](https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
 2. For each table, a tag will be added based on the name of the table from which data is fetched.
 
 ## Requirements
@@ -77,7 +77,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ## Setup
 
@@ -88,18 +88,18 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 ### To collect logs through AWS S3, follow the below steps:
 
-- Considering you already have an AWS S3 bucket setup, you can configure it with ServiceNow CMDB by integrating it using your AWS S3 credentials.
+- With an AWS S3 bucket that has been set up, you can configure it with ServiceNow CMDB by integrating it using your AWS S3 credentials.
 
 ### To collect logs through AWS SQS, follow the below steps:
 
-1. Assuming you've already set up a connection to push data into the AWS bucket; if not, see the section above.
-2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+1. Assuming you've already set up a connection to push data into the AWS bucket you can follow the below steps; if not, see the section above.
+2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" as described in the [Amazon S3 user guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
    - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in ServiceNow CMDB.
-3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+3. Configure event notifications for an S3 bucket according to the [Amazon S3 user guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
 ### Time Zone Selection:
-- In the Data Collection section, use the `Timezone of ServiceNow Instance` dropdown to select your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your Instances selected timezone. The system default is set to America/Los_Angeles, but you can See this in your ServiceNow profile settings.
+- In the Data Collection section, use the `Timezone of ServiceNow Instance` dropdown to select your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
 - Steps to See/Update the timezone in ServiceNow Instance:
   1. Click the user icon in the top-right corner of the ServiceNow interface.
   2. Select Profile from the dropdown menu.
@@ -146,24 +146,24 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-18T11:09:45.000Z",
+    "@timestamp": "2024-09-24T05:39:40.000Z",
     "agent": {
-        "ephemeral_id": "bd740e4f-4135-4e72-b643-90c12a132c24",
-        "id": "3fac5fa0-4659-435f-8825-b68d2050692e",
-        "name": "elastic-agent-12810",
+        "ephemeral_id": "bfc335a1-e3f5-4fa2-9a3f-9fdbc16d82dc",
+        "id": "303cd202-ea82-4538-b01f-8f78c98214c1",
+        "name": "elastic-agent-39087",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "servicenow_cmdb.event",
-        "namespace": "30042",
+        "namespace": "50972",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3fac5fa0-4659-435f-8825-b68d2050692e",
+        "id": "303cd202-ea82-4538-b01f-8f78c98214c1",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -173,10 +173,10 @@ An example event for `event` looks as following:
             "configuration",
             "threat"
         ],
-        "created": "2018-09-16T12:50:05.000Z",
+        "created": "2016-12-12T15:19:57.000Z",
         "dataset": "servicenow_cmdb.event",
-        "id": "1c832706732023002728660c4cf6a7b9",
-        "ingested": "2024-10-23T09:04:52Z",
+        "id": "1c741bd70b2322007518478d83673af3",
+        "ingested": "2024-10-30T05:16:58Z",
         "kind": "event",
         "severity": 3,
         "timezone": "America/Los_Angeles",
@@ -187,148 +187,52 @@ An example event for `event` looks as following:
     "input": {
         "type": "cel"
     },
-    "message": "My computer is not detecting the headphone device. It could be an issue with the USB port.",
     "related": {
         "user": [
-            "System Administrator",
-            "admin",
-            "system",
-            "David Miller"
+            "David Loo",
+            "Joe Employee",
+            "employee",
+            "admin"
         ]
     },
     "servicenow_cmdb": {
         "event": {
-            "active": {
-                "display_value": false,
-                "value": false
+            "activity_due": {
+                "display_value": "2016-12-12T17:26:36.000-08:00",
+                "value": "2016-12-13T01:26:36.000Z"
             },
-            "approval": {
-                "display_value": "Not Yet Requested",
-                "value": "not requested"
-            },
-            "business_duration": {
-                "display_value": "0 Seconds",
-                "value": "1970-01-01T00:00:00.000Z"
-            },
-            "business_stc": {
-                "display_value": "0",
-                "value": 0
-            },
-            "calendar_duration": {
-                "display_value": "1 Minute",
-                "value": "1970-01-01T00:01:54.000Z"
-            },
-            "calendar_stc": {
-                "display_value": "114",
-                "value": 114
-            },
-            "caller_id": {
-                "display_value": "David Miller",
-                "value": "77ad8176731313005754660c4cf6a7de"
-            },
-            "category": {
-                "display_value": "Hardware",
-                "value": "Hardware"
-            },
-            "child_incidents": {
-                "display_value": "1",
-                "value": 1
-            },
-            "close_code": {
-                "display_value": "Solved (Permanently)",
-                "value": "Solved (Permanently)"
-            },
-            "close_notes": {
-                "display_value": "This is not an issue with the USB port. Replaced the headset to resolve the issue.",
-                "value": "This is not an issue with the USB port. Replaced the headset to resolve the issue."
+            "assigned_to": {
+                "display_value": "David Loo",
+                "value": "5137153cc611227c000bbd1bd8cd2007"
             },
             "closed_at": {
-                "display_value": "2018-12-09T19:29:08.000-08:00",
-                "value": "2018-12-10T03:29:08.000Z"
-            },
-            "closed_by": {
-                "display_value": "System Administrator",
-                "value": "6816f79cc0a8016401c5a33be04be441"
-            },
-            "description": {
-                "value": "My computer is not detecting the headphone device. It could be an issue with the USB port."
-            },
-            "escalation": {
-                "display_value": "Normal",
-                "value": 0
-            },
-            "impact": {
-                "display_value": "2 - Medium",
-                "value": 2
-            },
-            "incident_state": {
-                "display_value": "Closed",
-                "value": 7
-            },
-            "knowledge": {
-                "display_value": false,
-                "value": false
-            },
-            "made_sla": {
-                "display_value": true,
-                "value": true
-            },
-            "notify": {
-                "display_value": "Do Not Notify",
-                "value": 1
-            },
-            "number": {
-                "display_value": "INC0009002",
-                "value": "INC0009002"
+                "display_value": "2016-12-13T18:46:44.000-08:00",
+                "value": "2016-12-14T02:46:44.000Z"
             },
             "opened_at": {
-                "display_value": "2018-09-16T05:49:23.000-07:00",
-                "value": "2018-09-16T12:49:23.000Z"
+                "display_value": "2016-12-12T07:19:57.000-08:00",
+                "value": "2016-12-12T15:19:57.000Z"
             },
             "opened_by": {
-                "value": "6816f79cc0a8016401c5a33be04be441"
+                "value": "681ccaf9c0a8016400b98a06818d57c7"
             },
             "priority": {
                 "display_value": "3 - Moderate",
                 "value": 3
             },
-            "reassignment_count": {
-                "display_value": "0",
-                "value": 0
-            },
-            "reopen_count": {
-                "display_value": "0",
-                "value": 0
-            },
-            "resolved_at": {
-                "display_value": "2018-09-16T05:51:17.000-07:00",
-                "value": "2018-09-16T12:51:17.000Z"
-            },
-            "resolved_by": {
-                "display_value": "System Administrator",
-                "value": "6816f79cc0a8016401c5a33be04be441"
-            },
             "severity": {
                 "display_value": "3 - Low"
-            },
-            "short_description": {
-                "display_value": "My computer is not detecting the headphone device",
-                "value": "My computer is not detecting the headphone device"
             },
             "state": {
                 "display_value": "Closed",
                 "value": "7"
             },
-            "sys_class_name": {
-                "display_value": "Incident",
-                "value": "incident"
-            },
             "sys_created_by": {
-                "display_value": "admin",
-                "value": "admin"
+                "display_value": "employee",
+                "value": "employee"
             },
             "sys_created_on": {
-                "display_value": "2018-09-16T05:50:05.000-07:00"
+                "display_value": "2016-12-12T07:19:57.000-08:00"
             },
             "sys_domain": {
                 "display_value": "global",
@@ -339,34 +243,14 @@ An example event for `event` looks as following:
                 "value": "/"
             },
             "sys_id": {
-                "value": "1c832706732023002728660c4cf6a7b9"
-            },
-            "sys_mod_count": {
-                "display_value": "9",
-                "value": 9
+                "value": "1c741bd70b2322007518478d83673af3"
             },
             "sys_updated_by": {
-                "display_value": "system",
-                "value": "system"
+                "display_value": "admin",
+                "value": "admin"
             },
             "sys_updated_on": {
-                "display_value": "2024-06-18T04:09:45.000-07:00"
-            },
-            "task_effective_number": {
-                "display_value": "INC0009002",
-                "value": "INC0009002"
-            },
-            "upon_approval": {
-                "display_value": "Proceed to Next Task",
-                "value": "proceed"
-            },
-            "upon_reject": {
-                "display_value": "Cancel all future Tasks",
-                "value": "cancel"
-            },
-            "urgency": {
-                "display_value": "2 - Medium",
-                "value": 2
+                "display_value": "2024-09-23T22:39:40.000-07:00"
             }
         }
     },
@@ -377,7 +261,7 @@ An example event for `event` looks as following:
         "servicenow_cmdb-event"
     ],
     "user": {
-        "name": "System Administrator"
+        "name": "Joe Employee"
     }
 }
 ```

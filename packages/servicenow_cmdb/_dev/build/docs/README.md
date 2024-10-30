@@ -2,12 +2,12 @@
 
 ## Overview
 
-[ServiceNow CMDB](https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html#benefits) integration helps organizations keep track of all their IT assets, like computers, software, and network devices. It shows how these items are related to each other. By having this information in one place, it makes it easier to manage changes, fix problems, and ensure everything is compliant with regulations. Essentially, it's a way to stay organized and know exactly what IT resources are available and how they work together.
+The [ServiceNow CMDB](https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html#benefits) integration helps organizations keep track of all their IT assets: computers, software and network devices, and shows how these items are related to each other. By having this information in one place, it is easier to manage changes, fix problems, and ensure everything is compliant with regulations. Essentially, it's a way to stay organized and know exactly what IT resources are available and how they work together.
 
 The ServiceNow CMDB integration can be used in three different modes to collect logs:
-- AWS S3 polling mode: ServiceNow CMDB writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files. Refer this [link](https://www.servicenow.com/community/now-platform-forum/aws-s3-integration-with-servicenow/td-p/1121852) to integrate AWS S3 with ServiceNow for retrieving logs into an S3 bucket.
-- AWS S3 SQS mode: ServiceNow CMDB writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
-- REST API mode: ServiceNow CMDB offers table APIs to retrieve data from its tables, the Elastic Agent polls these APIs to list their contents and read any new data. Visit this [link](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET) for additional information about REST APIs.
+- AWS S3 polling mode: ServiceNow CMDB writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files. Refer to the [ServiceNow documentation](https://www.servicenow.com/community/now-platform-forum/aws-s3-integration-with-servicenow/td-p/1121852) for how to integrate AWS S3 with ServiceNow for retrieving logs into an S3 bucket.
+- AWS S3 SQS mode: ServiceNow CMDB writes data to S3; S3 sends a notification of a new object to SQS; the Elastic Agent receives the notification from SQS and then reads the S3 object. Multiple agents can be used in this mode.
+- REST API mode: ServiceNow CMDB offers table APIs to retrieve data from its tables; the Elastic Agent polls these APIs to list their contents and read any new data. Visit this [link](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET) for additional information about REST APIs.
 
 ## Compatibility
 
@@ -52,7 +52,7 @@ Below is a list of the default ones.
 
 **Note**:
 
-1. This integration currently supports ECS mapping for default ServiceNow tables listed above. For custom tables created by users, ECS mapping is not automatically provided. If you want to add mappings for custom tables, please refer to this [tutotial guide](https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
+1. This integration currently supports ECS mapping for default ServiceNow tables listed above. For custom tables created by users, ECS mapping is not automatically provided. If you want to add mappings for custom tables, please refer to this [tutorial guide](https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
 2. For each table, a tag will be added based on the name of the table from which data is fetched.
 
 ## Requirements
@@ -77,7 +77,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ## Setup
 
@@ -88,18 +88,18 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 ### To collect logs through AWS S3, follow the below steps:
 
-- Considering you already have an AWS S3 bucket setup, you can configure it with ServiceNow CMDB by integrating it using your AWS S3 credentials.
+- With an AWS S3 bucket that has been set up, you can configure it with ServiceNow CMDB by integrating it using your AWS S3 credentials.
 
 ### To collect logs through AWS SQS, follow the below steps:
 
-1. Assuming you've already set up a connection to push data into the AWS bucket; if not, see the section above.
-2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+1. Assuming you've already set up a connection to push data into the AWS bucket you can follow the below steps; if not, see the section above.
+2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" as described in the [Amazon S3 user guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
    - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in ServiceNow CMDB.
-3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+3. Configure event notifications for an S3 bucket according to the [Amazon S3 user guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
 ### Time Zone Selection:
-- In the Data Collection section, use the `Timezone of ServiceNow Instance` dropdown to select your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your Instances selected timezone. The system default is set to America/Los_Angeles, but you can See this in your ServiceNow profile settings.
+- In the Data Collection section, use the `Timezone of ServiceNow Instance` dropdown to select your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
 - Steps to See/Update the timezone in ServiceNow Instance:
   1. Click the user icon in the top-right corner of the ServiceNow interface.
   2. Select Profile from the dropdown menu.
