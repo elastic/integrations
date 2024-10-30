@@ -9,7 +9,7 @@ Use the integration to collect logs from:
 
 ## Data streams
 
-The Custom Azure Logs Input integration collects one types of data streams: logs.
+The Custom Azure Logs Input integration collects one type of data stream: logs.
 
 The integration does not comes with a pre-defined data stream. You can select your dataset and namespace of choice when configuring the integration.
 
