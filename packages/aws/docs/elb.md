@@ -79,6 +79,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.elb.action_executed | The action executed when processing the request (forward, fixed-response, authenticate...). It can contain several values. | keyword |
+| aws.elb.alpn_be_protocol | The application protocol negotiated with the target. | keyword |
+| aws.elb.alpn_client_preference_list | The value of the application_layer_protocol_negotiation extension in the client hello message. This value is URL-encoded. | keyword |
+| aws.elb.alpn_fe_protocol | The application protocol negotiated with the client. | keyword |
 | aws.elb.backend.http.response.status_code | The status code from the backend (status code sent to the client from ELB is stored in `http.response.status_code` | long |
 | aws.elb.backend.ip | The IP address of the backend processing this connection. | keyword |
 | aws.elb.backend.port | The port in the backend processing this connection. | keyword |
@@ -102,6 +105,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.elb.target_group.arn | The ARN of the target group handling the request. | keyword |
 | aws.elb.target_port | List of IP addresses and ports for the targets that processed this request. | keyword |
 | aws.elb.target_status_code | List of status codes from the responses of the targets. | keyword |
+| aws.elb.tls_connection_creation_time | The time recorded at the beginning of the TLS connection. | date |
 | aws.elb.tls_handshake_time.ms | The total time for the TLS handshake to complete in milliseconds once the connection has been established. | long |
 | aws.elb.tls_named_group | The TLS named group. | keyword |
 | aws.elb.trace_id | The contents of the `X-Amzn-Trace-Id` header. | keyword |
