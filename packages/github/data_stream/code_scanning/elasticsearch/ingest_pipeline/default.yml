@@ -4,12 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  - set:
-      field: event.action
-      value: "code_scanning"
-  - set:
-      field: event.kind
-      value: "alert"
   - rename:
       field: message
       target_field: event.original
@@ -21,6 +15,11 @@ processors:
   - fail:
       if: "!(ctx.github.code_scanning instanceof Map)"
       message: Missing JSON object
+  - remove:
+      field: 
+        - event.kind
+      ignore_missing: true
+      description: Fields defined as constant_keyword are removed from _source for storage efficiency.
   - append:
       field: event.type
       value: creation
