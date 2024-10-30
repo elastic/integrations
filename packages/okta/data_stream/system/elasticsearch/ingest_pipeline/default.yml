@@ -36,6 +36,30 @@ processors:
           return false;
         }
         drop(ctx);
+
+  - script:
+      description: Populate  related.entity
+      lang: painless
+      source: |
+        boolean addValue(Set entities, String value) {
+          if (value == null || value == "" || value == "unknown") {
+            return false;
+          }
+          return entities.add(value);
+        }
+
+        // Using tree set to ensure a sorting is kept (testing purposes)
+        TreeSet related = new TreeSet();
+
+        addValue(related, field("json.actor.id").get(null));
+        addValue(related, field("json.actor.alternateId").get(null));
+
+        field("json.target").get(new ArrayList()).stream().forEach(target -> {
+          addValue(related, target.id);
+          addValue(related, target.relatedId);
+        });
+
+        field("related.entity").set(related);
   - convert:
       field: json.uuid
       target_field: _id
