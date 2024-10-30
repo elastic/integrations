@@ -58,61 +58,98 @@ processors:
       tag: set_event_timezone_from_tz_offset
       copy_from: _conf.tz_offset
       if: ctx.event?.timezone == null || ctx.event?.timezone == ""
-  - date:
-      if: ctx._tmp?.timestamp8601 != null
-      tag: date_tmp_timestamp8601
-      field: _tmp.timestamp8601
-      timezone: '{{{event.timezone}}}'
-      formats:
-        - ISO8601
+
   - set:
       field: _tmp.timestamp
       tag: set_tmp_timestamp
       if: ctx._tmp?.timestamp != null && ctx.citrix?.event_year != null
       value: "{{{citrix.event_year}}} {{{_tmp.timestamp}}}"
-  - date:
-      if: ctx._tmp?.timestamp != null
-      tag: date_tmp_timestamp
-      field: _tmp.timestamp
-      timezone: '{{{event.timezone}}}'
-      formats:
-        - MMM d HH:mm:ss
-        - MMM  d HH:mm:ss
-        - MMM dd HH:mm:ss
-        - MMMM d HH:mm:ss
-        - MMMM  d HH:mm:ss
-        - MMMM dd HH:mm:ss
-        - yyyy MMM d HH:mm:ss
-        - yyyy MMM  d HH:mm:ss
-        - yyyy MMM dd HH:mm:ss
-        - yyyy MMMM d HH:mm:ss
-        - yyyy MMMM  d HH:mm:ss
-        - yyyy MMMM dd HH:mm:ss
-  - script:
-      description: Convert timestamp_native via custom format
-      tag: date_tmp_timestamp_native_custom_format
-      lang: painless
-      source: >-
-        def dateFormat = ctx["_conf"]["custom_date_format"];
-        def formatter = DateTimeFormatter.ofPattern(dateFormat);
-        def text = ctx["_tmp"]["timestamp_native"];
-        def parsedDate = LocalDateTime.parse(text, formatter);
-        ctx["_tmp"]["timestamp_native"] = parsedDate.toString();
 
-      if: ctx._tmp?.timestamp_native != null && ctx?._conf?.custom_date_format != null && ctx?._conf?.custom_date_format != ''
+  - script:
+      description: Convert delink_time via custom format
+      tag: date_delink_time_custom_format
+      lang: painless
+      params:
+        fields:
+          timestamp8601:
+            - ISO8601
+
+          timestamp_native:
+            - MM/dd/yyyy:HH:mm:ss
+            - yyyy/MM/dd:HH:mm:ss
+            - dd/MM/yyyy:HH:mm:ss
+
+          timestamp:
+            - MMM d HH:mm:ss
+            - MMM  d HH:mm:ss
+            - MMM dd HH:mm:ss
+            - MMMM d HH:mm:ss
+            - MMMM  d HH:mm:ss
+            - MMMM dd HH:mm:ss
+            - yyyy MMM d HH:mm:ss
+            - yyyy MMM  d HH:mm:ss
+            - yyyy MMM dd HH:mm:ss
+            - yyyy MMMM d HH:mm:ss
+            - yyyy MMMM  d HH:mm:ss
+            - yyyy MMMM dd HH:mm:ss
+
+      source: >-
+        params.fields.forEach((field,date_formats) -> {
+            def locale = Locale.ENGLISH;
+            def printer = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", locale);
+            def parent = ctx._tmp;
+
+            if (!parent.containsKey(field)) {
+                return false;
+            }
+            def text = parent[field].trim();
+
+            def tz;
+            def made = false;
+            if (ctx.event instanceof Map && ctx.event.containsKey("timezone")) {
+                try {
+                    tz = ZoneId.of(ctx.event.timezone);
+                    made = true;
+                } catch (Exception e) {
+                    //
+                }
+            }
+
+            if (!made) {
+                tz = ZoneOffset.UTC;
+            }
+            printer = printer.withZone(tz);
+            def formats = [];
+            if (ctx._conf instanceof Map && ctx._conf.containsKey("custom_date_format")) {
+                formats.add(ctx._conf.custom_date_format);
+            }
+            formats.addAll(date_formats);
+
+            for (format in formats) {
+                def dateFormat = format.trim();
+                def parsedDate;
+                try {
+                    if (dateFormat == "ISO8601") {
+                        parsedDate = ZonedDateTime.parse(text);
+                    } else if (dateFormat == "UNIX_MS") {
+                        parsedDate = Instant.ofEpochMilli(Long.parseLong(text)).atZone(tz);
+                    } else {
+                        def formatter = DateTimeFormatter.ofPattern(dateFormat);
+                        parsedDate = ZonedDateTime.parse(text, formatter);
+                    }
+                    parent[field] = printer.format(parsedDate);
+                } catch (DateTimeParseException e) {
+                    // just pass through to the next format
+                }
+            }
+            return true;
+        });
+
+      if: ctx?.citrix_adc?.log != null && ctx.citrix_adc.log instanceof Map
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}. Offending format: {{{_conf.custom_date_format}}}.'
-  - date:
-      if: ctx._tmp?.timestamp_native != null && ctx?._conf?.custom_date_format == null
-      tag: date_tmp_timestamp_native
-      field: _tmp.timestamp_native
-      formats:
-        - MM/dd/yyyy:HH:mm:ss
-        - yyyy/MM/dd:HH:mm:ss
-        - dd/MM/yyyy:HH:mm:ss
-      timezone: '{{{event.timezone}}}'
   - remove:
       field: citrix.event_year
       tag: remove_event_year
