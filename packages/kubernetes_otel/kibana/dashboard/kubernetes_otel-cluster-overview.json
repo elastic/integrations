@@ -4025,6 +4025,617 @@
                 "panelIndex": "ca9941d7-1eb9-43b0-b4bc-05dcf4ab52c5",
                 "title": "",
                 "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "### Cluster Events\n***",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "bc1eea31-367b-4291-8ea1-5ab609888237",
+                    "w": 48,
+                    "x": 0,
+                    "y": 40
+                },
+                "panelIndex": "bc1eea31-367b-4291-8ea1-5ab609888237",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "f641ba62-c9ca-4f45-ba95-3d68c419a5a5": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "f641ba62-c9ca-4f45-ba95-3d68c419a5a5",
+                                    "name": "events-ad-hoc",
+                                    "runtimeFieldMap": {
+                                        "resource.attributes.k8s.namespace.name": {
+                                            "script": {
+                                                "source": "if (doc.containsKey('body_structured.object.regarding.kind')) {\n    if (doc['body_structured.object.regarding.kind'].value == \"Pod\") {\n        emit(doc['body_structured.object.regarding.namespace'].value);\n    }\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "resource.attributes.k8s.node.name": {
+                                            "script": {
+                                                "source": "if (doc.containsKey('body_structured.object.regarding.kind')) {\n    if (doc['body_structured.object.regarding.kind'].value == \"Node\") {\n        emit(doc['body_structured.object.regarding.name'].value);\n    }\n    if (doc['body_structured.object.regarding.kind'].value == \"Pod\") {\n        emit(doc['body_structured.object.reportingInstance'].value);\n    }\n}"
+                                            },
+                                            "type": "keyword"
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*otel*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "29bf96fd-6dcd-4667-8e14-8865fb5a7e63": {
+                                            "columnOrder": [
+                                                "f5ec8d83-2794-4577-bb1c-a23f1ea9c87e",
+                                                "5f4d7cd7-5853-47c5-9fd3-bcc5a0ad5da8",
+                                                "7c4f6d0c-8079-40a9-9d8f-14983af72e56"
+                                            ],
+                                            "columns": {
+                                                "5f4d7cd7-5853-47c5-9fd3-bcc5a0ad5da8": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "7c4f6d0c-8079-40a9-9d8f-14983af72e56": {
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "body_structured.object.kind:*"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Count of body_structured.object.kind",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "body_structured.object.kind"
+                                                },
+                                                "f5ec8d83-2794-4577-bb1c-a23f1ea9c87e": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of body_structured.object.regarding.kind + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "7c4f6d0c-8079-40a9-9d8f-14983af72e56",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "body_structured.object.reason"
+                                                        ],
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "body_structured.object.regarding.kind"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "body_structured.object.kind",
+                                        "index": "a299f833-0fff-49b7-a790-fc61198326f9",
+                                        "key": "body_structured.object.kind",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "body_structured.object.kind"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "body_structured.object.type",
+                                        "index": "a299f833-0fff-49b7-a790-fc61198326f9",
+                                        "key": "body_structured.object.type",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "Normal"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "body_structured.object.type": "Normal"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [
+                                {
+                                    "id": "f641ba62-c9ca-4f45-ba95-3d68c419a5a5",
+                                    "name": "indexpattern-datasource-layer-29bf96fd-6dcd-4667-8e14-8865fb5a7e63",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "7c4f6d0c-8079-40a9-9d8f-14983af72e56"
+                                        ],
+                                        "layerId": "29bf96fd-6dcd-4667-8e14-8865fb5a7e63",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "f5ec8d83-2794-4577-bb1c-a23f1ea9c87e",
+                                        "xAccessor": "5f4d7cd7-5853-47c5-9fd3-bcc5a0ad5da8"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Kubernetes Warning and Error Events",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "c2d8c039-fc7e-4637-b2ef-ac05cd0b0b24",
+                    "w": 23,
+                    "x": 0,
+                    "y": 45
+                },
+                "panelIndex": "c2d8c039-fc7e-4637-b2ef-ac05cd0b0b24",
+                "title": "Kubernetes Warning Events",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "3769faab-05d7-4801-a802-b96342983e85": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "3769faab-05d7-4801-a802-b96342983e85",
+                                    "name": "events-ad-hoc",
+                                    "runtimeFieldMap": {
+                                        "resource.attributes.k8s.namespace.name": {
+                                            "script": {
+                                                "source": "if (doc.containsKey('body_structured.object.regarding.kind')) {\n    if (doc['body_structured.object.regarding.kind'].value == \"Pod\") {\n        emit(doc['body_structured.object.regarding.namespace'].value);\n    }\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "resource.attributes.k8s.node.name": {
+                                            "script": {
+                                                "source": "if (doc.containsKey('body_structured.object.regarding.kind')) {\n    if (doc['body_structured.object.regarding.kind'].value == \"Node\") {\n        emit(doc['body_structured.object.regarding.name'].value);\n    }\n    if (doc['body_structured.object.regarding.kind'].value == \"Pod\") {\n        emit(doc['body_structured.object.reportingInstance'].value);\n    }\n}"
+                                            },
+                                            "type": "keyword"
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-*otel*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4581d01c-5f91-4098-bb19-36de6b81d665": {
+                                            "columnOrder": [
+                                                "ae8cea3a-aef4-48a3-8076-9b88229ed6c6",
+                                                "e60b992c-e1f9-4351-b5f1-d05a16424ccf",
+                                                "18cb52c0-f508-4d55-b5fc-7e0e7d273486",
+                                                "8e7feb9e-b98e-492d-b1a6-16c9152dcdbd",
+                                                "c62d6c19-ac0f-42e8-a872-4996e96a4904",
+                                                "cde7d210-0d76-4a32-92b6-bdfce76aaa1b",
+                                                "bd5a95f8-2eb8-4338-8b0b-50ccb2ded899"
+                                            ],
+                                            "columns": {
+                                                "18cb52c0-f508-4d55-b5fc-7e0e7d273486": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event Reason",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "bd5a95f8-2eb8-4338-8b0b-50ccb2ded899",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "body_structured.object.reason"
+                                                },
+                                                "8e7feb9e-b98e-492d-b1a6-16c9152dcdbd": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "bd5a95f8-2eb8-4338-8b0b-50ccb2ded899",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "body_structured.object.regarding.name"
+                                                },
+                                                "ae8cea3a-aef4-48a3-8076-9b88229ed6c6": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "bd5a95f8-2eb8-4338-8b0b-50ccb2ded899": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique count of body_structured.object.kind",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "body_structured.object.kind"
+                                                },
+                                                "c62d6c19-ac0f-42e8-a872-4996e96a4904": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Node",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "bd5a95f8-2eb8-4338-8b0b-50ccb2ded899",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "resource.attributes.k8s.node.name"
+                                                },
+                                                "cde7d210-0d76-4a32-92b6-bdfce76aaa1b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event message",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "bd5a95f8-2eb8-4338-8b0b-50ccb2ded899",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "body_structured.object.note"
+                                                },
+                                                "e60b992c-e1f9-4351-b5f1-d05a16424ccf": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event Kind",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "bd5a95f8-2eb8-4338-8b0b-50ccb2ded899",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "body_structured.object.regarding.kind"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "body_structured.object.kind",
+                                        "index": "a299f833-0fff-49b7-a790-fc61198326f9",
+                                        "key": "body_structured.object.kind",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "body_structured.object.kind"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "body_structured.object.type",
+                                        "index": "a299f833-0fff-49b7-a790-fc61198326f9",
+                                        "key": "body_structured.object.type",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "Normal"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "body_structured.object.type": "Normal"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [
+                                {
+                                    "id": "3769faab-05d7-4801-a802-b96342983e85",
+                                    "name": "indexpattern-datasource-layer-4581d01c-5f91-4098-bb19-36de6b81d665",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "e60b992c-e1f9-4351-b5f1-d05a16424ccf",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 139.35000000000002
+                                    },
+                                    {
+                                        "columnId": "ae8cea3a-aef4-48a3-8076-9b88229ed6c6",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false,
+                                        "width": 211.68333333333334
+                                    },
+                                    {
+                                        "columnId": "bd5a95f8-2eb8-4338-8b0b-50ccb2ded899",
+                                        "hidden": true,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "18cb52c0-f508-4d55-b5fc-7e0e7d273486",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 201.60000000000002
+                                    },
+                                    {
+                                        "columnId": "c62d6c19-ac0f-42e8-a872-4996e96a4904",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "cde7d210-0d76-4a32-92b6-bdfce76aaa1b",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "8e7feb9e-b98e-492d-b1a6-16c9152dcdbd",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 163.1222222222222
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "headerRowHeightLines": 1,
+                                "layerId": "4581d01c-5f91-4098-bb19-36de6b81d665",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": false,
+                                    "size": 10
+                                },
+                                "rowHeight": "auto",
+                                "sorting": {
+                                    "columnId": "ae8cea3a-aef4-48a3-8076-9b88229ed6c6",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Latest Warning Events",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "7b762c59-2643-4200-8c76-ece0937e11e7",
+                    "w": 25,
+                    "x": 23,
+                    "y": 45
+                },
+                "panelIndex": "7b762c59-2643-4200-8c76-ece0937e11e7",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
