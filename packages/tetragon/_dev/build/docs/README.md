@@ -26,7 +26,7 @@ Before collecting data from Tetragon, install the required assets for this integ
 
 ### Step 2: Configure Tetragon for JSON Export
 
-Tetragon needs to be configured to export its event data as JSON logs. You’ll then use **Filebeat** to send these logs to Elasticsearch. The simplest approach is to use the Tetragon Helm chart along with an override file.
+Tetragon needs to be configured to export its event data as JSON logs. You’ll then use **Filebeat** to send these logs to Elasticsearch. The simplest approach is to use the Tetragon Helm chart along with a Helm values file.
 
 Refer to the [Tetragon Documentation](https://tetragon.io/docs/installation/kubernetes/) for general Helm installation guidance.
 
