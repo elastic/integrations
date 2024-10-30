@@ -33,6 +33,10 @@ processors:
       if: _tmp.dissect_request != '-'
       field: _tmp.dissect_request
       pattern: '%{http.request.method} %{url.original} HTTP/%{http.version}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
       field: _tmp.sourceorusername
       tag: 'grok_parse_log_sourceoruser'
