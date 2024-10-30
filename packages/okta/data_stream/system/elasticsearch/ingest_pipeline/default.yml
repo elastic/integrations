@@ -38,8 +38,13 @@ processors:
         drop(ctx);
 
   - script:
-      description: Populate  related.entity
+      description: Populate related.entity
       lang: painless
+      on_failure: 
+        - set:
+            description: Add error reason
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
       source: |
         boolean addValue(Set entities, String value) {
           if (value == null || value == "" || value == "unknown") {
@@ -51,13 +56,22 @@ processors:
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
 
-        addValue(related, field("json.actor.id").get(null));
-        addValue(related, field("json.actor.alternateId").get(null));
+        addValue(related, ctx?.json?.actor?.id);
+        addValue(related, ctx?.json?.actor?.alternateId);
 
-        field("json.target").get(new ArrayList()).stream().forEach(target -> {
-          addValue(related, target.id);
-          addValue(related, target.relatedId);
-        });
+        def oktaTarget = ctx?.json?.target;
+
+        if (oktaTarget != null) {
+          if (oktaTarget instanceof List) {
+            oktaTarget.stream().forEach(target -> {
+              addValue(related, target.id);
+              addValue(related, target.relatedId);
+            });
+          } else if (oktaTarget instanceof Map) {
+            addValue(related, oktaTarget.id);
+            addValue(related, oktaTarget.alternateId);
+          }
+        }
 
         field("related.entity").set(related);
   - convert:
