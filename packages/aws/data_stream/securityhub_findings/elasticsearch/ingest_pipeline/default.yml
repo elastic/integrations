@@ -571,13 +571,14 @@ processors:
       field: json.UpdatedAt
       if: ctx.json?.UpdatedAt != null && ctx.json.UpdatedAt != ''
       target_field: aws.securityhub_findings.updated_at
+      tag: date_updated_at
       formats:
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
       copy_from: aws.securityhub_findings.updated_at
