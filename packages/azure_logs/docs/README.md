@@ -11,7 +11,7 @@ Use the integration to collect logs from:
 
 The Custom Azure Logs Input integration collects one type of data stream: logs.
 
-The integration does not comes with a pre-defined data stream. You can select your dataset and namespace of choice when configuring the integration.
+The integration does not use a pre-defined Elastic data stream. You can select your dataset and namespace of choice when configuring the integration.
 
 For example, if you select `azure.custom` as your dataset, and `default` as your namespace, the integration will send the data to the `logs-azure.custom-default` data stream.
 
