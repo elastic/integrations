@@ -1061,11 +1061,11 @@ processors:
           ctx.darktrace.model_breach_alert.is_acknowledged = false;
           return;
         }
-        if (ctx.darktrace?.model_breach_alert?.acknowledged.time == null) {
+        if (ctx.darktrace.model_breach_alert.acknowledged.time == null) {
           // No time, so be non-commital.
           return;
         }
-        if (ctx.darktrace?.model_breach_alert?.time == null) {
+        if (ctx.darktrace.model_breach_alert.time == null) {
           // Assume any time noted in json.acknowledged.time
           // is in the past.
           ctx.darktrace.model_breach_alert.is_acknowledged = true;
@@ -1078,6 +1078,12 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      value: '{{{darktrace.model_breach_alert.acknowledged.username}}}'
+      allow_duplicates: false
+      ignore_failure: true
+      if: ctx.darktrace?.model_breach_alert?.acknowledged?.username != null
   - foreach:
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
