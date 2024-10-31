@@ -153,18 +153,17 @@ processors:
         params.fields.forEach((field,date_formats) -> {
             def locale = Locale.ENGLISH;
             def printer = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", locale);
-            def parent = ctx.citrix_adc.log;
 
-            if (!parent.containsKey(field)) {
-                return false;
+            if (!ctx.citrix_adc.log.containsKey(field)) {
+                return true;
             }
-            def text = parent[field].trim();
+            def text = ctx.citrix_adc.log[field].trim();
 
             def tz;
             def made = false;
-            if (parent.containsKey(field + "_timezone")) {
+            if (ctx.citrix_adc.log.containsKey(field + "_timezone")) {
                 try {
-                    tz = ZoneId.of(parent[field + "_timezone"]);
+                    tz = ZoneId.of(ctx.citrix_adc.log[field + "_timezone"]);
                     made = true;
                 } catch (Exception e) {
                     //
@@ -194,14 +193,16 @@ processors:
                 def parsedDate;
                 try {
                     if (dateFormat == "ISO8601") {
-                        parsedDate = ZonedDateTime.parse(text);
+                        parsedDate = LocalDateTime.parse(text);
                     } else if (dateFormat == "UNIX_MS") {
-                        parsedDate = Instant.ofEpochMilli(Long.parseLong(text)).atZone(tz);
+                        parsedDate = Instant.ofEpochMilli(Long.parseLong(text));
                     } else {
                         def formatter = DateTimeFormatter.ofPattern(dateFormat);
-                        parsedDate = ZonedDateTime.parse(text, formatter);
+                        parsedDate = LocalDateTime.parse(text, formatter);
                     }
-                    parent[field] = printer.format(parsedDate);
+                    // the first one that works is the one we take
+                    ctx.citrix_adc.log[field] = printer.format(parsedDate.atZone(tz));
+                    break;
                 } catch (DateTimeParseException e) {
                     // just pass through to the next format
                 }
