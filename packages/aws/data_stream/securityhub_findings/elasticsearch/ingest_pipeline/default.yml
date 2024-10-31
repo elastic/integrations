@@ -4,9 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  - set:
-      field: event.kind
-      value: state
   - append:
       field: event.type
       value: info
@@ -33,14 +30,13 @@ processors:
         - json.CreatedAt
       target_field: _id
       ignore_missing: true
-  - set:
-      field: observer.vendor
-      value: AWS Security Hub
-      tag: set_observer_vendor
-  - set:
-      field: cloud.provider
-      value: aws
-      tag: set_cloud_provider
+  - remove: 
+      field: 
+        - cloud.provider
+        - event.kind
+        - observer.vendor
+      ignore_missing: true
+      description: Fields defined as constant_keyword are removed from _source for storage efficiency.
   - rename:
       field: json.Action.ActionType
       target_field: aws.securityhub_findings.action.type
