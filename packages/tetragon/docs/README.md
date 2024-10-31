@@ -26,7 +26,7 @@ Before collecting data from Tetragon, install the required assets for this integ
 
 ### Step 2: Configure Tetragon for JSON Export
 
-Tetragon needs to be configured to export its event data as JSON logs. You’ll then use **Filebeat** to send these logs to Elasticsearch. The simplest approach is to use the Tetragon Helm chart along with an override file.
+Tetragon needs to be configured to export its event data as JSON logs. You’ll then use **Filebeat** to send these logs to Elasticsearch. The simplest approach is to use the Tetragon Helm chart along with a Helm values file.
 
 Refer to the [Tetragon Documentation](https://tetragon.io/docs/installation/kubernetes/) for general Helm installation guidance.
 
@@ -139,6 +139,8 @@ The `log` datastream captures event logs from Tetragon. These events are indexed
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cilium_tetragon.log.cluster_name |  | keyword |
+| cilium_tetragon.log.node_name |  | keyword |
 | cilium_tetragon.log.process_exec.parent.auid |  | long |
 | cilium_tetragon.log.process_exec.parent.docker |  | keyword |
 | cilium_tetragon.log.process_exec.parent.exec_id |  | keyword |
@@ -221,7 +223,70 @@ The `log` datastream captures event logs from Tetragon. These events are indexed
 | cilium_tetragon.log.process_exit.process.refcnt |  | long |
 | cilium_tetragon.log.process_exit.process.start_time |  | keyword |
 | cilium_tetragon.log.process_exit.process.uid |  | long |
+| cilium_tetragon.log.process_exit.signal |  | keyword |
+| cilium_tetragon.log.process_exit.status |  | float64 |
 | cilium_tetragon.log.process_exit.time |  | keyword |
+| cilium_tetragon.log.process_kprobe.action |  | keyword |
+| cilium_tetragon.log.process_kprobe.args.capability_arg.name |  | keyword |
+| cilium_tetragon.log.process_kprobe.args.capability_arg.value |  | long |
+| cilium_tetragon.log.process_kprobe.args.file_arg.path |  | keyword |
+| cilium_tetragon.log.process_kprobe.args.file_arg.permission |  | keyword |
+| cilium_tetragon.log.process_kprobe.args.int_arg |  | long |
+| cilium_tetragon.log.process_kprobe.args.user_ns_arg.gid |  | long |
+| cilium_tetragon.log.process_kprobe.args.user_ns_arg.level |  | long |
+| cilium_tetragon.log.process_kprobe.args.user_ns_arg.ns.inum |  | long |
+| cilium_tetragon.log.process_kprobe.args.user_ns_arg.ns.is_host |  | boolean |
+| cilium_tetragon.log.process_kprobe.args.user_ns_arg.uid |  | long |
+| cilium_tetragon.log.process_kprobe.function_name |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.auid |  | long |
+| cilium_tetragon.log.process_kprobe.parent.docker |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.flags |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.parent_exec_id |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.container.id |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.container.image.id |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.container.image.name |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.container.name |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.container.pid |  | long |
+| cilium_tetragon.log.process_kprobe.parent.pod.container.start_time |  | date |
+| cilium_tetragon.log.process_kprobe.parent.pod.name |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.namespace |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.pod_labels.app.kubernetes.io/name |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.pod_labels.class |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.pod_labels.org |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.workload |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.pod.workload_kind |  | keyword |
+| cilium_tetragon.log.process_kprobe.parent.refcnt |  | long |
+| cilium_tetragon.log.process_kprobe.policy_name |  | keyword |
+| cilium_tetragon.log.process_kprobe.process.auid |  | long |
+| cilium_tetragon.log.process_kprobe.process.docker |  | keyword |
+| cilium_tetragon.log.process_kprobe.process.flags |  | keyword |
+| cilium_tetragon.log.process_kprobe.process.ns.cgroup.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.ns.ipc.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.ns.mnt.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.ns.net.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.ns.pid.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.ns.pid.pid_for_children.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.ns.pid_for_children.inum |  | keywords |
+| cilium_tetragon.log.process_kprobe.process.ns.time.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.ns.time.is_host |  | boolean |
+| cilium_tetragon.log.process_kprobe.process.ns.time.time_for_children.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.ns.time.time_for_children.is_host |  | boolean |
+| cilium_tetragon.log.process_kprobe.process.ns.time_for_children.inum |  | keywords |
+| cilium_tetragon.log.process_kprobe.process.ns.time_for_children.is_host |  | boolean |
+| cilium_tetragon.log.process_kprobe.process.ns.user.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.ns.user.is_host |  | boolean |
+| cilium_tetragon.log.process_kprobe.process.ns.uts.inum |  | long |
+| cilium_tetragon.log.process_kprobe.process.parent_exec_id |  | keyword |
+| cilium_tetragon.log.process_kprobe.process.pod.container.image.id |  | keyword |
+| cilium_tetragon.log.process_kprobe.process.pod.container.pid |  | long |
+| cilium_tetragon.log.process_kprobe.process.pod.container.start_time |  | date |
+| cilium_tetragon.log.process_kprobe.process.pod.pod_labels.app.kubernetes.io/name |  | keyword |
+| cilium_tetragon.log.process_kprobe.process.pod.pod_labels.class |  | keyword |
+| cilium_tetragon.log.process_kprobe.process.pod.pod_labels.org |  | keyword |
+| cilium_tetragon.log.process_kprobe.process.pod.workload |  | keyword |
+| cilium_tetragon.log.process_kprobe.process.refcnt |  | long |
+| cilium_tetragon.log.process_kprobe.return.int_arg |  | long |
+| cilium_tetragon.log.process_kprobe.return_action |  | keyword |
 | cilium_tetragon.log.time |  | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | container.labels | Image labels. | object |
