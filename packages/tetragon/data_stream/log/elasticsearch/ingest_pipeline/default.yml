@@ -181,7 +181,6 @@ processors:
       field: "process.parent.user.id"
       type: string
 
-
   - rename:
       ignore_missing: true
       field: "_tmp_.parent.start_time"
@@ -213,7 +212,6 @@ processors:
       ignore_missing: true
       field: "_tmp_.process.pod.namespace"
       target_field: "orchestrator.namespace"
-
   #  - rename:
   #      ignore_missing: true
   #      field: "_tmp_.process.pod.pod_labels"
@@ -223,6 +221,17 @@ processors:
       ignore_missing: true
       field: "_tmp_.process.pod.workload_kind"
       target_field: "orchestrator.resource.parent.type"
+
+  # Other response properties
+  - set:
+      field: "host.name"
+      copy_from: "cilium_tetragon.log.node_name"
+      if: 'ctx.cilium_tetragon?.log?.node_name != null'
+
+  - set:
+      field: "orchestrator.cluster.name"
+      copy_from: "cilium_tetragon.log.cluster_name"
+      if: 'ctx.cilium_tetragon?.log?.cluster_name != null'
 
   - remove:
      field: "_tmp_"
