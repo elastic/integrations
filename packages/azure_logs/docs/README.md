@@ -1,6 +1,6 @@
-# Custom Azure Logs Input
+# Custom Azure Logs
 
-The Custom Azure Logs Input integration collects logs from Azure Event Hub.
+The Custom Azure Logs integration collects logs from Azure Event Hub.
 
 Use the integration to collect logs from:
 
@@ -9,7 +9,7 @@ Use the integration to collect logs from:
 
 ## Data streams
 
-The Custom Azure Logs Input integration collects one type of data stream: logs.
+The Custom Azure Logs integration collects one type of data stream: logs.
 
 The integration does not use a pre-defined Elastic data stream. You can select your dataset and namespace of choice when configuring the integration.
 
@@ -22,7 +22,7 @@ Custom Logs integrations give you all the flexibility you need to configure the 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-Before using the Custom Azure Logs Input you will need:
+Before using the Custom Azure Logs you will need:
 
 * One **event hub** to store in-flight logs exported by Azure services (or other sources) and make them available to Elastic Agent.
 * A **storage account** to store information about logs consumed by the Elastic Agent.
@@ -31,7 +31,7 @@ Before using the Custom Azure Logs Input you will need:
 
 [Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service. It can receive and temporary store millions of events.
 
-Elastic Agent with the Custom Azure Logs Input integration will consume logs from the Event Hubs service.
+Elastic Agent with the Custom Azure Logs integration will consume logs from the Event Hubs service.
 
 ```text
   ┌────────────────┐      ┌───────────┐
@@ -46,7 +46,7 @@ To learn more about Event Hubs, refer to [Features and terminology in Azure Even
 
 The [Storage account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview) is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
 
-The Custom Azure Logs Input integration requires a Storage account container to work.
+The Custom Azure Logs integration requires a Storage account container to work.
 
 The integration uses the Storage Account container for checkpointing; it stores data about the Consumer Group (state, position, or offset) and shares it among the Elastic Agents. Sharing such information allows multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
 
@@ -63,7 +63,7 @@ The integration uses the Storage Account container for checkpointing; it stores 
   └────────────────┘                                                                            
 ```
 
-The Elastic Agent automatically creates one container for the Custom Azure Logs Input integration. The Agent will then create one blob for each partition on the event hub.
+The Elastic Agent automatically creates one container for the Custom Azure Logs integration. The Agent will then create one blob for each partition on the event hub.
 
 For example, if the integration is configured to fetch data from an event hub with four partitions, the Agent will create the following:
 
