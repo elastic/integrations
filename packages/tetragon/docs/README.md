@@ -224,7 +224,7 @@ The `log` datastream captures event logs from Tetragon. These events are indexed
 | cilium_tetragon.log.process_exit.process.start_time |  | keyword |
 | cilium_tetragon.log.process_exit.process.uid |  | long |
 | cilium_tetragon.log.process_exit.signal |  | keyword |
-| cilium_tetragon.log.process_exit.status |  | float64 |
+| cilium_tetragon.log.process_exit.status |  | float |
 | cilium_tetragon.log.process_exit.time |  | keyword |
 | cilium_tetragon.log.process_kprobe.action |  | keyword |
 | cilium_tetragon.log.process_kprobe.args.capability_arg.name |  | keyword |
@@ -266,12 +266,12 @@ The `log` datastream captures event logs from Tetragon. These events are indexed
 | cilium_tetragon.log.process_kprobe.process.ns.net.inum |  | long |
 | cilium_tetragon.log.process_kprobe.process.ns.pid.inum |  | long |
 | cilium_tetragon.log.process_kprobe.process.ns.pid.pid_for_children.inum |  | long |
-| cilium_tetragon.log.process_kprobe.process.ns.pid_for_children.inum |  | keywords |
+| cilium_tetragon.log.process_kprobe.process.ns.pid_for_children.inum |  | keyword |
 | cilium_tetragon.log.process_kprobe.process.ns.time.inum |  | long |
 | cilium_tetragon.log.process_kprobe.process.ns.time.is_host |  | boolean |
 | cilium_tetragon.log.process_kprobe.process.ns.time.time_for_children.inum |  | long |
 | cilium_tetragon.log.process_kprobe.process.ns.time.time_for_children.is_host |  | boolean |
-| cilium_tetragon.log.process_kprobe.process.ns.time_for_children.inum |  | keywords |
+| cilium_tetragon.log.process_kprobe.process.ns.time_for_children.inum |  | keyword |
 | cilium_tetragon.log.process_kprobe.process.ns.time_for_children.is_host |  | boolean |
 | cilium_tetragon.log.process_kprobe.process.ns.user.inum |  | long |
 | cilium_tetragon.log.process_kprobe.process.ns.user.is_host |  | boolean |
