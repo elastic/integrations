@@ -1,0 +1,82 @@
+source:
+  index: "logs-okta.system-default"
+  query:
+    bool:
+      filter:
+        - range:
+              '@timestamp':
+                gte: now-1M
+        - exists:
+            field: okta.event_type
+        - term:
+            'data_stream.dataset': "okta.system"
+        - terms:
+            'okta.event_type': ["user.session.start","user.session.end"]
+dest:
+  index: ml_okta_multiple_user_sessions_pad-0.0.1
+  aliases:
+    - alias: ml_okta_multiple_user_sessions_pad.latest
+      move_on_creation: true
+    - alias: ml_okta_multiple_user_sessions_pad.all
+      move_on_creation: false
+description: This transform runs hourly and collects user session information for Okta events for Privilege Access Detection package.
+frequency: 1h
+pivot:
+  aggregations:
+    distinct_ips:
+      cardinality:
+        field: source.ip
+    distinct_countries:
+      cardinality:
+        field: source.geo.country_name
+    session_info:
+      scripted_metric:
+        init_script: "state.data = ['ips': [], 'locations': [], 'has_end_event': 0];"
+        map_script: |
+          // Collect IPs and locations
+          if (doc.containsKey('source.ip') && !doc['source.ip'].empty) {
+            state.data['ips'].add(doc['source.ip'].value);
+          }
+          if (doc.containsKey('source.geo.country_name') && !doc['source.geo.country_name'].empty) {
+            state.data['locations'].add(doc['source.geo.country_name'].value);
+          }
+          // Check if session end event exists
+          if (doc['okta.event_type'].value == 'user.session.end') {
+            state.data['has_end_event'] = 1; // Set to 1 if an end event is present
+          }
+        combine_script: "return state.data;"
+        reduce_script: |
+          Map result = ['ips': [], 'locations': [], 'has_end_event': 0];
+          for (s in states) {
+            result['ips'].addAll(s['ips']);
+            result['locations'].addAll(s['locations']);
+            if (s['has_end_event'] == 1) {
+              result['has_end_event'] = 1; // Set to 1 if any shard has an end event
+            }
+          }
+          // Remove duplicates from the lists
+          result['ips'] = new ArrayList(new HashSet(result['ips']));
+          result['locations'] = new ArrayList(new HashSet(result['locations']));
+          return result;
+  group_by:
+    'user.name':
+      terms:
+        field: user.name
+    'user.full_name':
+      terms:
+        field: source.user.full_name
+    '@timestamp':
+      date_histogram:
+        field: '@timestamp'
+        fixed_interval: 30m
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    delay: 60s
+    field: '@timestamp'
+_meta:
+  fleet_transform_version: 0.0.1
+  run_as_kibana_system: false
