@@ -533,7 +533,9 @@ processors:
           }
 
           if (eventName == "GetParameter"
-            || eventName == "GetParameters") {
+            || eventName == "GetParameters"
+            || eventName == "CreateControlChannel"
+            || eventName == "OpenControlChannel") {
             field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
 
           } else if (eventName == "StartSession") {
@@ -542,9 +544,6 @@ processors:
           } else if (eventName == "CreateDocument") {
             addField(target, "json.requestParameters.name");
 
-          } else if (eventName == "CreateControlChannel") {
-            field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(target, f.ARN));
-            
           }
         }
 
