@@ -1,4 +1,4 @@
-# ServiceNow Configuration Management Database
+# ServiceNow
 
 ## Overview
 
