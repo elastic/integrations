@@ -1,5 +1,9 @@
 type: journald
+
+{{#if condition }}
 condition: {{condition}}
+{{/if}}
+
 {{#if paths}}
 paths:
 {{#each paths as |path i|}}
@@ -42,14 +46,11 @@ processors:
         to: log.syslog.procid
       - from: syslog.identifier
         to: log.syslog.appname
-- drop_fields:
-    ignore_missing: true
-    fields:
-      - syslog
-      - container.id_truncated
+#- drop_fields:
+#    ignore_missing: true
+#    fields:
+#      - syslog
+#      - container.id_truncated
 {{#if processors}}
 {{processors}}
 {{/if}}
-
-data_stream:
-  dataset: {{data_stream.dataset}}

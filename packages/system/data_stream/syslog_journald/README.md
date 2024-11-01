@@ -1,0 +1,2 @@
+Test cases:
+ - Empty conditions
