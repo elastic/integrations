@@ -1,6 +1,28 @@
 ---
 description: Pipeline for bcreportermain_v1 ProxySG
 processors:
+  # It has been observed that proxysg sometimes uses two space characters instead of single spaces between some fields with this log format.
+  # This will break the CSV processor used to parse logs, so first replace all double spaces with single spaces.
+  - script:
+      tag: remove_double_spaces
+      description: Remove double spaces from message
+      lang: painless
+      source: |
+        StringBuilder sb = new StringBuilder();
+        boolean lastWasSpace = false;
+        for (int i = 0; i < ctx._temp_.message.length(); i++) {
+            char currentChar = ctx._temp_.message.charAt(i);
+            if (currentChar == (char)' ') {
+                if (!lastWasSpace) {
+                    sb.append(currentChar);
+                }
+                lastWasSpace = true;
+            } else {
+                sb.append(currentChar);
+                lastWasSpace = false;
+            }
+        }
+        ctx._temp_.message = sb.toString();
   - csv:
       tag: "parse_fields_bcreportermain_v1"
       field: _temp_.message
@@ -23,6 +45,7 @@ processors:
         - proxysg.client_to_server.referer
         - proxysg.server_to_client.status
         - proxysg.server.action
+        - proxysg.client_to_server.method
         - proxysg.client_to_server.rs_content_type
         - proxysg.client_to_server.uri_scheme
         - proxysg.client_to_server.host
@@ -35,10 +58,16 @@ processors:
         - proxysg.server_to_client.bytes
         - proxysg.client_to_server.bytes
         - proxysg.x_virus_id
-        - proxysg.x_bluecoat_application_name
-        - proxysg.x_bluecoat_application_operation
-        - proxysg.x_bluecoat_application_groups
+        - proxysg.client_to_server.threat_source 
+        - proxysg.client_to_server.threat_id
+        - proxysg.remote_to_server.threat_source
+        - proxysg.remote_to_server.threat_id
+        - proxysg.x_bluecoat.application_name
+        - proxysg.x_bluecoat.application_operation
+        - proxysg.x_bluecoat.application_groups
         - proxysg.client_to_server.threat_risk
-        - proxysg.x_bluecoat_transaction_uuid
+        - proxysg.x_bluecoat.access_security_policy_action
+        - proxysg.x_bluecoat.access_security_policy_reason
+        - proxysg.x_bluecoat.transaction_uuid
         - proxysg.x_icap_reqmod_header_x_icap_metadata
         - proxysg.x_icap_respmod_header_x_icap_metadata
