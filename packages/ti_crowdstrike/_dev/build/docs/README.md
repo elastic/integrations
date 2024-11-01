@@ -36,7 +36,7 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Permissions
-This integration includes assets such as latest transform which requires users installing the integration to have `kibana_system` role.
+This integration includes assets such as latest transform which requires users installing the integration to have `kibana_system` built-in role. Follow the [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html) for information on `kibana_system` built-in role.
 
 This module has been tested against the **CrowdStrike Falcon Intelligence API Version v1**.
 
