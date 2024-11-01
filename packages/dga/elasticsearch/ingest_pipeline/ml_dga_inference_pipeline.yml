@@ -24,7 +24,7 @@ processors:
         }
 
         return new String[] {registered_domain.substring(0, registered_domain.length()-top_level_domain.length()-1), top_level_domain};
-        }
+      }
 
       double calculateShannonEntropy(String inputString) {
         // calculates the Shannon Entrpy of a given `inputString`
@@ -43,6 +43,31 @@ processors:
           result -= frequency * (Math.log(frequency) / Math.log(2));
         }
         return result;
+      }
+
+      double levensteinDistance(String a, String b) {
+        int[][] dp = new int[a.length() + 1][b.length() + 1];
+  
+        for (int i = 0; i <= a.length(); i++) {
+          for (int j = 0; j <= b.length(); j++) {
+            if (i == 0) {
+              dp[i][j] = j;
+            } else if (j == 0) {
+              dp[i][j] = i;
+            } else {
+              int cost = a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1;
+              int deletion = dp[i - 1][j] + 1;
+              int insertion = dp[i][j - 1] + 1;
+              int substitution = dp[i - 1][j - 1] + cost;
+              int tempMin = (int) Math.min(deletion, insertion);
+              dp[i][j] = (int) Math.min(tempMin, substitution);
+            }
+          }
+        }
+  
+        int distance = dp[a.length()][b.length()];
+        int maxLength = (int) Math.max(a.length(), b.length());
+        return maxLength > 0 ? 1.0 - ((double) distance / (double) maxLength) : 0.0;
       }
 
       String domain = ctx['dns']['question']['name'];
@@ -122,9 +147,20 @@ processors:
       String[] vocab = params.vocab.splitOnToken("|");
       String sldLower = sld.toLowerCase();
       List matches = new ArrayList();
-      for (String token: vocab) {
-        if (sldLower.contains(token)) {
-          matches.add(token)
+      //for (String token: vocab) {
+      //  if (sldLower.contains(token)) {
+      //    matches.add(token)
+      //  }
+      //}
+
+      for (int i=0; i<sldLower.length(); i++) {
+        for (token in vocab) {
+          if (i+token.length() <= sldLower.length()) {
+            String substring = sldLower.substring(i, i+token.length());
+            if (levensteinDistance(token, substring) >= 0.8) {
+               matches.add(token)
+            }
+          }
         }
       }
 
@@ -134,7 +170,7 @@ processors:
           maxLength = token.length();
         }
       }
-      
+
       // filter out tokens that are subsets of larger tokens
       List matchesFiltered = [];
       String shortestToken = "";
@@ -162,14 +198,14 @@ processors:
         for (token in matchesFiltered) {
           if (i+token.length() <= sldLower.length()) {
             String substring = sldLower.substring(i, i+token.length());
-            if (token == substring) {
+            if (levensteinDistance(token, substring) >= 0.8) {
               if (i > tokenEnd - 1) {
                 tokenStart = i;
                 tokenEnd = i+token.length();
                 // allow overlaps for plurals
-                if (token.substring(token.length() - 1) == "s") {
-                  tokenEnd = tokenEnd - 1;
-                }
+                //if (token.substring(token.length() - 1) == "s") {
+                tokenEnd = tokenEnd - 1;
+                //}
                 cursoredTokens.add(token)
               }
             }
