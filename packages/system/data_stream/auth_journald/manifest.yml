@@ -1,7 +1,10 @@
 title: System auth logs
 type: logs
 streams:
-  - input: logfile
+  - input: journald
+    template_path: journald.yml.hbs
+    title: System auth logs (journald)
+    description: Collect System auth logs using journald input
     vars:
       - name: condition
         title: Condition
@@ -10,40 +13,34 @@ streams:
         multi: false
         required: false
         show_user: true
-        default: ${host.os_version} != "12 (bookworm)"
-      - name: ignore_older
+        default: ${host.os_version} == "12 (bookworm)"
+      - name: include_matches
         type: text
-        title: Ignore events older than
-        default: 72h
-        required: false
-        show_user: false
-        description: >-
-          If this option is specified, events that are older than the specified amount of time are ignored. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+        title: Include Matches
+        multi: true
+        show_user: true
+        description: >
+          A list of filter expressions used to select the logs to read (e.g. `_SYSTEMD_UNIT=vault.service`). Defaults to all logs. See [include_matches](https://www.elastic.co/guide/en/beats/filebeat/7.x/filebeat-input-journald.html#filebeat-input-journald-include-matches) for details.
+
       - name: paths
         type: text
-        title: Paths
+        title: Journal paths
         multi: true
-        required: true
-        show_user: true
-        default:
-          - /var/log/auth.log*
-          - /var/log/secure*
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`.
-        type: bool
-        multi: false
-        default: false
+        show_user: false
+        description: >
+          List of journals to read from. Defaults to the system journal.
+
       - name: tags
         type: text
         title: Tags
+        description: >
+          Tags to include in the published event.
+
         multi: true
-        required: false
+        required: true
         show_user: false
         default:
-          - system-auth
+          - journald-log
       - name: processors
         type: yaml
         title: Processors
@@ -53,6 +50,3 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-    template_path: log.yml.hbs
-    title: System auth logs (log)
-    description: Collect System auth logs using log input
