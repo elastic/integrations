@@ -572,6 +572,15 @@ processors:
           }
         }
 
+        void enrichSns(def eventSource, def eventName, def target, def related) {
+          if (eventSource != "sns.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "CreateTopic") {
+            addField(target, "json.responseElements.topicArn");
+          }
+        }
 
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet related = new TreeSet();
@@ -613,6 +622,7 @@ processors:
         enrichSsm(eventSource, eventName, target, related);
         enrichSts(eventSource, eventName, target, related);
         enrichWafv2(eventSource, eventName, target, related);
+        enrichSns(eventSource, eventName, target, related);
         
         if (!target.isEmpty()) {
           field("target.entity.id").set(target);
