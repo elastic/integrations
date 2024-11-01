@@ -23,13 +23,13 @@ description: This transform runs hourly and collects user session information fo
 frequency: 1h
 pivot:
   aggregations:
-    distinct_ips:
+    okta_distinct_ips:
       cardinality:
         field: source.ip
-    distinct_countries:
+    okta_distinct_countries:
       cardinality:
         field: source.geo.country_name
-    session_info:
+    okta_session_info:
       scripted_metric:
         init_script: "state.data = ['ips': [], 'locations': [], 'has_end_event': 0];"
         map_script: |
@@ -59,10 +59,10 @@ pivot:
           result['locations'] = new ArrayList(new HashSet(result['locations']));
           return result;
   group_by:
-    'user.name':
+    'okta.user.name':
       terms:
         field: user.name
-    'user.full_name':
+    'okta.user.full_name':
       terms:
         field: source.user.full_name
     '@timestamp':
