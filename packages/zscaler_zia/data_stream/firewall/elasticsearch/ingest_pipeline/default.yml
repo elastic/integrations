@@ -169,6 +169,11 @@ processors:
       tag: set_destination_ip_from_zscaler_zia_firewall_client_destination_ip
       copy_from: zscaler_zia.firewall.client.destination.ip
       ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_ip
+      ignore_missing: true
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
@@ -218,6 +223,11 @@ processors:
       tag: set_source_ip_from_zscaler_zia_firewall_client_source_ip
       copy_from: zscaler_zia.firewall.client.source.ip
       ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
@@ -293,6 +303,7 @@ processors:
       field: destination.geo.country_iso_code
       tag: set_destination_geo_country_iso_code_from_firewall_destination_country
       copy_from: zscaler_zia.firewall.destination.country
+      if: ctx.destination?.geo?.country_iso_code == null
       ignore_empty_value: true
   - rename:
       field: json.deviceappversion
@@ -877,6 +888,7 @@ processors:
       field: source.geo.country_name
       tag: set_source_geo_country_name_from_firewall_source_ip_country
       copy_from: zscaler_zia.firewall.source_ip_country
+      if: ctx.source?.geo?.country_name == null
       ignore_empty_value: true
   - rename:
       field: json.stateful
