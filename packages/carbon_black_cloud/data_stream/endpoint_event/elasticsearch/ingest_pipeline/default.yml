@@ -178,11 +178,13 @@ processors:
           ctx.destination.port = ctx.json?.local_port;
           ctx.source.ip = ctx.json?.remote_ip;
           ctx.source.port = ctx.json?.remote_port;
+          ctx.source.domain = ctx.json?.netconn_domain;
         } else {
           ctx.source.ip = ctx.json?.local_ip;
           ctx.source.port = ctx.json?.local_port;
           ctx.destination.ip = ctx.json?.remote_ip;
           ctx.destination.port = ctx.json?.remote_port;
+          ctx.destination.domain = ctx.json?.netconn_domain;
         }     
   - append:
       field: related.ip
@@ -190,10 +192,6 @@ processors:
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
-      field: json.netconn_domain
-      target_field: source.address
-      ignore_missing: true
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
@@ -854,6 +852,7 @@ processors:
         - json.childproc_hash
         - json.modload_hash
         - json.scriptload_hash
+        - json.netconn_domain
         - json.netconn_inbound
         - json.netconn_protocol
         - json.remote_ip
