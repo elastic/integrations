@@ -26,7 +26,16 @@ processors:
         - yyyy.MM.dd
         - yyyy.MM
       tag: date_parse_index_creation_date
-  # TODO: compute age of the index (delta between creation date and timestamp)
+  - script:
+      source: |
+        def creationDate = ctx.elasticsearch.index.creation_date;
+        if (creationDate != null) {
+          def creationDateTime = ZonedDateTime.parse(creationDate);
+          def now = ZonedDateTime.parse(ctx['@timestamp']);
+          ctx.elasticsearch.index.age = ChronoUnit.DAYS.between(creationDateTime, now);
+        }
+      ignore_failure: true
+      tag: script_compute_index_age
   - script:
       source: |
         def preference = ctx.end['elasticsearch.index.tier_preference'];

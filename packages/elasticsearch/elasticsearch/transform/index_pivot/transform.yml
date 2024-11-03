@@ -10,15 +10,22 @@ source:
               - term:
                   event.dataset: "elasticsearch.stack_monitoring.index"
         # Exclude system indices
-        # TODO: also exclude the .ds-. indices
         - bool:
             should:
               - bool:
                   must_not:
                     - prefix:
                         elasticsearch.index.name: "."
-              - prefix:
-                  elasticsearch.index.name: ".ds-"
+              - bool:
+                  filter:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-"
+                  must_not:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-."
+                    - prefix:
+                        elasticsearch.index.name: ".ds-ilm-history"
+
 pivot:
   group_by:
     '@timestamp':
