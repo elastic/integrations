@@ -70,6 +70,110 @@ processors:
         return maxLength > 0 ? 1.0 - ((double) distance / (double) maxLength) : 0.0;
       }
 
+      List getVocabMatches(String[] vocab, String originalString, boolean approximateMatch, double approximateMatchTolerance) {
+        // filter a string to all vocabulary matches
+        // matches can be exact or approximate
+        List matches = [];
+
+        if (approximateMatch == true) { 
+          for (int i=0; i<originalString.length(); i++) {
+            for (token in vocab) {
+              if (i+token.length() <= originalString.length()) {
+                String substring = originalString.substring(i, i+token.length());
+                if (levensteinDistance(token, substring) >= approximateMatchTolerance) {
+                  matches.add(token)
+                }
+              }
+            }
+          }
+        } else {
+          for (String token: vocab) {
+            if (originalString.contains(token)) {
+              matches.add(token)
+            }
+          }
+        }
+        return matches;
+      }
+
+      int getMaxTokenLength(List tokenList) {
+        int maxTokenLength = 0;
+        for (token in tokenList) {
+          if (token.length() > maxTokenLength) {
+            maxTokenLength = token.length();
+          }
+        }
+        return maxTokenLength;
+      }
+
+      List filterTokenSubsets(List tokenList) {
+        // filter out tokens from a list that are subsets of larger tokens
+        int maxLength = getMaxTokenLength(tokenList);
+        List tokenListFiltered = [];
+        String shortestToken = "";
+        for (int i=maxLength; i>0; i--) {
+          for (token in tokenList) {
+            if (token.length() == i) {
+              boolean found = false;
+              for (superToken in tokenListFiltered) {
+                if (superToken.contains(token)) {
+                  found = true
+                }
+              }
+              if (found == false) {
+                tokenListFiltered.add(token)
+              }
+            }
+          }
+        }
+        return tokenListFiltered;
+      }
+
+      List filterTokensLeftToRight(List tokenList, String originalString, boolean approximateMatch, double approximateMatchTolerance) {
+        // using a cursor, filter words left to right
+        List cursoredTokens = [];
+        int tokenStart = 0;
+        int tokenEnd = -1;
+        int originalStringLength = originalString.length();
+
+        for (int i=0; i<originalString.length(); i++) {
+          for (token in tokenList) {
+            if (i+token.length() <= originalStringLength) {
+              String substring = originalString.substring(i, i+token.length());
+              boolean match = false;
+              if (approximateMatch == true) {
+                if (levensteinDistance(token, substring) >= approximateMatchTolerance) {
+                  match = true;
+                }
+              }
+              else {
+                if (token == substring) {
+                  match = true;
+                }
+              }
+              if (match == true) {
+                if (i > tokenEnd - 1) {
+                  tokenStart = i;
+                  tokenEnd = i+token.length();
+                  // allow 1 character overlaps for plurals and other special cases
+                  tokenEnd = tokenEnd - 1;
+                  cursoredTokens.add(token)
+                }
+              }
+            }
+          }
+        }
+        return cursoredTokens;
+      }
+
+      List getTokenLengthCounts(List tokenList) {
+        List tokenLengthCounts = [];
+        for (token in tokenList) {
+          tokenLengthCounts.add(token.length());
+        }
+        return tokenLengthCounts;
+      }
+
       String domain = ctx['dns']['question']['name'];
       String subdomain = ctx['dns']['question']['subdomain'];
       String registered_domain = ctx['dns']['question']['registered_domain'];
@@ -146,85 +250,21 @@ processors:
 
       String[] vocab = params.vocab.splitOnToken("|");
       String sldLower = sld.toLowerCase();
-      List matches = new ArrayList();
-      //for (String token: vocab) {
-      //  if (sldLower.contains(token)) {
-      //    matches.add(token)
-      //  }
-      //}
 
-      for (int i=0; i<sldLower.length(); i++) {
-        for (token in vocab) {
-          if (i+token.length() <= sldLower.length()) {
-            String substring = sldLower.substring(i, i+token.length());
-            if (levensteinDistance(token, substring) >= 0.8) {
-               matches.add(token)
-            }
-          }
-        }
-      }
+      List matches = getVocabMatches(vocab, sldLower, false, 1);
+      List matchesFiltered = filterTokenSubsets(matches);
+      List matchesCursored = filterTokensLeftToRight(matchesFiltered, sldLower, false, 1);
 
-      int maxLength = 0;
-      for (token in matches) {
-        if (token.length() > maxLength) {
-          maxLength = token.length();
-        }
-      }
+      List matchesApproximate = getVocabMatches(vocab, sldLower, true, 0.8);
+      List matchesFilteredApproximate = filterTokenSubsets(matchesApproximate);
+      List matchesCursoredApproximate = filterTokensLeftToRight(matchesFilteredApproximate, sldLower, true, 0.8);
 
-      // filter out tokens that are subsets of larger tokens
-      List matchesFiltered = [];
-      String shortestToken = "";
-      for (int i=maxLength; i>0; i--) {
-        for (token in matches) {
-          if (token.length() == i) {
-            boolean found = false;
-            for (superToken in matchesFiltered) {
-              if (superToken.contains(token)) {
-                found = true
-              }
-            }
-            if (found == false) {
-              matchesFiltered.add(token)
-            }
-          }
-        }
-      }
-
-      // using a cursor, filter words left to right
-      List cursoredTokens = [];
-      int tokenStart = 0;
-      int tokenEnd = -1;
-      for (int i=0; i<sldLower.length(); i++) {
-        for (token in matchesFiltered) {
-          if (i+token.length() <= sldLower.length()) {
-            String substring = sldLower.substring(i, i+token.length());
-            if (levensteinDistance(token, substring) >= 0.8) {
-              if (i > tokenEnd - 1) {
-                tokenStart = i;
-                tokenEnd = i+token.length();
-                // allow overlaps for plurals
-                //if (token.substring(token.length() - 1) == "s") {
-                tokenEnd = tokenEnd - 1;
-                //}
-                cursoredTokens.add(token)
-              }
-            }
-          }
-        }
-      }
-
-      // bin the number of vocabulary matches
-      String vocabMatchesBins;
-      if (cursoredTokens.size() <= 2) {
-        vocabMatchesBins = "0-2";
-      } else {
-        vocabMatchesBins = "3+";
-      }
-
-      ctx['f']['vocabMatchesBins'] = vocabMatchesBins;
-      ctx['f']['matches'] = matches;
-      ctx['f']['matchesFiltered'] = matchesFiltered;
-      ctx['f']['cursoredMatches'] = cursoredTokens;
+      ctx['f']['matches'] = matchesCursored;
+      ctx['f']['matchesCount'] = matchesCursored.size().toString();
+      ctx['f']['matchesLengths'] = getTokenLengthCounts(matchesCursored);
+      ctx['f']['matchesApproximate'] = matchesCursoredApproximate;
+      ctx['f']['matchesCountApproximate'] = matchesCursoredApproximate.size().toString();
+      ctx['f']['matchesLengths'] = getTokenLengthCounts(matchesCursoredApproximate);
     params:
       dynamic_domains:
         avsvmcloud.com: 0
