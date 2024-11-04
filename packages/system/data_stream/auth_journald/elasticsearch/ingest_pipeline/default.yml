@@ -207,6 +207,14 @@ processors:
         - syslog
         - systemd
         - message_id
+  - set:
+      field: event.dataset
+      value: system.auth
+      if: ctx?.event?.dataset == "system.auth_journald"
+  - set:
+      field: data_stream.dataset
+      value: system.auth
+      if: ctx?.data_stream?.dataset == "system.auth_journald"
 on_failure:
   - set:
       field: error.message

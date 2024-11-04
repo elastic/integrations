@@ -28,6 +28,14 @@ processors:
       - syslog
       - systemd
       - message_id
+- set:
+    field: event.dataset
+    value: system.syslog
+    if: ctx?.event?.dataset == "system.syslog_journald"
+- set:
+    field: data_stream.dataset
+    value: system.syslog
+    if: ctx?.data_stream?.dataset == "system.syslog_journald"
 on_failure:
 - set:
     field: error.message
