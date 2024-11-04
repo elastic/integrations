@@ -28,7 +28,7 @@ processors:
       ignore_empty_value: true
   - kv:
       field: suricata.eve.tls.subject
-      field_split: ' (?=[a-zA-Z]+=)'
+      field_split: ', (?=[a-zA-Z]+=)'
       value_split: '='
       target_field: suricata.eve.tls.kv_subject
       ignore_missing: true
@@ -92,7 +92,7 @@ processors:
       ignore_missing: true
   - kv:
       field: suricata.eve.tls.issuerdn
-      field_split: ', '
+      field_split: ', (?=[a-zA-Z]+=)'
       value_split: '='
       target_field: suricata.eve.tls.kv_issuerdn
       ignore_missing: true
@@ -167,7 +167,7 @@ processors:
       ignore_failure: true
   - append:
       field: related.hash
-      value: "{{tls.server.hash.sha1}}"
+      value: "{{{tls.server.hash.sha1}}}"
       if: "ctx?.tls?.server?.hash?.sha1 != null"
   - set:
       field: tls.client.server_name

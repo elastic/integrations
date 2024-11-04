@@ -60,7 +60,6 @@ To use this integration you will need:
 * **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. See more details in the [Setup section](#setup).
 * **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch?tab=Overview), or self-manage the Elastic Stack on your hardware.
 
-
 ### Authentication and costs
 
 **Authentication on the Azure side**
@@ -79,6 +78,16 @@ Elastic handles authentication by creating or renewing the authentication token.
 **Costs**
 Metric queries are charged based on the number of standard API calls. 
 Check [Azure Monitor pricing](https://azure.microsoft.com/en-gb/pricing/details/monitor/) for more detailsgit.
+
+## Generic and specialized integrations
+
+A generic integration is fully customizable and can support any Azure service. There are no out-of-the-box dashboards for visualizing data, giving users complete control over the process. You must install the integration and customize the configuration before sending metrics to the data stream. You have the maximum flexibility to customize the configuration, custom pipelines, and mappings fully.
+
+To start using the generic metrics integration, enable "Collect Azure Monitor metrics" and set up your custom configuration.
+
+A specialized integration specializes in a specific Azure service and comes with a built-in configuration that provides the most appropriate mapping for each field with one or more out-of-the-box dashboards to visualize data. You cannot edit the built-in configurations. When you install the integration, you can send the metrics to the data stream, and can immediately visualize and search the data. You still have customization options like custom pipelines and mappings, but they are optional for specific needs.
+
+Specialized integrations include the Azure Virtual Machine, Storage Account, Container Registry, and other Container-related metrics integrations.
 
 ## Setup
 

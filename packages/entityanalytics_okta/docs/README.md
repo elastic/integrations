@@ -195,7 +195,6 @@ An example event for `user` looks as following:
         }
     },
     "event": {
-        "action": "user-discovered",
         "agent_id_status": "verified",
         "category": [
             "iam"
@@ -252,7 +251,6 @@ An example event for `user` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -274,12 +272,15 @@ An example event for `user` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| entityanalytics_okta.groups.id | The ID for the group. | keyword |
+| entityanalytics_okta.groups.profile.\* | Group profile details. | object |
 | entityanalytics_okta.user._embedded | embedded resources related to the user. | flattened |
 | entityanalytics_okta.user._links | link relations for the user's current status. | flattened |
 | entityanalytics_okta.user.activated | timestamp when transition to ACTIVE status completed. | date |
 | entityanalytics_okta.user.created | timestamp when user was created. | date |
 | entityanalytics_okta.user.credentials.provider.name |  | keyword |
 | entityanalytics_okta.user.credentials.provider.type |  | keyword |
+| entityanalytics_okta.user.credentials.recovery_question.is_set |  | boolean |
 | entityanalytics_okta.user.id | unique key for user. | keyword |
 | entityanalytics_okta.user.last_login | timestamp of last login. | date |
 | entityanalytics_okta.user.last_updated | timestamp when user was last updated. | date |

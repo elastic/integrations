@@ -1,0 +1,863 @@
+---
+description: Pipeline for Gigamon Ami logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: json
+      target_field: gigamon.ami
+      if: ctx.json != null
+      tag: rename_json
+  - set:
+      field: event.kind
+      value: event
+  # process dates on base fields
+  - date:
+      field: gigamon.ami.ts
+      tag: date_gigamon_ami_ts
+      target_field: gigamon.ami.ts
+      formats:
+        - 'EEE MMM dd HH:mm:ss yyyy'
+        - 'EEE MMM  d HH:mm:ss yyyy'
+        - 'EEE MMM d HH:mm:ss yyyy'
+        - ISO8601
+      if: ctx.gigamon?.ami?.ts != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.ts
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gigamon.ami.start_time
+      target_field: gigamon.ami.start_time
+      tag: date_gigamon_ami_start_time
+      formats:
+        - 'yyyy:MM:dd HH:mm:ss.SSS'
+        - 'EEE MMM dd HH:mm:ss yyyy'
+        - 'EEE MMM  d HH:mm:ss yyyy'
+        - 'EEE MMM d HH:mm:ss yyyy'
+        - ISO8601
+      if: ctx.gigamon?.ami?.start_time != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.start_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gigamon.ami.end_time
+      target_field: gigamon.ami.end_time
+      tag: date_gigamon_ami_end_time
+      formats:
+        - 'yyyy:MM:dd HH:mm:ss.SSS'
+        - 'EEE MMM dd HH:mm:ss yyyy'
+        - 'EEE MMM  d HH:mm:ss yyyy'
+        - 'EEE MMM d HH:mm:ss yyyy'
+        - ISO8601
+      if: ctx.gigamon?.ami?.end_time != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.end_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gigamon.ami.ssl_validity_not_before
+      target_field: gigamon.ami.ssl_validity_not_before
+      tag: date_gigamon_ami_ssl_validity_not_before
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      if: ctx.gigamon?.ami?.ssl_validity_not_before != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.ssl_validity_not_before
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gigamon.ami.ssl_validity_not_after
+      target_field: gigamon.ami.ssl_validity_not_after
+      tag: date_gigamon_ami_ssl_validity_not_after
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      if: ctx.gigamon?.ami?.ssl_validity_not_after != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.ssl_validity_not_after
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # set @timestamp from gigamon.ami.ts
+  - set: 
+      field: '@timestamp'
+      copy_from: gigamon.ami.ts
+      ignore_empty_value: true
+
+  # convert base fields to long
+  - convert:
+      field: gigamon.ami.seq_num
+      if: ctx.gigamon?.ami?.seq_num != null
+      tag: convert_seq_num
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.seq_num
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.app_id
+      if: ctx.gigamon?.ami?.app_id != null
+      tag: convert_app_id
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.app_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.sys_up_time_first
+      if: ctx.gigamon?.ami?.sys_up_time_first != null
+      tag: convert_sys_up_time_first
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.sys_up_time_first
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.sys_up_time_last
+      if: ctx.gigamon?.ami?.sys_up_time_last != null
+      tag: convert_sys_up_time_last
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.sys_up_time_last
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.dst_bytes
+      if: ctx.gigamon?.ami?.dst_bytes != null
+      tag: convert_dst_bytes
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.dst_bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.dst_packets
+      if: ctx.gigamon?.ami?.dst_packets != null
+      tag: convert_dst_packets
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.dst_packets
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.dst_port
+      if: ctx.gigamon?.ami?.dst_port != null
+      tag: convert_dst_port
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.dst_port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.src_bytes
+      if: ctx.gigamon?.ami?.src_bytes != null
+      tag: convert_src_bytes
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.src_bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.src_packets
+      if: ctx.gigamon?.ami?.src_packets != null
+      tag: convert_src_packets
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.src_packets
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.src_port
+      if: ctx.gigamon?.ami?.src_port != null
+      tag: convert_src_port
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.src_port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # convert dns_ fields to long
+  - convert:
+      field: gigamon.ami.dns_qdcount
+      if: ctx.gigamon?.ami?.dns_qdcount != null
+      tag: convert_dns_qdcount
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.dns_qdcount
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.dns_transaction_id
+      if: ctx.gigamon?.ami?.dns_transaction_id != null
+      tag: convert_dns_transaction_id
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.dns_transaction_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.dns_ttl
+      if: ctx.gigamon?.ami?.dns_ttl != null
+      tag: convert_dns_ttl
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.dns_ttl
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.dns_ancount
+      if: ctx.gigamon?.ami?.dns_ancount != null
+      tag: convert_dns_ancount
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.dns_ancount
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # convert dns_ fields to ip
+  - convert:
+      field: gigamon.ami.dns_arcount
+      if: ctx.gigamon?.ami?.dns_arcount != null
+      tag: convert_dns_arcount
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.dns_arcount
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.dns_reverse_addr
+      if: ctx.gigamon?.ami?.dns_reverse_addr != null
+      tag: convert_dns_reverse_addr
+      type: ip
+      on_failure:
+        - remove:
+            field: gigamon.ami.dns_reverse_addr
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # convert dns_ fields to double
+  - convert:
+      field: gigamon.ami.dns_response_time
+      if: ctx.gigamon?.ami?.dns_response_time != null
+      tag: convert_dns_response_time
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.dns_response_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # convert http_ fields to long
+  - convert:
+      field: gigamon.ami.http_code
+      if: ctx.gigamon?.ami?.http_code != null
+      tag: convert_http_code
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.http_code
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.http_content_len
+      if: ctx.gigamon?.ami?.http_content_len != null
+      tag: convert_http_content_len
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.http_content_len
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.http_request_size
+      if: ctx.gigamon?.ami?.http_request_size != null
+      tag: convert_http_request_size
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.http_request_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # convert ssl_ fields to long
+  - convert:
+      field: gigamon.ami.ssl_request_size
+      if: ctx.gigamon?.ami?.ssl_request_size != null
+      tag: convert_ssl_request_size
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.ssl_request_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.ssl_client_hello_extension_len
+      if: ctx.gigamon?.ami?.ssl_client_hello_extension_len != null
+      tag: convert_ssl_client_hello_extension_len
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.ssl_client_hello_extension_len
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.ssl_server_hello_extension_len
+      if: ctx.gigamon?.ami?.ssl_server_hello_extension_len != null
+      tag: convert_ssl_server_hello_extension_len
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.ssl_server_hello_extension_len
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.ssl_ext_sig_algorithms_len
+      if: ctx.gigamon?.ami?.ssl_ext_sig_algorithms_len != null
+      tag: convert_ssl_ext_sig_algorithms_len
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.ssl_ext_sig_algorithms_len
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.ssl_certificate_subject_key_size
+      if: ctx.gigamon?.ami?.ssl_certificate_subject_key_size != null
+      tag: convert_ssl_certificate_subject_key_size
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.ssl_certificate_subject_key_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Gigamon AMI lookup mappings
+      tag: script_lookup_mapping
+      if: ctx.gigamon?.ami != null
+      params:
+        end_reason:
+            "1": Idle Timeout
+            "2": Active Timeout
+            "3": End of Flow
+            "0": None
+        http_uri_path:
+            "*v1*": V1
+        smb_version:
+            "1": SMB-V1
+            "2": SMB-V2
+        ssl_cipher_suite_id:
+            "47":
+                - TLS_RSA_WITH_AES_128_CBC_SHA
+                - AES128-SHA
+            "50":
+                - TLS_DHE_DSS_WITH_AES_128_CBC_SHA
+                - DHE-DSS-AES128-SHA
+            "51":
+                - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+                - DHE-RSA-AES128-SHA
+            "52":
+                - TLS_DH_anon_WITH_AES_128_CBC_SHA
+                - ADH-AES128-SHA
+            "53":
+                - TLS_RSA_WITH_AES_256_CBC_SHA
+                - AES256-SHA
+            "56":
+                - TLS_DHE_DSS_WITH_AES_256_CBC_SHA
+                - DHE-DSS-AES256-SHA
+            "57":
+                - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+                - DHE-RSA-AES256-SHA
+            "58":
+                - TLS_DH_anon_WITH_AES_256_CBC_SHA
+                - ADH-AES256-SHA
+            "65":
+                - TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
+                - CAMELLIA128-SHA
+            "68":
+                - TLS_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA
+                - DHE-DSS-CAMELLIA128-SHA
+            "69":
+                - TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA
+                - DHE-RSA-CAMELLIA128-SHA
+            "70":
+                - TLS_DH_anon_WITH_CAMELLIA_128_CBC_SHA
+                - ADH-CAMELLIA128-SHA
+            "108":
+                - TLS_DH_anon_WITH_AES_128_CBC_SHA256
+                - ADH-AES128-SHA256
+            "109":
+                - TLS_DH_anon_WITH_AES_256_CBC_SHA256
+                - ADH-AES256-SHA256
+            "132":
+                - TLS_RSA_WITH_CAMELLIA_256_CBC_SHA
+                - CAMELLIA256-SHA
+            "135":
+                - TLS_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA
+                - DHE-DSS-CAMELLIA256-SHA
+            "136":
+                - TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA
+                - DHE-RSA-CAMELLIA256-SHA
+            "137":
+                - TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA
+                - ADH-CAMELLIA256-SHA
+            "138":
+                - TLS_PSK_WITH_RC4_128_SHA
+                - PSK-RC4-SHA
+            "139":
+                - TLS_PSK_WITH_3DES_EDE_CBC_SHA
+                - PSK-3DES-EDE-CBC-SHA
+            "140":
+                - TLS_PSK_WITH_AES_128_CBC_SHA
+                - PSK-AES128-CBC-SHA
+            "141":
+                - TLS_PSK_WITH_AES_256_CBC_SHA
+                - PSK-AES256-CBC-SHA
+            "150":
+                - TLS_RSA_WITH_SEED_CBC_SHA
+                - SEED-SHA
+            "153":
+                - TLS_DHE_DSS_WITH_SEED_CBC_SHA
+                - DHE-DSS-SEED-SHA
+            "154":
+                - TLS_DHE_RSA_WITH_SEED_CBC_SHA
+                - DHE-RSA-SEED-SHA
+            "155":
+                - TLS_DH_anon_WITH_SEED_CBC_SHA
+                - ADH-SEED-SHA
+            "156":
+                - TLS_RSA_WITH_AES_256_CBC_SHA
+            "166":
+                - TLS_DH_anon_WITH_AES_128_GCM_SHA256
+                - ADH-AES128-GCM-SHA256
+            "167":
+                - TLS_DH_anon_WITH_AES_256_GCM_SHA384
+                - ADH-AES256-GCM-SHA384
+            "4865":
+                - TLS_AES_128_GCM_SHA256
+            "4866":
+                - TLS_AES_256_GCM_SHA384
+            "19171":
+                - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+            "49153":
+                - TLS_ECDH_ECDSA_WITH_NULL_SHA
+                - ECDH-ECDSA-NULL-SHA
+            "49154":
+                - TLS_ECDH_ECDSA_WITH_RC4_128_SHA
+                - ECDH-ECDSA-RC4-SHA
+            "49155":
+                - TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA
+                - ECDH-ECDSA-DES-CBC3-SHA
+            "49156":
+                - TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA
+                - ECDH-ECDSA-AES128-SHA
+            "49157":
+                - TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA
+                - ECDH-ECDSA-AES256-SHA
+            "49158":
+                - TLS_ECDHE_ECDSA_WITH_NULL_SHA
+                - ECDHE-ECDSA-NULL-SHA
+            "49159":
+                - TLS_ECDHE_ECDSA_WITH_RC4_128_SHA
+                - ECDHE-ECDSA-RC4-SHA
+            "49160":
+                - TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA
+                - ECDHE-ECDSA-DES-CBC3-SHA
+            "49161":
+                - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+                - ECDHE-ECDSA-AES128-SHA
+            "49162":
+                - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+                - ECDHE-ECDSA-AES256-SHA
+            "49163":
+                - TLS_ECDH_RSA_WITH_NULL_SHA
+                - ECDH-RSA-NULL-SHA
+            "49164":
+                - TLS_ECDH_RSA_WITH_RC4_128_SHA
+                - ECDH-RSA-RC4-SHA
+            "49165":
+                - TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA
+                - ECDH-RSA-DES-CBC3-SHA
+            "49166":
+                - TLS_ECDH_RSA_WITH_AES_128_CBC_SHA
+                - ECDH-RSA-AES128-SHA
+            "49167":
+                - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA
+                - ECDH-RSA-AES256-SHA
+            "49168":
+                - TLS_ECDHE_RSA_WITH_NULL_SHA
+                - ECDHE-RSA-NULL-SHA
+            "49169":
+                - TLS_ECDHE_RSA_WITH_RC4_128_SHA
+                - ECDHE-RSA-RC4-SHA
+            "49170":
+                - TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
+                - ECDHE-RSA-DES-CBC3-SHA
+            "49171":
+                - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+                - ECDHE-RSA-AES128-SHA
+            "49172":
+                - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+                - ECDHE-RSA-AES256-SHA
+            "49173":
+                - TLS_ECDH_anon_WITH_NULL_SHA
+                - AECDH-NULL-SHA
+            "49174":
+                - TLS_ECDH_anon_WITH_RC4_128_SHA
+                - AECDH-RC4-SHA
+            "49175":
+                - TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA
+                - AECDH-DES-CBC3-SHA
+            "49176":
+                - TLS_ECDH_anon_WITH_AES_128_CBC_SHA
+                - AECDH-AES128-SHA
+            "49177":
+                - TLS_ECDH_anon_WITH_AES_256_CBC_SHA
+                - AECDH-AES256-SHA
+            "49178":
+                - TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA
+                - SRP-3DES-EDE-CBC-SHA
+            "49179":
+                - TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA
+                - SRP-RSA-3DES-EDE-CBC-SHA
+            "49180":
+                - TLS_SRP_SHA_DSS_WITH_3DES_EDE_CBC_SHA
+                - SRP-DSS-3DES-EDE-CBC-SHA
+            "49181":
+                - TLS_SRP_SHA_WITH_AES_128_CBC_SHA
+                - SRP-AES-128-CBC-SHA
+            "49182":
+                - TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA
+                - SRP-RSA-AES-128-CBC-SHA
+            "49183":
+                - TLS_SRP_SHA_DSS_WITH_AES_128_CBC_SHA
+                - SRP-DSS-AES-128-CBC-SHA
+            "49184":
+                - TLS_SRP_SHA_WITH_AES_256_CBC_SHA
+                - SRP-AES-256-CBC-SHA
+            "49185":
+                - TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA
+                - SRP-RSA-AES-256-CBC-SHA
+            "49186":
+                - TLS_SRP_SHA_DSS_WITH_AES_256_CBC_SHA
+                - SRP-DSS-AES-256-CBC-SHA
+            "49191":
+                - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+            "49192":
+                - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+            "49195":
+                - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+            "49196":
+                - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+            "49199":
+                - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+            "49200":
+                - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+            "52392":
+                - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+            "52393":
+                - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+        ssl_protocol_version:
+            "2": SSL_2_0
+            "768": SSL_3_0
+            "769": TLS_1_0
+            "770": TLS_1_1
+            "771": TLS_1_2
+            "772": TLS_1_3
+        ssl_ext_sig_algorithm_hash:
+            "0": None
+            "1": MD5
+            "2": SHA1
+            "3": SHA224
+            "4": SHA256
+            "5": SHA384
+            "6": SHA512
+        ssl_ext_sig_algorithm_scheme:
+            "1537": rsa_pkcs1_sha512
+            "1027": ecdsa_secp256r1_sha256
+            "257":  MD5 RSA
+            "514":  SHA1 DSA
+            "515":  ecdsa_sha1
+            "769":  SHA224 RSA
+            "770":  SHA224 DSA
+            "771":  SHA224 ECDSA
+            "1025": rsa_pkcs1_sha256
+            "1026": SHA256 DSA
+            "1281": rsa_pkcs1_sha384
+            "1282": SHA384 DSA
+            "1283": ecdsa_secp384r1_sha384
+            "1538": SHA512 DSA
+            "1539": ecdsa_secp521r1_sha512
+            "2052": rsa_pss_rsae_sha256
+            "2053": rsa_pss_rsae_sha384
+            "2054": rsa_pss_rsae_sha512
+            "2055": ed25519
+            "2056": ed448
+            "2057": rsa_pss_pss_sha256
+            "2058": rsa_pss_pss_sha384
+            "2059": rsa_pss_pss_sha512
+            "2570": GREASE
+            "0":    Anonymous
+        dns_query_type:
+            "1": A
+            "2": NS
+            "3": MD
+            "4": MF
+            "5": CNAME
+            "6": SOA
+            "7": MB
+            "8": MG
+            "9": MR
+            "10": "NULL"
+            "11": WKS
+            "12": PTR
+            "13": HINFO
+            "14": MINFO
+            "15": MX
+            "16": TXT
+            "17": RP
+            "18": AFSDB
+            "19": X25
+            "20": ISDN
+            "21": RT
+            "22": NSAP
+            "23": NSAP-PTR
+            "24": SIG
+            "25": KEY
+            "26": PX
+            "27": GPOS
+            "28": AAAA
+            "29": LOC
+            "30": NXT
+            "31": EID
+            "32": NIMLOC
+            "33": SRV
+            "34": ATMA
+            "35": NAPTR
+            "36": KX
+            "37": CERT
+            "39": DNAME
+            "40": SINK
+            "41": OPT
+            "42": APL
+            "43": DS
+            "44": SSHFP
+            "45": IPSECKEY
+            "46": RRSIG
+            "47": NSEC
+            "48": DNSKEY
+            "49": DHCID
+            "50": NSEC3
+            "51": NSEC3PARAM
+            "52": TLSA
+            "53": SMIMEA
+            "54": Unassigned
+            "55": HIP
+            "56": NINFO
+            "57": RKEY
+            "58": TALINK
+            "59": CDS
+            "60": CDNSKEY
+            "61": OPENPGPKEY
+            "62": CSYNC
+            "63": ZONEMD
+            "99": SPF
+            "100": UINFO
+            "101": UID
+            "102": GID
+            "103": UNSPEC
+            "104": NID
+            "105": L32
+            "106": L64
+            "107": LP
+            "108": EUI48
+            "109": EUI64
+            "249": TKEY
+            "250": TSIG
+            "251": IXFR
+            "252": AXFR
+            "253": MAILB
+            "254": MAILA
+            "255": "*"
+            "256": URI
+            "257": CAA
+            "258": AVC
+            "259": DOA
+            "260": AMTRELAY
+            "32768": TA
+            "32769": DLV
+            "-1L": unknown
+        dns_reply_code: 
+            "0": No Error
+            "1": Format Error
+            "2": Server Failure
+            "3": Non-Existent Domain
+            "4": Not Implemented
+            "5": Query Refused
+            "6": Name Exists when it should not
+            "7": RR Set Exists when it should not
+            "8": RR Set that should exist does not
+            "9": Not Authorized
+            "10": Name not contained in zone
+            "11": DSO-TYPE Not Implemented
+            "16": Bad OPT Version
+            "17": Key not recognized
+            "18": Signature out of time window
+            "19": Bad TKEY Mode
+            "20": Duplicate key name
+            "21": Algorithm not supported
+            "22": Bad Truncation
+            "23": Bad/missing Server Cookie
+            "-1L": unknown
+      source: |-
+        // end_reason
+        if (ctx.gigamon.ami.end_reason != null) {
+            ctx.gigamon.ami.end_reason_value = params['end_reason'][ctx.gigamon.ami.end_reason];
+        }
+        // http_uri_path
+        if (ctx.gigamon.ami.http_uri_path != null) {
+            ctx.gigamon.ami.http_uri_path_value = params['http_uri_path'][ctx.gigamon.ami.http_uri_path];
+        }
+        // smb_version
+        if (ctx.gigamon.ami.smb_version != null) {
+            ctx.gigamon.ami.smb_version_value = params['smb_version'][ctx.gigamon.ami.smb_version];
+        }
+        // ssl_cipher_suite_id
+        if (ctx.gigamon.ami.ssl_cipher_suite_id != null) {
+            ctx.gigamon.ami.ssl_cipher_suite_id_value = params['ssl_cipher_suite_id'][ctx.gigamon.ami.ssl_cipher_suite_id];
+        }
+        // ssl_protocol_version
+        if (ctx.gigamon.ami.ssl_protocol_version != null) {
+            ctx.gigamon.ami.ssl_protocol_version_value = params['ssl_protocol_version'][ctx.gigamon.ami.ssl_protocol_version];
+        }
+        // ssl_ext_sig_algorithm_hash
+        if (ctx.gigamon.ami.ssl_ext_sig_algorithm_hash != null) {
+            ctx.gigamon.ami.ssl_ext_sig_algorithm_hash_value = params['ssl_ext_sig_algorithm_hash'][ctx.gigamon.ami.ssl_ext_sig_algorithm_hash];
+        }
+        // ssl_cipher_suite_id
+        if (ctx.gigamon.ami.ssl_cipher_suite_id != null) {
+            ctx.gigamon.ami.ssl_cipher_suite_id_value = params['ssl_cipher_suite_id'][ctx.gigamon.ami.ssl_cipher_suite_id][0];
+            if (params['ssl_cipher_suite_id'][ctx.gigamon.ami.ssl_cipher_suite_id].size() > 1) {
+                ctx.gigamon.ami.ssl_cipher_suite_id_protocol = params['ssl_cipher_suite_id'][ctx.gigamon.ami.ssl_cipher_suite_id][1];
+            }
+        }
+        // ssl_ext_sig_algorithm_scheme
+        if (ctx.gigamon.ami.ssl_ext_sig_algorithm_scheme != null) {
+            ctx.gigamon.ami.ssl_ext_sig_algorithm_scheme_value = params['ssl_ext_sig_algorithm_scheme'][ctx.gigamon.ami.ssl_ext_sig_algorithm_scheme];
+        }
+        // dns_query_type
+        if (ctx.gigamon.ami.dns_query_type != null) {
+            ctx.gigamon.ami.dns_query_type_value = params['dns_query_type'][ctx.gigamon.ami.dns_query_type];
+        }
+        // dns_reply_code
+        if (ctx.gigamon.ami.dns_reply_code != null) {
+            ctx.gigamon.ami.dns_reply_code_value = params['dns_reply_code'][ctx.gigamon.ami.dns_reply_code];
+        }
+  - remove:
+      field:
+        - ts
+        - json
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

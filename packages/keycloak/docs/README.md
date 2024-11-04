@@ -143,5 +143,4 @@ An example event for `log` looks as following:
         "keycloak-log"
     ]
 }
-
 ```

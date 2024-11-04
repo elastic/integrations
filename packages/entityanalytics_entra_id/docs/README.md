@@ -217,7 +217,6 @@ An example event for `entity` looks as following:
         "entityanalytics_entra_id-entity"
     ]
 }
-
 ```
 
 **Exported fields**

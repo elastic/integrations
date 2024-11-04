@@ -35,6 +35,9 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
+### Permissions
+This integration includes assets such as latest transform which requires users installing the integration to have `kibana_system` built-in role. Follow the [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html) for information on `kibana_system` built-in role.
+
 This module has been tested against the **CrowdStrike Falcon Intelligence API Version v1**.
 
 ## Setup
@@ -70,7 +73,10 @@ User should either have `admin` role or `Detection Exception Manager` role to ac
 The ingested IOCs expire after a certain duration. A separate [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for Intel and IOC datasets to facilitate only active Indicators and IOCs, respectively, being available to the end users. Since we want to retain only valuable information and avoid duplicated data, the CrowdStrike Falcon Intelligence Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_intel` and forces the IOC logs to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_ioc`.
 **Please, refer to this index in order to set alerts and so on.**
 
-#### Handling Orphaned IOCs
+### Transform Permissions
+The latest transforms for both Intel and IOC datasets require users to have `kibana_system` role as noted in [permissions](https://www.elastic.co/docs/current/integrations/ti_crowdstrike#permissions).
+
+### Handling Orphaned IOCs
 
 IOC expiration is set default to false in CrowdStrike console but user can set the expiration duration in using the admin console. Some CrowdStrike IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter for both the dataset Intel and IOC, respectively, while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_crowdstrike_latest.intel` and `logs-ti_crowdstrike_latest.ioc` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset.
 
@@ -94,24 +100,24 @@ An example event for `intel` looks as following:
 {
     "@timestamp": "2023-11-21T06:16:01.000Z",
     "agent": {
-        "ephemeral_id": "ee250a38-ef6d-486c-a245-6d0dd0785a11",
-        "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
+        "ephemeral_id": "6d3e7b87-a3f6-47b1-81a5-0264e901b3f9",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_crowdstrike.intel",
-        "namespace": "ep",
+        "namespace": "36922",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -120,7 +126,7 @@ An example event for `intel` looks as following:
         ],
         "dataset": "ti_crowdstrike.intel",
         "id": "hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d",
-        "ingested": "2024-03-28T10:49:11Z",
+        "ingested": "2024-08-01T08:31:15Z",
         "kind": "enrichment",
         "original": "{\"_marker\":\"17005473618d17ae6353d123235e4158c5c81f25f0\",\"actors\":[\"SALTYSPIDER\"],\"deleted\":false,\"domain_types\":[\"abc.com\"],\"id\":\"hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"indicator\":\"c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"ip_address_types\":[\"81.2.69.192\"],\"kill_chains\":[\"Installation\",\"C2\"],\"labels\":[{\"created_on\":1700547356,\"last_valid_on\":1700547360,\"name\":\"MaliciousConfidence/High\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"Malware/Mofksys\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/Commodity\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/CredentialHarvesting\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/InformationStealer\"}],\"last_updated\":1700547361,\"malicious_confidence\":\"high\",\"malware_families\":[\"Mofksys\"],\"published_date\":1700547356,\"relations\":[{\"created_date\":1700547339,\"id\":\"domain.com.yy\",\"indicator\":\"domain.ds\",\"last_valid_date\":1700547339,\"type\":\"domain\"},{\"created_date\":1700547339,\"id\":\"domain.xx.yy\",\"indicator\":\"domain.xx.fd\",\"last_valid_date\":1700547339,\"type\":\"domain\"}],\"reports\":[\"reports\"],\"targets\":[\"abc\"],\"threat_types\":[\"Commodity\",\"CredentialHarvesting\",\"InformationStealer\"],\"type\":\"hash_sha256\",\"vulnerabilities\":[\"vuln\"]}",
         "type": [
@@ -263,9 +269,12 @@ An example event for `intel` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.offset | Log offset. | long |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 | ti_crowdstrike.intel._marker | A special marker associated with the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.actors | Information related to actors associated with the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.deleted | Indicates whether the Intel Indicator has been deleted. | boolean |
@@ -307,24 +316,24 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2023-11-01T10:22:23.106Z",
     "agent": {
-        "ephemeral_id": "ca4c5a70-0aa1-4cb3-867c-3c099798eef4",
-        "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
+        "ephemeral_id": "6b69edbe-1d0f-4094-80d6-12915b7784ed",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_crowdstrike.ioc",
-        "namespace": "ep",
+        "namespace": "60867",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
+        "id": "36b03887-7783-4bc4-b8c5-6f8997e4cd1a",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "detect-again",
@@ -334,7 +343,7 @@ An example event for `ioc` looks as following:
         ],
         "dataset": "ti_crowdstrike.ioc",
         "id": "34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44",
-        "ingested": "2024-03-28T10:50:10Z",
+        "ingested": "2024-08-01T08:32:09Z",
         "kind": "enrichment",
         "original": "{\"action\":\"detect again\",\"applied_globally\":true,\"created_by\":\"abc.it@example.com\",\"created_on\":\"2023-11-01T10:22:23.10607613Z\",\"deleted\":false,\"description\":\"IS-38887\",\"expired\":false,\"from_parent\":false,\"id\":\"34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44\",\"metadata\":{\"filename\":\"High_Serverity_Heuristic_Sandbox_Threat.docx\"},\"modified_by\":\"example.it@ex.com\",\"modified_on\":\"2023-11-01T10:22:23.10607613Z\",\"platforms\":[\"windows\",\"mac\",\"linux\"],\"severity\":\"critical\",\"tags\":[\"IS-38887\"],\"type\":\"ipv4\",\"value\":\"81.2.69.192\"}",
         "type": [
@@ -421,9 +430,12 @@ An example event for `ioc` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.offset | Log offset. | long |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 | ti_crowdstrike.ioc.action | Describes the action taken when the IOC is detected. | keyword |
 | ti_crowdstrike.ioc.applied_globally | Indicates whether the IOC is applied globally. | boolean |
 | ti_crowdstrike.ioc.created_by | Indicates the entity or user who created the IOC. | keyword |

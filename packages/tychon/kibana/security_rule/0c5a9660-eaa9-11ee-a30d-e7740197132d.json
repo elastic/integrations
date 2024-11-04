@@ -1,0 +1,53 @@
+{
+    "id": "0c5a9660-eaa9-11ee-a30d-e7740197132d",
+    "type": "security-rule",
+    "attributes": {
+        "name": "Local Group Policy Overwriting TYCHON Device Control",
+        "tags": [
+            "TYCHON",
+            "Device",
+            "Control"
+        ],
+        "interval": "12h",
+        "enabled": true,
+        "revision": 0,
+        "description": "TYCHON is managing Device Control policy using built-in windows security features, a misconfigured Microsoft Group Policy audit can overwrite TYCHON settings on every enforcement.  If TYCHON is having to constantly change settings it cannot guarantee success.  Update GPO settings that apply to TYCHON management to \"not configured\"",
+        "risk_score": 60,
+        "severity": "medium",
+        "license": "",
+        "output_index": "",
+        "author": [
+            "Tychon"
+        ],
+        "false_positives": [],
+        "from": "now-46800s",
+        "rule_id": "0c5a9660-eaa9-11ee-a30d-e7740197132d",
+        "max_signals": 100,
+        "risk_score_mapping": [],
+        "severity_mapping": [],
+        "threat": [],
+        "to": "now",
+        "references": [],
+        "version": 1,
+        "exceptions_list": [],
+        "immutable": true,
+        "related_integrations": [],
+        "required_fields": [],
+        "setup": "",
+        "type": "threshold",
+        "language": "kuery",
+        "index": [
+            "logs-tychon_latest.externaldevicecontrol"
+        ],
+        "query": "tychon.type:\"policy\" and event.kind:\"state\" and (tychon.policy.attach.changed : true or tychon.policy.execution.changed : true or tychon.policy.whitelist.changed : true)",
+        "filters": [],
+        "threshold": {
+            "field": [
+                "tychon.id"
+            ],
+            "value": 10,
+            "cardinality": []
+        },
+        "actions": []
+    }
+}

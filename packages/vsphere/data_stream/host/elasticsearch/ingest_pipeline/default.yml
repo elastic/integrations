@@ -5,6 +5,30 @@ processors:
       field: ecs.version
       value: '8.11.0'
   - script: 
+      if: ctx.vsphere?.host?.triggered_alarms != null
+      lang: painless
+      source: >
+          def alerts = [];
+          def warnings = [];
+          for (alarm in ctx.vsphere.host.triggered_alarms) {
+              if (alarm.status == 'red') {
+              alerts.add(alarm.name);
+              }
+              if (alarm.status == 'yellow') {
+              warnings.add(alarm.name);
+              }
+          }
+          ctx.alerts = alerts;
+          ctx.warnings = warnings
+  - rename:
+      field: alerts
+      target_field: vsphere.host.alert.names
+      ignore_missing: true
+  - rename:
+      field: warnings
+      target_field: vsphere.host.warning.names
+      ignore_missing: true
+  - script: 
       if: ctx.vsphere?.host?.memory?.used.bytes != null && ctx.vsphere?.host?.memory?.total.bytes != null
       lang: painless
       source: >
@@ -20,7 +44,24 @@ processors:
         float total_cpu = ctx.vsphere.host.cpu.total.mhz;
         float used_cpu_pct = used_cpu/total_cpu;
         ctx.vsphere.host.cpu.used.pct = used_cpu_pct;
-  
+  - script:
+      description: "Drops null/empty values recursively."
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+            if (o == null || o == "") {
+            return true;
+            } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+            } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).size() == 0);
+            }
+            return false;
+        }
+        drop(ctx);
+
 on_failure:
   - set:
       field: error.message

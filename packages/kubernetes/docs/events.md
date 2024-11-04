@@ -71,7 +71,6 @@ An example event for `event` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**

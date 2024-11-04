@@ -5,6 +5,47 @@ is a part of the Linux kernel.
 
 This integration is available only for Linux.
 
+## Session View powered by Auditd Manager
+
+The Auditd Manager is one of the integrations that can power the [Session View](https://www.elastic.co/guide/en/security/current/session-view.html) utility for the Elastic Security Platform. This feature provides a visual representation of session and process execution data, organized according to the Linux process model to help you investigate process, user, and service activity on your Linux infrastructure.
+
+### Enabling Session Data Capture
+
+There are two ways to enable session data capture for the Session View feature:
+
+#### Method 1: Using the Toggle Switch (Recommended)
+
+1. Navigate to the Auditd Manager integration configuration in Kibana.
+2. Locate the "Session data" toggle switch.
+3. Turn the switch on to enable session data capture.
+
+#### Method 2: Manual Configuration
+
+1. Navigate to the Auditd Manager integration configuration in Kibana.
+2. Add the `add_session_metadata` processor configuration under the **Processors** section of Advanced options.
+
+```
+  - add_session_metadata:
+     backend: "auto"
+```
+
+3. Add these rules to the **Audit Rules** section of the configuration: 
+
+```
+  -a always,exit -F arch=b64 -S execve,execveat -k exec
+  -a always,exit -F arch=b64 -S exit_group
+  -a always,exit -F arch=b64 -S setsid
+```
+
+Changes are applied automatically, and you do not have to restart the service.
+
+### Important Notes
+
+- Using the toggle switch (Method 1) automatically applies these configurations, making it the simpler option for most users.
+- When enabling session data capture, be aware that it will collect extended process data, which may have privacy and storage implications.
+- You can disable session data capture at any time by turning off the toggle switch or removing the manual configurations.
+- If you switch between methods or disable the feature, ensure that any conflicting configurations are removed to avoid unexpected behaviour.
+
 ## How it works
 
 This integration establishes a subscription to the kernel to receive the events
@@ -31,28 +72,27 @@ commands to see if the `auditd` service is running and stop it:
 
 * See if `auditd` is running:
 
-```shell
-service auditd status
-```
+  ```shell
+  service auditd status
+  ```
 
 * Stop the `auditd` service:
 
-```shell
-service auditd stop
-```
+  ```shell
+  service auditd stop
+  ```
 
 * Disable `auditd` from starting on boot:
 
-```shell
-chkconfig auditd off
-```
+  ```shell
+  `chkconfig auditd off`
+  ```
 
-To save CPU usage and disk space, you can use this command to stop `journald`
-from listening to audit messages:
+* Stop `journald` from listening to audit messages (to save CPU usage and disk space):
 
-```shell
-systemctl mask systemd-journald-audit.socket
-```
+  ```shell
+  systemctl mask systemd-journald-audit.socket
+  ```
 
 ## Audit rules
 
@@ -243,7 +283,6 @@ An example event for `auditd` looks as following:
         "name": "root"
     }
 }
-
 ```
 
 **Exported fields**

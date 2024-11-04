@@ -174,7 +174,6 @@ An example event for `incident` looks as following:
         "scheme": "https"
     }
 }
-
 ```
 
 **Exported fields**
