@@ -15,50 +15,80 @@ streams:
     template_path: aws.yml.hbs
     enabled: false
     vars:
-      - name: access_key_id
+      - name: aws.account_type
+        title: Account type
+        multi: false
+        required: true
+        show_user: true
+        type: select
+        options:
+          - text: Single Account
+            value: single-account
+          - text: AWS Organization
+            value: organization-account
+        default: single-account
+      - name: aws.credentials.type
+        title: Credentials type
+        multi: false
+        required: true
+        show_user: true
+        type: select
+        options:
+          - text: CloudFormation
+            value: cloud_formation
+          - text: Assume Role (Manual)
+            value: assume_role
+          - text: Direct Access Keys (Manual)
+            value: direct_access_keys
+          - text: Temporary Keys (Manual)
+            value: temporary_keys
+          - text: Shared Credentials (Manual)
+            value: shared_credentials
+      - name: aws.access_key_id
         type: text
         title: Access Key ID
         multi: false
         required: false
         show_user: true
-      - name: secret_access_key
+        secret: false
+        description: Required when using Direct Access Keys or Temporary Keys
+      - name: aws.secret_access_key
         type: text
         title: Secret Access Key
         multi: false
         required: false
         show_user: true
         secret: true
-      - name: session_token
+        description: Required when using Direct Access Keys or Temporary Keys
+      - name: aws.session_token
         type: text
         title: Session Token
         multi: false
         required: false
         show_user: true
-      - name: shared_credential_file
+        secret: false
+        description: Required when using Temporary Keys
+      - name: aws.shared_credential_file
         type: text
         title: Shared Credential File
         multi: false
         required: false
         show_user: false
-        description: Directory of the shared credentials file
-      - name: credential_profile_name
+        description: Directory of the Shared Credentials file; required when using Shared Credentials
+      - name: aws.credential_profile_name
         type: text
         title: Credential Profile Name
         multi: false
         required: false
         show_user: false
-      - name: role_arn
+        description: Required when using Shared Credentials
+      - name: aws.role_arn
         type: text
         title: ARN Role
         multi: false
         required: false
         show_user: false
-      - name: aws.credentials.type
-        type: text
-        title: Credentials type
-        multi: false
-        required: false
-        show_user: false
+        description: Required when using Assume Role
   - input: cloudbeat/asset_inventory_azure
     title: Azure Asset Inventory
     description: Asset Inventory Discovery for Azure
@@ -66,29 +96,46 @@ streams:
     enabled: false
     vars:
       - name: azure.account_type
-        type: text
         title: Account type
         multi: false
-        required: false
-        show_user: false
+        required: true
+        show_user: true
+        type: select
+        options:
+          - text: Single Subscription
+            value: single-account
+          - text: Azure Organization
+            value: organization-account
+        default: single-account
       - name: azure.credentials.type
-        type: text
         title: Credentials type
         multi: false
-        required: false
-        show_user: false
+        required: true
+        show_user: true
+        type: select
+        options:
+          - text: ARM Template
+            value: arm_template
+          - text: Managed Identity
+            value: managed_identity
+          - text: Service Principal with Client Secret
+            value: service_principal_with_client_secret
+          - text: Service Principal with Client Certificate
+            value: service_principal_with_client_certificate
       - name: azure.credentials.client_id
         type: text
         title: Client ID
         multi: false
         required: false
         show_user: true
+        description: Required when using either of Service Principal options
       - name: azure.credentials.tenant_id
         type: text
         title: Tenant ID
         multi: false
         required: false
         show_user: true
+        description: Required when using Service Principal
       - name: azure.credentials.client_secret
         type: password
         title: Client Secret
@@ -96,25 +143,14 @@ streams:
         required: false
         show_user: true
         secret: true
-      - name: azure.credentials.client_username
-        type: text
-        title: Client Username
-        multi: false
-        required: false
-        show_user: true
-      - name: azure.credentials.client_password
-        type: password
-        title: Client Password
-        multi: false
-        required: false
-        show_user: true
-        secret: true
+        description: Required when using Service Principal with Client Secret
       - name: azure.credentials.client_certificate_path
         type: text
         title: Client Certificate Path
         multi: false
         required: false
         show_user: true
+        description: Required when using Service Principal with Client Certificate
       - name: azure.credentials.client_certificate_password
         type: password
         title: Client Certificate Password
@@ -122,6 +158,7 @@ streams:
         required: false
         show_user: true
         secret: true
+        description: Required when using Service Principal with Client Certificate
   - input: cloudbeat/asset_inventory_gcp
     title: GCP Asset Inventory
     description: Asset Inventory Discovery for GCP
