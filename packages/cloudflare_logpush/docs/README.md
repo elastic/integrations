@@ -292,7 +292,6 @@ An example event for `access_request` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245333949f"
     }
 }
-
 ```
 
 **Exported fields**
@@ -439,7 +438,6 @@ An example event for `audit` looks as following:
         "id": "enl3j9du8rnx2swwd9l32qots7l54t9s"
     }
 }
-
 ```
 
 **Exported fields**
@@ -610,7 +608,6 @@ An example event for `casb` looks as following:
         "scheme": "https"
     }
 }
-
 ```
 
 **Exported fields**
@@ -770,7 +767,6 @@ An example event for `device_posture` looks as following:
         "version": "2023.3.258"
     }
 }
-
 ```
 
 **Exported fields**
@@ -900,7 +896,6 @@ An example event for `dns` looks as following:
         "cloudflare_logpush-dns"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1050,7 +1045,6 @@ An example event for `dns_firewall` looks as following:
         "cloudflare_logpush-dns_firewall"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1258,7 +1252,6 @@ An example event for `firewall_event` looks as following:
         "version": "2.1"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1295,6 +1288,7 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.rule.id | The Cloudflare security product-specific RuleID triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.source | The Cloudflare security product triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.timestamp | The date and time the event occurred at the edge. | date |
+| cloudflare_logpush.firewall_event.zone.name | The human-readable name of the zone. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -1540,7 +1534,6 @@ An example event for `gateway_dns` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245000000"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1797,7 +1790,6 @@ An example event for `gateway_http` looks as following:
         "original": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) Firefox/112.0"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2013,7 +2005,6 @@ An example event for `gateway_network` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245723949f"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2585,7 +2576,6 @@ An example event for `magic_ids` looks as following:
         "cloudflare_logpush-magic_ids"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -2699,7 +2689,6 @@ An example event for `nel_report` looks as following:
         "cloudflare_logpush-nel_report"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -2970,7 +2959,6 @@ An example event for `network_analytics` looks as following:
         "cloudflare_logpush-network_analytics"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -3281,7 +3269,6 @@ An example event for `network_session` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245723949f"
     }
 }
-
 ```
 
 **Exported fields**
@@ -3509,7 +3496,6 @@ An example event for `sinkhole_http` looks as following:
         "original": "Mozilla/5.0"
     }
 }
-
 ```
 
 **Exported fields**
@@ -3688,7 +3674,6 @@ An example event for `spectrum_event` looks as following:
         "cloudflare_logpush-spectrum_event"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -3854,7 +3839,6 @@ An example event for `workers_trace` looks as following:
         "scheme": "http"
     }
 }
-
 ```
 
 **Exported fields**

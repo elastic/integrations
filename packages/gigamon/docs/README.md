@@ -4,42 +4,32 @@ Gigamon leverages deep packet inspection (DPI) to extract over 7500+ app related
 
 ## Data streams
 
-The Gigamon integration currently provides a single
-data stream: `ami`.
+The Cybereason integration collects the following logs from Gigamon:
+
+- **ami**
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
-You have a few options for installing and managing an Elastic Agent:
+There are several options for installing and managing Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
-With this approach, you install Elastic Agent and use Fleet in Kibana to
-define, configure, and manage your agents in a central location. We recommend
-using Fleet management because it makes the management and upgrade of your
-agents considerably easier.
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
 
 ### Install Elastic Agent in standalone mode (advanced users):
 
-With this approach, you install Elastic Agent and manually configure the agent
-locally on the system where it is installed. You are responsible for managing
-and upgrading the agents. This approach is reserved for advanced users only.
+With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
 
 ### Install Elastic Agent in a containerized environment:
 
-You can run Elastic Agent inside a container, either with Fleet Server or
-standalone. Docker images for all versions of Elastic Agent are available
-from the Elastic Docker registry, and we provide deployment manifests for
-running on Kubernetes.
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more
-information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
-The minimum **kibana.version** required is **8.12.0**.
 
 
 ### Setup
@@ -103,29 +93,30 @@ An example event for `ami` looks as following:
 {
     "@timestamp": "2023-05-16T15:25:25.000Z",
     "agent": {
-        "ephemeral_id": "0e2836eb-563d-4550-9858-6fc4af32480a",
-        "id": "931b4c56-94b9-481d-a440-a4d9f31c41fd",
-        "name": "elastic-agent-58986",
+        "ephemeral_id": "81522d17-a23d-4c0b-9fc3-619ddebd6764",
+        "id": "ef72383f-04dc-4020-9713-afbc5873e74d",
+        "name": "elastic-agent-95129",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.15.1"
     },
     "data_stream": {
         "dataset": "gigamon.ami",
-        "namespace": "16851",
+        "namespace": "49902",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "931b4c56-94b9-481d-a440-a4d9f31c41fd",
+        "id": "ef72383f-04dc-4020-9713-afbc5873e74d",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.15.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "gigamon.ami",
-        "ingested": "2024-08-23T10:00:41Z",
+        "ingested": "2024-10-21T06:12:50Z",
+        "kind": "event",
         "original": "{\"app_id\":\"32\",\"app_name\":\"dns\",\"device_inbound_interface\":\"0\",\"dns_class\":\"1\",\"dns_flags\":\"0\",\"dns_host\":\"pnstrex-83816.local\",\"dns_host_addr\":\"10.114.82.101\",\"dns_host_class\":\"1\",\"dns_host_raw\":\"706e73747265782d38333831362e6c6f63616c\",\"dns_host_type\":\"PTR\",\"dns_name\":\"a.b.2.b.9.6.c.2.3.9.3.d.6.2.6.a.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. i:p6.arpa\",\"dns_opcode\":\"0\",\"dns_qdcount\":\"4\",\"dns_query\":\"f.7.5.2.e.7.6.2.4.c.1.c.4.c.6.1.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. ip6.arpa\",\"dns_query_type\":\"255\",\"dns_transaction_id\":\"0\",\"dns_ttl\":\"120\",\"dst_bytes\":\"0\",\"dst_ip\":\"224.0.0.251\",\"dst_mac\":\"01:00:5e:00:00:fb\",\"dst_packets\":\"0\",\"dst_port\":\"5353\",\"egress_intf_id\":\"0\",\"end_reason\":\"1\",\"end_time\":\"2023:12:13 15:25:11.181\",\"generator\":\"gs_apps_appInst16_423722da-33ec-1556-b24b-cda2e74a53f6\",\"id\":\"679408454713072647\",\"intf_name\":\"0\",\"ip_version\":\"4\",\"protocol\":\"17\",\"seq_num\":\"656\",\"src_bytes\":\"337\",\"src_ip\":\"10.114.82.101\",\"src_mac\":\"00:50:56:8d:89:41\",\"src_packets\":\"1\",\"src_port\":\"5353\",\"start_time\":\"2023:12:13 15:25:11.181\",\"sys_up_time_first\":\"3497355275\",\"sys_up_time_last\":\"3497355275\",\"ts\":\"Thu May 16 15:25:25 2023\",\"vendor\":\"Gigamon\",\"version\":\"6.5.00\"}"
     },
     "gigamon": {

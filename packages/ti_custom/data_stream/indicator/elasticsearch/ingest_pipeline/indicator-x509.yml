@@ -1,0 +1,170 @@
+---
+description: Pipeline for processing x509 STIX patterns
+processors:
+  - grok:
+      field: _ingest._value
+      patterns:
+        - "(?i:^\\[?x509-certificate:hashes\\.'?MD5'?%{SPACE}=%{SPACE}'%{DATA:_tmp.md5}'\\]?)"
+        - "(?i:^\\[?x509-certificate:hashes\\.'?SHA-?1'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha1}'\\]?)"
+        - "(?i:^\\[?x509-certificate:hashes\\.'?SHA-?256'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha256}'\\]?)"
+        - "^\\[?x509-certificate:serial_number%{SPACE}=%{SPACE}'%{DATA:_tmp.serial_number}'\\]?"
+        - "^\\[?x509-certificate:signature_algorithm%{SPACE}=%{SPACE}'%{DATA:_tmp.signature_algorithm}'\\]?"
+        - "^\\[?x509-certificate:version%{SPACE}=%{SPACE}'%{DATA:_tmp.version_number}'\\]?"
+        - "^\\[?x509-certificate:validity_not_after%{SPACE}=%{SPACE}'%{TIMESTAMP_ISO8601:_tmp.not_after}'\\]?"
+        - "^\\[?x509-certificate:validity_not_before%{SPACE}=%{SPACE}'%{TIMESTAMP_ISO8601:_tmp.not_before}'\\]?"
+        - "^\\[?x509-certificate:issuer%{SPACE}=%{SPACE}'%{DATA:_tmp.issuer}'\\]?"
+        - "^\\[?x509-certificate:subject%{SPACE}=%{SPACE}'%{DATA:_tmp.subject}'\\]?"
+      ignore_failure: true
+
+  # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
+  - append:
+      field: threat.indicator.file.hash.md5
+      value: '{{{ _tmp.md5 }}}'
+      if: ctx._tmp?.md5 != null
+  - append:
+      field: threat.indicator.file.hash.sha1
+      value: '{{{ _tmp.sha1 }}}'
+      if: ctx._tmp?.sha1 != null
+  - append:
+      field: threat.indicator.file.hash.sha256
+      value: '{{{ _tmp.sha256 }}}'
+      if: ctx._tmp?.sha256 != null
+  - append:
+      field: threat.indicator.x509.serial_number
+      value: '{{{ _tmp.serial_number }}}'
+      if: ctx._tmp?.serial_number != null
+  - append:
+      field: threat.indicator.x509.signature_algorithm
+      value: '{{{ _tmp.signature_algorithm }}}'
+      if: ctx._tmp?.signature_algorithm != null
+  - append:
+      field: threat.indicator.x509.version_number
+      value: '{{{ _tmp.version_number }}}'
+      if: ctx._tmp?.version_number != null
+  - append:
+      field: threat.indicator.x509.issuer.distinguished_name
+      value: '{{{ _tmp.issuer }}}'
+      if: ctx._tmp?.issuer != null
+  - append:
+      field: threat.indicator.x509.subject.distinguished_name
+      value: '{{{ _tmp.subject }}}'
+      if: ctx._tmp?.subject != null
+
+  - kv:
+      field: _tmp.issuer
+      target_field: _tmp.issuer_fields
+      field_split: "(?<!\\\\),"
+      value_split: "="
+      trim_key: " "
+      ignore_failure: true
+      if: ctx._tmp?.issuer != null
+
+  - append:
+      field: threat.indicator.x509.issuer.common_name
+      value: '{{{ _tmp.issuer_fields.CN }}}'
+      if: ctx._tmp.issuer_fields?.CN != null
+  - append:
+      field: threat.indicator.x509.issuer.country
+      value: '{{{ _tmp.issuer_fields.C }}}'
+      if: ctx._tmp?.issuer_fields?.C != null
+  - append:
+      field: threat.indicator.x509.issuer.locality
+      value: '{{{ _tmp.issuer_fields.L }}}'
+      if: ctx._tmp?.issuer_fields?.L != null
+  - append:
+      field: threat.indicator.x509.issuer.organization
+      value: '{{{ _tmp.issuer_fields.O }}}'
+      if: ctx._tmp?.issuer_fields?.O != null
+  - append:
+      field: threat.indicator.x509.issuer.organizational_unit
+      value: '{{{ _tmp.issuer_fields.OU }}}'
+      if: ctx._tmp?.issuer_fields?.OU != null
+  - append:
+      field: threat.indicator.x509.issuer.state_or_province
+      value: '{{{ _tmp.issuer_fields.S }}}'
+      if: ctx._tmp?.issuer_fields?.S != null
+  - append:
+      field: threat.indicator.x509.issuer.state_or_province
+      value: '{{{ _tmp.issuer_fields.ST }}}'
+      if: ctx._tmp?.issuer_fields?.ST != null
+  - append:
+      field: threat.indicator.x509.issuer.state_or_province
+      value: '{{{ _tmp.issuer_fields.P }}}'
+      if: ctx._tmp?.issuer_fields?.P != null
+
+  - kv:
+      field: _tmp.subject
+      target_field: _tmp.subject_fields
+      field_split: "(?<!\\\\),"
+      value_split: "="
+      trim_key: " "
+      ignore_failure: true
+      if: ctx._tmp?.subject != null
+
+  - append:
+      field: threat.indicator.x509.subject.common_name
+      value: '{{{ _tmp.subject_fields.CN }}}'
+      if: ctx._tmp?.subject_fields?.CN != null
+  - append:
+      field: threat.indicator.x509.subject.country
+      value: '{{{ _tmp.subject_fields.C }}}'
+      if: ctx._tmp?.subject_fields?.C != null
+  - append:
+      field: threat.indicator.x509.subject.locality
+      value: '{{{ _tmp.subject_fields.L }}}'
+      if: ctx._tmp?.subject_fields?.L != null
+  - append:
+      field: threat.indicator.x509.subject.organization
+      value: '{{{ _tmp.subject_fields.O }}}'
+      if: ctx._tmp?.subject_fields?.O != null
+  - append:
+      field: threat.indicator.x509.subject.organizational_unit
+      value: '{{{ _tmp.subject_fields.OU }}}'
+      if: ctx._tmp?.subject_fields?.OU != null
+  - append:
+      field: threat.indicator.x509.subject.state_or_province
+      value: '{{{ _tmp.subject_fields.S }}}'
+      if: ctx._tmp?.subject_fields?.S != null
+  - append:
+      field: threat.indicator.x509.subject.state_or_province
+      value: '{{{ _tmp.subject_fields.ST }}}'
+      if: ctx._tmp?.subject_fields?.ST != null
+  - append:
+      field: threat.indicator.x509.subject.state_or_province
+      value: '{{{ _tmp.subject_fields.P }}}'
+      if: ctx._tmp?.subject_fields?.P != null
+
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.md5 }}}'
+      if: ctx._tmp?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.sha1 }}}'
+      if: ctx._tmp?.sha1 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{ _tmp.sha256 }}}'
+      if: ctx._tmp?.sha256 != null
+      allow_duplicates: false
+
+  - date:
+      field: _tmp.not_after
+      target_field: threat.indicator.x509.not_after
+      formats:
+        - "ISO8601"
+        - "yyyy-MM-dd HH:mm:ssz"
+      if: "ctx._tmp.not_after != null"
+  - date:
+      field: _tmp.not_before
+      target_field: threat.indicator.x509.not_before
+      formats:
+        - "ISO8601"
+        - "yyyy-MM-dd HH:mm:ssz"
+      if: "ctx._tmp.not_before != null"
+
+  - remove:
+      field: _tmp
+      ignore_missing: true

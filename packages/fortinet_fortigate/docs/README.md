@@ -170,7 +170,6 @@ An example event for `log` looks as following:
         "path": "/"
     }
 }
-
 ```
 
 **Exported fields**
@@ -215,6 +214,7 @@ An example event for `log` looks as following:
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
 | destination.user.email | User email address. | keyword |
+| destination.user.group.name | Name of the group. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |

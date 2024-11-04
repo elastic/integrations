@@ -165,12 +165,12 @@ processors:
       ignore_failure: true
   - set:
       field: source.user.name
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       ignore_empty_value: true
       if: ctx?.user?.name != null
   - set:
       field: client.user.name
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       ignore_empty_value: true
       if: ctx?.user?.name != null
   - rename:
@@ -448,6 +448,27 @@ processors:
                 arr[i].remove("detailEntry");
               }
             }
+
+            // Ensure that all entries in changeDetails.{from,to}.* are strings.
+            def cd = arr[i].get("changeDetails");
+            if (cd != null) {
+              if (cd.from instanceof Map) {
+                for (def f: cd.from.entrySet()) {
+                  def v = f.getValue();
+                  if (v != null && (v instanceof String)) {
+                    cd.from[f.getKey()] = v.toString()
+                  }
+                }
+              }
+              if (cd.to instanceof Map) {
+                for (def t: cd.to.entrySet()) {
+                  def v = t.getValue();
+                  if (v != null && (v instanceof String)) {
+                    cd.to[t.getKey()] = v.toString()
+                  }
+                }
+              }
+            }      
           }
 
           for (def i = 0; i < arr.length; i++) {
@@ -491,52 +512,52 @@ processors:
       ignore_missing: true
   - set:
       field: client.user.id
-      value: "{{okta.actor.id}}"
+      value: "{{{okta.actor.id}}}"
       ignore_empty_value: true
       if: ctx?.okta?.actor?.id != null
   - set:
       field: source.user.id
-      value: "{{okta.actor.id}}"
+      value: "{{{okta.actor.id}}}"
       ignore_empty_value: true
       if: ctx?.okta?.actor?.id != null
   - set:
       field: client.user.full_name
-      value: "{{okta.actor.display_name}}"
+      value: "{{{okta.actor.display_name}}}"
       ignore_empty_value: true
       if: ctx?.okta?.actor?.display_name != null
   - set:
       field: source.user.full_name
-      value: "{{okta.actor.display_name}}"
+      value: "{{{okta.actor.display_name}}}"
       ignore_empty_value: true
       if: ctx?.okta?.actor?.display_name != null
   - set:
       field: user.full_name
-      value: "{{okta.actor.display_name}}"
+      value: "{{{okta.actor.display_name}}}"
       ignore_empty_value: true
       if: ctx?.okta?.actor?.display_name != null
   - append:
       field: related.user
-      value: "{{okta.actor.display_name}}"
+      value: "{{{okta.actor.display_name}}}"
       allow_duplicates: false
       if: ctx?.okta?.actor?.display_name != null
   - append:
       field: related.user
-      value: "{{user.target.full_name}}"
+      value: "{{{user.target.full_name}}}"
       allow_duplicates: false
       if: ctx?.user?.target?.full_name != null
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx?.user?.name != null
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx?.source?.ip != null
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx?.destination?.ip != null
   - remove:
@@ -601,7 +622,7 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        Processor '{{ _ingest.on_failure_processor_type }}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
 

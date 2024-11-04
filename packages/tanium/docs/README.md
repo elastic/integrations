@@ -149,7 +149,6 @@ An example event for `action_history` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -253,7 +252,6 @@ An example event for `client_status` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -356,7 +354,6 @@ An example event for `discover` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -490,7 +487,6 @@ An example event for `endpoint_config` looks as following:
         "id": "1"
     }
 }
-
 ```
 
 **Exported fields**
@@ -612,7 +608,6 @@ An example event for `reporting` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -956,7 +951,6 @@ An example event for `threat_response` looks as following:
         "domain": "xyz"
     }
 }
-
 ```
 
 **Exported fields**

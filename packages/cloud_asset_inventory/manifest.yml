@@ -1,7 +1,7 @@
-format_version: 3.0.0
+format_version: 3.2.2
 name: cloud_asset_inventory
 title: "Cloud Asset Inventory"
-version: "0.1.9"
+version: "0.5.0"
 source:
   license: "Elastic-2.0"
 description: "Discover and Create Cloud Assets Inventory"
@@ -11,7 +11,7 @@ categories:
   - cloudsecurity_cdr
 conditions:
   kibana:
-    version: "^8.15.0"
+    version: ">=8.16.0"
   elastic:
     subscription: basic
     capabilities:
@@ -27,6 +27,14 @@ policy_templates:
   - name: asset_inventory
     title: Cloud Asset Inventory
     description: Discover assets in your Cloud Environment and store within Elastic Search
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: cloud-security-posture
     multiple: true
     icons:
       - src: /img/logo_cloud_security_posture.svg
@@ -36,10 +44,53 @@ policy_templates:
     data_streams:
       - asset_inventory
     inputs:
-      - type: cloudbeat/asset_inventory_aws
-        title: AWS Asset Inventory
-        description: AWS Asset Inventory
-        vars: []
+        - type: cloudbeat/asset_inventory_aws
+          title: AWS Asset Inventory
+          description: AWS Asset Inventory
+          vars:
+            - name: cloud_formation_template
+              type: text
+              title: CloudFormation Template
+              multi: false
+              required: true
+              show_user: false
+              description: Template URL to Cloud Formation Quick Create Stack
+              # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
+              default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-asset-inventory-ACCOUNT_TYPE-8.15.0.yml&stackName=Elastic-Cloud-Security-Posture-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
+            - name: cloud_formation_credentials_template
+              type: text
+              title: CloudFormation Credentials Template
+              multi: false
+              required: true
+              show_user: false
+              description: Template URL to Cloud Formation Cloud Credentials Stack
+              # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
+              default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-asset-inventory-direct-access-key-ACCOUNT_TYPE-8.15.0.yml
+        - type: cloudbeat/asset_inventory_azure
+          title: Azure Asset Inventory
+          description: Azure Asset Inventory
+          vars:
+            - name: arm_template_url
+              type: text
+              title: ARM Template URL
+              multi: false
+              required: true
+              show_user: false
+              description: A URL to the ARM Template for creating a new deployment
+              # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
+              default: https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fcloudbeat%2F8.15%2Fdeploy%2Fasset-inventory-arm%2FARM-for-ACCOUNT_TYPE.json
+        - type: cloudbeat/asset_inventory_gcp
+          title: GCP Asset Inventory
+          description: GCP Asset Inventory
+          vars:
+            - name: cloud_shell_url
+              type: text
+              title: CloudShell URL
+              multi: false
+              required: true
+              show_user: false
+              description: A URL to CloudShell for creating a new deployment
+              default: https://shell.cloud.google.com/cloudshell/?ephemeral=true&cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Felastic%2Fcloudbeat&cloudshell_git_branch=8.15&cloudshell_workspace=deploy%2Fdeployment-manager&show=terminal
     categories:
       - security
       - cloud

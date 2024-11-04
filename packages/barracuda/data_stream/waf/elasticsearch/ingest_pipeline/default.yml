@@ -16,6 +16,15 @@ processors:
   - dissect:
       field: _temp.full_message
       pattern: "%{barracuda.waf.unit_name} %{barracuda.waf.log_type} %{_temp.remMessage}"
+  #################
+  # Sanitize logs
+  #################
+  - gsub:
+      field: _temp.remMessage
+      pattern: "[\u0000-\u001F\u007F]"
+      replacement: ""
+      ignore_missing: true
+      if: ctx._temp?.remMessage != ''
   ################################################################
   # Collect the time related fields from the event and join them to form a pattern to parse
   ################################################################
@@ -72,6 +81,7 @@ processors:
                     handleList(x);
                 }
             }
+            list.removeIf(v -> v == null || v == '' || v == '""' || v == "[]" || v == '-' || v == '"-"' || ((v instanceof List || v instanceof Map) && v.isEmpty()));
         }
         handleMap(ctx);
   ################################################################
@@ -93,4 +103,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"

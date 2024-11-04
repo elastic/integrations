@@ -23,30 +23,30 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-05-12T11:30:05.248Z",
     "agent": {
-        "ephemeral_id": "55a748a5-5ecc-451d-859d-988ea77abde5",
-        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "7f9603e8-5411-4ed1-acdc-d842f98e5c8b",
+        "id": "fa4b2c2b-d00f-4e96-aaf3-d5de2b8544e6",
+        "name": "elastic-agent-97786",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "santa.log",
-        "namespace": "ep",
+        "namespace": "85590",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
+        "id": "fa4b2c2b-d00f-4e96-aaf3-d5de2b8544e6",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "link",
         "agent_id_status": "verified",
         "dataset": "santa.log",
-        "ingested": "2023-07-06T20:01:12Z",
+        "ingested": "2024-10-01T13:57:49Z",
         "kind": "event"
     },
     "file": {
@@ -58,21 +58,23 @@ An example event for `log` looks as following:
         "name": "wheel"
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "1de1e3b6561d4ccb9731539ce2f3baf3",
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-97786",
+        "id": "8269eab9370b4429947d2a16c3058fcb",
         "ip": [
-            "192.168.16.7"
+            "172.19.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-C0-A8-10-07"
+            "02-42-AC-12-00-04",
+            "02-42-AC-13-00-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-97786",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "6.10.0-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -93,7 +95,7 @@ An example event for `log` looks as following:
         "args": [
             "/usr/sbin/newsyslog"
         ],
-        "entity_id": "bb043b0c-36d1-4054-81ed-2d3f4546a433-71559-1096716",
+        "entity_id": "fa4b2c2b-d00f-4e96-aaf3-d5de2b8544e6-71559-1096716",
         "executable": "/usr/sbin/newsyslog",
         "name": "newsyslog",
         "parent": {
@@ -119,7 +121,6 @@ An example event for `log` looks as following:
         "name": "root"
     }
 }
-
 ```
 
 **Exported fields**
@@ -145,12 +146,16 @@ An example event for `log` looks as following:
 | santa.disk.appearance | Timestamp for volume operation. | date |
 | santa.disk.bsdname | The disk BSD name. | keyword |
 | santa.disk.bus | The disk bus protocol. | keyword |
+| santa.disk.dmgpath | The DMG (disk image) path. | keyword |
 | santa.disk.fs | The disk volume kind (filesystem type). | keyword |
 | santa.disk.model | The disk model. | keyword |
 | santa.disk.mount | The disk volume path. | keyword |
 | santa.disk.serial | The disk serial number. | keyword |
 | santa.disk.volume | The volume name. | keyword |
+| santa.event.uid | Event UID. | keyword |
+| santa.event.user | Event user. | keyword |
 | santa.explain | Further details for the decision. | keyword |
+| santa.graphical_session_id | The graphical session ID. | long |
 | santa.mode | Operating mode of Santa. | keyword |
 | santa.pidversion | macOS process identity version. | long |
 | santa.reason | Reason for the decision. | keyword |
