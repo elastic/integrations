@@ -305,6 +305,6 @@ The `error` data stream collects the Nginx Ingress Controller error logs.
 | attribute.log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | attributes.log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | body.structured.message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| body.structured.error.source.file | Source file | keyword |
-| body.structured.error.source.line_number | Source line number | long |
-| body.structured.error.thread_id | Thread ID | long |
+| body.structured.source.file.name | Source file | keyword |
+| body.structured.source.line_number | Source line number | long |
+| body.structured.thread_id | Thread ID | long |
