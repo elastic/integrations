@@ -162,6 +162,28 @@ processors:
       patterns:
         - "file:_(?<file.path>[^;]+)(; process:_pid:%{NUMBER:process.pid})?"
       ignore_missing: true
+  - split:
+      field: winlog.event_data.Path
+      separator: ";"
+      target_field: windows_defender.evidence_paths
+      ignore_missing: true
+      ignore_failure: true
+  - trim:
+      field: windows_defender.evidence_paths
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      field: windows_defender.evidence_paths
+      pattern: "file:_"
+      replacement: ""
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      field: windows_defender.evidence_paths
+      pattern: "process:_"
+      replacement: ""
+      ignore_missing: true
+      ignore_failure: true
   - grok:
       field: winlog.event_data.FileName
       patterns:
