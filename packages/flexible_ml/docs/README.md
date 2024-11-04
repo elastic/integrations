@@ -1,7 +1,7 @@
 <!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
 <!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
 
-# test pytorch
+# Test other ML models
 
 <!-- The test pytorch integration allows you to monitor {name of service}. {name of service} is {describe service}.
 
