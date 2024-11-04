@@ -8,16 +8,16 @@ instances. It can parse access and error logs created by the ingress.
 The integration was tested with the Nginx Ingress Controller v0.30.0 and v0.40.2. The log format is described
 [here](https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/docs/user-guide/nginx-configuration/log-format.md).
 
-**EDOT collector supported versions:** 8.16.0-SNAPSHOT
+**EDOT collector supported versions:** 8.16.0
 
 **OpenTelemetry collector components:**
 
-- Filelog receiver v0.110.0+
-- Transform processor v0.110.0+
-- Resource detector processor v0.110.0+
-- (Optional) GeoIP processor v0.110.0+
-- Elasticsearch exporter v0.110.0+
-- Filestorage extension v0.110.0+
+- Filelog receiver v0.112.0+
+- Transform processor v0.112.0+
+- Resource detector processor v0.112.0+
+- (Optional) GeoIP processor v0.112.0+
+- Elasticsearch exporter v0.112.0+
+- Filestorage extension v0.112.0+
 
 ## Usage
 
@@ -44,12 +44,12 @@ processors:
             # .+: Matches the rest of the log line (the message part, without needing specific timestamp or file format).
           - IsMatch(body, "^[EWF]\\d{4} .+")
         statements:
-          - set(body, ExtractGrokPatterns(body, "%{LOG_LEVEL:log.level}%{MONTHNUM}%{MONTHDAY} %{HOUR}:%{MINUTE}:%{SECOND}\\.%{MICROS}%{SPACE}%{NUMBER:error.thread_id} %{SOURCE_FILE:error.source.file}:%{NUMBER:error.source.line_number}\\] %{GREEDYMULTILINE:message}", true, ["LOG_LEVEL=[A-Z]", "MONTHNUM=(0[1-9]|1[0-2])", "MONTHDAY=(0[1-9]|[12][0-9]|3[01])", "HOUR=([01][0-9]|2[0-3])", "MINUTE=[0-5][0-9]", "SECOND=[0-5][0-9]", "MICROS=[0-9]{6}", "SOURCE_FILE=[^:]+", "GREEDYMULTILINE=(.|\\n)*"]))
+          - set(body, ExtractGrokPatterns(body, "%{LOG_LEVEL:log.level}%{MONTHNUM}%{MONTHDAY} %{HOUR}:%{MINUTE}:%{SECOND}\\.%{MICROS}%{SPACE}%{NUMBER:thread_id} %{SOURCE_FILE:source.file.name}:%{NUMBER:source.line_number}\\] %{GREEDYMULTILINE:message}", true, ["LOG_LEVEL=[A-Z]", "MONTHNUM=(0[1-9]|1[0-2])", "MONTHDAY=(0[1-9]|[12][0-9]|3[01])", "HOUR=([01][0-9]|2[0-3])", "MINUTE=[0-5][0-9]", "SECOND=[0-5][0-9]", "MICROS=[0-9]{6}", "SOURCE_FILE=[^:]+", "GREEDYMULTILINE=(.|\\n)*"]))
 
           - set(attributes["data_stream.dataset"], "nginx_ingress_controller.error")
 
           # LogRecord event: https://github.com/open-telemetry/semantic-conventions/pull/982
-          - set(attributes["event.name"], "nginx.ingress.controller.error")
+          - set(attributes["event.name"], "nginx_ingress_controller.error")
 
   transform/parse_nginx_ingress_access/log:
     error_mode: ignore
@@ -77,7 +77,7 @@ processors:
           - set(attributes["data_stream.dataset"], "nginx_ingress_controller.access")
 
           # LogRecord event: https://github.com/open-telemetry/semantic-conventions/pull/982
-          - set(attributes["event.name"], "nginx.ingress.controller.access")
+          - set(attributes["event.name"], "nginx_ingress_controller.access")
           - set(attributes["event.timestamp"], String(Time(body["nginx_ingress_controller.access.time"], "%d/%b/%Y:%H:%M:%S %z")))
 
           - delete_key(body, "nginx_ingress_controller.access.time")
