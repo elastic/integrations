@@ -117,7 +117,7 @@ processors:
             || eventName == "StopLogging") {
             addField(enrichCtx.target, "json.requestParameters.name");
           } else if (eventName == "DescribeTrails") {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
           }
         }
 
@@ -262,7 +262,7 @@ processors:
                     || eventName == "DescribeNetworkAcls"
                     || eventName == "DescribeVolumes"
           ) {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
           }
         }
 
@@ -363,7 +363,7 @@ processors:
             
           } else if (eventName == "ListRoles"
                     || eventName == "ListUsers") {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
           }
         }
 
@@ -407,7 +407,7 @@ processors:
             addField(enrichCtx.target, "json.requestParameters.functionName");
 
           } else if (eventName.contains("ListFunctions")) {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
 
           }
         }
@@ -481,7 +481,7 @@ processors:
             addField(enrichCtx.target, "json.responseElements.dBSnapshotIdentifier");
             
           } else if (eventName == "DescribeDBInstances") {
-            addField(enrichCtx.target, "json.userIdentifier.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
 
           }
         }
@@ -531,7 +531,7 @@ processors:
             addField(enrichCtx.target, "json.requestParameters.ReplicationConfiguration.Rule.Destination.Bucket");
 
           } else if (eventName == "ListBuckets") {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
 
           }
         }
@@ -556,7 +556,7 @@ processors:
           }
 
           if (eventName == "ConsoleLogin") {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
           }
         }
 
@@ -589,13 +589,13 @@ processors:
             }
 
             if (instanceIds.size() == 1 && instanceIds.get(0) == "*") {
-              instanceIds = [ field("json.userIdentity.accountId").get(null) ]; // if all instances, point to full account
+              instanceIds = [ field("json.recipientAccountId").get(null) ]; // if all instances, point to full account
             }
 
             addValues(enrichCtx.target, instanceIds);
 
           } else if (eventName == "ListInstanceAssociations") {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
           }
         }
 
@@ -624,11 +624,10 @@ processors:
               enrichCtx.actor = field("json.userIdentity.arn").get(null);
             }
 
-
             addField(enrichCtx.target, "json.requestParameters.roleArn");
 
           } else if (eventName == "GetCallerIdentity") {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
             enrichCtx.actor = field("json.userIdentity.arn").get(null);
 
           }
@@ -681,7 +680,7 @@ processors:
           }
 
           if (eventName == "DescribeLoadBalancers") {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
 
           }
         }
@@ -692,7 +691,7 @@ processors:
           }
 
           if (eventName == "ListTables") {
-            addField(enrichCtx.target, "json.userIdentity.accountId");
+            addField(enrichCtx.target, "json.recipientAccountId");
 
           }
         }
