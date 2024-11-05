@@ -1,0 +1,14 @@
+---
+description: Pipeline for PFsense SNORT logs.
+processors:
+    - grok:
+            field: message
+            patterns:
+                - '\[%{NUMBER:snort.generator_id}:%{NUMBER:snort.signature_id}:%{NUMBER:snort.signature_revision}\] \(%{DATA:snort.preprocessor}\) %{GREEDYDATA:snort.alert_message} \[Classification: %{DATA:snort.classification}\] \[Priority: %{NONNEGINT:snort.priority:long}\] \{%{WORD:network.protocol}\} %{IP:source.address}:%{NUMBER:source.port:long} -> %{IP:destination.address}:%{NUMBER:destination.port:long}'
+    - lowercase:
+        field: network.protocol
+        ignore_missing: true
+on_failure:
+    - set:
+          field: error.message
+          value: "{{{ _ingest.on_failure_message }}}"

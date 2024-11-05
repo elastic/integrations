@@ -1,0 +1,25 @@
+version: '2.3'
+services:
+  claroty-ctd-udp:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9536 -p=udp /sample_logs/claroty_ctd_event.log
+  claroty-ctd-tcp:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9537 -p=tcp /sample_logs/claroty_ctd_event.log
+  claroty-ctd-cel:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    hostname: claroty_ctd
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "8090"
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config.yml

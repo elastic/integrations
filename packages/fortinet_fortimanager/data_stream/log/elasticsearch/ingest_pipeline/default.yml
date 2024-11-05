@@ -975,6 +975,172 @@ processors:
       field: _temp.protocol
       target_field: fortimanager.log.protocol
       ignore_missing: true
+  - convert:
+      field: _temp.srcip
+      tag: 'convert_srcip_to_ip'
+      target_field: fortimanager.log.srcip
+      type: ip
+      ignore_missing: true
+      if: ctx._temp?.srcip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: fortimanager.log.srcip
+      ignore_empty_value: true
+  - rename:
+      field: _temp.srcname
+      target_field: fortimanager.log.srcname
+      ignore_missing: true
+  - set:
+      field: source.address
+      copy_from: fortimanager.log.srcname
+      ignore_empty_value: true
+  - convert:
+      field: _temp.srcport
+      tag: 'convert_srcport'
+      target_field: fortimanager.log.srcport
+      type: long
+      ignore_missing: true
+      if: ctx._temp?.srcport != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      copy_from: fortimanager.log.srcport
+      ignore_empty_value: true
+  - convert:
+      field: _temp.dstip
+      tag: 'convert_dstip_to_ip'
+      target_field: fortimanager.log.dstip
+      type: ip
+      ignore_missing: true
+      if: ctx._temp?.dstip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      copy_from: fortimanager.log.dstip
+      ignore_empty_value: true
+  - rename:
+      field: _temp.dstname
+      target_field: fortimanager.log.dstname
+      ignore_missing: true
+  - set:
+      field: destination.address
+      copy_from: fortimanager.log.dstname
+      ignore_empty_value: true
+  - rename:
+      field: _temp.dstcountry
+      target_field: fortimanager.log.dstcountry
+      ignore_missing: true
+  - set:
+      field: destination.geo.country_name
+      copy_from: fortimanager.log.dstcountry
+      ignore_empty_value: true
+  - rename:
+      field: _temp.unauthuser
+      target_field: fortimanager.log.unauthuser
+      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: fortimanager.log.unauthuser
+      ignore_empty_value: true
+  - convert:
+      field: _temp.sentbyte
+      tag: 'convert_sentbyte'
+      target_field: fortimanager.log.sentbyte
+      type: long
+      ignore_missing: true
+      if: ctx._temp?.sentbyte != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.bytes
+      copy_from: fortimanager.log.sentbyte
+      ignore_empty_value: true
+  - convert:
+      field: _temp.rcvdbyte
+      tag: 'convert_rcvdbyte'
+      target_field: fortimanager.log.rcvdbyte
+      type: long
+      ignore_missing: true
+      if: ctx._temp?.rcvdbyte != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.bytes
+      copy_from: fortimanager.log.rcvdbyte
+      ignore_empty_value: true
+  - rename:
+      field: _temp.osname
+      target_field: fortimanager.log.osname
+      ignore_missing: true
+  - set:
+      field: os.name
+      copy_from: fortimanager.log.osname
+      ignore_empty_value: true
+  - rename:
+      field: _temp.direction
+      target_field: fortimanager.log.direction
+      ignore_missing: true
+  - set:
+      field: network.direction
+      copy_from: fortimanager.log.direction
+      ignore_empty_value: true
+  - set:
+      field: network.direction
+      value: inbound
+      if: ctx.network?.direction == "incoming"
+  - set:
+      field: network.direction
+      value: outbound
+      if: ctx.network?.direction == "outgoing"
+  - rename:
+      field: _temp.crlevel
+      target_field: fortimanager.log.crlevel
+      ignore_missing: true
+  - set:
+      field: risk.static_level
+      copy_from: fortimanager.log.crlevel
+      ignore_empty_value: true
+  - convert:
+      field: _temp.crscore
+      tag: 'convert_crscore'
+      target_field: fortimanager.log.crscore
+      type: long
+      ignore_missing: true
+      if: ctx._temp?.crscore != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: risk.static_score_norm
+      copy_from: fortimanager.log.crscore
+      ignore_empty_value: true
+  - rename:
+      field: _temp.apprisk
+      target_field: fortimanager.log.apprisk
+      ignore_missing: true
+  - rename:
+      field: _temp.appcat
+      target_field: fortimanager.log.appcat
+      ignore_missing: true
+  - set:
+      field: rule.category
+      copy_from: fortimanager.log.appcat
+      ignore_empty_value: true
   - set:
       field: network.transport
       copy_from: fortimanager.log.protocol
@@ -1255,22 +1421,35 @@ processors:
       field:
         - fortimanager.log.action
         - fortimanager.log.adom.name
+        - fortimanager.log.crlevel
+        - fortimanager.log.crscore
         - fortimanager.log.date
         - fortimanager.log.dev.name
         - fortimanager.log.device.id
         - fortimanager.log.device.name
+        - fortimanager.log.direction
+        - fortimanager.log.dstcountry
+        - fortimanager.log.dstip
+        - fortimanager.log.dstname
         - fortimanager.log.end_time
         - fortimanager.log.err_code
         - fortimanager.log.event.id
         - fortimanager.log.file
         - fortimanager.log.level
         - fortimanager.log.msg
+        - fortimanager.log.osname
         - fortimanager.log.pid
         - fortimanager.log.protocol
+        - fortimanager.log.rcvdbyte
         - fortimanager.log.remote.ip
         - fortimanager.log.remote.port
+        - fortimanager.log.sentbyte
         - fortimanager.log.serial
+        - fortimanager.log.srcip
+        - fortimanager.log.srcname
+        - fortimanager.log.srcport
         - fortimanager.log.start_time
+        - fortimanager.log.unauthuser
         - fortimanager.log.user.id
         - fortimanager.log.user.name
       ignore_missing: true

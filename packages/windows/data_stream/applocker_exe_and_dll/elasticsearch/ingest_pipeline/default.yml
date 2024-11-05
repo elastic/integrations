@@ -36,10 +36,10 @@ processors:
       value: '{{winlog.event_id}}'
   - set:
       field: event.category
-      value: process
+      value: ["process"]
   - set:
       field: event.type
-      value: start
+      value: ["start"]
   - convert:
       field: winlog.record_id
       type: string
@@ -144,14 +144,38 @@ processors:
             ignore_failure: true
 
     ## Fully Qualified Binary Name (FQBN) / File Fields
+    ## ECS now requires some fields to be arrays, so extract
+    ## them into a temporary field
   - grok:
       field: winlog.user_data.Fqbn
       ignore_missing: true
       patterns:
-      - "^O=(?<file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}S=(?<file.x509.subject.state_or_province>.*),%{SPACE}C=(?<file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
-      - "^O=(?<file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}C=(?<file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
-      - "^O=(?<file.x509.subject.organization>.*),%{SPACE}S=(?<file.x509.subject.state_or_province>.*),%{SPACE}C=(?<file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
+      - "^O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}S=(?<tmp.file.x509.subject.state_or_province>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
+      - "^O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}L=(?<file.x509.subject.locality>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
+      - "^O=(?<tmp.file.x509.subject.organization>.*),%{SPACE}S=(?<tmp.file.x509.subject.state_or_province>.*),%{SPACE}C=(?<tmp.file.x509.subject.country>[^\\\\]*)\\\\(?<file.pe.product>[^\\\\]*)\\\\(?<file.pe.original_file_name>[^\\\\]*)\\\\(?<file.pe.file_version>.*)$"
       if: ctx.winlog?.user_data?.Fqbn != "-"
+
+    ## Use the append processor to create arrays from the single
+    ## strings extracted by the previous grok processor
+  - append:
+      field: file.x509.subject.country
+      value: "{{tmp.file.x509.subject.country}}"
+      ignore_failure: true
+
+  - append:
+      field: file.x509.subject.state_or_province
+      value: "{{tmp.file.x509.subject.state_or_province}}"
+      ignore_failure: true
+
+  - append:
+      field: file.x509.subject.organization
+      value: "{{tmp.file.x509.subject.organization}}"
+      ignore_failure: true
+
+    ## Remove all temporary fields
+  - remove:
+      field: tmp
+      ignore_missing: true
 
   - grok:
       field: winlog.user_data.FullFilePath

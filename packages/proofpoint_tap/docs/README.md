@@ -153,7 +153,6 @@ An example event for `clicks_blocked` looks as following:
         "version": "199.0.427504638"
     }
 }
-
 ```
 
 **Exported fields**
@@ -317,7 +316,6 @@ An example event for `clicks_permitted` looks as following:
         "version": "99.0.1150.46"
     }
 }
-
 ```
 
 **Exported fields**
@@ -724,7 +722,6 @@ An example event for `message_delivered` looks as following:
         "proofpoint_tap-message_delivered"
     ]
 }
-
 ```
 
 **Exported fields**

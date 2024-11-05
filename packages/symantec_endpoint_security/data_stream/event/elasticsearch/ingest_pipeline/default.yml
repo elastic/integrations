@@ -304,6 +304,33 @@ processors:
         - remove:
             field: ses.device_is_unmanaged
             ignore_missing: true
+  - rename:
+      field: ses.js_canary_cust
+      tag: rename_js_canary_cust_to_js_canary_enabled
+      target_field: ses.js_canary_enabled
+      ignore_missing: true
+      description: Renames the original `js_canary_cust` field to `js_canary_enabled` to be more descriptive.
+      if: ctx.ses?.js_canary_cust != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.js_canary_cust
+            ignore_missing: true
+  - convert:
+      field: ses.js_canary_enabled
+      tag: convert_js_canary_enabled_to_boolean
+      type: boolean
+      if: ctx.ses?.js_canary_enabled != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.js_canary_enabled
+            ignore_missing: true
   - gsub:
       field: ses.device_mac
       tag: gsub_device_mac
@@ -497,7 +524,7 @@ processors:
   - append:
       field: related.ip
       tag: append_related_ip_from_device_subnet
-      value: '{{ses.device_subnet}}'
+      value: '{{{ses.device_subnet}}}'
       allow_duplicates: false
       if: ctx.ses?.device_subnet != null
   - date:

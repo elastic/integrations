@@ -52,7 +52,7 @@ processors:
       if: ctx.misp?.event?.Orgc?.local != 'false'
   - set:
       field: threat.indicator.provider
-      value: "{{misp.event.Orgc.name}}"
+      value: "{{{misp.event.Orgc.name}}}"
       if: ctx.misp?.event?.Orgc?.local == 'false'
       ignore_empty_value: true
 
@@ -216,7 +216,7 @@ processors:
       if: "ctx.misp?.attribute?.type != null && (['md5', 'impfuzzy', 'imphash', 'pehash', 'sha1', 'sha224', 'sha256', 'sha3-224', 'sha3-256', 'sha3-384', 'sha3-512', 'sha384', 'sha512', 'sha512/224', 'sha512/256', 'ssdeep', 'tlsh', 'vhash'].contains(ctx.misp.attribute.type) || ctx.misp.attribute.type.startsWith('filename'))"
   - rename:
       field: misp.attribute.value
-      target_field: "threat.indicator.file.hash.{{misp.attribute.type}}"
+      target_field: "threat.indicator.file.hash.{{{misp.attribute.type}}}"
       ignore_missing: true
       if: "ctx.threat?.indicator?.type == 'file' && ctx.misp?.attribute?.type != null && !ctx.misp.attribute.type.startsWith('filename')"
   - rename:
@@ -237,8 +237,8 @@ processors:
       ignore_missing: true
       if: ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|')
   - set:
-      field: threat.indicator.file.hash.{{_tmp.hashtype}}
-      value: "{{_tmp.hashvalue}}"
+      field: threat.indicator.file.hash.{{{_tmp.hashtype}}}
+      value: "{{{_tmp.hashvalue}}}"
       if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|') && ctx._tmp?.hashvalue != null && ctx._tmp.hashtype != null"
 
   ## URL/URI indicator operations

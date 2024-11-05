@@ -1,9 +1,12 @@
 # CyberArk Privileged Access Security
 
-The CyberArk Privileged Access Security integration collects audit logs from [CyberArk's Vault](https://docs.cyberark.com/Product-Doc/OnlineHelp/Portal/Content/Resources/_TopNav/cc_Portal.htm) server.
-## Audit
+The CyberArk Privileged Access Security integration collects audit logs and monitoring data from [CyberArk's Vault](https://docs.cyberark.com/Product-Doc/OnlineHelp/Portal/Content/Resources/_TopNav/cc_Portal.htm) server.
 
-The `audit` dataset receives Vault Audit logs for User and Safe activities over the syslog protocol.
+## Data streams
+
+The `audit` data stream receives Vault Audit logs for User and Safe activities over the syslog protocol.
+
+It will also receive **monitoring** data from the server and route it to the `monitor` data stream (e.g. `logs-cyberarkpas.monitor-default`).
 
 ### Vault Configuration
 
@@ -16,17 +19,21 @@ the `Server\Syslog` folder.
 
 ```ini
 [SYSLOG]
-UseLegacySyslogFormat=No
+UseLegacySyslogFormat=no
 SyslogTranslatorFile=Syslog\elastic-json-v1.0.xsl
 SyslogServerIP=<INSERT FILEBEAT IP HERE>
 SyslogServerPort=<INSERT FILEBEAT PORT HERE>
 SyslogServerProtocol=TCP
+SendMonitoringMessage=yes
 ```
 
 For proper timestamping of events, it's recommended to use the newer RFC5424 Syslog format
 (`UseLegacySyslogFormat=No`). To avoid event loss, use `TCP` or `TLS` protocols instead of `UDP`.
 
-### Example event
+The sample configuration above will include monitoring data. For more information about monitoring, see
+[Monitor the Vault in SIEM Applications Using Syslog](https://docs.cyberark.com/pam-self-hosted/latest/en/content/pasimp/monitoring-the-vault-using-syslog.htm).
+
+### Example audit event
 
 An example event for `audit` looks as following:
 
@@ -124,10 +131,7 @@ An example event for `audit` looks as following:
         "name": "PVWAGWUser"
     }
 }
-
 ```
-
-**Exported fields**
 
 **Exported fields**
 
@@ -204,6 +208,124 @@ An example event for `audit` looks as following:
 | cyberarkpas.audit.timestamp | The timestamp, in MMM DD HH:MM:SS format. | keyword |
 | cyberarkpas.audit.vendor | A static value that represents the vendor. | keyword |
 | cyberarkpas.audit.version | A static value that represents the version of the Vault. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Name of the module this data is coming from. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+### Example monitor event
+
+An example event for `monitor` looks as following:
+
+```json
+{
+    "@timestamp": "2024-10-15T00:29:00.000Z",
+    "agent": {
+        "name": "elastic-agent-85013",
+        "id": "0a6fa575-a3ed-463b-b47f-9c3e3a07e56f",
+        "ephemeral_id": "c2d94886-0c83-475b-b25b-7e136a32240d",
+        "type": "filebeat",
+        "version": "8.14.3"
+    },
+    "cyberarkpas": {
+        "monitor": {
+            "syslog_queue_size": 0,
+            "iso_timestamp": "2024-10-15T00:29:00Z",
+            "drive_free_space_in_gb": 20,
+            "drive_total_space_in_gb": 40,
+            "max_parallel_tasks": 20,
+            "transaction_count": 315,
+            "memory_usage": 62,
+            "average_queue_time": 0,
+            "max_execution_time": 148,
+            "version": "11.7.0029",
+            "average_execution_time": 10,
+            "max_queue_time": 37,
+            "number_of_parallel_tasks": 1,
+            "cpu_usage": 7,
+            "timestamp": "Oct 15 00:29:00"
+        }
+    },
+    "data_stream": {
+        "namespace": "22830",
+        "type": "logs",
+        "dataset": "cyberarkpas.monitor"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "0a6fa575-a3ed-463b-b47f-9c3e3a07e56f",
+        "version": "8.14.3",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-10-21T07:32:45Z",
+        "timezone": "+00:00",
+        "kind": "metric",
+        "dataset": "cyberarkpas.monitor"
+    },
+    "host": {
+        "name": "VAULT",
+        "cpu": {
+            "usage": 0.07
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/monitor.log"
+        },
+        "offset": 15547
+    },
+    "observer": {
+        "product": "VaultMonitor",
+        "hostname": "VAULT",
+        "vendor": "Cyber-Ark",
+        "version": "11.7.0029"
+    },
+    "related": {
+        "hosts": [
+            "VAULT"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "cyberarkpas-monitor"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cyberarkpas.monitor.average_execution_time | The average time it has taken the Vault to complete the execution of a transaction in the last minute, in milliseconds. | integer |
+| cyberarkpas.monitor.average_queue_time | The average time that a transaction waited in the Vault's queue for execution in the last minute, in milliseconds. | integer |
+| cyberarkpas.monitor.cpu_usage | Percent of CPU usage on the Vault machine. | integer |
+| cyberarkpas.monitor.drive_free_space_in_gb | Number of GB available on the drive of the Vault installation folder. | integer |
+| cyberarkpas.monitor.drive_total_space_in_gb | Total number of GB on the drive of the Vault installation folder. | integer |
+| cyberarkpas.monitor.iso_timestamp | The timestamp, in ISO timestamp format (RFC 3339). | date |
+| cyberarkpas.monitor.max_execution_time | The maximum time it has taken the Vault to complete the execution of a transaction, in the last minute, in milliseconds. | integer |
+| cyberarkpas.monitor.max_parallel_tasks | The maximum number of Vault transactions that can run concurrently, based on the TasksCount parameter in DBParm.ini. | integer |
+| cyberarkpas.monitor.max_queue_time | The maximum time that a transaction waited in the Vault's queue for execution in the last minute, in millisecond. | integer |
+| cyberarkpas.monitor.memory_usage | Percent of used physical memory on the Vault machine. | integer |
+| cyberarkpas.monitor.number_of_parallel_tasks | Number of Vault transactions that are currently running. | integer |
+| cyberarkpas.monitor.raw | Raw XML for the original audit record. Only present when XSLT file has debugging enabled. | keyword |
+| cyberarkpas.monitor.syslog_queue_size | The size of the syslog queue. | integer |
+| cyberarkpas.monitor.timestamp | The timestamp, in MMM DD HH:MM:SS format. | keyword |
+| cyberarkpas.monitor.transaction_count | Number of Vault transactions in the last minute. | integer |
+| cyberarkpas.monitor.version | A static value that represents the version of the Vault. | version |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

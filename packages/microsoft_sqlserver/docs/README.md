@@ -112,8 +112,7 @@ Read more in [instructions about each performance counter metrics](https://docs.
 
 #### Transaction log metrics
 
-Collects system level `transaction_log` metrics information for SQL Server instance.
-Metrics for user-level databases can be collected by providing a list of user databases for which metrics are to be collected.
+The system-level database `transaction_log` metrics for SQL Server instances are collected by default. Metrics for user-level databases can be collected by specifying a list of user databases or by enabling the `Fetch from all databases` toggle to collect metrics from all databases on the server.
 
 Read more in [instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15).
 
@@ -481,7 +480,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### transaction_log
 
-The Microsoft SQL Server `transaction_log` dataset provides metrics from the log space usage and log stats tables of the system databases. All `transaction_log` metrics will be available in the `sqlserver.metrics` field group.
+The Microsoft SQL Server `transaction_log` dataset provides metrics from the log space usage and log stats tables. All `transaction_log` metrics will be available in the `sqlserver.metrics` field group.
 
 An example event for `transaction_log` looks as following:
 

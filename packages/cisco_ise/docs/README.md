@@ -223,7 +223,6 @@ An example event for `log` looks as following:
         "name": "psxvne"
     }
 }
-
 ```
 
 **Exported fields**
@@ -460,6 +459,7 @@ An example event for `log` looks as following:
 | client.geo.region_name | Region name. | keyword |
 | client.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.port | Port of the client. | long |
 | client.user.name | Short name or login of the user. | keyword |
 | client.user.name.text | Multi-field of `client.user.name`. | match_only_text |

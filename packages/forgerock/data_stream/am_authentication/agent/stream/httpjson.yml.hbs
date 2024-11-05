@@ -37,8 +37,36 @@ request.transforms:
       default: '[[ formatDate (now (parseDuration "-{{ initial_interval }}")) "2006-01-02T15:04:05-07:00" ]]'
   - set:
       target: url.params.endTime
-      value: '[[formatDate (now) "2006-01-02T15:04:05-07:00"]]'
-
+      value: |-
+        [[- $last := (parseDate .cursor.last_timestamp "2006-01-02T15:04:05-07:00") -]]
+        [[- $day := (parseDuration "24h") -]]
+        [[- $end := 0 -]][[- /* Predeclare $end. */ -]]
+        [[- with $last -]]
+          [[- $end = .Add $day -]]
+        [[- end -]]
+        [[- with $end -]]
+          [[- $recent := (now (parseDuration "-10s")) -]][[- /* Ensure that the API has stabilised the documents' presence. */ -]]
+          [[- if .Before $recent -]]
+            [[- formatDate $end "2006-01-02T15:04:05-07:00" -]]
+          [[- else -]]
+            [[- formatDate $recent "2006-01-02T15:04:05-07:00" -]]
+          [[- end -]]
+        [[- end -]]
+      default: |-
+        [[- $start := (now (parseDuration "-{{initial_interval}}")) -]]
+        [[- $day := (parseDuration "24h") -]]
+        [[- $end := 0 -]][[- /* Predeclare $end. */ -]]
+        [[- with $start -]]
+          [[- $end = .Add $day -]]
+        [[- end -]]
+        [[- with $end -]]
+          [[- $recent := (now (parseDuration "-10s")) -]][[- /* Stabilisation time. */ -]]
+          [[- if .Before $recent -]]
+            [[- formatDate $end "2006-01-02T15:04:05-07:00" -]]
+          [[- else -]]
+            [[- formatDate $recent "2006-01-02T15:04:05-07:00" -]]
+          [[- end -]]
+        [[- end -]]
 response.split:
   target: body.result
   ignore_empty_value: true

@@ -1,8 +1,20 @@
 # Azure Database Account Integration
 
 The Azure Database Account data stream collects and aggregates database account related metrics from Azure Database Account type resources where it can be used for analysis, visualization, and alerting.
+
 The Azure Database Account will periodically retrieve the Azure Monitor metrics using the Azure REST APIs as MetricList.
 Additional Azure API calls will be executed to retrieve information regarding the resources targeted by the user.
+
+## Supported namespaces and databases
+
+The Azure Database Account integration collects metrics from the `Microsoft.DocumentDb/databaseAccounts` namespace only.
+
+The integration supports metrics for the following databases:
+
+- Azure Cosmos DB with SQL API
+- Azure Cosmos DB for Apache Gremlin
+- Azure Cosmos DB for Apache Cassandra
+- Azure Cosmos DB for MongoDB
 
 ## Requirements
 

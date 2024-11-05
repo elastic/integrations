@@ -35,12 +35,12 @@ processors:
       name: '{{ IngestPipeline "json" }}'
   - set:
       field: event.timezone
-      value: "{{_tmp.tz_offset}}"
+      value: "{{{_tmp.tz_offset}}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
-      timezone: "{{ event.timezone }}"
+      timezone: "{{{ event.timezone }}}"
       formats:
         - MM/dd-HH:mm:ss.SSSSSS
         - MM/dd/YY-HH:mm:ss.SSSSSS
@@ -180,12 +180,12 @@ processors:
   - append:
       if: ctx.source?.ip != null
       field: related.ip
-      value: '{{source.ip}}'
+      value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
       if: ctx.destination?.ip != null
       field: related.ip
-      value: '{{destination.ip}}'
+      value: '{{{destination.ip}}}'
       allow_duplicates: false
   - remove:
       field:

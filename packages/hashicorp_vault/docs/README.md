@@ -172,7 +172,6 @@ An example event for `audit` looks as following:
         "hashicorp-vault-audit"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -391,7 +390,6 @@ An example event for `log` looks as following:
         "hashicorp-vault-log"
     ]
 }
-
 ```
 
 **Exported fields**

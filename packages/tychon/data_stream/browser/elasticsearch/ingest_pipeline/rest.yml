@@ -1,0 +1,75 @@
+---
+description: Pipeline for TYCHON Browser Tables
+processors:
+
+  - script:
+      tag: script_convert_tychon_package_installed_from_boolean_to_date
+      description: Convert tychon.package.installed from boolean to date
+      lang: painless
+      source: |
+        if (['installed', 'true'].contains(ctx.tychon.package.installed)) {
+          ctx.tychon.package.installed = '1970-01-01T00:00:01Z';
+        } else {
+          ctx.tychon.package.remove('installed');
+        }
+      if: ctx.tychon.package?.installed != null
+  - convert:
+      tag: convert_tychon_package_size
+      field: tychon.package.size
+      type: long
+      ignore_missing: true
+
+  # ECS fields
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [network]
+
+  # ECS fields from the tychon fieldset
+
+  - set:
+      tag: set_event_reason
+      field: event.reason
+      copy_from: tychon.event.reason
+      ignore_empty_value: true
+  - set:
+      tag: set_package_architecture
+      field: package.architecture
+      copy_from: tychon.package.architecture
+      ignore_empty_value: true
+  - set:
+      tag: set_package_name
+      field: package.name
+      copy_from: tychon.package.name
+      ignore_empty_value: true
+  - set:
+      tag: set_package_path
+      field: package.path
+      copy_from: tychon.package.path
+      ignore_empty_value: true
+  - set:
+      tag: set_package_size
+      field: package.size
+      copy_from: tychon.package.size
+      ignore_empty_value: true
+  - set:
+      tag: set_package_type
+      field: package.type
+      copy_from: tychon.package.type
+      ignore_empty_value: true
+  - set:
+      tag: set_package_version
+      field: package.version
+      copy_from: tychon.package.version
+      ignore_empty_value: true
+
+  - dissect:
+      tag: dissect_tychon_tls_version_protocol
+      field: tychon.tls.version_protocol
+      pattern: "%{tls.version_protocol}v%{tls.version}"
+      ignore_missing: true
+  - lowercase:
+      tag: lowercase_tls_version_protocol
+      field: tls.version_protocol
+      ignore_missing: true

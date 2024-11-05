@@ -57,39 +57,39 @@ An example event for `threat_intelligence` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-25T09:36:05.822Z",
+    "@timestamp": "2023-01-26T08:19:05.976Z",
     "agent": {
-        "ephemeral_id": "3cf850f4-d7a9-4302-9745-cb0d0b408c1e",
-        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "6c2fce20-5eb3-4d82-8d3f-317839b5f840",
+        "id": "4b0cd8f9-b1e6-47f3-bdb8-024cdea5fb03",
+        "name": "elastic-agent-68415",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.14.3"
     },
     "data_stream": {
         "dataset": "ti_mandiant_advantage.threat_intelligence",
-        "namespace": "99619",
+        "namespace": "36354",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
+        "id": "4b0cd8f9-b1e6-47f3-bdb8-024cdea5fb03",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.14.3"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2024-08-02T05:42:35.442Z",
+        "created": "2024-09-02T08:29:29.223Z",
         "dataset": "ti_mandiant_advantage.threat_intelligence",
-        "ingested": "2024-08-02T05:42:45Z",
+        "ingested": "2024-09-02T08:29:30Z",
         "kind": "enrichment",
         "module": "ti_mandiant_advantage_threat_intelligence",
-        "original": "{\"first_seen\":\"2022-09-06T00:46:38.000Z\",\"id\":\"fqdn--33bf4df5-3564-51e3-84f1-ca9d5bc2329e\",\"is_publishable\":true,\"last_seen\":\"2023-03-23T21:42:34.000Z\",\"last_updated\":\"2023-04-25T09:36:05.822Z\",\"misp\":{\"akamai\":false,\"alexa\":false,\"alexa_1M\":true,\"amazon-aws\":false,\"apple\":false,\"automated-malware-analysis\":false,\"bank-website\":false,\"captive-portals\":false,\"cisco_1M\":true,\"cisco_top1000\":false,\"cisco_top10k\":false,\"cisco_top20k\":false,\"cisco_top5k\":false,\"cloudflare\":false,\"common-contact-emails\":false,\"common-ioc-false-positive\":false,\"covid\":false,\"covid-19-cyber-threat-coalition-whitelist\":false,\"covid-19-krassi-whitelist\":false,\"crl-hostname\":false,\"crl-ip\":false,\"dax30\":false,\"disposable-email\":false,\"dynamic-dns\":false,\"eicar.com\":false,\"empty-hashes\":false,\"fastly\":false,\"google\":false,\"google-chrome-crux-1million\":true,\"google-gcp\":false,\"google-gmail-sending-ips\":false,\"googlebot\":false,\"ipv6-linklocal\":false,\"majestic_million\":true,\"majestic_million_1M\":true,\"microsoft\":false,\"microsoft-attack-simulator\":false,\"microsoft-azure\":false,\"microsoft-azure-appid\":false,\"microsoft-azure-china\":false,\"microsoft-azure-germany\":false,\"microsoft-azure-us-gov\":false,\"microsoft-office365\":false,\"microsoft-office365-cn\":false,\"microsoft-office365-ip\":false,\"microsoft-win10-connection-endpoints\":false,\"moz-top500\":false,\"mozilla-CA\":false,\"mozilla-IntermediateCA\":false,\"multicast\":false,\"nioc-filehash\":false,\"ovh-cluster\":false,\"parking-domain\":false,\"parking-domain-ns\":false,\"phone_numbers\":false,\"public-dns-hostname\":false,\"public-dns-v4\":false,\"public-dns-v6\":false,\"public-ipfs-gateways\":false,\"rfc1918\":false,\"rfc3849\":false,\"rfc5735\":false,\"rfc6598\":false,\"rfc6761\":false,\"second-level-tlds\":true,\"security-provider-blogpost\":false,\"sinkholes\":false,\"smtp-receiving-ips\":false,\"smtp-sending-ips\":false,\"stackpath\":false,\"tenable-cloud-ipv4\":false,\"tenable-cloud-ipv6\":false,\"ti-falsepositives\":false,\"tlds\":true,\"tranco\":true,\"tranco10k\":true,\"university_domains\":false,\"url-shortener\":false,\"vpn-ipv4\":false,\"vpn-ipv6\":false,\"whats-my-ip\":false,\"wikimedia\":false},\"mscore\":27,\"sources\":[{\"category\":[\"test\"],\"first_seen\":\"2022-09-06T00:46:38.722+0000\",\"last_seen\":\"2023-03-23T21:42:34.707+0000\",\"osint\":true,\"source_name\":\"dtm.blackbeard\"},{\"category\":[],\"first_seen\":\"2022-11-29T16:24:52.984+0000\",\"last_seen\":\"2022-11-29T16:24:52.984+0000\",\"osint\":true,\"source_name\":\"dtm.vanellope\"}],\"type\":\"fqdn\",\"value\":\"ru.wikibooks.org\"}",
-        "risk_score": 27,
+        "original": "{\"campaigns\":[{\"id\":\"campaign--bff76355-4d90-5f1f-b402-565a8fb2ac61\",\"name\":\"GLOBAL.21.005\",\"title\":\"Exploitation of CVE-2021-44228 (aka \\\"Log4Shell\\\") in Various Products\"}],\"first_seen\":\"2021-06-19T23:34:03.000Z\",\"id\":\"ipv4--55ba8198-79a1-5f13-b537-632c8bad942f\",\"is_publishable\":true,\"last_seen\":\"2022-12-26T23:34:03.000Z\",\"last_updated\":\"2023-01-26T08:19:05.976Z\",\"misp\":{\"akamai\":false,\"alexa\":false,\"alexa_1M\":false,\"amazon-aws\":false,\"apple\":false,\"automated-malware-analysis\":false,\"bank-website\":false,\"cisco_1M\":false,\"cisco_top1000\":false,\"cisco_top10k\":false,\"cisco_top20k\":false,\"cisco_top5k\":false,\"cloudflare\":false,\"common-contact-emails\":false,\"common-ioc-false-positive\":false,\"covid\":false,\"covid-19-cyber-threat-coalition-whitelist\":false,\"covid-19-krassi-whitelist\":false,\"crl-hostname\":false,\"crl-ip\":false,\"dax30\":false,\"disposable-email\":false,\"dynamic-dns\":false,\"eicar.com\":false,\"empty-hashes\":false,\"fastly\":false,\"google\":false,\"google-chrome-crux-1million\":false,\"google-gcp\":false,\"google-gmail-sending-ips\":false,\"googlebot\":false,\"ipv6-linklocal\":false,\"majestic_million\":false,\"majestic_million_1M\":false,\"microsoft\":false,\"microsoft-attack-simulator\":false,\"microsoft-azure\":false,\"microsoft-azure-appid\":false,\"microsoft-azure-china\":false,\"microsoft-azure-germany\":false,\"microsoft-azure-us-gov\":false,\"microsoft-office365\":false,\"microsoft-office365-cn\":false,\"microsoft-office365-ip\":false,\"microsoft-win10-connection-endpoints\":false,\"moz-top500\":false,\"mozilla-CA\":false,\"mozilla-IntermediateCA\":false,\"multicast\":false,\"nioc-filehash\":false,\"ovh-cluster\":false,\"parking-domain\":false,\"parking-domain-ns\":false,\"phone_numbers\":false,\"public-dns-hostname\":false,\"public-dns-v4\":false,\"public-dns-v6\":false,\"public-ipfs-gateways\":false,\"rfc1918\":false,\"rfc3849\":false,\"rfc5735\":false,\"rfc6598\":false,\"rfc6761\":false,\"second-level-tlds\":false,\"security-provider-blogpost\":false,\"sinkholes\":false,\"smtp-receiving-ips\":false,\"smtp-sending-ips\":false,\"stackpath\":false,\"tenable-cloud-ipv4\":false,\"tenable-cloud-ipv6\":false,\"ti-falsepositives\":false,\"tlds\":false,\"tranco\":false,\"tranco10k\":false,\"university_domains\":false,\"url-shortener\":false,\"vpn-ipv4\":false,\"vpn-ipv6\":false,\"whats-my-ip\":false,\"wikimedia\":false},\"mscore\":58,\"reports\":[{\"audience\":[\"cyber espionage\",\"fusion\"],\"id\":\"report--2781217d-3b75-5e22-b3f7-8db3e09d2b70\",\"published_date\":\"2022-05-11T19:53:16.583Z\",\"report_id\":\"22-00011950\",\"title\":\"APT29 Targets European Diplomatic Entities with ROOTSAW Dropper and New BEATDROP Variants Using Dropbox and Slack for C\\u0026C\",\"type\":\"Event Coverage/Implication\"}],\"sources\":[{\"category\":[],\"first_seen\":\"2022-02-23T10:10:01.828+0000\",\"last_seen\":\"2022-02-23T10:10:01.828+0000\",\"osint\":true,\"source_name\":\"blocklist_de\"},{\"category\":[\"exploit/vuln-scanning\",\"exploit\"],\"first_seen\":\"2021-06-19T23:34:03.810+0000\",\"last_seen\":\"2022-12-26T23:34:03.998+0000\",\"osint\":true,\"source_name\":\"blocklist_net_ua\"},{\"category\":[],\"first_seen\":\"2022-06-03T23:39:01.621+0000\",\"last_seen\":\"2022-06-03T23:39:01.621+0000\",\"osint\":false,\"source_name\":\"Mandiant\"},{\"category\":[],\"first_seen\":\"2022-06-20T20:20:01.549+0000\",\"last_seen\":\"2022-06-20T20:20:01.549+0000\",\"osint\":true,\"source_name\":\"the_haleys_ssh_dict_attack\"}],\"type\":\"ipv4\",\"value\":\"1.128.3.4\"}",
+        "risk_score": 58,
         "type": [
             "indicator"
         ]
@@ -100,35 +100,158 @@ An example event for `threat_intelligence` looks as following:
     "mandiant": {
         "threat_intelligence": {
             "ioc": {
-                "categories": [
-                    "test"
-                ],
-                "first_seen": "2022-09-06T00:46:38.000Z",
-                "id": "fqdn--33bf4df5-3564-51e3-84f1-ca9d5bc2329e",
-                "last_seen": "2023-03-23T21:42:34.000Z",
-                "last_update_date": "2023-04-25T09:36:05.822Z",
-                "mscore": 27,
-                "sources": [
+                "campaigns": [
                     {
-                        "category": [
-                            "test"
-                        ],
-                        "first_seen": "2022-09-06T00:46:38.722+0000",
-                        "last_seen": "2023-03-23T21:42:34.707+0000",
-                        "osint": true,
-                        "source_name": "dtm.blackbeard"
-                    },
-                    {
-                        "first_seen": "2022-11-29T16:24:52.984+0000",
-                        "last_seen": "2022-11-29T16:24:52.984+0000",
-                        "osint": true,
-                        "source_name": "dtm.vanellope"
+                        "id": "campaign--bff76355-4d90-5f1f-b402-565a8fb2ac61",
+                        "name": "GLOBAL.21.005",
+                        "title": "Exploitation of CVE-2021-44228 (aka \"Log4Shell\") in Various Products"
                     }
                 ],
-                "type": "fqdn",
-                "value": "ru.wikibooks.org"
+                "categories": [
+                    "exploit/vuln-scanning",
+                    "exploit"
+                ],
+                "first_seen": "2021-06-19T23:34:03.000Z",
+                "id": "ipv4--55ba8198-79a1-5f13-b537-632c8bad942f",
+                "is_publishable": true,
+                "last_seen": "2022-12-26T23:34:03.000Z",
+                "last_update_date": "2023-01-26T08:19:05.976Z",
+                "misp_warning_list_misses": [
+                    "covid",
+                    "smtp-receiving-ips",
+                    "eicar.com",
+                    "majestic_million",
+                    "alexa",
+                    "sinkholes",
+                    "cisco_top1000",
+                    "crl-hostname",
+                    "microsoft",
+                    "microsoft-office365",
+                    "googlebot",
+                    "microsoft-azure-germany",
+                    "microsoft-attack-simulator",
+                    "microsoft-azure",
+                    "rfc5735",
+                    "parking-domain",
+                    "tranco10k",
+                    "dax30",
+                    "public-dns-v4",
+                    "dynamic-dns",
+                    "public-dns-v6",
+                    "covid-19-cyber-threat-coalition-whitelist",
+                    "common-ioc-false-positive",
+                    "cisco_1M",
+                    "google-gmail-sending-ips",
+                    "microsoft-azure-china",
+                    "stackpath",
+                    "google",
+                    "cloudflare",
+                    "moz-top500",
+                    "tlds",
+                    "tranco",
+                    "university_domains",
+                    "smtp-sending-ips",
+                    "cisco_top20k",
+                    "empty-hashes",
+                    "nioc-filehash",
+                    "amazon-aws",
+                    "url-shortener",
+                    "microsoft-office365-ip",
+                    "microsoft-azure-us-gov",
+                    "microsoft-win10-connection-endpoints",
+                    "majestic_million_1M",
+                    "mozilla-CA",
+                    "microsoft-office365-cn",
+                    "whats-my-ip",
+                    "vpn-ipv6",
+                    "public-ipfs-gateways",
+                    "rfc3849",
+                    "rfc6761",
+                    "security-provider-blogpost",
+                    "tenable-cloud-ipv4",
+                    "cisco_top5k",
+                    "tenable-cloud-ipv6",
+                    "apple",
+                    "public-dns-hostname",
+                    "mozilla-IntermediateCA",
+                    "microsoft-azure-appid",
+                    "rfc1918",
+                    "ti-falsepositives",
+                    "akamai",
+                    "bank-website",
+                    "alexa_1M",
+                    "automated-malware-analysis",
+                    "rfc6598",
+                    "google-gcp",
+                    "multicast",
+                    "ovh-cluster",
+                    "phone_numbers",
+                    "fastly",
+                    "google-chrome-crux-1million",
+                    "cisco_top10k",
+                    "second-level-tlds",
+                    "wikimedia",
+                    "disposable-email",
+                    "common-contact-emails",
+                    "parking-domain-ns",
+                    "vpn-ipv4",
+                    "ipv6-linklocal",
+                    "covid-19-krassi-whitelist",
+                    "crl-ip"
+                ],
+                "mscore": 58,
+                "reports": [
+                    {
+                        "audience": [
+                            "cyber espionage",
+                            "fusion"
+                        ],
+                        "id": "report--2781217d-3b75-5e22-b3f7-8db3e09d2b70",
+                        "published_date": "2022-05-11T19:53:16.583Z",
+                        "report_id": "22-00011950",
+                        "title": "APT29 Targets European Diplomatic Entities with ROOTSAW Dropper and New BEATDROP Variants Using Dropbox and Slack for C&C",
+                        "type": "Event Coverage/Implication"
+                    }
+                ],
+                "sources": [
+                    {
+                        "first_seen": "2022-02-23T10:10:01.828+0000",
+                        "last_seen": "2022-02-23T10:10:01.828+0000",
+                        "osint": true,
+                        "source_name": "blocklist_de"
+                    },
+                    {
+                        "category": [
+                            "exploit/vuln-scanning",
+                            "exploit"
+                        ],
+                        "first_seen": "2021-06-19T23:34:03.810+0000",
+                        "last_seen": "2022-12-26T23:34:03.998+0000",
+                        "osint": true,
+                        "source_name": "blocklist_net_ua"
+                    },
+                    {
+                        "first_seen": "2022-06-03T23:39:01.621+0000",
+                        "last_seen": "2022-06-03T23:39:01.621+0000",
+                        "osint": false,
+                        "source_name": "Mandiant"
+                    },
+                    {
+                        "first_seen": "2022-06-20T20:20:01.549+0000",
+                        "last_seen": "2022-06-20T20:20:01.549+0000",
+                        "osint": true,
+                        "source_name": "the_haleys_ssh_dict_attack"
+                    }
+                ],
+                "type": "ipv4",
+                "value": "1.128.3.4"
             }
         }
+    },
+    "related": {
+        "ip": [
+            "1.128.3.4"
+        ]
     },
     "tags": [
         "preserve_original_event",
@@ -140,22 +263,28 @@ An example event for `threat_intelligence` looks as following:
             "name": "Mandiant Threat Intelligence"
         },
         "indicator": {
-            "confidence": "Low",
-            "first_seen": "2022-09-06T00:46:38.000Z",
-            "last_seen": "2023-03-23T21:42:34.000Z",
+            "as": {
+                "number": 1221,
+                "organization": {
+                    "name": "Telstra Pty Ltd"
+                }
+            },
+            "confidence": "Medium",
+            "first_seen": "2021-06-19T23:34:03.000Z",
+            "ip": "1.128.3.4",
+            "last_seen": "2022-12-26T23:34:03.000Z",
             "marking": {
-                "tlp": "GREEN",
+                "tlp": "RED",
                 "tlp_version": "2.0"
             },
-            "modified_at": "2023-04-25T09:36:05.822Z",
+            "modified_at": "2023-01-26T08:19:05.976Z",
             "provider": [
-                "dtm.blackbeard",
-                "dtm.vanellope"
+                "blocklist_de",
+                "blocklist_net_ua",
+                "Mandiant",
+                "the_haleys_ssh_dict_attack"
             ],
-            "type": "domain-name",
-            "url": {
-                "domain": "ru.wikibooks.org"
-            }
+            "type": "ipv4-addr"
         }
     }
 }
@@ -178,14 +307,20 @@ An example event for `threat_intelligence` looks as following:
 | log.offset | Log offset | long |
 | mandiant.threat_intelligence.ioc.associated_hashes | List of associated hashes and their types. | object |
 | mandiant.threat_intelligence.ioc.attributed_associations | List of attributed associations that this indicator has to other Malware families or Actors. | object |
+| mandiant.threat_intelligence.ioc.campaigns | List of related campaigns. | object |
 | mandiant.threat_intelligence.ioc.categories | Categories associated with this indicator. | keyword |
 | mandiant.threat_intelligence.ioc.first_seen | IOC first seen date. | date |
 | mandiant.threat_intelligence.ioc.id | IOC internal ID. | keyword |
 | mandiant.threat_intelligence.ioc.is_exclusive | Whether the indicator is exclusive to Mandiant or not. | boolean |
+| mandiant.threat_intelligence.ioc.is_publishable | Whether the indicator is publishable or not. | boolean |
 | mandiant.threat_intelligence.ioc.last_seen | IOC last seen date. | date |
 | mandiant.threat_intelligence.ioc.last_update_date | IOC last update date. | date |
+| mandiant.threat_intelligence.ioc.misp_warning_list_hits | Which MISP warning lists the indicator was found in. | keyword |
+| mandiant.threat_intelligence.ioc.misp_warning_list_misses | Which MISP warning lists the indicator was not found in. | keyword |
 | mandiant.threat_intelligence.ioc.mscore | M-Score (IC-Score) between 0 - 100. | integer |
-| mandiant.threat_intelligence.ioc.sources | List of the indicator sources. | object |
+| mandiant.threat_intelligence.ioc.reports | List of related reports. | object |
+| mandiant.threat_intelligence.ioc.sources.\* |  | keyword |
+| mandiant.threat_intelligence.ioc.sources.osint |  | boolean |
 | mandiant.threat_intelligence.ioc.type | IOC type. | keyword |
 | mandiant.threat_intelligence.ioc.value | IOC value. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |

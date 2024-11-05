@@ -4,9 +4,13 @@ vars:
 agent:
   runtime: docker
   provisioning_script:
-    language: "bash"
+    language: "sh"
     contents: |
-      apt-get update && apt-get -y install libaio1 wget unzip
+      if grep wolfi /etc/os-release > /dev/null ; then
+        apk update && apk add libaio wget unzip
+      else
+        apt-get update && apt-get -y install libaio1 wget unzip
+      fi
       mkdir -p /opt/oracle
       cd /opt/oracle
       wget https://download.oracle.com/otn_software/linux/instantclient/214000/instantclient-basic-linux.x64-21.4.0.0.0dbru.zip && unzip -o instantclient-basic-linux.x64-21.4.0.0.0dbru.zip

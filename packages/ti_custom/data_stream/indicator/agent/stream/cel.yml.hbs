@@ -1,0 +1,150 @@
+config_version: 2
+interval: {{interval}}
+resource.timeout: 60s
+resource.url: {{url}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if oauth2}}
+auth.oauth2: {{oauth2}}
+{{/if}}
+
+fields_under_root: true
+fields:
+  _conf:
+{{#if ioc_expiration_duration}}
+    ioc_expiration_duration: {{ioc_expiration_duration}}
+{{/if}}
+{{#if feed_name}}
+    feed_name: {{feed_name}}
+{{/if}}
+{{#if feed_reference}}
+    feed_reference: {{feed_reference}}
+{{/if}}
+{{#if restrict_stix}}
+    restrict_stix: {{restrict_stix}}
+{{/if}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+
+{{#if enable_taxii}}
+state:
+  url: {{url}}
+  initial_interval: {{initial_interval}}
+  want_more: false
+{{#if api_key}}
+  api_key: {{api_key}}
+{{/if}}
+{{#if username}}
+{{#if password}}
+  username: {{username}}
+  password: {{password}}
+{{/if}}
+{{/if}}
+redact:
+  fields:
+    - api_key
+    - username
+    - password
+
+# CEL program to follow TAXII 2.1 protocol. See https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html
+program: |
+    state.with(
+        request(
+            "GET",
+            state.?want_more.orValue(false) ?
+                state.next_url
+            : (has(state.initial_interval) && state.initial_interval != "") ?
+                (
+                    state.url.trim_right("/") + "?" + {
+                        "date_added": [(now() - duration(state.initial_interval)).format(time_layout.RFC3339)],
+                    }.format_query()
+                )
+                :
+                    state.url
+        ).with(
+            {
+                "Header": {
+                    "Content-Type": ["application/taxii+json;version=2.1"],
+                    "Accept": ["application/taxii+json;version=2.1"],
+                    "Authorization": (has(state.api_key) && state.api_key != "") ?
+                        ["Bearer " + string(state.api_key)]
+                    : (state.?username.orValue("") != "" && state.?password.orValue("") != "") ?
+                        ["Basic " + (state.username + ":" + state.password).base64()]
+                    :
+                        []
+                },
+            }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+            bytes(resp.Body).decode_json().as(body,
+                {
+                    "events": body.objects.map(e,
+                        {
+                            "message": e.encode_json(),
+                        }
+                    ),
+                    "url": state.url,
+                    "api_key": state.?api_key.orValue(""),
+                    "username": state.?username.orValue(""),
+                    "password": state.?password.orValue(""),
+                    "want_more": has(body.next) && body.next != null && body.next != "",
+                    "next_url": (has(body.next) && body.next != null && body.next != "") ?
+                        (
+                            state.url.trim_right("/") + "?" + {
+                                "next": [string(body.next)],
+                            }.format_query()
+                        )
+                    :
+                        state.url,
+                }
+            )
+        :
+            {
+                "events": {
+                    "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET:" +
+                        (
+                            (size(resp.Body) != 0) ?
+                                string(resp.Body)
+                            :
+                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        ),
+                    },
+                },
+                "want_more": false,
+            }
+        )
+    )
+
+{{else}}
+program: {{escape_string program}}
+
+{{#if state}}
+state:
+  {{state}}
+{{/if}}
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}

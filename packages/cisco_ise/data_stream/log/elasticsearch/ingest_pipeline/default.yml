@@ -158,7 +158,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "{{ _ingest.on_failure_message }}"
+            value: "{{{ _ingest.on_failure_message }}}"
   - remove:
       field: cisco_ise.log.log_details.ConfigVersionId
       ignore_missing: true
@@ -180,10 +180,6 @@ processors:
       copy_from: cisco_ise.log.message.code
       if: ctx.cisco_ise?.log?.message?.code != null
       ignore_failure: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_missing: true
   - script:
       lang: painless
       source:

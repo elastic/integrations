@@ -156,7 +156,7 @@ The settings' main section contains all the options needed to access the Azure A
 
 #### Advanced options
 
-There are two additional advanced options:
+There are a few additional advanced options:
 
 `Resource Manager Endpoint` _string_
 : Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
@@ -177,6 +177,15 @@ Examples:
 * `https://login.microsoftonline.de` for Azure GermanCloud
 * `https://login.microsoftonline.com` for Azure PublicCloud
 * `https://login.microsoftonline.us` for Azure USGovernmentCloud
+
+`Resource Manager Audience` _string_
+: Optional. By default, the integration uses the associated Resource Manager Audience. To override, users can provide a specific resource manager audience to use a different Azure environment.
+
+Examples:
+
+* `https://management.core.chinacloudapi.cn` for Azure ChinaCloud
+* `https://management.core.windows.net` for Azure PublicCloud
+* `https://management.core.usgovcloudapi.net` for Azure USGovernmentCloud
 
 #### Data stream options
 

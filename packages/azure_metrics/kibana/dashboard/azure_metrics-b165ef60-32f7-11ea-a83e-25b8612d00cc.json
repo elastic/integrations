@@ -30,6 +30,28 @@
                                 "azure.namespace": "Microsoft.Storage/storageAccounts/blobServices"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "storage_account",
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "azure.storage_account"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "azure.storage_account"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -64,10 +86,10 @@
                         "description": "",
                         "params": {
                             "fontSize": 10,
-                            "markdown": "### Azure Storage\n\n[Overview](#/dashboard/azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc) | [**Blob**](#/dashboard/azure_metrics-b165ef60-32f7-11ea-a83e-25b8612d00cc) | [File](#/dashboard/azure_metrics-dff7a080-32f7-11ea-a83e-25b8612d00cc) | [Table](#/dashboard/azure_metrics-ff2fe020-32f7-11ea-a83e-25b8612d00cc) | [Queue](#/dashboard/azure_metrics-10efa340-32f8-11ea-a83e-25b8612d00cc) ",
+                            "markdown": "[Overview](#/dashboard/azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc) | [**Blob**](#/dashboard/azure_metrics-b165ef60-32f7-11ea-a83e-25b8612d00cc) | [File](#/dashboard/azure_metrics-dff7a080-32f7-11ea-a83e-25b8612d00cc) | [Table](#/dashboard/azure_metrics-ff2fe020-32f7-11ea-a83e-25b8612d00cc) | [Queue](#/dashboard/azure_metrics-10efa340-32f8-11ea-a83e-25b8612d00cc) ",
                             "openLinksInNewTab": false
                         },
-                        "title": "Navigation Blob Storage Overview",
+                        "title": "Azure Storage — Blob Storage Overview",
                         "type": "markdown",
                         "uiState": {}
                     }
@@ -80,7 +102,7 @@
                     "y": 0
                 },
                 "panelIndex": "ed5f5642-c94a-481b-a8c2-7dfe4c6a4f05",
-                "title": "Navigation Blob Storage Overview",
+                "title": "Azure Storage — Blob Storage Overview",
                 "type": "visualization",
                 "version": "8.7.0"
             },
@@ -159,7 +181,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.blob_capacity.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Blob Capacity",
@@ -296,7 +318,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.blob_count.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Blob Count",
@@ -392,7 +414,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.container_count.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Container Count",
@@ -1640,6 +1662,11 @@
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },        
         {
             "id": "metrics-*",
             "name": "controlGroup_7eb82f60-7b2e-473f-960b-35b3fa5392d5:optionsListDataView",

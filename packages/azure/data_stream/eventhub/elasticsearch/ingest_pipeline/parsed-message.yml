@@ -42,11 +42,6 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       ignore_failure: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
       field: error.message

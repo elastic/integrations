@@ -316,5 +316,4 @@ An example event for `events` looks as following:
         "version": "109.0.0.0"
     }
 }
-
 ```

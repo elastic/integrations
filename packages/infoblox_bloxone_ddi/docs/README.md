@@ -148,7 +148,6 @@ An example event for `dhcp_lease` looks as following:
         "infoblox_bloxone_ddi-dhcp_lease"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -866,7 +865,6 @@ An example event for `dns_config` looks as following:
         "infoblox_bloxone_ddi-dns_config"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1333,7 +1331,6 @@ An example event for `dns_data` looks as following:
         "bloxone_ddi-dns_data"
     ]
 }
-
 ```
 
 **Exported fields**

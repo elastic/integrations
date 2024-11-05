@@ -1,0 +1,461 @@
+- name: panw.system
+  type: group
+  fields:
+    - name: uptime
+      type: group
+      fields:
+        - name: days
+          type: integer
+          unit: d
+          metric_type: gauge
+          description: >
+            Uptime in days
+
+        - name: hours
+          type: integer
+          unit: h
+          metric_type: gauge
+          description: >
+            Hours component of uptime
+
+        - name: minutes
+          type: integer
+          unit: m
+          metric_type: gauge
+          description: >
+            Minutes component of uptime
+
+    - name: user_count
+      type: long
+      metric_type: gauge
+      description: >
+        Number of users
+
+    - name: load_average
+      type: group
+      fields:
+        - name: 1m
+          type: float
+          metric_type: gauge
+          description: >
+            Load average in 1 minute
+
+        - name: 5m
+          type: float
+          metric_type: gauge
+          description: >
+            Load average in 5 minutes
+
+        - name: 15m
+          type: float
+          metric_type: gauge
+          description: >
+            Load average in 15 minutes
+
+    - name: tasks
+      type: group
+      fields:
+        - name: total
+          type: long
+          metric_type: gauge
+          description: >
+            Total number of tasks
+
+        - name: running
+          type: long
+          metric_type: gauge
+          description: >
+            Number of running tasks
+
+        - name: sleeping
+          type: long
+          metric_type: gauge
+          description: >
+            Number of sleeping tasks
+
+        - name: stopped
+          type: long
+          metric_type: gauge
+          description: >
+            Number of stopped tasks
+
+        - name: zombie
+          type: long
+          metric_type: gauge
+          description: >
+            Number of zombie tasks
+
+    - name: cpu
+      type: group
+      fields:
+        - name: user
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: >
+            CPU usage by user processes
+
+        - name: system
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: >
+            CPU usage by system processes
+
+        - name: nice
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: >
+            CPU usage by processes with a positive nice value
+
+        - name: idle
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: >
+            CPU idle time
+
+        - name: wait
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: >
+            CPU wait time
+
+        - name: hi
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: >
+            CPU hardware interrupts
+
+        - name: system_int
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: >
+            CPU software interrupts
+
+        - name: steal
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: >
+            CPU steal time
+
+    - name: memory
+      type: group
+      fields:
+        - name: total
+          type: float
+          unit: byte
+          metric_type: gauge
+          description: >
+            Total memory
+
+        - name: free
+          type: float
+          unit: byte
+          metric_type: gauge
+          description: >
+            Free memory
+
+        - name: used
+          type: float
+          unit: byte
+          metric_type: gauge
+          description: >
+            Used memory
+
+        - name: buffer_cache
+          type: float
+          unit: byte
+          metric_type: gauge
+          description: >
+            Memory used for buffers and cache
+
+    - name: swap
+      type: group
+      fields:
+        - name: total
+          type: float
+          unit: byte
+          metric_type: gauge
+          description: >
+            Total swap space
+
+        - name: free
+          type: float
+          unit: byte
+          metric_type: gauge
+          description: >
+            Free swap space
+
+        - name: used
+          type: float
+          unit: byte
+          metric_type: gauge
+          description: >
+            Used swap space
+
+        - name: available
+          type: float
+          unit: byte
+          metric_type: gauge
+          description: >
+            Available swap space
+
+    - name: license
+      type: group
+      fields:
+        - name: feature
+          type: keyword
+          dimension: true
+          description: >
+            Feature licensed, e.g. Advanced Threat Prevention
+
+        - name: description
+          type: keyword
+          description: >
+            Description of the licensed feature
+
+        - name: serial
+          type: keyword
+          dimension: true
+          description: >
+            Serial number of license
+
+        - name: issued
+          type: date
+          description: >
+            Date the license was issued
+
+        - name: expires
+          type: date
+          description: >
+            Date the license expires - not set if license never expires
+
+        - name: never_expires
+          type: boolean
+          description: >
+            Indicates if the license never expires
+
+        - name: expired
+          type: boolean
+          description: >
+            Indicates if the license is expired
+
+        - name: auth_code
+          type: keyword
+          description: >
+            Authorization code to activate or install the license
+
+    - name: filesystem
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          dimension: true
+          description: >
+            Filesystem name
+
+        - name: size
+          type: float
+          format: bytes
+          unit: byte
+          metric_type: gauge
+          description: >
+            Total size of the filesystem
+
+        - name: used
+          type: float
+          format: bytes
+          unit: byte
+          metric_type: gauge
+          description: >
+            Amount used on the filesystem
+
+        - name: available
+          type: float
+          format: bytes
+          unit: byte
+          metric_type: gauge
+          description: >
+            Disk space available on the filesystem
+
+        - name: use_percent
+          type: float
+          format: percent
+          unit: percent
+          metric_type: gauge
+          description: >
+            Percent of filesystem used
+
+        - name: mounted
+          type: keyword
+          dimension: true
+          description: >
+            Filesystem mount point
+
+    - name: fan
+      type: group
+      fields:
+        - name: slot_number
+          type: integer
+          description: >
+            The number of the hardware slot
+
+        - name: description
+          type: keyword
+          description: >
+            The description of the fan
+
+        - name: alarm
+          type: boolean
+          description: >
+            Is there an alarm status of the fan
+
+        - name: rpm
+          type: integer
+          metric_type: gauge
+          description: >
+            The speed of the fan in RPM
+
+        - name: min_rpm
+          type: integer
+          metric_type: gauge
+          description: >
+            The minimum speed of the fan in RPM
+
+    - name: thermal
+      type: group
+      fields:
+        - name: slot_number
+          type: integer
+          description: >
+            Slot number field
+
+        - name: description
+          type: text
+          store: true
+          description: >
+            Description field
+
+        - name: alarm
+          type: boolean
+          description: >
+            Alarm field
+
+        - name: degrees_celsius
+          type: float
+          metric_type: gauge
+          description: >
+            Degrees Celsius field
+
+        - name: minimum_temp
+          type: float
+          metric_type: gauge
+          description: >
+            Minimum temperature field
+
+        - name: maximum_temp
+          type: float
+          metric_type: gauge
+          description: >
+            Maximum temperature field
+
+    - name: power
+      type: group
+      fields:
+        - name: slot_number
+          type: integer
+          description: >
+            Slot number field
+
+        - name: description
+          type: text
+          store: true
+          description: >
+            Description field
+
+        - name: alarm
+          type: boolean
+          description: >
+            Indicates if alarm is active
+
+        - name: volts
+          type: float
+          metric_type: gauge
+          description: >
+            Current Volts
+
+        - name: minimum_volts
+          type: float
+          metric_type: gauge
+          description: >
+            Minimum volts recorded
+
+        - name: maximum_volts
+          type: float
+          metric_type: gauge
+          description: >
+            Maximum volts recorded
+
+    - name: certificate
+      type: group
+      fields:
+        - name: issuer
+          type: keyword
+          dimension: true
+          description: >
+            Issuer of the certificate database
+
+        - name: issuer_subject_hash
+          type: keyword
+          description: >
+            Subject hash of the issuer of the certificate database
+
+        - name: issuer_key_hash
+          type: keyword
+          description: >
+            Key hash of the issuer of the certificate database
+
+        - name: db_type
+          type: keyword
+          description: >
+            Type of the certificate database
+
+        - name: db_exp_date
+          type: keyword
+          description: >
+            Expiration date, format: 310329235959Z (Mar 29 23:59:59 2031 GMT)
+
+        - name: db_rev_date
+          type: keyword
+          description: >
+            Revision date of the certificate database
+
+        - name: db_serial_no
+          type: keyword
+          description: >
+            Serial number of the certificate database
+
+        - name: db_file
+          type: keyword
+          dimension: true
+          description: >
+            File name of the certificate database
+
+        - name: db_name
+          type: keyword
+          dimension: true
+          description: >
+            Name of the certificate database
+
+        - name: db_status
+          type: keyword
+          dimension: true
+          description: >
+            Status of the certificate database
+

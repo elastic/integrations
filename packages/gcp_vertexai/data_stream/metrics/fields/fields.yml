@@ -1,0 +1,80 @@
+- name: gcp.vertexai
+  description: Google Vertex AI metrics
+  type: group
+  fields:
+    - name: publisher.online_serving
+      description: Publisher Metrics
+      type: group
+      fields:
+        - name: token_count
+          type: long
+          metric_type: gauge
+          description: Accumulated input/output token count.
+        - name: model_invocation_count
+          type: long
+          metric_type: gauge
+          description: Number of model invocations (prediction requests). 
+        - name: character_count
+          type: long
+          metric_type: gauge
+          description: Accumulated input/output character count.
+        - name: consumed_throughput
+          type: long
+          metric_type: gauge
+          description: Overall throughput used (accounting for burndown rate) in terms of characters.
+        - name: model_invocation_latencies
+          type: histogram
+          description: Model invocation latencies (prediction latencies).
+        - name: first_token_latencies
+          type: histogram
+          description: Duration from request received to first token sent back to the client
+    - name: prediction.online
+      description: Prediction Metrics
+      type: group
+      fields:
+        - name: error_count
+          type: long
+          metric_type: gauge
+          description: Number of online prediction errors.
+        - name: prediction_count
+          type: long
+          metric_type: gauge
+          description: Number of online predictions.
+        - name: response_count
+          type: long
+          metric_type: gauge
+          description: Number of different online prediction response codes.
+        - name: cpu.utilization
+          type: double
+          metric_type: gauge
+          unit: percent
+          description: Fraction of CPU allocated by the deployed model replica and currently in use. May exceed 100% if the machine type has multiple CPUs. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds.
+        - name: memory.bytes_used
+          type: long
+          metric_type: gauge
+          unit: byte
+          description: Amount of memory allocated by the deployed model replica and currently in use. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds.
+        - name: network.received_bytes_count
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Number of bytes received over the network by the deployed model replica. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds.
+        - name: network.sent_bytes_count
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Number of bytes sent over the network by the deployed model replica. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds.
+        - name: replicas
+          type: long
+          metric_type: gauge
+          description: Number of active replicas used by the deployed model.
+        - name: target_replicas
+          type: long
+          metric_type: gauge
+          description: Target number of active replicas needed for the deployed model.
+        - name: prediction_latencies
+          type: histogram
+          description: Online prediction latency of the deployed model.
+- name: gcp.labels.resource.location
+  type: keyword
+  description: Location of the resource

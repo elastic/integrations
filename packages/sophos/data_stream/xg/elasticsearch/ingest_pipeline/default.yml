@@ -86,7 +86,7 @@ processors:
     ignore_missing: true
 - set:
     field: _temp_.time
-    value: "{{sophos.xg.date}} {{sophos.xg.time}}"
+    value: "{{{sophos.xg.date}}} {{{sophos.xg.time}}}"
     if: ctx.sophos?.xg?.date != null && ctx.sophos?.xg?.time != null
 - set:
     field: _temp_.time
@@ -140,7 +140,7 @@ processors:
                       field: error.message
                       value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
                   - fail:
-                      message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"    
+                      message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"    
       - date:
           tag: "date_utc_fallback"
           timezone: UTC
@@ -156,7 +156,7 @@ processors:
                 field: error.message
                 value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
             - fail:
-                message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+                message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
 # Sets starts, end and duration when start and duration is known
 - script:
@@ -468,7 +468,7 @@ processors:
           field: sophos.xg.eventtime
 - date:
     if: ctx.sophos?.xg?.eventtime != null && ctx.event?.timezone != null
-    timezone: "{{ event.timezone }}"
+    timezone: "{{{ event.timezone }}}"
     field: sophos.xg.eventtime
     target_field: sophos.xg.eventtime
     formats:

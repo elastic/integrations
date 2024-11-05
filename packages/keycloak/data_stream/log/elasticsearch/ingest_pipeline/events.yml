@@ -193,19 +193,19 @@ processors:
     if: ctx.keycloak?.admin?.resource == "USER"
 - append:
     field: related.ip
-    value: "{{source.ip}}"
+    value: "{{{source.ip}}}"
     if: ctx.source?.ip != null
 - append:
     field: related.user
-    value: "{{user.id}}"
+    value: "{{{user.id}}}"
     if: ctx.user?.id != null
 - append:
     field: related.user
-    value: "{{user.target.id}}"
+    value: "{{{user.target.id}}}"
     if: ctx.user?.target?.id != null
 - append:
     field: related.hosts
-    value: "{{url.domain}}"
+    value: "{{{url.domain}}}"
     if: ctx.url?.domain != null
 - remove:
     field:
@@ -217,7 +217,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

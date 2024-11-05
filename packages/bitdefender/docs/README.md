@@ -693,5 +693,4 @@ An example event for `push_statistics` looks as following:
         "forwarded"
     ]
 }
-
 ```

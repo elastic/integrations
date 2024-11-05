@@ -1,0 +1,35 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-ti_anomali.intelligence-*"
+# The version suffix on the dest.index should be incremented if a breaking change
+# is made to the index mapping. You must also bump the fleet_transform_version
+# for any change to this transform configuration to take effect. The old destination
+# index is not automatically removed. We are dependent on https://github.com/elastic/package-spec/issues/523 to give
+# us that ability in order to prevent having duplicate IoC data and prevent query
+# time field type conflicts.
+dest:
+  index: "logs-ti_anomali_latest.intelligence-1"
+  aliases:
+    - alias: "logs-ti_anomali_latest.intelligence"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - anomali.threatstream.id
+  sort: "@timestamp"
+description: Latest Anomali ThreatStream IoC data from the intelligence endpoint
+frequency: 30s
+sync:
+  time:
+    field: "@timestamp"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s, sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: anomali.threatstream.deletion_scheduled_at
+    max_age: 1m
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  fleet_transform_version: 0.1.0

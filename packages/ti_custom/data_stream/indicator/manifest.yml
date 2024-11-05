@@ -1,0 +1,290 @@
+type: logs
+title: STIX 2.1 indicators
+ilm_policy: logs-ti_custom.indicator-default_policy
+streams:
+  - input: cel
+    enabled: false
+    template_path: cel.yml.hbs
+    title: Collects threat intelligence IOCs
+    description: Collects STIX 2.1 data via CEL input
+    vars:
+      - name: url
+        type: text
+        title: URL API endpoint
+        multi: false
+        required: true
+        show_user: true
+        description: >
+          URL of the API endpoint to connect to in order to get the STIX data. In case of working with TAXII, the URL format should be as follows: https://{base_url}/{api-root}/collections/{id}/objects/
+
+      - name: enable_taxii
+        type: bool
+        title: Enable TAXII 2.1
+        multi: false
+        required: true
+        show_user: true
+        default: true
+        description: >
+          Enable this toggle when targeting an API compatible with the TAXII 2.1 protocol.
+
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+        description: >
+          Indicator is expired after this duration since its last seen timestamp. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g 10d). Default `90d`.
+
+      - name: restrict_stix
+        type: bool
+        title: Restrict STIX 2.1 format
+        multi: false
+        required: false
+        show_user: false
+        default: true
+        description: >
+          When this toggle is enabled, indicators that don't follow the STIX 2.1 standard format will be dropped. Disabling it allows data that don't follow STIX 2.1 to be ingested and processed by the ingest pipeline.
+
+      - name: api_key
+        type: password
+        title: API Key
+        multi: false
+        required: false
+        show_user: false
+        secret: true
+        description: >
+          API key that the API server may require for Bearer authorization.
+
+      - name: username
+        type: text
+        title: Basic Auth Username
+        multi: false
+        required: false
+        show_user: false
+        secret: true
+        description: >
+          The user to authenticate with in Basic HTTP authentication.
+
+      - name: password
+        type: password
+        title: Basic Auth Password
+        multi: false
+        show_user: false
+        required: false
+        secret: true
+        description: >
+          The password to authenticate with in Basic HTTP authentication.
+
+      - name: oauth2
+        type: yaml
+        title: OAuth2 Configuration
+        description: >
+          i.e. client.id, client.secret, token_url and [other OAuth2 options](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_auth_oauth2_enabled).
+
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #client.id: 12345678901234567890abcdef
+          #client.secret: abcdef12345678901234567890
+          #token_url: http://example.com/oauth2/token
+      - name: program
+        type: textarea
+        title: The CEL program to be run for each polling.
+        description: >
+          Program is the CEL program that is executed each polling period to get and transform the API data. More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_execution). For APIs that don't follow the TAXII protocol, generate this program in convenience to match API requirements. Pay special attention to headers, parameters, pagination, body formatting and error handling specific to the target API.
+
+        show_user: false
+        multi: false
+        required: false
+        default: |
+          # // Fetch the agent's public IP every minute and note when the last request was made.
+          # // It does not use the Resource URL configuration value.
+          # bytes(get("https://api.ipify.org/?format=json").Body).as(body, {
+          #     "events": [body.decode_json().with({
+          #         "last_requested_at": has(state.cursor) && has(state.cursor.last_requested_at) ?
+          #             state.cursor.last_requested_at
+          #         :
+          #             now
+          #     })],
+          #     "cursor": {"last_requested_at": now}
+          # })
+      - name: state
+        type: yaml
+        title: Initial CEL evaluation state
+        description: >
+          State is the initial state to be provided to the program. If it has a cursor field, that field will be overwritten by any stored cursor, but will be available if no stored cursor exists. More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#input-state-cel).
+
+        show_user: false
+        multi: false
+        required: false
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+        description: Duration between requests to the configured API. Supported units for this parameter are h/m/s.
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to look for indicators the first time the agent is started. Supported units for this parameter are h/m/s.
+        multi: false
+        required: false
+        show_user: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        multi: false
+        required: true
+        show_user: false
+        default: false
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ti_custom-indicator
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: >
+          The Ingest Node pipeline ID to be used by the integration. Include an ingest pipeline when ingesting IOCs that don't follow the STIX 2.1 standard.
+
+        required: false
+        show_user: false
+  - input: filestream
+    enabled: false
+    template_path: filestream.yml.hbs
+    title: STIX feeds from file
+    description: Collect STIX feeds via Filestream input.
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        description: A list of glob-based paths that will be crawled and fetched.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ti_custom-indicator
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+        description: >
+          Indicator is expired after this duration since its last seen timestamp. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g 10d). Default `90d`."
+
+      - name: restrict_stix
+        type: bool
+        title: Restrict STIX 2.1 format
+        multi: false
+        required: false
+        show_user: false
+        default: true
+        description: >
+          When this toggle is enabled, indicators that don't follow the STIX 2.1 standard format will be dropped. Disabling it allows data that don't follow STIX 2.1 to be ingested and processed by the ingest pipeline.
+
+      - name: feed_name
+        type: text
+        title: Feed name
+        multi: false
+        required: false
+        show_user: false
+        description: Name of the STIX feed to ingest. Used as metadata to enrich events.
+      - name: feed_reference
+        type: text
+        title: Feed reference
+        multi: false
+        required: false
+        show_user: false
+        description: Link reference to the source of the data. Used as metadata to enrich events.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: harvester_limit
+        type: integer
+        title: Harvester Limit
+        description: Limits the number of files that are ingested in parallel. More details [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#filebeat-input-filestream-harvester-limit).
+        required: false
+        show_user: false
+        default: 0
+      - name: close.on_state_change.inactive
+        type: text
+        title: File Handle Closure Duration
+        description: The duration after which the file handle is closed if the file has not been updated. More details [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#filebeat-input-filestream-close-inactive).
+        multi: false
+        required: false
+        show_user: false
+        default: 5m
+      - name: parsers
+        type: yaml
+        title: Parsers
+        description: |
+          This option expects a list of parsers that the payload has to go through. For more information, see [Parsers](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_parsers).
+        required: false
+        show_user: false
+        multi: false
+        default: |
+          # For cases when indicators are multiline JSON objects
+          # - multiline:
+          #     pattern: '^\{'
+          #     negate: true
+          #     match: after
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: >
+          The Ingest Node pipeline ID to be used by the integration. Include an ingest pipeline when ingesting IOCs that don't follow the STIX 2.1 standard.
+
+        required: false
+        show_user: false

@@ -143,7 +143,7 @@ program: |
         }
       }.encode_json()
     ).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body, has(body.?data.issues.nodes) ?
+        bytes(resp.Body).decode_json().as(body, body.?data.issues.nodes.orValue(null) != null ?
           {
             "events": body.data.issues.nodes.map(e, {
               "message": e.encode_json(),

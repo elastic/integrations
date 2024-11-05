@@ -236,7 +236,6 @@ An example event for `log` looks as following:
         "id": ""
     }
 }
-
 ```
 
 **Exported fields**
@@ -536,7 +535,6 @@ An example event for `winlog` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**

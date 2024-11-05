@@ -141,7 +141,6 @@ An example event for `log` looks as following:
         "id": "WIN10-VICTIM\\U"
     }
 }
-
 ```
 
 **Exported fields**

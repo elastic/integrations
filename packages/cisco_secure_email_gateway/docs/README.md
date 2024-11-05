@@ -324,7 +324,6 @@ An example event for `log` looks as following:
         "cisco_secure_email_gateway-log"
     ]
 }
-
 ```
 
 **Exported fields**

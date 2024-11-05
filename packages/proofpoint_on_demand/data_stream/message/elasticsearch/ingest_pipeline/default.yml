@@ -703,7 +703,7 @@ processors:
       tag: rename_filter_pe_rcpts
       target_field: proofpoint_on_demand.message.filter.pe.rcpts_object
       ignore_missing: true
-      if: ctx.json?.filter?.pe?.rcpts instanceof Object
+      if: ctx.json?.filter?.pe?.rcpts instanceof HashMap
   - convert:
       field: json.filter.pe.rcpts
       tag: convert_filter_pe_rcpts_to_string
@@ -1201,6 +1201,9 @@ processors:
               if (keyMap.containsKey(key)) {
                 updatedJson[keyMap[key]] = renameKeys(value, keyMap);
               } else {
+                if (key == '') {
+                  key = "MISSING_KEY";
+                }
                 updatedJson[key] = renameKeys(value, keyMap);
               }
             } else if (value instanceof List) {
@@ -1215,6 +1218,9 @@ processors:
               if (keyMap.containsKey(key)) {
                 updatedJson[keyMap[key]] = updatedList;
               } else {
+                if (key == '') {
+                  key = "MISSING_KEY";
+                }
                 updatedJson[key] = updatedList;
               }
             } else {
@@ -1227,6 +1233,9 @@ processors:
                   updatedJson[keyMap[key]] = value;
                 }
               } else {
+                if (key == '') {
+                  key = "MISSING_KEY";
+                }
                 updatedJson[key] = value;
               }
             }

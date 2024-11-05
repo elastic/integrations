@@ -1,0 +1,270 @@
+---
+description: Pipeline to process cilium_tetragon log logs
+
+# Refer to Tetrogon API to see log and object definitions: https://github.com/cilium/tetragon/tree/main/api/v1
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 8.11.0
+  - set:
+      tag: copy_original_message
+      field: originalMessage
+      copy_from: message
+  - rename:
+      ignore_missing: true
+      if: ctx.event?.original == null
+      tag: rename_message
+      field: originalMessage
+      target_field: event.original
+  - json:
+      tag: json_original
+      field: event.original
+      target_field: cilium_tetragon.log
+  # This object is torn apart to create ECS, so a 2nd temp copy is used
+  # Doing deep copying of the original json doc had very poor performace, creating a 2nd copy of the entire message is better
+  - json:
+      tag: json_tmp
+      field: event.original
+      target_field: _tmp_
+
+  # "process" objects exist in multiple types of other objects.
+  # Move these to a common location, to simplify later renames
+  - script:
+      tag: copy_processes
+      description: Parse process data into ECS.
+      lang: painless
+      source: |
+        void run(Map map) {
+          for (def k : map?.cilium_tetragon?.log?.keySet()) {
+            /* these tetragon objects have "process" */
+            if (k == "process_exec" ||
+                k == "process_exit" ||
+                k == "process_kprobe" ||
+                k == "process_tracepoint" ||
+                k == "process_loader" ||
+                k == "process_lsm" ||
+                k == "process_uprobe") {
+              if (map?._tmp_ == null) {
+                map["_tmp_"] = new HashMap();
+              }
+              map["_tmp_"]["process"] = map.cilium_tetragon.log[k].process;
+            }
+
+            /* these tetragon objects have "parent" */
+            if (k == "process_exec" ||
+                k == "process_exit" ||
+                k == "process_kprobe" ||
+                k == "process_tracepoint" ||
+                k == "process_lsm" ||
+                k == "process_uprobe") {
+              if (map?._tmp_ == null) {
+                map["_tmp_"] = new HashMap();
+              }
+              map["_tmp_"]["parent"] = map.cilium_tetragon.log[k].parent;
+            }
+          }
+        }
+
+        run(ctx);
+
+  ### Map tetragon fields to ECS
+  ## Map Process
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.arguments"
+      target_field: "process.args"
+
+  - split:
+      ignore_missing: true
+      field: process.args
+      separator: "\\s+"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.binary"
+      target_field: "process.executable"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.cwd"
+      target_field: "process.working_directory"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.pid"
+      target_field: "process.pid"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.exec_id"
+      target_field: "process.entity_id"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.tid"
+      target_field: "process.thread.id"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.uid"
+      target_field: "process.user.id"
+
+  - convert:
+      ignore_missing: true
+      field: "process.user.id"
+      type: string
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.start_time"
+      target_field: "process.start"
+
+  - set:
+      if: 'ctx.cilium_tetragon?.log?.process_exec != null'
+      field: event.action
+      value: "executed"
+
+  - set:
+      if: 'ctx.cilium_tetragon?.log?.process_exit != null'
+      field: event.action
+      value: "end"
+
+  - set:
+      if: 'ctx.cilium_tetragon?.log?.process_exit?.status != null'
+      field: process.exit_code
+      copy_from: "cilium_tetragon.log.process_exit.status"
+
+  # Map Parent
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.parent.arguments"
+      target_field: "process.parent.args"
+
+  - split:
+      ignore_missing: true
+      field: process.parent.args
+      separator: "\\s+"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.parent.binary"
+      target_field: "process.parent.executable"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.parent.cwd"
+      target_field: "process.parent.working_directory"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.parent.pid"
+      target_field: "process.parent.pid"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.parent.exec_id"
+      target_field: "process.parent.entity_id"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.parent.tid"
+      target_field: "process.parent.thread.id"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.parent.uid"
+      target_field: "process.parent.user.id"
+
+  - convert:
+      ignore_missing: true
+      field: "process.parent.user.id"
+      type: string
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.parent.start_time"
+      target_field: "process.parent.start"
+
+  # Map container
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.pod.container.name"
+      target_field: "container.name"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.pod.container.id"
+      target_field: "container.id"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.pod.container.image.name"
+      target_field: "container.image.name"
+
+  # Map orchestrator
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.pod.name"
+      target_field: "orchestrator.resource.name"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.pod.namespace"
+      target_field: "orchestrator.namespace"
+  #  - rename:
+  #      ignore_missing: true
+  #      field: "_tmp_.process.pod.pod_labels"
+  #      target_field: "orchestrator.resource.label"
+
+  - rename:
+      ignore_missing: true
+      field: "_tmp_.process.pod.workload_kind"
+      target_field: "orchestrator.resource.parent.type"
+
+  # Other response properties
+  - set:
+      field: "host.name"
+      copy_from: "cilium_tetragon.log.node_name"
+      if: 'ctx.cilium_tetragon?.log?.node_name != null'
+
+  - set:
+      field: "orchestrator.cluster.name"
+      copy_from: "cilium_tetragon.log.cluster_name"
+      if: 'ctx.cilium_tetragon?.log?.cluster_name != null'
+
+  - remove:
+     field: "_tmp_"
+
+  - script:
+      tag: script_drop_null_empty_values
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}} with tag
+        {{{_ingest.on_failure_processor_tag}}} in pipeline
+        {{{_ingest.on_failure_pipeline}}} failed with message:
+        {{{_ingest.on_failure_message}}}
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - remove:
+      field: "_tmp_"
+

@@ -7,6 +7,7 @@ Currently, there are five different pipelines:
 - https://buildkite.com/elastic/integrations-serverless: pipeline in charge of testing all packages using a Elastic Serverless project. More info at [section](#serverless-pipeline).
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
 - https://buildkite.com/elastic/integrations-schedule-daily/: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
+- https://buildkite.com/elastic/integrations-schedule-weekly/: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
 - https://buildkite.com/elastic/integrations-backport/: pipeline to create backport branches (just from UI). More info at [section](#backport-branches-pipeline).
 
 ## Pull Requests and pushes to specific branches
@@ -22,14 +23,15 @@ Special comments that can be added in the Pull Request (by Elastic employees):
 There are some environment variables that can be added into this pipeline:
 - **FORCE_CHECK_ALL**: If `true`, this forces the CI to check all packages even if those packages have no file updated/added/deleted. Default: `false`.
 - **STACK_VERSION**: Force the CI steps to spin up a specific Elastic stack version to run the tests. Default: unset.
+- **STACK_LOGSDB_ENABLED**: Enable LogsDB setting in Elasticsearch service. Default: false.
 - **PUBLISH_COVERAGE_REPORTS**: If `true`, it enables reporting coverage reports.
 Currently, it is just set for the build triggered with the current major Elastic stack from the daily job. Default: `false`.
 
 These environment variables can be defined in different locations:
 - In the [global `env` section](https://github.com/elastic/integrations/blob/5276ef63712f8f2311818770881688870e8422fe/.buildkite/pipeline.yml#L2).
-- In the case of the scheduled daily job here:
-    - [Running tests with previous major Elastic stack](https://github.com/elastic/integrations/blob/5276ef63712f8f2311818770881688870e8422fe/.buildkite/pipeline.schedule-daily.yml#L21).
-    - [Running tests with current major Elastic stack](https://github.com/elastic/integrations/blob/d6d99792b90838d18844f6df9343bc5f16130666/.buildkite/pipeline.schedule-daily.yml#L32).
+- In the case of the scheduled daily job in each step. Some examples:
+    - [Running tests with 7.x major Elastic stack](https://github.com/elastic/integrations/blob/5276ef63712f8f2311818770881688870e8422fe/.buildkite/pipeline.schedule-daily.yml#L21).
+    - [Running tests with 8.x major Elastic stack](https://github.com/elastic/integrations/blob/d6d99792b90838d18844f6df9343bc5f16130666/.buildkite/pipeline.schedule-daily.yml#L32).
 
 More details about this CI pipeline:
 
@@ -124,9 +126,13 @@ The schedule of this job can be checked [here](https://github.com/elastic/integr
 
 The scenarios that are tested in this daily job are:
 
-- Test packages with a local Elastic stack running the previous major version of the stack (7.17.X SNAPSHOT).
+- Test packages with a local Elastic stack running the latest 7.x version of the stack (7.17.X SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest major version of the stack (currently 8.X.Y-SNAPSHOT).
+- Test packages with a local Elastic stack running the latest 8.x version of the stack (8.X.Y-SNAPSHOT).
+    - Triggered pipeline: https://buildkite.com/elastic/integrations
+- Test packages with a local Elastic stack running the latest 8.x version of the stack with LogsDB setting enabled (8.X.Y-SNAPSHOT).
+    - Triggered pipeline: https://buildkite.com/elastic/integrations
+- Test packages with a local Elastic stack running the latest major version of the stack (currently 9.X.Y-SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
 - Test packages with an Elastic Serverless Observability project.
     - Triggered pipeline: https://buildkite.com/elastic/integration-serverless
@@ -141,6 +147,23 @@ have been published by triggering the pipeline https://buildkite.com/elastic/int
 Each step triggering a new pipeline can be customized through environment variables. Environment variables that can
 be used in each pipeline are detailed in the corresponding sections of each pipeline.
 
+## Weekly job
+
+**Note**: Just available for Employees at Elastic.
+
+Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly/
+
+The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/2e72e8524728daca2d47c814d8042031b8f5804f/catalog-info.yaml#L145).
+
+The scenarios that are tested in this weekly job are:
+
+- Test packages with a local Elastic stack running the latest 8.x version of the stack with Elastic Agent images based on Ubuntu images (8.X.Y-SNAPSHOT).
+    - Triggered pipeline: https://buildkite.com/elastic/integrations
+- Test packages with a local Elastic stack running the latest major version of the stack with Elastic Agent images based on non-Wolfi images (currently 9.X.Y-SNAPSHOT).
+    - Triggered pipeline: https://buildkite.com/elastic/integrations
+
+Each step triggering a new pipeline can be customized through environment variables. Environment variables that can
+be used in each pipeline are detailed in the corresponding sections of each pipeline.
 
 ## Backport branches pipeline
 

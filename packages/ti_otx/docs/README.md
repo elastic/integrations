@@ -132,7 +132,7 @@ The following subscriptions are included by this API:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | otx.content |  | keyword |

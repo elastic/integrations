@@ -168,7 +168,7 @@ processors:
       if: ctx?.source?.geo?.country_iso_code == null
   - set:
       field: source.geo.region_iso_code
-      value: "{{json.geo.country}}-{{json.geo.regionCode}}"
+      value: "{{{json.geo.country}}}-{{{json.geo.regionCode}}}"
       ignore_empty_value: true
       if: ctx?.source?.geo?.region_iso_code == null
   - rename:
@@ -426,7 +426,7 @@ processors:
   ##
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
   - set:
       field: client
@@ -474,6 +474,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        Processor '{{ _ingest.on_failure_processor_type }}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

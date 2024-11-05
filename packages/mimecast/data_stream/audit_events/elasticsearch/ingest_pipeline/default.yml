@@ -236,12 +236,12 @@ processors:
       if: 'ctx?.file?.name != null && ctx?.event?.action == "threat-intel-feed-download"'
   - script:
       lang: painless
-      source: | 
+      source: |
         ctx.file.extension = ctx.file.parts[ctx.file.parts.length-1];
       if: 'ctx?.file?.parts !=null && ctx?.file?.parts.length > 1'
   - set:
       field: event.created
-      value: "{{mimecast.date}} {{mimecast.time}}"
+      value: "{{{mimecast.date}}} {{{mimecast.time}}}"
       if: 'ctx?.mimecast?.date != null && ctx?.mimecast?.time != null'
   - date:
       field: event.created
@@ -285,17 +285,17 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{client.ip}}"
+      value: "{{{client.ip}}}"
       allow_duplicates: false
       if: 'ctx?.client?.ip !=null'
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       allow_duplicates: false
       if: 'ctx?.user?.name !=null'
   - append:
       field: related.user
-      value: "{{user.email}}"
+      value: "{{{user.email}}}"
       allow_duplicates: false
       if: ctx?.user?.email != null
   - lowercase:

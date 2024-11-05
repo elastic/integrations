@@ -1,0 +1,1222 @@
+- name: sublime_security
+  type: group
+  fields:
+    - name: email_message
+      type: group
+      fields:
+        - name: attachments
+          type: group
+          fields:
+            - name: content
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Content-ID extracted from the MIME payload.
+                - name: transfer_encoding
+                  type: keyword
+                  description: Content-Transfer-Encoding extracted from the MIME payload.
+                - name: type
+                  type: keyword
+                  description: Content-Type extracted from the MIME payload.
+            - name: file
+              type: group
+              fields:
+                - name: extension
+                  type: keyword
+                  description: File extension from context such as headers.
+                - name: name
+                  type: keyword
+                  description: File name.
+                - name: type
+                  type: keyword
+                  description: File type determined by looking at the magic bytes in the file.
+            - name: md5
+              type: keyword
+              description: MD5 hash of the raw contents.
+            - name: raw
+              type: keyword
+              description: Base64 encoded source of the file.
+            - name: sha1
+              type: keyword
+              description: SHA1 hash of the raw contents.
+            - name: sha256
+              type: keyword
+              description: SHA256 hash of the raw contents.
+            - name: size
+              type: long
+              description: Size of the file in bytes.
+        - name: body
+          type: group
+          fields:
+            - name: current_thread
+              type: group
+              fields:
+                - name: text
+                  type: keyword
+                  description: The text content from the latest reply/forward in a message thread. This typically excludes content from forwarded messages and warning banners.
+            - name: html
+              type: group
+              fields:
+                - name: charset
+                  type: keyword
+                  description: charset of the text/[subtype].
+                - name: content_transfer_encoding
+                  type: keyword
+                  description: Content-Transfer-Encoding of the text/[subtype].
+                - name: display_text
+                  type: keyword
+                  description: Visible text of the HTML document, with invisible characters removed and non-ASCII characters converted to ASCII spaces.
+                - name: inner_text
+                  type: keyword
+                  description: Inner text of the HTML document that doesn't include HTML tags.
+                - name: raw
+                  type: keyword
+                  description: Decoded raw content of a body text type (text/[subtype] section).
+            - name: ips
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The raw IP.
+            - name: links
+              type: group
+              fields:
+                - name: display_text
+                  type: keyword
+                  description: The text of a hyperlink, if it's not a URL.
+                - name: display_url
+                  type: group
+                  fields:
+                    - name: domain
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                        - name: punycode
+                          type: keyword
+                          description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                        - name: root_domain
+                          type: keyword
+                          description: The root domain, including the TLD.
+                        - name: sld
+                          type: keyword
+                          description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                        - name: subdomain
+                          type: keyword
+                          description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                        - name: tld
+                          type: keyword
+                          description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                        - name: valid
+                          type: boolean
+                          description: Whether the domain is valid.
+                    - name: fragment
+                      type: keyword
+                      description: 'Fragment identifier; the text following the # in the href_url (also called the anchor tag).'
+                    - name: password
+                      type: keyword
+                      description: The password specified before the domain name.
+                    - name: path
+                      type: keyword
+                      description: Everything after the TLD and before the query parameters.
+                    - name: port
+                      type: long
+                      description: The port used for the href_url. If no explicit port is set, the port will be inferred from the protocol.
+                    - name: query_params
+                      type: keyword
+                      description: The query parameters of the href_url.
+                    - name: rewrite
+                      type: group
+                      fields:
+                        - name: encoders
+                          type: keyword
+                          description: List of detected URL rewrite encoders while unraveling the URL.
+                        - name: original
+                          type: keyword
+                          description: Original URL without any unraveling URL rewrites.
+                    - name: scheme
+                      type: keyword
+                      description: Protocol for the href_url request, e.g. http.
+                    - name: url
+                      type: keyword
+                      description: Full URL.
+                    - name: username
+                      type: keyword
+                      description: The username specified before the domain name of the href_url.
+                - name: href_url
+                  type: group
+                  fields:
+                    - name: domain
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                        - name: punycode
+                          type: keyword
+                          description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                        - name: root_domain
+                          type: keyword
+                          description: The root domain, including the TLD.
+                        - name: sld
+                          type: keyword
+                          description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                        - name: subdomain
+                          type: keyword
+                          description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                        - name: tld
+                          type: keyword
+                          description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                        - name: valid
+                          type: boolean
+                          description: Whether the domain is valid.
+                    - name: fragment
+                      type: keyword
+                      description: 'Fragment identifier; the text following the # in the href_url (also called the anchor tag).'
+                    - name: password
+                      type: keyword
+                      description: The password specified before the domain name.
+                    - name: path
+                      type: keyword
+                      description: Everything after the TLD and before the query parameters.
+                    - name: port
+                      type: long
+                      description: The port used for the href_url. If no explicit port is set, the port will be inferred from the protocol.
+                    - name: query_params
+                      type: keyword
+                      description: The query parameters of the href_url.
+                    - name: rewrite
+                      type: group
+                      fields:
+                        - name: encoders
+                          type: keyword
+                          description: List of detected URL rewrite encoders while unraveling the URL.
+                        - name: original
+                          type: keyword
+                          description: Original URL without any unraveling URL rewrites.
+                    - name: scheme
+                      type: keyword
+                      description: Protocol for the href_url request, e.g. http.
+                    - name: url
+                      type: keyword
+                      description: Full URL.
+                    - name: username
+                      type: keyword
+                      description: The username specified before the domain name of the href_url.
+                - name: mismatched
+                  type: boolean
+                  description: Whether the display URL and href URL root domains are mismatched (i.e. .href_url.domain.root_domain != .display_url.domain.root_domain, where both are not null and valid domains).
+            - name: plain
+              type: group
+              fields:
+                - name: charset
+                  type: keyword
+                  description: charset of the text/[subtype].
+                - name: content_transfer_encoding
+                  type: keyword
+                  description: Content-Transfer-Encoding of the text/[subtype].
+                - name: raw
+                  type: keyword
+                  description: Decoded raw content of a body text type (text/[subtype] section).
+        - name: errors
+          type: object
+          object_type: keyword
+          description: Non-fatal errors while parsing MDM.
+        - name: external
+          type: group
+          fields:
+            - name: created_at
+              type: date
+              description: The created time of the message as provided by the cloud API (G Suite or Office 365) or other external source. This is typically the time the external source received the message.
+            - name: message_id
+              type: keyword
+              description: The message ID as provided by the cloud API (G Suite or Office 365) or other external source.
+            - name: route_type
+              type: keyword
+              description: whether the message was sent or received.
+            - name: spam
+              type: boolean
+              description: The upstream mail gateway determined the message to be spam. For cloud API providers, this will be the same as spam_folder. For other implementation methods like transport rules, this will be determined by message header values (e.g. X-SPAM) if supported.
+            - name: spam_folder
+              type: boolean
+              description: The message arrived in the user's spam folder. This only applies to cloud APIs (G Suite or Office 365).
+            - name: thread_id
+              type: keyword
+              description: The thread/conversation's unique ID as provided by the cloud API (G Suite or Office 365).
+        - name: headers
+          type: group
+          fields:
+            - name: auth_summary
+              type: group
+              fields:
+                - name: dmarc
+                  type: group
+                  fields:
+                    - name: details
+                      type: group
+                      fields:
+                        - name: action
+                          type: keyword
+                          description: Indicates the action taken by the spam filter based on the results of the DMARC check. For more information see https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/anti-spam-message-headers?view=o365-worldwide#authentication-results-message-header-fields.
+                        - name: disposition
+                          type: keyword
+                          description: Gmail-applied policy.
+                        - name: from
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                            - name: punycode
+                              type: keyword
+                              description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                            - name: root_domain
+                              type: keyword
+                              description: The root domain, including the TLD.
+                            - name: sld
+                              type: keyword
+                              description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                            - name: subdomain
+                              type: keyword
+                              description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                            - name: tld
+                              type: keyword
+                              description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                            - name: valid
+                              type: boolean
+                              description: Whether the domain is valid.
+                        - name: policy
+                          type: keyword
+                          description: Policy for the organizational domain.
+                        - name: sub_policy
+                          type: keyword
+                          description: Policy for the subdomain of the organizational domain.
+                        - name: verdict
+                          type: keyword
+                          description: Describes the results of the DMARC check for the message.
+                        - name: version
+                          type: keyword
+                          description: DMARC version.
+                    - name: pass
+                      type: boolean
+                      description: Whether the DMARC check passed.
+                    - name: received_hop
+                      type: long
+                      description: The lowest hop at which the DMARC check was made.
+                - name: spf
+                  type: group
+                  fields:
+                    - name: details
+                      type: group
+                      fields:
+                        - name: client_ip
+                          type: group
+                          fields:
+                            - name: ip
+                              type: ip
+                              description: The raw IP.
+                        - name: description
+                          type: keyword
+                          description: Verbose description of the SPF verdict.
+                        - name: designator
+                          type: keyword
+                          description: Email or domain of the designating body.
+                        - name: helo
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                            - name: punycode
+                              type: keyword
+                              description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                            - name: root_domain
+                              type: keyword
+                              description: The root domain, including the TLD.
+                            - name: sld
+                              type: keyword
+                              description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                            - name: subdomain
+                              type: keyword
+                              description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                            - name: tld
+                              type: keyword
+                              description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                            - name: valid
+                              type: boolean
+                              description: Whether the domain is valid.
+                        - name: server
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                            - name: punycode
+                              type: keyword
+                              description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                            - name: root_domain
+                              type: keyword
+                              description: The root domain, including the TLD.
+                            - name: sld
+                              type: keyword
+                              description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                            - name: subdomain
+                              type: keyword
+                              description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                            - name: tld
+                              type: keyword
+                              description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                            - name: valid
+                              type: boolean
+                              description: Whether the domain is valid.
+                        - name: verdict
+                          type: keyword
+                          description: Verdict of the SPF.
+                    - name: error
+                      type: boolean
+                      description: Whether the SPF check errored.
+                    - name: pass
+                      type: boolean
+                      description: Whether the SPF check passed.
+                    - name: received_hop
+                      type: long
+                      description: The lowest hop at which the SPF check was made.
+            - name: date
+              type: date
+              description: Date the email was sent in UTC.
+            - name: date_original_offset
+              type: keyword
+              description: UTC timezone offset of the sender.
+            - name: delivered_to
+              type: group
+              fields:
+                - name: domain
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                    - name: punycode
+                      type: keyword
+                      description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                    - name: root_domain
+                      type: keyword
+                      description: The root domain, including the TLD.
+                    - name: sld
+                      type: keyword
+                      description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                    - name: subdomain
+                      type: keyword
+                      description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                    - name: tld
+                      type: keyword
+                      description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                    - name: valid
+                      type: boolean
+                      description: Whether the domain is valid.
+                - name: email
+                  type: keyword
+                  description: Full email address.
+                - name: local_part
+                  type: keyword
+                  description: Local-part, i.e. before the @.
+            - name: domains
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                - name: punycode
+                  type: keyword
+                  description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                - name: root_domain
+                  type: keyword
+                  description: The root domain, including the TLD.
+                - name: sld
+                  type: keyword
+                  description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                - name: subdomain
+                  type: keyword
+                  description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                - name: tld
+                  type: keyword
+                  description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                - name: valid
+                  type: boolean
+                  description: Whether the domain is valid.
+            - name: hops
+              type: group
+              fields:
+                - name: authentication_results
+                  type: group
+                  fields:
+                    - name: compauth
+                      type: group
+                      fields:
+                        - name: reason
+                          type: keyword
+                          description: Reason for the verdict.
+                        - name: verdict
+                          type: keyword
+                          description: Verdict of the compauth.
+                    - name: dkim
+                      type: keyword
+                      description: Verdict of the Domain Keys Identified Mail check.
+                    - name: dkim_details
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: Signing algorithm.
+                        - name: body_hash
+                          type: keyword
+                          description: Body Hash.
+                        - name: domain
+                          type: keyword
+                          description: Domain identified in the DKIM signature if any. This is the domain that's queried for the public key.
+                        - name: headers
+                          type: keyword
+                          description: Header fields signed by the algorithm.
+                        - name: instance
+                          type: keyword
+                          description: Instance number of this signature (if ARC).
+                        - name: selector
+                          type: keyword
+                          description: Selector.
+                        - name: signature
+                          type: keyword
+                          description: Signature of headers and body.
+                        - name: type
+                          type: keyword
+                          description: The type of signature, derived from the field name.
+                        - name: version
+                          type: keyword
+                          description: Version.
+                    - name: dmarc
+                      type: keyword
+                      description: Verdict of the Domain-based Message Authentication, Reporting & Conformance check.
+                    - name: dmarc_details
+                      type: group
+                      fields:
+                        - name: action
+                          type: keyword
+                          description: Indicates the action taken by the spam filter based on the results of the DMARC check. For more information see https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/anti-spam-message-headers?view=o365-worldwide#authentication-results-message-header-fields.
+                        - name: disposition
+                          type: keyword
+                          description: Gmail-applied policy.
+                        - name: from
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                            - name: punycode
+                              type: keyword
+                              description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                            - name: root_domain
+                              type: keyword
+                              description: The root domain, including the TLD.
+                            - name: sld
+                              type: keyword
+                              description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                            - name: subdomain
+                              type: keyword
+                              description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                            - name: tld
+                              type: keyword
+                              description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                            - name: valid
+                              type: boolean
+                              description: Whether the domain is valid.
+                        - name: policy
+                          type: keyword
+                          description: Policy for the organizational domain.
+                        - name: sub_policy
+                          type: keyword
+                          description: Policy for the subdomain of the organizational domain.
+                        - name: verdict
+                          type: keyword
+                          description: Describes the results of the DMARC check for the message.
+                        - name: version
+                          type: keyword
+                          description: DMARC version.
+                    - name: instance
+                      type: keyword
+                      description: Instance number of this auth result (if ARC).
+                    - name: server
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                        - name: punycode
+                          type: keyword
+                          description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                        - name: root_domain
+                          type: keyword
+                          description: The root domain, including the TLD.
+                        - name: sld
+                          type: keyword
+                          description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                        - name: subdomain
+                          type: keyword
+                          description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                        - name: tld
+                          type: keyword
+                          description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                        - name: valid
+                          type: boolean
+                          description: Whether the domain is valid.
+                    - name: spf
+                      type: keyword
+                      description: Verdict of the Sender Policy Framework.
+                    - name: spf_details
+                      type: group
+                      fields:
+                        - name: client_ip
+                          type: group
+                          fields:
+                            - name: ip
+                              type: ip
+                              description: The raw IP.
+                        - name: description
+                          type: keyword
+                          description: Verbose description of the SPF verdict.
+                        - name: designator
+                          type: keyword
+                          description: Email or domain of the designating body.
+                        - name: helo
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                            - name: punycode
+                              type: keyword
+                              description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                            - name: root_domain
+                              type: keyword
+                              description: The root domain, including the TLD.
+                            - name: sld
+                              type: keyword
+                              description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                            - name: subdomain
+                              type: keyword
+                              description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                            - name: tld
+                              type: keyword
+                              description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                            - name: valid
+                              type: boolean
+                              description: Whether the domain is valid.
+                        - name: server
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                            - name: punycode
+                              type: keyword
+                              description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                            - name: root_domain
+                              type: keyword
+                              description: The root domain, including the TLD.
+                            - name: sld
+                              type: keyword
+                              description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                            - name: subdomain
+                              type: keyword
+                              description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                            - name: tld
+                              type: keyword
+                              description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                            - name: valid
+                              type: boolean
+                              description: Whether the domain is valid.
+                        - name: verdict
+                          type: keyword
+                          description: Verdict of the SPF.
+                    - name: type
+                      type: keyword
+                      description: The type of authentication result, derived from the field name.
+                - name: fields
+                  type: object
+                  object_type: keyword
+                - name: index
+                  type: long
+                  description: Index indicates the order in which a hop occurred from sender to recipient.
+                - name: received
+                  type: group
+                  fields:
+                    - name: additional
+                      type: group
+                      fields:
+                        - name: raw
+                          type: keyword
+                          description: The raw string for remaining additional clauses, such as transport information.
+                    - name: id
+                      type: group
+                      fields:
+                        - name: raw
+                          type: keyword
+                          description: The raw string of 'id' section.
+                    - name: link
+                      type: group
+                      fields:
+                        - name: raw
+                          type: keyword
+                          description: The raw string of 'via' section.
+                    - name: mailbox
+                      type: group
+                      fields:
+                        - name: raw
+                          type: keyword
+                          description: The raw string of 'for' section.
+                    - name: protocol
+                      type: group
+                      fields:
+                        - name: raw
+                          type: keyword
+                          description: The raw string of 'with' section.
+                    - name: server
+                      type: group
+                      fields:
+                        - name: raw
+                          type: keyword
+                          description: The raw string of 'by' section.
+                    - name: source
+                      type: group
+                      fields:
+                        - name: raw
+                          type: keyword
+                          description: The raw string of 'from' section.
+                    - name: time
+                      type: date
+                      description: Time parsed from the Received header.
+                    - name: zone_offset
+                      type: keyword
+                      description: Timezone offset parsed from the Received header.
+                - name: received_spf
+                  type: group
+                  fields:
+                    - name: client_ip
+                      type: group
+                      fields:
+                        - name: ip
+                          type: ip
+                          description: The raw IP.
+                    - name: description
+                      type: keyword
+                      description: Verbose description of the SPF verdict.
+                    - name: designator
+                      type: keyword
+                      description: Email or domain of the designating body.
+                    - name: helo
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                        - name: punycode
+                          type: keyword
+                          description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                        - name: root_domain
+                          type: keyword
+                          description: The root domain, including the TLD.
+                        - name: sld
+                          type: keyword
+                          description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                        - name: subdomain
+                          type: keyword
+                          description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                        - name: tld
+                          type: keyword
+                          description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                        - name: valid
+                          type: boolean
+                          description: Whether the domain is valid.
+                    - name: server
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                        - name: punycode
+                          type: keyword
+                          description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                        - name: root_domain
+                          type: keyword
+                          description: The root domain, including the TLD.
+                        - name: sld
+                          type: keyword
+                          description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                        - name: subdomain
+                          type: keyword
+                          description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                        - name: tld
+                          type: keyword
+                          description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                        - name: valid
+                          type: boolean
+                          description: Whether the domain is valid.
+                    - name: verdict
+                      type: keyword
+                      description: Verdict of the SPF.
+                - name: signature
+                  type: group
+                  fields:
+                    - name: algorithm
+                      type: keyword
+                      description: Signing algorithm.
+                    - name: body_hash
+                      type: keyword
+                      description: Body Hash.
+                    - name: domain
+                      type: keyword
+                      description: Domain identified in the DKIM signature if any. This is the domain that's queried for the public key.
+                    - name: headers
+                      type: keyword
+                      description: Header fields signed by the algorithm.
+                    - name: instance
+                      type: keyword
+                      description: Instance number of this signature (if ARC).
+                    - name: selector
+                      type: keyword
+                      description: Selector.
+                    - name: signature
+                      type: keyword
+                      description: Signature of headers and body.
+                    - name: type
+                      type: keyword
+                      description: The type of signature, derived from the field name.
+                    - name: version
+                      type: keyword
+                      description: Version.
+            - name: in_reply_to
+              type: keyword
+              description: In-Reply-To header value which identifies its parent message if exists.
+            - name: ips
+              type: group
+              fields:
+                - name: ip
+                  type: keyword
+                  description: The raw IP.
+            - name: mailer
+              type: keyword
+              description: X-Mailer or User-Agent extracted from headers.
+            - name: message_id
+              type: keyword
+              description: Message-ID extracted from the header.
+            - name: references
+              type: keyword
+              description: The Message-IDs of the other messages within this chain.
+            - name: reply_to
+              type: group
+              fields:
+                - name: display_name
+                  type: keyword
+                  description: Display name.
+                - name: email
+                  type: group
+                  fields:
+                    - name: domain
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                        - name: punycode
+                          type: keyword
+                          description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                        - name: root_domain
+                          type: keyword
+                          description: The root domain, including the TLD.
+                        - name: sld
+                          type: keyword
+                          description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                        - name: subdomain
+                          type: keyword
+                          description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                        - name: tld
+                          type: keyword
+                          description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                        - name: valid
+                          type: boolean
+                          description: Whether the domain is valid.
+                    - name: local_part
+                      type: keyword
+                      description: Local-part, i.e. before the @.
+                    - name: value
+                      type: keyword
+                      description: Full email address.
+            - name: return_path
+              type: group
+              fields:
+                - name: domain
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                    - name: punycode
+                      type: keyword
+                      description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                    - name: root_domain
+                      type: keyword
+                      description: The root domain, including the TLD.
+                    - name: sld
+                      type: keyword
+                      description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                    - name: subdomain
+                      type: keyword
+                      description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                    - name: tld
+                      type: keyword
+                      description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                    - name: valid
+                      type: boolean
+                      description: Whether the domain is valid.
+                - name: email
+                  type: keyword
+                  description: Full email address.
+                - name: local_part
+                  type: keyword
+                  description: Local-part, i.e. before the @.
+            - name: x_authenticated_domain
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                - name: punycode
+                  type: keyword
+                  description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                - name: root_domain
+                  type: keyword
+                  description: The root domain, including the TLD.
+                - name: sld
+                  type: keyword
+                  description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                - name: subdomain
+                  type: keyword
+                  description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                - name: tld
+                  type: keyword
+                  description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                - name: valid
+                  type: boolean
+                  description: Whether the domain is valid.
+            - name: x_authenticated_sender
+              type: group
+              fields:
+                - name: domain
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                    - name: punycode
+                      type: keyword
+                      description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                    - name: root_domain
+                      type: keyword
+                      description: The root domain, including the TLD.
+                    - name: sld
+                      type: keyword
+                      description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                    - name: subdomain
+                      type: keyword
+                      description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                    - name: tld
+                      type: keyword
+                      description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                    - name: valid
+                      type: boolean
+                      description: Whether the domain is valid.
+                - name: email
+                  type: keyword
+                  description: Full email address.
+                - name: local_part
+                  type: keyword
+                  description: Local-part, i.e. before the @.
+            - name: x_client_ip
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The raw IP.
+            - name: x_originating_ip
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The raw IP.
+            - name: x_secure_server_account
+              type: keyword
+              description: X-SecureServer-Acct header, which represents a unique identifier associated with the sender's email account on a secure server and can be used to trace the email back to a specific account or user.
+            - name: x_sender
+              type: group
+              fields:
+                - name: domain
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                    - name: punycode
+                      type: keyword
+                      description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                    - name: root_domain
+                      type: keyword
+                      description: The root domain, including the TLD.
+                    - name: sld
+                      type: keyword
+                      description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                    - name: subdomain
+                      type: keyword
+                      description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                    - name: tld
+                      type: keyword
+                      description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                    - name: valid
+                      type: boolean
+                      description: Whether the domain is valid.
+                - name: email
+                  type: keyword
+                  description: Full email address.
+                - name: local_part
+                  type: keyword
+                  description: Local-part, i.e. before the @.
+        - name: mailbox
+          type: group
+          fields:
+            - name: display_name
+              type: keyword
+              description: Display name.
+            - name: email
+              type: group
+              fields:
+                - name: domain
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                    - name: punycode
+                      type: keyword
+                      description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                    - name: root_domain
+                      type: keyword
+                      description: The root domain, including the TLD.
+                    - name: sld
+                      type: keyword
+                      description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                    - name: subdomain
+                      type: keyword
+                      description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                    - name: tld
+                      type: keyword
+                      description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                    - name: valid
+                      type: boolean
+                      description: Whether the domain is valid.
+                - name: local_part
+                  type: keyword
+                  description: Local-part, i.e. before the @.
+                - name: value
+                  type: keyword
+                  description: Full email address.
+        - name: meta
+          type: group
+          fields:
+            - name: canonical_id
+              type: keyword
+              description: A deterministic ID, generated from metadata such as Attachments, Body, Subject, Sender and is used to group similar messages/campaigns together.
+            - name: created_at
+              type: date
+              description: Creation time of the data model.
+            - name: effective_at
+              type: date
+              description: Effective time of the data model, used for evaluation against lists and historical functions such as sender profiles or whois.
+            - name: id
+              type: keyword
+              description: Message ID.
+        - name: recipients
+          type: group
+          fields:
+            - name: bcc
+              type: group
+              fields:
+                - name: display_name
+                  type: keyword
+                  description: Display name.
+                - name: email
+                  type: group
+                  fields:
+                    - name: domain
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                        - name: punycode
+                          type: keyword
+                          description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                        - name: root_domain
+                          type: keyword
+                          description: The root domain, including the TLD.
+                        - name: sld
+                          type: keyword
+                          description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                        - name: subdomain
+                          type: keyword
+                          description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                        - name: tld
+                          type: keyword
+                          description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                        - name: valid
+                          type: boolean
+                          description: Whether the domain is valid.
+                    - name: local_part
+                      type: keyword
+                      description: Local-part, i.e. before the @.
+                    - name: value
+                      type: keyword
+                      description: Full email address.
+            - name: cc
+              type: group
+              fields:
+                - name: display_name
+                  type: keyword
+                  description: Display name.
+                - name: email
+                  type: group
+                  fields:
+                    - name: domain
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                        - name: punycode
+                          type: keyword
+                          description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                        - name: root_domain
+                          type: keyword
+                          description: The root domain, including the TLD.
+                        - name: sld
+                          type: keyword
+                          description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                        - name: subdomain
+                          type: keyword
+                          description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                        - name: tld
+                          type: keyword
+                          description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                        - name: valid
+                          type: boolean
+                          description: Whether the domain is valid.
+                    - name: local_part
+                      type: keyword
+                      description: Local-part, i.e. before the @.
+                    - name: value
+                      type: keyword
+                      description: Full email address.
+            - name: to
+              type: group
+              fields:
+                - name: display_name
+                  type: keyword
+                  description: Display name.
+                - name: email
+                  type: group
+                  fields:
+                    - name: domain
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                        - name: punycode
+                          type: keyword
+                          description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                        - name: root_domain
+                          type: keyword
+                          description: The root domain, including the TLD.
+                        - name: sld
+                          type: keyword
+                          description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                        - name: subdomain
+                          type: keyword
+                          description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                        - name: tld
+                          type: keyword
+                          description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                        - name: valid
+                          type: boolean
+                          description: Whether the domain is valid.
+                    - name: local_part
+                      type: keyword
+                      description: Local-part, i.e. before the @.
+                    - name: value
+                      type: keyword
+                      description: Full email address.
+        - name: sender
+          type: group
+          fields:
+            - name: display_name
+              type: keyword
+              description: Display name.
+            - name: email
+              type: group
+              fields:
+                - name: domain
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The fully qualified domain name (FQDN). This may not always be routable, e.g. when an email address contains a domain that is just a TLD with no SLD, e.g. foo@WIN-bar.
+                    - name: punycode
+                      type: keyword
+                      description: Interpreted punycode if the domain starts with xn--. For example, if 'domain' is 'xn--ublimesecurity-4xc.com' then 'punycode' is śublimesecurity.com.
+                    - name: root_domain
+                      type: keyword
+                      description: The root domain, including the TLD.
+                    - name: sld
+                      type: keyword
+                      description: Second-level domain, e.g. 'windows' for the domain 'windows.net'.
+                    - name: subdomain
+                      type: keyword
+                      description: Subdomain, e.g. 'drive' for the domain 'drive.google.com'.
+                    - name: tld
+                      type: keyword
+                      description: The domain's top-level domain. E.g. the TLD of google.com is 'com'.
+                    - name: valid
+                      type: boolean
+                      description: Whether the domain is valid.
+                - name: local_part
+                  type: keyword
+                  description: Local-part, i.e. before the @.
+                - name: value
+                  type: keyword
+                  description: Full email address.
+        - name: subject
+          type: group
+          fields:
+            - name: subject
+              type: keyword
+              description: Subject of the email.
+        - name: type
+          type: group
+          fields:
+            - name: inbound
+              type: boolean
+              description: Message was sent from someone outside your organization, to at least one recipient inside your organization.
+            - name: internal
+              type: boolean
+              description: Message was sent from someone inside your organization, to at least one recipient inside your organization. Messages must be authenticated by either SPF or DKIM to be treated as internal.
+            - name: outbound
+              type: boolean
+              description: Message was sent from someone inside your organization, to at least one recipient outside your organization.
