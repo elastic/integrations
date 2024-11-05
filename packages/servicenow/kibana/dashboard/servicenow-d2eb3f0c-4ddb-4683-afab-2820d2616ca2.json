@@ -1,0 +1,2575 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "22a81ac1-eeb8-4f18-85d0-0f9d1a1e5fe5": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "servicenow.event.approval.display_value",
+                        "grow": true,
+                        "id": "22a81ac1-eeb8-4f18-85d0-0f9d1a1e5fe5",
+                        "searchTechnique": "prefix",
+                        "title": "Approval",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "ceec6966-3bff-455c-8af6-25a64f1807de": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "servicenow.event.state.display_value",
+                        "grow": true,
+                        "id": "ceec6966-3bff-455c-8af6-25a64f1807de",
+                        "searchTechnique": "prefix",
+                        "title": "State",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "d28e7a30-3a6a-482e-8ad5-67f2cd64fec0": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "servicenow.event.priority.display_value",
+                        "grow": true,
+                        "id": "d28e7a30-3a6a-482e-8ad5-67f2cd64fec0",
+                        "searchTechnique": "prefix",
+                        "title": "Priority",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
+        },
+        "description": "This dashboard shows Change Task and Change Request logs collected by the ServiceNow integration.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "servicenow.event"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "servicenow.event"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "tags",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "tags",
+                            "negate": false,
+                            "params": [
+                                "change_request",
+                                "change_task"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "tags": "change_request"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "tags": "change_task"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n[**ServiceNow**](/app/integrations/detail/servicenow/overview)\n\n- [Incident](#/dashboard/servicenow-d929c3a1-7af8-428e-8357-8b2e8d3e3050)\n- [Problem](#/dashboard/servicenow-d8977587-d9b4-4487-b321-a8402da07d48)\n- **Change Task and Request**\n- [User and Group](#/dashboard/servicenow-b4795d3e-8c8b-48b2-900e-edc89db4d336)\n- [CMDB CI Servers](#/dashboard/servicenow-22d413b7-ffb5-450f-b5f8-7dcd54fab22f)\n- [CMDB CI Services and CMN Location](#/dashboard/servicenow-648308f9-ebdf-46fe-b6ce-b90dfcf2d1dd)\n- [CMDB CI, REL and DB Instance Overview](#/dashboard/servicenow-0305f883-12a8-4021-af73-fbe05e797c3f)\n- [Knowledge](#/dashboard/servicenow-e6093b0d-38a6-4b05-8354-4bbaef28b667)\n- [ALM and CMDB CI Hardware and Computer](#/dashboard/servicenow-b182c6a6-3b4e-413f-899d-dd255b1a3623)\n- [Service Catalog](#/dashboard/servicenow-488772bc-4ce5-48c6-9e8a-d948439dbf39)\n- [Business Application](#/dashboard/servicenow-297414cc-3b65-40b1-b15b-e33cf676b3bf)\n- [ESX and Hyper-V Server](#/dashboard/servicenow-014c13b4-59bc-4bfa-bcb2-fdc1828020bf)\n\n**Overview**\n\nThis dashboard displays key statistics and visualizations for change task and change request table, including task and request metrics, distribution by state, priority, type, scope, risk, and category, as well as SLA performance, and highlights the  change requests and tasks details, providing a comprehensive overview of change task and change request trends and patterns.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 26,
+                    "i": "a67ee085-0ee6-4201-ad94-c72a6c0d8ab9",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "a67ee085-0ee6-4201-ad94-c72a6c0d8ab9",
+                "title": "Table of Content",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ba23666e-4a01-499c-b6c6-52459ba15c56",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "ba23666e-4a01-499c-b6c6-52459ba15c56": {
+                                            "columnOrder": [
+                                                "7dc7595b-8330-45bb-aad4-4c800001f65b"
+                                            ],
+                                            "columns": {
+                                                "7dc7595b-8330-45bb-aad4-4c800001f65b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Change Tasks made SLA",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "35244b2a-4915-4911-90a6-6a14153935e7",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_task"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_task"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "servicenow.event.made_sla.display_value",
+                                        "index": "99989771-ddbb-44c8-88f4-30a42b5b41f5",
+                                        "key": "servicenow.event.made_sla.display_value",
+                                        "negate": false,
+                                        "params": {
+                                            "query": true
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "servicenow.event.made_sla.display_value": true
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "ba23666e-4a01-499c-b6c6-52459ba15c56",
+                                "layerType": "data",
+                                "metricAccessor": "7dc7595b-8330-45bb-aad4-4c800001f65b"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "436a0e78-1661-4602-a26a-6bc9d3b61d4a",
+                    "w": 12,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "436a0e78-1661-4602-a26a-6bc9d3b61d4a",
+                "title": "Tasks made SLA [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-fa927a5b-e27a-46dd-a13c-8453602c7963",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "fa927a5b-e27a-46dd-a13c-8453602c7963": {
+                                            "columnOrder": [
+                                                "dfc16d14-83be-4418-b4a5-d29789870535"
+                                            ],
+                                            "columns": {
+                                                "dfc16d14-83be-4418-b4a5-d29789870535": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Inactive Change Request",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "servicenow.event.active.display_value",
+                                        "index": "3e93108a-01ba-4e65-98a7-5fbfca6e5866",
+                                        "key": "servicenow.event.active.display_value",
+                                        "negate": false,
+                                        "params": {
+                                            "query": false
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "servicenow.event.active.display_value": false
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "bfad852f-4f07-4a13-9906-c8aad6d4d3b2",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_request"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_request"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "fa927a5b-e27a-46dd-a13c-8453602c7963",
+                                "layerType": "data",
+                                "metricAccessor": "dfc16d14-83be-4418-b4a5-d29789870535"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "6abf5d4d-eaf9-4847-a27f-ee1f226e6a6d",
+                    "w": 12,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "6abf5d4d-eaf9-4847-a27f-ee1f226e6a6d",
+                "title": "Active Request [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-fa927a5b-e27a-46dd-a13c-8453602c7963",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "fa927a5b-e27a-46dd-a13c-8453602c7963": {
+                                            "columnOrder": [
+                                                "dfc16d14-83be-4418-b4a5-d29789870535"
+                                            ],
+                                            "columns": {
+                                                "dfc16d14-83be-4418-b4a5-d29789870535": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Active Change Request",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "bfad852f-4f07-4a13-9906-c8aad6d4d3b2",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_request"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_request"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "servicenow.event.active.display_value",
+                                        "index": "1e0f62d3-18b7-4d31-bdd8-5646b2117b77",
+                                        "key": "servicenow.event.active.display_value",
+                                        "negate": false,
+                                        "params": {
+                                            "query": true
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "servicenow.event.active.display_value": true
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "fa927a5b-e27a-46dd-a13c-8453602c7963",
+                                "layerType": "data",
+                                "metricAccessor": "dfc16d14-83be-4418-b4a5-d29789870535"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "8a265c1a-2268-4472-92aa-5a3e8d761633",
+                    "w": 12,
+                    "x": 36,
+                    "y": 0
+                },
+                "panelIndex": "8a265c1a-2268-4472-92aa-5a3e8d761633",
+                "title": "Active Request [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ba23666e-4a01-499c-b6c6-52459ba15c56",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "ba23666e-4a01-499c-b6c6-52459ba15c56": {
+                                            "columnOrder": [
+                                                "7dc7595b-8330-45bb-aad4-4c800001f65b"
+                                            ],
+                                            "columns": {
+                                                "7dc7595b-8330-45bb-aad4-4c800001f65b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Active Change Task",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "99f35a3f-82d0-4ff3-b676-ee7b813841e0",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_task"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_task"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "servicenow.event.active.display_value",
+                                        "index": "cc342185-fe09-4823-b174-b96737e19bcb",
+                                        "key": "servicenow.event.active.display_value",
+                                        "negate": false,
+                                        "params": {
+                                            "query": true
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "servicenow.event.active.display_value": true
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "ba23666e-4a01-499c-b6c6-52459ba15c56",
+                                "layerType": "data",
+                                "metricAccessor": "7dc7595b-8330-45bb-aad4-4c800001f65b"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "a6f061d0-4464-4a1c-b173-a6abfebf04d5",
+                    "w": 18,
+                    "x": 12,
+                    "y": 12
+                },
+                "panelIndex": "a6f061d0-4464-4a1c-b173-a6abfebf04d5",
+                "title": "Active Task [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ba23666e-4a01-499c-b6c6-52459ba15c56",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "ba23666e-4a01-499c-b6c6-52459ba15c56": {
+                                            "columnOrder": [
+                                                "7dc7595b-8330-45bb-aad4-4c800001f65b"
+                                            ],
+                                            "columns": {
+                                                "7dc7595b-8330-45bb-aad4-4c800001f65b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Inactive Change Task",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "41fd9424-4531-4ca9-944f-df1d688da930",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_task"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_task"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "servicenow.event.active.display_value",
+                                        "index": "bd8c2fa3-ba55-48b2-9da1-58079c687f9b",
+                                        "key": "servicenow.event.active.display_value",
+                                        "negate": false,
+                                        "params": {
+                                            "query": false
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "servicenow.event.active.display_value": false
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "ba23666e-4a01-499c-b6c6-52459ba15c56",
+                                "layerType": "data",
+                                "metricAccessor": "7dc7595b-8330-45bb-aad4-4c800001f65b"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "0eb4c704-7507-4315-80dd-c65af175d665",
+                    "w": 18,
+                    "x": 30,
+                    "y": 12
+                },
+                "panelIndex": "0eb4c704-7507-4315-80dd-c65af175d665",
+                "title": "Inactive Task [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-78f53d77-fd19-4828-9624-8931621130fa",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "78f53d77-fd19-4828-9624-8931621130fa": {
+                                            "columnOrder": [
+                                                "3649ede6-f21d-4de9-8f42-601b7add9c08",
+                                                "51e061e2-1383-48b9-ad0c-5ea8e82608a2"
+                                            ],
+                                            "columns": {
+                                                "3649ede6-f21d-4de9-8f42-601b7add9c08": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Priority",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "51e061e2-1383-48b9-ad0c-5ea8e82608a2",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "servicenow.event.priority.display_value"
+                                                },
+                                                "51e061e2-1383-48b9-ad0c-5ea8e82608a2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "f263c377-25e2-4101-9302-a36b57253657",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_request"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_request"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "78f53d77-fd19-4828-9624-8931621130fa",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "51e061e2-1383-48b9-ad0c-5ea8e82608a2"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "3649ede6-f21d-4de9-8f42-601b7add9c08"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "e8e539f7-10d8-4743-bf30-54ee9dc11fe9",
+                    "w": 24,
+                    "x": 0,
+                    "y": 26
+                },
+                "panelIndex": "e8e539f7-10d8-4743-bf30-54ee9dc11fe9",
+                "title": "Change Requests by Priority [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d01a30f5-dea4-49e4-b2ca-3a053b400602",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "d01a30f5-dea4-49e4-b2ca-3a053b400602": {
+                                            "columnOrder": [
+                                                "756d70b9-9e69-4cd7-b816-693afc57c286",
+                                                "d285a731-8d00-4362-a659-f74d94c3a908"
+                                            ],
+                                            "columns": {
+                                                "756d70b9-9e69-4cd7-b816-693afc57c286": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Priority",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d285a731-8d00-4362-a659-f74d94c3a908",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "servicenow.event.priority.display_value"
+                                                },
+                                                "d285a731-8d00-4362-a659-f74d94c3a908": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "425423e0-ec92-4e77-a92e-45dc21f27d68",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_task"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_task"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d01a30f5-dea4-49e4-b2ca-3a053b400602",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "d285a731-8d00-4362-a659-f74d94c3a908"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "756d70b9-9e69-4cd7-b816-693afc57c286"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "246388c7-4fe3-4d3f-8ac1-94a41f34dece",
+                    "w": 24,
+                    "x": 24,
+                    "y": 26
+                },
+                "panelIndex": "246388c7-4fe3-4d3f-8ac1-94a41f34dece",
+                "title": "Change Tasks by Priority [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-78f53d77-fd19-4828-9624-8931621130fa",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "78f53d77-fd19-4828-9624-8931621130fa": {
+                                            "columnOrder": [
+                                                "3649ede6-f21d-4de9-8f42-601b7add9c08",
+                                                "51e061e2-1383-48b9-ad0c-5ea8e82608a2"
+                                            ],
+                                            "columns": {
+                                                "3649ede6-f21d-4de9-8f42-601b7add9c08": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "State",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "51e061e2-1383-48b9-ad0c-5ea8e82608a2",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "servicenow.event.state.display_value"
+                                                },
+                                                "51e061e2-1383-48b9-ad0c-5ea8e82608a2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "f263c377-25e2-4101-9302-a36b57253657",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_request"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_request"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "78f53d77-fd19-4828-9624-8931621130fa",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "51e061e2-1383-48b9-ad0c-5ea8e82608a2"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "3649ede6-f21d-4de9-8f42-601b7add9c08"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "2838fa50-adcf-4b2c-b7f5-8cec1ab376f3",
+                    "w": 24,
+                    "x": 0,
+                    "y": 40
+                },
+                "panelIndex": "2838fa50-adcf-4b2c-b7f5-8cec1ab376f3",
+                "title": "Change Request by State [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d01a30f5-dea4-49e4-b2ca-3a053b400602",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "d01a30f5-dea4-49e4-b2ca-3a053b400602": {
+                                            "columnOrder": [
+                                                "756d70b9-9e69-4cd7-b816-693afc57c286",
+                                                "d285a731-8d00-4362-a659-f74d94c3a908"
+                                            ],
+                                            "columns": {
+                                                "756d70b9-9e69-4cd7-b816-693afc57c286": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "State",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d285a731-8d00-4362-a659-f74d94c3a908",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "servicenow.event.state.display_value"
+                                                },
+                                                "d285a731-8d00-4362-a659-f74d94c3a908": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "425423e0-ec92-4e77-a92e-45dc21f27d68",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_task"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_task"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d01a30f5-dea4-49e4-b2ca-3a053b400602",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "d285a731-8d00-4362-a659-f74d94c3a908"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "756d70b9-9e69-4cd7-b816-693afc57c286"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "84ad5713-0d6b-457d-af62-addad8a24feb",
+                    "w": 24,
+                    "x": 24,
+                    "y": 40
+                },
+                "panelIndex": "84ad5713-0d6b-457d-af62-addad8a24feb",
+                "title": "Change Tasks by State [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a79ade5f-1641-489f-9fa9-e0762a49aa75",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "a79ade5f-1641-489f-9fa9-e0762a49aa75": {
+                                            "columnOrder": [
+                                                "ff385d39-ece9-4e63-94d2-2b23baa97a64",
+                                                "e2424eba-4c6a-4089-a9d9-f3223ceae9f3"
+                                            ],
+                                            "columns": {
+                                                "e2424eba-4c6a-4089-a9d9-f3223ceae9f3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "ff385d39-ece9-4e63-94d2-2b23baa97a64": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Scope",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "e2424eba-4c6a-4089-a9d9-f3223ceae9f3",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "servicenow.event.scope.display_value"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "c3aa475f-ae94-45d0-93ff-03da9d6afd35",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_request"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_request"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e2424eba-4c6a-4089-a9d9-f3223ceae9f3"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "a79ade5f-1641-489f-9fa9-e0762a49aa75",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "xAccessor": "ff385d39-ece9-4e63-94d2-2b23baa97a64"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "b5e095a7-6527-487e-a3be-c9a2a5e59035",
+                    "w": 48,
+                    "x": 0,
+                    "y": 55
+                },
+                "panelIndex": "b5e095a7-6527-487e-a3be-c9a2a5e59035",
+                "title": "Change Requests by Scope [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-4a3fc424-5d71-459b-8d7b-4014d4b05420",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "4a3fc424-5d71-459b-8d7b-4014d4b05420": {
+                                            "columnOrder": [
+                                                "d92234df-6b71-4a23-9d61-1ddc21685cd2",
+                                                "cdd47caa-5fd1-41d8-8557-1fee40735b62"
+                                            ],
+                                            "columns": {
+                                                "cdd47caa-5fd1-41d8-8557-1fee40735b62": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "d92234df-6b71-4a23-9d61-1ddc21685cd2": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "cdd47caa-5fd1-41d8-8557-1fee40735b62",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "servicenow.event.change_task_type.display_value"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "d5b38d37-b59d-4bbc-8155-18564478c988",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_task"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_task"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "cdd47caa-5fd1-41d8-8557-1fee40735b62"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "4a3fc424-5d71-459b-8d7b-4014d4b05420",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "xAccessor": "d92234df-6b71-4a23-9d61-1ddc21685cd2"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "d60b9d1e-a964-45ea-8347-5bf1a03dc1e1",
+                    "w": 24,
+                    "x": 0,
+                    "y": 70
+                },
+                "panelIndex": "d60b9d1e-a964-45ea-8347-5bf1a03dc1e1",
+                "title": "Change Task by Type [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-e231a673-be68-4454-98ae-b3160e06dcb5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "e231a673-be68-4454-98ae-b3160e06dcb5": {
+                                            "columnOrder": [
+                                                "9489ec5c-03e1-44ca-bf45-98abccfc9a18",
+                                                "de921c6f-29d8-43de-bb13-aa23ca66cbb4"
+                                            ],
+                                            "columns": {
+                                                "9489ec5c-03e1-44ca-bf45-98abccfc9a18": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Category",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "de921c6f-29d8-43de-bb13-aa23ca66cbb4",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "servicenow.event.category.display_value"
+                                                },
+                                                "de921c6f-29d8-43de-bb13-aa23ca66cbb4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "a697738c-ee64-4e8a-a306-7261c23ca360",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_request"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_request"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "de921c6f-29d8-43de-bb13-aa23ca66cbb4"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "e231a673-be68-4454-98ae-b3160e06dcb5",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "xAccessor": "9489ec5c-03e1-44ca-bf45-98abccfc9a18"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "50b9f28e-3360-4f94-9f95-7b7a35b9b9ea",
+                    "w": 24,
+                    "x": 24,
+                    "y": 70
+                },
+                "panelIndex": "50b9f28e-3360-4f94-9f95-7b7a35b9b9ea",
+                "title": "Change Requests by Category [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-9a208aa4-2e29-477d-adf1-1fcae9bb7a76",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "9a208aa4-2e29-477d-adf1-1fcae9bb7a76": {
+                                            "columnOrder": [
+                                                "410002c3-3c7e-4535-b60c-50f327977c57",
+                                                "b30a42c3-06b7-4c4b-b173-654dbd8a33ba"
+                                            ],
+                                            "columns": {
+                                                "410002c3-3c7e-4535-b60c-50f327977c57": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Risk",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b30a42c3-06b7-4c4b-b173-654dbd8a33ba",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "servicenow.event.risk.display_value"
+                                                },
+                                                "b30a42c3-06b7-4c4b-b173-654dbd8a33ba": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "da340389-24e5-47a9-b5a5-a794fe113637",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_request"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_request"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b30a42c3-06b7-4c4b-b173-654dbd8a33ba"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "9a208aa4-2e29-477d-adf1-1fcae9bb7a76",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "xAccessor": "410002c3-3c7e-4535-b60c-50f327977c57"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "fe0f9ea3-c875-4517-9787-14b05fcb4a4a",
+                    "w": 24,
+                    "x": 0,
+                    "y": 85
+                },
+                "panelIndex": "fe0f9ea3-c875-4517-9787-14b05fcb4a4a",
+                "title": "Change Requests by Risk [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5db44303-ffee-4c6b-a429-192fc34f8b3d",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "5db44303-ffee-4c6b-a429-192fc34f8b3d": {
+                                            "columnOrder": [
+                                                "0066b417-0ad8-4f1d-bfdc-ed9f992aa902",
+                                                "4788824e-e662-444d-b89a-f5adbed73566"
+                                            ],
+                                            "columns": {
+                                                "0066b417-0ad8-4f1d-bfdc-ed9f992aa902": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "4788824e-e662-444d-b89a-f5adbed73566",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "servicenow.event.type.display_value"
+                                                },
+                                                "4788824e-e662-444d-b89a-f5adbed73566": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tags",
+                                        "index": "452cdaa7-b297-4c01-afa4-c17667c0ca9e",
+                                        "key": "tags",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "change_request"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tags": "change_request"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "4788824e-e662-444d-b89a-f5adbed73566"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "5db44303-ffee-4c6b-a429-192fc34f8b3d",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "xAccessor": "0066b417-0ad8-4f1d-bfdc-ed9f992aa902"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "566ac9b1-1cd4-4e1e-8eec-dcb51b21b511",
+                    "w": 24,
+                    "x": 24,
+                    "y": 85
+                },
+                "panelIndex": "566ac9b1-1cd4-4e1e-8eec-dcb51b21b511",
+                "title": "Change Requests by Type [Logs ServiceNow]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "d1a2f364-a04c-471b-8f24-ef17e3b1f759",
+                    "w": 48,
+                    "x": 0,
+                    "y": 100
+                },
+                "panelIndex": "d1a2f364-a04c-471b-8f24-ef17e3b1f759",
+                "panelRefName": "panel_d1a2f364-a04c-471b-8f24-ef17e3b1f759",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "8d4f026e-92ec-4b25-a1be-d1423f520508",
+                    "w": 48,
+                    "x": 0,
+                    "y": 116
+                },
+                "panelIndex": "8d4f026e-92ec-4b25-a1be-d1423f520508",
+                "panelRefName": "panel_8d4f026e-92ec-4b25-a1be-d1423f520508",
+                "type": "search"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs ServiceNow] Change Task and Request",
+        "version": 2
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-11-01T11:39:14.090Z",
+    "id": "servicenow-d2eb3f0c-4ddb-4683-afab-2820d2616ca2",
+    "managed": false,
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "436a0e78-1661-4602-a26a-6bc9d3b61d4a:indexpattern-datasource-layer-ba23666e-4a01-499c-b6c6-52459ba15c56",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6abf5d4d-eaf9-4847-a27f-ee1f226e6a6d:indexpattern-datasource-layer-fa927a5b-e27a-46dd-a13c-8453602c7963",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8a265c1a-2268-4472-92aa-5a3e8d761633:indexpattern-datasource-layer-fa927a5b-e27a-46dd-a13c-8453602c7963",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a6f061d0-4464-4a1c-b173-a6abfebf04d5:indexpattern-datasource-layer-ba23666e-4a01-499c-b6c6-52459ba15c56",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0eb4c704-7507-4315-80dd-c65af175d665:indexpattern-datasource-layer-ba23666e-4a01-499c-b6c6-52459ba15c56",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "e8e539f7-10d8-4743-bf30-54ee9dc11fe9:indexpattern-datasource-layer-78f53d77-fd19-4828-9624-8931621130fa",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "246388c7-4fe3-4d3f-8ac1-94a41f34dece:indexpattern-datasource-layer-d01a30f5-dea4-49e4-b2ca-3a053b400602",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2838fa50-adcf-4b2c-b7f5-8cec1ab376f3:indexpattern-datasource-layer-78f53d77-fd19-4828-9624-8931621130fa",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "84ad5713-0d6b-457d-af62-addad8a24feb:indexpattern-datasource-layer-d01a30f5-dea4-49e4-b2ca-3a053b400602",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b5e095a7-6527-487e-a3be-c9a2a5e59035:indexpattern-datasource-layer-a79ade5f-1641-489f-9fa9-e0762a49aa75",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d60b9d1e-a964-45ea-8347-5bf1a03dc1e1:indexpattern-datasource-layer-4a3fc424-5d71-459b-8d7b-4014d4b05420",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "50b9f28e-3360-4f94-9f95-7b7a35b9b9ea:indexpattern-datasource-layer-e231a673-be68-4454-98ae-b3160e06dcb5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "fe0f9ea3-c875-4517-9787-14b05fcb4a4a:indexpattern-datasource-layer-9a208aa4-2e29-477d-adf1-1fcae9bb7a76",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "566ac9b1-1cd4-4e1e-8eec-dcb51b21b511:indexpattern-datasource-layer-5db44303-ffee-4c6b-a429-192fc34f8b3d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "servicenow-01396f16-041b-4ec5-b104-d29fe68f09ad",
+            "name": "d1a2f364-a04c-471b-8f24-ef17e3b1f759:panel_d1a2f364-a04c-471b-8f24-ef17e3b1f759",
+            "type": "search"
+        },
+        {
+            "id": "servicenow-046f04ce-7f31-4929-81fa-34561fb369f0",
+            "name": "8d4f026e-92ec-4b25-a1be-d1423f520508:panel_8d4f026e-92ec-4b25-a1be-d1423f520508",
+            "type": "search"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_22a81ac1-eeb8-4f18-85d0-0f9d1a1e5fe5:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_ceec6966-3bff-455c-8af6-25a64f1807de:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_d28e7a30-3a6a-482e-8ad5-67f2cd64fec0:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "servicenow-security-solution-default",
+            "name": "tag-ref-servicenow-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "servicenow-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0"
+}
