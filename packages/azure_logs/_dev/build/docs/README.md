@@ -24,8 +24,8 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 Before using the Custom Azure Logs you will need:
 
-* One **event hub** to store in-flight logs exported by Azure services (or other sources) and make them available to Elastic Agent.
-* A **storage account** to store information about logs consumed by the Elastic Agent.
+* One **Event Hub** to store in-flight logs exported by Azure services (or other sources) and make them available to Elastic Agent.
+* A **Storage Account** to store information about logs consumed by the Elastic Agent.
 
 ### Event Hub
 
@@ -44,9 +44,9 @@ To learn more about Event Hubs, refer to [Features and terminology in Azure Even
 
 ### Storage Account Container
 
-The [Storage account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview) is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
+The [Storage Account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview) is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
 
-The Custom Azure Logs integration requires a Storage account container to work.
+The Custom Azure Logs integration requires a Storage Account container to work.
 
 The integration uses the Storage Account container for checkpointing; it stores data about the Consumer Group (state, position, or offset) and shares it among the Elastic Agents. Sharing such information allows multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
 
@@ -67,7 +67,7 @@ The Elastic Agent automatically creates one container for the Custom Azure Logs 
 
 For example, if the integration is configured to fetch data from an event hub with four partitions, the Agent will create the following:
 
-* One storage account container.
+* One Storage Account container.
 * Four blobs in that container.
 
 The information stored in the blobs is small (usually < 500 bytes per blob) and accessed frequently. Elastic recommends using the Hot storage tier.
@@ -239,15 +239,15 @@ Select the **subscription** and the **Event Hubs namespace** you previously crea
   └───────────────┘   └──────────────┘   └───────────────┘      └───────────┘
 ```
 
-### Create a Storage account container
+### Create a Storage Account Container
 
-The Elastic Agent stores the consumer group information (state, position, or offset) in a storage account container. Making this information available to all agents allows them to share the logs processing and resume from the last processed logs after a restart.
+The Elastic Agent stores the consumer group information (state, position, or offset) in a Storage Account container. Making this information available to all agents allows them to share the logs processing and resume from the last processed logs after a restart.
 
-NOTE: Use the storage account as a checkpoint store only.
+NOTE: Use the Storage Account as a checkpoint store only.
 
-To create the storage account:
+To create the Storage Account:
 
-1. Sign in to the [Azure Portal](https://portal.azure.com/) and create your storage account.
+1. Sign in to the [Azure Portal](https://portal.azure.com/) and create your Storage Account.
 1. While configuring your project details, make sure you select the following recommended default settings:
    - Hierarchical namespace: disabled
    - Minimum TLS version: Version 1.2
@@ -255,7 +255,7 @@ To create the storage account:
    - Enable soft delete for blobs: disabled
    - Enable soft delete for containers: disabled
 
-1. When the new storage account is ready, you need to take note of the storage account name and the storage account access keys, as you will use them later to authenticate your Elastic application’s requests to this storage account.
+1. When the new Storage Account is ready, you need to take note of the Storage Account name and the Storage Account access keys, as you will use them later to authenticate your Elastic application’s requests to this Storage Account.
 
 This is the final diagram of the a setup for collecting Activity logs from the Azure Monitor service.
 
@@ -271,7 +271,7 @@ This is the final diagram of the a setup for collecting Activity logs from the A
                      └──────────────┘                                           
 ```
 
-#### How many Storage account containers?
+#### Storage Account containers?
 
 The Elastic Agent can use one Storage Account (SA) for multiple integrations.
 
@@ -336,7 +336,7 @@ Use the following settings to configure the Azure Logs integration when you add 
 
 `eventhub` :
 _string_
-A fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for event hub names to maximize compatibility. You can use existing event hubs having underscores (_) in the event hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the event hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store event hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+A fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for event hub names to maximize compatibility. You can use existing event hubs having underscores (_) in the event hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the event hub name to create dependent Azure resources behind the scenes (e.g., the Storage Account container to store event hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -349,19 +349,19 @@ _string_
 
 The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) for more information.
 
-A Blob Storage account is required to store/retrieve/update the offset or state of the event hub messages. This allows the integration to start back up at the spot that it stopped processing messages.
+A Blob Storage Account is required to store/retrieve/update the offset or state of the event hub messages. This allows the integration to start back up at the spot that it stopped processing messages.
 
 `storage_account` :
 _string_
-The name of the storage account that the state/offsets will be stored and updated.
+The name of the Storage Account that the state/offsets will be stored and updated.
 
 `storage_account_key` :
 _string_
-The storage account key. Used to authorize access to data in your storage account.
+The Storage Account key. Used to authorize access to data in your Storage Account.
 
 `storage_account_container` :
 _string_
-The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated storage account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
+The Storage Account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated Storage Account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
 
 `pipeline` :
 _string_
