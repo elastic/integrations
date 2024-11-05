@@ -119,30 +119,29 @@ processors:
       value: state
       tag: set_event_kind
   - rename:
+      field: json.name
+      tag: rename_name
+      target_field: wiz.cloud_configuration_finding_full.name
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: wiz.cloud_configuration_finding_full.name
+      ignore_empty_value: true
+  - rename:
       field: json.rule.description
       tag: rename_rule_description
       target_field: wiz.cloud_configuration_finding_full.rule.description
       ignore_missing: true
   - set:
-      field: message
-      tag: set_message
-      copy_from: wiz.cloud_configuration_finding_full.rule.description
-      ignore_empty_value: true
-  - set:
       field: rule.description
       tag: set_rule_description
       copy_from: wiz.cloud_configuration_finding_full.rule.description
       ignore_empty_value: true
-  - date:
-      field: json.analyzedAt
-      tag: date_set_timestamp
-      formats:
-        - ISO8601
-      if: ctx.json?.analyzedAt != null && ctx.json.analyzedAt != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_timestamp
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
   - rename:
       field: json.rule.id
       tag: rename_rule_id
