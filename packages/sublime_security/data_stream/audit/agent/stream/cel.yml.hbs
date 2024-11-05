@@ -34,13 +34,31 @@ program: |
         "Authorization": ["Bearer " + state.api_key],
       },
     }).do_request().as(resp, resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(body,{
-        "events": body.events.map(e,{
-          "message": e.encode_json()
-        }),
-        "offset": size(body.events) > 0 ? int(state.offset) + int(state.page_size) : 0,
-        "want_more": size(body.events) > 0,
-      })
+      state.?latest.optMap(t, timestamp(t)).as(latest,
+        bytes(resp.Body).decode_json().as(body, {
+          "events": body.events.map(e,
+            // Filter on timestamp to reduce the risk of duplicate events
+            // being ingested. We allow equality to prevent loss of events
+            // at the slight risk of duplication. The implementation here
+            // depends on the ordering of events being returned by the API
+            // being ascending chronological. If that is not the case this
+            // will result in data loss.
+            !latest.hasValue() || timestamp(e.created_at) >= latest.value(),
+            {
+              "message": e.encode_json()
+            }
+          ),
+          "offset": size(body.events) > 0 ? int(state.offset) + int(state.page_size) : 0,
+          ?"cursor": size(body.events) > 0 ?
+            optional.of({
+              "latest": body.events.map(e, timestamp(e.created_at)).max(),
+            })
+          :
+            // Leave the existing cursor in place if there is no event.
+            optional.none(),
+          "want_more": size(body.events) > 0,
+        })
+      )
     :
       {
         "events": {
