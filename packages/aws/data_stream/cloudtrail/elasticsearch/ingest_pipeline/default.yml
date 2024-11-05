@@ -399,8 +399,16 @@ processors:
             "json.responseElements.vpcConfig.subnetIds"
           ]);
 
-          if (eventName != null && eventName.contains("AddPermission")) { // needs to be contains because lambda event names are versioned on the name
+          if (eventName == null) {
+            return;
+          }
+
+          if (eventName.contains("AddPermission")) { // needs to be contains because lambda event names are versioned on the name
             addField(enrichCtx.target, "json.requestParameters.functionName");
+
+          } else if (eventName.contains("ListFunctions")) {
+            addField(enrichCtx.target, "json.userIdentity.accountId");
+            
           }
         }
 
