@@ -2,6 +2,10 @@
 description: Journald pipeline for system integration syslog data stream
 processors:
 - set:
+    if: "ctx?.tags == null || (ctx.tags.contains('preserve_original_event'))"
+    field: event.original
+    value: "{{ message }}"
+- set:
     field: event.ingested
     copy_from: _ingest.timestamp
 - set:
