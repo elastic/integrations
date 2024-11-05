@@ -3,26 +3,10 @@ description: Pipeline for bcreportermain_v1 ProxySG
 processors:
   # It has been observed that proxysg sometimes uses two space characters instead of single spaces between some fields with this log format.
   # This will break the CSV processor used to parse logs, so first replace all double spaces with single spaces.
-  - script:
-      tag: remove_double_spaces
-      description: Remove double spaces from message
-      lang: painless
-      source: |
-        StringBuilder sb = new StringBuilder();
-        boolean lastWasSpace = false;
-        for (int i = 0; i < ctx._temp_.message.length(); i++) {
-            char currentChar = ctx._temp_.message.charAt(i);
-            if (currentChar == (char)' ') {
-                if (!lastWasSpace) {
-                    sb.append(currentChar);
-                }
-                lastWasSpace = true;
-            } else {
-                sb.append(currentChar);
-                lastWasSpace = false;
-            }
-        }
-        ctx._temp_.message = sb.toString();
+  - gsub:
+      field: _temp_.message
+      pattern: " {2}"
+      replacement: " "
   - csv:
       tag: "parse_fields_bcreportermain_v1"
       field: _temp_.message
