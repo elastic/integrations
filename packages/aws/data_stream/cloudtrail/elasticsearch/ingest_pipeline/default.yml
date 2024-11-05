@@ -569,6 +569,11 @@ processors:
 
           if (eventName == "AssumeRole") {
             addField(enrichCtx.target, "json.requestParameters.roleArn");
+
+          } else if (eventName == "GetCallerIdentity") {
+            addField(enrichCtx.target, "json.userIdentity.accountId");
+            enrichCtx.actor = field('json.userIdentity.arn').get(null)
+
           }
         }
 
