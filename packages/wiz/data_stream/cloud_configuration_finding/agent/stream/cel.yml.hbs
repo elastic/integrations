@@ -1,5 +1,5 @@
 config_version: 2
-interval: {{interval}}
+interval: 24h
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
@@ -24,7 +24,6 @@ auth.oauth2:
 redact:
   fields: ~
 state:
-  initial_interval: {{initial_interval}}
   want_more: false
   batch_size: {{batch_size}}
   query: >-
@@ -32,10 +31,12 @@ state:
        configurationFindings(filterBy: $filterBy first: $first after: $after orderBy: $orderBy) {
          nodes {
           id
+          name
           analyzedAt
           severity
           result
           remediation
+          status
           resource {
             id
             providerId
@@ -86,12 +87,8 @@ program: |
           "first": state.batch_size,
           "after": state.?end_cursor.value.orValue(null),
           "filterBy": {
-            "analyzedAt": {
-              "after": state.want_more ?
-                  state.?cursor.first_timestamp.orValue(null)
-                :
-                  state.?cursor.last_timestamp.orValue(string(now() - duration(state.initial_interval)))
-            }
+            "includeDeleted": false,
+            "status": ["OPEN", "RESOLVED"]
           }
         }
       }.encode_json()
@@ -101,23 +98,6 @@ program: |
             "events": body.data.configurationFindings.nodes.map(e, {
               "message": e.encode_json(),
             }),
-            "cursor": {
-              ?"last_timestamp": body.data.configurationFindings.nodes.size() > 0 ?
-                  optional.of(body.data.configurationFindings.nodes.map(e, timestamp(e.analyzedAt)).max().as(last,
-                    has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp) ?
-                      state.cursor.last_timestamp
-                    :
-                      string(last)
-                  ))
-                :
-                  state.?cursor.last_timestamp,
-              ?"first_timestamp": !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null ?
-                  optional.of(string(now() - duration(state.initial_interval)))
-                : body.data.configurationFindings.pageInfo.hasNextPage ?
-                  state.?cursor.first_timestamp
-                :
-                  state.?cursor.last_timestamp,
-            },
             "end_cursor": {
               ?"value": body.?data.configurationFindings.pageInfo.hasNextPage.orValue(false) ?
                   body.?data.configurationFindings.pageInfo.endCursor
