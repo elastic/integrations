@@ -58,7 +58,7 @@ processors:
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
       source: |
-        void addFields(Set entities, String[] fields) {
+        void addFields(Set entities, List fields) {
             for (String field : fields) {
               addField(entities, field);
             }
@@ -68,7 +68,7 @@ processors:
           addValue(entities, field(fieldName).get(null));
         }
 
-        boolean addValues(Set entities, String[] values) {
+        boolean addValues(Set entities, List values) {
             boolean addedAll = true;
             for (String value : values) {
               addedAll = addedAll && addValue(entities, value);
@@ -102,7 +102,7 @@ processors:
               return;
           }
 
-          addFields(enrichCtx.related, new String[]{
+          addFields(enrichCtx.related, [
             "json.requestParameters.name",
             "json.requestParameters.s3BucketName",
             "json.responseElements.cloudWatchLogsLogGroupArn",
@@ -111,7 +111,7 @@ processors:
             "json.responseElements.snsTopicARN",
             "json.responseElements.trailARN",
             "json.responseElements.name"
-          });
+          ]);
 
           if (eventName == "DeleteTrail"
             || eventName == "StopLogging") {
@@ -148,7 +148,7 @@ processors:
               return;
           }
 
-          addFields(enrichCtx.related, new String[]{
+          addFields(enrichCtx.related, [
             "json.requestParameters.groupId",
             "json.requestParameters.groupName",
             "json.requestParameters.roleName",
@@ -163,14 +163,14 @@ processors:
             "json.responseElements.vpc.dhcpOptionsId",
             "json.responseElements.snapshotId",
             "json.responseElements.volumeId"
-          });
+          ]);
           
           field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValues(enrichCtx.related, new String[]{
+            addValues(enrichCtx.related, [
               i.groupId,
               i.referencedGroupInfo?.groupId,
               i.securityGroupRuleId
-            });
+            ]);
           });
 
           field("json.responseElements.groupSet.items").get(new ArrayList()).stream().forEach(i -> {
@@ -186,20 +186,20 @@ processors:
           });
 
           field("json.responseElements.instancesSet.items").get(new ArrayList()).stream().forEach(instances -> {
-            addValues(enrichCtx.related, new String[]{
+            addValues(enrichCtx.related, [
               instances.subnetId,
               instances.vpcId,
               instances.instanceId,
               instances.imageId,
               instances.iamInstanceProfile?.arn
-            });
+            ]);
 
             instances.networkInterfaceSet?.items?.stream().forEach(networks -> {
-              addValues(enrichCtx.related, new String[]{
+              addValues(enrichCtx.related, [
                 networks.networkInterfaceId,
                 networks.vpcId,
                 networks.subnetId
-              });
+              ]);
 
               networks.groupSet?.items?.stream().forEach(group -> {
                 addValue(enrichCtx.related, group.groupId);
@@ -208,10 +208,10 @@ processors:
           });
 
           field("json.requestParameters.revokedSecurityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
-            addValues(enrichCtx.related, new String[]{
+            addValues(enrichCtx.related, [
               i.securityGroupRuleId, 
               i.groupId
-            });
+            ]);
           });
 
           if (eventName == "AuthorizeSecurityGroupIngress" 
@@ -283,10 +283,10 @@ processors:
               return;
           }
 
-          addFields(enrichCtx.related, new String[]{
+          addFields(enrichCtx.related, [
             "json.requestParameters.detectorId",
             "json.responseElements.detectorId"
-          });
+          ]);
 
           if (eventName == "CreateDetector") {
             addField(enrichCtx.target, "json.responseElements.detectorId");
@@ -300,7 +300,7 @@ processors:
             return;
           }
 
-          addFields(enrichCtx.related, new String[]{
+          addFields(enrichCtx.related, [
             "json.requestParameters.userName",
             "json.requestParameters.serialNumber",
             "json.requestParameters.accessKeyId",
@@ -316,7 +316,7 @@ processors:
             "json.responseElements.userId",
             "json.responseElements.role.arn",
             "json.responseElements.serialNumber"
-          });
+          ]);
 
           if (eventName == "AttachGroupPolicy") {
             addField(enrichCtx.target, "json.requestParameters.groupName");
@@ -327,16 +327,16 @@ processors:
             addField(enrichCtx.target, "json.requestParameters.roleName");
 
           } else if (eventName == "AttachUserPolicy") {
-            addFields(enrichCtx.target, new String[]{
+            addFields(enrichCtx.target, [
               "json.requestParameters.policyArn",
               "json.requestParameters.userName"
-            });
+            ]);
 
           } else if (eventName == "CreateAccessKey") {
-            addFields(enrichCtx.target, new String[]{
+            addFields(enrichCtx.target, [
               "json.responseElements.accessKey.accessKeyId", 
               "json.requestParameters.userName"
-            });
+            ]);
 
           } else if (eventName == "CreateUser"
                     || eventName == "DeactivateMFADevice") {
@@ -359,12 +359,12 @@ processors:
             return;
           }
 
-          addFields(enrichCtx.related, new String[]{
+          addFields(enrichCtx.related, [
             "json.requestParameters.keyId",
             "json.responseElements.keyId",
             "json.responseElements.keyMetadata.arn",
             "json.responseElements.keyMetadata.keyId"
-          });
+          ]);
 
           if (eventName == "DisableKey" 
             || eventName == "ScheduleKeyDeletion") {
@@ -377,14 +377,14 @@ processors:
             return;
           }
 
-          addFields(enrichCtx.related, new String[]{
+          addFields(enrichCtx.related, [
             "json.requestParameters.functionName",
             "json.responseElements.functionArn",
             "json.responseElements.functionName",
             "json.responseElements.role",
             "json.responseElements.vpcConfig.securityGroupIds",
             "json.responseElements.vpcConfig.subnetIds"
-          });
+          ]);
 
           if (eventName != null && eventName.contains("AddPermission")) { // needs to be contains because lambda event names are versioned on the name
             addField(enrichCtx.target, "json.requestParameters.functionName");
@@ -421,14 +421,14 @@ processors:
             return;
           }
 
-          addFields(enrichCtx.related, new String[]{
+          addFields(enrichCtx.related, [
             "json.requestParameters.dBInstanceIdentifier",
             "json.requestParameters.dBInstanceArn",
             "json.responseElements.dBInstanceIdentifier",
             "json.responseElements.dbInstanceArn",
             "json.responseElements.dBSubnetGroup.vpcId",
             "json.responseElements.vpcSecurityGroups.vpcSecurityGroupId"
-          });
+          ]);
 
           field("json.responseElements.dBSubnetGroup.subnets").get(new ArrayList()).stream().forEach(i -> {
             addValue(enrichCtx.related, i.subnetIdentifier);
@@ -550,6 +550,18 @@ processors:
           } else if (eventName == "CreateDocument") {
             addField(enrichCtx.target, "json.requestParameters.name");
 
+          } else if (eventName == "SendCommand") {
+            List instanceIds = field("json.requestParameters.instanceIds").get(new ArrayList());
+
+            if (instanceIds.isEmpty()) {
+              instanceIds = field("json.requestParameters.targets").get(new ArrayList()).stream().flatMap(target -> target.values.stream()).collect(Collectors.toList());
+            }
+
+            if (instanceIds.size() == 1 && instanceIds.get(0) == "*") {
+              instanceIds = [ field("json.userIdentity.accountId").get(null) ]; // if all instances, point to full account
+            }
+
+            addValues(enrichCtx.target, instanceIds);
           }
         }
 
@@ -558,14 +570,14 @@ processors:
             return;
           }
 
-          addFields(enrichCtx.related, new String[]{
+          addFields(enrichCtx.related, [
             "json.requestParameters.roleArn",
             "json.sourceIdentity",
             "json.additionalEventData.MFAIdentifier",
             "json.responseElements.assumedRoleUser.arn",
             "json.requestParameters.roleSessionName",
             "json.responseElements.accessKeyId"
-          });
+          ]);
 
           if (eventName == "AssumeRole") {
             def userType = field("json.userIdentity.type").get(null);
@@ -593,10 +605,10 @@ processors:
             return;
           }
 
-          addFields(enrichCtx.related, new String[]{
+          addFields(enrichCtx.related, [
             "json.requestParameters.id",
             "json.responseElements.summary"
-          });
+          ]);
 
           if (eventName == "DeleteRuleGroup"
               || eventName == "DeleteWebACL") {
@@ -635,13 +647,13 @@ processors:
         enrichCtx.target = new TreeSet();
         enrichCtx.actor = field("json.userIdentity.arn").get(null); // default actor value
 
-        addFields(enrichCtx.related, new String[]{
+        addFields(enrichCtx.related, [
           "json.userIdentity.accessKeyId",
           "json.userIdentity.arn",
           "json.userIdentity.userName",
           "json.userIdentity.sessionContext.sessionIssuer.arn",
           "json.userIdentity.sessionContext.sessionIssuer.userName"
-        });
+        ]);
 
         field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(enrichCtx.related, f.ARN));
 
