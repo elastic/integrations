@@ -13,7 +13,7 @@ The ServiceNow integration can be used in three different modes to collect logs:
 
 ## Compatibility
 
-This module has been tested against the latest (updated Aug 1, 2024) ServiceNow API.
+This module has been tested with the latest(updated as of August 1, 2024) version of Xanadu on ServiceNow.
 
 ## Data streams
 
