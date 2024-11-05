@@ -408,7 +408,7 @@ processors:
 
           } else if (eventName.contains("ListFunctions")) {
             addField(enrichCtx.target, "json.userIdentity.accountId");
-            
+
           }
         }
 
@@ -669,12 +669,23 @@ processors:
           }
         }
 
-         void enrichElasticLoadBalancing(def enrichCtx, def eventSource, def eventName) {
+        void enrichElasticLoadBalancing(def enrichCtx, def eventSource, def eventName) {
           if (eventSource != "elasticloadbalancing.amazonaws.com") {
             return;
           }
 
           if (eventName == "DescribeLoadBalancers") {
+            addField(enrichCtx.target, "json.userIdentity.accountId");
+
+          }
+        }
+
+        void enrichDynamoDB(def enrichCtx, def eventSource, def eventName) {
+          if (eventSource != "dynamodb.amazonaws.com") {
+            return;
+          }
+
+          if (eventName == "ListTables") {
             addField(enrichCtx.target, "json.userIdentity.accountId");
 
           }
@@ -724,6 +735,7 @@ processors:
         enrichSns(enrichCtx, eventSource, eventName);
         enrichBedrock(enrichCtx, eventSource, eventName);
         enrichElasticLoadBalancing(enrichCtx, eventSource, eventName);
+        enrichDynamoDB(enrichCtx, eventSource, eventName);
         
         if (!enrichCtx.target.isEmpty()) {
           field("target.entity.id").set(enrichCtx.target);
