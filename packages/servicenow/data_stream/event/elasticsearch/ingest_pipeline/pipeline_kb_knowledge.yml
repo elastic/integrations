@@ -1,0 +1,305 @@
+---
+description: Pipeline for processing Knowledge logs.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event_kb_knowledge
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type_kb_knowledge
+      value: info
+  - append:
+      field: event.category
+      tag: append_event_category_kb_knowledge
+      value: database
+  - set:
+      field: user.full_name
+      tag: set_user_full_name_from_event_author_display_value
+      copy_from: servicenow.event.author.display_value
+      ignore_empty_value: true
+  - convert:
+      field: servicenow.event.direct.display_value
+      tag: convert_direct_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.direct?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.direct.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.direct.value
+      tag: convert_direct_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.direct?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.direct.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.disable_commenting.display_value
+      tag: convert_disable_commenting_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.disable_commenting?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.disable_commenting.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.disable_commenting.value
+      tag: convert_disable_commenting_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.disable_commenting?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.disable_commenting.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.disable_suggesting.display_value
+      tag: convert_disable_suggesting_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.disable_suggesting?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.disable_suggesting.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.disable_suggesting.value
+      tag: convert_disable_suggesting_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.disable_suggesting?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.disable_suggesting.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.display_attachments.display_value
+      tag: convert_display_attachments_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.display_attachments?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.display_attachments.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.display_attachments.value
+      tag: convert_display_attachments_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.display_attachments?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.display_attachments.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.flagged.display_value
+      tag: convert_flagged_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.flagged?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.flagged.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.flagged.value
+      tag: convert_flagged_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.flagged?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.flagged.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.generated_with_now_assist.display_value
+      tag: convert_generated_with_now_assist_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.generated_with_now_assist?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.generated_with_now_assist.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.generated_with_now_assist.value
+      tag: convert_generated_with_now_assist_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.generated_with_now_assist?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.generated_with_now_assist.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.sys_view_count.value
+      tag: convert_sys_view_count_value_to_long
+      type: long
+      ignore_missing: true
+      if: ctx.servicenow?.event?.sys_view_count?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.sys_view_count.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.use_count.value
+      tag: convert_use_count_value_to_long
+      type: long
+      ignore_missing: true
+      if: ctx.servicenow?.event?.use_count?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.use_count.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.view_as_allowed.display_value
+      tag: convert_view_as_allowed_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.view_as_allowed?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.view_as_allowed.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.view_as_allowed.value
+      tag: convert_view_as_allowed_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.view_as_allowed?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.view_as_allowed.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.published.display_value
+      tag: date_published_display_value
+      target_field: servicenow.event.published.display_value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.published?.display_value != null && ctx.servicenow.event.published.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.published.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.published.value
+      tag: date_published_value
+      target_field: servicenow.event.published.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.published?.value != null && ctx.servicenow.event.published.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.published.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - html_strip:
+      field: servicenow.event.text.display_value
+      tag: html_strip_text_display_value
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - html_strip:
+      field: servicenow.event.text.value
+      tag: html_strip_text_value
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
