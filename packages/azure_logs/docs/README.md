@@ -29,7 +29,7 @@ Before using the Custom Azure Logs you will need:
 
 ### Event Hub
 
-[Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service. It can receive and temporary store millions of events.
+[Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service. It can receive and process millions of events in real-time.
 
 Elastic Agent with the Custom Azure Logs integration will consume logs from the Event Hubs service.
 
