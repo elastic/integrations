@@ -4,13 +4,13 @@ processors:
     description: Add ngram features for ML DGA model
     lang: painless
     source: |
-      String nGramAtPosition(String text, int fieldcount, int n){
-        if (fieldcount+n>text.length()){
-          return null;
-        } else {
-          return text.substring(fieldcount, fieldcount+n);
-        }
-      }
+      // String nGramAtPosition(String text, int fieldcount, int n){
+      //   if (fieldcount+n>text.length()){
+      //     return null;
+      //   } else {
+      //     return text.substring(fieldcount, fieldcount+n);
+      //   }
+      // }
 
       String[] secondLevelDomain(Map dynamic_domains, String domain, String subdomain, String registered_domain, String top_level_domain){
         if (registered_domain == null || registered_domain == '.') {
@@ -70,6 +70,27 @@ processors:
         return maxLength > 0 ? 1.0 - ((double) distance / (double) maxLength) : 0.0;
       }
 
+      def getCharacterSubsetRatio(String a, String b) {
+        int a_length = a.length();
+        int b_length = b.length();
+        
+        HashSet sa = new HashSet();
+        for (int i=0; i<a_length; i++) {
+          sa.add(a.charAt(i));
+        }
+        
+        HashSet sb = new HashSet();
+        for (int i=0; i<b_length; i++) {
+          sb.add(b.charAt(i));
+        }
+        
+        // get intersection of sets
+        sa.retainAll(sb);
+        
+        double ratio = sa.size()/(double)b_length;
+        return ratio
+      }
+
       List getVocabMatches(String[] vocab, String originalString, boolean approximateMatch, double approximateMatchTolerance) {
         // filter a string to all vocabulary matches
         // matches can be exact or approximate
@@ -80,8 +101,10 @@ processors:
             for (token in vocab) {
               if (i+token.length() <= originalString.length()) {
                 String substring = originalString.substring(i, i+token.length());
-                if (levensteinDistance(token, substring) >= approximateMatchTolerance) {
-                  matches.add(token)
+                if (getCharacterSubsetRatio(token, substring) >= 0.7) {
+                  if (levensteinDistance(token, substring) >= approximateMatchTolerance) {
+                    matches.add(token)
+                  }
                 }
               }
             }
@@ -142,6 +165,7 @@ processors:
               String substring = originalString.substring(i, i+token.length());
               boolean match = false;
               if (approximateMatch == true) {
+
                 if (levensteinDistance(token, substring) >= approximateMatchTolerance) {
                   match = true;
                 }
@@ -187,29 +211,29 @@ processors:
       ctx['f'] = new HashMap();
       ctx['f']['tld'] = tld;
 
-      for (int i=0;i<sld.length();i++){
-        String field = nGramAtPosition(sld, i, 1);
-        if (field == null) {
-          break;
-        }
-        ctx['f']['u'+ Integer.toString(i)] = field;
-      }
+      // for (int i=0;i<sld.length();i++){
+      //   String field = nGramAtPosition(sld, i, 1);
+      //   if (field == null) {
+      //     break;
+      //   }
+      //   ctx['f']['u'+ Integer.toString(i)] = field;
+      // }
 
-      for (int i=0;i<sld.length();i++){
-        String field = nGramAtPosition(sld, i, 2);
-        if (field == null) {
-          break;
-        }
-        ctx['f']['b'+ Integer.toString(i)] = field;
-        }
+      // for (int i=0;i<sld.length();i++){
+      //   String field = nGramAtPosition(sld, i, 2);
+      //   if (field == null) {
+      //     break;
+      //   }
+      //   ctx['f']['b'+ Integer.toString(i)] = field;
+      //   }
 
-      for (int i=0;i<sld.length();i++){
-        String field = nGramAtPosition(sld, i, 3);
-        if (field == null) {
-          break;
-        }
-        ctx['f']['t'+ Integer.toString(i)] = field;
-      }
+      // for (int i=0;i<sld.length();i++){
+      //   String field = nGramAtPosition(sld, i, 3);
+      //   if (field == null) {
+      //     break;
+      //   }
+      //   ctx['f']['t'+ Integer.toString(i)] = field;
+      // }
 
       String dashFeature = "0";
       if (sld.contains('-') == true) {
