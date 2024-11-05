@@ -568,11 +568,22 @@ processors:
           });
 
           if (eventName == "AssumeRole") {
+            def userType = field("json.userIdentity.type").get(null);
+
+            if (userType == "AWSService") {
+              enrichCtx.actor = field("json.userIdentity.invokedBy").get(null);
+            } else if (userType == "AssumedRole") {
+              enrichCtx.actor = field("json.userIdentity.sessionContext.sessionIssuer.arn").get(null);
+            } else {
+              enrichCtx.actor = field("json.userIdentity.arn").get(null);
+            }
+
+
             addField(enrichCtx.target, "json.requestParameters.roleArn");
 
           } else if (eventName == "GetCallerIdentity") {
             addField(enrichCtx.target, "json.userIdentity.accountId");
-            enrichCtx.actor = field('json.userIdentity.arn').get(null)
+            enrichCtx.actor = field("json.userIdentity.arn").get(null);
 
           }
         }
