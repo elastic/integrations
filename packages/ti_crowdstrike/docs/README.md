@@ -35,6 +35,9 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
+### Permissions
+This integration includes assets such as latest transform which requires users installing the integration to have `kibana_system` built-in role. Follow the [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html) for information on `kibana_system` built-in role.
+
 This module has been tested against the **CrowdStrike Falcon Intelligence API Version v1**.
 
 ## Setup
@@ -70,7 +73,10 @@ User should either have `admin` role or `Detection Exception Manager` role to ac
 The ingested IOCs expire after a certain duration. A separate [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for Intel and IOC datasets to facilitate only active Indicators and IOCs, respectively, being available to the end users. Since we want to retain only valuable information and avoid duplicated data, the CrowdStrike Falcon Intelligence Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_intel` and forces the IOC logs to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_ioc`.
 **Please, refer to this index in order to set alerts and so on.**
 
-#### Handling Orphaned IOCs
+### Transform Permissions
+The latest transforms for both Intel and IOC datasets require users to have `kibana_system` role as noted in [permissions](https://www.elastic.co/docs/current/integrations/ti_crowdstrike#permissions).
+
+### Handling Orphaned IOCs
 
 IOC expiration is set default to false in CrowdStrike console but user can set the expiration duration in using the admin console. Some CrowdStrike IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter for both the dataset Intel and IOC, respectively, while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_crowdstrike_latest.intel` and `logs-ti_crowdstrike_latest.ioc` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset.
 

@@ -38,7 +38,7 @@ see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/cur
 
 Note: Because the Windows integration always applies to the local server, the `hosts` config option is not needed.
 
-### Ingesting Windows Events via Splunk
+### Ingesting Windows Events via Splunk (Deprecated)
 
 This integration allows you to seamlessly ingest data from a Splunk Enterprise instance.
 The integration uses the [`httpjson` input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.

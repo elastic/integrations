@@ -323,7 +323,13 @@ An example event for `system` looks as following:
 | okta.security_context.is_proxy | Whether it is a proxy or not. | boolean |
 | okta.security_context.isp | The Internet Service Provider. | keyword |
 | okta.severity | The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR. | keyword |
-| okta.target | The list of targets. | flattened |
+| okta.target.alternate_id | The alternate ID of the target. | keyword |
+| okta.target.changeDetails.from.\* |  | object |
+| okta.target.changeDetails.to.\* |  | object |
+| okta.target.detailEntry.\* |  | object |
+| okta.target.display_name | The display name of the target. | keyword |
+| okta.target.id | The ID of the target. | keyword |
+| okta.target.type | The type of target. | keyword |
 | okta.transaction.detail.request_api_token_id | ID of the API token used in a request. | keyword |
 | okta.transaction.id | Identifier of the transaction. | keyword |
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
