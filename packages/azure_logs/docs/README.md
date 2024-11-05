@@ -4,7 +4,7 @@ The Custom Azure Logs integration collects logs from Azure Event Hub.
 
 Use the integration to collect logs from:
 
-* Azure services that support exporting logs to Event Hub
+* Azure services that support exporting logs to an Event Hub.
 * Any other source that can send logs to an Event Hub
 
 ## Data streams
