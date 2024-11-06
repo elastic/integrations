@@ -235,19 +235,17 @@ processors:
       //   ctx['f']['t'+ Integer.toString(i)] = field;
       // }
 
-      String dashFeature = "0";
-      if (sld.contains('-') == true) {
-        dashFeature = "1";
-      }
-      ctx['f']['dashFeature'] = dashFeature;
-
       int digitCount = 0;
+      int dashCount = 0;
       for (int i=0; i<sld.length(); i++){
-        if (Character.isDigit(sld.charAt(i)) && digitCount < 5) {
-          digitCount++
+        if (Character.isDigit(sld.charAt(i))) {
+          digitCount++;
+        } else if (sld.substring(i, i+1) == "-") { 
+          dashCount++;
         }
       }
       ctx['f']['digitCount'] = digitCount;
+      ctx['f']['dashCount'] = dashCount;
 
       int stringLength = sld.length();
       double stringEntropy = calculateShannonEntropy(sld);
