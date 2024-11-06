@@ -9,27 +9,29 @@ Use the integration to collect logs from:
 
 ## Data streams
 
-The Custom Azure Logs integration collects one type of data stream: logs.
+The Custom Azure Logs integration only supports logs data streams.
 
-The integration does not use a pre-defined Elastic data stream. You can select your dataset and namespace of choice when configuring the integration.
+This custom integration does not use a pre-defined Elastic data stream like standard integrations do (for example, `logs-azure.activitylogs-default` for Activity logs). You can take control and build your own data stream by selecting your dataset and namespace of choice when configuring the integration.
 
-For example, if you select `azure.custom` as your dataset, and `default` as your namespace, the integration will send the data to the `logs-azure.custom-default` data stream.
+For example, if you select `mydataset` as your dataset, and `default` as your namespace, the integration will send the data to the `logs-mydataset-default` data stream.
+
+The integration sets up a dedicated index template named `logs-mydataset` with the `logs-mydataset-*` index pattern. You can then customize it using a custom pipeline and custom mappings.
 
 Custom Logs integrations give you all the flexibility you need to configure the integration to your needs.
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+You need Elasticsearch to store and search for your data and Kibana to visualize and manage it.
+You can use our recommended hosted Elasticsearch Service on Elastic Cloud or self-manage the Elastic Stack on your own hardware.
 
-Before using the Custom Azure Logs you will need:
+Before using the Custom Azure Logs, you will need:
 
 * One **Event Hub** to store in-flight logs exported by Azure services (or other sources) and make them available to Elastic Agent.
-* A **Storage Account** to store information about logs consumed by the Elastic Agent.
+* A **Storage Account** to store checkpoint information about logs the Elastic Agent consumes.
 
 ### Event Hub
 
-[Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service. It can receive and temporary store millions of events.
+[Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service that can receive and temporarily store millions of events.
 
 Elastic Agent with the Custom Azure Logs integration will consume logs from the Event Hubs service.
 
@@ -48,7 +50,7 @@ The [Storage Account](https://learn.microsoft.com/en-us/azure/storage/common/sto
 
 The Custom Azure Logs integration requires a Storage Account container to work.
 
-The integration uses the Storage Account container for checkpointing; it stores data about the Consumer Group (state, position, or offset) and shares it among the Elastic Agents. Sharing such information allows multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
+The integration uses the Storage Account container for checkpointing. It stores data about the Consumer Group (state, position, or offset) and shares it among the Elastic Agents. Sharing such information allows multiple Elastic Agents assigned to the same agent policy to work together, enabling horizontal scaling of the logs processing when required.
 
 ```text
   ┌────────────────┐                     ┌───────────┐
@@ -63,7 +65,7 @@ The integration uses the Storage Account container for checkpointing; it stores 
   └────────────────┘                                                                            
 ```
 
-The Elastic Agent automatically creates one container for the Custom Azure Logs integration. The Agent will then create one blob for each partition on the event hub.
+The Elastic Agent automatically creates one container for the Custom Azure Logs integration and one blob for each partition on the event hub.
 
 For example, if the integration is configured to fetch data from an event hub with four partitions, the Agent will create the following:
 
@@ -82,9 +84,9 @@ Before adding the integration, you must complete the following tasks.
 
 ### Create an Event Hub
 
-The event hub receives the logs exported from the Azure service and makes them available to the Elastic Agent to pick up.
+The event hub receives the logs exported from the Azure service and makes them available for the Elastic Agent to read.
 
-Here's the high-level overview of the required steps:
+Here's a high-level overview of the required steps:
 
 * Create a resource group, or select an existing one.
 * Create an Event Hubs namespace.
@@ -96,9 +98,9 @@ Take note of the event hub **Name**, which you will use later when specifying an
 
 #### Event Hubs Namespace vs Event Hub
 
-You should use the event hub name (not the Event Hubs namespace name) as a value for the  **eventhub** option in the integration settings.
+In the integration settings, you should use the event hub name (not the Event Hubs namespace name) as the value for the  **event hub ** option.
 
-If you are new to Event Hubs, think of the Event Hubs namespace as the cluster and the event hub as the topic. You will typically have one cluster and multiple topics.
+If you are new to Event Hubs, think of the Event Hubs namespace as the cluster and the Event Hub as the topic. You will typically have one cluster and multiple topics.
 
 If you are familiar with Kafka, here's a conceptual mapping between the two:
 
@@ -186,15 +188,15 @@ To learn more about event hub partition from the performance perspective, check 
 
 Like all other event hub clients, Elastic Agent needs a consumer group name to access the event hub.
 
-A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple agents to each have a separate view of the event stream, and to read the logs independently at their own pace and with their own offsets.
+A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple agents to have a separate view of the event stream and to read the logs independently at their own pace and with their offsets.
 
-Consumer groups allow multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
+Consumer groups allow multiple Elastic Agents assigned to the same agent policy to work together, enabling horizontal scaling of log processing when required.
 
 In most cases, you can use the default consumer group named `$Default`. If `$Default` is already used by other applications, you can create a consumer group dedicated to the Azure Logs integration.
 
 #### Connection string
 
-The Elastic Agent requries a connection string to access the event hub and fetch the exported logs. The connection string contains details about the event hub used and the credentials required to access it.
+The Elastic Agent requires a connection string to access the event hub and fetch the exported logs. The connection string contains details about the event hub used and the credentials required to access it.
 
 To get the connection string for your Event Hubs namespace:
 
@@ -214,19 +216,19 @@ Take note of the **Connection string–primary key**, which you will use later w
 
 ### Create a Diagnostic Settings
 
-The diagnostic settings export the logs from Azure services to a destination and in order to use Azure Logs integration, it must be an event hubb.
+The diagnostic settings export the logs from Azure services to a destination, and in order to use Azure Logs integration, it must be an event hub.
 
 To create a diagnostic settings to export logs:
 
 1. Locate the diagnostic settings for the service (for example, Microsoft Entra ID).
-1. Select diagnostic settings in the **Monitoring** section of the service. Note that different services may place the diagnostic settings in different positions.
+1. Select diagnostic settings in the **Monitoring** section of the service. Note that different services may place the diagnostic settings in various positions.
 1. Select **Add diagnostic settings**.
 
-In the diagnostic settings page you have to select the source **log categories** you want to export and then select their **destination**.
+In the diagnostic settings page, you must select the source log categories you want to export and then select their destination.
 
 #### Select log categories
 
-Each Azure services exports a well-defined list of log categories. Check the individual integration doc to learn which log categories are supported by the integration.
+Each Azure service exports a well-defined list of log categories. Check the individual integration doc to learn which log categories the integration supports.
 
 #### Select the destination
 
@@ -255,9 +257,9 @@ To create the Storage Account:
    - Enable soft delete for blobs: disabled
    - Enable soft delete for containers: disabled
 
-1. When the new Storage Account is ready, you need to take note of the Storage Account name and the Storage Account access keys, as you will use them later to authenticate your Elastic application’s requests to this Storage Account.
+1. When the new Storage Account is ready, you need to take note of the Storage Account name and access keys, as you will use them later to authenticate your Elastic application's requests to this Storage Account.
 
-This is the final diagram of the a setup for collecting Activity logs from the Azure Monitor service.
+This is the final diagram of the setup for collecting Activity logs from the Azure Monitor service.
 
 ```text
  ┌───────────────┐   ┌──────────────┐   ┌────────────────┐         ┌───────────┐
@@ -275,11 +277,11 @@ This is the final diagram of the a setup for collecting Activity logs from the A
 
 The Elastic Agent can use one Storage Account (SA) for multiple integrations.
 
-The Agent creates one SA container for the integration. The SA container name is a combination of the event hub name and a prefix (`azure-eventhub-input-[eventhub]`).
+The Agent creates one SA container for the integration. The SA container name combines the event hub name and a prefix (`azure-eventhub-input-[eventhub]`).
 
 ### Running the integration behind a firewall
 
-When you run the Elastic Agent behind a firewall, to ensure proper communication with the necessary components, you need to allow traffic on port `5671` and `5672` for the event hub, and port `443` for the Storage Account container.
+When you run the Elastic Agent behind a firewall, you must allow traffic on ports `5671` and `5672` for the event hub and port `443` for the Storage Account container to ensure proper communication with the necessary components.
 
 ```text
 ┌────────────────────────────────┐  ┌───────────────────┐  ┌───────────────────┐
@@ -309,7 +311,7 @@ When you run the Elastic Agent behind a firewall, to ensure proper communication
 
 #### Event Hub
 
-Port `5671` and `5672` are commonly used for secure communication with the event hub. These ports are used to receive events. By allowing traffic on these ports, the Elastic Agent can establish a secure connection with the event hub. 
+Port `5671` and `5672` are commonly used for secure communication with the event hub. These ports are used to receive events. The Elastic Agent can establish a secure connection with the event hub by allowing traffic on these ports. 
 
 For more information, check the following documents:
 
@@ -318,7 +320,7 @@ For more information, check the following documents:
 
 #### Storage Account Container
 
-Port `443` is used for secure communication with the Storage Account container. This port is commonly used for HTTPS traffic. By allowing traffic on port 443, the Elastic Agent can securely access and interact with the Storage Account container, which is essential for storing and retrieving checkpoint data for each event hub partition.
+Port `443` is used for secure communication with the Storage Account container. This port is commonly used for HTTPS traffic. By allowing traffic on port 443, the Elastic Agent can securely access and interact with the Storage Account container, essential for storing and retrieving checkpoint data for each event hub partition.
 
 #### DNS
 
@@ -347,21 +349,20 @@ Default value: `$Default`
 `connection_string` :
 _string_
 
-The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) for more information.
+The connection string is required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) for more information.
 
-A Blob Storage Account is required to store/retrieve/update the offset or state of the event hub messages. This allows the integration to start back up at the spot that it stopped processing messages.
+A Blob Storage Account is required to store/retrieve/update the checkpoint information of the event hub messages. This allows the integration to resume processing messages left when the user stops it.
 
 `storage_account` :
 _string_
-The name of the Storage Account that the state/offsets will be stored and updated.
-
+The name of the Storage Account that stores the checkpoint information.
 `storage_account_key` :
 _string_
-The Storage Account key. Used to authorize access to data in your Storage Account.
+The Storage Account key. Key to authorize access to data in your Storage Account.
 
 `storage_account_container` :
 _string_
-The Storage Account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated Storage Account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
+The Storage Account container is where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated Storage Account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
 
 `pipeline` :
 _string_
@@ -378,21 +379,21 @@ Examples:
 * Azure PublicCloud: `https://management.azure.com/`
 * Azure USGovernmentCloud: `https://management.usgovcloudapi.net/`
 
-This setting can also be used to define your own endpoints, like for hybrid cloud models.
+This setting can also define your endpoints, like for hybrid cloud models.
 
 ## Handling Malformed JSON in Azure Logs
 
-Azure services have been observed to send [malformed JSON](https://learn.microsoft.com/en-us/answers/questions/1001797/invalid-json-logs-produced-for-function-apps) documents occasionally. These logs can disrupt the expected JSON formatting and lead to parsing issues during processing.
+Azure services have been observed occasionally sending [malformed JSON](https://learn.microsoft.com/en-us/answers/questions/1001797/invalid-json-logs-produced-for-function-apps) documents. These logs can disrupt the expected JSON formatting and lead to parsing issues during processing.
 
 To address this issue, the advanced settings section of each data stream offers two sanitization options:
 
 * Sanitizes New Lines: removes new lines in logs.
-* Sanitizes Single Quotes: replaces single quotes with double quotes in logs, excluding single quotes occurring within double quotes.
+* Sanitizes Single Quotes: Replace single quotes with double quotes in logs, excluding single quotes occurring within double quotes.
 
-Malformed logs can be indentified by:
+Malformed logs can be identified by:
 
-* Presence of a records array in the message field, indicating a failure to unmarshal the byte slice.
-* Existence of an error.message field containing the text "Received invalid JSON from the Azure Cloud platform. Unable to parse the source log message."
+* The presence of a `records` array in the message field indicates a failure to unmarshal the byte slice.
+* Existence of an `error.message` field containing the text "Received invalid JSON from the Azure Cloud platform. Unable to parse the source log message."
 
 Known data streams that might produce malformed logs:
 
