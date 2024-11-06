@@ -18,18 +18,21 @@
       type: group
       description: Information about the specific index being monitored.
       fields:
-        - name: name
-          type: keyword
-          description: Name of the Elasticsearch index.
         - name: datastream
           type: keyword
           description: The data stream associated with the index.
-        - name: creation_date
-          type: date
-          description: The creation date of the index.
         - name: tier
           type: keyword
           description: The data tier of the index (e.g., hot, warm, cold, frozen, or unknown).
+        - name: name
+          type: keyword
+          description: Name of the Elasticsearch index.
+        - name: creation_date
+          type: date
+          description: The creation date of the index.
+        - name: age
+          type: long
+          description: Age of the index in days.
 
         - name: primaries
           type: group
@@ -78,17 +81,6 @@
                   type: long
                   description: Change in the total time in milliseconds for search queries since the last measurement.
 
-            - name: store
-              type: group
-              description: Metrics related to data storage.
-              fields:
-                - name: size_in_bytes
-                  type: long
-                  description: Total size of the data set in bytes.
-                - name: size_in_bytes_delta
-                  type: long
-                  description: Change in the total size of the data set in bytes since the last measurement.
-
             - name: indexing
               type: group
               description: Metrics related to document indexing.
@@ -106,6 +98,17 @@
                   type: long
                   description: Change in the total time in milliseconds for indexing documents since the last measurement.
 
+            - name: store
+              type: group
+              description: Metrics related to data storage.
+              fields:
+                - name: size_in_bytes
+                  type: long
+                  description: Total size of the data set in bytes.
+                - name: size_in_bytes_delta
+                  type: long
+                  description: Change in the total size of the data set in bytes since the last measurement.
+
 - name: event
   type: group
   description: Information about the event.
@@ -113,4 +116,3 @@
     - name: ingested
       type: date
       description: Timestamp when the event was ingested by Elasticsearch.
-
