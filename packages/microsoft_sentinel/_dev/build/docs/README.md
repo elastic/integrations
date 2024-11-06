@@ -2,19 +2,19 @@
 
 ## Overview
 
-[Microsoft Sentinel](https://learn.microsoft.com/en-us/azure/sentinel/overview?tabs=azure-portal) is a scalable, cloud-native security information and event management (SIEM) that delivers an intelligent and comprehensive solution for SIEM and security orchestration, automation, and response (SOAR). Microsoft Sentinel provides cyberthreat detection, investigation, response, and proactive hunting, with a bird's-eye view across your enterprise.
+[Microsoft Sentinel](https://learn.microsoft.com/en-us/azure/sentinel/overview?tabs=azure-portal) is a scalable, cloud-native security information and event management (SIEM) system that delivers an intelligent and comprehensive solution for SIEM and security orchestration, automation, and response (SOAR). Microsoft Sentinel provides cyberthreat detection, investigation, response, and proactive hunting, with a bird's-eye view across your enterprise.
 
-Use the Microsoft Sentinel integration to collect and parse Alerts and Incidents from Microsoft Sentinel REST API and Events from the Microsoft Azure Event Hub, then visualise such data in Kibana.
+Use the Microsoft Sentinel integration to collect and parse Alerts and Incidents from Microsoft Sentinel REST API and Events from the Microsoft Azure Event Hub, then visualise the data in Kibana.
 
 ## Data streams
 
 The Microsoft Sentinel integration collects logs for three types of events: Alert, Event and Incident.
 
-**Alert:** [Alert](https://learn.microsoft.com/en-us/rest/api/securityinsights/incidents/list-alerts?view=rest-securityinsights-2024-03-01&tabs=HTTP) leverages to collect all alerts for an incident via API.
+**Alert:** [Alert](https://learn.microsoft.com/en-us/rest/api/securityinsights/incidents/list-alerts?view=rest-securityinsights-2024-03-01&tabs=HTTP) allows collecting all alerts for an incident via API.
 
-**Incident:** [Incident](https://learn.microsoft.com/en-us/rest/api/securityinsights/incidents/list?view=rest-securityinsights-2024-03-01&tabs=HTTP) leverages to collect all incidents via API.
+**Incident:** [Incident](https://learn.microsoft.com/en-us/rest/api/securityinsights/incidents/list?view=rest-securityinsights-2024-03-01&tabs=HTTP) allows collecting all incidents via API.
 
-**Event:** [Event](https://learn.microsoft.com/en-us/azure/sentinel/security-alert-schema) leverages to collect all alerts for an incident streamed to an Azure Event Hub.  
+**Event:** [Event](https://learn.microsoft.com/en-us/azure/sentinel/security-alert-schema) allows collecting all alerts for an incident streamed to an Azure Event Hub.  
 
 ## Requirements
 

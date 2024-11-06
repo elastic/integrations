@@ -2,19 +2,19 @@
 
 ## Overview
 
-[Microsoft Sentinel](https://learn.microsoft.com/en-us/azure/sentinel/overview?tabs=azure-portal) is a scalable, cloud-native security information and event management (SIEM) that delivers an intelligent and comprehensive solution for SIEM and security orchestration, automation, and response (SOAR). Microsoft Sentinel provides cyberthreat detection, investigation, response, and proactive hunting, with a bird's-eye view across your enterprise.
+[Microsoft Sentinel](https://learn.microsoft.com/en-us/azure/sentinel/overview?tabs=azure-portal) is a scalable, cloud-native security information and event management (SIEM) system that delivers an intelligent and comprehensive solution for SIEM and security orchestration, automation, and response (SOAR). Microsoft Sentinel provides cyberthreat detection, investigation, response, and proactive hunting, with a bird's-eye view across your enterprise.
 
-Use the Microsoft Sentinel integration to collect and parse Alerts and Incidents from Microsoft Sentinel REST API and Events from the Microsoft Azure Event Hub, then visualise such data in Kibana.
+Use the Microsoft Sentinel integration to collect and parse Alerts and Incidents from Microsoft Sentinel REST API and Events from the Microsoft Azure Event Hub, then visualise the data in Kibana.
 
 ## Data streams
 
 The Microsoft Sentinel integration collects logs for three types of events: Alert, Event and Incident.
 
-**Alert:** [Alert](https://learn.microsoft.com/en-us/rest/api/securityinsights/incidents/list-alerts?view=rest-securityinsights-2024-03-01&tabs=HTTP) leverages to collect all alerts for an incident via API.
+**Alert:** [Alert](https://learn.microsoft.com/en-us/rest/api/securityinsights/incidents/list-alerts?view=rest-securityinsights-2024-03-01&tabs=HTTP) allows collecting all alerts for an incident via API.
 
-**Incident:** [Incident](https://learn.microsoft.com/en-us/rest/api/securityinsights/incidents/list?view=rest-securityinsights-2024-03-01&tabs=HTTP) leverages to collect all incidents via API.
+**Incident:** [Incident](https://learn.microsoft.com/en-us/rest/api/securityinsights/incidents/list?view=rest-securityinsights-2024-03-01&tabs=HTTP) allows collecting all incidents via API.
 
-**Event:** [Event](https://learn.microsoft.com/en-us/azure/sentinel/security-alert-schema) leverages to collect all alerts for an incident streamed to an Azure Event Hub.  
+**Event:** [Event](https://learn.microsoft.com/en-us/azure/sentinel/security-alert-schema) allows collecting all alerts for an incident streamed to an Azure Event Hub.  
 
 ## Requirements
 
@@ -84,22 +84,22 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-07-20T18:21:53.615Z",
     "agent": {
-        "ephemeral_id": "14216c6b-8b94-4ea9-8b4e-b81398b279c7",
-        "id": "191948cd-0501-4027-a905-ef118b6a7ad8",
-        "name": "elastic-agent-59529",
+        "ephemeral_id": "5d8e36a5-f551-4b9a-b54b-0c36d92d4a27",
+        "id": "c5507885-d48f-4dcb-91a9-73944f51118a",
+        "name": "elastic-agent-82640",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "microsoft_sentinel.alert",
-        "namespace": "16128",
+        "namespace": "90867",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "191948cd-0501-4027-a905-ef118b6a7ad8",
+        "id": "c5507885-d48f-4dcb-91a9-73944f51118a",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -109,7 +109,7 @@ An example event for `alert` looks as following:
         "duration": 86400000000000,
         "end": "2020-07-21T18:21:53.615Z",
         "id": "abcdef-6fde-4ab7-a093-d09f7b75c58c",
-        "ingested": "2024-10-29T09:10:28Z",
+        "ingested": "2024-11-05T06:04:45Z",
         "kind": "alert",
         "original": "{\"id\":\"/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/1234567-890-890-a999999-d09f7b75c58c\",\"kind\":\"SecurityAlert\",\"name\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"properties\":{\"additionalData\":{\"AlertMessageEnqueueTime\":\"2020-07-20T18:21:57.304Z\"},\"alertDisplayName\":\"myAlert\",\"alertType\":\"myAlert\",\"confidenceLevel\":\"Unknown\",\"endTimeUtc\":\"2020-07-21T18:21:53.6158361Z\",\"friendlyName\":\"myAlert\",\"processingEndTime\":\"2020-07-20T18:21:53.6158361Z\",\"productName\":\"AzureSecurityCenter\",\"resourceIdentifiers\":[{\"resourceGroup\":\"myRG\",\"subscriptionId\":\"a123456-4d29-4647-9105-6339bfdb4e6a\",\"type\":\"LogAnalytics\",\"workspaceId\":\"abcdefg-985d-4e4e-8e91-fb3466cd0e5b\"}],\"severity\":\"Low\",\"startTimeUtc\":\"2020-07-20T18:21:53.6158361Z\",\"status\":\"New\",\"systemAlertId\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"tactics\":[\"abc\"],\"timeGenerated\":\"2020-07-20T18:21:53.6158361Z\",\"vendorName\":\"Microsoft\"},\"systemData\":{\"createdAt\":\"2020-07-20T18:21:57.304Z\",\"createdBy\":\"admin\",\"createdByType\":\"new\",\"lastModifiedAt\":\"2020-07-20T18:21:57.304Z\"},\"type\":\"Microsoft.SecurityInsights/Entities\"}",
         "severity": 1,
@@ -257,6 +257,8 @@ This is the `Event` dataset.
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
 | microsoft_sentinel.event.alert.link | A link to the alert in the portal of the originating product. | keyword |
 | microsoft_sentinel.event.alert.name | The display name of the alert. | keyword |
 | microsoft_sentinel.event.alert.severity | The severity of the alert. | keyword |
@@ -293,6 +295,7 @@ This is the `Event` dataset.
 | microsoft_sentinel.event.vendor.original_id | Unique ID for the specific alert instance, set by the originating product. | keyword |
 | microsoft_sentinel.event.workspace.resource_group |  | keyword |
 | microsoft_sentinel.event.workspace.subscription_id |  | keyword |
+| tags | User defined tags. | keyword |
 
 
 ### Incident
@@ -307,22 +310,22 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2024-10-23T13:15:30.000Z",
     "agent": {
-        "ephemeral_id": "ec6325d7-208b-4e7f-93e3-edadbc77dd3c",
-        "id": "52342b04-a989-44a0-84ce-c27a18072fc9",
-        "name": "elastic-agent-47978",
+        "ephemeral_id": "bb54d388-612e-4628-a508-c3ee26212b2e",
+        "id": "ca782186-cfde-46eb-b413-d8a11bd533f9",
+        "name": "elastic-agent-22752",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "microsoft_sentinel.incident",
-        "namespace": "83228",
+        "namespace": "44018",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "52342b04-a989-44a0-84ce-c27a18072fc9",
+        "id": "ca782186-cfde-46eb-b413-d8a11bd533f9",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -331,7 +334,7 @@ An example event for `incident` looks as following:
         "created": "2019-01-01T13:15:30.000Z",
         "dataset": "microsoft_sentinel.incident",
         "id": "aaaaaaa-5cd7-4139-a149-9f2736ff2ab5",
-        "ingested": "2024-10-29T09:11:18Z",
+        "ingested": "2024-11-05T06:07:10Z",
         "kind": "alert",
         "original": "{\"etag\":\"\\\"bbbbbbbb-0000-0000-0000-5c37296e0000\\\"\",\"id\":\"/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/aaaaaa-5cd7-4139-a149-9f2736ff2ab5\",\"name\":\"aaaaaaa-5cd7-4139-a149-9f2736ff2ab5\",\"properties\":{\"additionalData\":{\"alertProductNames\":[],\"alertsCount\":0,\"bookmarksCount\":0,\"commentsCount\":3,\"tactics\":[\"InitialAccess\",\"Persistence\"]},\"classification\":\"FalsePositive\",\"classificationComment\":\"Notamaliciousactivity\",\"classificationReason\":\"InaccurateData\",\"createdTimeUtc\":\"2019-01-01T13:15:30Z\",\"description\":\"Thisisademoincident\",\"firstActivityTimeUtc\":\"2019-01-01T13:00:30Z\",\"incidentNumber\":3177,\"incidentUrl\":\"https://portal.azure.com/#asset/Microsoft_Azure_Security_Insights/Incident/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/73e01a99-5cd7-4139-a149-9f2736ff2ab5\",\"labels\":[],\"lastActivityTimeUtc\":\"2019-01-01T13:05:30Z\",\"lastModifiedTimeUtc\":\"2024-10-23T13:15:30Z\",\"owner\":{\"assignedTo\":\"johndoe\",\"email\":\"john.doe@example.com\",\"objectId\":\"abcdefghij-040d-4a46-9e2b-91c2941bfa70\",\"userPrincipalName\":\"john@example.com\"},\"providerIncidentId\":\"3177\",\"providerName\":\"AzureSentinel\",\"relatedAnalyticRuleIds\":[\"/subscriptions/abc12345678-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/alertRules/fab3d2d4-747f-46a7-8ef0-9c0be8112bf7\"],\"severity\":\"High\",\"status\":\"Closed\",\"title\":\"Myincident\"},\"type\":\"Microsoft.SecurityInsights/incidents\"}",
         "severity": 3,
@@ -439,6 +442,7 @@ An example event for `incident` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | microsoft_sentinel.incident.etag | Etag of the azure resource. | keyword |
 | microsoft_sentinel.incident.id | Fully qualified resource ID for the resource. | keyword |

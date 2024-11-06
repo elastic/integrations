@@ -36,6 +36,8 @@ program: |
           request(
             "GET",
             has(state.nextLink) && state.nextLink != null ?
+              // The nextLink URL is unescaped, so we need to parse
+              // and reformat the query, otherwise the request fails.
               state.url.trim_right("/") + "/incidents?" + state.nextLink.parse_url().RawQuery.parse_query().format_query()
             :
               state.url.trim_right("/") + "/incidents?" + {
@@ -48,7 +50,7 @@ program: |
             bytes(resp.Body).decode_json().as(body, {
               "worklist": body.value,
               "next": 0,
-              "nextLink": has(body.nextLink) ? body.nextLink : null,
+              ?"nextLink": body.?nextLink,
             })
           :
             {
@@ -56,7 +58,7 @@ program: |
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
-                  "message": "GET:"+ (
+                  "message": "GET /incidents:"+ (
                     size(resp.Body) != 0 ?
                       string(resp.Body)
                     :
@@ -101,7 +103,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET:"+(
+                "message": "GET /incidents/"+state.worklist[state.next].name+"/alerts:"+(
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :

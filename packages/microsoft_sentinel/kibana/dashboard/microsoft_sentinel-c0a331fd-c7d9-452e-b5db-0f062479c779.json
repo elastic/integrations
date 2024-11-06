@@ -99,20 +99,52 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
                             "negate": false,
-                            "params": {
-                                "query": "microsoft_sentinel.incident"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "logs-*",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "microsoft_sentinel.incident"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "microsoft_sentinel.incident"
+                                        }
+                                    }
+                                },
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "logs-*",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "AND",
+                            "type": "combined"
                         },
-                        "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "microsoft_sentinel.incident"
-                            }
-                        }
+                        "query": {}
                     }
                 ],
                 "query": {
@@ -1296,7 +1328,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-10-29T07:47:01.996Z",
+    "created_at": "2024-11-05T12:26:46.479Z",
     "id": "microsoft_sentinel-c0a331fd-c7d9-452e-b5db-0f062479c779",
     "managed": false,
     "references": [
@@ -1374,6 +1406,11 @@
             "id": "logs-*",
             "name": "controlGroup_62b59bdb-ded9-4d94-b011-a9b6ed908d0a:optionsListDataView",
             "type": "index-pattern"
+        },
+        {
+            "id": "microsoft_sentinel-security-solution-default",
+            "name": "tag-ref-microsoft_sentinel-security-solution-default",
+            "type": "tag"
         },
         {
             "id": "microsoft_sentinel-security-solution-default",
