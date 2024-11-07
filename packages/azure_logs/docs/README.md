@@ -349,7 +349,7 @@ Default value: `$Default`
 `connection_string` :
 _string_
 
-The connection string is required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) for more information.
+The connection string is required to communicate with Event Hubs. Check [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) for more information.
 
 A Blob Storage Account is required to store/retrieve/update the checkpoint information of the event hub messages. This allows the integration to resume processing messages left when the user stops it.
 
