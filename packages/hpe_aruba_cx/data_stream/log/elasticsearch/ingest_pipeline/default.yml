@@ -61,6 +61,12 @@ processors:
         if: "['9209'].contains(ctx.event?.code)"
         patterns:
             - "PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
+    - grok:
+        field: message
+        tag: dns_client_event
+        if: "['11901'].contains(ctx.event?.code)"
+        patterns:
+            - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}*"
 
 on_failure:
   - set:
