@@ -80,11 +80,11 @@ By deleting a Storage Account container, the Elastic Agent will lose track of th
 
 ## Setup
 
-Before adding the integration, you must complete the following tasks.
+Before adding the integration, complete the following tasks.
 
 ### Create an Event Hub
 
-The event hub receives the logs exported from the Azure service and makes them available for the Elastic Agent to read.
+The Event Hub receives the logs exported from the Azure service and makes them available for the Elastic Agent to read.
 
 Here's a high-level overview of the required steps:
 
@@ -92,7 +92,7 @@ Here's a high-level overview of the required steps:
 * Create an Event Hubs namespace.
 * Create an event hub.
 
-For a detailed step-by-step guide, check the quickstart [Create an event hub using Azure portal](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create).
+For a step-by-step guide, check the quickstart [Create an event hub using Azure portal](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create).
 
 Take note of the event hub **Name**, which you will use later when specifying an **eventhub** in the integration settings.
 
@@ -180,11 +180,11 @@ The number of partitions must be at least the number of agents.
 
 Create an event hub with at least two partitions. Two partitions allow low-volume deployment to support high availability with two agents. Consider creating four partitions or more to handle medium-volume deployments with availability.
 
-To learn more about event hub partitions, read an in-depth guide from Microsoft at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create.
+To learn more about event hub partitions, check this guide from Microsoft at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create.
 
 To learn more about event hub partition from the performance perspective, check the scalability-focused document at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability#partitions.
 
-#### Consumer Group
+#### Consumer group
 
 Like all other event hub clients, Elastic Agent needs a consumer group name to access the event hub.
 
@@ -208,27 +208,27 @@ Create a new Shared Access Policy (SAS):
 1. Select **Add** to open the creation panel.
 1. Add a **Policy name** (for example, "ElasticAgent").
 1. Select the **Listen** claim.
-1. Select **Create**.
+1. Click **Create**.
 
 When the SAS Policy is ready, select it to display the information panel.
 
 Take note of the **Connection string–primary key**, which you will use later when specifying a **connection_string** in the integration settings.
 
-### Create a Diagnostic Settings
+### Create a diagnostic settings
 
-The diagnostic settings export the logs from Azure services to a destination, and in order to use Azure Logs integration, it must be an event hub.
+The diagnostic settings export the logs from Azure services to a destination, and to use Azure Logs integration, it must be an event hub.
 
 To create a diagnostic settings to export logs:
 
 1. Locate the diagnostic settings for the service (for example, Microsoft Entra ID).
-1. Select diagnostic settings in the **Monitoring** section of the service. Note that different services may place the diagnostic settings in various positions.
+1. Select diagnostic settings in the **Monitoring** section of the service. Note that different services might place the diagnostic settings in various positions.
 1. Select **Add diagnostic settings**.
 
 In the diagnostic settings page, you must select the source log categories you want to export and then select their destination.
 
 #### Select log categories
 
-Each Azure service exports a well-defined list of log categories. Check the individual integration doc to learn which log categories the integration supports.
+Each Azure service exports a well-defined list of log categories. Check the individual integration documentation to check the supported log categories.
 
 #### Select the destination
 
@@ -257,7 +257,7 @@ To create the Storage Account:
    - Enable soft delete for blobs: disabled
    - Enable soft delete for containers: disabled
 
-1. When the new Storage Account is ready, you need to take note of the Storage Account name and access keys, as you will use them later to authenticate your Elastic application's requests to this Storage Account.
+1. When the new Storage Account is ready, take note of the Storage Account name and access keys, as you will use them later to authenticate your Elastic application's requests to this Storage Account.
 
 This is the final diagram of the setup for collecting Activity logs from the Azure Monitor service.
 
@@ -362,7 +362,7 @@ The Storage Account key. Key to authorize access to data in your Storage Account
 
 `storage_account_container` :
 _string_
-The Storage Account container is where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated Storage Account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
+The Storage Account container is where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated Storage Account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. Check [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
 
 `pipeline` :
 _string_
@@ -370,7 +370,7 @@ Optional. Overrides the default ingest pipeline for this integration.
 
 `resource_manager_endpoint` :
 _string_
-Optional. By default, the integration uses the Azure public environment. To override this and use a different Azure environment, users can provide a specific resource manager endpoint
+Optional. By default, the integration uses the Azure public environment. To override this and use a different Azure environment, users can provide a specific resource manager endpoint.
 
 Examples:
 
