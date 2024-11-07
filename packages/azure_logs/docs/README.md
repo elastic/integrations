@@ -1,11 +1,11 @@
 # Custom Azure Logs
 
-The Custom Azure Logs integration collects logs from Azure Event Hub.
+The Custom Azure Logs integration collects logs from Azure Event Hubs.
 
 Use the integration to collect logs from:
 
-* Azure services that support exporting logs to Event Hub
-* Any other source that can send logs to an Event Hub
+* Azure services that support exporting logs to Event Hubs
+* Any other source that can send logs to an Event Hubs
 
 ## Data streams
 
@@ -26,10 +26,10 @@ You can use our recommended hosted Elasticsearch Service on Elastic Cloud or sel
 
 Before using the Custom Azure Logs, you will need:
 
-* One **Event Hub** to store in-flight logs exported by Azure services (or other sources) and make them available to Elastic Agent.
+* One **event hub** to store in-flight logs exported by Azure services (or other sources) and make them available to Elastic Agent.
 * A **Storage Account** to store checkpoint information about logs the Elastic Agent consumes.
 
-### Event Hub
+### Event hub
 
 [Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service that can receive and temporarily store millions of events.
 
@@ -55,7 +55,7 @@ The integration uses the Storage Account container for checkpointing. It stores 
 ```text
   ┌────────────────┐                     ┌───────────┐
   │   myeventhub   │        logs         │  Elastic  │
-  │ <<Event Hub>>  │────────────────────▶│   Agent   │
+  │ <<event hub>>  │────────────────────▶│   Agent   │
   └────────────────┘                     └───────────┘
                                                 │      
                        consumer group info      │      
@@ -65,9 +65,9 @@ The integration uses the Storage Account container for checkpointing. It stores 
   └────────────────┘                                                                            
 ```
 
-The Elastic Agent automatically creates one container for the Custom Azure Logs integration and one blob for each partition on the Event Hub.
+The Elastic Agent automatically creates one container for the Custom Azure Logs integration and one blob for each partition on the event hub.
 
-For example, if the integration is configured to fetch data from an Event Hub with four partitions, the Agent will create the following:
+For example, if the integration is configured to fetch data from an event hub with four partitions, the Agent will create the following:
 
 * One Storage Account container.
 * Four blobs in that container.
@@ -76,15 +76,15 @@ The information stored in the blobs is small (usually < 500 bytes per blob) and 
 
 You need to keep the Storage Account container as long as you need to run the integration with the Elastic Agent. If you delete a Storage Account container, the Elastic Agent will stop working and create a new one the next time it starts.
 
-By deleting a Storage Account container, the Elastic Agent will lose track of the last message processed and start processing messages from the beginning of the Event Hub retention period.
+By deleting a Storage Account container, the Elastic Agent will lose track of the last message processed and start processing messages from the beginning of the event hub retention period.
 
 ## Setup
 
 Before adding the integration, complete the following tasks.
 
-### Create an Event Hub
+### Create an event hub
 
-The Event Hub receives the logs exported from the Azure service and makes them available for the Elastic Agent to read.
+The event hub receives the logs exported from the Azure service and makes them available for the Elastic Agent to read.
 
 Here's a high-level overview of the required steps:
 
@@ -96,21 +96,21 @@ For a step-by-step guide, check the quickstart [Create an event hub using Azure 
 
 Take note of the event hub **Name**, which you will use later when specifying an **eventhub** in the integration settings.
 
-#### Event Hubs Namespace vs Event Hub
+#### Event Hubs namespace vs event hub
 
-In the integration settings, you should use the event hub name (not the Event Hubs namespace name) as the value for the  **event hub ** option.
+In the integration settings, you should use the event hub name (not the Event Hubs namespace name) as the value for the  **event hub** option.
 
-If you are new to Event Hubs, think of the Event Hubs namespace as the cluster and the Event Hub as the topic. You will typically have one cluster and multiple topics.
+If you are new to Event Hubs, think of the Event Hubs namespace as the cluster and the event hub as the topic. You will typically have one cluster and multiple topics.
 
 If you are familiar with Kafka, here's a conceptual mapping between the two:
 
-| Kafka Concept  | Event Hub Concept |
-|----------------|-------------------|
-| Cluster        | Namespace         |
-| Topic          | An event hub      |
-| Partition      | Partition         |
-| Consumer Group | Consumer Group    |
-| Offset         | Offset            |
+| Kafka Concept  | Event Hubs Concept  |
+|----------------|---------------------|
+| Cluster        | Namespace           |
+| Topic          | Event hub           |
+| Partition      | Partition           |
+| Consumer Group | Consumer group      |
+| Offset         | Offset              |
 
 #### How many partitions?
 
@@ -143,12 +143,12 @@ With a single Agent deployment, increasing the number of partitions on the event
 
 │                         │    │                         │
 
-└ Event Hub ─ ─ ─ ─ ─ ─ ─ ┘    └ Agent ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+└ Event hub ─ ─ ─ ─ ─ ─ ─ ┘    └ Elastic Agent ─ ─ ─ ─ ─ ┘
 ```
 
-##### Two or more Agents
+##### Two or more Elastic Agents
 
-With more than one Agent, setting the number of partitions is crucial. The agents share the existing partitions to scale out performance and improve availability.
+With more than one Elastic Agent, setting the number of partitions is crucial. The agents share the existing partitions to scale out performance and improve availability.
 
 The number of partitions must be at least the number of agents.
 
@@ -173,7 +173,7 @@ The number of partitions must be at least the number of agents.
                                   └─────────────────┘
 │                         │    │                         │
 
-└ Event Hub ─ ─ ─ ─ ─ ─ ─ ┘    └ Agent ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+└ Event hub ─ ─ ─ ─ ─ ─ ─ ┘    └ Elastic Agent ─ ─ ─ ─ ─ ┘
 ```
 
 ##### Recommendations
@@ -237,7 +237,7 @@ Select the **subscription** and the **Event Hubs namespace** you previously crea
 ```text
   ┌───────────────┐   ┌──────────────┐   ┌───────────────┐      ┌───────────┐
   │  MS Entra ID  │   │  Diagnostic  │   │     adlogs    │      │  Elastic  │
-  │  <<service>>  ├──▶│   Settings   │──▶│ <<Event Hub>> │─────▶│   Agent   │
+  │  <<service>>  ├──▶│   Settings   │──▶│ <<event hub>> │─────▶│   Agent   │
   └───────────────┘   └──────────────┘   └───────────────┘      └───────────┘
 ```
 
@@ -264,7 +264,7 @@ This is the final diagram of the setup for collecting Activity logs from the Azu
 ```text
  ┌───────────────┐   ┌──────────────┐   ┌────────────────┐         ┌───────────┐
  │  MS Entra ID  │   │  Diagnostic  │   │     adlogs     │  logs   │  Elastic  │
- │  <<service>>  ├──▶│   Settings   │──▶│ <<Event Hub>>  │────────▶│   Agent   │
+ │  <<service>>  ├──▶│   Settings   │──▶│ <<event hub>>  │────────▶│   Agent   │
  └───────────────┘   └──────────────┘   └────────────────┘         └───────────┘
                                                                           │     
                      ┌──────────────┐          consumer group info        │     
@@ -309,7 +309,7 @@ When you run the Elastic Agent behind a firewall, you must allow traffic on port
 └─Azure──────────────────────────┘
 ```
 
-#### Event Hub
+#### Event hub
 
 Port `5671` and `5672` are commonly used for secure communication with the event hub. These ports are used to receive events. The Elastic Agent can establish a secure connection with the event hub by allowing traffic on these ports. 
 
@@ -318,7 +318,7 @@ For more information, check the following documents:
 * [What ports do I need to open on the firewall?](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall) from the [Event Hubs frequently asked questions](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall).
 * [AMQP outbound port requirements](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide#amqp-outbound-port-requirements)
 
-#### Storage Account Container
+#### Storage Account container
 
 Port `443` is used for secure communication with the Storage Account container. This port is commonly used for HTTPS traffic. By allowing traffic on port 443, the Elastic Agent can securely access and interact with the Storage Account container, essential for storing and retrieving checkpoint data for each event hub partition.
 
