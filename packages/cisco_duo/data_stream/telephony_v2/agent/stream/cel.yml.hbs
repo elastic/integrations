@@ -35,14 +35,13 @@ program: |
             })
     ).as(state, state.with({
         // calculate maxtime to be the current time minus a buffer (2 minutes) to avoid potential synchronization issues.
-        "maxtime": int(now - duration("2m")).as(mx, 
-            (int(timestamp(int(state.mintime) / 1000) + duration("4320h") - duration("2m"))).as(oneeigthydays, 
-                mx < int(timestamp(int(state.mintime) / 1000) + duration("4320h")) ? 
-                    string(mx * 1000)
-                : 
-                    string(oneeigthydays * 1000)
-            )
-        )
+        "maxtime": state.want_more ?
+            string(state.maxtime)
+        :
+            string(int([
+                int(timestamp(int(state.mintime)/1000) + duration("4320h")),
+                int(now - duration("2m"))
+            ].min()) * 1000)
     })).as(state, state.with(
         {
             // prepare request data dynamically for each request to prevent 40103 error.
