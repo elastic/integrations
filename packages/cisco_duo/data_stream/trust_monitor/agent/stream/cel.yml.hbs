@@ -28,7 +28,7 @@ program: |
             state
         :
             state.with({
-                "mintime": string(state.?cursor.last_published.orValue(int(now - duration(state.initial_interval)) * 1000)),
+                "mintime": string(int(state.?cursor.last_published.orValue(int(now - duration(state.initial_interval)) * 1000))),
             })
     ).as(state, state.with({
         // the duration between maxtime and mintime should be less than 180d to avoid error_code 400 from API.
@@ -49,10 +49,7 @@ program: |
                  "limit": [string(dyn(state).limit)],
                  "maxtime": [string(state.maxtime)],
                  "mintime": [string(state.mintime)],
-                 ?"offset": has(state.next_offset) ?
-                    optional.of([string(state.next_offset)])
-                :
-                    optional.none(),
+                 ?"offset": state.?next_offset.optMap(v, [string(v)]),
             }.format_query(),
         }.as(r, r.with({
             // add an authorization header value using prepared data from r.
