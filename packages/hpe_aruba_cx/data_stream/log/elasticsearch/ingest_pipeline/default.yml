@@ -67,6 +67,12 @@ processors:
         if: "['11901'].contains(ctx.event?.code)"
         patterns:
             - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}*"
+    - grok:
+        field: message
+        tag: dpse_event
+        if: "['10901', '10904'].contains(ctx.event?.code)"
+        patterns:
+            - "Line card module %{DATA:aruba.dpse.linecard_name} (triggered|completed) backplane sequence recovery"
 
 on_failure:
   - set:

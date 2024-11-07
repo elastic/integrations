@@ -250,7 +250,7 @@ Note: Descriptions have not been filled out
 #### [DPSE events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DPSE.htm)
 | Field                    | Description | Type | Common                          |
 |--------------------------|-------------|------|---------------------------------|
-| aruba.dpse.linecard_name |             |      | observer.ingress.interface.name |
+| aruba.dpse.linecard_name |             |      |                                 |
 
 #### [ECMP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ECMP.htm)
 | Field               | Description | Type | Common                       |
