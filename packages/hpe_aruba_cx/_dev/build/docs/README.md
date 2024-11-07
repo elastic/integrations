@@ -8,6 +8,7 @@ Use the HPE Aruba integration and follow the setup steps listed below to forward
 ## Compatibility
 
 This package follows the [5200-8214 specification](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/PDF/5200-8214.pdf) and has been tested from sample logs captured from the HPE Aruba Networking CX Switches: **6000, 6300 and 8360** on the 10.07 version of the specification. As new appliances and OSes are released, they are expected to be compatible with the integration but Elastic does not guarantee compatibility with new/old version of the product line.
+The integration ONLY supports logs in ENGLISH, internationalization of logs to other languages are NOT supported.
 
 
 ## Data streams
@@ -43,23 +44,23 @@ Note: Field types are defined within `fields.yml`
 Note: Descriptions have not been filled out
 
 #### [AAA events (Aruba Docs)](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm)
-| Field                        | Description | Type | Common                       |
-|------------------------------|-------------|------|------------------------------|
-| aruba.aaa.config_event       |             |      | event.code                   |
-| aruba.aaa.config_type        |             |      | event.type                   |
-| aruba.aaa.radius_action      |             |      | event.action                 |
-| aruba.aaa.radius_event       |             |      | event.code                   |
-| aruba.aaa.radius.server_address |          |      | server.address               |
-| aruba.aaa.radius.server_authport |          |      | server.port                  |
-| aruba.aaa.status             |             |      | aruba.status                 |
-| aruba.aaa.radius.server_vrfid |            |      | aruba.vrf.id                 |
-| aruba.aaa.radius_type        |             |      | event.type                   |
-| aruba.aaa.tacacs_action      |             |      | event.action                 |
-| aruba.aaa.tacacs_event       |             |      | event.code                   |
-| aruba.aaa.tacacs.server_address |          |      | server.address               |
-| aruba.aaa.tacacs.server_authport |          |      | server.port                  |
-| aruba.aaa.tacacs.server_vrfid |            |      | aruba.vrf.id                 |
-| aruba.aaa.tacacs_type        |             |      | event.type                   |
+| Field                            | Description | Type | Common                       |
+|----------------------------------|-------------|------|------------------------------|
+| aruba.aaa.config_event           |             |      |                              |
+| aruba.aaa.config_type            |             |      |                              |
+| aruba.aaa.radius_action          |             |      |                              |
+| aruba.aaa.radius_event           |             |      |                              |
+| aruba.aaa.radius.server_address  |             |      | server.address               |
+| aruba.aaa.radius.server_authport |             |      | aruba.port                   |
+| aruba.aaa.status                 |             |      | aruba.status                 |
+| aruba.aaa.radius.server_vrfid    |             |      | aruba.vrf.id                 |
+| aruba.aaa.radius_type            |             |      | event.type                   |
+| aruba.aaa.tacacs_action          |             |      |                              |
+| aruba.aaa.tacacs_event           |             |      |                              |
+| aruba.aaa.tacacs.server_address  |             |      | server.address               |
+| aruba.aaa.tacacs.server_authport |             |      | aruba.port                   |
+| aruba.aaa.tacacs.server_vrfid    |             |      | aruba.vrf.id                 |
+| aruba.aaa.tacacs_type            |             |      |                              |
 
 #### [ACLs events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ACL.htm)
 | Field                        | Description | Type | Common                       |
@@ -91,25 +92,25 @@ Note: Descriptions have not been filled out
 | aruba.bfd.applied_interval   |             |      |                              |
 | aruba.bfd.dest_ip            |             |      | destination.ip               |
 | aruba.bfd.direction          |             |      | network.direction            |
-| aruba.bfd.from               |             |      | observer.ingress.interface.name |
-| aruba.bfd.intf               |             |      | observer.ingress.interface.id |
+| aruba.bfd.from               |             |      |                              |
+| aruba.bfd.intf               |             |      | aruba.interface.id           |
 | aruba.bfd.invalid_ip         |             |      |                              |
 | aruba.bfd.ip_version         |             |      |                              |
 | aruba.bfd.local_diag         |             |      |                              |
 | aruba.bfd.local_state        |             |      |                              |
 | aruba.bfd.op_mode            |             |      |                              |
-| aruba.bfd.port_name          |             |      | server.port                  |
+| aruba.bfd.port_name          |             |      | aruba.port                   |
 | aruba.bfd.remote_diag        |             |      |                              |
 | aruba.bfd.remote_state       |             |      |                              |
 | aruba.bfd.requested_interval |             |      |                              |
 | aruba.bfd.session_id         |             |      | aruba.instance.id            |
-| aruba.bfd.src_port           |             |      | server.port                  |
+| aruba.bfd.src_port           |             |      | aruba.port                   |
 | aruba.bfd.vrf                |             |      | aruba.vrf.id                 |
 
 #### [BGP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BGP.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.bgp.as_number          |             |      | client.as.number             |
+| aruba.bgp.as_number          |             |      |                              |
 | aruba.bgp.id                 |             |      |                              |
 | aruba.bgp.error-code         |             |      | error.code                   |
 | aruba.bgp.error-subcode      |             |      |                              |
@@ -148,10 +149,10 @@ Note: Descriptions have not been filled out
 #### [Config Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONFIG_MGMT.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.config.error           |             |      | error.message                |
-| aruba.config.from            |             |      | observer.ingress.interface.name |
+| aruba.config.error           |             |      | event.reason                 |
+| aruba.config.from            |             |      |                              |
 | aruba.config.info            |             |      | event.action                 |
-| aruba.config.to              |             |      | observer.egress.interface.name |
+| aruba.config.to              |             |      |                              |
 | aruba.config.type            |             |      |                              |
 | aruba.config.value           |             |      |                              |
 
