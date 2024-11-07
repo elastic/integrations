@@ -1,9 +1,9 @@
 {
     "attributes": {
-      "id": "pad-ml",
+      "id": "privileged_access-ml",
       "title": "Privilege Access Detection",
       "description": "",
-      "type": "pad",
+      "type": "privileged_access",
       "logo": {
         "icon": "machineLearningApp"
       },
@@ -76,11 +76,11 @@
       },
       "jobs": [
         {
-          "id": "pad_windows_high_count_special_logon_events",
+          "id": "privileged_access_windows_high_count_special_logon_events",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects unusually high special logon events initiated by an user.",
             "analysis_config": {
@@ -113,11 +113,11 @@
           }
         },
         {
-          "id": "pad_windows_high_count_special_privilege_use_events",
+          "id": "privileged_access_windows_high_count_special_privilege_use_events",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects unusually high special privilege use events initiated by an user.",
             "analysis_config": {
@@ -149,11 +149,11 @@
           }
         },
         {
-          "id": "pad_windows_high_count_group_management_events",
+          "id": "privileged_access_windows_high_count_group_management_events",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects unusually high security group management events initiated by an user.",
             "analysis_config": {
@@ -186,11 +186,11 @@
           }
         },
         {
-          "id": "pad_windows_high_count_user_account_management_events",
+          "id": "privileged_access_windows_high_count_user_account_management_events",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects unusually high security user account management events initiated by an user.",
             "analysis_config": {
@@ -221,11 +221,11 @@
           }
         },
         {
-          "id": "pad_windows_rare_privilege_assigned_to_user",
+          "id": "privileged_access_windows_rare_privilege_assigned_to_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects an unusual privilege type assigned to an user.",
             "analysis_config": {
@@ -256,11 +256,11 @@
           }
         },
         {
-          "id": "pad_windows_rare_group_name_by_user",
+          "id": "privileged_access_windows_rare_group_name_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects an unusual group name accessed by an user.",
             "analysis_config": {
@@ -292,11 +292,11 @@
           }
         },
         {
-          "id": "pad_windows_rare_device_by_user",
+          "id": "privileged_access_windows_rare_device_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects an unusual device accessed by an user.",
             "analysis_config": {
@@ -328,11 +328,11 @@
           }
         },
         {
-          "id": "pad_windows_rare_source_ip_by_user",
+          "id": "privileged_access_windows_rare_source_ip_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects an unusual source IP address accessed by the user.",
             "analysis_config": {
@@ -364,11 +364,11 @@
           }
         },
         {
-          "id": "pad_windows_rare_region_name_by_user",
+          "id": "privileged_access_windows_rare_region_name_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects an unusual region name for the user.",
             "analysis_config": {
@@ -401,55 +401,20 @@
           }
         },
         {
-          "id": "pad_windows_unusual_time_of_week_for_privileged_events",
+          "id": "privileged_access_linux_high_count_privileged_process_events_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
-            "description": "Detects an unusual time of week for privileged events.",
+            "description": "Detects a spike in privileged commands executed by an user.",
             "analysis_config": {
               "bucket_span": "3h",
               "detectors": [
                 {
-                  "detector_description": "Unusual time of week for privileged actions",
-                  "function": "time_of_week",
-                  "by_field_name": "event.action",
-                  "partition_field_name": "user.name",
-                  "detector_index": 0
-                }
-              ],
-              "influencers": [
-                "host.name",
-                "user.name",
-                "winlog.event_data.PrivilegeList",
-                "event.action"
-              ]
-            },
-            "data_description": {
-              "time_field": "@timestamp",
-              "time_format": "epoch_ms"
-            },
-            "custom_settings": {
-              "created_by": "ml-module-lmd"
-            }
-          }
-        },
-        {
-          "id": "pad_linux_high_count_privileged_events_by_user",
-          "config": {
-            "groups": [
-              "security",
-              "privilege_escalation"
-            ],
-            "description": "Detects a spike in privileged events executed by an user.",
-            "analysis_config": {
-              "bucket_span": "3h",
-              "detectors": [
-                {
-                  "detector_description": "High count of privileged events by user name",
+                  "detector_description": "High count of privileged processes by user name",
                   "function": "high_count",
-                  "by_field_name": "event.action",
+                  "by_field_name": "process.name",
                   "partition_field_name": "user.name",
                   "detector_index": 0
                 }
@@ -472,11 +437,11 @@
           }
         },
         {
-          "id": "pad_linux_rare_process_executed_by_user",
+          "id": "privileged_access_linux_rare_process_executed_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects a rare process executed by an user.",
             "analysis_config": {
@@ -508,11 +473,11 @@
           }
         },
         {
-          "id": "pad_linux_high_info_content_command_line_by_user",
+          "id": "privileged_access_linux_high_info_content_command_line_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects high information content in command lines that are executed by an user.",
             "analysis_config": {
@@ -544,11 +509,11 @@
           }
         },
         {
-          "id": "pad_okta_spike_in_group_membership_changes",
+          "id": "privileged_access_okta_spike_in_group_membership_changes",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects spike in group membership change events by an user",
             "analysis_config": {
@@ -580,11 +545,11 @@
           }
         },
         {
-          "id": "pad_okta_spike_in_user_account_management_changes",
+          "id": "privileged_access_okta_spike_in_user_account_management_changes",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects spike in user account management change events by an user",
             "analysis_config": {
@@ -616,11 +581,11 @@
           }
         },
         {
-          "id": "pad_okta_spike_in_group_privilege_changes",
+          "id": "privileged_access_okta_spike_in_group_privilege_changes",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects spike in group privilege change events by an user",
             "analysis_config": {
@@ -653,11 +618,11 @@
           }
         },
         {
-          "id": "pad_okta_spike_in_group_application_assignment_changes",
+          "id": "privileged_access_okta_spike_in_group_application_assignment_changes",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects spike in group application assignment change events by an user",
             "analysis_config": {
@@ -688,11 +653,11 @@
           }
         },
         {
-          "id": "pad_okta_spike_in_group_lifecycle_changes",
+          "id": "privileged_access_okta_spike_in_group_lifecycle_changes",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects spike in group lifecycle change events by an user",
             "analysis_config": {
@@ -723,11 +688,11 @@
           }
         },
         {
-          "id": "pad_okta_high_sum_distinct_active_sessions_by_user",
+          "id": "privileged_access_okta_high_sum_distinct_active_sessions_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects an unusual sum of active sessions started by a user",
             "analysis_config": {
@@ -743,9 +708,9 @@
               ],
               "influencers": [
                   "okta.user.name",
-                  "okta_session.info.ips",
+                  "okta_session_info.ips",
                   "okta.user.full_name",
-                  "okta_session.info.locations"
+                  "okta_session_info.locations"
               ]
             },
             "data_description": {
@@ -758,11 +723,11 @@
           }
         },
         {
-          "id": "pad_okta_rare_ip_by_user",
+          "id": "privileged_access_okta_rare_ip_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects an unusual source IP address accessed by the user.",
             "analysis_config": {
@@ -794,11 +759,11 @@
           }
         },
         {
-          "id": "pad_okta_region_name_by_user",
+          "id": "privileged_access_okta_region_name_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects an unusual region name  for the user.",
             "analysis_config": {
@@ -831,11 +796,11 @@
           }
         },
         {
-          "id": "pad_okta_host_name_by_user",
+          "id": "privileged_access_okta_host_name_by_user",
           "config": {
             "groups": [
               "security",
-              "privilege_escalation"
+              "privileged_access"
             ],
             "description": "Detects an unusual host name  for the user.",
             "analysis_config": {
@@ -869,13 +834,13 @@
       ],
       "datafeeds": [
         {
-          "id": "datafeed-pad_high_count_special_logon_events",
-          "job_id": "pad_high_count_special_logon_events",
+          "id": "datafeed-privileged_access_windows_high_count_special_logon_events",
+          "job_id": "privileged_access_windows_high_count_special_logon_events",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_high_count_special_logon_events",
+            "job_id": "privileged_access_windows_high_count_special_logon_events",
             "query": {
               "bool": {
                 "filter": [
@@ -909,13 +874,13 @@
           }
         },
         {
-          "id": "datafeed-pad_high_count_special_privilege_use_events",
-          "job_id": "pad_high_count_special_privilege_use_events",
+          "id": "datafeed-privileged_access_windows_high_count_special_privilege_use_events",
+          "job_id": "privileged_access_windows_high_count_special_privilege_use_events",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_high_count_special_privilege_use_events",
+            "job_id": "privileged_access_windows_high_count_special_privilege_use_events",
             "query": {
               "bool": {
                 "filter": [
@@ -949,13 +914,13 @@
           }
         },
         {
-          "id": "datafeed-pad_high_count_group_management_events",
-          "job_id": "pad_high_count_group_management_events",
+          "id": "datafeed-privileged_access_windows_high_count_group_management_events",
+          "job_id": "privileged_access_windows_high_count_group_management_events",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_high_count_group_management_events",
+            "job_id": "privileged_access_windows_high_count_group_management_events",
             "query": {
               "bool": {
                 "filter": [
@@ -992,13 +957,13 @@
           }
         },
         {
-          "id": "datafeed-pad_high_count_user_account_management_events",
-          "job_id": "pad_high_count_user_account_management_events",
+          "id": "datafeed-privileged_access_windows_high_count_user_account_management_events",
+          "job_id": "privileged_access_windows_high_count_user_account_management_events",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_high_count_user_account_management_events",
+            "job_id": "privileged_access_windows_high_count_user_account_management_events",
             "query": {
               "bool": {
                 "filter": [
@@ -1036,13 +1001,13 @@
           }
         },
         {
-          "id": "datafeed-pad_rare_privilege_assigned_to_user",
-          "job_id": "pad_rare_privilege_assigned_to_user",
+          "id": "datafeed-privileged_access_windows_rare_privilege_assigned_to_user",
+          "job_id": "privileged_access_windows_rare_privilege_assigned_to_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_rare_privilege_assigned_to_user",
+            "job_id": "privileged_access_windows_rare_privilege_assigned_to_user",
             "query": {
               "bool": {
                 "filter": [
@@ -1057,13 +1022,13 @@
           }
         },
         {
-          "id": "datafeed-pad_rare_group_name_by_user",
-          "job_id": "pad_rare_group_name_by_user",
+          "id": "datafeed-privileged_access_windows_rare_group_name_by_user",
+          "job_id": "privileged_access_windows_rare_group_name_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_rare_group_name_by_user",
+            "job_id": "privileged_access_windows_rare_group_name_by_user",
             "query": {
               "bool": {
                 "filter": [
@@ -1100,13 +1065,13 @@
           }
         },
         {
-          "id": "datafeed-pad_rare_device_by_user",
-          "job_id": "pad_rare_device_by_user",
+          "id": "datafeed-privileged_access_windows_rare_device_by_user",
+          "job_id": "privileged_access_windows_rare_device_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_rare_device_by_user",
+            "job_id": "privileged_access_windows_rare_device_by_user",
             "query": {
               "bool": {
                 "filter": [
@@ -1158,19 +1123,29 @@
                       ]
                     }
                   }
+                ],
+              "must_not": [
+                {
+                  "terms": {
+                    "event.action": [
+                      "log_on",
+                      "created_process"
+                    ]
+                    }
+                  }
                 ]
               }
             }
           }
         },
         {
-          "id": "datafeed-pad_rare_source_ip_by_user",
-          "job_id": "pad_rare_source_ip_by_user",
+          "id": "datafeed-privileged_access_windows_rare_source_ip_by_user",
+          "job_id": "privileged_access_windows_rare_source_ip_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_rare_source_ip_by_user",
+            "job_id": "privileged_access_windows_rare_source_ip_by_user",
             "query": {
               "bool": {
                 "filter": [
@@ -1222,19 +1197,29 @@
                       ]
                     }
                   }
+                ],
+                "must_not": [
+                {
+                  "terms": {
+                    "event.action": [
+                      "log_on",
+                      "created_process"
+                    ]
+                    }
+                  }
                 ]
               }
             }
           }
         },
         {
-          "id": "datafeed-pad_rare_region_name_by_user",
-          "job_id": "pad_rare_region_name_by_user",
+          "id": "datafeed-privileged_access_windows_rare_region_name_by_user",
+          "job_id": "privileged_access_windows_rare_region_name_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_rare_region_name_by_user",
+            "job_id": "privileged_access_windows_rare_region_name_by_user",
             "query": {
               "bool": {
                 "filter": [
@@ -1286,63 +1271,14 @@
                       ]
                     }
                   }
-                ]
-              }
-            }
-          }
-        },
-        {
-          "id": "datafeed-pad_unusual_time_of_week_for_privileged_events",
-          "job_id": "pad_unusual_time_of_week_for_privileged_events",
-          "config": {
-            "indices": [
-              "INDEX_PATTERN_NAME"
-            ],
-            "job_id": "pad_unusual_time_of_week_for_privileged_events",
-            "query": {
-              "bool": {
-                "filter": [
-                  {
-                    "terms": {
-                      "host.os.type": [
-                        "windows",
-                        "Windows"
-                      ]
-                    }
-                  },
-                  {
-                    "exists": {
-                      "field": "user.name"
-                    }
-                  },
-                  {
-                    "terms": {
-                      "event.code": [
-                        "4720",
-                        "4726",
-                        "4722",
-                        "4756",
-                        "4672",
-                        "4673",
-                        "4674",
-                        "4720",
-                        "4728",
-                        "4732",
-                        "4756",
-                        "624",
-                        "632",
-                        "636",
-                        "660",
-                        "4725",
-                        "4723",
-                        "4648",
-                        "4688",
-                        "4729",
-                        "4733",
-                        "4757",
-                        "637",
-                        "661"
-                      ]
+                ],
+                "must_not": [
+                {
+                  "terms": {
+                    "event.action": [
+                      "log_on",
+                      "created_process"
+                    ]
                     }
                   }
                 ]
@@ -1351,19 +1287,37 @@
           }
         },
         {
-          "id": "datafeed-pad_linux_high_count_privileged_events_by_user",
-          "job_id": "pad_linux_high_count_privileged_events_by_user",
+          "id": "datafeed-privileged_access_linux_high_count_privileged_process_events_by_user",
+          "job_id": "privileged_access_linux_high_count_privileged_process_events_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_linux_high_count_privileged_events_by_user",
+            "job_id": "privileged_access_linux_high_count_privileged_process_events_by_user",
             "query": {
               "bool": {
-                "must": [
+                "must_not": [
                   {
                     "terms": {
-                      "host.os.type": [
+                      "process.name": [
+                        "elastic-agent",
+                        "elasticsearch-users"
+                      ]
+                    }
+                  }
+                ],
+                "must": [
+                  {
+                    "range": {
+                      "@timestamp": {
+                        "gte": "now-5d/d",
+                        "lt": "now/d"
+                      }
+                    }
+                  },
+                  {
+                    "terms": {
+                      "host.os.name": [
                         "linux",
                         "Linux"
                       ]
@@ -1387,32 +1341,32 @@
                       "should": [
                         {
                           "wildcard": {
-                            "process.command_line": "*sudo*root*"
+                            "process.command_line": "* sudo */root/*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*sudo*etc*"
+                            "process.command_line": "* sudo *etc/sudoers*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*sudo*visudo*"
+                            "process.command_line": "* sudo * visudo *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*timestamp_timeout=-1*"
+                            "process.command_line": "* timestamp_timeout=-1 *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*tty_tickets*"
+                            "process.command_line": "* tty_tickets *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*etc/cron.d*"
+                            "process.command_line": "*etc/cron.*/"
                           }
                         },
                         {
@@ -1422,22 +1376,22 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*chmod*cron.d*"
+                            "process.command_line": "* trap * SIGINT *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "* trap *"
+                            "process.command_line": "* trap * EXIT *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*LD_PRELOAD*"
+                            "process.command_line": "* LD_PRELOAD *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*ld.so.preload*"
+                            "process.command_line": "*/etc/ld.so.preload*"
                           }
                         },
                         {
@@ -1472,16 +1426,6 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "* gcc *"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "* cc *"
-                          }
-                        },
-                        {
-                          "wildcard": {
                             "process.command_line": "*/root/.ssh/authorized_keys*"
                           }
                         },
@@ -1492,57 +1436,27 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*start*"
+                            "process.command_line": "*systemctl* start *timer*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*enable*"
+                            "process.command_line": "*systemctl* enable *timer"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemd*start*"
+                            "process.command_line": "*echo*/.bash_profile*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemd*enable*"
+                            "process.command_line": "*echo*/.bashrc*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemd*timer*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*systemd*service*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*systemctl*timer*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*systemctl*service*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*echo*.bash_profile*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*echo*.bashrc*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*echo*.shrc*"
+                            "process.command_line": "*echo*/.shrc*"
                           }
                         },
                         {
@@ -1552,7 +1466,7 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*echo*.bash_logout*"
+                            "process.command_line": "*echo*/.bash_logout*"
                           }
                         },
                         {
@@ -1562,57 +1476,42 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*restart*"
+                            "process.command_line": "*systemctl* daemon-reload *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*daemon-reload*"
+                            "process.command_line": "* echo * at *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*etc/init.d/*"
+                            "process.command_line": "* useradd *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "* echo * at * now *"
+                            "process.command_line": "* pw mod user *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*useradd*"
+                            "process.command_line": "* pw unlock *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*passwd*"
+                            "process.command_line": "* usermod *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*pw mod user*"
+                            "process.command_line": "* sudo * nobody *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*pw unlock*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*usermod*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*sudo*nobody*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*su*nobody*"
+                            "process.command_line": "* su * nobody *"
                           }
                         }
                       ]
@@ -1624,19 +1523,37 @@
           }
         },
         {
-          "id": "datafeed-pad_linux_rare_process_executed_by_user",
-          "job_id": "pad_linux_rare_process_executed_by_user",
+          "id": "datafeed-privileged_access_linux_rare_process_executed_by_user",
+          "job_id": "privileged_access_linux_rare_process_executed_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_linux_rare_process_executed_by_user",
+            "job_id": "privileged_access_linux_rare_process_executed_by_user",
             "query": {
               "bool": {
-                "must": [
+                "must_not": [
                   {
                     "terms": {
-                      "host.os.type": [
+                      "process.name": [
+                        "elastic-agent",
+                        "elasticsearch-users"
+                      ]
+                    }
+                  }
+                ],
+                "must": [
+                  {
+                    "range": {
+                      "@timestamp": {
+                        "gte": "now-5d/d",
+                        "lt": "now/d"
+                      }
+                    }
+                  },
+                  {
+                    "terms": {
+                      "host.os.name": [
                         "linux",
                         "Linux"
                       ]
@@ -1660,32 +1577,32 @@
                       "should": [
                         {
                           "wildcard": {
-                            "process.command_line": "*sudo*root*"
+                            "process.command_line": "* sudo */root/*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*sudo*etc*"
+                            "process.command_line": "* sudo *etc/sudoers*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*sudo*visudo*"
+                            "process.command_line": "* sudo * visudo *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*timestamp_timeout=-1*"
+                            "process.command_line": "* timestamp_timeout=-1 *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*tty_tickets*"
+                            "process.command_line": "* tty_tickets *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*etc/cron.d*"
+                            "process.command_line": "*etc/cron.*/"
                           }
                         },
                         {
@@ -1695,22 +1612,22 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*chmod*cron.d*"
+                            "process.command_line": "* trap * SIGINT *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "* trap *"
+                            "process.command_line": "* trap * EXIT *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*LD_PRELOAD*"
+                            "process.command_line": "* LD_PRELOAD *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*ld.so.preload*"
+                            "process.command_line": "*/etc/ld.so.preload*"
                           }
                         },
                         {
@@ -1745,16 +1662,6 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "* gcc *"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "* cc *"
-                          }
-                        },
-                        {
-                          "wildcard": {
                             "process.command_line": "*/root/.ssh/authorized_keys*"
                           }
                         },
@@ -1765,57 +1672,27 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*start*"
+                            "process.command_line": "*systemctl* start *timer*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*enable*"
+                            "process.command_line": "*systemctl* enable *timer"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemd*start*"
+                            "process.command_line": "*echo*/.bash_profile*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemd*enable*"
+                            "process.command_line": "*echo*/.bashrc*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemd*timer*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*systemd*service*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*systemctl*timer*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*systemctl*service*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*echo*.bash_profile*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*echo*.bashrc*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*echo*.shrc*"
+                            "process.command_line": "*echo*/.shrc*"
                           }
                         },
                         {
@@ -1825,7 +1702,7 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*echo*.bash_logout*"
+                            "process.command_line": "*echo*/.bash_logout*"
                           }
                         },
                         {
@@ -1835,57 +1712,42 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*restart*"
+                            "process.command_line": "*systemctl* daemon-reload *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*daemon-reload*"
+                            "process.command_line": "* echo * at *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*etc/init.d/*"
+                            "process.command_line": "* useradd *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "* echo * at * now *"
+                            "process.command_line": "* pw mod user *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*useradd*"
+                            "process.command_line": "* pw unlock *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*passwd*"
+                            "process.command_line": "* usermod *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*pw mod user*"
+                            "process.command_line": "* sudo * nobody *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*pw unlock*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*usermod*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*sudo*nobody*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*su*nobody*"
+                            "process.command_line": "* su * nobody *"
                           }
                         }
                       ]
@@ -1897,19 +1759,37 @@
           }
         },
         {
-          "id": "datafeed-pad_linux_high_info_content_in_command_line_by_user",
-          "job_id": "pad_linux_high_info_content_in_command_line_by_user",
+          "id": "datafeed-privileged_access_linux_high_info_content_in_command_line_by_user",
+          "job_id": "privileged_access_linux_high_info_content_in_command_line_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_linux_high_info_content_in_command_line_by_user",
+            "job_id": "privileged_access_linux_high_info_content_in_command_line_by_user",
             "query": {
               "bool": {
-                "must": [
+                "must_not": [
                   {
                     "terms": {
-                      "host.os.type": [
+                      "process.name": [
+                        "elastic-agent",
+                        "elasticsearch-users"
+                      ]
+                    }
+                  }
+                ],
+                "must": [
+                  {
+                    "range": {
+                      "@timestamp": {
+                        "gte": "now-5d/d",
+                        "lt": "now/d"
+                      }
+                    }
+                  },
+                  {
+                    "terms": {
+                      "host.os.name": [
                         "linux",
                         "Linux"
                       ]
@@ -1933,32 +1813,32 @@
                       "should": [
                         {
                           "wildcard": {
-                            "process.command_line": "*sudo*root*"
+                            "process.command_line": "* sudo */root/*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*sudo*etc*"
+                            "process.command_line": "* sudo *etc/sudoers*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*sudo*visudo*"
+                            "process.command_line": "* sudo * visudo *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*timestamp_timeout=-1*"
+                            "process.command_line": "* timestamp_timeout=-1 *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*tty_tickets*"
+                            "process.command_line": "* tty_tickets *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*etc/cron.d*"
+                            "process.command_line": "*etc/cron.*/"
                           }
                         },
                         {
@@ -1968,22 +1848,22 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*chmod*cron.d*"
+                            "process.command_line": "* trap * SIGINT *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "* trap *"
+                            "process.command_line": "* trap * EXIT *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*LD_PRELOAD*"
+                            "process.command_line": "* LD_PRELOAD *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*ld.so.preload*"
+                            "process.command_line": "*/etc/ld.so.preload*"
                           }
                         },
                         {
@@ -2018,16 +1898,6 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "* gcc *"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "* cc *"
-                          }
-                        },
-                        {
-                          "wildcard": {
                             "process.command_line": "*/root/.ssh/authorized_keys*"
                           }
                         },
@@ -2038,57 +1908,27 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*start*"
+                            "process.command_line": "*systemctl* start *timer*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*enable*"
+                            "process.command_line": "*systemctl* enable *timer"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemd*start*"
+                            "process.command_line": "*echo*/.bash_profile*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemd*enable*"
+                            "process.command_line": "*echo*/.bashrc*"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemd*timer*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*systemd*service*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*systemctl*timer*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*systemctl*service*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*echo*.bash_profile*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*echo*.bashrc*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*echo*.shrc*"
+                            "process.command_line": "*echo*/.shrc*"
                           }
                         },
                         {
@@ -2098,7 +1938,7 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*echo*.bash_logout*"
+                            "process.command_line": "*echo*/.bash_logout*"
                           }
                         },
                         {
@@ -2108,57 +1948,42 @@
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*restart*"
+                            "process.command_line": "*systemctl* daemon-reload *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*systemctl*daemon-reload*"
+                            "process.command_line": "* echo * at *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*etc/init.d/*"
+                            "process.command_line": "* useradd *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "* echo * at * now *"
+                            "process.command_line": "* pw mod user *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*useradd*"
+                            "process.command_line": "* pw unlock *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*passwd*"
+                            "process.command_line": "* usermod *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*pw mod user*"
+                            "process.command_line": "* sudo * nobody *"
                           }
                         },
                         {
                           "wildcard": {
-                            "process.command_line": "*pw unlock*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*usermod*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*sudo*nobody*"
-                          }
-                        },
-                        {
-                          "wildcard": {
-                            "process.command_line": "*su*nobody*"
+                            "process.command_line": "* su * nobody *"
                           }
                         }
                       ]
@@ -2170,13 +1995,13 @@
           }
         },
         {
-          "id": "datafeed-pad_okta_spike_in_group_membership_changes",
-          "job_id": "pad_okta_spike_in_group_membership_changes",
+          "id": "datafeed-privileged_access_okta_spike_in_group_membership_changes",
+          "job_id": "privileged_access_okta_spike_in_group_membership_changes",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_okta_spike_in_group_membership_changes",
+            "job_id": "privileged_access_okta_spike_in_group_membership_changes",
             "query": {
               "bool": {
                 "filter": [
@@ -2196,13 +2021,13 @@
           }
         },
         {
-          "id": "datafeed-pad_okta_spike_in_user_account_management_changes",
-          "job_id": "pad_okta_spike_in_user_account_management_changes",
+          "id": "datafeed-privileged_access_okta_spike_in_user_account_management_changes",
+          "job_id": "privileged_access_okta_spike_in_user_account_management_changes",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_okta_spike_in_user_account_management_changes",
+            "job_id": "privileged_access_okta_spike_in_user_account_management_changes",
             "query": {
               "bool": {
                 "filter": [
@@ -2229,13 +2054,13 @@
           }
         },
                 {
-          "id": "datafeed-pad_okta_spike_in_group_privilege_changes",
-          "job_id": "pad_okta_spike_in_group_privilege_changes",
+          "id": "datafeed-privileged_access_okta_spike_in_group_privilege_changes",
+          "job_id": "privileged_access_okta_spike_in_group_privilege_changes",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_okta_spike_in_group_privilege_changes",
+            "job_id": "privileged_access_okta_spike_in_group_privilege_changes",
             "query": {
               "bool": {
                 "filter": [
@@ -2255,13 +2080,13 @@
           }
         },
                 {
-          "id": "datafeed-pad_okta_spike_in_group_application_assignment_changes",
-          "job_id": "pad_okta_spike_in_group_application_assignment_changes",
+          "id": "datafeed-privileged_access_okta_spike_in_group_application_assignment_changes",
+          "job_id": "privileged_access_okta_spike_in_group_application_assignment_changes",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_okta_spike_in_group_application_assignment_changes",
+            "job_id": "privileged_access_okta_spike_in_group_application_assignment_changes",
             "query": {
               "bool": {
                 "filter": [
@@ -2281,13 +2106,13 @@
           }
         },
         {
-          "id": "datafeed-pad_okta_spike_in_group_lifecycle_changes",
-          "job_id": "pad_okta_spike_in_group_lifecycle_changes",
+          "id": "datafeed-privileged_access_okta_spike_in_group_lifecycle_changes",
+          "job_id": "privileged_access_okta_spike_in_group_lifecycle_changes",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_okta_spike_in_group_lifecycle_changes",
+            "job_id": "privileged_access_okta_spike_in_group_lifecycle_changes",
             "query": {
               "bool": {
                 "filter": [
@@ -2307,13 +2132,13 @@
           }
         },
         {
-          "id": "datafeed-pad_okta_high_sum_distinct_active_sessions_by_user",
-          "job_id": "pad_okta_high_sum_distinct_active_sessions_by_user",
+          "id": "datafeed-privileged_access_okta_high_sum_distinct_active_sessions_by_user",
+          "job_id": "privileged_access_okta_high_sum_distinct_active_sessions_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_okta_high_sum_distinct_active_sessions_by_user",
+            "job_id": "privileged_access_okta_high_sum_distinct_active_sessions_by_user",
             "query": {
               "bool": {
                 "filter": [
@@ -2352,13 +2177,13 @@
           }
         },
         {
-          "id": "datafeed-pad_okta_rare_ip_by_user",
-          "job_id": "pad_okta_rare_ip_by_user",
+          "id": "datafeed-privileged_access_okta_rare_ip_by_user",
+          "job_id": "privileged_access_okta_rare_ip_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_okta_rare_ip_by_user",
+            "job_id": "privileged_access_okta_rare_ip_by_user",
             "query": {
               "bool": {
                 "filter": [
@@ -2397,13 +2222,13 @@
           }
         },
                 {
-          "id": "datafeed-pad_okta_region_name_by_user",
-          "job_id": "pad_okta_region_name_by_user",
+          "id": "datafeed-privileged_access_okta_region_name_by_user",
+          "job_id": "privileged_access_okta_region_name_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_okta_region_name_by_user",
+            "job_id": "privileged_access_okta_region_name_by_user",
             "query": {
               "bool": {
                 "filter": [
@@ -2442,13 +2267,13 @@
           }
         },
                 {
-          "id": "datafeed-pad_okta_host_name_by_user",
-          "job_id": "pad_okta_host_name_by_user",
+          "id": "datafeed-privileged_access_okta_host_name_by_user",
+          "job_id": "privileged_access_okta_host_name_by_user",
           "config": {
             "indices": [
               "INDEX_PATTERN_NAME"
             ],
-            "job_id": "pad_okta_host_name_by_user",
+            "job_id": "privileged_access_okta_host_name_by_user",
             "query": {
               "bool": {
                 "filter": [
@@ -2488,7 +2313,7 @@
         }
       ]
     },
-    "id": "pad-ml",
+    "id": "privileged_access-ml",
     "migrationVersion": {
         "search": "7.16.0"
     },
