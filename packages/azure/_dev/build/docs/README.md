@@ -337,7 +337,7 @@ This is the final diagram of the a setup for collecting Activity logs from the A
 
 The Elastic Agent can create containers for all integrations on a single Storage Account.
 
-The Agent will use the **integration name** and the **event hub name** to uniquely identify the container that holds the blobs with the checkpoint information.
+The Agent uses the **integration name** and the **event hub name** to uniquely identify the container that holds the blobs with the checkpoint information.
 
 ```text
 ┌─────────────────────────────────┐      ┌──────────────────────────────────────────┐
