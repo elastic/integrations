@@ -138,7 +138,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| gcp.labels.resource.location | Location of the resource | keyword |  |  |
+| gcp.labels.metrics.deployed_model_id | The ID of the DeployedModel which serves the prediction request. | keyword |  |  |
+| gcp.labels.metrics.error_category | Response error category of the request (user/system/capacity). | keyword |  |  |
+| gcp.labels.metrics.input_token_size | The bucketized size of number of tokens in the prediction request. | keyword |  |  |
+| gcp.labels.metrics.latency_type | The type of latency for the prediction request (either model or overhead). | keyword |  |  |
+| gcp.labels.metrics.max_token_size | The bucketized max size of number of tokens in the prediction request/response. | keyword |  |  |
+| gcp.labels.metrics.method | The type of method of the request (RawPredict/StreamRawPredict/ChatCompletions/etc). | keyword |  |  |
+| gcp.labels.metrics.output_token_size | The bucketized size of number of tokens in the prediction response. | keyword |  |  |
+| gcp.labels.metrics.replica_id | Unique ID corresponding to the model replica. | keyword |  |  |
+| gcp.labels.metrics.request_type | The type of traffic of the request (dedicated/shared). | keyword |  |  |
+| gcp.labels.metrics.response_code | Response code of prediction request. | keyword |  |  |
+| gcp.labels.metrics.spot | Whether this deployment is on Spot VMs. Has values of True or False. | keyword |  |  |
+| gcp.labels.metrics.type | Type of token (input/output). | keyword |  |  |
+| gcp.labels.resource.endpoint_id | The ID of the Endpoint. | keyword |  |  |
+| gcp.labels.resource.location | The region in which the service is running. | keyword |  |  |
+| gcp.labels.resource.model_user_id | The resource ID of the PublisherModel. | keyword |  |  |
+| gcp.labels.resource.model_version_id | The version ID of the PublisherModel. | keyword |  |  |
+| gcp.labels.resource.publisher | The publisher of the model. | keyword |  |  |
+| gcp.labels.resource.resource_container | The identifier of the GCP Project owning the Endpoint. | keyword |  |  |
 | gcp.vertexai.prediction.online.cpu.utilization | Fraction of CPU allocated by the deployed model replica and currently in use. May exceed 100% if the machine type has multiple CPUs. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | double | percent | gauge |
 | gcp.vertexai.prediction.online.error_count | Number of online prediction errors. | long |  | gauge |
 | gcp.vertexai.prediction.online.memory.bytes_used | Amount of memory allocated by the deployed model replica and currently in use. Sampled every 60 seconds. After sampling data is not visible for up to 360 seconds. | long | byte | gauge |
