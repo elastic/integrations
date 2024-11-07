@@ -1,5 +1,5 @@
 source:
-  index: "logs-okta.system-default"
+  index: "logs-*"
   query:
     bool:
       filter:
@@ -13,11 +13,11 @@ source:
         - terms:
             'okta.event_type': ["user.session.start","user.session.end"]
 dest:
-  index: ml_okta_multiple_user_sessions_pad-0.0.1
+  index: ml_okta_multiple_user_sessions_privileged_access-0.0.1
   aliases:
-    - alias: ml_okta_multiple_user_sessions_pad.latest
+    - alias: ml_okta_multiple_user_sessions_privileged_access.latest
       move_on_creation: true
-    - alias: ml_okta_multiple_user_sessions_pad.all
+    - alias: ml_okta_multiple_user_sessions_privileged_access.all
       move_on_creation: false
 description: This transform runs hourly and collects user session information for Okta events for Privilege Access Detection package.
 frequency: 1h
@@ -29,35 +29,16 @@ pivot:
     okta_distinct_countries:
       cardinality:
         field: source.geo.country_name
-    okta_session_info:
-      scripted_metric:
-        init_script: "state.data = ['ips': [], 'locations': [], 'has_end_event': 0];"
-        map_script: |
-          // Collect IPs and locations
-          if (doc.containsKey('source.ip') && !doc['source.ip'].empty) {
-            state.data['ips'].add(doc['source.ip'].value);
-          }
-          if (doc.containsKey('source.geo.country_name') && !doc['source.geo.country_name'].empty) {
-            state.data['locations'].add(doc['source.geo.country_name'].value);
-          }
-          // Check if session end event exists
-          if (doc['okta.event_type'].value == 'user.session.end') {
-            state.data['has_end_event'] = 1; // Set to 1 if an end event is present
-          }
-        combine_script: "return state.data;"
-        reduce_script: |
-          Map result = ['ips': [], 'locations': [], 'has_end_event': 0];
-          for (s in states) {
-            result['ips'].addAll(s['ips']);
-            result['locations'].addAll(s['locations']);
-            if (s['has_end_event'] == 1) {
-              result['has_end_event'] = 1; // Set to 1 if any shard has an end event
-            }
-          }
-          // Remove duplicates from the lists
-          result['ips'] = new ArrayList(new HashSet(result['ips']));
-          result['locations'] = new ArrayList(new HashSet(result['locations']));
-          return result;
+    'okta_session_info.has_end_event':
+      filter:
+        term:
+          'okta.event_type': "user.session.end"
+    'okta_session_info.ips':
+      terms:
+        field: source.ip
+    'okta_session_info.locations':
+      terms:
+        field: source.geo.country_name
   group_by:
     'okta.user.name':
       terms:
