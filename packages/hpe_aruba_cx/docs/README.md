@@ -239,7 +239,7 @@ Note: Descriptions have not been filled out
 #### [Discovery and Capability Exchange (DCBx) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DCBX.htm)
 | Field                | Description | Type | Common                          |
 |----------------------|-------------|------|---------------------------------|
-| aruba.dcbx.intf_name |             |      | observer.ingress.interface.name |
+| aruba.dcbx.intf_name | Interface name as reported by the system | keyword | |
 
 #### [DNS client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DNS_CLIENT.htm)
 | Field            | Description | Type | Common           |
@@ -1304,6 +1304,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.config.value |  | keyword |
 | aruba.copp.class |  | keyword |
 | aruba.cpu_rx.filter_description |  | keyword |
+| aruba.dcbx.intf_name | Interface name as reported by the system | keyword |
 | aruba.dhcp.config |  | keyword |
 | aruba.dhcp.ipv6_address |  | keyword |
 | aruba.dhcp.lease_ip_address |  | ip |
@@ -1463,6 +1464,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
@@ -1479,6 +1481,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | input.type | Input type | keyword |
 | log.file.device_id | Device Id of the log file this event came from. | keyword |
 | log.file.inode | Inode of the log file this event came from. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.origin.file.line | The line number of the file containing the source code which originated the log event. | long |
@@ -1505,6 +1508,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
 | url.full.text | Multi-field of `url.full`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
