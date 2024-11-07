@@ -1,11 +1,11 @@
 source:
-  index: "logs-*"
+  index: "windows-events-privilege-escalation"
   query:
     bool:
       filter:
         - range:
               '@timestamp':
-                gte: now-1M
+                gte: now-12M
         - exists:
             field: winlog.event_data.PrivilegeList
         - terms:
@@ -15,11 +15,11 @@ source:
         - terms:
             'winlog.event_data.PrivilegeList': ["SeDebugPrivilege","SeTakeOwnershipPrivilege","SeBackupPrivilege", "SeRestorePrivilege","SeImpersonatePrivilege","SeAssignPrimaryTokenPrivilege"]
 dest:
-  index: ml_windows_privilege_type_ped-0.0.1
+  index: ml_windows_privilege_type_privileged_access-0.0.1
   aliases:
-    - alias: ml_windows_privilege_type_ped.latest
+    - alias: ml_windows_privilege_type_privileged_access.latest
       move_on_creation: true
-    - alias: ml_windows_privilege_type_ped.all
+    - alias: ml_windows_privilege_type_privileged_access.all
       move_on_creation: false
 description: This transform runs hourly and collects special privileges assigned to an user in Windows events for Privilege Escalation Detection package.
 frequency: 1h
