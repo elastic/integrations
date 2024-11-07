@@ -65,7 +65,7 @@ The integration uses the Storage Account container for checkpointing. It stores 
   └────────────────┘                                                                            
 ```
 
-The Elastic Agent automatically creates one container for the Custom Azure Logs integration and one blob for each partition on the event hub.
+The Elastic Agent automatically creates one container for the Custom Azure Logs integration and one blob for each partition on the Event Hub.
 
 For example, if the integration is configured to fetch data from an Event Hub with four partitions, the Agent will create the following:
 
