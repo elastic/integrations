@@ -239,7 +239,7 @@ Note: Descriptions have not been filled out
 #### [Discovery and Capability Exchange (DCBx) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DCBX.htm)
 | Field                | Description | Type | Common                          |
 |----------------------|-------------|------|---------------------------------|
-| aruba.dcbx.intf_name |             |      | observer.ingress.interface.name |
+| aruba.dcbx.intf_name | Interface name as reported by the system | keyword | |
 
 #### [DNS client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DNS_CLIENT.htm)
 | Field            | Description | Type | Common           |
