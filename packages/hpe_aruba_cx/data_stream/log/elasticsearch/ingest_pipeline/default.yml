@@ -61,6 +61,16 @@ processors:
         if: "['9209'].contains(ctx.event?.code)"
         patterns:
             - "PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
+    - dissect:
+        field: message
+        tag: cfm_event_11601
+        if: "ctx.event?.code == '11601'"
+        pattern: "Connection lost for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
+    - dissect:
+        field: message
+        tag: cfm_event_11602
+        if: "ctx.event?.code == '11602'"
+        pattern: "Connection restored for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
 
 on_failure:
   - set:

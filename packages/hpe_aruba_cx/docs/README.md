@@ -159,8 +159,8 @@ Note: Descriptions have not been filled out
 #### [Connectivity Fault Management (CFM) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.cfm.id                 |             |      | aruba.instance.id            |
-| aruba.cfm.interface          |             |      | observer.ingress.interface.name |
+| aruba.cfm.id                 | Maintenance Endpoint ID | keyword | aruba.instance.id            |
+| aruba.cfm.interface          | Interface name | keyword | observer.ingress.interface.name |
 
 #### [Container manager events CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
 | Field                        | Description | Type | Common           |
@@ -1294,6 +1294,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.bgp.pg_name |  | keyword |
 | aruba.bgp.threshold_limit |  | long |
 | aruba.bgp.vtep_ip |  | ip |
+| aruba.cfm.id | Maintenance Endpoint ID | keyword |
+| aruba.cfm.interface | Interface name on which CFM event occurred | keyword |
 | aruba.cm.cert_name |  | keyword |
 | aruba.cm.days |  | long |
 | aruba.cm.est_name |  | keyword |
