@@ -11,7 +11,7 @@ Use the integration to collect logs from:
 
 The Custom Azure Logs integration only supports logs data streams.
 
-This custom integration does not use a pre-defined Elastic data stream like standard integrations do (for example, `logs-azure.activitylogs-default` for Activity logs). You can take control and build your own data stream by selecting your dataset and namespace of choice when configuring the integration.
+This custom integration does not use a predefined Elastic data stream like standard integrations do (for example, `logs-azure.activitylogs-default` for Activity logs). You can take control and build your own data stream by selecting your dataset and namespace of choice when configuring the integration.
 
 For example, if you select `mydataset` as your dataset, and `default` as your namespace, the integration will send the data to the `logs-mydataset-default` data stream.
 
