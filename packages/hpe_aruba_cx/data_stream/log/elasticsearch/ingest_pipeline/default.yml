@@ -302,53 +302,142 @@ processors:
         field: "message"
         description: "Event raised when a BFD session specifies an interval outside the specified bounds"
         patterns:
-            - "BFD session %{DATA:network.direction} interval override of %{NUMBER:aruba.bfd.requested_interval:long} ms is out of bounds for protocol %{DATA:aruba.bfd.from}, using %{NUMBER:aruba.bfd.applied_interval:long} ms instead"
-# # Certificate management events
-#     - grok:
-#         if: "ctx.event.code == '7701'"
-#         tag: parse_7701
-#         field: "message"
-#         description: "Event raised when a ta profile is created"
-#         patterns:
-#             - "TA Profile %{DATA:aruba.cm.cert_name} created"
+            - "BFD session %{DATA:aruba.bfd.direction} interval override of %{NUMBER:aruba.bfd.requested_interval:long} ms is out of bounds for protocol %{DATA:aruba.bfd.from}, using %{NUMBER:aruba.bfd.applied_interval:long} ms instead"
 
-# # Bluetooth Management events
-#     - grok:
-#         if: "ctx.event.code == '8001'"
-#         tag: parse_8001
-#         field: "message"
-#         description: "Event raised when Bluetooth is enabled or disabled"
-#         patterns:
-#             - "Bluetooth has been %{DATA:event.action}"
+# Certificate management events
+    - grok:
+        if: "['7701', '7702', '7703', '7704'].contains(ctx.event?.code)"
+        tag: parse_7701_7702_7703_7704
+        field: "message"
+        description: "Event raised when a ta profile is created/delete | Leaf certificate import/deleted"
+        patterns:
+            - "(TA Profile|Leaf certificate) %{DATA:aruba.cm.cert_name} (created|deleted|imported|deleted)"
+    - grok:
+        if: "ctx.event.code == '7705'"
+        tag: parse_7705
+        field: "message"
+        description: "Event raised when an installed certifiate will expire within 60 days"
+        patterns: 
+            - 'Certificate %{DATA:aruba.cm.cert_name} will expire within %{NUMBER:aruba.cm.days:long} days'
+    - grok:
+        if: "['7706', '7707', '7708'].contains(ctx.event?.code)"
+        tag: parse_7706_7707_7708
+        field: "message"
+        description: "Event raised when an installed certifiate is not yet past its start date/expired or is verified"
+        patterns:
+            - "Certificate %{DATA:aruba.cm.cert_name} has not yet reached its start date"
+            - "Certificate %{DATA:aruba.cm.cert_name} has expired and can no longer be used"
+            - "Certificate %{DATA:aruba.cm.cert_name} verified and accepted"
+    - dissect:
+        if: "ctx.event.code == '7709'"
+        tag: parse_7709
+        field: "message"
+        description: "Event raised when a certificate chain is rejected"
+        pattern: 'Certificate %{aruba.cm.cert_name} rejected due to verification failure (%{event.reason})'
+    - grok:
+        if: "['7710', '7711', '7712'].contains(ctx.event?.code)"
+        tag: parse_7710_7711_7712
+        field: "message"
+        description: "Event raised when a (self-signed) certificate signing request is created on the switch | invalid certificate association is made"
+        patterns:
+            - "(Certificate signing request|Self-signed certificate) %{DATA:aruba.cm.cert_name} created"
+            - "Application association with the %{DATA:aruba.cm.cert_name} certificate is not permitted"
+    - dissect:
+        if: "ctx.event.code == '7713'"
+        tag: parse_7713
+        field: "message"
+        description: "Event raised when a certificate is verified due to optional OCSP enforcement"
+        pattern: 'Certificate %{aruba.cm.cert_name} failed OCSP verification (%{aruba.status}), but was accepted because OCSP enforcement is set to optional.'
+    - grok:
+        if: "['7714', '7715'].contains(ctx.event?.code)"
+        tag: parse_7714_7715
+        field: "message"
+        description: "Event raised when CA certificates were [successfully|could not be] downloaded from an EST server"
+        patterns:
+            - "(CA certificates successfully downloaded|Failed to download CA certificates) from EST server %{GREEDYDATA:aruba.cm.cert_name}"
+    - grok:
+        if: "['7716', '7717', '7718', '7719'].contains(ctx.event?.code)"
+        tag: parse_7716_7717_7718_7719
+        field: "message"
+        description: "Certificate is successfully enrolled with EST | Certificate (re)enrollment with an EST server fails | Certificate is successfully reenrolled with EST"
+        patterns:
+            - "Certificate %{DATA:aruba.cm.cert_name} successfully (re)?enrolled by EST server %{GREEDYDATA:aruba.cm.est_name}"
+            - "Failed to (re)?enroll certificate %{DATA:aruba.cm.cert_name} with EST server %{GREEDYDATA:aruba.cm.est_name}"
+    - grok:
+        if: "['7720', '7721'].contains(ctx.event?.code)"
+        tag: parse_7720_7721
+        field: "message"
+        description: "A signer certifiate is not set for signing | An installed certifiate is invalid or malformed"
+        patterns:
+            - "Certificate %{DATA:aruba.cm.cert_name} is (not set for signing purpose|invalid or malformed)"
 
-# # CDP events
-#     - grok:
-#         if: "ctx.event.code == '8903'"
-#         tag: parse_8903
-#         field: "message"
-#         description: "Log to indicate CDP neighbor addition"
-#         patterns:
-#             - "CDP neighbor %{MAC:aruba.vrf.name} is added on %{GREEDYDATA:observer.ingress.interface.name}"
+# Bluetooth Management events
+    - grok:
+        if: "['8001', '8003'].contains(ctx.event?.code)"
+        tag: parse_8001
+        field: "message"
+        description: "Event raised when Bluetooth is enabled or disabled | receives signal for Bluetooth adapter"
+        patterns: 
+            - "Bluetooth (has been|adapter) %{GREEDYDATA:event.action}"
+    - grok:
+        if: "ctx.event.code == '8004'"
+        tag: parse_8004
+        field: "message"
+        description: "Event raised when btd receives signal for Bluetooth device event"
+        patterns: 
+            - "Bluetooth device %{DATA:event.action}: %{MAC:client.mac}"
 
-# # ACLs events
-#     - grok:
-#         if: "ctx.event.code == '10002'"
-#         tag: parse_10002
-#         field: "message"
-#         description: "ACL log statistics"
-#         patterns:
-#             - "%{DATA:aruba.acl.name} on %{DATA:observer.egress.interface.name} (%{DATA:network.direction})\\s?:\\s?%{DATA:aruba.acl.hit_delta} %{DATA:aruba.acl.ace_string}"
+# CDP events
+    - grok:
+        if: "['8903', '8904', '8905'].contains(ctx.event?.code)"
+        tag: parse_8903_8904_8905
+        field: "message"
+        description: "Log to indicate CDP neighbor addition/modification/deletion"
+        patterns:
+            - "CDP neighbor %{MAC:source.mac} is (added|updated|deleted) on %{GREEDYDATA:aruba.interface.name}"
 
-# # ARP security events
-#     - grok:
-#         if: "ctx.event.code == '10401'"
-#         tag: parse_10401
-#         field: "message"
-#         description: "ARP inspection configuration on VLAN"
-#         patterns:
-#             - "ARP inspection %{DATA:aruba.status} on vlan %{DATA:network.vlan.id}."
+# ACLs events
+    - grok:
+        if: "ctx.event.code == '10002'"
+        tag: parse_10002
+        field: "message"
+        description: "ACL log statistics"
+        patterns: 
+            - "%{DATA:aruba.acl.name} on %{DATA:aruba.interface.name} \\(%{DATA:aruba.acl.direction}\\): %{NUMBER:aruba.acl.hit_delta:long} %{GREEDYDATA:aruba.acl.ace_string}"
+    - dissect:
+        if: "ctx.event.code == '10003'"
+        tag: parse_10003
+        field: "message"
+        description: "ACL application failure"
+        pattern: 'ACL %{aruba.acl.type} %{aruba.acl.name} failed to apply on %{aruba.acl.application}'
 
+# ARP security events
+    - grok:
+        if: "['10401', '10402'].contains(ctx.event?.code)"
+        tag: parse_10401_10402
+        field: "message"
+        description: "ARP inspection configuration on VLAN | ARP inspection port mode configuration"
+        patterns:
+            - "ARP inspection %{DATA:aruba.status} on vlan %{GREEDYDATA:network.vlan.id}."
+            - "ARP inspection %{DATA:aruba.status} on port %{GREEDYDATA:aruba.port}."
 
+# Cleanup MAC addresses for different fields
+    - uppercase:
+        field: client.mac
+        ignore_missing: true
+    - gsub:
+        field: client.mac
+        pattern: '[:.]'
+        replacement: '-'
+        ignore_missing: true
+    - uppercase:
+        field: source.mac
+        ignore_missing: true
+    - gsub:
+        field: source.mac
+        pattern: '[:.]'
+        replacement: '-'
+        ignore_missing: true
 
 on_failure:
   - set:

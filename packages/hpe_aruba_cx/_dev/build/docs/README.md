@@ -69,15 +69,15 @@ Note: Descriptions have not been filled out
 | aruba.acl.type               |             |      |                              |
 | aruba.acl.ace_string         |             |      |                              |
 | aruba.acl.application        |             |      |                              |
-| aruba.acl.direction          |             |      | network.direction            |
+| aruba.acl.direction          |             |      |                              |
 | aruba.acl.hit_delta          |             |      |                              |
-| aruba.acl.interface_name     | keyword     |      | observer.egress.interface.name / observer.ingress.interface.name |
+| aruba.acl.interface_name     | keyword     |      | aruba.interface.name         |
 | aruba.acl.name               |             |      |                              |
 
 #### [ARP security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.arp.port_name          |             |      | server.port                  |
+| aruba.arp.port_name          |             |      | aruba.port                   |
 | aruba.arp.status             |             |      | aruba.status                 |
 | aruba.arp.vlan_id            |             |      | network.vlan.id              |
 
@@ -133,15 +133,15 @@ Note: Descriptions have not been filled out
 #### [CDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CDP.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.cdp.interface          |             |      | observer.ingress.interface.name |
-| aruba.cdp.mac                |             |      | client.mac                   |
+| aruba.cdp.interface          |             |      | aruba.interface.name         |
+| aruba.cdp.mac                |             |      | source.mac                   |
 
 #### [Certificate management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CERTMGR.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
 | aruba.cm.cert_name           |             |      |                              |
 | aruba.cm.days                |             |      |                              |
-| aruba.cm.error               |             |      | error.message                |
+| aruba.cm.error               |             |      | event.reason                 |
 | aruba.cm.est_name            |             |      |                              |
 | aruba.cm.profile_name        |             |      |                              |
 | aruba.cm.status              |             |      | aruba.status                 |

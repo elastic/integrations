@@ -8,6 +8,7 @@ Use the HPE Aruba integration and follow the setup steps listed below to forward
 ## Compatibility
 
 This package follows the [5200-8214 specification](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/PDF/5200-8214.pdf) and has been tested from sample logs captured from the HPE Aruba Networking CX Switches: **6000, 6300 and 8360** on the 10.07 version of the specification. As new appliances and OSes are released, they are expected to be compatible with the integration but Elastic does not guarantee compatibility with new/old version of the product line.
+The integration ONLY supports logs in ENGLISH, internationalization of logs to other languages are NOT supported.
 
 
 ## Data streams
@@ -43,23 +44,23 @@ Note: Field types are defined within `fields.yml`
 Note: Descriptions have not been filled out
 
 #### [AAA events (Aruba Docs)](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm)
-| Field                        | Description | Type | Common                       |
-|------------------------------|-------------|------|------------------------------|
-| aruba.aaa.config_event       |             |      | event.code                   |
-| aruba.aaa.config_type        |             |      | event.type                   |
-| aruba.aaa.radius_action      |             |      | event.action                 |
-| aruba.aaa.radius_event       |             |      | event.code                   |
-| aruba.aaa.radius.server_address |          |      | server.address               |
-| aruba.aaa.radius.server_authport |          |      | server.port                  |
-| aruba.aaa.status             |             |      | aruba.status                 |
-| aruba.aaa.radius.server_vrfid |            |      | aruba.vrf.id                 |
-| aruba.aaa.radius_type        |             |      | event.type                   |
-| aruba.aaa.tacacs_action      |             |      | event.action                 |
-| aruba.aaa.tacacs_event       |             |      | event.code                   |
-| aruba.aaa.tacacs.server_address |          |      | server.address               |
-| aruba.aaa.tacacs.server_authport |          |      | server.port                  |
-| aruba.aaa.tacacs.server_vrfid |            |      | aruba.vrf.id                 |
-| aruba.aaa.tacacs_type        |             |      | event.type                   |
+| Field                            | Description | Type | Common                       |
+|----------------------------------|-------------|------|------------------------------|
+| aruba.aaa.config_event           |             |      |                              |
+| aruba.aaa.config_type            |             |      |                              |
+| aruba.aaa.radius_action          |             |      |                              |
+| aruba.aaa.radius_event           |             |      |                              |
+| aruba.aaa.radius.server_address  |             |      | server.address               |
+| aruba.aaa.radius.server_authport |             |      | aruba.port                   |
+| aruba.aaa.status                 |             |      | aruba.status                 |
+| aruba.aaa.radius.server_vrfid    |             |      | aruba.vrf.id                 |
+| aruba.aaa.radius_type            |             |      | event.type                   |
+| aruba.aaa.tacacs_action          |             |      |                              |
+| aruba.aaa.tacacs_event           |             |      |                              |
+| aruba.aaa.tacacs.server_address  |             |      | server.address               |
+| aruba.aaa.tacacs.server_authport |             |      | aruba.port                   |
+| aruba.aaa.tacacs.server_vrfid    |             |      | aruba.vrf.id                 |
+| aruba.aaa.tacacs_type            |             |      |                              |
 
 #### [ACLs events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ACL.htm)
 | Field                        | Description | Type | Common                       |
@@ -68,15 +69,15 @@ Note: Descriptions have not been filled out
 | aruba.acl.type               |             |      |                              |
 | aruba.acl.ace_string         |             |      |                              |
 | aruba.acl.application        |             |      |                              |
-| aruba.acl.direction          |             |      | network.direction            |
+| aruba.acl.direction          |             |      |                              |
 | aruba.acl.hit_delta          |             |      |                              |
-| aruba.acl.interface_name     | keyword     |      | observer.egress.interface.name / observer.ingress.interface.name |
+| aruba.acl.interface_name     | keyword     |      | aruba.interface.name         |
 | aruba.acl.name               |             |      |                              |
 
 #### [ARP security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.arp.port_name          |             |      | server.port                  |
+| aruba.arp.port_name          |             |      | aruba.port                   |
 | aruba.arp.status             |             |      | aruba.status                 |
 | aruba.arp.vlan_id            |             |      | network.vlan.id              |
 
@@ -91,25 +92,25 @@ Note: Descriptions have not been filled out
 | aruba.bfd.applied_interval   |             |      |                              |
 | aruba.bfd.dest_ip            |             |      | destination.ip               |
 | aruba.bfd.direction          |             |      | network.direction            |
-| aruba.bfd.from               |             |      | observer.ingress.interface.name |
-| aruba.bfd.intf               |             |      | observer.ingress.interface.id |
+| aruba.bfd.from               |             |      |                              |
+| aruba.bfd.intf               |             |      | aruba.interface.id           |
 | aruba.bfd.invalid_ip         |             |      |                              |
 | aruba.bfd.ip_version         |             |      |                              |
 | aruba.bfd.local_diag         |             |      |                              |
 | aruba.bfd.local_state        |             |      |                              |
 | aruba.bfd.op_mode            |             |      |                              |
-| aruba.bfd.port_name          |             |      | server.port                  |
+| aruba.bfd.port_name          |             |      | aruba.port                   |
 | aruba.bfd.remote_diag        |             |      |                              |
 | aruba.bfd.remote_state       |             |      |                              |
 | aruba.bfd.requested_interval |             |      |                              |
 | aruba.bfd.session_id         |             |      | aruba.instance.id            |
-| aruba.bfd.src_port           |             |      | server.port                  |
+| aruba.bfd.src_port           |             |      | aruba.port                   |
 | aruba.bfd.vrf                |             |      | aruba.vrf.id                 |
 
 #### [BGP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BGP.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.bgp.as_number          |             |      | client.as.number             |
+| aruba.bgp.as_number          |             |      |                              |
 | aruba.bgp.id                 |             |      |                              |
 | aruba.bgp.error-code         |             |      | error.code                   |
 | aruba.bgp.error-subcode      |             |      |                              |
@@ -132,15 +133,15 @@ Note: Descriptions have not been filled out
 #### [CDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CDP.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.cdp.interface          |             |      | observer.ingress.interface.name |
-| aruba.cdp.mac                |             |      | client.mac                   |
+| aruba.cdp.interface          |             |      | aruba.interface.name         |
+| aruba.cdp.mac                |             |      | source.mac                   |
 
 #### [Certificate management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CERTMGR.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
 | aruba.cm.cert_name           |             |      |                              |
 | aruba.cm.days                |             |      |                              |
-| aruba.cm.error               |             |      | error.message                |
+| aruba.cm.error               |             |      | event.reason                 |
 | aruba.cm.est_name            |             |      |                              |
 | aruba.cm.profile_name        |             |      |                              |
 | aruba.cm.status              |             |      | aruba.status                 |
@@ -148,10 +149,10 @@ Note: Descriptions have not been filled out
 #### [Config Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONFIG_MGMT.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.config.error           |             |      | error.message                |
-| aruba.config.from            |             |      | observer.ingress.interface.name |
+| aruba.config.error           |             |      | event.reason                 |
+| aruba.config.from            |             |      |                              |
 | aruba.config.info            |             |      | event.action                 |
-| aruba.config.to              |             |      | observer.egress.interface.name |
+| aruba.config.to              |             |      |                              |
 | aruba.config.type            |             |      |                              |
 | aruba.config.value           |             |      |                              |
 
@@ -1275,12 +1276,23 @@ The `log` dataset collects the HPE Aruba CX logs.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
+| aruba.aaa.config_event |  | keyword |
+| aruba.aaa.config_type |  | keyword |
+| aruba.aaa.radius_action |  | keyword |
+| aruba.aaa.radius_event |  | keyword |
+| aruba.aaa.radius_type |  | keyword |
+| aruba.aaa.tacacs_action |  | keyword |
+| aruba.aaa.tacacs_event |  | keyword |
+| aruba.aaa.tacacs_type |  | keyword |
 | aruba.acl.ace_string | TBD for all description fields - need to be filled in | keyword |
 | aruba.acl.application |  | keyword |
+| aruba.acl.direction |  | keyword |
 | aruba.acl.hit_delta |  | long |
 | aruba.acl.name |  | keyword |
 | aruba.acl.type |  | keyword |
 | aruba.bfd.applied_interval |  | long |
+| aruba.bfd.direction |  | keyword |
+| aruba.bfd.from |  | keyword |
 | aruba.bfd.invalid_ip |  | ip |
 | aruba.bfd.ip_version |  | keyword |
 | aruba.bfd.local_diag |  | keyword |
@@ -1288,7 +1300,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.bfd.op_mode |  | keyword |
 | aruba.bfd.remote_diag |  | keyword |
 | aruba.bfd.remote_state |  | keyword |
-| aruba.bfd.requested_interval |  | keyword |
+| aruba.bfd.requested_interval |  | long |
+| aruba.bgp.as_number |  | long |
 | aruba.bgp.error-subcode |  | keyword |
 | aruba.bgp.id |  | keyword |
 | aruba.bgp.pg_name |  | keyword |
@@ -1300,6 +1313,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.cm.profile_name |  | keyword |
 | aruba.component.category |  | keyword |
 | aruba.component.name |  | keyword |
+| aruba.config.from |  | keyword |
+| aruba.config.to |  | keyword |
 | aruba.config.type |  | keyword |
 | aruba.config.value |  | keyword |
 | aruba.copp.class |  | keyword |
@@ -1363,6 +1378,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.hardware.type |  | keyword |
 | aruba.hardware.vni |  | keyword |
 | aruba.instance.id |  | keyword |
+| aruba.interface.id |  | keyword |
+| aruba.interface.name |  | keyword |
 | aruba.ip_sla.name |  | keyword |
 | aruba.l3.encaps_allocated |  | keyword |
 | aruba.l3.encaps_free |  | keyword |
@@ -1435,6 +1452,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.ndm.old_mac |  | keyword |
 | aruba.ndm.role1 |  | keyword |
 | aruba.ndm.role2 |  | keyword |
+| aruba.port |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.sequence |  | keyword |
 | aruba.server.sessions |  | keyword |
@@ -1466,7 +1484,6 @@ The `log` dataset collects the HPE Aruba CX logs.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
-| error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
