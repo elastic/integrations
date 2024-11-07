@@ -37,6 +37,30 @@ processors:
         field: event.kind
         tag: lowercase_event_kind
         ignore_missing: true
+    - grok:
+        field: message
+        tag: dcbx_event_9203_9204
+        if: "['9203', '9204'].contains(ctx.event?.code)"
+        patterns:
+            - "DCBX is (dis|en)abled on interface %{DATA:aruba.dcbx.intf_name}$"
+    - grok:
+        field: message
+        tag: dcbx_event_9205_9206
+        if: "['9205', '9206'].contains(ctx.event?.code)"
+        patterns:
+            - "DCBX status (in)?active on interface %{DATA:aruba.dcbx.intf_name}$"
+    - grok:
+        field: message
+        tag: dcbx_event_9207_9208
+        if: "['9207', '9208'].contains(ctx.event?.code)"
+        patterns:
+            - "PFC TLV status (in)?active on interface %{DATA:aruba.dcbx.intf_name}$"
+    - grok:
+        field: message
+        tag: dcbx_event
+        if: "['9209'].contains(ctx.event?.code)"
+        patterns:
+            - "PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
 
 on_failure:
   - set:
