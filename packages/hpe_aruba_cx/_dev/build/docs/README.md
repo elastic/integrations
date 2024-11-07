@@ -159,8 +159,8 @@ Note: Descriptions have not been filled out
 #### [Connectivity Fault Management (CFM) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm)
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
-| aruba.cfm.id                 |             |      | aruba.instance.id            |
-| aruba.cfm.interface          |             |      | observer.ingress.interface.name |
+| aruba.cfm.id                 | Maintenance Endpoint ID | keyword | aruba.instance.id            |
+| aruba.cfm.interface          | Interface name | keyword | observer.ingress.interface.name |
 
 #### [Container manager events CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
 | Field                        | Description | Type | Common           |
