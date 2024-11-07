@@ -28,27 +28,27 @@ There isn't a single, specific role required to view metrics for Vertex AI. Acce
 
 However, to summarize the necessary permissions and implied roles, you'll generally need a role that includes the following permissions:
 
-- **monitoring.metricDescriptor.list:** This permission allows you to list available metric descriptors.
-- **monitoring.timeSeries.list:** This permission lets you list time series data for the metrics.
+- **monitoring.metricDescriptor.list:** Allows you to list available metric descriptors.
+- **monitoring.timeSeries.list:** Allows you to list time series data for the metrics.
 
-These permissions are included in many roles, but here are some of the most likely candidates:
+These permissions are included in many roles, but here are some of the most common ones:
 
 - **roles/monitoring.viewer:** This role provides read-only access to Cloud Monitoring metrics.
 - **roles/aiplatform.user:** This role grants broader access to Vertex AI, including model viewing and potentially metric access.
-- **More granular roles:** For finer-grained control (recommended for security best practices), consider using a custom role built with the specific permissions needed. This would only include the necessary permissions to view model metrics, rather than broader access to all Vertex AI or Cloud Monitoring resources. This requires expertise in IAM (Identity and Access Management).
-- **Predefined roles with broader access:** These roles like roles/aiplatform.user or roles/editor provide extensive permissions within the Google Cloud project, giving access to metrics but granting much broader abilities than necessary for just viewing metrics. These are generally too permissive unless necessary for other tasks.
+- **More granular roles:** For fine-grained control (recommended for security best practices), consider using a custom role built with the specific permissions needed. This would only include the necessary permissions to view model metrics, rather than broader access to all Vertex AI or Cloud Monitoring resources. This requires expertise in IAM (Identity and Access Management).
+- **Predefined roles with broader access:** These roles provide extensive permissions within the Google Cloud project, giving access to metrics but granting much broader abilities than necessary for just viewing metrics. These are generally too permissive unless necessary for other tasks. Examples are `roles/aiplatform`.user or `roles/editor`.
 
 #### Configuration
 
-For fetching the metrics, users need to enter the project_id and the credentials file/json.
+To fetch the metrics, enter the project_id and the credentials file/json.
 
-Refer to the [Google Cloud Platform configuration](https://www.elastic.co/docs/current/integrations/gcp#configure-the-integration-settings) page for more information about the configuration.
+Refer to [Google Cloud Platform configuration](https://www.elastic.co/docs/current/integrations/gcp#configure-the-integration-settings) for more information about the configuration.
 
 #### Troubleshooting
 
-Refer to the [Google Cloud Platform troubleshooting](https://www.elastic.co/docs/current/integrations/gcp#metrics-collection-configuration:~:text=to%20collect%20metrics.-,Troubleshooting,-If%20you%20don%27t) page for more information about troubleshooting the issue.
+Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/docs/current/integrations/gcp#metrics-collection-configuration:~:text=to%20collect%20metrics.-,Troubleshooting,-If%20you%20don%27t) for more information about troubleshooting the issue.
 
-#### Metrics Reference
+#### Metrics reference
 
 {{event "metrics"}}
 
