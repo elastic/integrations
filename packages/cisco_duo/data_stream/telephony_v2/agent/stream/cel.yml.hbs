@@ -54,10 +54,7 @@ program: |
                 "limit": [string(dyn(state).limit)],
                 "maxtime": [string(state.maxtime)],
                 "mintime": [string(state.mintime)],
-                ?"next_offset": has(state.next_offset) ?
-                    optional.of([string(state.next_offset)])
-                :
-                    optional.none(),
+                ?"next_offset": state.?next_offset.optMap(v, [string(v)]),
                 "sort": ["ts:asc"],
             }.format_query(),
         }.as(r, r.with({
