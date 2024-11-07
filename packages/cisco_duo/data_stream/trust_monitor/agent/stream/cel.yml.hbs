@@ -32,11 +32,13 @@ program: |
             })
     ).as(state, state.with({
         // the duration between maxtime and mintime should be less than 180d to avoid error_code 400 from API.
-        "maxtime": int(now - duration("2m")).as(mx, 
-            (int(timestamp(int(state.mintime) / 1000) + duration("4320h") - duration("2m"))).as(oneeigthydays, 
-                mx < oneeigthydays ? (state.want_more ? string(state.maxtime) : string(mx * 1000)) : string(oneeigthydays * 1000)
-            )
-        )
+        "maxtime": state.want_more ?
+            string(state.maxtime)
+        :
+            string(int([
+                int(timestamp(int(state.mintime)/1000) + duration("4320h")),
+                int(now - duration("2m"))
+            ].min()) * 1000)
     })).as(state, state.with(
         // prepare the data inside r.
         {
