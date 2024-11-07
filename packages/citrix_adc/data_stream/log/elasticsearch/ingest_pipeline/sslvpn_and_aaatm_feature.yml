@@ -28,7 +28,7 @@ processors:
         - '^Context %{DATA:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip} ?- SessionId: %{NUMBER:citrix_adc.log.session_id} ?- User %{DATA:citrix_adc.log.user} ?- Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Group\(s\) %{DATA:citrix_adc.log.groups}'
         - '^Context %{CITRIX_USER_AT_IP} ?- %{CITRIX_SESSION_ID} - %{CITRIX_USER} - %{CITRIX_CLIENT_IP} - %{CITRIX_NAT_IP} - %{CITRIX_VSERVER} - %{CITRIX_SOURCE} - %{CITRIX_DESTINATION} - %{CITRIX_START_TIME} - %{CITRIX_END_TIME} - %{CITRIX_DURATION} - %{CITRIX_TOTAL_BYTES_SEND} - %{CITRIX_TOTAL_BYTES_RECV} - %{CITRIX_COMPRESSED_SEND} - %{CITRIX_COMPRESSED_RECV} - %{CITRIX_COMP_RATIO_SEND} - %{CITRIX_COMP_RATIO_RECV} - %{CITRIX_ACCESS} - %{CITRIX_GROUPS}$'
         # I'm not sure if this one is a special case or for real
-        - '^Context \[%{USER}\]\(mailto:%{CITRIX_USER_AT_IP}\) ?- %{CITRIX_SESSION_ID} - %{CITRIX_USER} - %{CITRIX_CLIENT_IP} - %{CITRIX_NAT_IP} - %{CITRIX_VSERVER} - %{CITRIX_SOURCE} - %{CITRIX_DESTINATION} - %{CITRIX_START_TIME} - %{CITRIX_END_TIME} - %{CITRIX_DURATION} - %{CITRIX_TOTAL_BYTES_SEND} - %{CITRIX_TOTAL_BYTES_RECV} - %{CITRIX_COMPRESSED_SEND} - %{CITRIX_COMPRESSED_RECV} - %{CITRIX_COMP_RATIO_SEND} - %{CITRIX_COMP_RATIO_RECV} - %{CITRIX_ACCESS} - %{CITRIX_GROUPS}$'
+        - '^Context \[%{USER}\]\(mailto:%{CITRIX_USER_AT_IP}\) - %{CITRIX_SESSION_ID} - %{CITRIX_USER} - %{CITRIX_CLIENT_IP} - %{CITRIX_NAT_IP} - %{CITRIX_VSERVER} - %{CITRIX_SOURCE} - %{CITRIX_DESTINATION} - %{CITRIX_START_TIME} - %{CITRIX_END_TIME} - %{CITRIX_DURATION} - %{CITRIX_TOTAL_BYTES_SEND} - %{CITRIX_TOTAL_BYTES_RECV} - %{CITRIX_COMPRESSED_SEND} - %{CITRIX_COMPRESSED_RECV} - %{CITRIX_COMP_RATIO_SEND} - %{CITRIX_COMP_RATIO_RECV} - %{CITRIX_ACCESS} - %{CITRIX_GROUPS}$'
       pattern_definitions:
         CITRIX_USER: 'User %{DATA:citrix_adc.log.user}'
         CITRIX_GROUPS: 'Group\(s\) %{DATA:citrix_adc.log.groups}'
@@ -51,10 +51,53 @@ processors:
         CITRIX_COMP_RATIO_RECV: 'Total_compressedbytes_recv %{NUMBER:citrix_adc.log.compression_ratio_received}%'
         CITRIX_ACCESS: 'Access %{WORD:citrix_adc.log.access}'
       ignore_failure: false
+
+  - script:
+      description: Convert timestamps via custom format before processing
+      tag: sslvpn_date_delink_start_end_timestamp_time_custom_format
+      lang: painless
+      source: >-
+        def locale = Locale.ENGLISH;
+        def printer = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", locale);
+        def dateFormat = ctx._conf.custom_date_format.trim();
+        def formatter = DateTimeFormatter.ofPattern(dateFormat);
+        def tz = ZoneOffset.UTC;
+
+        if (ctx.event instanceof Map && ctx.event.containsKey("timezone")) {
+            try {
+                def timezone = ZoneId.of(ctx.event.timezone);
+                tz = timezone;
+            } catch (Exception e) {
+                // just pass through
+            }
+        }
+
+        printer = printer.withZone(tz);
+        ["delink_time", "start_time", "end_time", "timestamp"].forEach(l -> {
+            if (ctx.citrix_adc.log.containsKey(l)) {
+                try {
+                    def text = ctx.citrix_adc.log[l].trim();
+                    def parsedDate = LocalDateTime.parse(text, formatter);
+                    ctx.citrix_adc.log[l] = printer.format(parsedDate.atZone(tz));
+                } catch (Exception e) {
+                    // just pass through
+                    return true;
+                }
+            }
+            return true;
+        });
+
+
+      if: ctx?.citrix_adc?.log instanceof Map && ctx?._conf?.custom_date_format != null && ctx?._conf?.custom_date_format != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}. Offending format: {{{_conf.custom_date_format}}}.'
+
   - trim:
       field: citrix_adc.log.timestamp
       tag: trim_timestamp
-      if: ctx.citrix_adc?.log?.timestamp != null && ctx.citrix_adc.log.timestamp != ''
+      if: ctx.citrix_adc?.log?.timestamp != null && ctx.citrix_adc.log.timestamp != '' && ctx._conf?.custom_date_format == null
   - date:
       field: citrix_adc.log.timestamp
       tag: date_timestamp
@@ -141,7 +184,7 @@ processors:
   - trim:
       field: citrix_adc.log.end_time
       tag: trim_end_time
-      if: ctx.citrix_adc?.log?.end_time != null && ctx.citrix_adc.log.end_time != ''
+      if: ctx.citrix_adc?.log?.end_time != null && ctx.citrix_adc.log.end_time != '' && ctx._conf?.custom_date_format == null
   - date:
       field: citrix_adc.log.end_time
       tag: date_end_time
@@ -163,7 +206,7 @@ processors:
   - trim:
       field: citrix_adc.log.start_time
       tag: trim_start_time
-      if: ctx.citrix_adc?.log?.start_time != null && ctx.citrix_adc.log.start_time != ''
+      if: ctx.citrix_adc?.log?.start_time != null && ctx.citrix_adc.log.start_time != '' && ctx._conf?.custom_date_format == null
   - date:
       field: citrix_adc.log.start_time
       tag: date_start_time

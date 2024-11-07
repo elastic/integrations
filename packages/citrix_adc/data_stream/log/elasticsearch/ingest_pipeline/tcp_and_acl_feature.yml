@@ -8,8 +8,10 @@ processors:
       patterns:
         - '^%{SOURCE_IP_AND_PORT} - %{VSERVER_IP_AND_PORT} - %{NAT_IP_AND_PORT}%{SPACE}- %{DEST_IP_AND_PORT} - Delink Time \"%{DELINK_TIME}\" *- %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV}$'
         - '^%{SOURCE_IP_AND_PORT} - %{VSERVER_IP_AND_PORT} - %{NAT_IP_AND_PORT}%{SPACE}- %{DEST_IP_AND_PORT} - Delink Time %{DELINK_TIME}(?: %{WORD:citrix_adc.log.delink_timezone})? - %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV}$'
-        - '^%{SOURCE_IP_AND_PORT} - %{DEST_IP_AND_PORT} - Start Time \"%{DATA:citrix_adc.log.start_time}\"%{SPACE}(?:%{DATA:citrix_adc.log.start_time_timezone})?%{SPACE}- End Time \"%{DATA:citrix_adc.log.end_time}\"%{SPACE}(?:%{DATA:citrix_adc.log.end_time_timezone})?%{SPACE}- %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV}$'
-        - '^%{SOURCE_IP_AND_PORT} - %{DEST_IP_AND_PORT} - Start Time %{DATA:citrix_adc.log.start_time} (?:%{DATA:citrix_adc.log.start_time_timezone})? *- End Time %{DATA:citrix_adc.log.end_time} (?:%{DATA:citrix_adc.log.end_time_timezone})? - %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV}$'
+        - '^%{SOURCE_IP_AND_PORT} - %{DEST_IP_AND_PORT} - Start Time \"%{DATA:citrix_adc.log.start_time}\" (?:%{DATA:citrix_adc.log.start_time_timezone})? - End Time \"%{DATA:citrix_adc.log.end_time}\"%{SPACE}(?:%{DATA:citrix_adc.log.end_time_timezone})?%{SPACE}- %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV}$'
+        - '^%{SOURCE_IP_AND_PORT} - %{DEST_IP_AND_PORT} - Start Time %{NOTSPACE:citrix_adc.log.start_time} *- End Time %{NOTSPACE:citrix_adc.log.end_time} *- %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV}$'
+        - '^%{SOURCE_IP_AND_PORT} - %{DEST_IP_AND_PORT} - Start Time \"%{DATA:citrix_adc.log.start_time}\" *- End Time \"%{DATA:citrix_adc.log.end_time}\" *- %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV}$'
+        - '^%{SOURCE_IP_AND_PORT} - %{DEST_IP_AND_PORT} - Start Time %{DATA:citrix_adc.log.start_time} %{DATA:citrix_adc.log.start_time_timezone} *- End Time %{DATA:citrix_adc.log.end_time} %{DATA:citrix_adc.log.end_time_timezone} *- %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV}$'
         - '^%{SOURCE_IP_AND_PORT} - %{DEST_IP_AND_PORT} - %{NAT_IP_AND_PORT} - %{TRANSLATED_DEST_IP_AND_PORT} - Start Time %{DATA:citrix_adc.log.start_time}(?: %{DATA:citrix_adc.log.start_time_timezone})? - Delink Time %{DELINK_TIME}(?: %{DATA:citrix_adc.log.delink_timezone})? - %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV} - Closure%{SPACE}Reason %{GREEDYDATA:citrix_adc.log.closure_reason}$'
         - '^%{SOURCE_IP_AND_PORT} - %{DEST_IP_AND_PORT} - %{NAT_IP_AND_PORT} - %{TRANSLATED_DEST_IP_AND_PORT} - Start Time \"%{DATA:citrix_adc.log.start_time}\"(?: %{DATA:citrix_adc.log.start_time_timezone})? - Delink Time \"%{DELINK_TIME}\"(?: | %{DATA:citrix_adc.log.delink_timezone})? - %{TOTAL_BYTES_SEND} - %{TOTAL_BYTES_RECV} - Closure%{SPACE}Reason %{GREEDYDATA:citrix_adc.log.closure_reason}$'
         - '^Source %{IP:citrix_adc.log.source.ip} --> Destination %{IP:citrix_adc.log.destination.ip} - Protocol %{WORD:citrix_adc.log.protocol} - Type %{INT:citrix_adc.log.type} - Code %{INT:citrix_adc.log.code} - Time%{SPACE}Stamp %{DATA:citrix_adc.log.timestamp}%{SPACE}\(ms\) - Hitcount %{INT:citrix_adc.log.hit.count:int} - Hit%{SPACE}Rule %{GREEDYDATA:citrix_adc.log.hit.rule} - Action %{WORD:citrix_adc.log.action} - Data$'
@@ -24,6 +26,7 @@ processors:
         TOTAL_BYTES_RECV: 'Total_bytes_recv %{INT:citrix_adc.log.total_bytes_received:long}'
         DELINK_TIME: '%{DATA:citrix_adc.log.delink_time}'
       ignore_failure: true
+
   - script:
       description: Convert timestamps via custom format before processing
       tag: date_delink_start_end_timestamp_time_custom_format
@@ -204,7 +207,7 @@ processors:
         - MM/dd/yyyy:HH:mm:ss
         - yyyy/MM/dd:HH:mm:ss
         - ISO8601
-      if: ctx.citrix_adc?.log?.delink_time != null && ctx.citrix_adc.log.delink_time != ''
+      if: ctx.citrix_adc?.log?.delink_time != null && ctx.citrix_adc.log.delink_time != '' && ctx._conf?.custom_date_format == null
       on_failure:
         - append:
             field: error.message
