@@ -7,8 +7,16 @@ socket_type: '{{socket_type}}'
 immutable: {{immutable}}
 resolve_ids: {{resolve_ids}}
 failure_mode: {{failure_mode}}
+{{#if session_data}}
+audit_rules: "{{escape_multiline_string "# Session data audit rules
+-a always,exit -F arch=b64 -S execve,execveat -k exec
+-a always,exit -F arch=b64 -S exit_group
+-a always,exit -F arch=b64 -S setsid
+"}}{{escape_multiline_string audit_rules}}"
+{{else}}
 {{#if audit_rules}}
 audit_rules: {{escape_string audit_rules}}
+{{/if}}
 {{/if}}
 {{#if audit_rule_files.length}}
 audit_rule_files:
@@ -33,4 +41,12 @@ publisher_pipeline.disable_host: true
 {{#if processors}}
 processors:
 {{processors}}
+{{#if session_data}}
+{{session_data_processors}}
+{{/if}}
+{{else}}
+{{#if session_data}}
+processors:
+{{session_data_processors}}
+{{/if}}
 {{/if}}

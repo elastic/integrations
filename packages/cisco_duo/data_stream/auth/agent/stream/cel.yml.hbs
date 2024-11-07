@@ -1,0 +1,125 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{hostname}}
+resource.rate_limit.burst: 1
+resource.rate_limit.limit: {{rate_limit}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+
+state:
+  url: {{hostname}}
+  integration_key: {{integration_key}}
+  secret_key: {{secret_key}}
+  limit: {{limit}}
+  initial_interval: {{initial_interval}}
+  want_more: false
+redact:
+  fields:
+    - secret_key
+
+program: |
+    (
+        state.want_more ?
+            state
+        :
+            state.with({
+                "mintime": state.?cursor.last_timestamp_ms.orValue(string(int(now - duration(state.initial_interval)) * 1000)),
+                "maxtime": string(int(now - duration("2m")) * 1000),
+            })
+    ).as(state, state.with(
+        {
+            // prepare request data
+            "date": now.format(time_layout.RFC1123Z),
+            "method": "GET",
+            "url_base": state.url.trim_right("/"),
+            "url_path": "/admin/v2/logs/authentication",
+            "query_string": {
+                 "limit": [string(int(state.limit))],
+                 "maxtime": [state.maxtime],
+                 "mintime": [state.mintime],
+                 ?"next_offset": state.?next_offset_joined.optMap(v, [v]),
+                 "sort": ["ts:asc"],
+            }.format_query(),
+        }.as(r, r.with({
+            // add an authorization header value
+            "authorization": "Basic " + (
+                state.integration_key + ":" + (
+                    [
+                        r.date,
+                        r.method,
+                        r.url_base.trim_prefix("https://"),
+                        r.url_path,
+                        r.query_string,
+                    ].join("\n")
+                    .hmac("sha1", bytes(state.secret_key))
+                    .hex()
+                )
+            ).base64(),
+        })).as(r,
+            // now do the request using the prepared data
+            request(
+                r.method,
+                [r.url_base, r.url_path, "?", r.query_string].join("")
+            ).with({
+                "Header": {
+                    "Content-Type": ["application/x-www-form-urlencoded"],
+                    "Date": [r.date],
+                    "Authorization": [r.authorization],
+                },
+            }).do_request().as(resp, (resp.StatusCode == 200) ?
+                bytes(resp.Body).decode_json().as(body, has(body.?response.authlogs) && size(body.response.authlogs) > 0 ?
+                    body.response.as(r, {
+                        "events": r.authlogs.map(item, { "message": item.encode_json() }),
+                        "want_more": r.?metadata.next_offset.hasValue(),
+                        ?"next_offset_joined": r.?metadata.next_offset.optMap(v, [v].flatten().join(",")),
+                        "cursor": {
+                            "last_timestamp_ms": string(int(r.authlogs[size(r.authlogs) - 1].timestamp) * 1000),
+                        }
+                    })
+                :
+                    {
+                        "events":[],
+                        "want_more": false,
+                    }
+
+                )
+            :
+                bytes(resp.Body).decode_json().as(body,
+                    {
+                        "events": {
+                            "error": {
+                                "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
+                                "id": string(resp.Status),
+                                "message": "GET:"+(
+                                    size(resp.Body) != 0 ?
+                                        string(resp.Body)
+                                    :
+                                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                                ),
+                            },
+                        },
+                        "want_more": false,
+                    }
+                )
+            )
+        )
+    ))
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

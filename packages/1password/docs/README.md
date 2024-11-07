@@ -51,24 +51,24 @@ An example event for `signin_attempts` looks as following:
 {
     "@timestamp": "2021-08-11T14:28:03.000Z",
     "agent": {
-        "ephemeral_id": "1e0fc736-84ed-49e4-883f-0e760641aafc",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "53b71bee-2cfb-44b2-91e8-56858cf7948a",
+        "id": "830aad64-eb94-4e27-830a-be5a339967b4",
+        "name": "elastic-agent-21199",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.15.2"
     },
     "data_stream": {
         "dataset": "1password.signin_attempts",
-        "namespace": "ep",
+        "namespace": "71969",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "830aad64-eb94-4e27-830a-be5a339967b4",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.15.2"
     },
     "event": {
         "action": "success",
@@ -76,10 +76,11 @@ An example event for `signin_attempts` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2023-09-25T15:46:05.478Z",
+        "created": "2024-10-23T03:10:13.522Z",
         "dataset": "1password.signin_attempts",
-        "ingested": "2023-09-25T15:46:08Z",
+        "ingested": "2024-10-23T03:10:16Z",
         "kind": "event",
+        "original": "{\"category\":\"success\",\"client\":{\"app_name\":\"1Password Browser Extension\",\"app_version\":\"1109\",\"ip_address\":\"1.1.1.1\",\"os_name\":\"Android\",\"os_version\":\"10\",\"platform_name\":\"Chrome\",\"platform_version\":\"93.0.4577.62\"},\"country\":\"AR\",\"details\":null,\"session_uuid\":\"UED4KFZ5BH37IQWTJ7LG4VPWK7\",\"target_user\":{\"email\":\"email@1password.com\",\"name\":\"Name\",\"uuid\":\"OJQGU46KAPROEJLCK674RHSAY5\"},\"timestamp\":\"2021-08-11T14:28:03Z\",\"type\":\"credentials_ok\",\"uuid\":\"HGIF4OEWXDTVWKEQDIWTKV26HU\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -120,6 +121,7 @@ An example event for `signin_attempts` looks as following:
         "ip": "1.1.1.1"
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "1password-signin_attempts"
     ],
@@ -129,7 +131,6 @@ An example event for `signin_attempts` looks as following:
         "id": "OJQGU46KAPROEJLCK674RHSAY5"
     }
 }
-
 ```
 
 ### Item Usages
@@ -165,24 +166,24 @@ An example event for `item_usages` looks as following:
 {
     "@timestamp": "2021-08-30T18:57:42.484Z",
     "agent": {
-        "ephemeral_id": "b62ebce2-8912-45ae-ab78-ca49158aae5f",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "a0a48829-3614-4525-8def-4814cdab271d",
+        "id": "c987e484-ccdb-465d-aec3-6b7d68b73337",
+        "name": "elastic-agent-80484",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.15.2"
     },
     "data_stream": {
         "dataset": "1password.item_usages",
-        "namespace": "ep",
+        "namespace": "61510",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "c987e484-ccdb-465d-aec3-6b7d68b73337",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.15.2"
     },
     "event": {
         "action": "reveal",
@@ -190,10 +191,11 @@ An example event for `item_usages` looks as following:
         "category": [
             "file"
         ],
-        "created": "2023-09-25T15:44:58.422Z",
+        "created": "2024-10-23T03:07:44.001Z",
         "dataset": "1password.item_usages",
-        "ingested": "2023-09-25T15:45:01Z",
+        "ingested": "2024-10-23T03:07:47Z",
         "kind": "event",
+        "original": "{\"action\":\"reveal\",\"client\":{\"app_name\":\"1Password Browser Extension\",\"app_version\":\"1109\",\"ip_address\":\"1.1.1.1\",\"os_name\":\"Android\",\"os_version\":\"10\",\"platform_name\":\"Chrome\",\"platform_version\":\"93.0.4577.62\"},\"item_uuid\":\"bvwmmwxisuca7wbehrbyqhag54\",\"location\":{\"city\":\"Toronto\",\"country\":\"Canada\",\"latitude\":43.64,\"longitude\":-79.433,\"region\":\"Ontario\"},\"timestamp\":\"2021-08-30T18:57:42.484Z\",\"used_version\":1,\"user\":{\"email\":\"email@1password.com\",\"name\":\"Name\",\"uuid\":\"OJQGU46KAPROEJLCK674RHSAY5\"},\"uuid\":\"MCQODBBWJD5HISKYNP3HJPV2DV\",\"vault_uuid\":\"jaqxqf5qylslqiitnduawrndc5\"}",
         "type": [
             "access"
         ]
@@ -233,6 +235,7 @@ An example event for `item_usages` looks as following:
         "ip": "1.1.1.1"
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "1password-item_usages"
     ],
@@ -242,7 +245,6 @@ An example event for `item_usages` looks as following:
         "id": "OJQGU46KAPROEJLCK674RHSAY5"
     }
 }
-
 ```
 
 
@@ -290,24 +292,24 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2022-10-24T21:16:52.827Z",
     "agent": {
-        "ephemeral_id": "689182ac-608d-4aed-bb28-bef2dc682f45",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "707e9afa-28e0-4f96-a888-3e83853dba31",
+        "id": "1befb18f-d4ea-4c2c-95f5-308d7df0439e",
+        "name": "elastic-agent-11710",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.15.2"
     },
     "data_stream": {
         "dataset": "1password.audit_events",
-        "namespace": "ep",
+        "namespace": "30141",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "1befb18f-d4ea-4c2c-95f5-308d7df0439e",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.15.2"
     },
     "event": {
         "action": "suspend",
@@ -315,10 +317,11 @@ An example event for `audit_events` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2023-09-25T15:43:52.446Z",
+        "created": "2024-10-23T03:06:30.812Z",
         "dataset": "1password.audit_events",
-        "ingested": "2023-09-25T15:43:55Z",
+        "ingested": "2024-10-23T03:06:33Z",
         "kind": "event",
+        "original": "{\"action\":\"suspend\",\"actor_uuid\":\"GLF6WUEKS5CSNDJ2OG6TCZD3M4\",\"location\":{\"city\":\"Toronto\",\"country\":\"Canada\",\"latitude\":43.64,\"longitude\":-79.433,\"region\":\"Ontario\"},\"object_type\":\"user\",\"object_uuid\":\"ZRQCUD6A65AKHFETOUFO7NL4OM\",\"session\":{\"device_uuid\":\"rqtd557fn2husnstp5nc66w2xa\",\"ip\":\"89.160.20.156\",\"login_time\":\"2022-10-24T21:07:34.703106271Z\",\"uuid\":\"ODOHXUYQCJBUJKRGZNNPBJURPE\"},\"timestamp\":\"2022-10-24T21:16:52.827288935Z\",\"uuid\":\"3UQOGUC7DVOCN4OZP2MDKHFLSG\"}",
         "type": [
             "access"
         ]
@@ -367,6 +370,7 @@ An example event for `audit_events` looks as following:
         "ip": "89.160.20.156"
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "1password-audit_events"
     ],
@@ -374,5 +378,4 @@ An example event for `audit_events` looks as following:
         "id": "GLF6WUEKS5CSNDJ2OG6TCZD3M4"
     }
 }
-
 ```

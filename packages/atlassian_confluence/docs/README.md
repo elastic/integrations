@@ -122,5 +122,4 @@ An example event for `audit` looks as following:
         "full_name": "System"
     }
 }
-
 ```

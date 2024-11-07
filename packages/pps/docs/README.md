@@ -2,6 +2,12 @@
 
 The Pleasant Password Server integration collects and parses DNS, DHCP, and Audit data collected from [Pleasant Password Server](https://pleasantpasswords.com/) via TCP/UDP or logfile.
 
+## Data streams
+
+The PPS integration collects the following event types:
+
+- **log**
+
 ## Setup steps
 1. Enable the integration with TCP/UDP input.
 2. Log in to the PPS WebUI.
@@ -17,6 +23,39 @@ The Pleasant Password Server integration collects and parses DNS, DHCP, and Audi
 
 This module has been tested against `Pleasant Password Server Version 7.11.44.0 `.  
 It should however work with all versions.
+
+
+## Requirements
+
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+
+### Installing and managing an Elastic Agent:
+
+There are several options for installing and managing Elastic Agent:
+
+### Install a Fleet-managed Elastic Agent (recommended):
+
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+
+### Install Elastic Agent in standalone mode (advanced users):
+
+With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
+
+### Install Elastic Agent in a containerized environment:
+
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
+
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+
+
+### Enabling the integration in Elastic:
+
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `Pleasant Password Server` or `PPS`.
+3. Select the "Pleasant Password Server" integration from the search results.
+4. Select "Add Pleasant Password Server" to add the integration.
+5. Add all the required integration configuration parameters.
+6. Select "Save and continue" to save the integration.
 
 ## Log samples
 Below are the samples logs of the respective category:
@@ -72,6 +111,7 @@ An example event for `log` looks as following:
         "created": "2024-01-23T09:49:10.000+05:00",
         "dataset": "pps.log",
         "ingested": "2024-01-23T22:18:43Z",
+        "kind": "event",
         "original": "<134>Jan 23 09:49:10 SRV-PPS-001 Pleasant Password Server:192.168.1.2 - user@name.test -  - Success - Syslog Settings Changed - User <user@name.test> Syslogging setting updated  changing the host from <localhost> to <127.0.0.1> changing the port fr\t127.0.0.1\t23/01 09:49:10.894\t",
         "outcome": "success",
         "timezone": "+0500"

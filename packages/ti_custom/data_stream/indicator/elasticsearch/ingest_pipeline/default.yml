@@ -1,0 +1,411 @@
+---
+description: Pipeline for processing STIX 2.1 IOCs
+processors:
+  # Fail if error during the CEL program evaluation
+  - fail:
+      if: ctx.error?.message != null
+      message: "Error during CEL program evaluation"
+
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: enrichment
+  - append:
+      field: event.category
+      value: threat
+  - append:
+      field: event.type
+      value: indicator
+
+  - set:
+      field: threat.feed.name
+      copy_from: _conf.feed_name
+      if: ctx._conf?.feed_name != null
+  - set:
+      field: threat.feed.reference
+      copy_from: _conf.feed_reference
+      if: ctx._conf?.feed_reference != null
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+
+  - json:
+      field: event.original
+      target_field: stix
+      tag: stix_event_original
+  - drop:
+      if: >-
+        ctx.stix.type != 'indicator' &&
+        ctx._conf?.restrict_stix == true
+      tag: drop_no_indicator
+  - drop:
+      if: >-
+        ctx.stix.spec_version != '2.1' &&
+        ctx._conf?.restrict_stix == true
+      tag: drop_no_stix_2_1
+
+  - fingerprint:
+      fields:
+        - stix.id
+        - stix.created
+        - stix.pattern
+      target_field: "_id"
+      ignore_missing: true
+
+  - date:
+      field: stix.created
+      target_field: "@timestamp"
+      formats:
+        - "ISO8601"
+      if: ctx.stix.created != null
+      tag: date_created
+  - date:
+      field: stix.modified
+      target_field: threat.indicator.last_seen
+      formats:
+        - ISO8601
+      if: ctx.stix.modified != null
+      tag: date_modified
+  - set:
+      field: threat.indicator.modified_at
+      copy_from: threat.indicator.last_seen
+      if: ctx.threat?.indicator?.last_seen != null
+      tag: set_threat_indicator_last_seen
+  - date:
+      field: stix.valid_from
+      target_field: threat.indicator.first_seen
+      formats:
+        - "ISO8601"
+      if: ctx.stix.valid_from != null
+      tag: date_valid_from
+  - rename:
+      field: stix.name
+      target_field: threat.indicator.name
+      ignore_missing: true
+      tag: rename_name
+  - rename:
+      field: stix.description
+      target_field: threat.indicator.description
+      ignore_missing: true
+      tag: rename_description
+  - script:
+      lang: painless
+      if: ctx.stix.confidence != null
+      description: Normalize confidence level.
+      tag: script_normalize_confidence
+      source: >
+        def value = ctx.stix.confidence;
+        if (value == 0) {
+          ctx.threat.indicator.confidence = "None";
+        } else if (value >= 1 && value <= 29) {
+          ctx.threat.indicator.confidence = "Low";
+        } else if (value >= 30 && value <= 69) {
+          ctx.threat.indicator.confidence = "Medium";
+        } else if (value >= 70 && value <= 100) {
+          ctx.threat.indicator.confidence = "High";
+        } else {
+          ctx.threat.indicator.confidence = "Not Specified";
+        }
+  - foreach:
+      field: stix.labels
+      if: ctx.stix.labels != null
+      processor:
+        append:
+          field: tags
+          value: '{{{ _ingest._value }}}'
+          tag: append_tags
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: stix.labels
+      ignore_missing: true
+  - gsub:
+      field: tags
+      pattern: '\\\"'
+      replacement: '\"'
+      ignore_missing: true
+
+  ## IOC expiration
+  - date:
+      field: stix.valid_until
+      target_field: stix.ioc_expiration_date
+      formats:
+        - ISO8601
+      if: ctx.stix.valid_until != null
+      tag: date_ioc_expiration_valid_until
+  - set:
+      field: stix.ioc_expiration_date
+      copy_from: threat.indicator.modified_at
+      if: >-
+        ctx.stix.ioc_expiration_date == null &&
+        ctx.stix.revoked != null &&
+        ctx.stix.revoked == true
+      tag: set_ioc_expiration_revoked
+
+  - script:
+      lang: painless
+      tag: script_conf_ioc_expiration
+      if: >-
+        ctx.stix.ioc_expiration_date == null &&
+        ctx._conf?.ioc_expiration_duration != null &&
+        ctx._conf.ioc_expiration_duration != ''
+      source: >
+        ZonedDateTime ioc_expiration_date;
+        ZonedDateTime updated_at;
+        def dur = ctx._conf.ioc_expiration_duration;
+
+        if (ctx.threat.indicator.last_seen != null) {
+          updated_at = ZonedDateTime.parse(ctx.threat.indicator.last_seen);
+        } else {
+          updated_at = ZonedDateTime.parse(ctx.threat.indicator.first_seen);
+        }
+
+        if (dur instanceof String){
+          String time_unit = dur.substring(dur.length() -  1, dur.length());
+          String time_value = dur.substring(0, dur.length() - 1);
+          if (time_unit == 'd') {
+            ioc_expiration_date = updated_at.plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            ioc_expiration_date = updated_at.plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            ioc_expiration_date = updated_at.plusMinutes(Long.parseLong(time_value));
+          } else {
+            if (ctx.error == null) {
+              ctx.error = new HashMap();
+            }
+            if (ctx.error.message == null) {
+              ctx.error.message = new ArrayList();
+            }
+            ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+            ioc_expiration_date = updated_at.plusDays(90L);
+          }
+        } else {
+            ioc_expiration_date = updated_at.plusDays(90L);
+        }
+
+        ctx.stix.ioc_expiration_date = ioc_expiration_date;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - script:
+      lang: painless
+      tag: script_set_ioc_expiration_reason
+      if: ctx.stix.ioc_expiration_date != null
+      params:
+        valid_until: "Expiration set from valid_until field"
+        revoked: "Expiration set from revoked field"
+        default: "Expiration set by Elastic from the integration's parameter `IOC Expiration Duration`"
+      source: >
+        if (ctx.stix.valid_until != null) {
+          ctx.stix.ioc_expiration_reason = params.valid_until;
+        } else if (ctx.stix.revoked != null && ctx.stix.revoked == true) {
+          ctx.stix.ioc_expiration_reason = params.revoked;
+        } else {
+          ctx.stix.ioc_expiration_reason = params.default;
+        }
+
+  - date:
+      field: stix.ioc_expiration_date
+      tag: date_ioc_expiration_date
+      target_field: stix.ioc_expiration_date
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - fail:
+            description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
+            message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: stix.ioc_expiration_duration
+      ignore_missing: true
+
+  - set:
+      field: threat.indicator.type
+      value: autonomous-system
+      if: ctx.stix.pattern?.startsWith('[autonomous-system') == true
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+      if: ctx.stix.pattern?.startsWith('[domain-name') == true
+  - set:
+      field: threat.indicator.type
+      value: email-addr
+      if: ctx.stix.pattern?.startsWith('[email') == true
+  - set:
+      field: threat.indicator.type
+      value: file
+      if: ctx.stix.pattern?.startsWith('[file') == true
+  - set:
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: ctx.stix.pattern?.startsWith('[ipv4-addr') == true
+  - set:
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: ctx.stix.pattern?.startsWith('[ipv6-addr') == true
+  - set:
+      field: threat.indicator.type
+      value: url
+      if: ctx.stix.pattern?.startsWith('[url') == true
+  - set:
+      field: threat.indicator.type
+      value: windows-registry-key
+      if: ctx.stix.pattern?.startsWith('[windows-registry-key') == true
+  - set:
+      field: threat.indicator.type
+      value: x509-certificate
+      if: ctx.stix.pattern?.startsWith('[x509') == true
+
+  - split:
+      field: stix.pattern
+      target_field: stix._patterns
+      separator: '\s+AND\s+|\s+OR\s+'
+      if: ctx.threat?.indicator?.type != null && ctx.stix.pattern != null
+      tag: split_pattern
+
+  - foreach:
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'autonomous-system'
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "indicator-asn" }}'
+  - foreach:
+      field: threat.indicator.as.number
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value
+          type: integer
+          ignore_missing: true
+
+  - foreach:
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'domain-name'
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "indicator-domain-name" }}'
+
+  - foreach:
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'email-addr'
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "indicator-email" }}'
+
+  - foreach:
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'file'
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "indicator-file" }}'
+  
+  - foreach:
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type?.startsWith('ip') == true
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "indicator-ip" }}'
+
+  - foreach:
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'url'
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "indicator-url" }}'
+  
+  - foreach:
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'windows-registry-key'
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "indicator-windows-registry" }}'
+  
+  - foreach:
+      field: stix._patterns
+      if: ctx.threat?.indicator?.type == 'x509-certificate'
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "indicator-x509" }}'
+
+  - remove:
+      field:
+        - _conf
+        - stix._patterns
+      ignore_missing: true
+
+  - script:
+      lang: painless
+      description: Unscape values recursively.
+      tag: script_unscape_values
+      source: >
+        void unescape(Object obj) {
+          if (obj instanceof Map) {
+            for (entry in ((Map)obj).entrySet()) {
+              Object value = entry.getValue();
+              unescape(value);
+              if (value instanceof String) {
+                entry.setValue(((String)value).replace('\\\\', '\\'));
+              }
+            }
+          } else if (obj instanceof List) {
+            for (int i = 0; i < ((List)obj).size(); i++) {
+              Object value = ((List)obj).get(i);
+              unescape(value);
+              if (value instanceof String) {
+                ((List)obj).set(i, ((String)value).replace('\\\\', '\\'));
+              }
+            }
+          }
+        }
+        unescape(ctx);
+
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: drop_null_empty_values
+      source: >
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

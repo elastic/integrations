@@ -1,0 +1,65 @@
+- name: vsphere.datastorecluster
+  type: group
+  description: >
+    Datastore Cluster
+  fields:
+    - name: alert.names
+      type: keyword
+      description: >
+        List of all the alerts on this Datastore Cluster.
+    - name: capacity.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: >
+        Total capacity of this storage pod, in bytes.
+      format: bytes
+    - name: datastore
+      type: group
+      fields:
+        - name: names
+          type: keyword
+          description: List of all the Datastore names associated with the Datastore Cluster.
+        - name: count
+          type: long
+          metric_type: gauge
+          description: Number of datastores in the Datastore Cluster.
+    - name: free_space.bytes
+      type: long
+      metric_type: gauge
+      unit: byte
+      description: >
+        Total free space on this storage pod, in bytes.
+      format: bytes
+    - name: name
+      type: keyword
+      # Reason to add as a dimension field: unique identifier of the host
+      dimension: true
+      description: The Datastore Cluster name.
+    - name: triggered_alarms
+      type: group
+      description: >
+        List of all the triggered alarms.
+      fields:
+        - name: status
+          type: keyword
+          description: Status of the alarm.
+        - name: triggered_time
+          type: date
+          description: Time when the alarm was triggered.
+        - name: description
+          type: keyword
+          description: Description of the alarm.
+        - name: entity_name
+          type: keyword
+          description: Name of the entity associated with the alarm.
+        - name: name
+          type: keyword
+          description: Name of the alarm.
+        - name: id
+          type: keyword
+          description: Unique identifier for the alarm.
+    - name: warning.names
+      type: keyword
+      description: >
+        List of all the warnings on this Datastore Cluster. 

@@ -1,0 +1,95 @@
+- name: cisco_duo.trust_monitor
+  type: group
+  fields:
+    - name: bypass_status_enabled
+      type: long
+      description: |
+        The Unix timestamp in milliseconds when bypass status was enabled for the user or group. Returned for events with type=bypass_status.
+    - name: enabled_by
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Name of the application or the administrator that enabled bypass status. Returned for events with type=bypass_status.
+        - name: key
+          type: keyword
+          description: |
+            Key of the application or the administrator that enabled bypass status. Returned for events with type=bypass_status.
+    - name: enabled_for
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Name of the user or group with bypass status. Returned for events with type=bypass_status.
+        - name: key
+          type: keyword
+          description: |
+            Key of the user or group with bypass status. Returned for events with type=bypass_status.
+    - name: explanations
+      type: group
+      fields:
+        - name: summary
+          type: keyword
+          description: |
+            Description of why Trust Monitor surfaced the event.
+        - name: type
+          type: keyword
+          description: |
+            Type of reason why Trust Monitor surfaced the event.
+    - name: from_common_netblock
+      type: boolean
+      description: |
+        A boolean describing if this event was created from a common IP netblock. Returned for events with type=auth.
+    - name: from_new_user
+      type: boolean
+      description: |
+        A boolean describing if this event was created for a new user. Returned for events with type=auth or type=device_registration.
+    - name: low_risk_ip
+      type: boolean
+      description: |
+        A boolean describing if this event was created from an IP address identified in the Risk Profile configuration as a low risk IP address. Returned for events with type=auth.
+    - name: priority_event
+      type: boolean
+      description: |
+        A boolean describing if the event matches the Risk Profile configuration.
+    - name: priority_reasons
+      type: group
+      fields:
+        - name: label
+          type: keyword
+          description: |
+            The label of the priority reason describing how the event matches the Trust Monitor Risk Profile configuration for the event's match. Returned for events with type=auth or type=device_registration.
+        - name: type
+          type: keyword
+          description: |
+            The type of priority reason describing how the event matches the Trust Monitor Risk Profile configuration for the event's match. Returned for events with type=auth or type=device_registration.
+    - name: sekey
+      type: keyword
+      description: |
+        The unique identifier for this event as a 20 character string. This is unique across all different event types.
+    - name: state
+      type: keyword
+      description: |
+        A string describing the state of the event. One of statenew or stateprocessed.
+    - name: state_updated_timestamp
+      type: long
+      description: |
+        The Unix timestamp in milliseconds of the last change to the state of the event.
+    - name: surfaced_auth
+      type: flattened
+      description: |
+        An object which represents the actual authentication. Returned for events with type=auth.
+    - name: triage_event_uri
+      type: keyword
+      description: |
+        A string representing the URI of the security event, which a Duo administrator can use to view and process the surfaced event in the Duo Admin Panel. Returned for events with type=auth.
+    - name: triaged_as_interesting
+      type: boolean
+      description: |
+        A boolean describing if this event was triaged as being interesting or not interesting.
+    - name: type
+      type: keyword
+      description: |
+        The type of event, as a string. One of auth, bypass_status, or device_registration.

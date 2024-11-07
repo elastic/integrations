@@ -21,8 +21,6 @@ The [CrowdStrike](https://www.crowdstrike.com/) Falcon integration allows you to
 This integration is compatible with both CrowdStrike Falcon SIEM-Connector-v2.0 and REST API.
 For Rest API support, this module has been tested against the **CrowdStrike API Version v1/v2**.
 
-The minimum **kibana.version** required is **8.12.0**.
-
 ## Setup
 ### To collect data from CrowdStrike REST API, the following parameters from your CrowdStrike instance are required:
 

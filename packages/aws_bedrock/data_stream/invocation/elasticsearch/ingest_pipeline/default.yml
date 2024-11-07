@@ -1,5 +1,5 @@
 ---
-description: Pipeline for AWS Bedrock model invocation logs.
+description: Pipeline for Amazon Bedrock model invocation logs.
 processors:
   - rename:
       field: message
@@ -170,6 +170,16 @@ processors:
         "topicPolicy": "topic_policy"
         "customWords": "custom_words"
         "sensitiveInformationPolicy": "sensitive_information_policy"
+        "invocationMetrics": "invocation_metrics"
+        "guardrailCoverage": "guardrail_coverage"
+        "textCharacters": "text_characters"
+        "guardrailProcessingLatency": "guardrail_processing_latency"
+        "contentPolicyUnits": "content_policy_units"
+        "contextualGroundingPolicyUnits": "contextual_grounding_policy_units"
+        "sensitiveInformationPolicyFreeUnits": "sensitive_information_policy_free_units"
+        "sensitiveInformationPolicyUnits": "sensitive_information_policy_units"
+        "topicPolicyUnits": "topic_policy_units"
+        "wordPolicyUnits": "word_policy_units"
         "piiEntities": "pii_entities"
         "normalizeIndex": "normalize_index"
         "latencyMs": "latency_ms"
@@ -346,7 +356,7 @@ processors:
         def violations = new HashSet();
         def matches = new HashSet();
         for (def e: body) {
-          if (e.amazon_bedrock_guardrail_action == 'INTERVENED') {
+          if (e.amazon_bedrock_guardrail_action == 'INTERVENED' || e.stop_reason == 'guardrail_intervened') {
             if (ctx.gen_ai == null) {
               ctx.gen_ai = new HashMap();
             }
@@ -358,23 +368,49 @@ processors:
             }
             ctx.gen_ai.compliance.violation_detected = true;
             ctx.event.outcome = 'failure';
-            if (!(e.amazon_bedrock_trace?.guardrail?.input instanceof HashMap)) {
-              continue;
-            }
-            for (def o: e.amazon_bedrock_trace.guardrail.input.entrySet()) {
-              for (def i: o.getValue().entrySet()) {
-                String policy_name = i.getKey();
-                policies.add(policy_name);
-                for (def p: i.getValue().entrySet()) {
-                  for (def c: p.getValue()) {
-                    actions.add(c.action);
-                    if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
-                      matches.add(c);
+            if (e.trace?.guardrail?.inputAssessment instanceof HashMap) {
+              for (def o: e.trace.guardrail.inputAssessment.entrySet()) {
+                for (def i: o.getValue().entrySet()) {
+                  String policy_name = i.getKey();
+                  if (!policy_name.endsWith('_policy')) {
+                    continue;
+                  }
+                  policies.add(policy_name);
+                  for (def p: i.getValue().entrySet()) {
+                    for (def c: p.getValue()) {
+                      actions.add(c.action);
+                      if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
+                        matches.add(c);
+                      }
+                      if (c.type != null) {
+                        if (policy_name == 'content_policy') {
+                          violations.add(c.type);
+                          confidences.add(c.confidence);
+                        }
+                      }
                     }
-                    if (c.type != null) {
-                      if (policy_name == 'content_policy') {
-                        violations.add(c.type);
-                        confidences.add(c.confidence);
+                  }
+                }
+              }
+            } else if (e.amazon_bedrock_trace?.guardrail?.input instanceof HashMap) {
+              for (def o: e.amazon_bedrock_trace.guardrail.input.entrySet()) {
+                for (def i: o.getValue().entrySet()) {
+                  String policy_name = i.getKey();
+                  if (!policy_name.endsWith('_policy')) {
+                    continue;
+                  }
+                  policies.add(policy_name);
+                  for (def p: i.getValue().entrySet()) {
+                    for (def c: p.getValue()) {
+                      actions.add(c.action);
+                      if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
+                        matches.add(c);
+                      }
+                      if (c.type != null) {
+                        if (policy_name == 'content_policy') {
+                          violations.add(c.type);
+                          confidences.add(c.confidence);
+                        }
                       }
                     }
                   }
@@ -550,11 +586,6 @@ processors:
       tag: remove_duplicate_custom_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
   - script:
       description: Remove massive event.original if it was wanted.
       if: ctx.event?.original instanceof String && ctx.event.original.length() > 32766
@@ -565,6 +596,6 @@ on_failure:
   - set:
       field: error.message
       value: >-
-        Processor '{{ _ingest.on_failure_processor_type }}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

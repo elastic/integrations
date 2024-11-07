@@ -1,0 +1,2460 @@
+{
+    "attributes": {
+        "description": "The TYCHON Encryption Summary Dashboard is a high level view of all your ciphers and certificates detected on endpoints.  The dashboard displays risk associated with Quatnum Computer decryption and general certificate hygiene.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5498e720-4b0a-4ac3-a60d-8113352e0d76",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b1e861a1-0386-4f5e-849f-35f85d8436e4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "5498e720-4b0a-4ac3-a60d-8113352e0d76": {
+                                            "columnOrder": [
+                                                "2e43ca5b-83e5-482d-ae20-dbcec122f225",
+                                                "eaf0daec-2521-46be-9edf-fa4b19adb4ec",
+                                                "c215d5fc-6929-46ea-83e1-1a59864f3ddb"
+                                            ],
+                                            "columns": {
+                                                "2e43ca5b-83e5-482d-ae20-dbcec122f225": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "tychon.tls.server.cipher.weight \u003e 2"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Endpoints containing High Risk Ciphers",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tychon.host.id"
+                                                },
+                                                "c215d5fc-6929-46ea-83e1-1a59864f3ddb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "eaf0daec-2521-46be-9edf-fa4b19adb4ec": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Endpoints",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tychon.host.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "b1e861a1-0386-4f5e-849f-35f85d8436e4",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.ciphers"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.ciphers"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#ffffff",
+                                "icon": "empty",
+                                "layerId": "5498e720-4b0a-4ac3-a60d-8113352e0d76",
+                                "layerType": "data",
+                                "maxAccessor": "eaf0daec-2521-46be-9edf-fa4b19adb4ec",
+                                "metricAccessor": "2e43ca5b-83e5-482d-ae20-dbcec122f225",
+                                "secondaryMetricAccessor": "c215d5fc-6929-46ea-83e1-1a59864f3ddb",
+                                "showBar": true
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in Certificates Details"
+                                    },
+                                    "eventId": "5182e22d-64a4-450b-b703-8da850eccf81",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "f676eccc-9a79-448f-865d-1077f03f8012",
+                    "w": 10,
+                    "x": 0,
+                    "y": 6
+                },
+                "panelIndex": "f676eccc-9a79-448f-865d-1077f03f8012",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ab9e8c14-2735-4d9e-9098-525c3cadc715",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a5fd97e1-60df-4d11-b2e1-dbc463190619": {
+                                            "columnOrder": [
+                                                "d046b225-a7ff-419d-9716-f4b53e0c0f57",
+                                                "15870e94-fcdd-4544-bceb-3a30f65dc6bf"
+                                            ],
+                                            "columns": {
+                                                "15870e94-fcdd-4544-bceb-3a30f65dc6bf": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "d046b225-a7ff-419d-9716-f4b53e0c0f57": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Service Protocol Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "15870e94-fcdd-4544-bceb-3a30f65dc6bf",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.service.protocol.name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "ab9e8c14-2735-4d9e-9098-525c3cadc715",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.ciphers"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.ciphers"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.7,
+                                        "layerId": "a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendSize": "small",
+                                        "metrics": [
+                                            "15870e94-fcdd-4544-bceb-3a30f65dc6bf"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "hidden",
+                                        "primaryGroups": [
+                                            "d046b225-a7ff-419d-9716-f4b53e0c0f57"
+                                        ]
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "cool",
+                                    "type": "palette"
+                                },
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "Within a cipher suite, the protocol acts as the master of ceremonies, defining the precise steps and rules for establishing a secure connection. It orchestrates the interactions between different algorithms, ensuring they work together seamlessly to protect sensitive data during communication.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in Port Encryption / Protocols Details"
+                                    },
+                                    "eventId": "6bec6960-c959-47f0-8a0b-a66100cb4cf3",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "bd8578a1-a406-4142-845a-b7f09c746ee9",
+                    "w": 14,
+                    "x": 10,
+                    "y": 0
+                },
+                "panelIndex": "bd8578a1-a406-4142-845a-b7f09c746ee9",
+                "title": "Cipher Suite Protocols in Use",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-2adb2a06-06e1-4b24-a552-2c7680dd82bc",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "e81e106e-7482-4ec5-ad64-bdd915ce0e48",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2adb2a06-06e1-4b24-a552-2c7680dd82bc": {
+                                            "columnOrder": [
+                                                "01c736f1-2c9d-41ab-9ff9-56be18ec7be7",
+                                                "2f2ea675-9da3-4a85-992c-64c61985081b"
+                                            ],
+                                            "columns": {
+                                                "01c736f1-2c9d-41ab-9ff9-56be18ec7be7": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.certificate.is_file : false"
+                                                                },
+                                                                "label": "Secure Store Based"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.certificate.is_file : true"
+                                                                },
+                                                                "label": "File System Based"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
+                                                },
+                                                "2f2ea675-9da3-4a85-992c-64c61985081b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Secure Store Based Certificate Coverage",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "e81e106e-7482-4ec5-ad64-bdd915ce0e48",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.systemcerts"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.systemcerts"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "host"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.source": "host"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.7,
+                                        "layerId": "2adb2a06-06e1-4b24-a552-2c7680dd82bc",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendPosition": "right",
+                                        "legendSize": "small",
+                                        "metrics": [
+                                            "2f2ea675-9da3-4a85-992c-64c61985081b"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "hidden",
+                                        "percentDecimals": 0,
+                                        "primaryGroups": [
+                                            "01c736f1-2c9d-41ab-9ff9-56be18ec7be7"
+                                        ],
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "temperature",
+                                    "type": "palette"
+                                },
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in File Based Certificates Dashboard"
+                                    },
+                                    "eventId": "c29e5e87-ed6b-48e7-a7ff-a7f710d13746",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "d1f3b3dd-7d5c-4c25-b6ea-ad7aab9c484f",
+                    "w": 14,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "d1f3b3dd-7d5c-4c25-b6ea-ad7aab9c484f",
+                "title": "Secure Store Certificate Coverage",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-33365512-f26a-42a6-bc77-ed813f1afbf0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f5706683-2697-4c68-976e-07c4b1364764",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "33365512-f26a-42a6-bc77-ed813f1afbf0": {
+                                            "columnOrder": [
+                                                "87cdd8ee-b056-4499-80b1-6b646c506023",
+                                                "7a91fc86-7774-41c4-8a27-72cce946c17f"
+                                            ],
+                                            "columns": {
+                                                "7a91fc86-7774-41c4-8a27-72cce946c17f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": " ",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "87cdd8ee-b056-4499-80b1-6b646c506023": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.certificate.is_expired: true"
+                                                                },
+                                                                "label": "Expired Certificates"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.certificate.is_expiring_soon: true AND tychon.certificate.is_expired : false"
+                                                                },
+                                                                "label": "Certificates Set To Expire"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.x509.is_self_signed : true"
+                                                                },
+                                                                "label": "Self Signed Certificates"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "certificate.location.trust_category.keyword: \"Non-NATO\" or tychon.certificate.location.trust_category: \"Non-NATO\""
+                                                                },
+                                                                "label": "Non-NATO Cert Issuer"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.certificate.is_file: true"
+                                                                },
+                                                                "label": "File System Based"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "f5706683-2697-4c68-976e-07c4b1364764",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.systemcerts"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.systemcerts"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "host"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.source": "host"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "breakdownByAccessor": "87cdd8ee-b056-4499-80b1-6b646c506023",
+                                "layerId": "33365512-f26a-42a6-bc77-ed813f1afbf0",
+                                "layerType": "data",
+                                "maxCols": 1,
+                                "metricAccessor": "7a91fc86-7774-41c4-8a27-72cce946c17f"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in File Based Certificates"
+                                    },
+                                    "eventId": "b40901f2-41e8-496b-8be7-1e81dc4aafd2",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                },
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in Listening Certificate Data"
+                                    },
+                                    "eventId": "46606eaa-fc10-4556-ad68-d526c58fd038",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 24,
+                    "i": "62fdafb8-bc3c-450f-a62b-5252e325c0f8",
+                    "w": 10,
+                    "x": 38,
+                    "y": 0
+                },
+                "panelIndex": "62fdafb8-bc3c-450f-a62b-5252e325c0f8",
+                "title": "Vulnerable Certificates",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3859f4fc-29ff-41fd-9f16-91d03e903952",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a5fd97e1-60df-4d11-b2e1-dbc463190619": {
+                                            "columnOrder": [
+                                                "15870e94-fcdd-4544-bceb-3a30f65dc6bf",
+                                                "762f041f-c2a3-4d62-96f6-c21e5189210a"
+                                            ],
+                                            "columns": {
+                                                "15870e94-fcdd-4544-bceb-3a30f65dc6bf": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "tychon.tls.server.protocol.weight : 1"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Count of Endpoints with High Risk Protocol in use",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tychon.host.id"
+                                                },
+                                                "762f041f-c2a3-4d62-96f6-c21e5189210a": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "3859f4fc-29ff-41fd-9f16-91d03e903952",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.ciphers"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.ciphers"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                "layerType": "data",
+                                "metricAccessor": "15870e94-fcdd-4544-bceb-3a30f65dc6bf",
+                                "secondaryMetricAccessor": "762f041f-c2a3-4d62-96f6-c21e5189210a"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": true,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in Cipher Details"
+                                    },
+                                    "eventId": "ab44bd5b-122e-4515-b309-5b470ba893e6",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "47f6455b-fcd5-4285-a099-4299debe918c",
+                    "w": 10,
+                    "x": 0,
+                    "y": 12
+                },
+                "panelIndex": "47f6455b-fcd5-4285-a099-4299debe918c",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5498e720-4b0a-4ac3-a60d-8113352e0d76",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "32b359a9-5f40-4dee-87a7-d7b05836eb3a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "5498e720-4b0a-4ac3-a60d-8113352e0d76": {
+                                            "columnOrder": [
+                                                "8867c269-7d18-4884-a846-4f00236a5ac5"
+                                            ],
+                                            "columns": {
+                                                "8867c269-7d18-4884-a846-4f00236a5ac5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Reported Host Count",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "tychon.host.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "32b359a9-5f40-4dee-87a7-d7b05836eb3a",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.ciphers"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.ciphers"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "icon": "empty",
+                                "layerId": "5498e720-4b0a-4ac3-a60d-8113352e0d76",
+                                "layerType": "data",
+                                "metricAccessor": "8867c269-7d18-4884-a846-4f00236a5ac5"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "952c1757-ba7a-41f0-816f-d3fd38c30072",
+                    "w": 10,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "952c1757-ba7a-41f0-816f-d3fd38c30072",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d81d780b-342a-43d7-bc66-1be9bab8afa1",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "d9d3fdbb-e5b5-42bf-9fe6-dd58ddf7dccb",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d81d780b-342a-43d7-bc66-1be9bab8afa1": {
+                                            "columnOrder": [
+                                                "3f4d476c-2898-4590-ad81-a563f1cb5c46",
+                                                "0668f624-5c2c-47ba-be5c-12d446e989e5",
+                                                "a54423ed-23bd-43cb-aa22-874c83dd25c0"
+                                            ],
+                                            "columns": {
+                                                "0668f624-5c2c-47ba-be5c-12d446e989e5": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Supported Ciphers",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a54423ed-23bd-43cb-aa22-874c83dd25c0",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.tls.server.supported_ciphers"
+                                                },
+                                                "3f4d476c-2898-4590-ad81-a563f1cb5c46": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Cipher Risk",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.tls.server.cipher.weight : 0 or tychon.tls.server.cipher.weight : 1"
+                                                                },
+                                                                "label": "Low Risk Cipher"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.tls.server.cipher.weight : 2"
+                                                                },
+                                                                "label": "Medium Risk Cipher"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "tychon.tls.server.cipher.weight \u003e 2"
+                                                                },
+                                                                "label": "High Risk Cipher"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
+                                                },
+                                                "a54423ed-23bd-43cb-aa22-874c83dd25c0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Ciphers Found",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "d9d3fdbb-e5b5-42bf-9fe6-dd58ddf7dccb",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.ciphers"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.ciphers"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignmentMode": "manual",
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#339933",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Low Risk Cipher"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#ffe25c",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Medium Risk Cipher"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorCode": "#fa3701",
+                                                        "type": "colorCode"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "High Risk Cipher"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 5,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": true
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.7,
+                                        "layerId": "d81d780b-342a-43d7-bc66-1be9bab8afa1",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "a54423ed-23bd-43cb-aa22-874c83dd25c0"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "3f4d476c-2898-4590-ad81-a563f1cb5c46",
+                                            "0668f624-5c2c-47ba-be5c-12d446e989e5"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "A cipher suite is a recipe for secure communication, combining encryption formulas for confidentiality, key exchange methods for secure communication setup, and authentication tools to ensure you're talking to the right party. It's like a security cocktail of algorithms to keep your online interactions safe and sound.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in Cipher Details"
+                                    },
+                                    "eventId": "01c36559-1832-4c74-af19-158be35d681a",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "f679f74d-8c1e-4874-971a-8257dfa74e01",
+                    "w": 14,
+                    "x": 10,
+                    "y": 12
+                },
+                "panelIndex": "f679f74d-8c1e-4874-971a-8257dfa74e01",
+                "title": "Cipher Suite and Protocol Risk",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b2ef33eb-2e69-49b5-8e1f-b2da42778315",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a5fd97e1-60df-4d11-b2e1-dbc463190619": {
+                                            "columnOrder": [
+                                                "8c863ad5-6bc1-49e9-b4d6-8b43431791fc",
+                                                "15870e94-fcdd-4544-bceb-3a30f65dc6bf"
+                                            ],
+                                            "columns": {
+                                                "15870e94-fcdd-4544-bceb-3a30f65dc6bf": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "8c863ad5-6bc1-49e9-b4d6-8b43431791fc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Supported Cipher MAC",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "15870e94-fcdd-4544-bceb-3a30f65dc6bf",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 12
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.tls.server.supported_cipher_mac"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "b2ef33eb-2e69-49b5-8e1f-b2da42778315",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.ciphers"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.ciphers"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "hide",
+                                        "emptySizeRatio": 0.7,
+                                        "layerId": "a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "15870e94-fcdd-4544-bceb-3a30f65dc6bf"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "hidden",
+                                        "primaryGroups": [
+                                            "8c863ad5-6bc1-49e9-b4d6-8b43431791fc"
+                                        ]
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "cool",
+                                    "type": "palette"
+                                },
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "In cryptography, a message authentication code (MAC), sometimes known as an authentication tag, is a short piece of information used for authenticating and integrity-checking a message. In other words, to confirm that the message came from the stated sender (its authenticity) and has not been changed (its integrity). The MAC value allows verifiers (who also possess a secret key) to detect any changes to the message content.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in Port Encryption / Protocols Details"
+                                    },
+                                    "eventId": "66636cdd-4759-42e6-a148-c5e4dc218e59",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "6600940b-0b70-4ca0-b8fe-7284d8b4843e",
+                    "w": 14,
+                    "x": 24,
+                    "y": 12
+                },
+                "panelIndex": "6600940b-0b70-4ca0-b8fe-7284d8b4843e",
+                "title": "Message Authentication Code Algorithms",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "55753b49-037b-4b8f-a1cf-77058d8fdd76",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a5fd97e1-60df-4d11-b2e1-dbc463190619": {
+                                            "columnOrder": [
+                                                "35c332ab-da84-4d22-bce8-447ab74379d3"
+                                            ],
+                                            "columns": {
+                                                "35c332ab-da84-4d22-bce8-447ab74379d3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "tychon.tls.server.cipher.weight \u003e 2 or tychon.tls.server.protocol.weight \u003e 2"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Total Number of High Risk Ciphers",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "55753b49-037b-4b8f-a1cf-77058d8fdd76",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.ciphers"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.ciphers"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                "layerType": "data",
+                                "metricAccessor": "35c332ab-da84-4d22-bce8-447ab74379d3"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in Cipher Details"
+                                    },
+                                    "eventId": "ab44bd5b-122e-4515-b309-5b470ba893e6",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "5506dfa0-5178-4cb0-a5c0-dae34a2d76f4",
+                    "w": 10,
+                    "x": 0,
+                    "y": 18
+                },
+                "panelIndex": "5506dfa0-5178-4cb0-a5c0-dae34a2d76f4",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-743dd6d6-e1bc-41ad-9879-68c79162e0d4",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "550a80d9-efea-4a34-bc8f-6ea3631c7d94",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "743dd6d6-e1bc-41ad-9879-68c79162e0d4": {
+                                            "columnOrder": [
+                                                "7786d478-f5cf-4854-8f17-3255fbae57d2",
+                                                "d74c2118-16a4-47ff-80dd-37086f6698b6"
+                                            ],
+                                            "columns": {
+                                                "7786d478-f5cf-4854-8f17-3255fbae57d2": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of tychon.x509.issuer.country",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d74c2118-16a4-47ff-80dd-37086f6698b6",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.x509.issuer.country"
+                                                },
+                                                "d74c2118-16a4-47ff-80dd-37086f6698b6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Certificates Used",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "550a80d9-efea-4a34-bc8f-6ea3631c7d94",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.systemcerts"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.systemcerts"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "host"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.source": "host"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "743dd6d6-e1bc-41ad-9879-68c79162e0d4",
+                                "layerType": "data",
+                                "regionAccessor": "7786d478-f5cf-4854-8f17-3255fbae57d2",
+                                "valueAccessor": "d74c2118-16a4-47ff-80dd-37086f6698b6"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsChoropleth"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 26,
+                    "i": "03d7af81-44e3-4200-af21-84ef83556646",
+                    "w": 48,
+                    "x": 0,
+                    "y": 24
+                },
+                "panelIndex": "03d7af81-44e3-4200-af21-84ef83556646",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ba42d4ef-c671-4aad-9392-523ef3391211",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a5fd97e1-60df-4d11-b2e1-dbc463190619": {
+                                            "columnOrder": [
+                                                "c9802413-da86-46f2-970a-062ead6ab1d8",
+                                                "15870e94-fcdd-4544-bceb-3a30f65dc6bf"
+                                            ],
+                                            "columns": {
+                                                "15870e94-fcdd-4544-bceb-3a30f65dc6bf": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Certificates Using Cipher",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "c9802413-da86-46f2-970a-062ead6ab1d8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Supported Ciph",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "15870e94-fcdd-4544-bceb-3a30f65dc6bf",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 12
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tychon.tls.server.supported_ciphers"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "ba42d4ef-c671-4aad-9392-523ef3391211",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "true"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "true"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "event.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "tychon.ciphers"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "event.dataset": "tychon.ciphers"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "15870e94-fcdd-4544-bceb-3a30f65dc6bf"
+                                        ],
+                                        "layerId": "a5fd97e1-60df-4d11-b2e1-dbc463190619",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "c9802413-da86-46f2-970a-062ead6ab1d8",
+                                        "yConfig": [
+                                            {
+                                                "color": "#6092c0",
+                                                "forAccessor": "15870e94-fcdd-4544-bceb-3a30f65dc6bf"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View in Port Encryption / Protocols Details"
+                                    },
+                                    "eventId": "8a60796f-4333-4434-9f9f-6330a4510a67",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 44,
+                    "i": "2a92a2c3-9197-4006-a22f-9d76be69dedb",
+                    "w": 48,
+                    "x": 0,
+                    "y": 50
+                },
+                "panelIndex": "2a92a2c3-9197-4006-a22f-9d76be69dedb",
+                "title": "Endpoint Cipher Suites",
+                "type": "lens"
+            }
+        ],
+        "refreshInterval": {
+            "pause": true,
+            "value": 60000
+        },
+        "timeFrom": "now-15M",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[TYCHON] Encryption Usage Summary Dashboard",
+        "version": 2
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-07-28T17:01:06.835Z",
+    "id": "tychon-e8482f80-99d6-11ee-a807-b73fc989b238-cipher",
+    "managed": false,
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "f676eccc-9a79-448f-865d-1077f03f8012:indexpattern-datasource-layer-5498e720-4b0a-4ac3-a60d-8113352e0d76",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f676eccc-9a79-448f-865d-1077f03f8012:b1e861a1-0386-4f5e-849f-35f85d8436e4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon-da7f6300-8865-11ee-9c38-4f37dc7b49bb-cipher",
+            "name": "f676eccc-9a79-448f-865d-1077f03f8012:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:5182e22d-64a4-450b-b703-8da850eccf81:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "bd8578a1-a406-4142-845a-b7f09c746ee9:indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "bd8578a1-a406-4142-845a-b7f09c746ee9:ab9e8c14-2735-4d9e-9098-525c3cadc715",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon-ccc4fb80-8865-11ee-9c38-4f37dc7b49bb-cipher",
+            "name": "bd8578a1-a406-4142-845a-b7f09c746ee9:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:6bec6960-c959-47f0-8a0b-a66100cb4cf3:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "d1f3b3dd-7d5c-4c25-b6ea-ad7aab9c484f:indexpattern-datasource-layer-2adb2a06-06e1-4b24-a552-2c7680dd82bc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d1f3b3dd-7d5c-4c25-b6ea-ad7aab9c484f:e81e106e-7482-4ec5-ad64-bdd915ce0e48",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon-da7f6300-8865-11ee-9c38-4f37dc7b49bb-cipher",
+            "name": "d1f3b3dd-7d5c-4c25-b6ea-ad7aab9c484f:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:c29e5e87-ed6b-48e7-a7ff-a7f710d13746:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "62fdafb8-bc3c-450f-a62b-5252e325c0f8:indexpattern-datasource-layer-33365512-f26a-42a6-bc77-ed813f1afbf0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "62fdafb8-bc3c-450f-a62b-5252e325c0f8:f5706683-2697-4c68-976e-07c4b1364764",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon-da7f6300-8865-11ee-9c38-4f37dc7b49bb-cipher",
+            "name": "62fdafb8-bc3c-450f-a62b-5252e325c0f8:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:b40901f2-41e8-496b-8be7-1e81dc4aafd2:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon-ae961760-aa58-11ee-a807-b73fc989b238-cipher",
+            "name": "62fdafb8-bc3c-450f-a62b-5252e325c0f8:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:46606eaa-fc10-4556-ad68-d526c58fd038:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "47f6455b-fcd5-4285-a099-4299debe918c:indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "47f6455b-fcd5-4285-a099-4299debe918c:3859f4fc-29ff-41fd-9f16-91d03e903952",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon-ccc4fb80-8865-11ee-9c38-4f37dc7b49bb-cipher",
+            "name": "47f6455b-fcd5-4285-a099-4299debe918c:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:ab44bd5b-122e-4515-b309-5b470ba893e6:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "952c1757-ba7a-41f0-816f-d3fd38c30072:indexpattern-datasource-layer-5498e720-4b0a-4ac3-a60d-8113352e0d76",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "952c1757-ba7a-41f0-816f-d3fd38c30072:32b359a9-5f40-4dee-87a7-d7b05836eb3a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f679f74d-8c1e-4874-971a-8257dfa74e01:indexpattern-datasource-layer-d81d780b-342a-43d7-bc66-1be9bab8afa1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f679f74d-8c1e-4874-971a-8257dfa74e01:d9d3fdbb-e5b5-42bf-9fe6-dd58ddf7dccb",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon-ccc4fb80-8865-11ee-9c38-4f37dc7b49bb-cipher",
+            "name": "f679f74d-8c1e-4874-971a-8257dfa74e01:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:01c36559-1832-4c74-af19-158be35d681a:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "6600940b-0b70-4ca0-b8fe-7284d8b4843e:indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6600940b-0b70-4ca0-b8fe-7284d8b4843e:b2ef33eb-2e69-49b5-8e1f-b2da42778315",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon-0c036be0-3de5-11ee-9610-15dee918f31a-exposedservice",
+            "name": "6600940b-0b70-4ca0-b8fe-7284d8b4843e:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:66636cdd-4759-42e6-a148-c5e4dc218e59:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "5506dfa0-5178-4cb0-a5c0-dae34a2d76f4:indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5506dfa0-5178-4cb0-a5c0-dae34a2d76f4:55753b49-037b-4b8f-a1cf-77058d8fdd76",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon-ae961760-aa58-11ee-a807-b73fc989b238-cipher",
+            "name": "5506dfa0-5178-4cb0-a5c0-dae34a2d76f4:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:ab44bd5b-122e-4515-b309-5b470ba893e6:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "03d7af81-44e3-4200-af21-84ef83556646:indexpattern-datasource-layer-743dd6d6-e1bc-41ad-9879-68c79162e0d4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "03d7af81-44e3-4200-af21-84ef83556646:550a80d9-efea-4a34-bc8f-6ea3631c7d94",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2a92a2c3-9197-4006-a22f-9d76be69dedb:indexpattern-datasource-layer-a5fd97e1-60df-4d11-b2e1-dbc463190619",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2a92a2c3-9197-4006-a22f-9d76be69dedb:ba42d4ef-c671-4aad-9392-523ef3391211",
+            "type": "index-pattern"
+        },
+        {
+            "id": "tychon-ccc4fb80-8865-11ee-9c38-4f37dc7b49bb-cipher",
+            "name": "2a92a2c3-9197-4006-a22f-9d76be69dedb:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:8a60796f-4333-4434-9f9f-6330a4510a67:dashboardId",
+            "type": "dashboard"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0"
+}

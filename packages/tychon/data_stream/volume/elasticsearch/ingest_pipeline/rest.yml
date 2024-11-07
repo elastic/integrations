@@ -1,0 +1,56 @@
+---
+description: Pipeline for TYCHON Volumes
+processors:
+
+  - set:
+      tag: set_tychon_volume_block_size
+      field: tychon.volume.block_size
+      value: 0
+      if: ctx.tychon.volume?.block_size == null
+  - set:
+      tag: set_tychon_volume_freespace
+      field: tychon.volume.freespace
+      value: 0
+      if: ctx.tychon.volume?.freespace == null
+  - set:
+      tag: set_tychon_volume_percent_full
+      field: tychon.volume.percent_full
+      value: 100
+      if: ctx.tychon.volume?.percent_full == null || ctx.tychon.volume.percent_full == 'NaN'
+  - set:
+      tag: set_tychon_volume_size
+      field: tychon.volume.size
+      value: 0
+      if: ctx.tychon.volume?.size == null
+  - convert:
+      tag: convert_tychon_volume_automount
+      field: tychon.volume.automount
+      type: boolean
+      ignore_missing: true
+  - convert:
+      tag: convert_tychon_volume_block_size
+      field: tychon.volume.block_size
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_tychon_volume_freespace
+      field: tychon.volume.freespace
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_tychon_volume_percent_full
+      field: tychon.volume.percent_full
+      type: float
+      ignore_missing: true
+  - convert:
+      tag: convert_tychon_volume_size
+      field: tychon.volume.size
+      type: long
+      ignore_missing: true
+
+  # ECS fields
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [configuration]

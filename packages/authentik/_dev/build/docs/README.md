@@ -8,19 +8,17 @@ The authentik integration collects event, group, and user logs using REST API.
 
 The authentik integration collects three types of logs:
 
-| Log Type                                                                                                         |
-|------------------------------------------------------------------------------------------------------------------|
-| **[Event](https://docs.goauthentik.io/developer-docs/api/reference/events-events-list)**                         |
-| **[Group](https://docs.goauthentik.io/developer-docs/api/reference/core-groups-list)**                           |
-| **[User](https://docs.goauthentik.io/developer-docs/api/reference/core-users-list)**                             |
+- **[Event](https://docs.goauthentik.io/developer-docs/api/reference/events-events-list)**                         
+- **[Group](https://docs.goauthentik.io/developer-docs/api/reference/core-groups-list)**                           
+- **[User](https://docs.goauthentik.io/developer-docs/api/reference/core-users-list)**                             
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
-You have a few options for installing and managing an Elastic Agent:
+There are several options for installing and managing Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
@@ -34,7 +32,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#_minimum_requirements).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
 ## Setup
 
@@ -44,12 +42,12 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type authentik.
-3. Click on the "authentik" integration from the search results.
-4. Click on the "Add authentik" button to add the integration.
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `Authentik`.
+3. Select the "authentik" integration from the search results.
+4. Select "Add authentik" to add the integration.
 5. Add all the required integration configuration parameters, including API Token, Interval and Page Size to enable data collection.
-6. Click on "Save and continue" to save the integration.
+6. Select "Save and continue" to save the integration.
 
 ## Logs reference
 

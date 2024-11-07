@@ -1823,6 +1823,209 @@ processors:
       target_field: aws.guardduty.service.resource_role
       ignore_missing: true
   - rename:
+      field: json.service.runtimeDetails.context.addressFamily
+      target_field: aws.guardduty.service.runtime_details.context.address_family
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.commandLineExample
+      target_field: aws.guardduty.service.runtime_details.context.command_line_example
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.fileSystemType
+      target_field: aws.guardduty.service.runtime_details.context.file_system_type
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.flags
+      target_field: aws.guardduty.service.runtime_details.context.flags
+      ignore_missing: true
+  - convert:
+      field: json.service.runtimeDetails.context.ianaProtocolNumber
+      target_field: aws.guardduty.service.runtime_details.context.iana_protocol_number
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.runtimeDetails.context.ldPreloadValue
+      target_field: aws.guardduty.service.runtime_details.context.ld_preload
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.libraryPath
+      target_field: aws.guardduty.service.runtime_details.context.library_path
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.memoryRegions
+      target_field: aws.guardduty.service.runtime_details.context.memory_regions
+      ignore_missing: true
+  - date:
+      field: json.service.runtimeDetails.context.modifiedAt
+      target_field: aws.guardduty.service.runtime_details.context.modified_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.service?.runtimeDetails?.context?.modifiedAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.runtimeDetails.context.modifyingProcess
+      target_field: aws.guardduty.service.runtime_details.context.modifying_process
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.moduleFilePath
+      target_field: aws.guardduty.service.runtime_details.context.module_file_path
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.moduleName
+      target_field: aws.guardduty.service.runtime_details.context.module_name
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.moduleSha256
+      target_field: aws.guardduty.service.runtime_details.context.module_sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{aws.guardduty.service.runtime_details.context.module_sha256}}}'
+      if: ctx.aws?.guardduty?.service?.runtime_details?.context?.module_sha256 != null
+      allow_duplicates: false
+  - rename:
+      field: json.service.runtimeDetails.context.mountSource
+      target_field: aws.guardduty.service.runtime_details.context.mount_source
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.mountTarget
+      target_field: aws.guardduty.service.runtime_details.context.mount_target
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.releaseAgentPath
+      target_field: aws.guardduty.service.runtime_details.context.release_agent_path
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.runcBinaryPath
+      target_field: aws.guardduty.service.runtime_details.context.runc_binary_path
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.scriptPath
+      target_field: aws.guardduty.service.runtime_details.context.script_path
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.serviceName
+      target_field: aws.guardduty.service.runtime_details.context.service_name
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.shellHistoryFilePath
+      target_field: aws.guardduty.service.runtime_details.context.shell_history_file_path
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.socketPath
+      target_field: aws.guardduty.service.runtime_details.context.socket_path
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.targetProcess
+      target_field: aws.guardduty.service.runtime_details.context.target_process
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.threatFilePath
+      target_field: aws.guardduty.service.runtime_details.context.threat_file_path
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.toolCategory
+      target_field: aws.guardduty.service.runtime_details.context.tool_category
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.context.toolName
+      target_field: aws.guardduty.service.runtime_details.context.tool_name
+      ignore_missing: true
+  - convert:
+      field: json.service.runtimeDetails.process.euid
+      target_field: aws.guardduty.service.runtime_details.process.euid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.runtimeDetails.process.executablePath
+      target_field: aws.guardduty.service.runtime_details.process.executable_path
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.process.executableSha256
+      target_field: aws.guardduty.service.runtime_details.process.executable_sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{aws.guardduty.service.runtime_details.process.executable_sha256}}}'
+      if: ctx.aws?.guardduty?.service?.runtime_details?.process?.executable_sha256 != null
+      allow_duplicates: false
+  - rename:
+      field: json.service.runtimeDetails.process.lineage
+      target_field: aws.guardduty.service.runtime_details.process.lineage
+      ignore_missing: true
+  - rename:
+      field: json.service.runtimeDetails.process.name
+      target_field: aws.guardduty.service.runtime_details.process.name
+      ignore_missing: true
+  - convert:
+      field: json.service.runtimeDetails.process.namespacePid
+      target_field: aws.guardduty.service.runtime_details.process.namespace_pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.runtimeDetails.process.parentUuid
+      target_field: aws.guardduty.service.runtime_details.process.parent_uuid
+      ignore_missing: true
+  - convert:
+      field: json.service.runtimeDetails.process.pid
+      target_field: aws.guardduty.service.runtime_details.process.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.runtimeDetails.process.pwd
+      target_field: aws.guardduty.service.runtime_details.process.pwd
+      ignore_missing: true
+  - date:
+      field: json.service.runtimeDetails.process.startTime
+      target_field: aws.guardduty.service.runtime_details.process.start_time
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.service?.runtimeDetails?.process?.startTime != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.runtimeDetails.process.user
+      target_field: aws.guardduty.service.runtime_details.process.user
+      ignore_missing: true
+  - convert:
+      field: json.service.runtimeDetails.process.userId
+      target_field: aws.guardduty.service.runtime_details.process.user_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.runtimeDetails.process.uuid
+      target_field: aws.guardduty.service.runtime_details.process.uuid
+      ignore_missing: true
+  - rename:
       field: json.service.serviceName
       target_field: aws.guardduty.service.service_name
       ignore_missing: true
@@ -2119,7 +2322,7 @@ processors:
   - script:
       description: Map source.geo.location field.
       lang: painless
-      source:
+      source: |
         def locationList = new ArrayList();
         if (ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.remote_ip_details?.geo_location != null) {
           locationList.add(ctx.aws.guardduty.service.action.aws_api_call_action.remote_ip_details.geo_location);
@@ -2238,6 +2441,10 @@ processors:
       field: host.type
       copy_from: aws.guardduty.resource.instance_details.instance.type
       ignore_empty_value: true
+  - set:
+      field: network.iana_number
+      copy_from: aws.guardduty.service.runtime_details.context.iana_protocol_number
+      ignore_empty_value: true
   - lowercase:
       field: aws.guardduty.service.action.network_connection_action.connection_direction
       target_field: network.direction
@@ -2266,6 +2473,26 @@ processors:
   - set:
       field: orchestrator.resource.type
       copy_from: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.type
+      ignore_empty_value: true
+  - set:
+      field: process.executable
+      copy_from: aws.guardduty.service.runtime_details.process.executable_path
+      ignore_empty_value: true
+  - set:
+      field: process.name
+      copy_from: aws.guardduty.service.runtime_details.process.name
+      ignore_empty_value: true
+  - set:
+      field: process.pid
+      copy_from: aws.guardduty.service.runtime_details.process.pid
+      ignore_empty_value: true
+  - set:
+      field: process.start
+      copy_from: aws.guardduty.service.runtime_details.process.start_time
+      ignore_empty_value: true
+  - set:
+      field: process.working_directory
+      copy_from: aws.guardduty.service.runtime_details.process.pwd
       ignore_empty_value: true
   - set:
       field: rule.name
@@ -2315,6 +2542,14 @@ processors:
           field: _ingest._value
           type: long
           ignore_failure: true
+  - set:
+      field: threat.indicator.file.path
+      copy_from: aws.guardduty.service.runtime_details.context.threat_file_path
+      ignore_empty_value: true
+  - set:
+      field: threat.software.name
+      copy_from: aws.guardduty.service.runtime_details.context.tool_name
+      ignore_empty_value: true
   - append:
       field: user.id
       value: '{{{aws.guardduty.resource.access_key_details.principal_id}}}'
@@ -2407,6 +2642,14 @@ processors:
         - aws.guardduty.service.action.type
         - aws.guardduty.service.event.first_seen
         - aws.guardduty.service.event.last_seen
+        - aws.guardduty.service.runtime_details.context.iana_protocol_number
+        - aws.guardduty.service.runtime_details.context.threat_file_path
+        - aws.guardduty.service.runtime_details.context.tool_name
+        - aws.guardduty.service.runtime_details.process.executable_path
+        - aws.guardduty.service.runtime_details.process.name
+        - aws.guardduty.service.runtime_details.process.pid
+        - aws.guardduty.service.runtime_details.process.pwd
+        - aws.guardduty.service.runtime_details.process.start_time
         - aws.guardduty.service.service_name
         - aws.guardduty.type
         - aws.guardduty.updated_at
@@ -2451,14 +2694,10 @@ processors:
                 - _ingest._value.file.path
                 - _ingest._value.hash
               ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == "") {
             return true;
@@ -2478,10 +2717,12 @@ processors:
       if: ctx.error?.message != null
       allow_duplicates: false
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

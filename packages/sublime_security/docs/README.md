@@ -12,19 +12,19 @@ The Sublime Security integration collects data for Audit, Email Message(MDM Sche
 
 The Sublime Security integration collects three types of logs:
 
-**[Audit](https://docs.sublime.security/reference/listeventsinauditlog)** - Captures detailed records of all significant actions and changes within the platform, including changes to email security policies, user access to email data, and modifications to email configurations, ensuring traceability and compliance for all operations.
+- **[Audit](https://docs.sublime.security/reference/listeventsinauditlog)** - Captures detailed records of all significant actions and changes within the platform, including changes to email security policies, user access to email data, and modifications to email configurations, ensuring traceability and compliance for all operations.
 
-**[Email Message](https://docs.sublime.security/docs/export-message-mdms)** - Represents the flow of individual emails through the platform, including sender and recipient details, spam filtering outcomes, and overall email disposition, helping to secure and analyze email communication.
+- **[Email Message](https://docs.sublime.security/docs/export-message-mdms)** - Represents the flow of individual emails through the platform, including sender and recipient details, spam filtering outcomes, and overall email disposition, helping to secure and analyze email communication.
 
-**[Message Event](https://docs.sublime.security/reference/getmessage-1)** - Represents document specific actions taken on emails, like spam detection or rule applications, providing detailed insights into how the platform processes and protects email communications.
+- **[Message Event](https://docs.sublime.security/reference/getmessage-1)** - Represents document specific actions taken on emails, like spam detection or rule applications, providing detailed insights into how the platform processes and protects email communications.
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
-You have a few options for installing and managing an Elastic Agent:
+There are several options for installing and managing Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
@@ -38,7 +38,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#_minimum_requirements).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
 ## Setup
 
@@ -74,10 +74,10 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type Sublime Security.
-3. Click on the "Sublime Security" integration from the search results.
-4. Click on the "Add Sublime Security" button to add the integration.
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `Sublime Security`.
+3. Select the "Sublime Security" integration from the search results.
+4. Select "Add Sublime Security" to add the integration.
 5. Enable the Integration to collect logs via AWS S3 or API input.
 6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
 7. Add all the required integration configuration parameters, including API Key, Interval, Initial Interval and Page Size for API input and Access Key, Secret Key and Session Token for AWS input type to enable data collection.

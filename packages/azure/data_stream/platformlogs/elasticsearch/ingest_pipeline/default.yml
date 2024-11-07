@@ -275,11 +275,6 @@ processors:
       value: event
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
   - pipeline:
       if: "ctx?.azure_log_forwarder?.resource_type != null && (ctx?.azure_log_forwarder?.resource_type == 'Microsoft.AppPlatform/Spring'|| ctx?.azure_log_forwarder?.resource_type == 'MICROSOFT.APPPLATFORM/SPRING')"
       name: '{{ IngestPipeline "springcloudlogs-inner-pipeline" }}'

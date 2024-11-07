@@ -1,0 +1,55 @@
+---
+description: Pipeline for TYCHON ARP Tables
+processors:
+
+  - uppercase:
+      tag: uppercase_tychon_destination_mac
+      field: tychon.destination.mac
+
+  - lowercase:
+      tag: lowercase_tychon_network_type
+      field: tychon.network.type
+      ignore_missing: true
+
+  # ECS fields
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [network]
+
+  # ECS fields from the tychon fieldset
+
+  - append:
+      tag: append_related_hosts
+      field: related.hosts
+      value: "{{{tychon.destination.hostname}}}"
+      if: ctx.tychon?.destination?.hostname != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip
+      field: related.ip
+      value: "{{{tychon.destination.ip}}}"
+      if: ctx.tychon?.destination?.ip != null
+      allow_duplicates: false
+
+  - set:
+      tag: set_destination_ip
+      field: destination.ip
+      copy_from: tychon.destination.ip
+      ignore_empty_value: true
+  - set:
+      tag: set_destination_mac
+      field: destination.mac
+      copy_from: tychon.destination.mac
+      ignore_empty_value: true
+  - set:
+      tag: set_network_direction
+      field: network.direction
+      copy_from: tychon.network.direction
+      ignore_empty_value: true
+  - set:
+      tag: set_network_type
+      field: network.type
+      copy_from: tychon.network.type
+      ignore_empty_value: true

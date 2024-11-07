@@ -83,7 +83,6 @@ An example event for `log` looks as following:
         "auditd-log"
     ]
 }
-
 ```
 
 **Exported fields**

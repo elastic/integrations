@@ -1,0 +1,84 @@
+format_version: 3.2.3
+name: elastic_connectors
+title: "Elastic Connectors"
+version: 0.0.3
+source:
+  license: "Elastic-2.0"
+description: "Sync data from source to the Elasticsearch index."
+type: integration
+categories:
+  - connector
+conditions:
+  kibana:
+    version: "^9.0.0"
+  elastic:
+    subscription: "platinum"
+screenshots:
+  - src: /img/google-drive-connector-screenshot.png
+    title: Google Drive Connector Screenshot
+    size: 3824×1808
+    type: image/png
+icons:
+  - src: /img/connectors-logo.svg
+    title: Connectors Logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: github
+    title: GitHub & GitHub Enterprise Server Connector
+    icons:
+      - src: /img/service_type/github.svg
+        title: GitHub logo
+        size: 32x32
+        type: image/svg+xml
+    description: Use a connector to sync data from your GitHub data source.
+    deployment_modes:
+      default:
+        enabled: false
+      agentless:
+        enabled: true
+        organization: elastic
+        division: engineering
+        team: search-extract-and-transform
+    multiple: false
+    inputs:
+      - type: connectors-py
+        title: GitHub & GitHub Enterprise Server Connector
+        description: Connectors syncs data from an original data source to an Elasticsearch index.
+        vars:
+          - &connector_name
+            name: connector_name
+            type: text
+            title: Connector Name
+            required: false
+            show_user: false # TODO: Change to true once this is fixed https://github.com/elastic/kibana/issues/194310
+            description: Connector name to identify the connector in the UI
+        template_path: github.yml.hbs
+  - name: google_drive
+    title: Google Drive Connector
+    icons:
+      - src: /img/service_type/google_drive.svg
+        title: Google Drive logo
+        size: 32x32
+        type: image/svg+xml
+    description: Use a connector to sync from your Google Drive data source.
+    deployment_modes:
+      default:
+        enabled: false
+      agentless:
+        enabled: true
+        organization: elastic
+        division: engineering
+        team: search-extract-and-transform
+    multiple: false
+    inputs:
+      - type: connectors-py
+        title: Google Drive Connector
+        description: Connectors syncs data from an original data source to an Elasticsearch index.
+        vars:
+          - <<: *connector_name
+        template_path: google_drive.yml.hbs
+
+owner:
+  github: elastic/search-extract-and-transform
+  type: elastic

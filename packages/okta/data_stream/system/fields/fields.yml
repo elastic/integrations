@@ -126,9 +126,33 @@
       description: |
         The result of the outcome. Must be one of: SUCCESS, FAILURE, SKIPPED, ALLOW, DENY, CHALLENGE, UNKNOWN.
 - name: okta.target
-  type: flattened
-  description: |
-    The list of targets.
+  description: The list of targets.
+  type: group
+  fields:
+    - name: alternate_id
+      type: keyword
+      description: The alternate ID of the target.
+    - name: changeDetails.from.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+    - name: changeDetails.to.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+    - name: detailEntry.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+    - name: display_name
+      type: keyword
+      description: The display name of the target.
+    - name: id
+      type: keyword
+      description: The ID of the target.
+    - name: type
+      type: keyword
+      description: The type of target.
 - name: okta.transaction
   type: group
   fields:
@@ -155,6 +179,8 @@
       type: keyword
       description: |
         The authorization request ID.
+    - name: debug_data.client_secret
+      type: keyword
     - name: debug_data.device_fingerprint
       type: keyword
       description: |
@@ -167,6 +193,10 @@
       type: keyword
       description: |
         The factor used for authentication.
+    - name: debug_data.granted_scopes
+      type: keyword
+    - name: debug_data.grant_type
+      type: keyword
     - name: debug_data.request_id
       type: keyword
       description: |
@@ -179,6 +209,8 @@
       type: keyword
       description: |
         Threat suspected.
+    - name: debug_data.requested_scopes
+      type: keyword
     - name: debug_data.risk_behaviors
       type: keyword
       description: |

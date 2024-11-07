@@ -101,7 +101,6 @@ An example event for `eve` looks as following:
         "suricata-eve"
     ]
 }
-
 ```
 
 **Exported fields**

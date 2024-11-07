@@ -3,8 +3,64 @@
         "controlGroupInput": {
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
-            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"93a8183f-ab74-4636-9f63-9e30c35bfa6b\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.repository.owner.login\",\"title\":\"Owner/Organization\",\"id\":\"93a8183f-ab74-4636-9f63-9e30c35bfa6b\",\"enhancements\":{}}},\"965171e3-e02b-49ff-a2f7-6ddfa5159eee\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.repository.name\",\"title\":\"Repository\",\"id\":\"965171e3-e02b-49ff-a2f7-6ddfa5159eee\",\"enhancements\":{}}},\"8fb8d319-c120-4bcb-849d-6d45f3f5406a\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.state\",\"title\":\"State\",\"id\":\"8fb8d319-c120-4bcb-849d-6d45f3f5406a\",\"enhancements\":{}}},\"3d506940-8d8f-4f4f-8fa8-5ac070d1dc36\":{\"order\":3,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.severity\",\"title\":\"Severity\",\"id\":\"3d506940-8d8f-4f4f-8fa8-5ac070d1dc36\",\"enhancements\":{}}}}"
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "3d506940-8d8f-4f4f-8fa8-5ac070d1dc36": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.code_scanning.rule.security_severity_level",
+                        "id": "3d506940-8d8f-4f4f-8fa8-5ac070d1dc36",
+                        "searchTechnique": "prefix",
+                        "title": "Severity"
+                    },
+                    "grow": true,
+                    "order": 3,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "8fb8d319-c120-4bcb-849d-6d45f3f5406a": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.code_scanning.state",
+                        "id": "8fb8d319-c120-4bcb-849d-6d45f3f5406a",
+                        "searchTechnique": "prefix",
+                        "title": "State"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "93a8183f-ab74-4636-9f63-9e30c35bfa6b": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.repository.owner.login",
+                        "id": "93a8183f-ab74-4636-9f63-9e30c35bfa6b",
+                        "title": "Owner/Organization"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "965171e3-e02b-49ff-a2f7-6ddfa5159eee": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.repository.name",
+                        "id": "965171e3-e02b-49ff-a2f7-6ddfa5159eee",
+                        "title": "Repository"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
         },
         "description": "",
         "kibanaSavedObjectMeta": {
@@ -18,25 +74,60 @@
                             "alias": "Code Scanning",
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.action",
                             "negate": false,
                             "params": [
-                                "code_scanning"
-                            ],
-                            "type": "phrases"
-                        },
-                        "query": {
-                            "bool": {
-                                "minimum_should_match": 1,
-                                "should": [
-                                    {
-                                        "match_phrase": {
-                                            "event.action": "code_scanning"
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "logs-*",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": [
+                                            "github.code_scanning"
+                                        ],
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.code_scanning"
+                                        ]
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "github.code_scanning"
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
-                                ]
-                            }
-                        }
+                                },
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "logs-*",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "AND",
+                            "type": "combined"
+                        },
+                        "query": {}
                     }
                 ],
                 "query": {
@@ -55,6 +146,43 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n**Github**  \n\n- **Audit**\n  - [Audit Log Activity](#/dashboard/github-dcee84c0-2059-11ec-8b10-11a4c5e322a0)\n  - [User Change Audit](#/dashboard/github-8bfd8310-205c-11ec-8b10-11a4c5e322a0)\n- **Github Advanced Security**\n  - [Advanced Security Overview](#/dashboard/github-6a6d7c40-17ab-11ed-809a-7b4be950fe9c)\n  - [**Code Scanning (This Page)**](#/dashboard/github-4da91aa0-12fc-11ed-af77-016e1a977d80)\n  - [Secret Scanning](#/dashboard/github-591d69e0-17b6-11ed-809a-7b4be950fe9c)\n  - [Dependabot](#/dashboard/github-6197be80-220c-11ed-88c4-e3caca48250a)\n- [Issues](#/dashboard/github-f0104680-ae18-11ed-83fa-df5d96a45724)\n\n**Overview**\nThis dashboard provides an overview of the alerts ingested from Github Code Scanning.\n\nThe dashboard provides details on code scanning alerts that are open and resolved. It deep-dives into the top 10 repositories where code scanning alerts are found. It also calculates the mean-time to resolve (or dismiss) an open code scanning alert. The dashboard presents a view of alerts by severity and code scanning rules defining the alerts. Finally, it gives a layout of top users resolving the code scanning alerts.\n\n[**Integrations Page**](/app/integrations/detail/github/overview)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 29,
+                    "i": "bccec7c9-4db6-4cbf-96e7-eabf5a791af0",
+                    "w": 10,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "bccec7c9-4db6-4cbf-96e7-eabf5a791af0",
+                "title": "Table of Contents",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
@@ -65,11 +193,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "2c60b75b-1f6f-4bee-8a9c-6b7fdcbc905e",
+                                "name": "4f9f826a-a1a6-454a-a27e-1dcbdb3a2dd4",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "577b815d-0e9c-46b7-a0e9-d43d604ee84b",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -104,13 +238,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "2c60b75b-1f6f-4bee-8a9c-6b7fdcbc905e",
+                                        "index": "4f9f826a-a1a6-454a-a27e-1dcbdb3a2dd4",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.code_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.code_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -124,35 +261,57 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "577b815d-0e9c-46b7-a0e9-d43d604ee84b",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "ccdc8558-1d3f-4c8b-a31e-d59ac78d0212",
+                                "color": "#6092C0",
                                 "layerId": "3f8b858f-a1ee-4d69-a100-d59282acd94d",
                                 "layerType": "data",
-                                "textAlign": "center",
-                                "titlePosition": "top"
+                                "metricAccessor": "ccdc8558-1d3f-4c8b-a31e-d59ac78d0212"
                             }
                         },
                         "title": "Total Alerts Created [GitHub Code Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 5,
                     "i": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac",
-                    "w": 14,
-                    "x": 0,
+                    "w": 11,
+                    "x": 10,
                     "y": 0
                 },
                 "panelIndex": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -166,11 +325,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "4fa3d8de-226f-4ff3-ab95-b9167e6ff115",
+                                "name": "1bf4d7b4-41e4-44e2-98d4-a145d7509f7b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b5fecfee-86fa-4a82-ba13-cafa5517a8e4",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -195,7 +360,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "count()/count(kql='github.state:dismissed')",
+                                                        "formula": "count()/count(kql='NOT github.code_scanning.state:open')",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -207,7 +372,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Resolved/Dismissed Alerts",
+                                                    "label": "Part of Alerts Found/Fixed Ratio",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -220,10 +385,10 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "github.state:dismissed"
+                                                        "query": "NOT github.code_scanning.state:open"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Resolved/Dismissed Alerts",
+                                                    "label": "Part of Alerts Found/Fixed Ratio",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -235,7 +400,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Resolved/Dismissed Alerts",
+                                                    "label": "Part of Alerts Found/Fixed Ratio",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -244,11 +409,11 @@
                                                                 "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX1"
                                                             ],
                                                             "location": {
-                                                                "max": 43,
+                                                                "max": 56,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "count()/count(kql='github.state:dismissed')",
+                                                            "text": "count()/count(kql='NOT github.code_scanning.state:open')",
                                                             "type": "function"
                                                         }
                                                     },
@@ -272,13 +437,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "4fa3d8de-226f-4ff3-ab95-b9167e6ff115",
+                                        "index": "1bf4d7b4-41e4-44e2-98d4-a145d7509f7b",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.code_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.code_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -292,22 +460,45 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "b5fecfee-86fa-4a82-ba13-cafa5517a8e4",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "None",
+                                "color": "#6092C0",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Alerts Found/Fixed Ratio [GitHub Code Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -315,13 +506,12 @@
                 "gridData": {
                     "h": 5,
                     "i": "85cbbb74-4d3c-44e0-98f6-be076e31aea3",
-                    "w": 14,
-                    "x": 14,
+                    "w": 11,
+                    "x": 21,
                     "y": 0
                 },
                 "panelIndex": "85cbbb74-4d3c-44e0-98f6-be076e31aea3",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -335,41 +525,76 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "5b02c858-e981-4dc4-a3bc-1d563549180a",
+                                "name": "915716e4-324e-4217-853a-1ca266dc4515",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "a45a8e01-295d-4165-a070-248d94ab7356",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
                                         "cbc5557e-f6b9-4140-90b2-3100f33083c4": {
                                             "columnOrder": [
                                                 "3ef214a7-820c-42e3-b2b0-5daa7566fedc",
+                                                "344cef17-99d0-482a-94eb-0c407ef3ab93",
                                                 "4525c4ae-5f82-4b4d-9867-48e4aba462fd"
                                             ],
                                             "columns": {
-                                                "3ef214a7-820c-42e3-b2b0-5daa7566fedc": {
-                                                    "customLabel": true,
+                                                "344cef17-99d0-482a-94eb-0c407ef3ab93": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Open vs Resolved",
+                                                    "label": "Top 10 values of github.code_scanning.state",
                                                     "operationType": "terms",
                                                     "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
                                                             "columnId": "4525c4ae-5f82-4b4d-9867-48e4aba462fd",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
-                                                        "otherBucket": false,
+                                                        "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.code_scanning.most_recent_instance.state"
+                                                    "sourceField": "github.code_scanning.state"
+                                                },
+                                                "3ef214a7-820c-42e3-b2b0-5daa7566fedc": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "NOT \"github.code_scanning.state\" : \"open\" "
+                                                                },
+                                                                "label": "Resolved"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "\"github.code_scanning.state\" : \"open\" "
+                                                                },
+                                                                "label": "Open"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
                                                 },
                                                 "4525c4ae-5f82-4b4d-9867-48e4aba462fd": {
                                                     "dataType": "number",
@@ -396,7 +621,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "5b02c858-e981-4dc4-a3bc-1d563549180a",
+                                        "index": "915716e4-324e-4217-853a-1ca266dc4515",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -409,8 +634,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "a45a8e01-295d-4165-a070-248d94ab7356",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -430,6 +678,7 @@
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
+                                            "344cef17-99d0-482a-94eb-0c407ef3ab93",
                                             "3ef214a7-820c-42e3-b2b0-5daa7566fedc"
                                         ],
                                         "truncateLegend": true
@@ -443,6 +692,7 @@
                             }
                         },
                         "title": "Open vs Resolved/Dismissed [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {}
@@ -450,13 +700,13 @@
                 "gridData": {
                     "h": 15,
                     "i": "1b501988-f932-4d80-8625-d2a1c8cd7321",
-                    "w": 20,
-                    "x": 28,
+                    "w": 16,
+                    "x": 32,
                     "y": 0
                 },
                 "panelIndex": "1b501988-f932-4d80-8625-d2a1c8cd7321",
-                "type": "lens",
-                "version": "8.7.1"
+                "title": "Open vs Resolved [GitHub Code Scanning]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -470,16 +720,22 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "5d417c98-6b80-42b4-9183-15bf539c9c46",
+                                "name": "87d715bf-83d4-4de3-a487-a76b1e2ca6e3",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "c10f8d54-f8a4-45cf-8c17-527a0b914e14",
+                                "name": "01474a2e-8654-4bd4-9538-0f4d090114cc",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "faba399d-2f59-4416-95ec-79e360fa6ecf",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -520,13 +776,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "5d417c98-6b80-42b4-9183-15bf539c9c46",
+                                        "index": "87d715bf-83d4-4de3-a487-a76b1e2ca6e3",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.code_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.code_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -548,7 +807,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "c10f8d54-f8a4-45cf-8c17-527a0b914e14",
+                                        "index": "01474a2e-8654-4bd4-9538-0f4d090114cc",
                                         "key": "github.code_scanning.state",
                                         "negate": false,
                                         "params": {
@@ -561,78 +820,57 @@
                                             "github.code_scanning.state": "open"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "faba399d-2f59-4416-95ec-79e360fa6ecf",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "Labels",
+                                "color": "#E7664C",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "palette": {
-                                    "name": "custom",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 1000
-                                            }
-                                        ],
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 1000
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 1001
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Open Alerts Count [GitHub Code Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 5,
                     "i": "12c18b92-9f7b-4832-b85f-aad64720ea87",
-                    "w": 14,
-                    "x": 0,
+                    "w": 11,
+                    "x": 10,
                     "y": 5
                 },
                 "panelIndex": "12c18b92-9f7b-4832-b85f-aad64720ea87",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -646,16 +884,22 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "1d49d476-9ca6-44e0-8501-35c7f63ed984",
+                                "name": "eb3e000c-55e8-47ff-b181-6b8be83eee8c",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "a0505379-6e67-41c4-b3c8-b7e6bd3efa7d",
+                                "name": "56259762-bbfa-4247-b64a-4626e17fdc23",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3018b8f7-a894-40ef-a2d1-9f7982481e41",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -690,7 +934,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "1d49d476-9ca6-44e0-8501-35c7f63ed984",
+                                        "index": "eb3e000c-55e8-47ff-b181-6b8be83eee8c",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -711,7 +955,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "a0505379-6e67-41c4-b3c8-b7e6bd3efa7d",
+                                        "index": "56259762-bbfa-4247-b64a-4626e17fdc23",
                                         "key": "github.code_scanning.time_to_resolution.sec",
                                         "negate": false,
                                         "type": "exists",
@@ -722,22 +966,45 @@
                                             "field": "github.code_scanning.time_to_resolution.sec"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "3018b8f7-a894-40ef-a2d1-9f7982481e41",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "e33d2853-5b3d-4be9-9312-2d8da64d9523",
-                                "colorMode": "None",
+                                "color": "#6092C0",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "textAlign": "center"
+                                "metricAccessor": "e33d2853-5b3d-4be9-9312-2d8da64d9523"
                             }
                         },
                         "title": "Mean Time to Resolution [GitHub Code Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -745,14 +1012,13 @@
                 "gridData": {
                     "h": 5,
                     "i": "7131e4d3-c168-480d-9496-1463ceaaa97a",
-                    "w": 14,
-                    "x": 14,
+                    "w": 11,
+                    "x": 21,
                     "y": 5
                 },
                 "panelIndex": "7131e4d3-c168-480d-9496-1463ceaaa97a",
                 "title": "Mean Time To Resolution [GitHub Code Scanning]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -766,16 +1032,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "bff2e3f5-8f9b-49f4-ba88-b0e937089c2f",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "960abe90-416f-4075-aaef-2cc0a3af1707",
+                                "name": "0995144d-5a44-4cf1-8d9e-e42a60a9534d",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -789,7 +1051,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Resolved/Dismissed Alerts",
+                                                    "label": "Resolved (Dismissed or Fixed) Alerts",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "format": {
@@ -810,7 +1072,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Dismissed Alerts",
+                                                    "label": "Part of Resolved (Dismissed or Fixed) Alerts",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -832,7 +1094,29 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "bff2e3f5-8f9b-49f4-ba88-b0e937089c2f",
+                                        "field": "github.code_scanning.state",
+                                        "index": "0995144d-5a44-4cf1-8d9e-e42a60a9534d",
+                                        "key": "github.code_scanning.state",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "open"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "github.code_scanning.state": "open"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "cc12dc98-34d8-449e-b418-b4c4ef8b297e",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
@@ -860,77 +1144,37 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "960abe90-416f-4075-aaef-2cc0a3af1707",
-                                        "key": "github.state",
+                                        "field": "labels.is_transform_source",
+                                        "index": "dd3602c0-a608-46ad-b10e-b56d2a09d155",
+                                        "key": "labels.is_transform_source",
                                         "negate": false,
-                                        "params": [
-                                            "dismissed",
-                                            "resolved"
-                                        ],
-                                        "type": "phrases"
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
                                     },
                                     "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "dismissed"
-                                                    }
-                                                },
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "resolved"
-                                                    }
-                                                }
-                                            ]
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "Labels",
+                                "color": "#54B399",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "palette": {
-                                    "name": "positive",
-                                    "params": {
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "positive",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#bbdad3",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#77b6a8",
-                                                "stop": 8
-                                            },
-                                            {
-                                                "color": "#209280",
-                                                "stop": 16
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Resolved/Dismissed Alerts Count [GitHub Code Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -938,13 +1182,13 @@
                 "gridData": {
                     "h": 5,
                     "i": "c3e8ea64-b6f9-470c-9004-02f8909672eb",
-                    "w": 14,
-                    "x": 0,
+                    "w": 11,
+                    "x": 10,
                     "y": 10
                 },
                 "panelIndex": "c3e8ea64-b6f9-470c-9004-02f8909672eb",
-                "type": "lens",
-                "version": "8.7.1"
+                "title": "Resolved (Dismissed) Alerts Count [GitHub Code Scanning]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -955,14 +1199,10 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-d8a21374-4117-4796-96e2-ecd47f2babd2",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "2ce8a419-debd-4a37-85e6-c7b49e61604f",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -993,7 +1233,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Ratio between the alerts and the number of commits generated",
+                                                    "label": "Part of Ratio between the alerts generated and the number of commits",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -1005,7 +1245,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Ratio between the alerts and the number of commits generated",
+                                                    "label": "Part of Ratio between the alerts generated and the number of commits",
                                                     "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -1017,7 +1257,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Ratio between the alerts and the number of commits generated",
+                                                    "label": "Part of Ratio between the alerts generated and the number of commits",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -1054,7 +1294,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "2ce8a419-debd-4a37-85e6-c7b49e61604f",
+                                        "index": "36d42660-8f01-4072-b742-11bb325ae59e",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
@@ -1074,34 +1314,57 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "1bf86065-506d-4303-ae83-fe605d1ec862",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "c96796ed-ded2-4cb6-9e7d-4ffbc1def264",
+                                "color": "#6092C0",
                                 "layerId": "d8a21374-4117-4796-96e2-ecd47f2babd2",
                                 "layerType": "data",
-                                "textAlign": "center"
+                                "metricAccessor": "c96796ed-ded2-4cb6-9e7d-4ffbc1def264"
                             }
                         },
                         "title": "Alert/Commit Ratio [GitHub Code Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 5,
                     "i": "46dc58eb-4994-442d-a6b4-4b3699b74bf1",
-                    "w": 14,
-                    "x": 14,
+                    "w": 11,
+                    "x": 21,
                     "y": 10
                 },
                 "panelIndex": "46dc58eb-4994-442d-a6b4-4b3699b74bf1",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1115,11 +1378,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "1d50dadb-a088-4e8b-842f-8d84e6378658",
+                                "name": "903f820f-b968-4bbc-b978-f6b07e54b01d",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "dc3374b1-bd6c-412a-8d85-598da79fc886",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1218,13 +1487,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "1d50dadb-a088-4e8b-842f-8d84e6378658",
+                                        "index": "903f820f-b968-4bbc-b978-f6b07e54b01d",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.code_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.code_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -1238,8 +1510,31 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "dc3374b1-bd6c-412a-8d85-598da79fc886",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1294,20 +1589,20 @@
                             }
                         },
                         "title": "Alerts count by owner and by repository [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 14,
                     "i": "9a3577e8-d452-46cc-b2dd-9424ec80c871",
-                    "w": 25,
-                    "x": 0,
+                    "w": 18,
+                    "x": 10,
                     "y": 15
                 },
                 "panelIndex": "9a3577e8-d452-46cc-b2dd-9424ec80c871",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1321,11 +1616,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "63aad513-3506-45e9-8c13-d2ee49f689ab",
+                                "name": "f355e045-27f2-49ca-8115-db85848e0835",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ecf608a4-cf24-41d1-ac5d-d69a53c7a181",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1404,13 +1705,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "63aad513-3506-45e9-8c13-d2ee49f689ab",
+                                        "index": "f355e045-27f2-49ca-8115-db85848e0835",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.code_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.code_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -1424,8 +1728,31 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "ecf608a4-cf24-41d1-ac5d-d69a53c7a181",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1452,22 +1779,22 @@
                             }
                         },
                         "title": "Aerts % by owner and by repository [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 14,
                     "i": "ae814e70-2e8e-43df-b62e-e32d1c26f676",
-                    "w": 23,
-                    "x": 25,
+                    "w": 20,
+                    "x": 28,
                     "y": 15
                 },
                 "panelIndex": "ae814e70-2e8e-43df-b62e-e32d1c26f676",
                 "title": "Alerts % by owner and by repository [GitHub Code Scanning]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1481,11 +1808,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "14d80078-f238-406f-9a34-bae0f8616bc0",
+                                "name": "95a606ae-be95-433b-bf8d-1b66b77e4838",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "c0a409ec-0fbc-4a06-98d1-e3c5c5e0a20e",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1543,7 +1876,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "14d80078-f238-406f-9a34-bae0f8616bc0",
+                                        "index": "95a606ae-be95-433b-bf8d-1b66b77e4838",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1556,8 +1889,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "c0a409ec-0fbc-4a06-98d1-e3c5c5e0a20e",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1610,6 +1966,7 @@
                             }
                         },
                         "title": "Tool Contribution Count [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -1620,12 +1977,11 @@
                     "i": "4e77167a-4642-4cbb-8430-2197e2f31666",
                     "w": 14,
                     "x": 0,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "4e77167a-4642-4cbb-8430-2197e2f31666",
                 "title": "Tool Contribution [GitHub Code Scanning]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1639,11 +1995,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "e696efc1-4a91-44d3-ad68-618f00d80703",
+                                "name": "5e629040-5058-44e9-a2d4-50b6b12b26b3",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "8d95ae92-0ad4-4159-9b73-342269046443",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1699,7 +2061,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "e696efc1-4a91-44d3-ad68-618f00d80703",
+                                        "index": "5e629040-5058-44e9-a2d4-50b6b12b26b3",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1712,8 +2074,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "8d95ae92-0ad4-4159-9b73-342269046443",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1743,6 +2128,7 @@
                             }
                         },
                         "title": "Tool Contribution [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {}
@@ -1752,11 +2138,10 @@
                     "i": "5135da2a-0093-4b71-a35a-c2b8877d22dd",
                     "w": 11,
                     "x": 14,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "5135da2a-0093-4b71-a35a-c2b8877d22dd",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1770,11 +2155,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "a9c37a5a-574a-411d-9420-2e53045288f3",
+                                "name": "041d7614-e610-4b2c-906d-482f8252ef40",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "dc24aa1e-1b5b-483d-8f9a-2501d614ae75",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1845,7 +2236,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "a9c37a5a-574a-411d-9420-2e53045288f3",
+                                        "index": "041d7614-e610-4b2c-906d-482f8252ef40",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1858,8 +2249,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "dc24aa1e-1b5b-483d-8f9a-2501d614ae75",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1914,6 +2328,7 @@
                             }
                         },
                         "title": "Daily Tool Contribution [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -1924,11 +2339,10 @@
                     "i": "7a3f8c53-407b-4862-9dc3-10dccfe06426",
                     "w": 23,
                     "x": 25,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "7a3f8c53-407b-4862-9dc3-10dccfe06426",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1942,11 +2356,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "c1f5c308-cb41-49d7-9d2b-034ddea6eec8",
+                                "name": "0a43e606-a685-43a6-b9f0-236efc099835",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ad5332c2-6db1-4b9c-a373-3da51344172d",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1989,7 +2409,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.severity"
+                                                    "sourceField": "github.code_scanning.rule.security_severity_level"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -2005,7 +2425,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "c1f5c308-cb41-49d7-9d2b-034ddea6eec8",
+                                        "index": "0a43e606-a685-43a6-b9f0-236efc099835",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2018,8 +2438,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "ad5332c2-6db1-4b9c-a373-3da51344172d",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2074,6 +2517,7 @@
                             }
                         },
                         "title": "Alert Severity Count [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -2084,11 +2528,10 @@
                     "i": "9653b170-7606-461f-9ac4-bf58547f30db",
                     "w": 14,
                     "x": 0,
-                    "y": 40
+                    "y": 42
                 },
                 "panelIndex": "9653b170-7606-461f-9ac4-bf58547f30db",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2102,11 +2545,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "3ad0255d-c017-4880-b3dd-d60cb17375c1",
+                                "name": "eac4b05e-e29d-4e50-b786-80a5500c0a36",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5b506618-3341-4179-bc0e-052693412f3f",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -2149,7 +2598,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.severity"
+                                                    "sourceField": "github.code_scanning.rule.security_severity_level"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -2165,7 +2614,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "3ad0255d-c017-4880-b3dd-d60cb17375c1",
+                                        "index": "eac4b05e-e29d-4e50-b786-80a5500c0a36",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2178,8 +2627,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "5b506618-3341-4179-bc0e-052693412f3f",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2211,6 +2683,7 @@
                             }
                         },
                         "title": "Alert Severity % [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
@@ -2221,11 +2694,10 @@
                     "i": "563a073c-7de0-4095-b0ac-127caed562f2",
                     "w": 11,
                     "x": 14,
-                    "y": 40
+                    "y": 42
                 },
                 "panelIndex": "563a073c-7de0-4095-b0ac-127caed562f2",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2239,11 +2711,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "8a760085-cbc8-4b89-8401-4eb7f686cc80",
+                                "name": "fb15893b-7148-40a7-bf74-186fa26f5130",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "56dae885-8ab2-4ec1-9683-5bf6ee7075d8",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -2257,7 +2735,7 @@
                                                 "00866684-5176-499e-9517-eff9e9102155": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of github.severity",
+                                                    "label": "Top 10 values of github.code_scanning.rule.security_severity_level",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -2274,7 +2752,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.severity"
+                                                    "sourceField": "github.code_scanning.rule.security_severity_level"
                                                 },
                                                 "257a7d8d-1315-4775-97d9-e679c0f3aa79": {
                                                     "dataType": "date",
@@ -2315,7 +2793,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "8a760085-cbc8-4b89-8401-4eb7f686cc80",
+                                        "index": "fb15893b-7148-40a7-bf74-186fa26f5130",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2328,8 +2806,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "56dae885-8ab2-4ec1-9683-5bf6ee7075d8",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2384,6 +2885,7 @@
                             }
                         },
                         "title": "Daily Alerts Count by Severity [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -2394,11 +2896,10 @@
                     "i": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5",
                     "w": 23,
                     "x": 25,
-                    "y": 40
+                    "y": 42
                 },
                 "panelIndex": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2412,11 +2913,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "d3c21fb5-7785-4c13-b684-0eebfa9a8ea9",
+                                "name": "92144d94-751b-4037-a865-6ee7c6521f4a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3e2c9216-55ba-4fd2-beea-0adf8b281672",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -2474,7 +2981,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "d3c21fb5-7785-4c13-b684-0eebfa9a8ea9",
+                                        "index": "92144d94-751b-4037-a865-6ee7c6521f4a",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2487,8 +2994,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "3e2c9216-55ba-4fd2-beea-0adf8b281672",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2543,6 +3073,7 @@
                             }
                         },
                         "title": "Rule Severity [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -2552,11 +3083,10 @@
                     "i": "c8b71fb6-3611-4788-a05f-fc9336b277f5",
                     "w": 14,
                     "x": 0,
-                    "y": 53
+                    "y": 55
                 },
                 "panelIndex": "c8b71fb6-3611-4788-a05f-fc9336b277f5",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2570,11 +3100,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "68463b79-453f-4a36-a9a5-e747691dbbc9",
+                                "name": "02fe5de4-c150-4e77-8c1d-f915f1dd34d7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "dc642fb7-9919-447f-ab66-93841eb642db",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -2632,7 +3168,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "68463b79-453f-4a36-a9a5-e747691dbbc9",
+                                        "index": "02fe5de4-c150-4e77-8c1d-f915f1dd34d7",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2645,8 +3181,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "dc642fb7-9919-447f-ab66-93841eb642db",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2699,6 +3258,7 @@
                             }
                         },
                         "title": "Top Rules [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -2708,11 +3268,10 @@
                     "i": "26c79a62-100e-4eb4-b878-621e2be8570d",
                     "w": 34,
                     "x": 14,
-                    "y": 53
+                    "y": 55
                 },
                 "panelIndex": "26c79a62-100e-4eb4-b878-621e2be8570d",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2726,11 +3285,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "1fdc2685-af71-4ebd-ad31-9a9f0aa8a12f",
+                                "name": "cfb764b5-f316-4c55-a7b4-1cb1c2dbd10f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "412373e2-29e3-4901-b084-a8bb460d6962",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -2788,7 +3353,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "1fdc2685-af71-4ebd-ad31-9a9f0aa8a12f",
+                                        "index": "cfb764b5-f316-4c55-a7b4-1cb1c2dbd10f",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2801,8 +3366,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "412373e2-29e3-4901-b084-a8bb460d6962",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2853,6 +3441,7 @@
                             }
                         },
                         "title": "Top files [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -2862,11 +3451,10 @@
                     "i": "41578b87-d820-42df-92d5-69af2643d793",
                     "w": 36,
                     "x": 0,
-                    "y": 66
+                    "y": 68
                 },
                 "panelIndex": "41578b87-d820-42df-92d5-69af2643d793",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2880,11 +3468,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "eeb76646-d085-43fb-bad2-e7e78e3470fa",
+                                "name": "349b1a9d-cbb9-4a4a-ae38-4d5d4cf014c8",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "0f927a88-b7af-4233-a926-00e688bb3dee",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -2942,7 +3536,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "eeb76646-d085-43fb-bad2-e7e78e3470fa",
+                                        "index": "349b1a9d-cbb9-4a4a-ae38-4d5d4cf014c8",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2955,8 +3549,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "0f927a88-b7af-4233-a926-00e688bb3dee",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -3003,6 +3620,7 @@
                             }
                         },
                         "title": "Top users dismissing alerts [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -3012,11 +3630,10 @@
                     "i": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b",
                     "w": 12,
                     "x": 36,
-                    "y": 66
+                    "y": 68
                 },
                 "panelIndex": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -3030,11 +3647,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "deab5558-7fec-4cfa-b152-24203a046301",
+                                "name": "8277113a-444f-4f28-a100-ccf0bce92b66",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "bd1547b2-217d-44a7-8b23-069a0e68b4c9",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -3082,7 +3705,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "deab5558-7fec-4cfa-b152-24203a046301",
+                                        "index": "8277113a-444f-4f28-a100-ccf0bce92b66",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -3095,8 +3718,31 @@
                                             "data_stream.dataset": "github.code_scanning"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "bd1547b2-217d-44a7-8b23-069a0e68b4c9",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -3145,6 +3791,7 @@
                             }
                         },
                         "title": "Events Timeline [GitHub Code Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -3154,23 +3801,20 @@
                     "i": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32",
                     "w": 48,
                     "x": 0,
-                    "y": 81
+                    "y": 83
                 },
                 "panelIndex": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[GitHub] Code Scanning Alerts",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-07-10T01:35:24.333Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-10-28T09:53:52.378Z",
     "id": "github-4da91aa0-12fc-11ed-af77-016e1a977d80",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -3184,7 +3828,12 @@
         },
         {
             "id": "logs-*",
-            "name": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac:2c60b75b-1f6f-4bee-8a9c-6b7fdcbc905e",
+            "name": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac:4f9f826a-a1a6-454a-a27e-1dcbdb3a2dd4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac:577b815d-0e9c-46b7-a0e9-d43d604ee84b",
             "type": "index-pattern"
         },
         {
@@ -3194,7 +3843,12 @@
         },
         {
             "id": "logs-*",
-            "name": "85cbbb74-4d3c-44e0-98f6-be076e31aea3:4fa3d8de-226f-4ff3-ab95-b9167e6ff115",
+            "name": "85cbbb74-4d3c-44e0-98f6-be076e31aea3:1bf4d7b4-41e4-44e2-98d4-a145d7509f7b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "85cbbb74-4d3c-44e0-98f6-be076e31aea3:b5fecfee-86fa-4a82-ba13-cafa5517a8e4",
             "type": "index-pattern"
         },
         {
@@ -3204,7 +3858,12 @@
         },
         {
             "id": "logs-*",
-            "name": "1b501988-f932-4d80-8625-d2a1c8cd7321:5b02c858-e981-4dc4-a3bc-1d563549180a",
+            "name": "1b501988-f932-4d80-8625-d2a1c8cd7321:915716e4-324e-4217-853a-1ca266dc4515",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1b501988-f932-4d80-8625-d2a1c8cd7321:a45a8e01-295d-4165-a070-248d94ab7356",
             "type": "index-pattern"
         },
         {
@@ -3214,12 +3873,17 @@
         },
         {
             "id": "logs-*",
-            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:5d417c98-6b80-42b4-9183-15bf539c9c46",
+            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:87d715bf-83d4-4de3-a487-a76b1e2ca6e3",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:c10f8d54-f8a4-45cf-8c17-527a0b914e14",
+            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:01474a2e-8654-4bd4-9538-0f4d090114cc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:faba399d-2f59-4416-95ec-79e360fa6ecf",
             "type": "index-pattern"
         },
         {
@@ -3229,12 +3893,17 @@
         },
         {
             "id": "logs-*",
-            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:1d49d476-9ca6-44e0-8501-35c7f63ed984",
+            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:eb3e000c-55e8-47ff-b181-6b8be83eee8c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:a0505379-6e67-41c4-b3c8-b7e6bd3efa7d",
+            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:56259762-bbfa-4247-b64a-4626e17fdc23",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:3018b8f7-a894-40ef-a2d1-9f7982481e41",
             "type": "index-pattern"
         },
         {
@@ -3244,12 +3913,7 @@
         },
         {
             "id": "logs-*",
-            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:bff2e3f5-8f9b-49f4-ba88-b0e937089c2f",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:960abe90-416f-4075-aaef-2cc0a3af1707",
+            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:0995144d-5a44-4cf1-8d9e-e42a60a9534d",
             "type": "index-pattern"
         },
         {
@@ -3259,17 +3923,17 @@
         },
         {
             "id": "logs-*",
-            "name": "46dc58eb-4994-442d-a6b4-4b3699b74bf1:2ce8a419-debd-4a37-85e6-c7b49e61604f",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "9a3577e8-d452-46cc-b2dd-9424ec80c871:indexpattern-datasource-layer-2592c6ef-cf07-4080-b4fe-014cc142e3c8",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "9a3577e8-d452-46cc-b2dd-9424ec80c871:1d50dadb-a088-4e8b-842f-8d84e6378658",
+            "name": "9a3577e8-d452-46cc-b2dd-9424ec80c871:903f820f-b968-4bbc-b978-f6b07e54b01d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9a3577e8-d452-46cc-b2dd-9424ec80c871:dc3374b1-bd6c-412a-8d85-598da79fc886",
             "type": "index-pattern"
         },
         {
@@ -3279,7 +3943,12 @@
         },
         {
             "id": "logs-*",
-            "name": "ae814e70-2e8e-43df-b62e-e32d1c26f676:63aad513-3506-45e9-8c13-d2ee49f689ab",
+            "name": "ae814e70-2e8e-43df-b62e-e32d1c26f676:f355e045-27f2-49ca-8115-db85848e0835",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ae814e70-2e8e-43df-b62e-e32d1c26f676:ecf608a4-cf24-41d1-ac5d-d69a53c7a181",
             "type": "index-pattern"
         },
         {
@@ -3289,7 +3958,12 @@
         },
         {
             "id": "logs-*",
-            "name": "4e77167a-4642-4cbb-8430-2197e2f31666:14d80078-f238-406f-9a34-bae0f8616bc0",
+            "name": "4e77167a-4642-4cbb-8430-2197e2f31666:95a606ae-be95-433b-bf8d-1b66b77e4838",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4e77167a-4642-4cbb-8430-2197e2f31666:c0a409ec-0fbc-4a06-98d1-e3c5c5e0a20e",
             "type": "index-pattern"
         },
         {
@@ -3299,7 +3973,12 @@
         },
         {
             "id": "logs-*",
-            "name": "5135da2a-0093-4b71-a35a-c2b8877d22dd:e696efc1-4a91-44d3-ad68-618f00d80703",
+            "name": "5135da2a-0093-4b71-a35a-c2b8877d22dd:5e629040-5058-44e9-a2d4-50b6b12b26b3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5135da2a-0093-4b71-a35a-c2b8877d22dd:8d95ae92-0ad4-4159-9b73-342269046443",
             "type": "index-pattern"
         },
         {
@@ -3309,7 +3988,12 @@
         },
         {
             "id": "logs-*",
-            "name": "7a3f8c53-407b-4862-9dc3-10dccfe06426:a9c37a5a-574a-411d-9420-2e53045288f3",
+            "name": "7a3f8c53-407b-4862-9dc3-10dccfe06426:041d7614-e610-4b2c-906d-482f8252ef40",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7a3f8c53-407b-4862-9dc3-10dccfe06426:dc24aa1e-1b5b-483d-8f9a-2501d614ae75",
             "type": "index-pattern"
         },
         {
@@ -3319,7 +4003,12 @@
         },
         {
             "id": "logs-*",
-            "name": "9653b170-7606-461f-9ac4-bf58547f30db:c1f5c308-cb41-49d7-9d2b-034ddea6eec8",
+            "name": "9653b170-7606-461f-9ac4-bf58547f30db:0a43e606-a685-43a6-b9f0-236efc099835",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9653b170-7606-461f-9ac4-bf58547f30db:ad5332c2-6db1-4b9c-a373-3da51344172d",
             "type": "index-pattern"
         },
         {
@@ -3329,7 +4018,12 @@
         },
         {
             "id": "logs-*",
-            "name": "563a073c-7de0-4095-b0ac-127caed562f2:3ad0255d-c017-4880-b3dd-d60cb17375c1",
+            "name": "563a073c-7de0-4095-b0ac-127caed562f2:eac4b05e-e29d-4e50-b786-80a5500c0a36",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "563a073c-7de0-4095-b0ac-127caed562f2:5b506618-3341-4179-bc0e-052693412f3f",
             "type": "index-pattern"
         },
         {
@@ -3339,7 +4033,12 @@
         },
         {
             "id": "logs-*",
-            "name": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5:8a760085-cbc8-4b89-8401-4eb7f686cc80",
+            "name": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5:fb15893b-7148-40a7-bf74-186fa26f5130",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5:56dae885-8ab2-4ec1-9683-5bf6ee7075d8",
             "type": "index-pattern"
         },
         {
@@ -3349,7 +4048,12 @@
         },
         {
             "id": "logs-*",
-            "name": "c8b71fb6-3611-4788-a05f-fc9336b277f5:d3c21fb5-7785-4c13-b684-0eebfa9a8ea9",
+            "name": "c8b71fb6-3611-4788-a05f-fc9336b277f5:92144d94-751b-4037-a865-6ee7c6521f4a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c8b71fb6-3611-4788-a05f-fc9336b277f5:3e2c9216-55ba-4fd2-beea-0adf8b281672",
             "type": "index-pattern"
         },
         {
@@ -3359,7 +4063,12 @@
         },
         {
             "id": "logs-*",
-            "name": "26c79a62-100e-4eb4-b878-621e2be8570d:68463b79-453f-4a36-a9a5-e747691dbbc9",
+            "name": "26c79a62-100e-4eb4-b878-621e2be8570d:02fe5de4-c150-4e77-8c1d-f915f1dd34d7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "26c79a62-100e-4eb4-b878-621e2be8570d:dc642fb7-9919-447f-ab66-93841eb642db",
             "type": "index-pattern"
         },
         {
@@ -3369,7 +4078,12 @@
         },
         {
             "id": "logs-*",
-            "name": "41578b87-d820-42df-92d5-69af2643d793:1fdc2685-af71-4ebd-ad31-9a9f0aa8a12f",
+            "name": "41578b87-d820-42df-92d5-69af2643d793:cfb764b5-f316-4c55-a7b4-1cb1c2dbd10f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "41578b87-d820-42df-92d5-69af2643d793:412373e2-29e3-4901-b084-a8bb460d6962",
             "type": "index-pattern"
         },
         {
@@ -3379,7 +4093,12 @@
         },
         {
             "id": "logs-*",
-            "name": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b:eeb76646-d085-43fb-bad2-e7e78e3470fa",
+            "name": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b:349b1a9d-cbb9-4a4a-ae38-4d5d4cf014c8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b:0f927a88-b7af-4233-a926-00e688bb3dee",
             "type": "index-pattern"
         },
         {
@@ -3389,7 +4108,12 @@
         },
         {
             "id": "logs-*",
-            "name": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32:deab5558-7fec-4cfa-b152-24203a046301",
+            "name": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32:8277113a-444f-4f28-a100-ccf0bce92b66",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32:bd1547b2-217d-44a7-8b23-069a0e68b4c9",
             "type": "index-pattern"
         },
         {
@@ -3411,7 +4135,13 @@
             "id": "logs-*",
             "name": "controlGroup_3d506940-8d8f-4f4f-8fa8-5ac070d1dc36:optionsListDataView",
             "type": "index-pattern"
+        },
+        {
+            "id": "github-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

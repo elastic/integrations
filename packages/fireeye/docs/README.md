@@ -175,5 +175,4 @@ An example event for `nx` looks as following:
         "fireeye-nx"
     ]
 }
-
 ```

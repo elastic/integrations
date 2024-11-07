@@ -70,7 +70,7 @@ processors:
   #######################
   - set:
       field: _tmp.timestamp
-      value: "{{forcepoint_web.date}} {{forcepoint_web.time}}"
+      value: "{{{forcepoint_web.date}}} {{{forcepoint_web.time}}}"
       if: ctx.forcepoint_web?.date != null && ctx.forcepoint_web?.date != "" && ctx.forcepoint_web?.time != null && ctx.forcepoint_web?.time != ""
   - date:
       if: ctx._tmp?.timestamp != null && ctx.event.timezone == null
@@ -95,7 +95,7 @@ processors:
   - append:
       field: related.ip
       value:
-        - '{{destination.ip}}'
+        - '{{{destination.ip}}}'
       if: ctx.destination?.ip != null && ctx.destination?.ip != ""
   - convert:
       field: forcepoint_web.source_ip
@@ -105,7 +105,7 @@ processors:
   - append:
       field: related.ip
       value:
-        - '{{source.ip}}'
+        - '{{{source.ip}}}'
       if: ctx.source?.ip != null && ctx.source?.ip != ""
   - convert:
       field: forcepoint_web.connection_ip
@@ -115,7 +115,7 @@ processors:
   - append:
       field: related.ip
       value:
-        - '{{source.nat.ip}}'
+        - '{{{source.nat.ip}}}'
       if: ctx.source?.nat?.ip != null && ctx.source?.nat?.ip != ""
   - uppercase:
       field: forcepoint_web.http_request_method

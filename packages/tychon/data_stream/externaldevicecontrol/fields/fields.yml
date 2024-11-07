@@ -1,0 +1,93 @@
+- name: tychon
+  type: group
+  fields:
+    - name: event_data
+      type: group
+      fields:
+        - name: device_description
+          type: keyword
+          description: The description of the device that connected
+        - name: device_id
+          type: keyword
+          description: The device Identifer
+        - name: device_location
+          type: keyword
+          description: The device location of where it was plugged in
+    - name: log
+      type: group
+      fields:
+        - name: event_data
+          type: group
+          fields:
+            - name: device_description
+              type: keyword
+              description: The description of the device that connected
+        - name: event_id
+          type: long
+          description: The event log id
+        - name: event_summary
+          type: keyword
+          description: A description of the event
+        - name: record_id
+          type: long
+          description: The record id from the event
+        - name: time_created
+          type: date
+          description: The time this event was created
+        - name: user_data
+          type: group
+          fields:
+            - name: code_name
+              type: keyword
+              description: The device trying to connect code name
+            - name: device_id
+              type: keyword
+              description: The device Identifer trying to connnect, used to update whitelists of allowed hardware
+    - name: policy
+      type: group
+      fields:
+        - name: attach
+          type: group
+          fields:
+            - name: action
+              type: keyword
+              description: Determines if the action was a success or failure
+            - name: changed
+              type: boolean
+              description: TYCHON changed the value of the attachment policy
+        - name: execution
+          type: group
+          fields:
+            - name: action
+              type: keyword
+              description: Determines if the action was a success or failure
+            - name: changed
+              type: boolean
+              description: TYCHON changed the value of the exeuction policy
+        - name: whitelist
+          type: group
+          fields:
+            - name: action
+              type: keyword
+              description: Determines if the action was a success or failure
+            - name: changed
+              type: boolean
+              description: TYCHON changed the value of the whitelist policy
+            - name: current_value
+              type: text
+              description: The current value of the whitelist
+            - name: previous_value
+              type: text
+              description: The previous value of the whitelist
+    - name: tychon
+      type: group
+      fields:
+        - name: data
+          type: group
+          fields:
+            - name: version
+              type: keyword
+              description: Tychon data version
+    - name: type
+      type: keyword
+      description: The type of event being sent for device control, policy change type (policy) or device event (device) from the event log

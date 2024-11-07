@@ -97,6 +97,15 @@ SELECT file_name,
          over() AS TOTAL_BYTES
 FROM   details"
     response_format: table  
+{{#if enable_extended_space_metrics}}
+  - query: "SELECT a.tablespace_name,
+(a.tablespace_size * b.block_size) as tb_extended_total,
+((a.tablespace_size - a.used_space) * b.block_size) as tb_extended_free,
+(a.used_space * b.block_size) as tb_extended_used
+FROM dba_tablespace_usage_metrics a JOIN dba_tablespaces b
+ON a.tablespace_name = b.tablespace_name"
+    response_format: table
+{{/if}}
 {{#if processors}}
 processors:
 {{processors}}

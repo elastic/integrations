@@ -118,7 +118,6 @@ An example event for `sflow` looks as following:
         "sflow"
     ]
 }
-
 ```
 
 ## Requirements

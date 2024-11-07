@@ -11,18 +11,21 @@ processors:
       if: ctx.event?.original == null
   - json:
       field: event.original
-      target_field: json
+      target_field: slack
   - date:
-      field: json.date_create
+      field: slack.date_create
       formats:
         - UNIX
       target_field: "@timestamp"
+  - remove:
+      field: slack.date_create
+      ignore_missing: true
   - rename:
-      field: json.action
+      field: slack.action
       target_field: event.action
       ignore_missing: true
   - rename:
-      field: json.id
+      field: slack.id
       target_field: event.id
       ignore_missing: true
   - fingerprint:
@@ -31,122 +34,129 @@ processors:
       target_field: _id
       ignore_missing: true
   - rename:
-      field: json.actor.user.id
+      field: slack.actor.user.id
       target_field: user.id
       ignore_missing: true
   - rename:
-      field: json.actor.user.name
+      field: slack.actor.user.name
       target_field: user.full_name
       ignore_missing: true
   - rename:
-      field: json.actor.user.email
+      field: slack.actor.user.email
       target_field: user.email
       ignore_missing: true
   - rename:
-      field: json.entity.workspace
+      field: slack.actor
+      target_field: slack.audit.actor
+      ignore_missing: true
+  - rename:
+      field: slack.entity.workspace
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.enterprise
+      field: slack.entity.enterprise
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.user
+      field: slack.entity.user
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.file
+      field: slack.entity.file
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.channel
+      field: slack.entity.channel
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.app
+      field: slack.entity.app
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.workflow
+      field: slack.entity.workflow
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.user
+      field: slack.entity.usergroup
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.usergroup
+      field: slack.entity.barrier
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.barrier
+      field: slack.entity.message
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.message
+      field: slack.entity.role
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.role
+      field: slack.entity.account_type_role
       target_field: slack.audit.entity
       ignore_missing: true
-      if: "ctx.slack?.entity == null"
+      if: ctx.slack?.audit?.entity == null
   - rename:
-      field: json.entity.account_type_role
-      target_field: slack.audit.entity
-      ignore_missing: true
-      if: "ctx.slack?.entity == null"
-  - rename:
-      field: json.entity.type
+      field: slack.entity.type
       target_field: slack.audit.entity.entity_type
       ignore_missing: true
   - rename:
-      field: json.context.ua
+      field: slack.context.ua
       target_field: user_agent.original
       ignore_missing: true
   - user_agent:
       field: user_agent.original
       ignore_failure: true
   - rename:
-      field: json.context.ip_address
+      field: slack.context.ip_address
       target_field: source.address
       ignore_missing: true
   - rename:
-      field: json.details.location
-      target_field: slack.audit.details.location
+      field: slack.details
+      target_field: slack.audit.details
       ignore_missing: true
   - convert:
       type: ip
-      field: json.details.previous_ip_address
+      field: slack.audit.details.previous_ip_address
       target_field: slack.audit.details.previous_ip_address
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: slack.audit.details.previous_ip_address
+            ignore_failure: true
+        - set:
+            field: event.kind
+            value: pipeline_error
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - rename:
-      field: json.details.previous_ua
+      field: slack.audit.details.previous_ua
       target_field: slack.audit.details.previous_user_agent
       ignore_missing: true
   - rename:
-      field: json.details.reason
-      target_field: slack.audit.details.reason
-      ignore_missing: true
-  - rename:
-      field: json.details.md5_hash
+      field: slack.audit.details.md5_hash
       target_field: slack.audit.details.md5
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{slack.audit.details.md5}}'
+      value: '{{{slack.audit.details.md5}}}'
       allow_duplicates: false
       if: ctx.slack?.audit?.details?.md5 != null
   - set:
@@ -155,19 +165,38 @@ processors:
       ignore_empty_value: true
       if: ctx.slack?.audit?.entity?.entity_type == "file"
   - script:
-      if: ctx.json?.details?.action_timestamp != null && ctx.json.details.action_timestamp > 1e13
+      if: ctx.slack?.audit?.details?.action_timestamp != null && ctx.slack.audit.details.action_timestamp > 1e13
       description: Parse action_timestamp as microseconds since unix epoch.
       tag: action-timestamp-microseconds
       source: |
-        def secs = (long)(ctx.json.details.action_timestamp/1e6);
-        def nanos = (long)(ctx.json.details.action_timestamp % 1e6) * 1000;
+        def secs = (long)(ctx.slack.audit.details.action_timestamp/1e6);
+        def nanos = (long)(ctx.slack.audit.details.action_timestamp % 1e6) * 1000;
         ctx["@timestamp"] = Instant.ofEpochSecond(secs, nanos).atZone(ZoneId.of("UTC"));
-        ctx.json.details.remove("action_timestamp");
+        ctx.slack.audit.details.remove("action_timestamp");
   - date:
-      if: ctx.json?.details?.action_timestamp != null
-      field: json.details.action_timestamp
+      if: ctx.slack?.audit?.details?.action_timestamp != null
+      field: slack.audit.details.action_timestamp
       formats:
         - UNIX_MS
+      on_failure:
+        - remove:
+            field: slack.audit.details.action_timestamp
+            ignore_failure: true
+        - set:
+            field: event.kind
+            value: pipeline_error
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - remove:
+      field: slack.audit.details.action_timestamp
+      ignore_missing: true
+  - uri_parts:
+      field: slack.audit.details.url_private
+      ignore_missing: true
   - convert:
       field: source.address
       target_field: source.ip
@@ -194,11 +223,11 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
-      field: json.context.location
+      field: slack.context.location
       target_field: slack.audit.context
       ignore_missing: true
   - rename:
-      field: json.context.session_id
+      field: slack.context.session_id
       target_field: slack.audit.context.session_id
       ignore_missing: true
   - convert:
@@ -408,10 +437,6 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - remove:
-      field:
-        - json
-      ignore_missing: true
-  - remove:
       field: event.original
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
@@ -445,9 +470,9 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        Processor '{{ _ingest.on_failure_processor_type }}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error

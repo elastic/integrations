@@ -63,6 +63,18 @@ processors:
       value: authentication
       if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5231','5233','5239'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5231','5233','5239'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5404','5434','5413'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
   - append:
       tag: append_event_type
       field: event.type
@@ -213,6 +225,11 @@ processors:
       target_field: cisco_ise.log.endpoint.mac.address
       ignore_failure: true
       ignore_missing: true
+  - set:
+      field: client.mac
+      copy_from: cisco_ise.log.endpoint.mac.address
+      ignore_failure: true
+      ignore_empty_value: true
   - gsub:
       field: cisco_ise.log.endpoind.mac.address
       pattern: '[-:.]'
@@ -575,6 +592,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        Processor '{{ _ingest.on_failure_processor_type }}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

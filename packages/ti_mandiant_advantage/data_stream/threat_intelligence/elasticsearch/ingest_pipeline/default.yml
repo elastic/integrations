@@ -387,15 +387,15 @@ processors:
           }
           drop(ctx);
       ignore_failure: true
-- remove:
-      field: event.original
-      ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
 - fingerprint:
+      description: >
+        Fingerprint the event.original value in attempt to prevent the same
+        event from being indexed more than once under connection failures or
+        other agent related issues. This assumes that httpjson consistently 
+        normalizes the JSON (i.e. sorted keys and minimized).
+      if: ctx.event?.original != null
       fields:
-      - mandiant.threat_intelligence.ioc.last_seen
-      - mandiant.threat_intelligence.ioc.value
+        - event.original
       target_field: _id
       ignore_missing: true
       ignore_failure: true
@@ -407,7 +407,10 @@ processors:
 on_failure:
   - append:
         field: error.message
-        value: '{{{_ingest.on_failure_message}}}'
+        value: >-
+          Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
         field: event.kind
         value: pipeline_error

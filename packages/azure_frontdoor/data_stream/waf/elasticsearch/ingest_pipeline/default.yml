@@ -184,13 +184,13 @@ processors:
   # set user.email to the original name if the above grok succeeded.
   - set:
       field: user.email
-      value: '{{azure.frontdoor.waf.identity.claims_initiated_by_user.name}}'
+      value: '{{{azure.frontdoor.waf.identity.claims_initiated_by_user.name}}}'
       ignore_empty_value: true
       if: 'ctx.user?.name != null'
   # set user.name to the original name if the above grok failed (name format is not an email).
   - set:
       field: user.name
-      value: '{{azure.frontdoor.waf.identity.claims_initiated_by_user.name}}'
+      value: '{{{azure.frontdoor.waf.identity.claims_initiated_by_user.name}}}'
       ignore_empty_value: true
       if: 'ctx.user?.name == null'
   - rename:
@@ -203,22 +203,22 @@ processors:
       ignore_missing: true
   - append:
       field: user.roles
-      value: '{{azure.frontdoor.waf.identity.authorization.evidence.role}}'
+      value: '{{{azure.frontdoor.waf.identity.authorization.evidence.role}}}'
       allow_duplicates: false
       if: ctx.azure?.frontdoor?.waf?.identity?.authorization?.evidence?.role != null
   - append:
       field: related.user
-      value: '{{user.name}}'
+      value: '{{{user.name}}}'
       allow_duplicates: false
       if: 'ctx.user?.name != null'
   - append:
       field: related.user
-      value: '{{user.full_name}}'
+      value: '{{{user.full_name}}}'
       allow_duplicates: false
       if: 'ctx.user?.name != null'
   - append:
       field: related.user
-      value: '{{user.id}}'
+      value: '{{{user.id}}}'
       allow_duplicates: false
       if: 'ctx.user?.name != null'
   - rename:
@@ -259,11 +259,6 @@ processors:
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
       ignore_missing: true
 
 on_failure:

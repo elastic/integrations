@@ -1171,36 +1171,46 @@ processors:
       copy_from: m365_defender.event.md5
       ignore_empty_value: true
       tag: set_file_hash_md5
-      if: ctx.event?.category != null && 
-        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: >-
+        ctx.event?.category != null && 
+        !ctx.event.category.contains('process') &&
+        !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.hash.sha1
       copy_from: m365_defender.event.sha1
       ignore_empty_value: true
       tag: set_file_hash_sha1
-      if: ctx.event?.category != null && 
-        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: >-
+        ctx.event?.category != null && 
+        !ctx.event.category.contains('process') &&
+        !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.hash.sha256
       copy_from: m365_defender.event.sha256
       ignore_empty_value: true
       tag: set_file_hash_sha256
-      if: ctx.event?.category != null && 
-        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: >-
+        ctx.event?.category != null && 
+        !ctx.event.category.contains('process') &&
+        !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.name
       copy_from: m365_defender.event.file.name
       ignore_empty_value: true
       tag: set_file_name
-      if: ctx.event?.category != null && 
-        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: >-
+        ctx.event?.category != null && 
+        !ctx.event.category.contains('process') &&
+        !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.size
       copy_from: m365_defender.event.file.size
       ignore_empty_value: true
       tag: set_file_size
-      if: ctx.event?.category != null && 
-        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: >-
+        ctx.event?.category != null && 
+        !ctx.event.category.contains('process') &&
+        !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.x509.not_after
       copy_from: m365_defender.event.certificate.expiration_time
@@ -1992,10 +2002,22 @@ processors:
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('macos')
   # host.os.type can also be derived for Windows based on event.category
   - set:
+      field: _tmp.posix
+      value: true
+      if: >-
+        ctx.m365_defender?.event?.additional_fields != null &&
+        !(ctx.m365_defender.event.additional_fields instanceof List) &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixEffectiveGroup != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixEffectiveUser != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixFilePermissions != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixProcessGroupId != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixRealUser != null &&
+        ctx.m365_defender.event.additional_fields.InitiatingProcessPosixSessionId != null
+  - set:
       field: host.os.type
       value: windows
-      if: >- 
-        ctx.event?.category != null && (
+      if: >-
+        ctx.event?.category != null && ctx._tmp?.posix != true && (
             ctx.event.category.contains('api') || 
             ctx.event.category.contains('registry') || 
             ctx.event.category.contains('library') || 
@@ -2004,7 +2026,7 @@ processors:
   - set:
       field: host.os.type
       value: windows
-      if: >- 
+      if: >-
         ctx.event?.category != null && ctx.event.category.contains('file') && (
             ctx.m365_defender?.event?.initiating_process?.account_sid != null || 
             ctx.m365_defender?.event?.request?.account_sid != null
@@ -2012,25 +2034,29 @@ processors:
   - set:
       field: host.os.type
       value: windows
-      if: >- 
-        ctx.event?.category != null && ctx.event.category.contains('process') && (
+      if: >-
+        ctx.event?.category != null && ctx._tmp?.posix != true && ctx.event.category.contains('process') && (
             ctx.m365_defender?.event?.initiating_process?.account_sid != null
         )
   - set:
       field: host.os.type
       value: windows
-      if: >- 
-        ctx.event?.category != null && ctx.event.category.contains('authentication') && (
+      if: >-
+        ctx.event?.category != null && ctx._tmp?.posix != true && ctx.event.category.contains('authentication') && (
             ctx.m365_defender?.event?.initiating_process?.account_sid != null ||
             ctx.m365_defender?.event?.account?.sid != null
         )
   - set:
       field: host.os.type
       value: windows
-      if: >- 
-        ctx.event?.category != null && ctx.event.category.contains('network') && (
+      if: >-
+        ctx.event?.category != null && ctx._tmp?.posix != true && ctx.event.category.contains('network') && (
             ctx.m365_defender?.event?.initiating_process?.account_sid != null
         )
+  - set:
+      field: host.os.type
+      value: unix
+      if: ctx.host?.os?.type == null && ctx._tmp?.posix == true
 
   - set:
       field: host.os.full

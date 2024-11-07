@@ -56,10 +56,6 @@ processors:
       field: event.reason
       copy_from: json.reason
       ignore_failure: true
-  - set:
-      field: source.address
-      copy_from: json.access_device.ip
-      ignore_failure: true
   - grok:
       field: json.access_device.ip
       patterns:
@@ -93,14 +89,62 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.access_device.ip
+      target_field: cisco_duo.auth.access_device.ip
+      ignore_missing: true
+  - rename:
+      field: json.access_device.port
+      target_field: cisco_duo.auth.access_device.port
+      ignore_missing: true
+  - geoip:
+      field: cisco_duo.auth.access_device.ip
+      target_field: cisco_duo.auth.access_device.geo
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: cisco_duo.auth.access_device.ip
+      target_field: cisco_duo.auth.access_device.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cisco_duo.auth.access_device.as.asn
+      target_field: cisco_duo.auth.access_device.as.number
+      ignore_missing: true
+  - rename:
+      field: cisco_duo.auth.access_device.as.organization_name
+      target_field: cisco_duo.auth.access_device.as.organization.name
+      ignore_missing: true
   - set:
       field: source.ip
-      copy_from: json.access_device.ip
+      copy_from: cisco_duo.auth.access_device.ip
       ignore_failure: true
+      ignore_empty_value: true
   - set:
       field: source.port
-      copy_from: json.access_device.port
+      copy_from: cisco_duo.auth.access_device.port
       ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: source.as
+      copy_from: cisco_duo.auth.access_device.as
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: source.geo
+      copy_from: cisco_duo.auth.access_device.geo
+      ignore_failure: true
+      ignore_empty_value: true
   - grok:
       field: json.auth_device.ip
       patterns:
@@ -154,34 +198,6 @@ processors:
   - rename:
       field: json.user.groups
       target_field: source.user.group.name
-      ignore_missing: true
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
       ignore_missing: true
   - geoip:
       field: json.auth_device.ip
@@ -279,14 +295,6 @@ processors:
       field: json.access_device.hostname
       target_field: cisco_duo.auth.access_device.hostname
       if: ctx.json?.access_device?.hostname != null
-  - rename:
-      field: json.access_device.ip
-      target_field: cisco_duo.auth.access_device.ip
-      ignore_missing: true
-  - rename:
-      field: json.access_device.port
-      target_field: cisco_duo.auth.access_device.port
-      ignore_missing: true
   - rename:
       field: json.access_device.is_encryption_enabled
       target_field: cisco_duo.auth.access_device.is_encryption_enabled

@@ -1,0 +1,311 @@
+---
+description: Pipeline for processing Harmony Endpoint Forensics logs
+processors:
+
+#################### Event ECS fields ########################
+
+  - set:
+      field: event.module
+      value: checkpoint_harmony_endpoint
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - set:
+      field: event.kind
+      value: alert
+  - set:
+      field: event.category
+      value: ['malware']
+  - set:
+      field: event.type
+      value: ['info']
+  - set:
+      field: event.dataset
+      value: checkpoint_harmony_endpoint.forensics
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - drop:
+      if: ctx.json?.event?.reason == 'polling'      
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+
+#################### Related fields ##########################
+
+  - append:
+      field: related.user
+      value: '{{{json.src_user_name}}}'
+      allow_duplicates: false
+      if: ctx.json?.src_user_name instanceof String
+  - foreach:
+      field: json.src_user_name
+      if: ctx.json?.src_user_name instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_src_user_name_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{json.process_username}}}'
+      allow_duplicates: false
+      if: ctx.json?.process_username != null
+  - append:
+      field: related.ip
+      value: '{{{json.src}}}'
+      if: ctx.json?.src != null && ctx.json?.src != '0.0.0.0'
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{json.dst}}}'
+      if: ctx.json?.dst != null && ctx.json?.dst != '0.0.0.0'
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{json.proxy_src_ip}}}'
+      if: ctx.json?.proxy_src_ip != null && ctx.json?.proxy_src_ip != '0.0.0.0'
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{json.src_machine_name}}}'
+      if: ctx.json?.src_machine_name != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{json.file_md5}}}'
+      if: ctx.json?.file_md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: '{{{json.file_sha1}}}'
+      if: ctx.json?.file_sha1 != null
+      allow_duplicates: false
+
+###################### ECS fields ###########################
+
+  - date:
+      field: json.time
+      target_field: "@timestamp"
+      formats:
+        - strict_date_optional_time_nanos
+  - rename:
+      field: json.host_type
+      target_field: host.type
+      ignore_missing: true
+  - append:
+      field: host.ip
+      value: '{{{json.src}}}'
+      if: ctx.json?.src != null && ctx.json?.src != '0.0.0.0'
+      allow_duplicates: false
+  - rename:
+      field: json.src_machine_name
+      target_field: host.hostname
+      override: true
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: host.hostname
+      ignore_empty_value: true
+  - rename:
+      field: json.os_name
+      target_field: host.os.name
+      if: ctx.json?.os_name != null
+      override: true
+  - rename:
+      field: json.os_version
+      target_field: host.os.version
+      if: ctx.json?.os_version != null
+      override: true
+  - script:
+      lang: painless
+      if: ctx.host?.os?.name != null && ctx.host?.os?.version != null
+      source: |-
+        if (ctx.host.os.name instanceof List && ctx.host.os.name.size() == 1)
+            ctx.host.os.name = ctx.host.os.name[0];
+        if (ctx.host.os.version instanceof List && ctx.host.os.version.size() == 1)
+            ctx.host.os.version = ctx.host.os.version[0];
+  - rename:
+      field: json.domain
+      target_field: user.domain
+      ignore_missing: true
+  - rename:
+      field: json.src_user_name
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: json.user_sid
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: json.file_type
+      target_field: file.type
+      if: ctx.json?.file_type != null
+      ignore_missing: true
+  - rename:
+      field: json.file_name
+      target_field: file.name
+      if: ctx.json?.file_name != null
+  - script:
+      lang: painless
+      if: ctx.file?.name != null
+      source: |-
+        if (ctx.file.name instanceof List)
+            ctx.file.name = ctx.file.name[0];
+  - remove:
+      field: file.name
+      ignore_missing: true
+      if: ctx.file?.name == " "
+  - rename:
+      field: json.file_size
+      target_field: file.size
+      ignore_missing: true
+  - rename:
+      field: json.resource
+      target_field: file.path
+      if: ctx.json?.resource != null && !["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
+  - script:
+      lang: painless
+      if: ctx.file?.path != null
+      source: |-
+        if (ctx.file.path instanceof List && ctx.file.path.size() == 1)
+            ctx.file.path = ctx.file.path[0];
+  - rename:
+      field: json.resource
+      target_field: url.original
+      if: ctx.json?.resource != null && ["http emulation", "url reputation", "url filtering", "phishing"].contains(ctx.json?.protection_type?.toLowerCase())
+  - script:
+      lang: painless
+      if: ctx.url?.original != null
+      source: |-
+        if (ctx.url.original instanceof List && ctx.url.original.size() == 1)
+            ctx.url.original = ctx.url.original[0];
+  - rename:
+      field: json.file_md5
+      target_field: file.hash.md5
+      if: ctx.json?.file_md5 != null
+      ignore_missing: true
+  - rename:
+      field: json.file_sha1
+      target_field: file.hash.sha1
+      if: ctx.json?.file_sha1 != null
+      ignore_missing: true
+  - rename:
+      field: json.protection_name
+      target_field: rule.name
+      ignore_missing: true
+
+#################### Forensics Log fields ####################
+
+  - rename:
+      field: json
+      target_field: checkpoint_harmony_endpoint.forensics
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.forensics.policy_date
+      target_field: checkpoint_harmony_endpoint.forensics.policy.date
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.forensics.policy_name
+      target_field: checkpoint_harmony_endpoint.forensics.policy.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.forensics.policy_number
+      target_field: checkpoint_harmony_endpoint.forensics.policy.number
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.forensics.client_name
+      target_field: checkpoint_harmony_endpoint.forensics.client.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.forensics.client_version
+      target_field: checkpoint_harmony_endpoint.forensics.client.version
+      if: ctx.checkpoint_harmony_endpoint.forensics?.client_version != null
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.forensics?.client?.version != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.forensics.client.version instanceof List && ctx.checkpoint_harmony_endpoint.forensics.client.version.size() == 1)
+            ctx.checkpoint_harmony_endpoint.forensics.client.version = ctx.checkpoint_harmony_endpoint.forensics.client.version[0];
+  - rename:
+      field: checkpoint_harmony_endpoint.forensics.malware_action
+      target_field: checkpoint_harmony_endpoint.forensics.malware.action
+      if: ctx.checkpoint_harmony_endpoint.forensics?.malware_action != null
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.forensics?.malware?.action != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.forensics.malware.action instanceof List && ctx.checkpoint_harmony_endpoint.forensics.malware.action.size() == 1)
+            ctx.checkpoint_harmony_endpoint.forensics.malware.action = ctx.checkpoint_harmony_endpoint.forensics.malware.action[0];
+  - remove:
+      field: checkpoint_harmony_endpoint.forensics.malware.action
+      ignore_missing: true
+      if: ctx.checkpoint_harmony_endpoint?.forensics?.malware?.action == " "
+  - script:
+      lang: painless
+      if: ctx.checkpoint_harmony_endpoint?.forensics?.web_client_type != null
+      source: |-
+        if (ctx.checkpoint_harmony_endpoint.forensics.web_client_type instanceof List && ctx.checkpoint_harmony_endpoint.forensics.web_client_type.size() == 1)
+            ctx.checkpoint_harmony_endpoint.forensics.web_client_type = ctx.checkpoint_harmony_endpoint.forensics.web_client_type[0];
+  - remove:
+      field: checkpoint_harmony_endpoint.forensics.web_client_type
+      ignore_missing: true
+      if: ctx.checkpoint_harmony_endpoint?.forensics?.web_client_type == " "
+  - rename:
+      field: checkpoint_harmony_endpoint.forensics.product
+      target_field: checkpoint_harmony_endpoint.forensics.product.name
+      ignore_missing: true
+  - rename:
+      field: checkpoint_harmony_endpoint.forensics.product_family
+      target_field: checkpoint_harmony_endpoint.forensics.product.family
+      ignore_missing: true
+
+########################## Clean Up ###########################
+
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+  - remove:
+      field:
+        - checkpoint_harmony_endpoint.forensics.client_version
+        - checkpoint_harmony_endpoint.forensics.malware_action
+        - checkpoint_harmony_endpoint.forensics.product_family
+        - checkpoint_harmony_endpoint.forensics.resource
+        - checkpoint_harmony_endpoint.forensics.orig
+        - checkpoint_harmony_endpoint.forensics.os_name
+        - checkpoint_harmony_endpoint.forensics.os_version
+        - checkpoint_harmony_endpoint.forensics.time
+      ignore_missing: true
+      tag: remove_custom_duplicate_fields
+
+###############################Handle failures###############
+
+on_failure:
+  - append:
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+
+################################################################

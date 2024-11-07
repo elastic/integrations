@@ -427,10 +427,13 @@ processors:
         if (!matcher.find()) {
             return;
         }
+        if (ctx.tls == null) {
+            ctx.tls = new HashMap();
+        }
         ctx.tls.version_protocol = tlsver.substring(0, matcher.start());
         ctx.tls.version = tlsver.substring(matcher.start(), tlsver.length());
         if (!ctx.tls.version.contains(".")) {
-          ctx.tls.version += ".0";
+            ctx.tls.version += ".0";
         }
   - append:
       field: vulnerability.category

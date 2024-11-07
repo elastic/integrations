@@ -915,9 +915,10 @@ processors:
           }
         }
   - gsub:
+      tag: extract_ipv4_and_port
       field: client._temp
-      pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)'
-      replacement: '$1'
+      pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](:[0-9]+)?)?$'
+      replacement: '$1$2'
       ignore_missing: true
   - grok:
       field: client._temp
@@ -1043,32 +1044,32 @@ processors:
       if: 'ctx.network?.type == null && ctx.client?.ip != null'
   - append:
       field: related.ip
-      value: "{{client.ip}}"
+      value: "{{{client.ip}}}"
       allow_duplicates: false
       if: ctx.client?.ip != null
   - append:
       field: related.ip
-      value: "{{server.ip}}"
+      value: "{{{server.ip}}}"
       allow_duplicates: false
       if: ctx.server?.ip != null
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      value: "{{user.target.name}}"
+      value: "{{{user.target.name}}}"
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
       field: related.user
-      value: "{{file.owner}}"
+      value: "{{{file.owner}}}"
       allow_duplicates: false
       if: ctx.file?.owner != null
   - append:
       field: related.user
-      value: "{{o365audit.Parameters.User}}"
+      value: "{{{o365audit.Parameters.User}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Parameters?.User != null
   - rename:
@@ -1153,9 +1154,20 @@ processors:
       field: o365audit.YammerNetworkId
       type: string
       ignore_missing: true
+  - gsub:
+      field: o365audit.Data
+      pattern: ',\"QueryTime\":\"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M\"|\"QueryTime\":\"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M\",'
+      replacement: ""
+      if: ctx.o365audit?.containsKey('Data') == true && ctx.o365audit?.RecordType == '64'
+      tag: gsub_remove_duplicated_querytime
   - json:
       field: o365audit.Data
       if: ctx.o365audit?.containsKey('Data') == true
+      on_failure:
+        - remove:
+            field: o365audit.Data
+            ignore_missing: true
+            description: remove_malformed_data
   - rename:
       field: o365audit.Data
       target_field: o365audit.Data.flattened
@@ -1213,22 +1225,22 @@ processors:
       if: ctx.o365audit?.Data?.ttdt != null
   - append:
       field: related.user
-      value: "{{o365audit.Data.f3u}}"
+      value: "{{{o365audit.Data.f3u}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Data?.f3u?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.f3u.length() >= 3;
   - append:
       field: related.user
-      value: "{{o365audit.Data.suid}}"
+      value: "{{{o365audit.Data.suid}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Data?.suid?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.suid.length() >= 3;
   - append:
       field: related.user
-      value: "{{o365audit.Data.tsd}}"
+      value: "{{{o365audit.Data.tsd}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Data?.tsd?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.tsd.length() >= 3;
   - append:
       field: related.user
-      value: "{{o365audit.Data.trc}}"
+      value: "{{{o365audit.Data.trc}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Data?.trc?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.trc.length() >= 3;
   - rename:

@@ -1,42 +1,194 @@
 # Anomali Integration
 
-The Anomali integration supports the following datasets.
+The Anomali integration can fetch indicators from [Anomali ThreatStream](https://www.anomali.com/products/threatstream), a commercial Threat Intelligence service.
 
-- `threatstream` dataset: Support for [Anomali ThreatStream](https://www.anomali.com/products/threatstream), a commercial Threat Intelligence service.
+It has the following data streams:
+
+- **`intelligence`** Indicators retrieved from the Anomali ThreatStream API's intelligence endpoint.
+- **`threatstream`** Indicators received from the Anomali ThreatStream Elastic Extension, which is additional software. This is deprecated.
 
 ## Logs
 
-### Anomali Threatstream
-
-This integration requires additional software, the _Elastic_ _Extension,_
-to connect the Anomali ThreatStream with this integration. It's available
-at the [ThreatStream download page.](https://ui.threatstream.com/downloads)
-
-Please refer to the documentation included with the Extension for a detailed
-explanation on how to configure the Anomali ThreatStream to send indicator
-to this integration.
-
 ### Expiration of Indicators of Compromise (IOCs)
-The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `logs-ti_anomali_latest.threatstream-2` which only contains active and unexpired IOCs. The destination index also has an alias `logs-ti_anomali_latest.threatstream`. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_anomali.threatstream-*` indices.
+
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to provide a view of active indicators for end users. The transform creates destination indices that are accessible via the alias of the form `logs-ti_anomali_latest.<datastreamname>`. When querying for active indicators or setting up indicator match rules, use the alias to avoid false positives from expired indicators. The dashboards show only the latest indicators.
 
 #### Handling Orphaned IOCs
-When an IOC expires, Anomali feed contains information about all IOCs that got `deleted`. However, some Anomali IOCs may never expire and will continue to stay in the latest destination index `logs-ti_anomali_latest.threatstream`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_anomali_latest.threatstream` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset. 
 
-**NOTE:** `IOC Expiration Duration` parameter does not override the expiration provided by the Anomali for their IOCs. So, if Anomali IOC is expired and subsequently such `deleted` IOCs are sent into the feed, they are deleted immediately. `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case Anomali IOCs never expire.
+Indicator data from Anomali can contain information about deletion or expiry times. However, some Anomali IOCs may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned IOCs, users are allowed to configure an "IOC Expiration Duration" or "IOC Duration Before Deletion" parameter while setting up a policy. The value set there will limit the time that indicators are retained before deletion, but indicators may be removed earlier based on information from Anomali.
 
 ### Destination index versioning and deleting older versions
-The destination indices created by the transform are versioned with an integer suffix such as `-1`, `-2`. Example index name - `logs-ti_anomali_latest.threatstream-1`. 
 
-Due to schema changes on destination index, the versioning on it could be bumped. For example, in integration version `1.15.1`, the destination index  is changed to `logs-ti_anomali_latest.threatstream-2` from `logs-ti_anomali_latest.threatstream-1`. 
+The destination indices created by the transform are versioned with an integer suffix such as `-1`, `-2`, for example, `logs-ti_anomali_latest.intelligence-1`.
 
-Since the transform does not have the functionality to auto-delete the old index, users must to delete this old index manually. This is to ensure duplicates are not present when using wildcard queries such as `logs-ti_anomali_latest.threatstream-*`. Please follow below steps:
-1. After upgrading the integration to latest, check the current transform's destination index version by navigating via: `Stack Management -> Transforms -> logs-ti_anomali.latest_ioc-default -> Details`. Check `destination_index` value.
-2. Run `GET _cat/indices?v` and check if any older versions exist. Such as `logs-ti_anomali_latest.threatstream-1`
-3. Run `DELETE logs-ti_anomali_latest.threatstream-<OLDVERSION>` to delete the old index.
+Due to schema changes in the destination index, its version number may be incremented.
 
-### ILM Policy
-To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_anomali.threat-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+When this happens, the transform does not have the functionality to auto-delete the old index, so users must delete this old index manually. This is to ensure that duplicates are not present when using wildcard queries such as `logs-ti_anomali_latest.intelligence-*`. To delete an old index, follow the steps below (either for `intelligence` as below, or for the older `threatstream` equivalents):
 
+1. After upgrading the integration to the latest version, check the current transform's destination index version by navigating to: `Stack Management -> Transforms -> logs-ti_anomali.latest_intelligence-default -> Details`. Check the `destination_index` value.
+2. Run `GET _cat/indices?v` and check if any older versions exist. Such as `logs-ti_anomali_latest.intelligence-1`
+3. Run `DELETE logs-ti_anomali_latest.intelligence-<OLDVERSION>` to delete the old index.
+
+### ILM Policies
+
+To prevent unbounded growth of the source data streams `logs-ti_opencti.<datastreamname>-*`, index lifecycle management (ILM) policies will deletes records 5 days after ingestion.
+
+### Anomali ThreatStream API
+
+The Anomali ThreatStream API's intelligence endpoint is the preferred source of indicators. This data will be be accessible using the alias `logs-ti_anomali_latest.intelligence`.
+
+An example event for `intelligence` looks as following:
+
+```json
+{
+    "@timestamp": "2024-10-02T16:04:31.789615115Z",
+    "agent": {
+        "ephemeral_id": "bfe2b7b4-003a-49a1-b51b-e41ece98943b",
+        "id": "72cb3ab8-2baa-4ae5-9a62-ee752a56df42",
+        "name": "elastic-agent-85520",
+        "type": "filebeat",
+        "version": "8.14.3"
+    },
+    "anomali": {
+        "threatstream": {
+            "can_add_public_tags": true,
+            "confidence": 60,
+            "deletion_scheduled_at": "2024-10-09T16:04:31.789615115Z",
+            "expiration_ts": "9999-12-31T00:00:00.000Z",
+            "feed_id": 0,
+            "id": "232020126",
+            "is_anonymous": false,
+            "is_editable": false,
+            "is_public": true,
+            "itype": "apt_domain",
+            "meta": {
+                "severity": "very-high"
+            },
+            "owner_organization_id": 67,
+            "retina_confidence": -1,
+            "source_reported_confidence": 60,
+            "status": "active",
+            "threat_type": "apt",
+            "type": "domain",
+            "update_id": 100000001,
+            "uuid": "0921be47-9cc2-4265-b896-c62a7cb91042",
+            "value": "gen1xyz.com"
+        }
+    },
+    "data_stream": {
+        "dataset": "ti_anomali.intelligence",
+        "namespace": "49937",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "72cb3ab8-2baa-4ae5-9a62-ee752a56df42",
+        "snapshot": false,
+        "version": "8.14.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "created": "2021-04-06T09:56:22.915Z",
+        "dataset": "ti_anomali.intelligence",
+        "ingested": "2024-10-02T16:04:31Z",
+        "kind": "enrichment",
+        "original": "{\"asn\":\"\",\"can_add_public_tags\":true,\"confidence\":60,\"created_by\":null,\"created_ts\":\"2021-04-06T09:56:22.915Z\",\"description\":null,\"expiration_ts\":\"9999-12-31T00:00:00.000Z\",\"feed_id\":0,\"id\":232020126,\"is_anonymous\":false,\"is_editable\":false,\"is_public\":true,\"itype\":\"apt_domain\",\"locations\":[],\"meta\":{\"detail2\":\"imported by user 136\",\"severity\":\"very-high\"},\"modified_ts\":\"2021-04-06T09:56:22.915Z\",\"org\":\"\",\"owner_organization_id\":67,\"rdns\":null,\"resource_uri\":\"/api/v2/intelligence/232020126/\",\"retina_confidence\":-1,\"sort\":[455403032],\"source\":\"Analyst\",\"source_locations\":[],\"source_reported_confidence\":60,\"status\":\"active\",\"subtype\":null,\"tags\":null,\"target_industry\":[],\"threat_type\":\"apt\",\"threatscore\":54,\"tlp\":null,\"trusted_circle_ids\":null,\"type\":\"domain\",\"update_id\":100000001,\"uuid\":\"0921be47-9cc2-4265-b896-c62a7cb91042\",\"value\":\"gen1xyz.com\",\"workgroups\":[]}",
+        "severity": 9,
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "anomali-intelligence"
+    ],
+    "threat": {
+        "indicator": {
+            "confidence": "Medium",
+            "marking": {
+                "tlp": "WHITE"
+            },
+            "modified_at": "2021-04-06T09:56:22.915Z",
+            "provider": "Analyst",
+            "type": "domain-name",
+            "url": {
+                "domain": "gen1xyz.com"
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| anomali.threatstream.can_add_public_tags | Indicates whether a user can add public tags to a Threat Model entity. | boolean |
+| anomali.threatstream.confidence | Level of certainty that an observable is of the reported indicator type. Confidence scores range from 0-100, in increasing order of confidence, and is assigned by ThreatStream based on several factors. | long |
+| anomali.threatstream.deletion_scheduled_at | At this time the IOC will be deleted by the transform. | date |
+| anomali.threatstream.expiration_ts | Time stamp of when intelligence will expire on ThreatStream, in UTC time. Note: expiration_ts can only be specified in an advanced search query. | date |
+| anomali.threatstream.feed_id | Numeric ID of the threat feed that generated the indicator. feed_id = 0 for user-created indicators. | long |
+| anomali.threatstream.id | Unique ID for the indicator. This identifier is assigned to the indicator when it is first created on ThreatStream. Unlike update_id, this identifier never changes as long as the indicator is available on ThreatStream. | keyword |
+| anomali.threatstream.import_session_id | ID of import session in which the indicator was imported. import_session_id=0 if the indicator came in through a threat feed. | long |
+| anomali.threatstream.is_anonymous | Whether the organization and user information is anonymized when the observable is accessed by users outside of the owner organization. | boolean |
+| anomali.threatstream.is_editable | Indicates whether the imported entity can be updated by an intelligence source. This attribute is reserved for intelligence source providers and can be ignored. | boolean |
+| anomali.threatstream.is_public | Visibility of the indicator—public or private. 0/False—if the indicator is private or belongs to a Trusted Circle 1/True—if the indicator is public Default: 0/False | boolean |
+| anomali.threatstream.itype | Indicator type. | keyword |
+| anomali.threatstream.meta.maltype | Tag that specifies the malware associated with an indicator. | keyword |
+| anomali.threatstream.meta.registrant.address | Indicator domain WHOIS registrant address. | keyword |
+| anomali.threatstream.meta.registrant.email | Indicator domain WHOIS registrant email. | keyword |
+| anomali.threatstream.meta.registrant.name | Indicator domain WHOIS registrant name. | keyword |
+| anomali.threatstream.meta.registrant.org | Indicator domain WHOIS registrant org. | keyword |
+| anomali.threatstream.meta.registrant.phone | Indicator domain WHOIS registrant phone. | keyword |
+| anomali.threatstream.meta.registration_created | Registration created. | date |
+| anomali.threatstream.meta.registration_updated | Registration updated. | date |
+| anomali.threatstream.meta.severity | Severity assigned to the indicator through machine-learning algorithms ThreatStream deploys. Possible values: low, medium, high, very-high | keyword |
+| anomali.threatstream.owner_organization_id | ID of the (ThreatStream) organization that brought in the indicator, either through a threat feed or through the import process. | long |
+| anomali.threatstream.rdns | Domain name (obtained through reverse domain name lookup) associated with the IP address that is associated with the indicator. | keyword |
+| anomali.threatstream.retina_confidence | Confidence score assigned to the observable by Anomali machine learning algorithms. | long |
+| anomali.threatstream.source_created | Time stamp of when the entity was created by its original source. | date |
+| anomali.threatstream.source_modified | Time stamp of when the entity was last updated by its original source. | date |
+| anomali.threatstream.source_reported_confidence | A risk score from 0 to 100, provided by the source of the indicator. | long |
+| anomali.threatstream.status | Status assigned to the indicator. For example, active, inactive, falsepos. | keyword |
+| anomali.threatstream.threat_type | Summarized threat type of the indicator. For example, malware, compromised, apt, c2, and so on. | keyword |
+| anomali.threatstream.threatscore | Deprecated. | keyword |
+| anomali.threatstream.trusted_circle_ids | IDs of the trusted circles with which the indicator is shared. | long |
+| anomali.threatstream.type | Type of indicator—domain, email, ip, md5, string, url. | keyword |
+| anomali.threatstream.update_id | An incrementing numeric identifier associated with each update to intelligence on ThreatStream. | long |
+| anomali.threatstream.uuid | UUID (universally unique identifier) assigned to the observable for STIX compliance. | keyword |
+| anomali.threatstream.value | Value of the observable. For example, 192.168.0.10 or http://www.google.com. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
+
+
+### Anomali ThreatStream via the Elastic Extension
+
+This source of indicators is deprecated. New users should instead use the API source above. This source requires additional software, the _Elastic_ _Extension,_ to connect Anomali ThreatStream to this integration. It's available on the [ThreatStream download page](https://ui.threatstream.com/downloads).
+
+Please refer to the documentation included with the extension for a detailed explanation on how to configure Anomali ThreatStream to send indicators to this integration.
+
+Indicators ingested in this way will become accessible using the alias `logs-ti_anomali_latest.threatstream`.
 
 An example event for `threatstream` looks as following:
 
@@ -173,7 +325,7 @@ An example event for `threatstream` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |

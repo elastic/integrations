@@ -1,0 +1,180 @@
+---
+description: Pipeline for common host fields processing
+processors:
+
+  - gsub:
+      tag: gsub_tychon_host_mac
+      field: tychon.host.mac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - split:
+      tag: split_tychon_host_mac
+      field: tychon.host.mac
+      separator: ','
+      if: ctx.tychon?.host?.mac instanceof String
+      ignore_missing: true
+  - split:
+      tag: split_tychon_host_ip
+      field: tychon.host.ip
+      separator: ','
+      if: ctx.tychon?.host?.ip instanceof String
+      ignore_missing: true
+  - split:
+      tag: split_tychon_host_ipv4
+      field: tychon.host.ipv4
+      separator: ','
+      if: ctx.tychon?.host?.ipv4 instanceof String
+      ignore_missing: true
+  - split:
+      tag: split_tychon_host_ipv6
+      field: tychon.host.ipv6
+      separator: ','
+      if: ctx.tychon?.host?.ipv6 instanceof String
+      ignore_missing: true
+
+  - convert:
+      tag: convert_tychon_host_uptime
+      field: tychon.host.uptime
+      type: string
+      ignore_missing: true
+  - gsub:
+      tag: gsub_truncate_decimal_part_of_host_uptime_value
+      description: Truncate decimal part of host.uptime value
+      field: tychon.host.uptime
+      pattern: '\.\d+$'
+      replacement: ""
+      ignore_missing: true
+  - convert:
+      tag: convert_tychon_host_uptime_2
+      field: tychon.host.uptime
+      type: long
+      ignore_missing: true
+
+  - remove:
+      tag: remove_tychon_host_cloud
+      field: tychon.host.cloud
+      if: ctx.tychon?.host?.cloud?.hosted != true
+      ignore_missing: true
+
+  # ECS fields from the tychon fieldset
+
+  - foreach:
+      tag: foreach_tychon_host_ip
+      field: tychon.host.ip
+      if: ctx.tychon?.host?.ip instanceof List
+      processor:
+        append:
+          tag: append_related_ip
+          field: related.ip
+          value: "{{{_ingest._value}}}"
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_tychon_host_ipv4
+      field: tychon.host.ipv4
+      if: ctx.tychon?.host?.ipv4 instanceof List
+      processor:
+        append:
+          tag: append_related_ip_2
+          field: related.ip
+          value: "{{{_ingest._value}}}"
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_tychon_host_ipv6
+      field: tychon.host.ipv6
+      if: ctx.tychon?.host?.ipv6 instanceof List
+      processor:
+        append:
+          tag: append_related_ip_3
+          field: related.ip
+          value: "{{{_ingest._value}}}"
+          allow_duplicates: false
+  - append:
+      tag: append_related_hosts
+      field: related.hosts
+      value: "{{{tychon.host.domain}}}"
+      if: ctx.tychon?.host?.domain != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_2
+      field: related.hosts
+      value: "{{{tychon.host.hostname}}}"
+      if: ctx.tychon?.host?.hostname != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_3
+      field: related.hosts
+      value: "{{{tychon.host.id}}}"
+      if: ctx.tychon?.host?.id != null
+      allow_duplicates: false
+
+  - set:
+      tag: set_host_domain
+      field: host.domain
+      copy_from: tychon.host.domain
+      ignore_empty_value: true
+  - set:
+      tag: set_host_hostname
+      field: host.hostname
+      copy_from: tychon.host.hostname
+      ignore_empty_value: true
+  - set:
+      tag: set_host_id
+      field: host.id
+      copy_from: tychon.host.id
+      ignore_empty_value: true
+  - set:
+      tag: set_host_ip
+      field: host.ip
+      copy_from: tychon.host.ip
+      ignore_empty_value: true
+  - set:
+      tag: set_host_mac
+      field: host.mac
+      copy_from: tychon.host.mac
+      ignore_empty_value: true
+  - set:
+      tag: set_host_os_family
+      field: host.os.family
+      copy_from: tychon.host.os.family
+      ignore_empty_value: true
+  - script:
+      tag: script_host_os_type
+      description: host.os.type
+      lang: painless
+      source: |
+        def value = ctx.tychon.host?.os?.family?.toLowerCase();
+        if (['linux', 'macos', 'unix', 'windows', 'ios', 'android'].contains(value)) {
+          if (ctx.host == null) {
+            ctx.host = [:];
+          }
+          if (ctx.host.os == null) {
+            ctx.host.os = [:];
+          }
+          ctx.host.os.type = value;
+        }
+  - set:
+      tag: set_host_os_name
+      field: host.os.name
+      copy_from: tychon.host.os.name
+      ignore_empty_value: true
+  - set:
+      tag: set_host_os_platform
+      field: host.os.platform
+      copy_from: tychon.host.os.platform
+      ignore_empty_value: true
+  - set:
+      tag: set_host_os_version
+      field: host.os.version
+      copy_from: tychon.host.os.version
+      ignore_empty_value: true
+  - set:
+      tag: set_host_type
+      field: host.type
+      copy_from: tychon.host.type
+      ignore_empty_value: true
+  - set:
+      tag: set_host_uptime
+      field: host.uptime
+      copy_from: tychon.host.uptime
+      ignore_empty_value: true
