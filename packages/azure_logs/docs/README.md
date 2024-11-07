@@ -76,7 +76,7 @@ The information stored in the blobs is small (usually < 500 bytes per blob) and 
 
 You need to keep the Storage Account container as long as you need to run the integration with the Elastic Agent. If you delete a Storage Account container, the Elastic Agent will stop working and create a new one the next time it starts.
 
-By deleting a Storage Account container, the Elastic Agent will lose track of the last message processed and start processing messages from the beginning of the event hub retention period.
+By deleting a Storage Account container, the Elastic Agent will lose track of the last message processed and start processing messages from the beginning of the Event Hub retention period.
 
 ## Setup
 
