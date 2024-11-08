@@ -1309,10 +1309,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.duration |  | keyword |
 | citrix_adc.log.end_time |  | date |
 | citrix_adc.log.end_time_timezone |  | keyword |
+| citrix_adc.log.errmsg |  | keyword |
 | citrix_adc.log.error |  | keyword |
 | citrix_adc.log.error_code |  | keyword |
 | citrix_adc.log.error_line |  | keyword |
-| citrix_adc.log.errrmsg |  | keyword |
 | citrix_adc.log.failure_reason |  | keyword |
 | citrix_adc.log.field_name |  | keyword |
 | citrix_adc.log.field_type |  | keyword |
