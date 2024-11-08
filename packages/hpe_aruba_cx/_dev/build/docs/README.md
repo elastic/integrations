@@ -244,13 +244,13 @@ Note: Descriptions have not been filled out
 #### [DNS client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DNS_CLIENT.htm)
 | Field            | Description | Type | Common           |
 |------------------|-------------|------|------------------|
-| aruba.dns.type   |             |      | event.type       |
-| aruba.dns.vrf_name |           |      | aruba.vrf.name   |
+| aruba.dns.type   | DNS event type | keyword | event.type       |
+| aruba.dns.vrf_name | Virtual Routing and Forwarding name | keyword | aruba.vrf.name   |
 
 #### [DPSE events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DPSE.htm)
 | Field                    | Description | Type | Common                          |
 |--------------------------|-------------|------|---------------------------------|
-| aruba.dpse.linecard_name |             |      | observer.ingress.interface.name |
+| aruba.dpse.linecard_name |             |      |                                 |
 
 #### [ECMP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ECMP.htm)
 | Field               | Description | Type | Common                       |
