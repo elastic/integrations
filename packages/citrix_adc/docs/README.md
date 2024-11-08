@@ -1283,7 +1283,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.closure_reason |  | keyword |
 | citrix_adc.log.code |  | keyword |
 | citrix_adc.log.command |  | keyword |
-| citrix_adc.log.compression_ratio_received |  | double |
+| citrix_adc.log.compression_ratio_recieved |  | double |
 | citrix_adc.log.compression_ratio_send |  | double |
 | citrix_adc.log.connection_id |  | keyword |
 | citrix_adc.log.connection_priority |  | keyword |
@@ -1431,9 +1431,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.timezone |  | keyword |
 | citrix_adc.log.total_bytes_received |  | long |
 | citrix_adc.log.total_bytes_send |  | long |
-| citrix_adc.log.total_bytes_wire_received |  | keyword |
+| citrix_adc.log.total_bytes_wire_recieved |  | keyword |
 | citrix_adc.log.total_bytes_wire_send |  | keyword |
-| citrix_adc.log.total_compressed_bytes_received |  | long |
+| citrix_adc.log.total_compressed_bytes_recieved |  | long |
 | citrix_adc.log.total_compressed_bytes_send |  | long |
 | citrix_adc.log.total_http_header_length |  | long |
 | citrix_adc.log.total_policies_allowed |  | long |
