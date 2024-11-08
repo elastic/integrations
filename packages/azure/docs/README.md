@@ -129,7 +129,6 @@ If you are familiar with Kafka, here's a conceptual mapping between the two:
 | Consumer Group | Consumer Group    |
 | Offset         | Offset            |
 
-
 #### How many partitions?
 
 The number of partitions is essential to balance the event hub cost and performance. 
@@ -194,7 +193,6 @@ The number of partitions must be at least the number of agents.
 
 └ Event Hub ─ ─ ─ ─ ─ ─ ─ ┘    └ Agent ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 ```
-
 
 ##### Recommendations
 
@@ -305,7 +303,7 @@ Select the **subscription** and the **Event Hubs namespace** you previously crea
 
 ### Create a Storage account container
 
-The Elastic Agent stores the consumer group information (state, position, or offset) in a storage account container. Making this information available to all agents allows them to share the logs processing and resume from the last processed logs after a restart.
+The Elastic Agent stores the event hub checkpoint information in a storage account container. Storing checkpoint information in a container allows agents to share message processing and resume from the last processed message after a restart.
 
 NOTE: Use the storage account as a checkpoint store only.
 
@@ -335,11 +333,30 @@ This is the final diagram of the a setup for collecting Activity logs from the A
                      └──────────────┘                                           
 ```
 
-#### How many Storage account containers?
+#### How many Storage Accounts?
 
-The Elastic Agent can use one Storage account container for all integrations.
+The Elastic Agent can create containers for all integrations on a single Storage Account.
 
-The Agent will use the integration name and the event hub name to identify the blob to store the consumer group information uniquely.
+The Agent uses the **integration name** and the **event hub name** to uniquely identify the container that holds the blobs with the checkpoint information.
+
+```text
+┌─────────────────────────────────┐      ┌──────────────────────────────────────────┐
+│                                 │      │                                          │
+│    ┌─────────────────────┐      │      │  ┌───────────────────────────────────┐   │
+│    │   azure-eventhub    │      │      │  │   filebeat-activitylogs-evehub1   │   │
+│    │      <<input>>      │──────┼──────┼─▶│           <<container>>           │   │
+│    └─────────────────────┘      │      │  └───────────────────────────────────┘   │
+│    ┌─────────────────────┐      │      │  ┌───────────────────────────────────┐   │
+│    │   azure-eventhub    │      │      │  │    filebeat-signinlogs-evehub1    │   │
+│    │      <<input>>      │──────┼──────┼─▶│           <<container>>           │   │
+│    └─────────────────────┘      │      │  └───────────────────────────────────┘   │
+│    ┌─────────────────────┐      │      │  ┌───────────────────────────────────┐   │
+│    │   azure-eventhub    │      │      │  │    filebeat-auditlogs-evehub1     │   │
+│    │      <<input>>      │──────┼──────┼─▶│           <<container>>           │   │
+│    └─────────────────────┘      │      │  └───────────────────────────────────┘   │
+│                                 │      │                                          │
+└─Elastic Agent───────────────────┘      └─Storage Account──────────────────────────┘
+```
 
 ### Running the integration behind a firewall
 
