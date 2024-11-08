@@ -28,27 +28,28 @@ processors:
         - '^Context %{DATA:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip} ?- SessionId: %{NUMBER:citrix_adc.log.session_id} ?- User %{DATA:citrix_adc.log.user} ?- Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Group\(s\) %{DATA:citrix_adc.log.groups}'
         - '^Context %{CITRIX_USER_AT_IP} ?- %{CITRIX_SESSION_ID} - %{CITRIX_USER} - %{CITRIX_CLIENT_IP} - %{CITRIX_NAT_IP} - %{CITRIX_VSERVER} - %{CITRIX_SOURCE} - %{CITRIX_DESTINATION} - %{CITRIX_START_TIME} - %{CITRIX_END_TIME} - %{CITRIX_DURATION} - %{CITRIX_TOTAL_BYTES_SEND} - %{CITRIX_TOTAL_BYTES_RECV} - %{CITRIX_COMPRESSED_SEND} - %{CITRIX_COMPRESSED_RECV} - %{CITRIX_COMP_RATIO_SEND} - %{CITRIX_COMP_RATIO_RECV} - %{CITRIX_ACCESS} - %{CITRIX_GROUPS}$'
         # I'm not sure if this one is a special case or for real
-        - '^Context \[%{USER}\]\(mailto:%{CITRIX_USER_AT_IP}\) - %{CITRIX_SESSION_ID} - %{CITRIX_USER} - %{CITRIX_CLIENT_IP} - %{CITRIX_NAT_IP} - %{CITRIX_VSERVER} - %{CITRIX_SOURCE} - %{CITRIX_DESTINATION} - %{CITRIX_START_TIME} - %{CITRIX_END_TIME} - %{CITRIX_DURATION} - %{CITRIX_TOTAL_BYTES_SEND} - %{CITRIX_TOTAL_BYTES_RECV} - %{CITRIX_COMPRESSED_SEND} - %{CITRIX_COMPRESSED_RECV} - %{CITRIX_COMP_RATIO_SEND} - %{CITRIX_COMP_RATIO_RECV} - %{CITRIX_ACCESS} - %{CITRIX_GROUPS}$'
+        - '^Context \[%{DATA}\]\(mailto:%{DATA:citrix_adc.log.username}@%{IP}\) - %{CITRIX_SESSION_ID} - %{CITRIX_USER} - %{CITRIX_CLIENT_IP} - %{CITRIX_NAT_IP} - %{CITRIX_VSERVER} - %{CITRIX_SOURCE} - %{CITRIX_DESTINATION} - %{CITRIX_START_TIME} - %{CITRIX_END_TIME} - %{CITRIX_DURATION} - %{CITRIX_TOTAL_BYTES_SEND} - %{CITRIX_TOTAL_BYTES_RECV} - %{CITRIX_COMPRESSED_SEND} - %{CITRIX_COMPRESSED_RECV} - %{CITRIX_COMP_RATIO_SEND}% - %{CITRIX_COMP_RATIO_RECV}% - %{CITRIX_ACCESS} - %{CITRIX_GROUPS}$'
+        - ' %{CITRIX_ACCESS} - %{CITRIX_GROUPS}$'
       pattern_definitions:
         CITRIX_USER: 'User %{DATA:citrix_adc.log.user}'
         CITRIX_GROUPS: 'Group\(s\) %{DATA:citrix_adc.log.groups}'
         CITRIX_CLIENT_IP: 'Client_ip %{IP:citrix_adc.log.client_ip}'
-        CITRIX_NAT_IP: 'Nat_ip %{IP:citrix_adc.log.nat_ip}'
+        CITRIX_NAT_IP: 'Nat_ip %{IP:citrix_adc.log.nat.ip}'
         CITRIX_USER_AT_IP: '%{DATA:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip}'
         CITRIX_USER_AT_IP_MARKDOWN: '%{DATA:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip}'
-        CITRIX_SESSION_ID: 'SessionId: %{INT:citrix_adc.log.session_id}'
+        CITRIX_SESSION_ID: 'SessionId: %{NUMBER:citrix_adc.log.session_id:long}'
         CITRIX_VSERVER: 'Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port}'
         CITRIX_SOURCE: 'Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port}'
         CITRIX_DESTINATION: 'Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port}'
-        CITRIX_START_TIME: 'Start_time \"%{DATA:citrix_adc.log.start_time}\"'
-        CITRIX_END_TIME: 'End_time \"%{DATA:citrix_adc.log.end_time}\"'
+        CITRIX_START_TIME: 'Start_time "%{DATA:citrix_adc.log.start_time}"'
+        CITRIX_END_TIME: 'End_time "%{DATA:citrix_adc.log.end_time}"'
         CITRIX_DURATION: 'Duration %{DATA:citrix_adc.log.duration}'
-        CITRIX_TOTAL_BYTES_SEND: 'Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int}'
-        CITRIX_TOTAL_BYTES_RECV: 'Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int}'
-        CITRIX_COMPRESSED_SEND: 'Total_compressedbytes_send %{NUMBER:citrix_adc.log.total_compressed_bytes_send:int}'
-        CITRIX_COMPRESSED_RECV: 'Total_compressedbytes_recv %{NUMBER:citrix_adc.log.total_compressed_bytes_received:int}'
-        CITRIX_COMP_RATIO_SEND: 'Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send}%'
-        CITRIX_COMP_RATIO_RECV: 'Total_compressedbytes_recv %{NUMBER:citrix_adc.log.compression_ratio_received}%'
+        CITRIX_TOTAL_BYTES_SEND: 'Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:long}'
+        CITRIX_TOTAL_BYTES_RECV: 'Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:long}'
+        CITRIX_COMPRESSED_SEND: 'Total_compressedbytes_send %{NUMBER:citrix_adc.log.total_compressed_bytes_send:long}'
+        CITRIX_COMPRESSED_RECV: 'Total_compressedbytes_recv %{NUMBER:citrix_adc.log.total_compressed_bytes_recieved:long}'
+        CITRIX_COMP_RATIO_SEND: 'Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send}'
+        CITRIX_COMP_RATIO_RECV: 'Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved}'
         CITRIX_ACCESS: 'Access %{WORD:citrix_adc.log.access}'
       ignore_failure: false
 
@@ -388,7 +389,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: citrix_adc.log.total_bytes_wire_recieved
-      tag: convert_total_bytes_wire_recieved_to_string
+      tag: convert_total_bytes_wire_received_to_string
       type: string
       ignore_missing: true
       on_failure:
@@ -415,7 +416,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: citrix_adc.log.total_compressed_bytes_recieved
-      tag: convert_total_compressed_bytes_recieved_to_long
+      tag: convert_total_compressed_bytes_received_to_long
       type: long
       ignore_missing: true
       on_failure:
@@ -433,7 +434,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: citrix_adc.log.compression_ratio_recieved
-      tag: convert_compression_ratio_recieved_to_double
+      tag: convert_compression_ratio_received_to_double
       type: double
       ignore_missing: true
       on_failure:

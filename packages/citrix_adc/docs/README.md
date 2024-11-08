@@ -122,13 +122,13 @@ An example event for `interface` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-07T06:24:46.588Z",
+    "@timestamp": "2024-11-07T19:38:06.311Z",
     "agent": {
-        "ephemeral_id": "6bbf5dd0-e14b-4006-ac77-ee175a9e81b8",
-        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "ephemeral_id": "02019de7-bb79-46d5-b889-c9f475831cc7",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "citrix_adc": {
         "interface": {
@@ -212,7 +212,7 @@ An example event for `interface` looks as following:
             "received": {
                 "bytes": {
                     "rate": 4603,
-                    "value": 1103884030
+                    "value": 1103884064
                 }
             },
             "stalled": {
@@ -222,7 +222,7 @@ An example event for `interface` looks as following:
             "transmitted": {
                 "bytes": {
                     "rate": 1924,
-                    "value": 776571650
+                    "value": 776571619
                 }
             }
         }
@@ -236,18 +236,18 @@ An example event for `interface` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-10-07T06:24:46.588Z",
+        "created": "2024-11-07T19:38:06.311Z",
         "dataset": "citrix_adc.interface",
-        "ingested": "2022-10-07T06:24:50Z",
+        "ingested": "2024-11-07T19:38:18Z",
         "kind": "event",
         "module": "citrix_adc",
         "original": "{\"curintfstate\":\"UP\",\"curlinkdowntime\":\"00:00:11\",\"curlinkstate\":\"DOWN\",\"curlinkuptime\":\"4.06:45:16\",\"errdroppedrxpkts\":\"2797172\",\"errdroppedrxpktsrate\":32,\"errdroppedtxpkts\":\"0\",\"errdroppedtxpktsrate\":0,\"errifindiscards\":\"0\",\"errifindiscardsrate\":0,\"errlinkhangs\":\"0\",\"errnicmuted\":\"0\",\"errpktrx\":\"0\",\"errpktrxrate\":0,\"errpkttx\":\"0\",\"errpkttxrate\":0,\"id\":\"0/1\",\"interfacealias\":\"\",\"jumbopktsreceived\":\"0\",\"jumbopktsreceivedrate\":0,\"jumbopktstransmitted\":\"0\",\"jumbopktstransmittedrate\":0,\"linkreinits\":\"0\",\"macmovedrate\":0,\"netscalerpktsrate\":6,\"nicerrdisables\":\"0\",\"nicerrifoutdiscards\":\"0\",\"nicerrifoutdiscardsrate\":0,\"nicmulticastpktsrate\":0,\"nicrxstalls\":\"0\",\"nicstsstalls\":\"0\",\"nictotmulticastpkts\":\"278537\",\"nictxstalls\":\"0\",\"rxbytesrate\":4603,\"rxcrcerrors\":\"0\",\"rxcrcerrorsrate\":0,\"rxlacpdu\":\"0\",\"rxlacpdurate\":0,\"rxpktsrate\":38,\"totmacmoved\":\"0\",\"totnetscalerpkts\":\"2493179\",\"totrxbytes\":\"1103884064\",\"totrxpkts\":\"5396347\",\"tottxbytes\":\"776571619\",\"tottxpkts\":\"2511171\",\"trunkpktsreceived\":\"0\",\"trunkpktsreceivedrate\":0,\"trunkpktstransmitted\":\"0\",\"trunkpktstransmittedrate\":0,\"txbytesrate\":1924,\"txlacpdu\":\"0\",\"txlacpdurate\":0,\"txpktsrate\":5}",
@@ -330,13 +330,13 @@ An example event for `lbvserver` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-07T06:25:28.550Z",
+    "@timestamp": "2024-11-07T19:38:53.758Z",
     "agent": {
-        "ephemeral_id": "5d00842d-a4ee-4502-9a8c-16100e326dc0",
-        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "ephemeral_id": "156fbaba-e449-4c50-a631-664d23a9ada0",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "citrix_adc": {
         "lbvserver": {
@@ -454,18 +454,18 @@ An example event for `lbvserver` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-10-07T06:25:28.550Z",
+        "created": "2024-11-07T19:38:53.758Z",
         "dataset": "citrix_adc.lbvserver",
-        "ingested": "2022-10-07T06:25:32Z",
+        "ingested": "2024-11-07T19:39:05Z",
         "kind": "event",
         "module": "citrix_adc",
         "original": "{\"actsvcs\":\"10\",\"avgcltttlb\":\"6\",\"cltresponsetimeapdex\":1,\"cltttlbtransactionsrate\":3,\"cpuusagepm\":\"10\",\"curbackuppersistencesessions\":\"8\",\"curclntconnections\":\"8\",\"curmptcpsessions\":\"13\",\"curpersistencesessions\":\"8\",\"cursrvrconnections\":\"8\",\"cursubflowconn\":\"13\",\"deferredreq\":\"13\",\"deferredreqrate\":13,\"establishedconn\":\"6\",\"frustratingttlbtransactions\":\"1\",\"frustratingttlbtransactionsrate\":1,\"h2requestsrate\":7,\"h2responsesrate\":7,\"hitsrate\":5,\"httpmaxhdrfldlenpkts\":\"3\",\"httpmaxhdrszpkts\":\"3\",\"inactsvcs\":\"6\",\"invalidrequestresponse\":\"13\",\"invalidrequestresponsedropped\":\"13\",\"labelledconn\":\"8\",\"name\":\"elastic\",\"pktsrecvdrate\":8,\"pktssentrate\":8,\"primaryipaddress\":\"8.8.8.8\",\"primaryport\":80,\"pushlabel\":\"8\",\"reqretrycount\":\"3\",\"reqretrycountexceeded\":\"3\",\"requestbytesrate\":7,\"requestsrate\":5,\"responsebytesrate\":7,\"responsesrate\":5,\"sothreshold\":\"8\",\"state\":\"DOWN\",\"surgecount\":\"8\",\"svcsurgecount\":\"8\",\"svrbusyerrrate\":3,\"tcpmaxooopkts\":\"3\",\"toleratingttlbtransactions\":\"3\",\"toleratingttlbtransactionsrate\":1,\"totalconnreassemblyqueue75\":\"13\",\"totalconnreassemblyqueueflush\":\"3\",\"totalh2requests\":\"7\",\"totalh2responses\":\"7\",\"totalpktsrecvd\":\"7\",\"totalpktssent\":\"8\",\"totalrequestbytes\":\"7\",\"totalrequests\":\"5\",\"totalresponsebytes\":\"7\",\"totalresponses\":\"5\",\"totalsvrbusyerr\":\"3\",\"totcltttlbtransactions\":\"3\",\"tothits\":\"10\",\"totspillovers\":\"8\",\"totvserverdownbackuphits\":\"13\",\"type\":\"HTTP\",\"vslbhealth\":\"67\",\"vsvrsurgecount\":\"6\"}",
@@ -551,13 +551,13 @@ An example event for `service` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-07T06:26:11.339Z",
+    "@timestamp": "2024-11-07T19:43:46.472Z",
     "agent": {
-        "ephemeral_id": "2fa2a685-d35a-40a6-8212-7a9dd581d647",
-        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "ephemeral_id": "6c4b4036-efe5-4f49-959e-a8125c8fb5b1",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "citrix_adc": {
         "service": {
@@ -628,18 +628,18 @@ An example event for `service` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-10-07T06:26:11.339Z",
+        "created": "2024-11-07T19:43:46.472Z",
         "dataset": "citrix_adc.service",
-        "ingested": "2022-10-07T06:26:14Z",
+        "ingested": "2024-11-07T19:43:58Z",
         "kind": "event",
         "module": "citrix_adc",
         "original": "{\"activetransactions\":\"0\",\"avgsvrttfb\":\"34\",\"curclntconnections\":\"8\",\"curload\":\"0\",\"curreusepool\":\"2\",\"cursrvrconnections\":\"2\",\"curtflags\":\"0\",\"frustratingttlbtransactions\":\"0\",\"httpmaxhdrfldlenpkts\":\"0\",\"httpmaxhdrszpkts\":\"0\",\"maxclients\":\"0\",\"name\":\"nshttpd-gui-127.0.0.1-80\",\"primaryipaddress\":\"127.0.0.1\",\"primaryport\":80,\"requestbytesrate\":139,\"requestsrate\":0,\"responsebytesrate\":316,\"responsesrate\":0,\"serviceorder\":\"0\",\"servicetype\":\"HTTP\",\"state\":\"UP\",\"surgecount\":\"0\",\"svrestablishedconn\":\"2\",\"tcpmaxooopkts\":\"0\",\"throughput\":\"0\",\"throughputrate\":0,\"toleratingttlbtransactions\":\"0\",\"totalconnreassemblyqueue75\":\"0\",\"totalconnreassemblyqueueflush\":\"0\",\"totalrequestbytes\":\"8334520\",\"totalrequests\":\"15133\",\"totalresponsebytes\":\"26482988\",\"totalresponses\":\"15133\",\"totsvrttlbtransactions\":\"0\",\"vsvrservicehits\":\"0\",\"vsvrservicehitsrate\":0}",
@@ -713,13 +713,13 @@ An example event for `system` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-03T11:58:48.678Z",
+    "@timestamp": "2024-11-07T19:44:35.625Z",
     "agent": {
-        "ephemeral_id": "17888c67-ea5e-4c24-ad2d-6e1572930f9d",
-        "id": "f1fb7954-85ee-4fe3-971d-546763d1571b",
+        "ephemeral_id": "ed04a684-61a2-449f-92c1-9ad9ef39f01c",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "citrix_adc": {
         "system": {
@@ -730,20 +730,20 @@ An example event for `system` looks as following:
                         "pct": 0
                     },
                     "avg": {
-                        "pct": 4294967300
+                        "pct": 4294967295
                     },
                     "management": {
                         "pct": 0.8
                     },
                     "master": {
-                        "pct": 4294967300
+                        "pct": 4294967295
                     },
                     "packets": {
                         "pct": 1.1
                     },
                     "pct": 1.1,
                     "slave": {
-                        "pct": 4294967300
+                        "pct": 4294967295
                     }
                 }
             },
@@ -782,18 +782,18 @@ An example event for `system` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f1fb7954-85ee-4fe3-971d-546763d1571b",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-11-03T11:58:48.678Z",
+        "created": "2024-11-07T19:44:35.625Z",
         "dataset": "citrix_adc.system",
-        "ingested": "2022-11-03T11:58:52Z",
+        "ingested": "2024-11-07T19:44:47Z",
         "kind": "event",
         "module": "citrix_adc",
         "original": "{\"errorcode\":0,\"message\":\"Done\",\"severity\":\"NONE\",\"system\":{\"addimgmtcpuusagepcnt\":0,\"auxtemp0\":0,\"auxtemp1\":0,\"auxtemp2\":0,\"auxtemp3\":0,\"auxvolt0\":0,\"auxvolt1\":0,\"auxvolt2\":0,\"auxvolt3\":0,\"auxvolt4\":0,\"auxvolt5\":0,\"auxvolt6\":0,\"auxvolt7\":0,\"cpu0temp\":0,\"cpu1temp\":0,\"cpufan0speed\":0,\"cpufan1speed\":0,\"cpuusage\":\"1\",\"cpuusagepcnt\":1.1,\"disk0avail\":1278,\"disk0perusage\":12,\"disk0size\":1585,\"disk0used\":180,\"disk1avail\":11441,\"disk1perusage\":12,\"disk1size\":14179,\"disk1used\":1603,\"fan0speed\":0,\"fan2speed\":0,\"fan3speed\":0,\"fan4speed\":0,\"fan5speed\":0,\"fanspeed\":0,\"internaltemp\":0,\"mastercpuusage\":\"4294967295\",\"memsizemb\":\"0\",\"memusagepcnt\":21.114572,\"memuseinmb\":\"216\",\"mgmtcpu0usagepcnt\":0.8,\"mgmtcpuusagepcnt\":0.8,\"numcpus\":\"1\",\"pktcpuusagepcnt\":1.1,\"powersupply1status\":\"NOT SUPPORTED\",\"powersupply2status\":\"NOT SUPPORTED\",\"powersupply3status\":\"NOT SUPPORTED\",\"powersupply4status\":\"NOT SUPPORTED\",\"rescpuusage\":\"4294967295\",\"rescpuusagepcnt\":4294967295,\"slavecpuusage\":\"4294967295\",\"starttime\":\"Thu Sep 22 03:50:13 2022\",\"starttimelocal\":\"Thu Sep 22 09:20:13 2022\",\"systemfanspeed\":0,\"timesincestart\":\"00:00:00\",\"voltagev12n\":0,\"voltagev12p\":0,\"voltagev33main\":0,\"voltagev33stby\":0,\"voltagev5n\":0,\"voltagev5p\":0,\"voltagev5sb\":0,\"voltagevbat\":0,\"voltagevcc0\":0,\"voltagevcc1\":0,\"voltagevsen2\":0,\"voltagevtt\":0}}",
@@ -849,13 +849,13 @@ An example event for `vpn` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-10T11:42:13.787Z",
+    "@timestamp": "2024-11-07T19:45:23.798Z",
     "agent": {
-        "ephemeral_id": "8fd05f47-0933-4b28-8412-6d4b6f365dff",
-        "id": "98ae8a23-ea52-4679-b111-33a6d6e8db77",
+        "ephemeral_id": "6925a4f4-0477-41e3-993b-00f8f546941d",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "citrix_adc": {
         "vpn": {
@@ -992,18 +992,18 @@ An example event for `vpn` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "98ae8a23-ea52-4679-b111-33a6d6e8db77",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-10-10T11:42:13.787Z",
+        "created": "2024-11-07T19:45:23.798Z",
         "dataset": "citrix_adc.vpn",
-        "ingested": "2022-10-10T11:42:17Z",
+        "ingested": "2024-11-07T19:45:35Z",
         "kind": "event",
         "module": "citrix_adc",
         "original": "{\"errorcode\":0,\"message\":\"Done\",\"severity\":\"NONE\",\"vpn\":{\"cfghtmlserved\":\"8\",\"cfghtmlservedrate\":8,\"cpsconnfailure\":\"11\",\"cpsconnfailurerate\":11,\"cpsconnsuccess\":\"4\",\"cpsconnsuccessrate\":11,\"csconnsuccrate\":16,\"csgconnectedusersrate\":17,\"csgptktvalidatenotstarted\":\"5\",\"csgptktvalidatenotstartedrate\":5,\"csgrtktvalidatenotstarted\":\"9\",\"csgrtktvalidatenotstartedrate\":9,\"csgtotalconnectedusers\":\"9\",\"cshttpprobehit\":\"16\",\"cshttpprobehitrate\":16,\"csnonhttpprobehit\":\"16\",\"csnonhttpprobehitrate\":16,\"csrequesthit\":\"16\",\"csrequesthitrate\":16,\"dnsreqhit\":\"8\",\"dnsreqhitrate\":8,\"fsrequestrate\":16,\"icalicensefailure\":\"7\",\"icalicensefailurerate\":7,\"iipdisabledmipdisabled\":\"9\",\"iipdisabledmipdisabledrate\":9,\"iipdisabledmipused\":\"16\",\"iipdisabledmipusedrate\":12,\"iipfailedmipdisabled\":\"9\",\"iipfailedmipdisabledrate\":9,\"iipfailedmipused\":\"12\",\"iipfailedmipusedrate\":12,\"iipspillovermipused\":\"12\",\"iipspillovermipusedrate\":12,\"indexhtmlhit\":\"8\",\"indexhtmlnoserved\":\"8\",\"socksclienterror\":\"8\",\"socksclienterrorrate\":8,\"socksconnreqrcvd\":\"3\",\"socksconnreqrcvdrate\":2,\"socksconnreqsent\":\"2\",\"socksconnreqsentrate\":2,\"socksconnresprcvd\":\"2\",\"socksconnresprcvdrate\":2,\"socksconnrespsent\":\"8\",\"socksconnrespsentrate\":8,\"socksmethreqrcvd\":\"17\",\"socksmethreqrcvdrate\":17,\"socksmethreqsent\":\"17\",\"socksmethreqsentrate\":17,\"socksmethresprcvd\":\"3\",\"socksmethresprcvdrate\":3,\"socksmethrespsent\":\"3\",\"socksmethrespsentrate\":3,\"socksservererror\":\"8\",\"socksservererrorrate\":8,\"staconnfailure\":\"4\",\"staconnfailurerate\":4,\"staconnsuccess\":\"4\",\"staconnsuccessrate\":4,\"stamonfail\":\"5\",\"stamonfailrate\":5,\"stamonrcvd\":\"7\",\"stamonrcvdrate\":5,\"stamonsent\":\"7\",\"stamonsentrate\":7,\"stamonsucc\":\"5\",\"stamonsuccrate\":5,\"starequestsent\":\"11\",\"starequestsentrate\":11,\"staresponserecvd\":\"7\",\"staresponserecvdrate\":7,\"totalcsconnsucc\":\"16\",\"totalfsrequest\":\"16\",\"vpnlicensefail\":\"16\",\"winsrequesthit\":\"16\",\"winsrequesthitrate\":16}}",
@@ -1089,11 +1089,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2012-12-18T21:46:17.000Z",
     "agent": {
-        "ephemeral_id": "2976e761-4399-4de7-8ea0-97ea83ec7726",
-        "id": "418f7c57-c332-4913-b3ec-ddaa31f832a0",
+        "ephemeral_id": "d1f085a9-d06d-49c1-8ef3-665bb2ed9f7f",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.12.2"
     },
     "citrix": {
         "cef_format": true,
@@ -1135,16 +1135,16 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "418f7c57-c332-4913-b3ec-ddaa31f832a0",
+        "id": "2d098d6a-1046-426a-a738-d4422aacacb4",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.12.2"
     },
     "event": {
         "action": "not blocked",
         "agent_id_status": "verified",
         "dataset": "citrix_adc.log",
         "id": "465",
-        "ingested": "2024-03-20T08:51:14Z",
+        "ingested": "2024-11-07T19:43:10Z",
         "original": "Dec 18 21:46:17 <local0.info> 81.2.69.144 CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
         "severity": 6,
         "timezone": "+00:00"
@@ -1156,11 +1156,11 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.249.4:48549"
+            "address": "172.18.0.4:51938"
         }
     },
     "message": "Disallow Illegal URL.",
@@ -1283,7 +1283,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.closure_reason |  | keyword |
 | citrix_adc.log.code |  | keyword |
 | citrix_adc.log.command |  | keyword |
-| citrix_adc.log.compression_ratio_recieved |  | double |
+| citrix_adc.log.compression_ratio_received |  | double |
 | citrix_adc.log.compression_ratio_send |  | double |
 | citrix_adc.log.connection_id |  | keyword |
 | citrix_adc.log.connection_priority |  | keyword |
@@ -1431,9 +1431,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.timezone |  | keyword |
 | citrix_adc.log.total_bytes_received |  | long |
 | citrix_adc.log.total_bytes_send |  | long |
-| citrix_adc.log.total_bytes_wire_recieved |  | keyword |
+| citrix_adc.log.total_bytes_wire_received |  | keyword |
 | citrix_adc.log.total_bytes_wire_send |  | keyword |
-| citrix_adc.log.total_compressed_bytes_recieved |  | long |
+| citrix_adc.log.total_compressed_bytes_received |  | long |
 | citrix_adc.log.total_compressed_bytes_send |  | long |
 | citrix_adc.log.total_http_header_length |  | long |
 | citrix_adc.log.total_policies_allowed |  | long |
