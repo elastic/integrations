@@ -26,28 +26,19 @@ include_matches:
 {{/each}}
 {{/if}}
 
-{{#if tags}}
 tags:
-{{#each tags as |tag i|}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
-{{/if}}
 
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 
-processors:
 {{#if processors}}
+processors:
 {{processors}}
 {{/if}}
-# Workaround to have event.dataset and data_stream.dataset matching the
-# log input counterpart
-- add_fields:
-    target: data_stream
-    fields:
-      dataset: system.auth
-- add_fields:
-    target: event
-    fields:
-      dataset: system.auth
