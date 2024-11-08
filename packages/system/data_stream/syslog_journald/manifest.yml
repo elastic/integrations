@@ -14,13 +14,17 @@ streams:
         required: false
         show_user: true
         default: ${host.os_version} == "12 (bookworm)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023")
+
       - name: include_matches
         type: text
         title: Include Matches
         multi: true
         show_user: false
         description: >
-          A list of filter expressions used to select the logs to read (e.g. `_SYSTEMD_UNIT=vault.service`). Defaults to all logs. See [include_matches](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-journald.html#filebeat-input-journald-include-matches) for details.
+          A list of filter expressions used to select the logs to read (e.g. `_SYSTEMD_UNIT=vault.service`). Defaults to all logs. See
+          [include_matches](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-journald.html#filebeat-input-journald-include-matches) for details.
+          The logs are already filtered by the following syslog facilities: 0, 1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 15, so any filter added here will be added to this existing
+          filter.
 
       - name: paths
         type: text
