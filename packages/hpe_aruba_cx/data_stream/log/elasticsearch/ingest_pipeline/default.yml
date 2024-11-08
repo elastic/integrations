@@ -37,6 +37,8 @@ processors:
         field: event.kind
         tag: lowercase_event_kind
         ignore_missing: true
+    
+    # DCBX Events
     - grok:
         field: message
         tag: dcbx_event_9203_9204
@@ -61,6 +63,22 @@ processors:
         if: "['9209'].contains(ctx.event?.code)"
         patterns:
             - "PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
+
+    # DPSE Events
+    - dissect:
+        field: message
+        tag: dpse_event_10901
+        description: "A line card hit a backplane sequence error that triggered a recovery operation"
+        if: "ctx.event?.code == '10901'"
+        pattern: "Line card module %{aruba.dpse.linecard_name} triggered backplane sequence recovery"
+    - dissect:
+        field: message
+        tag: dpse_event_10904
+        description: "The system completed backplane sequence recovery triggered by line card error"
+        if: "ctx.event?.code == '10904'"
+        pattern: "Line card module %{aruba.dpse.linecard_name} completed backplane sequence recovery"
+    
+    # CFM Events
     - dissect:
         field: message
         tag: cfm_event_11601
@@ -71,6 +89,15 @@ processors:
         tag: cfm_event_11602
         if: "ctx.event?.code == '11602'"
         pattern: "Connection restored for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
+    
+    # DNS Client Events
+    - grok:
+        field: message
+        tag: dns_client_event_11901
+        description: "Event reported when DNS event triggered"
+        if: "['11901'].contains(ctx.event?.code)"
+        patterns:
+            - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}$"
 
 on_failure:
   - set:
