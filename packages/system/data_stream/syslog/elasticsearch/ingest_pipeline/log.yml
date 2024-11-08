@@ -1,27 +1,12 @@
 ---
 description: Pipeline for parsing Syslog messages.
 processors:
-  - grok:
-      field: message
-      patterns:
-        - '%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}'
-        - '%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{GREEDYMULTILINE:system.syslog.message}'
-        - '%{TIMESTAMP_ISO8601:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}'
-      pattern_definitions:
-        GREEDYMULTILINE: |-
-          (.|
-          )*
-      ignore_missing: true
-  - rename:
-      if: ctx.event?.original == null
-      field: message
-      target_field: event.original
-      ignore_missing: true
   - remove:
       if: 'ctx.event?.original != null' 
       field: message
       ignore_missing: true
-      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+      description: |
+         The `message` field is no longer required if the document has an `event.original` field. `message` will be set in the next step from `system.syslog.message`.
   - rename:
       field: system.syslog.message
       target_field: message

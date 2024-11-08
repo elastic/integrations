@@ -5,6 +5,11 @@ processors:
       field: event.ingested
       copy_from: _ingest.timestamp
   - set:
+      if: ctx.event?.message == null && ctx.event?.original != null
+      field: message
+      copy_from: event.original
+      description: Ensure we have the 'message' field
+  - set:
       field: "process.pid"
       copy_from: "journald.pid"
   - set:
