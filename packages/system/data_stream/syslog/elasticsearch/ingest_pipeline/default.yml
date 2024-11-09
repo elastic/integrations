@@ -2,7 +2,7 @@
 description: Entrypoint pipeline for system integration syslog data stream
 processors:
   - grok:
-      if: "ctx?.journald == null"
+      if: ctx?.journald == null
       field: message
       patterns:
         - '%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}'
@@ -19,10 +19,10 @@ processors:
       target_field: event.original
       ignore_missing: true
   - pipeline:
-      if: "ctx?.journald != null"
+      if: ctx?.input.type == "journald"
       name: '{{ IngestPipeline "journald" }}'
   - pipeline:
-      if: "ctx?.journald == null"
+      if: ctx?.input.type == "log"
       name: '{{ IngestPipeline "log" }}'
   - remove:
       field: event.original
