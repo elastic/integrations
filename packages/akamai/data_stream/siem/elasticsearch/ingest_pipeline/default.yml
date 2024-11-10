@@ -313,11 +313,11 @@ processors:
         ArrayList rule_tags = new ArrayList();
         for (def i = 0; i < ctx.json.attackData.rules.length; i++) {
           HashMap map = new HashMap();
-          for (def j = 0; j < params.items.length; j++) {
-            String key = params.items[j];
+          for (String key: params.items) {
             if (i < ctx.json.attackData[key].length) {
+              String data = ctx.json.attackData[key][i].replace(" ", "");
               try {
-                String value = ctx.json.attackData[key][i].replace(" ", "").decodeBase64();
+                String value = data.decodeBase64();
                 map.put(key, value);
                 if (key == "ruleTags") {
                   rule_tags.add(value.toLowerCase());
@@ -326,7 +326,15 @@ processors:
                 }
               }
               catch (Exception e) {
-                // Do nothing.
+                if (data.length() > 10) {
+                  data = data.substring(0,10)+"..."
+                }
+                String error = e.toString();
+                if (error.startsWith("java.lang.IllegalArgumentException: ")) {
+                  error = error.substring("java.lang.IllegalArgumentException: ".length());
+                }
+                String warning = "failed to decode base64 data: " + error + ": " + data;
+                map.put(key, warning);
               }
             }
           }
