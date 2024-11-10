@@ -13,7 +13,7 @@ processors:
       field: event.original
       target_field: json
   - drop:
-      if: ctx?.json.offset != null
+      if: ctx.json.offset != null
   - set:
       field: observer.vendor
       value: akamai
@@ -155,7 +155,7 @@ processors:
   - set:
       field: network.transport
       value: tcp
-      if: ctx?.network?.protocol != null && ctx?.network?.protocol == 'http'
+      if: ctx.network?.protocol != null && ctx.network.protocol == 'http'
   - dissect:
       field: json.httpMessage.tls
       pattern: "%{tls.version_protocol}v%{tls.version}"
@@ -182,17 +182,17 @@ processors:
       field: json.geo.country
       target_field: source.geo.country_iso_code
       ignore_missing: true
-      if: ctx?.source?.geo?.country_iso_code == null
+      if: ctx.source?.geo?.country_iso_code == null
   - set:
       field: source.geo.region_iso_code
       value: "{{{json.geo.country}}}-{{{json.geo.regionCode}}}"
       ignore_empty_value: true
-      if: ctx?.source?.geo?.region_iso_code == null
+      if: ctx.source?.geo?.region_iso_code == null
   - rename:
       field: json.geo.city
       target_field: source.geo.city_name
       ignore_missing: true
-      if: ctx?.source?.geo?.city_name == null
+      if: ctx.source?.geo?.city_name == null
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -210,7 +210,7 @@ processors:
       target_field: source.as.number
       type: long
       ignore_missing: true
-      if: ctx?.source?.as?.number == null
+      if: ctx.source?.as?.number == null
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
