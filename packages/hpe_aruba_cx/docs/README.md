@@ -259,7 +259,6 @@ Note: Descriptions have not been filled out
 | aruba.ecmp.err      |  error.message  |
 | aruba.ecmp.route    |                 |
 
-
 #### [ERPS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm)
 | Field                | Description | Type | Common                       |
 |----------------------|-------------|------|------------------------------|
