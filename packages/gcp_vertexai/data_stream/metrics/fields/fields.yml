@@ -13,7 +13,7 @@
         - name: model_invocation_count
           type: long
           metric_type: gauge
-          description: Number of model invocations (prediction requests). 
+          description: Number of model invocations (prediction requests).
         - name: character_count
           type: long
           metric_type: gauge
@@ -75,6 +75,70 @@
         - name: prediction_latencies
           type: histogram
           description: Online prediction latency of the deployed model.
-- name: gcp.labels.resource.location
-  type: keyword
-  description: Location of the resource
+## Label Fields
+- name: gcp.labels
+  description: Google Vertex AI monitored-resource type fields.
+  type: group
+  fields:
+    - name: resource
+      description: Resource fields.
+      type: group
+      fields:
+        - name: location
+          type: keyword
+          description: The region in which the service is running.
+        - name: model_user_id
+          type: keyword
+          description: The resource ID of the PublisherModel.
+        - name: model_version_id
+          type: keyword
+          description: The version ID of the PublisherModel.
+        - name: publisher
+          type: keyword
+          description: The publisher of the model.
+        - name: endpoint_id
+          type: keyword
+          description: The ID of the Endpoint.
+        - name: resource_container
+          type: keyword
+          description: The identifier of the GCP Project owning the Endpoint.
+    - name: metrics
+      description: Metrics fields.
+      type: group
+      fields:
+        - name: request_type
+          type: keyword
+          description: The type of traffic of the request (dedicated/shared).
+        - name: type
+          type: keyword
+          description: Type of token (input/output).
+        - name: max_token_size
+          type: keyword
+          description: The bucketized max size of number of tokens in the prediction request/response.
+        - name: input_token_size
+          type: keyword
+          description: The bucketized size of number of tokens in the prediction request.
+        - name: output_token_size
+          type: keyword
+          description: The bucketized size of number of tokens in the prediction response.
+        - name: response_code
+          type: keyword
+          description: Response code of prediction request.
+        - name: method
+          type: keyword
+          description: The type of method of the request (RawPredict/StreamRawPredict/ChatCompletions/etc).
+        - name: error_category
+          type: keyword
+          description: Response error category of the request (user/system/capacity).
+        - name: latency_type
+          type: keyword
+          description: The type of latency for the prediction request (either model or overhead).
+        - name: deployed_model_id
+          type: keyword
+          description: The ID of the DeployedModel which serves the prediction request.
+        - name: spot
+          type: keyword
+          description: Whether this deployment is on Spot VMs. Has values of True or False.
+        - name: replica_id
+          type: keyword
+          description: Unique ID corresponding to the model replica.
