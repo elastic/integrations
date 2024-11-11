@@ -10,27 +10,30 @@
         - name: timestamp
           type: keyword
           description: Time when the backend received the batch of events.
-    - name: childproc
+    - name: process
       type: group
       fields:
+        - name: duration
+          type: long
+          description: The time difference in seconds between the process start and process terminate event.
         - name: guid
           type: keyword
-          description: Unique ID of the child process.
+          description: Unique ID of the process.
         - name: hash
           type: group
           fields:
             - name: md5
               type: keyword
-              description: Cryptographic MD5 hashes of the executable file backing the child process.
+              description: Cryptographic MD5 hashes of the executable file backing the process.
             - name: sha256
               type: keyword
-              description: Cryptographic SHA256 hashes of the executable file backing the child process.
+              description: Cryptographic SHA256 hashes of the executable file backing the process.
         - name: name
           type: keyword
           description: Full path to the target of the crossproc event on the device's local file system.
         - name: pid
           type: long
-          description: OS-reported Process ID of the child process.
+          description: OS-reported Process ID of the process.
         - name: publisher
           type: group
           description: Signature entry for the childproc as reported by the endpoint.
@@ -44,9 +47,58 @@
         - name: reputation
           type: keyword
           description: Carbon Black Cloud Reputation string for the childproc.
+        - name: terminated
+          type: boolean
+          description: Whether the process terminated.
         - name: username
           type: keyword
-          description: The username associated with the user context that the child process was started under.
+          description: The username associated with the user context that the process was started under.
+        - name: parent
+          type: group
+          fields:
+            - name: parent
+              type: group
+              fields:
+                - name: command_line
+                  type: keyword
+                  description: Full command line that started the grandparent process, including the absolute path to the executable, and all arguments.
+                - name: entity_id
+                  type: keyword
+                  description: Unique identifier for the grandparent process.
+                - name: executable
+                  type: keyword
+                  description: Absolute path to the grandparent process executable.
+                - name: hash.md5
+                  type: keyword
+                  description: MD5 hash of the grandparent process.
+                - name: hash.sha256
+                  type: keyword
+                  description: SHA256 hash of the grandparent process.
+                - name: reputation
+                  type: keyword
+                  description: Reputation of the grandparent process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud.
+                - name: pid
+                  type: long
+                  description: OS-reported Process ID of the grandparent process.
+            - name: publisher
+              type: group
+              description: Signature entry for the process as reported by the endpoint.
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the publisher.
+                - name: state
+                  type: keyword
+                  description: The state of the publisher.
+            - name: reputation
+              type: keyword
+              description: Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud.
+            - name: terminated
+              type: boolean
+              description: Whether the process terminated.
+            - name: username
+              type: keyword
+              description: The username associated with the user context that this process was started under.
     - name: crossproc
       type: group
       fields:
@@ -160,37 +212,6 @@
     - name: organization_key
       type: keyword
       description: The organization key associated with the console instance.
-    - name: process
-      type: group
-      fields:
-        - name: duration
-          type: long
-          description: The time difference in seconds between the process start and process terminate event.
-        - name: parent
-          type: group
-          fields:
-            - name: reputation
-              type: keyword
-              description: Reputation of the parent process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud.
-        - name: publisher
-          type: group
-          description: Signature entry for the process as reported by the endpoint.
-          fields:
-            - name: name
-              type: keyword
-              description: The name of the publisher.
-            - name: state
-              type: keyword
-              description: The state of the publisher.
-        - name: reputation
-          type: keyword
-          description: Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud.
-        - name: terminated
-          type: boolean
-          description: True if process was terminated elase false.
-        - name: username
-          type: keyword
-          description: The username associated with the user context that this process was started under.
     - name: schema
       type: long
       description: The schema version. The current schema version is "1". This schema version will only be incremented if the field definitions are changed in a backwards-incompatible way.

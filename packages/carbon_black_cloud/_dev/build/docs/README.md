@@ -8,10 +8,10 @@ Carbon Black Cloud `Alerts API (v6)` [will be deactivated on July 31, 2024](http
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
 data stream. The default values of file selector regexes have been commented out for this reason. The only reason the global queue now exists is to avoid
-a breaking change while upgrading to version 1.21 and above. A separate SQS queue per data stream should help fix the data loss that's been occurring in the 
+a breaking change while upgrading to version 1.21 and above. A separate SQS queue per data stream should help fix the data loss that's been occurring in the
 older versions.
 
-## HTTPJSON vs CEL 
+## HTTPJSON vs CEL
 Version 2.0.0 introduces the use of the CEL input. This input method is currently marked as [Beta] while the older HTTPJSON input method has been
 marked as [Legacy]. The HTTPJSON input method will not receive enhancement changes and will not support the new `alert_v7` data stream.
 
@@ -40,7 +40,7 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
   | Endpoint Event    | endpoint_event_logs    |
   | Watchlist Hit     | watchlist_hit_logs     |
 
-### To collect data from AWS SQS, follow the below steps:
+### To collect data from AWS SQS, follow the steps below:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
 2. Follow the steps below for each data stream that has been enabled:
      1. Create an SQS queue
@@ -61,10 +61,10 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
 1. In Carbon Black Cloud, On the left navigation pane, click **Settings > API Access**.
 2. Click Add API Key.
 3. Give the API key a unique name and description.
-    - Select the appropriate access level type. Please check the required Access Levels & Permissions for integration in the table below.  
+    - Select the appropriate access level type. Please check the required Access Levels & Permissions for integration in the table below.
      **Note:** To use a custom access level, select Custom from the Access Level type drop-down menu and specify the Custom Access Level.
     - Optional: Add authorized IP addresses.
-    - You can restrict the use of an API key to a specific set of IP addresses for security reasons.  
+    - You can restrict the use of an API key to a specific set of IP addresses for security reasons.
      **Note:** Authorized IP addresses are not available with Custom keys.
 4. To apply the changes, click Save.
 
