@@ -1304,7 +1304,6 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.component.name |  | keyword |
 | aruba.config.type |  | keyword |
 | aruba.config.value |  | keyword |
-| aruba.container.name | Name of container | keyword |
 | aruba.copp.class |  | keyword |
 | aruba.cpu_rx.filter_description |  | keyword |
 | aruba.dcbx.intf_name | Interface name as reported by the system | keyword |
