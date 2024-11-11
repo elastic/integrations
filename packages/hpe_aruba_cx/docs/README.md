@@ -256,7 +256,7 @@ Note: Descriptions have not been filled out
 | Field               | Schema Mapping  |
 |---------------------|-----------------|
 | aruba.ecmp.egressid |                 |
-| aruba.ecmp.err      |  error.message  |
+| aruba.ecmp.err      |                 |
 | aruba.ecmp.route    |                 |
 
 #### [ERPS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm)
