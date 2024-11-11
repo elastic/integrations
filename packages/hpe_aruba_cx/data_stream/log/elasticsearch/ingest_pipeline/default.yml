@@ -38,6 +38,42 @@ processors:
         tag: lowercase_event_kind
         ignore_missing: true
     
+    # ECMP Events
+    - grok:
+        field: message
+        tag: ecmp_event_1801
+        description: "logs errors while creating ecmp group."
+        if: "ctx.event?.code == '1801'"
+        patterns:
+            - "Failed to update ecmp object for route %{DATA:aruba.ecmp.route}, error: %{DATA:aruba.ecmp.err}$"
+    - grok:
+        field: message
+        tag: ecmp_event_1802
+        description: "logs while creating ecmp group."
+        if: "ctx.event?.code == '1802'"
+        patterns:
+            - "Update ecmp object for route %{DATA:aruba.ecmp.route}$"
+    - grok:
+        field: message
+        tag: ecmp_event_1803
+        description: "logs errors while deleting ecmp group."
+        if: "ctx.event?.code == '1803'"
+        patterns:
+            - "Failed to delete ecmp egress object %{DATA:aruba.ecmp.egressid}, error: %{DATA:aruba.ecmp.err}$"
+    - dissect:
+        field: message
+        tag: ecmp_event_1804
+        description: "logs while deleting ecmp group."
+        if: "ctx.event?.code == '1804'"
+        pattern: "Delete ecmp egress object %{aruba.ecmp.egressid}"
+    - grok:
+        field: message
+        tag: ecmp_event_1805
+        description: "logs for ECMP setup errors."
+        if: "ctx.event?.code == '1805'"
+        patterns:
+            - "ECMP error: %{DATA:aruba.ecmp.err}$"
+
     # DCBX Events
     - grok:
         field: message
