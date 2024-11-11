@@ -90,6 +90,13 @@ processors:
         if: "ctx.event?.code == '11602'"
         pattern: "Connection restored for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
     
+    # Container Manager Events
+    - dissect:
+        field: message
+        tag: container_manager_11801_11802_11803
+        if: "['11801', '11802', '11803'].contains(ctx.event?.code)"
+        pattern: "Container %{container.name} is %{?ignore_action}"
+
     # DNS Client Events
     - grok:
         field: message
