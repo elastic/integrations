@@ -11,12 +11,16 @@ processors:
       field: citrix.detail
       patterns:
         - '^%{SPACE}%{HEADER_NOTIMEZONE} : %{DATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
+        - '^%{SPACE}%{HEADER_NOTIMEZONE} : %{DATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
         - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
         - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
       pattern_definitions:
-        HEADER_NOTIMEZONE: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
-        HEADER: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone}? (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
+        HEADER_NOTIMEZONE: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} (?: ?%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
+        HEADER: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native}( %{WORD:event.timezone})? (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
         NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}|%{MONTHDAY}/%{MONTHNUM}/%{YEAR}):%{HOUR}:%{MINUTE}:%{SECOND}'  
+        MonthNumber: '(?:%{MONTHNUM:event.date.month})'
+        MonthDayNum: '(?:%{MONTHDAY:event.date.day})'
+        YearNumber: '(?:%{YEAR:event.date.year})'
   - grok:
       description: Parse out details.
       tag: grok_tmp_details
