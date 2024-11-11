@@ -45,7 +45,7 @@ processors:
         description: "logs errors while creating ecmp group."
         if: "ctx.event?.code == '1801'"
         patterns:
-            - "Failed to update ecmp object for route %{DATA:aruba.ecmp.route}, error: %{DATA:error.message}$"
+            - "Failed to update ecmp object for route %{DATA:aruba.ecmp.route}, error: %{DATA:aruba.ecmp.err}$"
     - grok:
         field: message
         tag: ecmp_event_1802
@@ -59,7 +59,7 @@ processors:
         description: "logs errors while deleting ecmp group."
         if: "ctx.event?.code == '1803'"
         patterns:
-            - "Failed to delete ecmp egress object %{DATA:aruba.ecmp.egressid}, error: %{DATA:error.message}$"
+            - "Failed to delete ecmp egress object %{DATA:aruba.ecmp.egressid}, error: %{DATA:aruba.ecmp.err}$"
     - dissect:
         field: message
         tag: ecmp_event_1804
@@ -72,7 +72,7 @@ processors:
         description: "logs for ECMP setup errors."
         if: "ctx.event?.code == '1805'"
         patterns:
-            - "ECMP error: %{DATA:error.message}$"
+            - "ECMP error: %{DATA:aruba.ecmp.err}$"
 
     # DCBX Events
     - grok:
