@@ -160,12 +160,12 @@ Note: Descriptions have not been filled out
 | Field                        | Description | Type | Common                       |
 |------------------------------|-------------|------|------------------------------|
 | aruba.cfm.id                 | Maintenance Endpoint ID | keyword | aruba.instance.id            |
-| aruba.cfm.interface          | Interface name | keyword | observer.ingress.interface.name |
+| aruba.cfm.interface          | Interface name | keyword |                        |
 
 #### [Container manager events CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
 | Field                        | Description | Type | Common           |
 |------------------------------|-------------|------|------------------|
-| aruba.container.name         |             |      | container.name   |
+| aruba.container.name         | Name of container | keyword | container.name   |
 
 #### [CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm)
 | Field                        | Description | Type | Common           |
@@ -1304,6 +1304,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.component.name |  | keyword |
 | aruba.config.type |  | keyword |
 | aruba.config.value |  | keyword |
+| aruba.container.name | Name of container | keyword |
 | aruba.copp.class |  | keyword |
 | aruba.cpu_rx.filter_description |  | keyword |
 | aruba.dcbx.intf_name | Interface name as reported by the system | keyword |
