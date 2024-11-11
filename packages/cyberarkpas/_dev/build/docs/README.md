@@ -1,9 +1,12 @@
 # CyberArk Privileged Access Security
 
-The CyberArk Privileged Access Security integration collects audit logs from [CyberArk's Vault](https://docs.cyberark.com/Product-Doc/OnlineHelp/Portal/Content/Resources/_TopNav/cc_Portal.htm) server.
-## Audit
+The CyberArk Privileged Access Security integration collects audit logs and monitoring data from [CyberArk's Vault](https://docs.cyberark.com/Product-Doc/OnlineHelp/Portal/Content/Resources/_TopNav/cc_Portal.htm) server.
 
-The `audit` dataset receives Vault Audit logs for User and Safe activities over the syslog protocol.
+## Data streams
+
+The `audit` data stream receives Vault Audit logs for User and Safe activities over the syslog protocol.
+
+It will also receive **monitoring** data from the server and route it to the `monitor` data stream (e.g. `logs-cyberarkpas.monitor-default`).
 
 ### Vault Configuration
 
@@ -16,20 +19,28 @@ the `Server\Syslog` folder.
 
 ```ini
 [SYSLOG]
-UseLegacySyslogFormat=No
+UseLegacySyslogFormat=no
 SyslogTranslatorFile=Syslog\elastic-json-v1.0.xsl
 SyslogServerIP=<INSERT FILEBEAT IP HERE>
 SyslogServerPort=<INSERT FILEBEAT PORT HERE>
 SyslogServerProtocol=TCP
+SendMonitoringMessage=yes
 ```
 
 For proper timestamping of events, it's recommended to use the newer RFC5424 Syslog format
 (`UseLegacySyslogFormat=No`). To avoid event loss, use `TCP` or `TLS` protocols instead of `UDP`.
 
-### Example event
+The sample configuration above will include monitoring data. For more information about monitoring, see
+[Monitor the Vault in SIEM Applications Using Syslog](https://docs.cyberark.com/pam-self-hosted/latest/en/content/pasimp/monitoring-the-vault-using-syslog.htm).
+
+### Example audit event
 
 {{event "audit"}}
 
-**Exported fields**
-
 {{fields "audit"}}
+
+### Example monitor event
+
+{{event "monitor"}}
+
+{{fields "monitor"}}

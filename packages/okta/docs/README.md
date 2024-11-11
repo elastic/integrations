@@ -265,10 +265,13 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.behaviors.New_State |  | keyword |
 | okta.debug_context.debug_data.behaviors.Velocity |  | keyword |
 | okta.debug_context.debug_data.behaviors.Velocity_Behavior |  | keyword |
+| okta.debug_context.debug_data.client_secret |  | keyword |
 | okta.debug_context.debug_data.device_fingerprint | The fingerprint of the device. | keyword |
 | okta.debug_context.debug_data.dt_hash | The device token hash | keyword |
 | okta.debug_context.debug_data.factor | The factor used for authentication. | keyword |
 | okta.debug_context.debug_data.flattened | The complete debug_data object. | flattened |
+| okta.debug_context.debug_data.grant_type |  | keyword |
+| okta.debug_context.debug_data.granted_scopes |  | keyword |
 | okta.debug_context.debug_data.logOnlySecurityData |  | keyword |
 | okta.debug_context.debug_data.logOnlySecurityData.behaviors |  | keyword |
 | okta.debug_context.debug_data.logOnlySecurityData.behaviors.New_City |  | keyword |
@@ -289,6 +292,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.promptingPolicyTypes |  | keyword |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
 | okta.debug_context.debug_data.request_uri | The request URI. | keyword |
+| okta.debug_context.debug_data.requested_scopes |  | keyword |
 | okta.debug_context.debug_data.risk |  | keyword |
 | okta.debug_context.debug_data.risk.level |  | keyword |
 | okta.debug_context.debug_data.risk.reasons |  | keyword |
@@ -319,7 +323,13 @@ An example event for `system` looks as following:
 | okta.security_context.is_proxy | Whether it is a proxy or not. | boolean |
 | okta.security_context.isp | The Internet Service Provider. | keyword |
 | okta.severity | The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR. | keyword |
-| okta.target | The list of targets. | flattened |
+| okta.target.alternate_id | The alternate ID of the target. | keyword |
+| okta.target.changeDetails.from.\* |  | object |
+| okta.target.changeDetails.to.\* |  | object |
+| okta.target.detailEntry.\* |  | object |
+| okta.target.display_name | The display name of the target. | keyword |
+| okta.target.id | The ID of the target. | keyword |
+| okta.target.type | The type of target. | keyword |
 | okta.transaction.detail.request_api_token_id | ID of the API token used in a request. | keyword |
 | okta.transaction.id | Identifier of the transaction. | keyword |
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |

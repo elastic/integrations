@@ -313,6 +313,18 @@ processors:
   - set:
       field: event.kind
       value: event
+  - append:
+      field: related.entity
+      value: '{{{ azure.resource_id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.resource_id != null && ctx.azure.resource_id != ''
+  - append:
+      field: related.entity
+      value: '{{{ azure.activitylogs.identity.authorization.evidence.principal_id }}}'
+      allow_duplicates: false
+      if: >
+        ctx.azure?.activitylogs?.identity?.authorization?.evidence?.principal_id != null &&
+        ctx.azure.activitylogs.identity.authorization.evidence.principal_id != ''
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
@@ -320,3 +332,4 @@ on_failure:
       field: error.message
       value: |-
         Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+

@@ -4,12 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: "8.11.0"
-  - set:
-      field: event.action
-      value: "dependabot"
-  - set:
-      field: event.kind
-      value: "alert"
   - rename:
       field: message
       target_field: event.original
@@ -21,19 +15,14 @@ processors:
   - fail:
       if: "!(ctx.github.dependabot instanceof Map)"
       message: Missing JSON object
+  - remove:
+      field: 
+        - event.kind
+      ignore_missing: true
+      description: Fields defined as constant_keyword are removed from _source for storage efficiency.
   - set:
       field: _temp.updated_at
       value: "{{{_ingest.timestamp}}}"
-  - fingerprint:
-      fields:
-        - github.dependabot.repository.owner.login
-        - github.dependabot.repository.name
-        - github.dependabot.number
-        - github.dependabot.created_at
-        - github.dependabot.dismissed_at
-        - github.dependabot.fixed_at
-      target_field: "_id"
-      ignore_missing: true
   - rename:
       field: github.dependabot.createdAt
       target_field: github.dependabot.created_at
@@ -90,13 +79,21 @@ processors:
       timezone: UTC
       target_field: "@timestamp"
       if: ctx.github.dependabot.fixed_at != null
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.github?.dependabot?.fixed_at == null && ctx.github?.dependabot?.dismissed_at == null
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.github?.dependabot?.fixed_at != null || ctx.github?.dependabot?.dismissed_at != null
   - rename:
       field: github.dependabot.repository.isInOrganization
       target_field: github.dependabot.repository.is_in_organization
       ignore_missing: true
   - rename:
       field: github.dependabot.repository.isPrivate
-      target_field: github.dependabot.repository.is_private
+      target_field: github.dependabot.repository.private
       ignore_missing: true
   - rename:
       field: github.dependabot.securityAdvisory
@@ -263,21 +260,19 @@ processors:
   - lowercase:
       field: vulnerability.severity
       ignore_missing: true
-  - set:
-      field: github.state
-      copy_from: github.dependabot.state
-      if: ctx.github.dependabot.state != null
-  - set:
-      field: github.severity
-      copy_from: vulnerability.severity
-      if: ctx.vulnerability?.severity != null
-  - set:
-      field: github.severity
-      value: "undefined"
-      if: ctx.github.severity == null
   - rename:
       field: github.dependabot.repository
       target_field: github.repository
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - github.repository.owner.login
+        - github.repository.name
+        - github.dependabot.number
+        - github.dependabot.created_at
+        - github.dependabot.dismissed_at
+        - github.dependabot.fixed_at
+      target_field: "_id"
       ignore_missing: true
       ###########
       # Cleanup #

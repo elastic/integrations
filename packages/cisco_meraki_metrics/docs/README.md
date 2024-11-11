@@ -51,7 +51,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
-| meraki.device.address | Physical address of the device. | keyword |  |  |
+| meraki.device.address | Physical address of the device. | text |  |  |
 | meraki.device.channel_utilization.wifi0.utilization_80211 | Percentage of wifi channel utiliation for the given radio. | double | percent | gauge |
 | meraki.device.channel_utilization.wifi0.utilization_non_80211 | Percentage of non-wifi channel utiliation for the given radio. | double | percent | gauge |
 | meraki.device.channel_utilization.wifi0.utilization_total | Percentage of total channel utiliation for the given radio. | double | percent | gauge |
@@ -79,7 +79,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | meraki.device.model | Model of the device. | keyword |  |  |
 | meraki.device.name | Name of the device. | keyword |  |  |
 | meraki.device.network_id | ID of the network the device belongs to. | keyword |  |  |
-| meraki.device.notes | Notes for the device, limited to 255 characters. | keyword |  |  |
+| meraki.device.notes | Notes for the device, limited to 255 characters. | text |  |  |
 | meraki.device.performance_score |  | double |  | gauge |
 | meraki.device.product_type | Product type of the device. | keyword |  |  |
 | meraki.device.serial | Serial number of the device. | keyword |  |  |

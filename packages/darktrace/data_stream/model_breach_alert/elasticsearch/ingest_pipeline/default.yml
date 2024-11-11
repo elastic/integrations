@@ -490,15 +490,6 @@ processors:
       field: json.device.vendor
       target_field: darktrace.model_breach_alert.device.vendor
       ignore_missing: true
-  - convert:
-      field: json.acknowledged
-      target_field: darktrace.model_breach_alert.is_acknowledged
-      type: boolean
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.mitreTechniques
       if: ctx.json?.mitreTechniques instanceof List
@@ -1042,6 +1033,57 @@ processors:
       field: '@timestamp'
       copy_from: darktrace.model_breach_alert.time
       ignore_failure: true
+  - rename:
+      field: json.acknowledged
+      target_field: darktrace.model_breach_alert.acknowledged
+      ignore_missing: true
+  - date:
+      field: darktrace.model_breach_alert.acknowledged.time
+      target_field: darktrace.model_breach_alert.acknowledged.time
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - 'MMM dd HH:mm:ss'
+      if: ctx.darktrace?.model_breach_alert?.acknowledged?.time != null
+      on_failure:
+        - remove:
+            field: darktrace.model_breach_alert.acknowledged.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      source: |
+        ctx.darktrace = ctx.darktrace ?: [:];
+        ctx.darktrace.model_breach_alert = ctx.darktrace?.model_breach_alert ?: [:];
+        if (ctx.darktrace?.model_breach_alert?.acknowledged == null) {
+          ctx.darktrace.model_breach_alert.is_acknowledged = false;
+          return;
+        }
+        if (ctx.darktrace.model_breach_alert.acknowledged.time == null) {
+          // No time, so be non-commital.
+          return;
+        }
+        if (ctx.darktrace.model_breach_alert.time == null) {
+          // Assume any time noted in json.acknowledged.time
+          // is in the past.
+          ctx.darktrace.model_breach_alert.is_acknowledged = true;
+          return;
+        }
+        def time = ctx.darktrace.model_breach_alert.time;
+        def acknowledged = ctx.darktrace.model_breach_alert.acknowledged.time;
+        ctx.darktrace.model_breach_alert.is_acknowledged = ZonedDateTime.parse(acknowledged).isBefore(ZonedDateTime.parse(time));
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      value: '{{{darktrace.model_breach_alert.acknowledged.username}}}'
+      allow_duplicates: false
+      ignore_failure: true
+      if: ctx.darktrace?.model_breach_alert?.acknowledged?.username != null
   - foreach:
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List

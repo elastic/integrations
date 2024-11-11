@@ -105,11 +105,21 @@ This module has been tested against **Symantec Integrated Cyber Defense Exchange
 
 - Considering you already have an AWS S3 bucket setup, to configure it with Symantec Endpoint Security, follow the steps mentioned [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html) to enable the Symantec Endpoint Streaming.
 
+### To collect data from Azure Blob Storage, follow the below steps:
+
+- Considering you already have an Azure storage container setup, configure it with Symantec Endpoint Security.
+- Enable the Symantec Endpoint Streaming as mentioned [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html).
+- Configure the integration with your Azure Storage account name, Container name and Service Account Key/Service Account URI.
+
+**For more details about the Azure Blob Storage input settings please see the documentation [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html).**
+
 ### To collect data from a GCS bucket, follow the below steps:
 
 - Considering you already have a GCS bucket setup, configure it with Symantec Endpoint Security.
 - Enable the Symantec Endpoint Streaming as mentioned [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html).
 - Configure the integration with your GCS project ID, Bucket name and Service Account Key/Service Account Credentials File.
+
+**For more details about the GCS input settings please see the documentation [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html).**
 
 ### The GCS credentials key file:
 Once you have added a key to GCP service account, you will get a JSON key file that can only be downloaded once.
@@ -152,6 +162,7 @@ A sample JSON Credentials file looks as follows:
 3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
+**For more details about the AWS-S3 input settings please see the documentation [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).**
 
 ### Steps to obtain Client ID and Client Secret to collect data from EDR Incident API:
 

@@ -27,36 +27,108 @@ processors:
             value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
         - fail:
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
-
-  - set:
-      field: event.kind
-      value: event
+  - convert:
+      field: error.code
+      type: string
+      ignore_missing: true
   - set:
       field: event.code
       value: '{{winlog.event_id}}'
   - set:
+      field: event.action
+      value: antivirus-configuration-changed
+      if: ctx.event?.code == "5007"
+  - set:
+      field: event.action
+      value: antivirus-updated
+      if: ctx.event?.code == "2000"
+  - set:
+      field: event.action
+      value: file-uploaded
+      if: ctx.event?.code == "2050"
+  - set:
+      field: event.action
+      value: malware-detected
+      if: ctx.event?.code == "1116" || ctx.event?.code == "1117"
+  - set:
+      field: event.action
+      value: malware-quarantined
+      if: ctx.event?.code == "1117" && ctx.winlog?.event_data?.Action_Name == "Quarantine"
+  - set:
+      field: event.category
+      value: ["configuration"]
+      if: ctx.event?.code == "5007"
+  - set:
+      field: event.category
+      value: ["file"]
+      if: ctx.event?.code == "2050"
+  - set:
+      field: event.category
+      value: ["malware"]
+      if: ctx.event?.code == "1116" || ctx.event?.code == "1117"
+  - set:
       field: event.category
       value: ["process"]
+      override: false
+      if: ctx.event?.category == null  
   - set:
-      field: event.type
-      value: ["start"]
+      field: event.kind
+      value: event
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.winlog?.event_data?.Error_Description == "The operation completed successfully. "
+  - set:
+      field: event.reference
+      ignore_empty_value: true
+      copy_from: winlog.event_data.FWLink
+  - script:
+      description: Set Event Types
+      lang: painless
+      source: |
+        if (ctx?.event?.category instanceof List) {
+          for (category in ctx.event.category) {
+            if (category == 'configuration' && ctx?.event?.code == '5007') {
+              ctx.event.type = ['change'];
+              break;
+            }
+          }
+        }
+        if (ctx?.event?.type == null && ctx?.event?.category instanceof List) {
+          for (category in ctx.event.category) {
+            if (category == 'malware' || category == 'file' || category == 'process') {
+              ctx.event.type = ['info'];
+              break;
+            }
+          }
+        }
+        if (ctx?.event?.type == null && ctx?.event?.category instanceof List) {
+          for (category in ctx.event.category) {
+            if (category == 'process') {
+              ctx.event.type = ['start'];
+              break;
+            }
+          }
+        }
+  - set:
+      field: destination.domain
+      override: false
+      ignore_empty_value: true
+      copy_from: winlog.event_data.Destination
   - convert:
       field: winlog.record_id
       type: string
       ignore_failure: true
       ignore_missing: true
-  - convert:
-      field: error.code
-      type: string
-      ignore_missing: true
+
 
   ## User fields.
 
-  - set:
-      field: user.id
-      copy_from: winlog.user.identifier
-      ignore_failure: true
-      ignore_empty_value: true
+  - split:
+      field: winlog.event_data.Detection_User
+      separator: '\\'
+      target_field: "_temp.user_parts"
+      ignore_missing: true
   - split:
       field: winlog.event_data.User
       target_field: "_temp.user_parts"
@@ -74,38 +146,91 @@ processors:
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
-  - rename:
-      field: winlog.user.name
-      target_field: user.name
-      ignore_failure: true
+  - remove:
+      field: _temp
       ignore_missing: true
-      if: ctx.user?.name == null
-      
-    ## User data fields.
-  - convert:
-      field: winlog.user_data.TargetProcessId
-      type: long
+      if: ctx._temp != null
+  - remove:
+      field: winlog.message
       ignore_missing: true
-      on_failure:
-        - remove:
-            field: winlog.user_data.TargetProcessId
-            ignore_failure: true
+      if: ctx.winlog?.message != null
 
     ## File Fields
 
-  - grok:
-      field: winlog.user_data.FullFilePath
+  - gsub:
+      field: "winlog.event_data.Path"
+      pattern: ".*:_"
+      replacement: ""
+      target_field: "file.path"
       ignore_missing: true
+  - gsub:
+      field: "winlog.event_data.FileName"
+      pattern: ".*:_"
+      replacement: ""
+      target_field: "file.path"
+      ignore_missing: true
+  - set:
+      field: "file.path"
+      copy_from: "winlog.event_data.Path"
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: "file.path"
+      override: false
+      ignore_empty_value: true
+      copy_from: "winlog.event_data.Filename"
+  - grok:
+      field: file.path
       patterns:
-      - '(?<file.name>([^\\]*$))'
-      if: ctx.winlog?.user_data?.FullFilePath != "-"
-
+        - '(?<file.name>([^\\\\]*$))'
+      ignore_missing: true
+      if: ctx.file?.name == null
+  - grok:
+      field: file.name
+      patterns:
+        - '\.%{GREEDYDATA:file.extension}$'
+      ignore_missing: true
   - set:
       field: file.hash.sha256
-      copy_from: winlog.user_data.FileHash
+      copy_from: winlog.event_data.Sha256
+      override: false
       ignore_empty_value: true
-      if: ctx.winlog?.user_data?.FileHash != "-"
-      
+      if: ctx.winlog?.event_data?.Sha256 != "-"
+
+      ## Process Fields
+
+  - rename:
+      field: winlog.event_data.Target_Commandline
+      target_field: process.command_line
+      ignore_missing: true
+  - rename:
+      field: winlog.event_data.Parent_Commandline
+      target_field: process.parent.command_line
+      ignore_missing: true
+  - rename:
+      field: winlog.event_data.Process_Name
+      target_field: process.executable
+      ignore_missing: true
+      if: ctx.process?.executable == null && ctx.event?.code != "1126"
+  - rename:
+      field: winlog.event_data.Process_Name
+      target_field: process.name
+      ignore_missing: true
+      if: ctx.process?.name == null && ctx.event?.code == "1126"
+  - grok:
+      field: process.executable
+      patterns:
+        - '(?<process.name>([^\\]*$))'
+      ignore_missing: true
+      if: ctx.process?.name == null
+
+      ## URL Fields
+  - set:
+      field: destination.domain
+      override: false
+      ignore_empty_value: true
+      copy_from: winlog.event_data.Destination
+
 on_failure:
   - set:
       field: event.kind

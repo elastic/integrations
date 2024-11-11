@@ -24,7 +24,15 @@ processors:
   - dissect:
       field: event.original
       tag: 'dissect_event_original'
-      pattern: '%{_tmp.sourceorusername} %{apache_tomcat.access.http.ident} %{apache_tomcat.access.http.useragent} [%{_tmp.timestamp}] "%{http.request.method} %{url.original} HTTP/%{http.version}" %{_tmp.dissectgrok}'
+      pattern: '%{_tmp.sourceorusername} %{apache_tomcat.access.http.ident} %{apache_tomcat.access.http.useragent} [%{_tmp.timestamp}] "%{_tmp.dissect_request}" %{_tmp.dissectgrok}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dissect:
+      field: _tmp.dissect_request
+      pattern: '%{http.request.method} %{url.original} HTTP/%{http.version}'
+      if: ctx._tmp.dissect_request != '-'
       on_failure:
         - append:
             field: error.message

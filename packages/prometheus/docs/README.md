@@ -101,6 +101,10 @@ When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
 }
 ```
 
+#### Metrics count
+
+The Prometheus integration's `collector` dataset provides a `Metrics Count` parameter, which is disabled by default. When enabled, it counts the total number of Prometheus metrics within each Elasticsearch document. This count is stored in a field called `metrics_count` and its value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines.
+
 #### Scraping all metrics from a Prometheus server
 
 We recommend using the Remote Write dataset for this, and make Prometheus push metrics to Agent.
@@ -241,6 +245,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
+| metrics_count | Total count of Prometheus metrics within the Elasticsearch document. This value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines. | long |  |
 | prometheus.\*.counter | Prometheus counter metric | object | counter |
 | prometheus.\*.histogram | Prometheus histogram metric | object |  |
 | prometheus.\*.rate | Prometheus rated counter metric | object | gauge |
@@ -437,6 +442,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
+| metrics_count | Total count of Prometheus metrics within the Elasticsearch document. This value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines. | long |  |
 | prometheus.\*.counter | Prometheus counter metric | object | counter |
 | prometheus.\*.histogram | Prometheus histogram metric | object |  |
 | prometheus.\*.rate | Prometheus rated counter metric | object | gauge |
@@ -527,6 +533,10 @@ types_patterns:
 Note that when using `types_patterns`, the provided patterns have higher priority than the default patterns.
 For instance if `_histogram_total` is a defined histogram pattern, then a metric like `network_bytes_histogram_total`
 will be handled as a histogram, even if it has the suffix `_total` which is a default pattern for counters.
+
+#### Metrics count
+
+The Prometheus integration's `remote_write` dataset provides a `Metrics Count` parameter, which is disabled by default. When enabled, it counts the total number of Prometheus metrics within each Elasticsearch document. This count is stored in a field called `metrics_count` and its value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines.
 
 ### Prometheus Queries (PromQL)
 

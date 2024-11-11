@@ -1,0 +1,661 @@
+rules:
+#### Forensics ####
+  - path: /auth/external
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: '{"accessKey":"xxxx","clientId":"xxxxforensics"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "token": "xxxxforensics",
+              "csrf": "xxxx",
+              "expires": "Tue, 10 Sep 2024 09:11:32 GMT",
+              "expiresIn": 1800
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxforensics"
+    request_body: /^\{\"cloudService\":\"Harmony Endpoint\",\"filter\":\"product:\\\"Forensics\\\"\",\"limit\":[0-9]+,\"pageLimit\":[0-9]+,\"timeframe\":\{\"endTime\":\"[0-9T\:\-Z]+\",\"startTime\":\"[0-9T\:\-Z]+\"\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "taskId": "xxxxforensics"
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/xxxxforensics
+    methods: ["GET"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxforensics"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "state": "Ready",
+              "pageTokens": [
+                "xxxxforensics"
+              ]
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/retrieve
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxforensics"
+    request_body: /^\{\"pageToken\":\"xxxxforensics\",\"taskId\":\"xxxxforensics\"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {
+            "success": true,
+            "data": {
+              "records": [
+                {"confidence_level": "High", "policy_date": "2024-09-02T06:23:25.0000000Z", "severity": "Critical", "time": "2024-09-03T08:53:12.000001Z", "id": "a4640108-91b1-0f19-66d6-ceb500000000", "orig": "164.100.1.8", "sequencenum": 1, "action": "Detect", "product": "Forensics", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "description": "To exclude the file: On the Harmony Endpoint Management add this sha1 exclusion: 62f0bd56-b0e1235b-99940b34-916c19ec-fac8e80c Attack status: Dormant.", "protection_type": "File Reputation", "attack_status": "Dormant", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "detected_by": "Endpoint File Reputation", "event_type": "Forensics Case Analysis", "file_md5": "1468c1908845ef238f7f196809946288", "file_name": [ "malz5.zip" ], "file_sha1": "62f0bd56b0e1235b99940b34916c19ecfac8e80c", "file_size": 12707198, "file_type": "zip", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "malware_action": [ " " ], "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "packet_capture_unique_id": "0acd55a9-f241-4097-a699-6b7e41cd26af", "policy_name": "Default Forensics settings", "policy_number": 3, "protection_name": "Gen.Rep.zip", "remediated_files": "malz5.zip(Remediation disabled in policy)", "resource": [ "c:\\users\\admin\\downloads\\malz5.zip" ], "service_domain": "ep-demo", "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "suspicious_events": "System Shutdown / Reboot: ; ", "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "packet_capture": "Packet Capture"}
+              ],
+              "recordsCount": 1,
+              "nextPageToken": "NULL"
+            }
+          }
+#### Anti-Bot ####
+  - path: /auth/external
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: '{"accessKey":"xxxx","clientId":"xxxxantibot"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "token": "xxxxantibot",
+              "csrf": "xxxx",
+              "expires": "Tue, 10 Sep 2024 09:11:32 GMT",
+              "expiresIn": 1800
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxantibot"
+    request_body: /^\{\"cloudService\":\"Harmony Endpoint\",\"filter\":\"product:\\\"Anti-Bot\\\"\",\"limit\":[0-9]+,\"pageLimit\":[0-9]+,\"timeframe\":\{\"endTime\":\"[0-9T\:\-Z]+\",\"startTime\":\"[0-9T\:\-Z]+\"\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "taskId": "xxxxantibot"
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/xxxxantibot
+    methods: ["GET"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxantibot"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "state": "Ready",
+              "pageTokens": [
+                "xxxxantibot"
+              ]
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/retrieve
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxantibot"
+    request_body: /^\{\"pageToken\":\"xxxxantibot\",\"taskId\":\"xxxxantibot\"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {
+            "success": true,
+            "data": {
+              "records": [
+                {"confidence_level": "High", "policy_date": "2024-09-03T10:46:14.0000000Z", "severity": "High", "time": "2024-09-06T08:32:28Z", "id": "a4640108-91b1-0f19-66da-bf6400000001", "orig": "164.100.1.8", "sequencenum": 16777215, "action": "Detect", "product": "Anti-Bot", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "Detected dns query to malicious domain malware.wicar.org [Infecting Website.RS.TC.32eclVjT]. To exclude: On the Harmony Endpoint Management add an Anti-Bot exclusion of type Domain with value: \"malware.wicar.org\"", "event_type": "Anti Bot Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "policy_name": "Default Anti-Bot settings", "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_number": 3, "protection_type": "URL Reputation", "file_md5": "7469cc568ad6821fd9d925542730a7d8", "file_name": [ "svchost.exe" ], "file_size": 47040, "file_type": "exe", "malware_action": [ "Access to site known to contain malware" ], "packet_capture_unique_id": "e71ae8af-f40e-49cb-9bef-1a91602f8faf", "protection_name": "Infecting Website.RS.TC.32eclVjT", "resource": [ "malware.wicar.org" ], "packet_capture": "Packet Capture", "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"Anti Bot exclusions\",\"exclusion_type\":\"Domain\",\"exclusion_value\":{\"default_value\":\"malware.wicar.org\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"\"}}]", "dst": "0.0.0.0", "process_username": "NETWORK SERVICE", "proxy_src_ip": "0.0.0.0" },
+                {"confidence_level": "High", "policy_date": "2024-09-03T10:46:14.0000000Z", "severity": "High", "time": "2024-09-06T08:32:26Z", "id": "a4640108-91b1-0f19-66da-bf6400000000", "orig": "164.100.1.8", "sequencenum": 16777215, "action": "Detect", "product": "Anti-Bot", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "Detected dns query to malicious domain malware.wicar.org [Infecting Website.RS.TC.32eclVjT]. To exclude: On the Harmony Endpoint Management add an Anti-Bot exclusion of type Domain with value: \"malware.wicar.org\"", "event_type": "Anti Bot Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "policy_name": "Default Anti-Bot settings", "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_number": 3, "protection_type": "URL Reputation", "file_md5": "bb7c48cddde076e7eb44022520f40f77", "file_name": [ "chrome.exe" ], "file_size": 2742376, "file_type": "exe", "malware_action": [ "Access to site known to contain malware" ], "packet_capture_unique_id": "087e116c-c098-44ba-95dd-064a90189b4a", "protection_name": "Infecting Website.RS.TC.32eclVjT", "resource": [ "malware.wicar.org" ], "packet_capture": "Packet Capture", "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"Anti Bot exclusions\",\"exclusion_type\":\"Domain\",\"exclusion_value\":{\"default_value\":\"malware.wicar.org\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"\"}}]", "dst": "0.0.0.0", "process_username": "admin", "proxy_src_ip": "0.0.0.0" },
+                {"confidence_level": "Medium", "policy_date": "2024-08-29T13:12:51.0000000Z", "severity": "Critical", "time": "2024-09-02T08:53:44Z", "id": "a4640108-91b1-0f19-66d5-7d9d00000000", "orig": "164.100.1.8", "sequencenum": 16777215, "action": "Detect", "product": "Anti-Bot", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "Detected bot activity [Anti-Bot test.TC.e]. To exclude: On the Harmony Endpoint Management add an exclusion of type \"URL\" with value: \"http://www.threat-cloud.com/test/files/MediumConfidenceBot.html\"", "event_type": "Anti Bot Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "policy_name": "Default Anti-Bot settings", "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_number": 2, "protection_type": "URL Reputation", "file_md5": "bd075be9d011daaa82c3f9ff2572076e", "file_name": [ "chrome.exe" ], "file_size": 2742376, "file_type": "exe", "malware_action": [ "Communication with C&C" ], "packet_capture_unique_id": "6c239c74-89a9-4797-ab6b-75a2b2a6afd7", "protection_name": "Anti-Bot test.TC.e", "resource": [ "www.threat-cloud.com" ], "packet_capture": "Packet Capture", "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"Anti Bot exclusions\",\"exclusion_type\":\"URL\",\"exclusion_value\":{\"default_value\":\"http://www.threat-cloud.com/test/files/MediumConfidenceBot.html\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"\"}}]", "dst": "89.160.20.128", "process_username": "admin", "proxy_src_ip": "89.160.20.128", "dst_country": [ "UnitedStates" ]}
+              ],
+              "recordsCount": 3,
+              "nextPageToken": "NULL"
+            }
+          }
+#### Anti-Malware ####
+  - path: /auth/external
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: '{"accessKey":"xxxx","clientId":"xxxxantimalware"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "token": "xxxxantimalware",
+              "csrf": "xxxx",
+              "expires": "Tue, 10 Sep 2024 09:11:32 GMT",
+              "expiresIn": 1800
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxantimalware"
+    request_body: /^\{\"cloudService\":\"Harmony Endpoint\",\"filter\":\"product:\\\"Anti-Malware\\\"\",\"limit\":[0-9]+,\"pageLimit\":[0-9]+,\"timeframe\":\{\"endTime\":\"[0-9T\:\-Z]+\",\"startTime\":\"[0-9T\:\-Z]+\"\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "taskId": "xxxxantimalware"
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/xxxxantimalware
+    methods: ["GET"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxantimalware"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "state": "Ready",
+              "pageTokens": [
+                "xxxxantimalware"
+              ]
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/retrieve
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxantimalware"
+    request_body: /^\{\"pageToken\":\"xxxxantimalware\",\"taskId\":\"xxxxantimalware\"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {
+            "success": true,
+            "data": {
+              "records": [
+                {"confidence_level": "High", "policy_date": "2024-08-29T13:12:46.0000000Z", "severity": "High", "time": "2024-09-02T09:09:07Z", "id": "a4640108-91b1-0f19-66d5-815d0000000f", "orig": "164.100.1.8", "sequencenum": 16777215, "product": "Anti-Malware", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "event_type": "Infection", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_name": "Default Anti-Malware settings for the entire organization", "policy_number": 3, "action_details": "Infected", "connectivity_state": "Connected", "engine_ver": "3.90", "sig_ver": "202409011444", "action": "Detect", "protection_type": "Protection", "file_name": [ "9e68140d-22bb-4e96-8aaa-70ec80eb2dc4.tmp" ], "packet_capture_unique_id": "31dc576b-7192-49bf-b2fc-b40c93f84b7c", "protection_name": "Mal/ShellDl-A", "packet_capture": "Packet Capture", "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"File & Folder exclusions (system, scheduled and on-demand)\",\"exclusion_type\":\"Path\",\"exclusion_value\":{\"default_value\":\"md5:\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"md5 taken from file C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\9e68140d-22bb-4e96-8aaa-70ec80eb2dc4.tmp\"}}]", "infection_category": "Malware" },
+                {"confidence_level": "High", "policy_date": "2024-09-06T10:21:35.0000000Z", "severity": "High", "time": "2024-09-09T12:38:42Z", "id": "a4640108-91b1-0f19-66de-ed0700000012", "orig": "164.100.1.8", "sequencenum": 16777215, "product": "Anti-Malware", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "event_type": "Infection", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_name": "Default Anti-Malware settings for the entire organization", "policy_number": 7, "action_details": "Infected", "connectivity_state": "Connected", "engine_ver": "3.90", "sig_ver": "202409090014", "action": "Detect", "protection_type": "Protection", "file_md5": "44d88612fea8a8f36de82e1278abb02f", "file_name": [ "eicar.txt" ], "packet_capture_unique_id": "bb6c808c-b96e-4f12-9749-1dfae7f6f8c2", "protection_name": "EICAR-AV-Test", "packet_capture": "Packet Capture", "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"File & Folder exclusions (system, scheduled and on-demand)\",\"exclusion_type\":\"Path\",\"exclusion_value\":{\"default_value\":\"md5:44d88612fea8a8f36de82e1278abb02f\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"md5 taken from file C:\\\\Users\\\\admin\\\\Downloads\\\\eicar.txt\"}}]", "infection_category": "Virus" },
+                {"policy_date": "2024-08-29T13:12:46.0000000Z", "severity": "Low", "time": "2024-09-02T10:37:24Z", "id": "a4640108-91b1-0f19-66d5-967600000000", "orig": "164.100.1.8", "sequencenum": 16777215, "product": "Anti-Malware", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "event_type": "Scan Stop", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_name": "Default Anti-Malware settings for the entire organization", "policy_number": 3, "action_details": "Finished", "connectivity_state": "Connected", "engine_ver": "3.90", "sig_ver": "202409011444", "integrity_av_invoke_type": "Scheduled", "duration": 2787, "items_detected": 0, "items_scanned": 61330, "items_treated": 0 },
+                {"policy_date": "2024-09-03T10:46:10.0000000Z", "severity": "Low", "time": "2024-09-03T11:27:05.000002Z", "id": "a4640108-91b1-0f19-66d6-f30b00000004", "orig": "164.100.1.8", "sequencenum": 2, "product": "Anti-Malware", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "event_type": "Scan Start", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_name": "Default Anti-Malware settings for the entire organization", "policy_number": 4, "action_details": "Started", "connectivity_state": "Connected", "engine_ver": "3.90", "sig_ver": "202409021821", "integrity_av_invoke_type": "Unknown" },
+                {"policy_date": "2024-09-06T10:21:35.0000000Z", "severity": "Low", "time": "2024-09-09T12:38:48Z", "id": "a4640108-91b1-0f19-66de-ed0700000013", "orig": "164.100.1.8", "sequencenum": 16777215, "product": "Anti-Malware", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "event_type": "Update", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_name": "Default Anti-Malware settings for the entire organization", "policy_number": 7, "action_details": "Successfully", "connectivity_state": "Connected", "engine_ver": "3.90", "failed_updates": 0, "result": "Finished", "sig_ver": "202409090014"}
+              ],
+              "recordsCount": 5,
+              "nextPageToken": "NULL"
+            }
+          }
+#### Threat Emulation ####
+  - path: /auth/external
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: '{"accessKey":"xxxx","clientId":"xxxxthreatemulation"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "token": "xxxxthreatemulation",
+              "csrf": "xxxx",
+              "expires": "Tue, 10 Sep 2024 09:11:32 GMT",
+              "expiresIn": 1800
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxthreatemulation"
+    request_body: /^\{\"cloudService\":\"Harmony Endpoint\",\"filter\":\"product:\\\"Threat Emulation\\\"\",\"limit\":[0-9]+,\"pageLimit\":[0-9]+,\"timeframe\":\{\"endTime\":\"[0-9T\:\-Z]+\",\"startTime\":\"[0-9T\:\-Z]+\"\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "taskId": "xxxxthreatemulation"
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/xxxxthreatemulation
+    methods: ["GET"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxthreatemulation"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "state": "Ready",
+              "pageTokens": [
+                "xxxxthreatemulation"
+              ]
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/retrieve
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxthreatemulation"
+    request_body: /^\{\"pageToken\":\"xxxxthreatemulation\",\"taskId\":\"xxxxthreatemulation\"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {
+            "success": true,
+            "data": {
+              "records": [
+                {"confidence_level": "High", "policy_date": "2024-09-03T10:46:13.0000000Z", "severity": "Low", "time": "2024-09-06T09:06:55Z", "id": "a4640108-91b1-0f19-66da-c6a900000004", "orig": "164.100.1.8", "sequencenum": 16777215, "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "Download of malicious file eicar_com.zip was prevented . To exclude the file: On the Harmony Endpoint Management add this sha1 exclusion: d2726507-4c9eac2e-2122ed69-294dbc4d-7cce9141", "event_type": "TE Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "policy_name": "Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization", "policy_number": 4, "product": "Threat Emulation", "product_family": "Endpoint", "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "domain": "SMC User", "type": "Log", "action": "Prevent", "protection_type": "HTTP Emulation", "file_name": [ "eicar_com.zip" ], "file_sha1": "d27265074c9eac2e2122ed69294dbc4d7cce9141", "file_size": 184, "file_type": "zip", "malware_action": [ " " ], "packet_capture_unique_id": "9672a696-fdcd-43be-a8c0-7b50b5efc6c4", "protection_name": "gen.ba.sb.zip", "resource": [ "https://secure.eicar.org/eicar_com.zip" ], "packet_capture": "Packet Capture", "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"Threat Emulation, Extraction and Zero Phishing Exclusions\",\"exclusion_type\":\"Domain\",\"exclusion_value\":{\"default_value\":\"secure.eicar.org\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"\"}}]", "analyzed_on": "Harmony Local Cache", "incident_uid": "c40d72fb-533b-423a-9749-d239a9c4ea3f", "verdict": "Malicious", "web_client_type": [ "Chrome" ] },
+                {"confidence_level": "High", "policy_date": "2024-08-29T13:12:50.0000000Z", "severity": "High", "time": "2024-09-03T08:52:45Z", "id": "a4640108-91b1-0f19-66d6-cf6900000000", "orig": "164.100.1.8", "sequencenum": 16777215, "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "Endpoint FR detected malicious file (malz5.zip) . To exclude the file: On the Harmony Endpoint Management add this sha1 exclusion: 62f0bd56-b0e1235b-99940b34-916c19ec-fac8e80c", "event_type": "TE Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "policy_name": "Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization", "policy_number": 3, "product": "Threat Emulation", "product_family": "Endpoint", "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "domain": "SMC User", "type": "Log", "action": "Detect", "protection_type": "File Reputation", "file_md5": "1468c1908845ef238f7f196809946288", "file_name": [ "malz5.zip" ], "file_sha1": "62f0bd56b0e1235b99940b34916c19ecfac8e80c", "file_size": 12707198, "file_type": "zip", "malware_action": [ " " ], "packet_capture_unique_id": "ee12249f-b2bd-48aa-80a4-9f92745caba1", "protection_name": "Gen.Rep.zip", "resource": [ "C:\\Users\\admin\\Downloads\\malz5.zip" ], "packet_capture": "Packet Capture", "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"Threat Emulation, Extraction and Zero Phishing Exclusions\",\"exclusion_type\":\"SHA1\",\"exclusion_value\":{\"default_value\":\"62f0bd56b0e1235b99940b34916c19ecfac8e80c\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"\"}}]", "analyzed_on": "Harmony Local Cache", "incident_uid": "0acd55a9-f241-4097-a699-6b7e41cd26af", "verdict": "Malicious", "web_client_type": [ " " ] },
+                {"confidence_level": "High", "policy_date": "2024-08-29T13:12:50.0000000Z", "severity": "Critical", "time": "2024-09-02T09:04:54Z", "id": "a4640108-91b1-0f19-66d5-803100000012", "orig": "164.100.1.8", "sequencenum": 16777215, "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "Endpoint TE detected malicious file (681573a2-414a-4f7d-9683-177df4f8ca7f.tmp) . To exclude the file: On the Harmony Endpoint Management add this sha1 exclusion: 9d3395d9-4c6bbba5-2abf0e6a-fcbf4ca3-12597c21", "event_type": "TE Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "policy_name": "Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization", "policy_number": 3, "product": "Threat Emulation", "product_family": "Endpoint", "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "domain": "SMC User", "type": "Log", "action": "Detect", "protection_type": "File System Emulation", "file_md5": "ebe8b633d231bbfee9543d744a2ab59d", "file_name": [ "681573a2-414a-4f7d-9683-177df4f8ca7f.tmp" ], "file_sha1": "9d3395d94c6bbba52abf0e6afcbf4ca312597c21", "file_size": 139648, "file_type": "zip", "malware_action": [ "Adware\",\"Solimba\",\"Trojan\",\"behavior" ], "packet_capture_unique_id": "5e3302e5-3f73-4b77-beec-2849003e9d47", "protection_name": "Gen.SB.zip", "resource": [ "C:\\Users\\admin\\Downloads\\681573a2-414a-4f7d-9683-177df4f8ca7f.tmp" ], "packet_capture": "Packet Capture", "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"Threat Emulation, Extraction and Zero Phishing Exclusions\",\"exclusion_type\":\"SHA1\",\"exclusion_value\":{\"default_value\":\"9d3395d94c6bbba52abf0e6afcbf4ca312597c21\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"\"}}]", "analyzed_on": "Check Point Threat Emulation Cloud", "incident_uid": "74a33ecb-1b91-4c25-a136-1989eb175638", "verdict": "Malicious", "web_client_type": [ " " ]}
+              ],
+              "recordsCount": 3,
+              "nextPageToken": "NULL"
+            }
+          }
+#### Threat Extraction ####
+  - path: /auth/external
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: '{"accessKey":"xxxx","clientId":"xxxxthreatextraction"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "token": "xxxxthreatextraction",
+              "csrf": "xxxx",
+              "expires": "Tue, 10 Sep 2024 09:11:32 GMT",
+              "expiresIn": 1800
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxthreatextraction"
+    request_body: /^\{\"cloudService\":\"Harmony Endpoint\",\"filter\":\"product:\\\"Threat Extraction\\\"\",\"limit\":[0-9]+,\"pageLimit\":[0-9]+,\"timeframe\":\{\"endTime\":\"[0-9T\:\-Z]+\",\"startTime\":\"[0-9T\:\-Z]+\"\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "taskId": "xxxxthreatextraction"
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/xxxxthreatextraction
+    methods: ["GET"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxthreatextraction"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "state": "Ready",
+              "pageTokens": [
+                "xxxxthreatextraction"
+              ]
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/retrieve
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxthreatextraction"
+    request_body: /^\{\"pageToken\":\"xxxxthreatextraction\",\"taskId\":\"xxxxthreatextraction\"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {
+            "success": true,
+            "data": {
+              "records": [
+                {"confidence_level": "High", "policy_date": "2024-08-29T13:12:50.0000000Z", "severity": "Informational", "time": "2024-09-02T09:21:42.000001Z", "id": "a4640108-91b1-0f19-66d5-83f100000019", "orig": "164.100.1.8", "sequencenum": 1, "action": "Extract", "product": "Threat Extraction", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "File is not supported for extraction", "event_type": "TEX Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_name": "Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization", "policy_number": 3, "protection_type": "Content Removal", "advanced_info": " \"disable_exclusion\": true ", "extension_version": " 990.97.911 ", "file_name": [ "mirai.sh4" ], "file_sha1": "no-sha1", "file_size": 0, "file_type": "sh4", "malware_action": [ "Not Supported" ], "protection_name": "Extract potentially malicious content", "resource": [ "blob:https://github.com/6bd30ea7-29a8-4dd2-9056-f5077632e110" ], "web_client_type": [ "Chrome" ]}
+              ],
+              "recordsCount": 1,
+              "nextPageToken": "NULL"
+            }
+          }
+#### URL Filtering ####
+  - path: /auth/external
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: '{"accessKey":"xxxx","clientId":"xxxxurlfiltering"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "token": "xxxxurlfiltering",
+              "csrf": "xxxx",
+              "expires": "Tue, 10 Sep 2024 09:11:32 GMT",
+              "expiresIn": 1800
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxurlfiltering"
+    request_body: /^\{\"cloudService\":\"Harmony Endpoint\",\"filter\":\"product:\\\"URL Filtering\\\"\",\"limit\":[0-9]+,\"pageLimit\":[0-9]+,\"timeframe\":\{\"endTime\":\"[0-9T\:\-Z]+\",\"startTime\":\"[0-9T\:\-Z]+\"\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "taskId": "xxxxurlfiltering"
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/xxxxurlfiltering
+    methods: ["GET"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxurlfiltering"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "state": "Ready",
+              "pageTokens": [
+                "xxxxurlfiltering"
+              ]
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/retrieve
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxurlfiltering"
+    request_body: /^\{\"pageToken\":\"xxxxurlfiltering\",\"taskId\":\"xxxxurlfiltering\"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {
+            "success": true,
+            "data": {
+              "records": [
+                {"policy_date": "2024-09-06T10:08:44.0000000Z", "severity": "Informational", "time": "2024-09-06T10:19:56.000001Z", "id": "a4640108-91b1-0f19-66da-d78900000009", "orig": "164.100.1.8", "sequencenum": 1, "action": "Prevent", "product": "URL Filtering", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "To exclude: Open the Harmony Management -> POLICY -> Threat Prevention -> EXCLUSION CENTER -> Web and Files Protection -> URL Filtering exclusions -> + -> paste this: livingliquidz.com", "event_type": "URLF Info Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "policy_name": "Default Anti-Bot settings", "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_number": 5, "protection_type": "URL Filtering", "protection_name": "gen.urlf", "resource": [ "https://livingliquidz.com/" ], "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"URL Filtering exclusions\",\"exclusion_type\":\"Domain\",\"exclusion_value\":{\"default_value\":\"livingliquidz.com\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"\"}}]", "dst": "0.0.0.0", "web_client_type": [ "Chrome" ], "app_id": "0", "app_properties": [ "Alcohol & Tobacco" ], "appi_name": "livingliquidz.com", "matched_category": "Alcohol & Tobacco", "process_exe_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", "usercheck_incident_uid": "7fcc5b44" },
+                {"policy_date": "2024-09-06T09:57:28.0000000Z", "severity": "Informational", "time": "2024-09-06T10:07:43Z", "id": "a4640108-91b1-0f19-66da-d62100000013", "orig": "164.100.1.8", "sequencenum": 16777215, "action": "Detect", "product": "URL Filtering", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "URLF Info Event", "event_type": "URLF Info Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "policy_name": "Default Anti-Bot settings", "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_number": 4, "protection_type": "URL Filtering", "protection_name": "gen.urlf", "resource": [ "https://secure.indeed.com/auth?branding=save-profile-modal&tmpl=inline&from=act_zeroauth_profile_tst&iframe_tk=9a019527-a6f1-4b3d-b803-2b25bb46b1db&hl=en_IN&co=IN" ], "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"URL Filtering exclusions\",\"exclusion_type\":\"Domain\",\"exclusion_value\":{\"default_value\":\"secure.indeed.com\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"\"}}]", "dst": "0.0.0.0", "web_client_type": [ "Chrome" ], "app_id": "0", "app_properties": [ "Job Search / Careers, Business / Economy" ], "appi_name": "secure.indeed.com", "matched_category": "Job Search / Careers", "process_exe_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", "usercheck_incident_uid": "b04d8940"}
+              ],
+              "recordsCount": 2,
+              "nextPageToken": "NULL"
+            }
+          }
+#### Zero Phishing ####
+  - path: /auth/external
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+    request_body: '{"accessKey":"xxxx","clientId":"xxxxzerophishing"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "token": "xxxxzerophishing",
+              "csrf": "xxxx",
+              "expires": "Tue, 10 Sep 2024 09:11:32 GMT",
+              "expiresIn": 1800
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxzerophishing"
+    request_body: /^\{\"cloudService\":\"Harmony Endpoint\",\"filter\":\"product:\\\"Zero Phishing\\\"\",\"limit\":[0-9]+,\"pageLimit\":[0-9]+,\"timeframe\":\{\"endTime\":\"[0-9T\:\-Z]+\",\"startTime\":\"[0-9T\:\-Z]+\"\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "taskId": "xxxxzerophishing"
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/xxxxzerophishing
+    methods: ["GET"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxzerophishing"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "success": true,
+            "data": {
+              "state": "Ready",
+              "pageTokens": [
+                "xxxxzerophishing"
+              ]
+            }
+          }
+  - path: /app/laas-logs-api/api/logs_query/retrieve
+    methods: ["POST"]
+    request_headers:
+      Accept:
+        - "application/json"
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer xxxxzerophishing"
+    request_body: /^\{\"pageToken\":\"xxxxzerophishing\",\"taskId\":\"xxxxzerophishing\"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {
+            "success": true,
+            "data": {
+              "records": [
+                {"confidence_level": "High", "policy_date": "2024-08-29T13:12:50.0000000Z", "severity": "High", "time": "2024-09-02T08:51:08Z", "id": "a4640108-91b1-0f19-66d5-7d6100000004", "orig": "164.100.1.8", "sequencenum": 16777215, "action": "Detect", "product": "Zero Phishing", "domain": "SMC User", "product_family": "Endpoint", "type": "Log", "client_name": "Check Point Endpoint Security Client", "client_version": [ "88.50.0213" ], "description": "Deceptive site (https://main.sbm-demo.xyz/zero-phishing) was detected.", "event_type": "Phishing Event", "host_type": [ "Desktop" ], "installed_products": "Full Disk Encryption; Media Encryption & Port Protection; Firewall; Compliance; Application Control; Anti-Malware; VPN; Anti-Bot; Forensics; Threat Emulation", "os_name": [ "Microsoft Windows 10 Pro" ], "os_version": [ "10.0-19045-SP0.0-SMP" ], "src": "10.35.38.102", "src_machine_name": "DESKTOP-E2P4OL0", "src_user_name": [ "admin" ], "tenant_id": "3e15ed24-89ff-4986-a204-c425cee4ba48", "user_sid": "S-1-5-21-3766288932-3295778425-2939962592-1001", "policy_name": "Default Threat Extraction, Emulation and Anti-Exploit settings for the entire organization", "policy_number": 3, "protection_type": "Phishing", "malware_action": [ " " ], "protection_name": "gen.ba.phishing", "resource": [ "https://main.sbm-demo.xyz/zero-phishing" ], "advanced_info": "\"exclusions\":[{\"exclusion_engine_type\":\"Threat Emulation, Extraction and Zero Phishing Exclusions\",\"exclusion_type\":\"Domain\",\"exclusion_value\":{\"default_value\":\"main.sbm-demo.xyz\",\"md5\":\"\",\"original_name\":\"\",\"signer\":\"\",\"process\":\"\",\"protection\":\"\",\"comment\":\"\"}}]", "extension_version": "Check Point Endpoint Security Client", "web_client_type": [ "Chrome" ]}
+              ],
+              "recordsCount": 1,
+              "nextPageToken": "NULL"
+            }
+          }

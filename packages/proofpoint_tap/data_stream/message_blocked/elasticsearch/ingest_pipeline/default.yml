@@ -13,6 +13,8 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - drop:
+      if: ctx.json?.messagesBlocked instanceof List && ctx.json.messagesBlocked.length == 0
   - date:
       field: json.messageTime
       if: ctx.json?.messageTime != null && ctx.json.messageTime != ''

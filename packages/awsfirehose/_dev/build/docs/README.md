@@ -126,3 +126,11 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     for details on how to set up a metric stream in CloudWatch and 
     [Custom setup with Firehose](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-metric-streams-setup-datalake.html) 
     to send metrics to Firehose. For Elastic, we only support JSON and OpenTelemetry 1.0.0 formats for the metrics.
+
+## Logs reference
+
+{{fields "logs"}}
+
+## Metrics reference
+
+{{fields "metrics"}}
