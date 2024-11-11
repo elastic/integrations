@@ -253,11 +253,11 @@ Note: Descriptions have not been filled out
 | aruba.dpse.linecard_name |             |      |                                 |
 
 #### [ECMP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ECMP.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.ecmp.egressid |             |      | observer.egress.interface.id |
-| aruba.ecmp.err      |             |      | error.message                |
-| aruba.ecmp.route    |             |      |                              |
+| Field               | Schema Mapping  |
+|---------------------|-----------------|
+| aruba.ecmp.egressid |                 |
+| aruba.ecmp.err      |                 |
+| aruba.ecmp.route    |                 |
 
 #### [ERPS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm)
 | Field                | Description | Type | Common                       |
@@ -1317,6 +1317,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.dns.type |  | keyword |
 | aruba.dns.vrf_name |  | keyword |
 | aruba.dpse.linecard_name |  | keyword |
+| aruba.ecmp.egressid |  | keyword |
+| aruba.ecmp.err |  | keyword |
 | aruba.ecmp.route |  | keyword |
 | aruba.erps.ring_id |  | keyword |
 | aruba.event_type |  | keyword |
