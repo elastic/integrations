@@ -8,26 +8,8 @@ processors:
       field: elasticsearch.index.name
       tag: grok_parse_index_name
       patterns:
-        - '^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?(?<elasticsearch.index.datastream>[a-z_0-9\-\.]+?)(-(?<elasticsearch.index.creation_date>\d{4}\.\d{2}(\.\d{2})?))?(?:-\d+)?$'
+        - '^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?(?<elasticsearch.index.datastream>[a-z_0-9\-\.]+?)(-(?:\d{4}\.\d{2}(\.\d{2})?))?(?:-\d+)?$'
       ignore_failure: true
-  - date:
-      field: elasticsearch.index.creation_date
-      target_field: elasticsearch.index.creation_date
-      ignore_failure: true
-      formats:
-        - yyyy.MM.dd
-        - yyyy.MM
-      tag: date_parse_index_creation_date
-  - script:
-      source: |
-        def creationDate = ctx.elasticsearch.index.creation_date;
-        if (creationDate != null) {
-          def creationDateTime = ZonedDateTime.parse(creationDate);
-          def now = ZonedDateTime.parse(ctx['@timestamp']);
-          ctx.elasticsearch.index.age = ChronoUnit.DAYS.between(creationDateTime, now);
-        }
-      ignore_failure: true
-      tag: script_compute_index_age
   - script:
       source: |
         def preference = ctx.end['elasticsearch.index.tier_preference'];
@@ -60,6 +42,13 @@ processors:
   - dot_expander:
       field: "*"
       tag: dot_expander
+  - date:
+      field: elasticsearch.index.creation_date
+      target_field: elasticsearch.index.creation_date
+      ignore_failure: true
+      formats:
+        - UNIX_MS
+      tag: date_parse_index_creation_date
   - convert:
       field: elasticsearch.index.primaries.docs.count
       type: long
