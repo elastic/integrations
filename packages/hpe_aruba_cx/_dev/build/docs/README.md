@@ -262,13 +262,13 @@ Note: Descriptions have not been filled out
 #### [ERPS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm)
 | Field                | Description | Type | Common                       |
 |----------------------|-------------|------|------------------------------|
-| aruba.erps.ccvlan    |             |      | network.vlan.id              |
+| aruba.erps.ccVlan    |             |      | network.vlan.id              |
 | aruba.erps.dataVlan  |             |      | network.vlan.id              |
 | aruba.erps.ifID      |             |      | observer.ingress.interface.id|
 | aruba.erps.instanceID|             |      | aruba.instance.id            |
-| aruba.erps.interfaceName |         |      | observer.ingress.interface.name |
+| aruba.erps.interfaceName |         |      | observer.ingress.interface.name|
 | aruba.erps.node      |             |      | client.mac                   |
-| aruba.erps.portName  |             |      | client.port                  |
+| aruba.erps.portName  |             |      |                              |
 | aruba.erps.reason    |             |      | event.reason                 |
 | aruba.erps.ring_id   |             |      |                              |
 | aruba.erps.state     |             |      | aruba.status                 |
