@@ -4,13 +4,13 @@ processors:
     description: Add ngram features for ML DGA model
     lang: painless
     source: |
-      // String nGramAtPosition(String text, int fieldcount, int n){
-      //   if (fieldcount+n>text.length()){
-      //     return null;
-      //   } else {
-      //     return text.substring(fieldcount, fieldcount+n);
-      //   }
-      // }
+      String nGramAtPosition(String text, int fieldcount, int n){
+        if (fieldcount+n>text.length()){
+          return null;
+        } else {
+          return text.substring(fieldcount, fieldcount+n);
+        }
+      }
 
       String[] secondLevelDomain(Map dynamic_domains, String domain, String subdomain, String registered_domain, String top_level_domain){
         if (registered_domain == null || registered_domain == '.') {
@@ -211,29 +211,29 @@ processors:
       ctx['f'] = new HashMap();
       ctx['f']['tld'] = tld;
 
-      // for (int i=0;i<sld.length();i++){
-      //   String field = nGramAtPosition(sld, i, 1);
-      //   if (field == null) {
-      //     break;
-      //   }
-      //   ctx['f']['u'+ Integer.toString(i)] = field;
-      // }
+      for (int i=0;i<sld.length();i++){
+        String field = nGramAtPosition(sld, i, 1);
+        if (field == null) {
+          break;
+        }
+        ctx['f']['u'+ Integer.toString(i)] = field;
+      }
 
-      // for (int i=0;i<sld.length();i++){
-      //   String field = nGramAtPosition(sld, i, 2);
-      //   if (field == null) {
-      //     break;
-      //   }
-      //   ctx['f']['b'+ Integer.toString(i)] = field;
-      //   }
+      for (int i=0;i<sld.length();i++){
+        String field = nGramAtPosition(sld, i, 2);
+        if (field == null) {
+          break;
+        }
+        ctx['f']['b'+ Integer.toString(i)] = field;
+        }
 
-      // for (int i=0;i<sld.length();i++){
-      //   String field = nGramAtPosition(sld, i, 3);
-      //   if (field == null) {
-      //     break;
-      //   }
-      //   ctx['f']['t'+ Integer.toString(i)] = field;
-      // }
+      for (int i=0;i<sld.length();i++){
+        String field = nGramAtPosition(sld, i, 3);
+        if (field == null) {
+          break;
+        }
+        ctx['f']['t'+ Integer.toString(i)] = field;
+      }
 
       int digitCount = 0;
       int dashCount = 0;
