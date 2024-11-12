@@ -1320,7 +1320,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.ecmp.egressid |  | keyword |
 | aruba.ecmp.err |  | keyword |
 | aruba.ecmp.route |  | keyword |
-| aruba.erps.portName |  | keyword |
+| aruba.erps.port_name |  | keyword |
 | aruba.erps.ring_id |  | keyword |
 | aruba.event_type |  | keyword |
 | aruba.evpn.rd |  | keyword |
