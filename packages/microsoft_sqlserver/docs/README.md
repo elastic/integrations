@@ -45,7 +45,7 @@ Please make sure the user has the permissions to system as well as user-defined 
 User setup options:
 
 - Grant specific permissions as mentioned in the MSDN pages above.
-- Alteratively, use `sysadmin` role (includes all required permissions): This can be configured via SQL Server Management Studio (SSMS) in `Server Roles`.
+- Alteratively, use `sysadmin` role (includes all required permissions): This can be configured via SQL Server Management Studio (SSMS) in `Server Roles`. Read more about joining a role in the [SQL Server documentation](https://learn.microsoft.com/en-us/sql/relational-databases/security/authentication-access/join-a-role?view=sql-server-ver16#SSMSProcedure).
 
 User Mappings (using SQL Server Management Studio (SSMS)):
 
