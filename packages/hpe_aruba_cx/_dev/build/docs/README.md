@@ -44,117 +44,117 @@ Note: Field types are defined within `fields.yml`
 Note: Descriptions have not been filled out
 
 #### [AAA events (Aruba Docs)](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm)
-| Field                            | Schema Mapping               |
-|----------------------------------|------------------------------|
-| aruba.aaa.config_event           |                              |
-| aruba.aaa.config_type            |                              |
-| aruba.aaa.radius_action          |                              |
-| aruba.aaa.radius_event           |                              |
-| aruba.aaa.radius.server_address  | server.address               |
-| aruba.aaa.radius.server_authport | aruba.port                   |
-| aruba.aaa.status                 | aruba.status                 |
-| aruba.aaa.radius.server_vrfid    | aruba.vrf.id                 |
-| aruba.aaa.radius_type            | event.type                   |
-| aruba.aaa.tacacs_action          |                              |
-| aruba.aaa.tacacs_event           |                              |
-| aruba.aaa.tacacs.server_address  | server.address               |
-| aruba.aaa.tacacs.server_authport | aruba.port                   |
-| aruba.aaa.tacacs.server_vrfid    | aruba.vrf.id                 |
-| aruba.aaa.tacacs_type            |                              |
+| Doc Fields         | Schema Mapping               |
+|--------------------|------------------------------|
+| <aaa_config_type>  | aruba.aaa.config_event       |
+| <aaa_config_event> | aruba.aaa.config_type        |
+| <tacacs_action>    | aruba.aaa.radius_action      |
+| <radius_event>     | aruba.aaa.radius_event       |
+| <server_address>   | server.address               |
+| <server_authport>  | aruba.port                   |
+| <status>           | aruba.status                 |
+| <server_vrfid>     | aruba.vrf.id                 |
+| <radius_type>      | event.type                   |
+| <tacacs_action>    | aruba.aaa.tacacs_action      |
+| <tacacs_event>     | aruba.aaa.tacacs_event       |
+| <server_address>   | server.address               |
+| <server_authport>  | aruba.port                   |
+| <server_vrfid>     | aruba.vrf.id                 |
+| <tacacs_type>      | aruba.aaa.tacacs_type        |
 
 #### [ACLs events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ACL.htm)
-| Field                        | Schema Mapping               |
-|------------------------------|------------------------------|
-| aruba.acl.log                | message                      |
-| aruba.acl.type               |                              |
-| aruba.acl.ace_string         |                              |
-| aruba.acl.application        |                              |
-| aruba.acl.direction          |                              |
-| aruba.acl.hit_delta          |                              |
-| aruba.acl.interface_name     | aruba.interface.name         |
-| aruba.acl.name               |                              |
+| Doc Fields        | Schema Mapping         |
+|-------------------|------------------------|
+| <log>             | message                |
+| <type>            | aruba.acl.type         |
+| <ace_string>      | aruba.acl.ace_string   |
+| <application>     | aruba.acl.application  |
+| <direction>       | aruba.acl.direction    |
+| <hit_delta>       | aruba.acl.hit_delta    |
+| <interface_name>  | aruba.interface.name   |
+| <name>            | aruba.acl.name         |
 
 #### [ARP security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm)
-| Field                        | Schema Mapping               |
-|------------------------------|------------------------------|
-| aruba.arp.port_name          | aruba.port                   |
-| aruba.arp.status             | aruba.status                 |
-| aruba.arp.vlan_id            | network.vlan.id              |
+| Doc Fields  | Schema Mapping  |
+|-------------|-----------------|
+| <port_name> | aruba.port      |
+| <status>    | aruba.status    |
+| <vlan_id>   | network.vlan.id |
 
 #### [ASIC table full error for L3PD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ASIC_RESOURCE.htm)
-| Field | Common |
-|-------|--------|
+| Doc Fields | Schema Mapping |
+|------------|----------------|
 
 
 #### [BFD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BFD.htm)
-| Field                        | Schema Mapping               |
-|------------------------------|------------------------------|
-| aruba.bfd.applied_interval   |                              |
-| aruba.bfd.dest_ip            | destination.ip               |
-| aruba.bfd.direction          | network.direction            |
-| aruba.bfd.from               |                              |
-| aruba.bfd.intf               | aruba.interface.id           |
-| aruba.bfd.invalid_ip         |                              |
-| aruba.bfd.ip_version         |                              |
-| aruba.bfd.local_diag         |                              |
-| aruba.bfd.local_state        |                              |
-| aruba.bfd.op_mode            |                              |
-| aruba.bfd.port_name          | aruba.port                   |
-| aruba.bfd.remote_diag        |                              |
-| aruba.bfd.remote_state       |                              |
-| aruba.bfd.requested_interval |                              |
-| aruba.bfd.session_id         | aruba.instance.id            |
-| aruba.bfd.src_port           | aruba.port                   |
-| aruba.bfd.vrf                | aruba.vrf.id                 |
+| Doc Fields           | Schema Mapping               |
+|----------------------|------------------------------|
+| <applied_interval>   | aruba.bfd.applied_interval   |
+| <dest_ip>            | destination.ip               |
+| <direction>          | network.direction            |
+| <from>               | aruba.bfd.from               |
+| <intf>               | aruba.interface.id           |
+| <invalid_ip>         | aruba.bfd.invalid_ip         |
+| <ip_version>         | aruba.bfd.ip_version         |
+| <local_diag>         | aruba.bfd.local_diag         |
+| <local_state>        | aruba.bfd.local_state        |
+| <op_mode>            | aruba.bfd.op_mode            |
+| <port_name>          | aruba.port                   |
+| <remote_diag>        | aruba.bfd.remote_diag        |
+| <remote_state>       | aruba.bfd.remote_state       |
+| <requested_interval> | aruba.bfd.requested_interval |
+| <session_id>         | aruba.instance.id            |
+| <src_port>           | aruba.port                   |
+| <vrf>                | aruba.vrf.id                 |
 
 #### [BGP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BGP.htm)
-| Field                        | Schema Mapping               |
-|------------------------------|------------------------------|
-| aruba.bgp.as_number          |                              |
-| aruba.bgp.id                 |                              |
-| aruba.bgp.error-code         | error.code                   |
-| aruba.bgp.error-subcode      |                              |
-| aruba.bgp.local_as           | client.as.number             |
-| aruba.bgp.pg_name            |                              |
-| aruba.bgp.remote-addr        | destination.address          |
-| aruba.bgp.remote_as          | destination.as.number        |
-| aruba.bgp.src_ipaddr         | source.ip                    |
-| aruba.bgp.threshold_limit    |                              |
-| aruba.bgp.vrf-name           | aruba.vrf.name               |
+| Doc Fields        | Schema Mapping            |
+|-------------------|---------------------------|
+| <as_number>       | aruba.bgp.as_number       |
+| <id>              | aruba.bgp.id              |
+| <error-code>      | error.code                |
+| <error-subcode>   | aruba.bgp.error-subcode   |
+| <local_as>        | client.as.number          |
+| <pg_name>         | aruba.bgp.pg_name         |
+| <remote-addr>     | destination.address       |
+| <remote_as>       | destination.as.number     |
+| <src_ipaddr>      | source.ip                 |
+| <threshold_limit> | aruba.bgp.threshold_limit |
+| vrf-<name>        | aruba.vrf.name            |
 
 #### [Bluetooth Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BLUETOOTH_MGMT.htm)
-| Field                           | Schema Mapping               |
-|---------------------------------|------------------------------|
-| aruba.bt.connected_disconnected | event.action                 |
-| aruba.bt.enabled_disabled       | event.action                 |
-| aruba.bt.inserted_removed       | event.action                 |
-| aruba.bt.mac                    | client.mac                   |
+| Doc Fields               | Schema Mapping               |
+|--------------------------|------------------------------|
+| <connected_disconnected> | event.action                 |
+| <enabled_disabled>       | event.action                 |
+| <inserted_removed>       | event.action                 |
+| <mac>                    | client.mac                   |
 
 #### [CDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CDP.htm)
-| Field                        | Schema Mapping               |
-|------------------------------|------------------------------|
-| aruba.cdp.interface          | aruba.interface.name         |
-| aruba.cdp.mac                | source.mac                   |
+| Doc Fields | Schema Mapping       |
+|------------|----------------------|
+| <interface> | aruba.interface.name |
+| <mac>       | source.mac           |
 
 #### [Certificate management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CERTMGR.htm)
-| Field                        | Schema Mapping               |
-|------------------------------|------------------------------|
-| aruba.cm.cert_name           |                              |
-| aruba.cm.days                |                              |
-| aruba.cm.error               | event.reason                 |
-| aruba.cm.est_name            |                              |
-| aruba.cm.profile_name        |                              |
-| aruba.cm.status              | aruba.status                 |
+| Doc Fields     | Schema Mapping        |
+|----------------|-----------------------|
+| <cert_name>    | aruba.cm.cert_name    |
+| <days>         | aruba.cm.days         |
+| <error>        | event.reason          |
+| <est_name>     | aruba.cm.est_name     |
+| <profile_name> | aruba.cm.profile_name |
+| <status>       | aruba.status          |
 
 #### [Config Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONFIG_MGMT.htm)
-| Field                        | Schema Mapping               |
-|------------------------------|------------------------------|
-| aruba.config.error           | event.reason                 |
-| aruba.config.from            |                              |
-| aruba.config.info            | event.action                 |
-| aruba.config.to              |                              |
-| aruba.config.type            |                              |
-| aruba.config.value           |                              |
+| Doc Fields | Schema Mapping       |
+|------------|----------------------|
+| error      | event.reason         |
+| from       | aruba.config.from    |
+| info       | event.action         |
+| to         | aruba.config.to      |
+| type       | aruba.config.type    |
+| value      | aruba.config.value   |
 
 #### [Connectivity Fault Management (CFM) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm)
 | Field                        | Description | Type | Common                       |
