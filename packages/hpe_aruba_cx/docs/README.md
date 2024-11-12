@@ -170,7 +170,7 @@ Note: Descriptions have not been filled out
 #### [CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm)
 | Doc Field                    | Schema Mapping      |
 |------------------------------|---------------------|
-| <class>                      | aruba.class         |
+| <class>                      | aruba.copp.class    |
 | <slot>                       | aruba.slot          |
 
 
