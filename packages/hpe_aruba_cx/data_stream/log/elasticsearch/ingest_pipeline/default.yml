@@ -74,6 +74,86 @@ processors:
         patterns:
             - "ECMP error: %{DATA:aruba.ecmp.err}$"
 
+    # ERPS Events
+    - dissect:
+        field: message
+        tag: erps_event_8501
+        description: "Log event when RAPS messages are not received for a certain time interval"
+        if: "ctx.event?.code == '8501'"
+        pattern: "Expected R-APS packets not received on %{observer.ingress.interface.id} in ring %{aruba.erps.ring_id} with control VLAN %{network.vlan.id}"
+    - dissect:
+        field: message
+        tag: erps_event_8502
+        description: "Log event when a ring misconfiguration happens"
+        if: "ctx.event?.code == '8502'"
+        pattern: "Misconfiguration detected on ring %{aruba.erps.ring_id} with control VLAN %{network.vlan.id}. Another node in the ring with mac %{client.mac} is also operating as an RPL owner"
+    - dissect:
+        field: message
+        tag: erps_event_8503
+        description: "Log state transition of ring instance"
+        if: "ctx.event?.code == '8503'"
+        pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to %{aruba.status}"
+    - dissect:
+        field: message
+        tag: erps_event_8504
+        description: "Log event when ring is configured with a non-L2 port"
+        if: "ctx.event?.code == '8504'"
+        pattern: "%{observer.ingress.interface.name} is not an L2 port"
+    - dissect:
+        field: message
+        tag: erps_event_8505
+        description: "Log event when an interface which is already associated to a ring port is getting mapped to other ring port as well"
+        if: "ctx.event?.code == '8505'"
+        pattern: "%{observer.ingress.interface.name} is already associated with %{aruba.erps.port_name} of ERPS ring %{aruba.erps.ring_id}"
+    - dissect:
+        field: message
+        tag: erps_event_8506
+        description: "Log event when control-channel VLAN is part of the protected-vlans"
+        if: "ctx.event?.code == '8506'"
+        pattern: "Configured control-channel VLAN %{network.vlan.id} is already protected by ERPS ring %{aruba.erps.ring_id}, instance %{aruba.instance.id}"
+    - dissect:
+        field: message
+        tag: erps_event_8507
+        description: "Log event when control-channel VLAN overlaps with another control-channel of same ring"
+        if: "ctx.event?.code == '8507'"
+        pattern: "VLAN %{network.vlan.id} is already configured as control-channel for instance %{aruba.instance.id} of ring %{aruba.erps.ring_id}"
+    - dissect:
+        field: message
+        tag: erps_event_8508
+        description: "Log event when protected-vlan(s) overlap"
+        if: "ctx.event?.code == '8508'"
+        pattern: "Vlan %{network.vlan.id} is already part of the protected VLAN set of ring %{aruba.erps.ring_id} instance %{aruba.instance.id}"
+    - dissect:
+        field: message
+        tag: erps_event_8510
+        description: "Log event when parent-ring id is configured to be the same as sub-ring"
+        if: "ctx.event?.code == '8510'"
+        pattern: "Parent-ring %{aruba.erps.ring_id} is same as sub-ring"
+    - dissect:
+        field: message
+        tag: erps_event_8511
+        description: "Log event when VLAN from the protected-vlans list is already configured as control-channel VLAN"
+        if: "ctx.event?.code == '8511'"
+        pattern: "VLAN %{network.vlan.id} in the protected VLANs list is also configured as the control-channel"
+    - dissect:
+        field: message
+        tag: erps_event_8512
+        description: "Log event if the same ring port is configured as RPL port for more than one instance"
+        if: "ctx.event?.code == '8512'"
+        pattern: "%{aruba.erps.port_name} is already configured as RPL port for instance %{aruba.instance.id}"
+    - dissect:
+        field: message
+        tag: erps_event_8513
+        description: "Log event if ring port which is also an ISL is being configured as RPL"
+        if: "ctx.event?.code == '8513'"
+        pattern: "RPL configuration is not allowed on ISL port %{observer.ingress.interface.name}"
+    - dissect:
+        field: message
+        tag: erps_event_8515
+        description: "Log transition of state of ring instance to initializing and the reason for it"
+        if: "ctx.event?.code == '8515'"
+        pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to Initializing with reason %{event.reason}"
+
     # DCBX Events
     - grok:
         field: message
