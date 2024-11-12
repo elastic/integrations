@@ -1050,14 +1050,12 @@ processors:
         - remove:
             field: darktrace.model_breach_alert.acknowledged.time
             ignore_missing: true
-            ignore_failure: true
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
       tag: handle_acknowledged_status
       lang: painless
-      if: ctx.darktrace?.model_breach_alert?.acknowledged != null
       source: |
         ctx.darktrace = ctx.darktrace ?: [:];
         ctx.darktrace.model_breach_alert = ctx.darktrace?.model_breach_alert ?: [:];
@@ -1100,7 +1098,7 @@ processors:
       value: '{{{darktrace.model_breach_alert.acknowledged.username}}}'
       allow_duplicates: false
       ignore_failure: true
-      if: ctx.darktrace?.model_breach_alert?.acknowledged instanceof Map && ctx.darktrace?.model_breach_alert.acknowledged.username != null
+      if: ctx.darktrace?.model_breach_alert?.acknowledged instanceof Map && ctx.darktrace.model_breach_alert.acknowledged.username != null
   - foreach:
       field: json.triggeredComponents
       if: ctx.json?.triggeredComponents instanceof List
