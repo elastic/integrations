@@ -1248,7 +1248,6 @@ An example event for `virtualmachine` looks as following:
         }
     }
 }
-
 ```
 
 **ECS Field Reference**
