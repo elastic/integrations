@@ -37,8 +37,14 @@ processors:
         field: event.kind
         tag: lowercase_event_kind
         ignore_missing: true
-    
-    # ECMP Events
+
+    # CoPP Events (15xx)
+
+    # The following Event IDs do not need further processing
+    # * 1501
+    # * 1502
+
+    # ECMP Events (18xx)
     - grok:
         field: message
         tag: ecmp_event_1801
@@ -74,7 +80,7 @@ processors:
         patterns:
             - "ECMP error: %{DATA:aruba.ecmp.err}$"
 
-    # DCBX Events
+    # DCBX Events (92xx)
     - grok:
         field: message
         tag: dcbx_event_9203_9204
@@ -100,7 +106,7 @@ processors:
         patterns:
             - "PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
 
-    # DPSE Events
+    # DPSE Events (109xx)
     - dissect:
         field: message
         tag: dpse_event_10901
@@ -114,7 +120,7 @@ processors:
         if: "ctx.event?.code == '10904'"
         pattern: "Line card module %{aruba.dpse.linecard_name} completed backplane sequence recovery"
     
-    # CFM Events
+    # CFM Events (116xx)
     - dissect:
         field: message
         tag: cfm_event_11601
@@ -126,16 +132,14 @@ processors:
         if: "ctx.event?.code == '11602'"
         pattern: "Connection restored for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
     
-    # Container Manager Events
+    # Container Manager Events (118xx)
     - dissect:
         field: message
         tag: container_manager_11801_11802_11803
         if: "['11801', '11802', '11803'].contains(ctx.event?.code)"
         pattern: "Container %{container.name} is %{?ignore_action}"
 
-    # CoPP Events
-
-    # DNS Client Events
+    # DNS Client Events (119xx)
     - grok:
         field: message
         tag: dns_client_event_11901
