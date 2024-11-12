@@ -60,6 +60,9 @@ For Rest API, this module has been tested against the **2024-03-01** version.
 1. Open [Azure Portal](https://portal.azure.com/) and [Register a new Azure Application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app?tabs=certificate).
 2. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for data collection.
 3. To get **Workspace Name, Subscription ID, and Resource Group** navigate to **Microsoft Sentinel** and select desired workspace among the list.
+4. Go to **Manage > API permissions** in your portal, then add the following permissions for **Microsoft Graph**:
+    - **SecurityAlert.Read.All** with both **Application** and **Delegated** permission types.
+    - **User.Read** with the **Delegated** permission type.
 
 ### Enabling the integration in Elastic:
 
@@ -84,22 +87,22 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-07-20T18:21:53.615Z",
     "agent": {
-        "ephemeral_id": "5d8e36a5-f551-4b9a-b54b-0c36d92d4a27",
-        "id": "c5507885-d48f-4dcb-91a9-73944f51118a",
-        "name": "elastic-agent-82640",
+        "ephemeral_id": "fef91ec8-bbe7-494a-b3b4-a8d9d79b11c3",
+        "id": "2ca2bad8-2946-4164-8d1c-4b0dd7281ae6",
+        "name": "elastic-agent-77518",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "microsoft_sentinel.alert",
-        "namespace": "90867",
+        "namespace": "19076",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c5507885-d48f-4dcb-91a9-73944f51118a",
+        "id": "2ca2bad8-2946-4164-8d1c-4b0dd7281ae6",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -108,10 +111,9 @@ An example event for `alert` looks as following:
         "dataset": "microsoft_sentinel.alert",
         "duration": 86400000000000,
         "end": "2020-07-21T18:21:53.615Z",
-        "id": "abcdef-6fde-4ab7-a093-d09f7b75c58c",
-        "ingested": "2024-11-05T06:04:45Z",
-        "kind": "alert",
-        "original": "{\"id\":\"/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/1234567-890-890-a999999-d09f7b75c58c\",\"kind\":\"SecurityAlert\",\"name\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"properties\":{\"additionalData\":{\"AlertMessageEnqueueTime\":\"2020-07-20T18:21:57.304Z\"},\"alertDisplayName\":\"myAlert\",\"alertType\":\"myAlert\",\"confidenceLevel\":\"Unknown\",\"endTimeUtc\":\"2020-07-21T18:21:53.6158361Z\",\"friendlyName\":\"myAlert\",\"processingEndTime\":\"2020-07-20T18:21:53.6158361Z\",\"productName\":\"AzureSecurityCenter\",\"resourceIdentifiers\":[{\"resourceGroup\":\"myRG\",\"subscriptionId\":\"a123456-4d29-4647-9105-6339bfdb4e6a\",\"type\":\"LogAnalytics\",\"workspaceId\":\"abcdefg-985d-4e4e-8e91-fb3466cd0e5b\"}],\"severity\":\"Low\",\"startTimeUtc\":\"2020-07-20T18:21:53.6158361Z\",\"status\":\"New\",\"systemAlertId\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"tactics\":[\"abc\"],\"timeGenerated\":\"2020-07-20T18:21:53.6158361Z\",\"vendorName\":\"Microsoft\"},\"systemData\":{\"createdAt\":\"2020-07-20T18:21:57.304Z\",\"createdBy\":\"admin\",\"createdByType\":\"new\",\"lastModifiedAt\":\"2020-07-20T18:21:57.304Z\"},\"type\":\"Microsoft.SecurityInsights/Entities\"}",
+        "id": "/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/abcdef-6fde-4ab7-a093-d09f7b75c58c",
+        "ingested": "2024-11-12T06:18:55Z",
+        "original": "{\"id\":\"/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"kind\":\"SecurityAlert\",\"name\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"properties\":{\"additionalData\":{\"AlertMessageEnqueueTime\":\"2020-07-20T18:21:57.304Z\"},\"alertDisplayName\":\"myAlert\",\"alertType\":\"myAlert\",\"confidenceLevel\":\"Unknown\",\"endTimeUtc\":\"2020-07-21T18:21:53.6158361Z\",\"friendlyName\":\"myAlert\",\"processingEndTime\":\"2020-07-20T18:21:53.6158361Z\",\"productName\":\"AzureSecurityCenter\",\"resourceIdentifiers\":[{\"resourceGroup\":\"myRG\",\"subscriptionId\":\"a123456-4d29-4647-9105-6339bfdb4e6a\",\"type\":\"LogAnalytics\",\"workspaceId\":\"abcdefg-985d-4e4e-8e91-fb3466cd0e5b\"}],\"severity\":\"Low\",\"startTimeUtc\":\"2020-07-20T18:21:53.6158361Z\",\"status\":\"New\",\"systemAlertId\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"tactics\":[\"abc\"],\"timeGenerated\":\"2020-07-20T18:21:53.6158361Z\",\"vendorName\":\"Microsoft\"},\"systemData\":{\"createdAt\":\"2020-07-20T18:21:57.304Z\",\"createdBy\":\"admin\",\"createdByType\":\"new\",\"lastModifiedAt\":\"2020-07-20T18:21:57.304Z\"},\"type\":\"Microsoft.SecurityInsights/Entities\"}",
         "severity": 1,
         "start": "2020-07-20T18:21:53.615Z"
     },
@@ -120,7 +122,7 @@ An example event for `alert` looks as following:
     },
     "microsoft_sentinel": {
         "alert": {
-            "id": "/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/1234567-890-890-a999999-d09f7b75c58c",
+            "id": "/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/abcdef-6fde-4ab7-a093-d09f7b75c58c",
             "kind": "SecurityAlert",
             "name": "abcdef-6fde-4ab7-a093-d09f7b75c58c",
             "properties": {
@@ -165,10 +167,6 @@ An example event for `alert` looks as following:
             "type": "Microsoft.SecurityInsights/Entities"
         }
     },
-    "observer": {
-        "product": "Azure Sentinel",
-        "vendor": "Microsoft"
-    },
     "tags": [
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
@@ -197,6 +195,7 @@ An example event for `alert` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
+| event.kind |  | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
@@ -238,6 +237,8 @@ An example event for `alert` looks as following:
 | microsoft_sentinel.alert.system_data.last_modified_by | The identity that last modified the resource. | keyword |
 | microsoft_sentinel.alert.system_data.last_modified_by_type | The type of identity that last modified the resource. | keyword |
 | microsoft_sentinel.alert.type | The type of the resource. | keyword |
+| observer.product |  | constant_keyword |
+| observer.vendor |  | constant_keyword |
 | tags | User defined tags. | keyword |
 
 
@@ -256,6 +257,7 @@ This is the `Event` dataset.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
+| event.kind |  | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
@@ -310,22 +312,22 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2024-10-23T13:15:30.000Z",
     "agent": {
-        "ephemeral_id": "bb54d388-612e-4628-a508-c3ee26212b2e",
-        "id": "ca782186-cfde-46eb-b413-d8a11bd533f9",
-        "name": "elastic-agent-22752",
+        "ephemeral_id": "f2937dba-f98d-44e6-a1e2-161b5d5a8ea7",
+        "id": "648b0051-77fb-49c2-a0ab-952d43da9d7f",
+        "name": "elastic-agent-18094",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "microsoft_sentinel.incident",
-        "namespace": "44018",
+        "namespace": "18260",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ca782186-cfde-46eb-b413-d8a11bd533f9",
+        "id": "648b0051-77fb-49c2-a0ab-952d43da9d7f",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -333,9 +335,8 @@ An example event for `incident` looks as following:
         "agent_id_status": "verified",
         "created": "2019-01-01T13:15:30.000Z",
         "dataset": "microsoft_sentinel.incident",
-        "id": "aaaaaaa-5cd7-4139-a149-9f2736ff2ab5",
-        "ingested": "2024-11-05T06:07:10Z",
-        "kind": "alert",
+        "id": "/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/aaaaaa-5cd7-4139-a149-9f2736ff2ab5",
+        "ingested": "2024-11-12T06:19:52Z",
         "original": "{\"etag\":\"\\\"bbbbbbbb-0000-0000-0000-5c37296e0000\\\"\",\"id\":\"/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/aaaaaa-5cd7-4139-a149-9f2736ff2ab5\",\"name\":\"aaaaaaa-5cd7-4139-a149-9f2736ff2ab5\",\"properties\":{\"additionalData\":{\"alertProductNames\":[],\"alertsCount\":0,\"bookmarksCount\":0,\"commentsCount\":3,\"tactics\":[\"InitialAccess\",\"Persistence\"]},\"classification\":\"FalsePositive\",\"classificationComment\":\"Notamaliciousactivity\",\"classificationReason\":\"InaccurateData\",\"createdTimeUtc\":\"2019-01-01T13:15:30Z\",\"description\":\"Thisisademoincident\",\"firstActivityTimeUtc\":\"2019-01-01T13:00:30Z\",\"incidentNumber\":3177,\"incidentUrl\":\"https://portal.azure.com/#asset/Microsoft_Azure_Security_Insights/Incident/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/73e01a99-5cd7-4139-a149-9f2736ff2ab5\",\"labels\":[],\"lastActivityTimeUtc\":\"2019-01-01T13:05:30Z\",\"lastModifiedTimeUtc\":\"2024-10-23T13:15:30Z\",\"owner\":{\"assignedTo\":\"johndoe\",\"email\":\"john.doe@example.com\",\"objectId\":\"abcdefghij-040d-4a46-9e2b-91c2941bfa70\",\"userPrincipalName\":\"john@example.com\"},\"providerIncidentId\":\"3177\",\"providerName\":\"AzureSentinel\",\"relatedAnalyticRuleIds\":[\"/subscriptions/abc12345678-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/alertRules/fab3d2d4-747f-46a7-8ef0-9c0be8112bf7\"],\"severity\":\"High\",\"status\":\"Closed\",\"title\":\"Myincident\"},\"type\":\"Microsoft.SecurityInsights/incidents\"}",
         "severity": 3,
         "url": "https://portal.azure.com/#asset/Microsoft_Azure_Security_Insights/Incident/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/73e01a99-5cd7-4139-a149-9f2736ff2ab5"
@@ -393,10 +394,6 @@ An example event for `incident` looks as following:
             "type": "Microsoft.SecurityInsights/incidents"
         }
     },
-    "observer": {
-        "product": "Azure Sentinel",
-        "vendor": "Microsoft"
-    },
     "related": {
         "user": [
             "johndoe",
@@ -440,6 +437,7 @@ An example event for `incident` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
+| event.kind |  | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
@@ -483,5 +481,7 @@ An example event for `incident` looks as following:
 | microsoft_sentinel.incident.system_data.last_modified_by | The identity that last modified the resource. | keyword |
 | microsoft_sentinel.incident.system_data.last_modified_by_type | The type of identity that last modified the resource. | keyword |
 | microsoft_sentinel.incident.type | The type of the resource. | keyword |
+| observer.product |  | constant_keyword |
+| observer.vendor |  | constant_keyword |
 | tags | User defined tags. | keyword |
 

@@ -30,10 +30,10 @@ program: |
   state.with(
     state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval))).as(last_modified_time, request(
       "GET",
-      has(state.nextLink) && state.nextLink != null ?
+      has(state.?next_page.link) ?
         // The nextLink URL is unescaped, so we need to parse
         // and reformat the query, otherwise the request fails.
-        state.url.trim_right("/") + "/incidents?" + state.nextLink.parse_url().RawQuery.parse_query().format_query()
+        state.url.trim_right("/") + "/incidents?" + state.next_page.link.parse_url().RawQuery.parse_query().format_query()
       :
         state.url.trim_right("/") + "/incidents?" + {
           "api-version": ["2024-03-01"],
@@ -49,12 +49,14 @@ program: |
         "cursor": {
           ?"last_timestamp": has(body.value) && size(body.value) > 0 && !has(body.nextLink)?
             optional.of(
-              body.value.map(e, e.properties.lastModifiedTimeUtc).map(t, timestamp(t)).max()
+              body.value.map(e, timestamp(e.properties.lastModifiedTimeUtc)).max()
             )
           :
             state.?cursor.last_timestamp,
         },
-        "nextLink": has(body.nextLink) ? body.nextLink : null,
+        "next_page": {
+          ?"link": body.?nextLink,
+        },
         "want_more": has(body.nextLink),
       })
     :

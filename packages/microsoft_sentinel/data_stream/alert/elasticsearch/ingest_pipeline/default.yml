@@ -5,10 +5,13 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
-  - set:
-      field: event.kind
-      tag: set_alert_in_event_kind
-      value: alert
+  - remove:
+      field: 
+        - event.kind
+        - oberver.product
+        - oberver.vendor
+      ignore_missing: true
+      description: Fields defined as constant_keyword are removed from _source for storage efficiency.
   - fail:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -40,7 +43,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
-        - json.name
         - json.id
         - json.properties.timeGenerated
       tag: fingerprint_alert_pipeline
@@ -51,6 +53,11 @@ processors:
       tag: rename_id
       target_field: microsoft_sentinel.alert.id
       ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_alert_id
+      copy_from: microsoft_sentinel.alert.id
+      ignore_empty_value: true
   - rename:
       field: json.kind
       tag: rename_kind
@@ -61,11 +68,6 @@ processors:
       tag: rename_name
       target_field: microsoft_sentinel.alert.name
       ignore_missing: true
-  - set:
-      field: event.id
-      tag: set_event_id_from_alert_name
-      copy_from: microsoft_sentinel.alert.name
-      ignore_empty_value: true
   - rename:
       field: json.properties.additionalData
       tag: rename_properties_additionalData
@@ -200,10 +202,6 @@ processors:
       tag: rename_properties_productName
       target_field: microsoft_sentinel.alert.properties.product.name
       ignore_missing: true
-  - set:
-      field: observer.product
-      tag: set_observer_product
-      value: Azure Sentinel
   - rename:
       field: json.properties.productVersion
       tag: rename_properties_productVersion
@@ -249,8 +247,6 @@ processors:
           ctx.event.severity = 2;
         } else if (temp == 'high') {
           ctx.event.severity = 3;
-        } else {
-          ctx.event.severity = null;
         }
       on_failure:
         - append:
@@ -330,10 +326,6 @@ processors:
       tag: rename_properties_vendorName
       target_field: microsoft_sentinel.alert.properties.vendor_name
       ignore_missing: true
-  - set:
-      field: observer.vendor
-      tag: set_observer_vendor
-      value: Microsoft
   - date:
       field: json.systemData.createdAt
       tag: date_systemData_createdAt
@@ -401,7 +393,7 @@ processors:
       ignore_missing: true
   - remove:
       field:
-        - microsoft_sentinel.alert.name
+        - microsoft_sentinel.alert.id
         - microsoft_sentinel.alert.properties.alert.link
         - microsoft_sentinel.alert.properties.description
         - microsoft_sentinel.alert.properties.end_time_utc

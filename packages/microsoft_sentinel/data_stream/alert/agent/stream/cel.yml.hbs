@@ -35,10 +35,10 @@ program: |
         state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval))).as(last_modified_time, 
           request(
             "GET",
-            has(state.nextLink) && state.nextLink != null ?
+            has(state.?next_page.link) ?
               // The nextLink URL is unescaped, so we need to parse
               // and reformat the query, otherwise the request fails.
-              state.url.trim_right("/") + "/incidents?" + state.nextLink.parse_url().RawQuery.parse_query().format_query()
+              state.url.trim_right("/") + "/incidents?" + state.next_page.link.parse_url().RawQuery.parse_query().format_query()
             :
               state.url.trim_right("/") + "/incidents?" + {
                 "api-version": ["2024-03-01"],
@@ -50,7 +50,9 @@ program: |
             bytes(resp.Body).decode_json().as(body, {
               "worklist": body.value,
               "next": 0,
-              "nextLink": has(body.nextLink) ? body.nextLink : null,
+              "next_page": {
+                ?"link": body.?nextLink,
+              },
             })
           :
             {
@@ -71,7 +73,7 @@ program: |
         ))
   ).as(state, state.with(
     !has(state.worklist) ? state : // Exit early due to GET failure.
-      has(state.next) && state.next < size(state.worklist) ?
+      state.worklist[?state.?next.orValue(-1)].hasValue() ?
         request(
           "POST",
           state.url.trim_right("/") + "/incidents/" + state.worklist[state.next].name + "/alerts" + "?api-version=2024-03-01"
@@ -86,16 +88,16 @@ program: |
                 [{"message":"retry"}]
             ),
             "cursor": {
-              ?"last_timestamp": int(state.next) + 1 < size(state.worklist) || (has(state.nextLink) && state.nextLink != null) ?
+              ?"last_timestamp": int(state.next) + 1 < size(state.worklist) || has(state.?next_page.link) ?
                 state.?cursor.last_timestamp
               :
                 optional.of(
-                  state.worklist.map(e, e.properties.lastModifiedTimeUtc).map(t, timestamp(t)).max()
+                  state.worklist.map(e, timestamp(e.properties.lastModifiedTimeUtc)).max()
                 )
             },
             "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
             "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
-            "want_more": int(state.next) + 1 < size(state.worklist) || (has(state.nextLink) && state.nextLink != null),
+            "want_more": int(state.next) + 1 < size(state.worklist) || has(state.?next_page.link),
           })
         :
           {
@@ -118,7 +120,7 @@ program: |
         {
           "events": [],
           "want_more": false,
-          "nextLink": null
+          "next_page": {},
         }
     )
   )

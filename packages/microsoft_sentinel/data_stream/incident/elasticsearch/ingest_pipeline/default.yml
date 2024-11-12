@@ -5,18 +5,6 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
-  - set:
-      field: event.kind
-      tag: set_alert_in_event_kind
-      value: alert
-  - set:
-      field: observer.product
-      tag: set_observer_product
-      value: Azure Sentinel
-  - set:
-      field: observer.vendor
-      tag: set_observer_vendor
-      value: Microsoft
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -57,16 +45,16 @@ processors:
       tag: rename_id
       target_field: microsoft_sentinel.incident.id
       ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_incident_id
+      copy_from: microsoft_sentinel.incident.id
+      ignore_empty_value: true
   - rename:
       field: json.name
       tag: rename_name
       target_field: microsoft_sentinel.incident.name
       ignore_missing: true
-  - set:
-      field: event.id
-      tag: set_event_id_from_incident_name
-      copy_from: microsoft_sentinel.incident.name
-      ignore_empty_value: true
   - rename:
       field: json.properties.additionalData.alertProductNames
       tag: rename_properties_additionalData_alertProductNames
@@ -342,8 +330,6 @@ processors:
           ctx.event.severity = 2;
         } else if (temp == 'high') {
           ctx.event.severity = 3;
-        } else {
-          ctx.event.severity = null;
         }
       on_failure:
         - append:
@@ -420,7 +406,7 @@ processors:
       ignore_missing: true
   - remove:
       field:
-        - microsoft_sentinel.incident.name
+        - microsoft_sentinel.incident.id
         - microsoft_sentinel.incident.properties.additional_data.tactics
         - microsoft_sentinel.incident.properties.created_time_utc
         - microsoft_sentinel.incident.properties.description

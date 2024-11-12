@@ -60,6 +60,9 @@ For Rest API, this module has been tested against the **2024-03-01** version.
 1. Open [Azure Portal](https://portal.azure.com/) and [Register a new Azure Application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app?tabs=certificate).
 2. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for data collection.
 3. To get **Workspace Name, Subscription ID, and Resource Group** navigate to **Microsoft Sentinel** and select desired workspace among the list.
+4. Go to **Manage > API permissions** in your portal, then add the following permissions for **Microsoft Graph**:
+    - **SecurityAlert.Read.All** with both **Application** and **Delegated** permission types.
+    - **User.Read** with the **Delegated** permission type.
 
 ### Enabling the integration in Elastic:
 
