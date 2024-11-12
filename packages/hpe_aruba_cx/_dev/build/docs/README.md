@@ -262,17 +262,17 @@ Note: Descriptions have not been filled out
 #### [ERPS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm)
 | Field                | Description | Type | Common                       |
 |----------------------|-------------|------|------------------------------|
-| aruba.erps.ccvlan    |             |      | network.vlan.id              |
-| aruba.erps.dataVlan  |             |      | network.vlan.id              |
-| aruba.erps.ifID      |             |      | observer.ingress.interface.id|
-| aruba.erps.instanceID|             |      | aruba.instance.id            |
-| aruba.erps.interfaceName |         |      | observer.ingress.interface.name |
-| aruba.erps.node      |             |      | client.mac                   |
-| aruba.erps.portName  |             |      | client.port                  |
-| aruba.erps.reason    |             |      | event.reason                 |
-| aruba.erps.ring_id   |             |      |                              |
-| aruba.erps.state     |             |      | aruba.status                 |
-| aruba.erps.vland_id  |             |      | network.vlan.id              |
+| <ccvlan>             |             |      | network.vlan.id              |
+| <dataVlan>           |             |      | network.vlan.id              |
+| <ifID>               |             |      | observer.ingress.interface.id|
+| <instanceID>         |             |      | aruba.instance.id            |
+| <interfaceName>      |             |      | observer.ingress.interface.name|
+| <node>               |             |      | client.mac                   |
+| <portName>           |             |      | aruba.erps.port_name         |
+| <reason>             |             |      | event.reason                 |
+| <ringID>             |             |      | aruba.erps.ring_id           |
+| <state>              |             |      | aruba.status                 |
+| <vlandID>            |             |      | network.vlan.id              |
 
 #### [EVPN events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EVPN.htm)
 | Field              | Description | Type | Common           |
