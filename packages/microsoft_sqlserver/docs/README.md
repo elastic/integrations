@@ -17,8 +17,8 @@ Find more details in [Logs](#logs).
 
 **Metrics** data streams provide insights into SQL Server performance and health:
 
-* `performance` — Comprehensive performance counters and objects available on the server.
-* `transaction_log` — Usage statistics and space utilization metrics for transaction logs.
+* `performance`: Comprehensive performance counters and objects available on the server.
+* `transaction_log`: Usage statistics and space utilization metrics for transaction logs.
 
 Find more details in [Metrics](#metrics).
 
