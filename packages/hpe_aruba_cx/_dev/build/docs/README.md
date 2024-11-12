@@ -103,7 +103,7 @@ Note: Descriptions have not been filled out
 | <remote_diag>        | aruba.bfd.remote_diag        |
 | <remote_state>       | aruba.bfd.remote_state       |
 | <requested_interval> | aruba.bfd.requested_interval |
-| <session_id>         | aruba.instance.id            |
+| <session_id>         | aruba.session.id             |
 | <src_port>           | aruba.port                   |
 | <vrf>                | aruba.vrf.id                 |
 
@@ -610,7 +610,7 @@ Note: Descriptions have not been filled out
 #### [Mirroring events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MIRRORING.htm)
 | Field                  | Description | Type | Common                       |
 |------------------------|-------------|------|------------------------------|
-| aruba.mirroring.session|             |      | aruba.instance.id            |
+| aruba.mirroring.session|             |      | aruba.session.id             |
 
 #### [Module events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MODULE.htm)
 | Field                  | Description | Type | Common                       |
