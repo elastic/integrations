@@ -51,19 +51,19 @@ processors:
         tag: copp_event_1506
         description: "Logs failure of programming queue for a CoPP packet class"
         if: "ctx.event?.code == '1506'"
-        pattern: "Packet class programming failed for %{aruba.class}"
+        pattern: "Packet class programming failed for %{aruba.copp.class}"
     - dissect:
         field: message
         tag: copp_event_1507
         description: "Logs failure of programming ingress field processor for a COPP class"
         if: "ctx.event?.code == '1507'"
-        pattern: "Failed to program ingress field processor rule for %{aruba.class}"
+        pattern: "Failed to program ingress field processor rule for %{aruba.copp.class}"
     - dissect:
         field: message
         tag: copp_event_1508
         description: "Logs failure of programming egress field processor for a COPP class"
         if: "ctx.event?.code == '1508'"
-        pattern: "Failed to program egress rule for %{aruba.class}"
+        pattern: "Failed to program egress rule for %{aruba.copp.class}"
     - dissect:
         field: message
         tag: copp_event_1509
@@ -87,13 +87,13 @@ processors:
         tag: copp_event_1512
         description: "Logs failure while configuring hardware on a slot for a CoPP class"
         if: "ctx.event?.code == '1512'"
-        pattern: "Failed to configure hardware for CoPP on slot %{aruba.slot} class %{aruba.class}"
+        pattern: "Failed to configure hardware for CoPP on slot %{aruba.slot} class %{aruba.copp.class}"
     - dissect:
         field: message
         tag: copp_event_1513
         description: "Logs failure while retrieving statistics on a slot for a CoPP class"
         if: "ctx.event?.code == '1513'"
-        pattern: "Failed to retrieve CoPP statistics from slot %{aruba.slot} class %{aruba.class}"
+        pattern: "Failed to retrieve CoPP statistics from slot %{aruba.slot} class %{aruba.copp.class}"
 
 
     # ECMP Events (18xx)
@@ -279,6 +279,14 @@ processors:
         if: "['11901'].contains(ctx.event?.code)"
         patterns:
             - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}$"
+
+    # Convert aruba.slot from a string to a long
+    # Dissect processor sets everything to a string type
+    - convert:
+        field: aruba.slot
+        type: long
+        ignore_missing: true
+
 
 on_failure:
   - set:
