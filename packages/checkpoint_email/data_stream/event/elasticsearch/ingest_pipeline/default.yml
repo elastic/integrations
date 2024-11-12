@@ -1,0 +1,356 @@
+---
+description: Pipeline for processing event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.eventId
+        - json.customerId
+        - json.eventCreated
+        - json.description
+        - json.entityId
+      tag: fingerprint_event
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_alert
+      value: alert
+  - append:
+      field: event.category
+      tag: append_email_into_event_category
+      value: email
+  - append:
+      field: event.category
+      tag: append_malware_into_event_category
+      value: malware
+      if: >-
+        ctx.json?.type != null && (
+          ctx.json.type.equalsIgnoreCase('malware') ||
+          ctx.json.type.equalsIgnoreCase('suspicious malware')
+        )
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+      if: >-
+        ctx.json?.type != null && (
+          ctx.json.type.equalsIgnoreCase('anomaly') ||
+          ctx.json.type.equalsIgnoreCase('shadow_it')
+        )
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+      if: >-
+        ctx.json?.type != null && (
+          ctx.json.type.equalsIgnoreCase('anomaly') ||
+          ctx.json.type.equalsIgnoreCase('shadow_it')
+        )
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Check Point
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Harmony Email & Collaboration
+  - foreach:
+      field: json.actions
+      if: ctx.json?.actions instanceof List
+      processor:
+        rename:
+          field: _ingest._value.actionType
+          tag: rename_actions_actionType
+          target_field: _ingest._value.action_type
+          ignore_missing: true
+  - foreach:
+      field: json.actions
+      if: ctx.json?.actions instanceof List
+      processor:
+        date:
+          field: _ingest._value.createTime
+          tag: date_actions_createTime
+          target_field: _ingest._value.create_time
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.createTime
+                ignore_missing: true
+  - foreach:
+      field: json.actions
+      if: ctx.json?.actions instanceof List
+      processor:
+        rename:
+          field: _ingest._value.relatedEntityId
+          tag: rename_actions_relatedEntityId
+          target_field: _ingest._value.related_entity_id
+          ignore_missing: true
+  - foreach:
+      field: json.actions
+      if: ctx.json?.actions instanceof List
+      processor:
+        remove:
+          field: _ingest._value.createTime
+          tag: remove_actions_createTime
+          ignore_missing: true
+  - rename:
+      field: json.actions
+      tag: rename_actions
+      target_field: checkpoint_email.event.actions
+      ignore_missing: true
+  - rename:
+      field: json.additionalData
+      tag: rename_additionalData
+      target_field: checkpoint_email.event.additional_data
+      ignore_missing: true
+  - foreach:
+      field: json.availableEventActions
+      if: ctx.json?.availableEventActions instanceof List
+      processor:
+        rename:
+          field: _ingest._value.actionName
+          tag: rename_availableEventActions_actionName
+          target_field: _ingest._value.action_name
+          ignore_missing: true
+  - foreach:
+      field: json.availableEventActions
+      if: ctx.json?.availableEventActions instanceof List
+      processor:
+        rename:
+          field: _ingest._value.actionParameter
+          tag: rename_availableEventActions_actionParameter
+          target_field: _ingest._value.action_parameter
+          ignore_missing: true
+  - rename:
+      field: json.availableEventActions
+      tag: rename_availableEventActions
+      target_field: checkpoint_email.event.available_event_actions
+      ignore_missing: true
+  - rename:
+      field: json.confidenceIndicator
+      tag: rename_confidenceIndicator
+      target_field: checkpoint_email.event.confidence_indicator
+      ignore_missing: true
+  - rename:
+      field: json.customerId
+      tag: rename_customerId
+      target_field: checkpoint_email.event.customer_id
+      ignore_missing: true
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_event_customer_id
+      copy_from: checkpoint_email.event.customer_id
+      ignore_empty_value: true
+  - rename:
+      field: json.data
+      tag: rename_data
+      target_field: checkpoint_email.event.data
+      ignore_missing: true
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: checkpoint_email.event.description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_event_description
+      copy_from: checkpoint_email.event.description
+      ignore_empty_value: true
+  - rename:
+      field: json.entityId
+      tag: rename_entityId
+      target_field: checkpoint_email.event.entity_id
+      ignore_missing: true
+  - rename:
+      field: json.entityLink
+      tag: rename_entityLink
+      target_field: checkpoint_email.event.entity_link
+      ignore_missing: true
+  - set:
+      field: event.url
+      tag: set_event_url_from_event_entity_link
+      copy_from: checkpoint_email.event.entity_link
+      ignore_empty_value: true
+  - date:
+      field: json.eventCreated
+      tag: date_eventCreated
+      target_field: checkpoint_email.event.created
+      formats:
+        - ISO8601
+      if: ctx.json?.eventCreated != null && ctx.json.eventCreated != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_created
+      copy_from: checkpoint_email.event.created
+      ignore_empty_value: true
+  - set:
+      field: event.created
+      tag: set_event_created_from_event_created
+      copy_from: checkpoint_email.event.created
+      ignore_empty_value: true
+  - rename:
+      field: json.eventId
+      tag: rename_eventId
+      target_field: checkpoint_email.event.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_event_id
+      copy_from: checkpoint_email.event.id
+      ignore_empty_value: true
+  - rename:
+      field: json.saas
+      tag: rename_saas
+      target_field: checkpoint_email.event.saas
+      ignore_missing: true
+  - rename:
+      field: json.senderAddress
+      tag: rename_senderAddress
+      target_field: checkpoint_email.event.sender_address
+      ignore_missing: true
+  - set:
+      field: source.user.email
+      tag: set_source_user_email_from_sender_address
+      copy_from: checkpoint_email.event.sender_address
+      ignore_empty_value: true
+  - set:
+      field: email.sender.address
+      tag: set_email_sender_address_from_sender_address
+      copy_from: checkpoint_email.event.sender_address
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_sender_address_into_related_user
+      value: '{{{checkpoint_email.event.sender_address}}}'
+      allow_duplicates: false
+      if: ctx.checkpoint_email?.event?.sender_address != null
+  - convert:
+      field: json.severity
+      tag: convert_severity_to_long
+      target_field: checkpoint_email.event.severity
+      type: long
+      ignore_missing: true
+      if: ctx.json?.severity != null && ctx.json.severity != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Set severity enum.
+      if: ctx.checkpoint_email?.event?.severity != null
+      params:
+        severity:
+          - Lowest
+          - Low
+          - Medium
+          - High
+          - Critical
+      source: |-
+        def severityValue = ctx.checkpoint_email.event.severity;
+        if (severityValue > 0 && severityValue <= params.severity.length) {
+          ctx.checkpoint_email.event.put('severity_enum', params['severity'][(int)severityValue-1]);
+        }
+  - set:
+      field: event.severity
+      tag: set_event_severity_from_event_severity
+      copy_from: checkpoint_email.event.severity
+      ignore_empty_value: true
+  - rename:
+      field: json.state
+      tag: rename_state
+      target_field: checkpoint_email.event.state
+      ignore_missing: true
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: checkpoint_email.event.type
+      ignore_missing: true
+  - remove:
+      field:
+        - checkpoint_email.event.customer_id
+        - checkpoint_email.event.description
+        - checkpoint_email.event.entity_link
+        - checkpoint_email.event.id
+        - checkpoint_email.event.created
+        - checkpoint_email.event.severity
+        - checkpoint_email.event.sender_address
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

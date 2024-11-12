@@ -117,120 +117,83 @@ An example event for `logs` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-03T03:25:28.923Z",
+    "@timestamp": "2021-11-03T03:06:05.696Z",
     "agent": {
-        "ephemeral_id": "667cd3fd-5cbb-420c-91e4-060bb1455023",
-        "id": "d45df655-b57b-4c5d-8017-17c41cca0d2b",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "ca08f8bd-d4b8-4ea2-aefa-eb285a0b32c6",
+        "id": "212c7c0c-b1d6-427f-b567-7cc8887732b9",
+        "name": "elastic-agent-75377",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "auth0": {
         "logs": {
             "data": {
-                "classification": "Login - Success",
-                "client_id": "aI61p8I8aFjmYRliLWgvM9ev97kCCNDB",
-                "client_name": "Default App",
-                "connection": "Username-Password-Authentication",
-                "connection_id": "con_1a5wCUmAs6VOU17n",
-                "date": "2021-11-03T03:25:28.923Z",
+                "classification": "Login - Failure",
+                "date": "2021-11-03T03:06:05.696Z",
+                "description": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs",
                 "details": {
-                    "completedAt": 1635909928922,
-                    "elapsedTime": 1110091,
-                    "initiatedAt": 1635908818831,
-                    "prompts": [
-                        {
-                            "completedAt": 1635909903693,
-                            "connection": "Username-Password-Authentication",
-                            "connection_id": "con_1a5wCUmAs6VOU17n",
-                            "identity": "6182002f34f4dd006b05b5c7",
-                            "name": "prompt-authenticate",
-                            "stats": {
-                                "loginsCount": 1
+                    "error": {
+                        "message": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs",
+                        "oauthError": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs. Please go to 'https://manage.auth0.com/#/applications/aI61p8I8aFjmYRliLWgvM9ev97kCCNDB/settings' and make sure you are sending the same callback url from your application.",
+                        "payload": {
+                            "attempt": "http://localhost:3000/callback",
+                            "client": {
+                                "clientID": "aI61p8I8aFjmYRliLWgvM9ev97kCCNDB"
                             },
-                            "strategy": "auth0"
+                            "code": "unauthorized_client",
+                            "message": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs",
+                            "name": "CallbackMismatchError",
+                            "status": 403
                         },
-                        {
-                            "completedAt": 1635909903745,
-                            "elapsedTime": 1084902,
-                            "flow": "universal-login",
-                            "initiatedAt": 1635908818843,
-                            "name": "login",
-                            "timers": {
-                                "rules": 5
-                            },
-                            "user_id": "auth0|6182002f34f4dd006b05b5c7",
-                            "user_name": "neo@test.com"
-                        },
-                        {
-                            "completedAt": 1635909928352,
-                            "elapsedTime": 23378,
-                            "flow": "consent",
-                            "grantInfo": {
-                                "audience": "https://dev-yoj8axza.au.auth0.com/userinfo",
-                                "id": "618201284369c9b4f9cd6d52",
-                                "scope": "openid profile"
-                            },
-                            "initiatedAt": 1635909904974,
-                            "name": "consent"
-                        }
-                    ],
-                    "session_id": "1TAd-7tsPYzxWudzqfHYXN0e6q1D0GSc",
-                    "stats": {
-                        "loginsCount": 1
+                        "type": "callback-url-mismatch"
+                    },
+                    "qs": {
+                        "client_id": "aI61p8I8aFjmYRliLWgvM9ev97kCCNDB",
+                        "redirect_uri": "http://localhost:3000/callback",
+                        "response_type": "code",
+                        "scope": "openid profile",
+                        "state": "Vz6G2zZf95/FCOQALrpvd4bS6jx5xvRos2pVldFAiw4="
                     }
                 },
                 "hostname": "dev-yoj8axza.au.auth0.com",
-                "login": {
-                    "completedAt": "2021-11-03T03:25:28.922Z",
-                    "elapsedTime": 1110091,
-                    "initiatedAt": "2021-11-03T03:06:58.831Z",
-                    "stats": {
-                        "loginsCount": 1
-                    }
-                },
-                "strategy": "auth0",
-                "strategy_type": "database",
-                "type": "Successful login"
+                "type": "Failed login"
             }
         }
     },
     "data_stream": {
         "dataset": "auth0.logs",
-        "namespace": "93795",
+        "namespace": "12089",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d45df655-b57b-4c5d-8017-17c41cca0d2b",
+        "id": "212c7c0c-b1d6-427f-b567-7cc8887732b9",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
-        "action": "successful-login",
+        "action": "failed-login",
         "agent_id_status": "verified",
         "category": [
-            "authentication",
-            "session"
+            "authentication"
         ],
         "dataset": "auth0.logs",
-        "id": "90020211103032530111223343147286033102509916061341581378",
-        "ingested": "2024-07-30T05:19:59Z",
+        "id": "90020211103030609732115389415260839021644201259064885298",
+        "ingested": "2024-11-11T15:35:02Z",
         "kind": "event",
-        "original": "{\"data\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"client_name\":\"Default App\",\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"date\":\"2021-11-03T03:25:28.923Z\",\"details\":{\"completedAt\":1635909928922,\"elapsedTime\":1110091,\"initiatedAt\":1635908818831,\"prompts\":[{\"completedAt\":1635909903693,\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"elapsedTime\":null,\"identity\":\"6182002f34f4dd006b05b5c7\",\"name\":\"prompt-authenticate\",\"stats\":{\"loginsCount\":1},\"strategy\":\"auth0\"},{\"completedAt\":1635909903745,\"elapsedTime\":1084902,\"flow\":\"universal-login\",\"initiatedAt\":1635908818843,\"name\":\"login\",\"timers\":{\"rules\":5},\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},{\"completedAt\":1635909928352,\"elapsedTime\":23378,\"flow\":\"consent\",\"grantInfo\":{\"audience\":\"https://dev-yoj8axza.au.auth0.com/userinfo\",\"expiration\":null,\"id\":\"618201284369c9b4f9cd6d52\",\"scope\":\"openid profile\"},\"initiatedAt\":1635909904974,\"name\":\"consent\"}],\"session_id\":\"1TAd-7tsPYzxWudzqfHYXN0e6q1D0GSc\",\"stats\":{\"loginsCount\":1}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103032530111223343147286033102509916061341581378\",\"strategy\":\"auth0\",\"strategy_type\":\"database\",\"type\":\"s\",\"user_agent\":\"Mozilla/5.0 (X11;Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\",\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},\"log_id\":\"90020211103032530111223343147286033102509916061341581378\"}",
-        "outcome": "success",
+        "original": "{\"data\":{\"connection_id\":\"\",\"date\":\"2021-11-03T03:06:05.696Z\",\"description\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"details\":{\"body\":{},\"error\":{\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"oauthError\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs. Please go to 'https://manage.auth0.com/#/applications/aI61p8I8aFjmYRliLWgvM9ev97kCCNDB/settings' and make sure you are sending the same callback url from your application.\",\"payload\":{\"attempt\":\"http://localhost:3000/callback\",\"authorized\":[],\"client\":{\"clientID\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\"},\"code\":\"unauthorized_client\",\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"name\":\"CallbackMismatchError\",\"status\":403},\"type\":\"callback-url-mismatch\"},\"qs\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"redirect_uri\":\"http://localhost:3000/callback\",\"response_type\":\"code\",\"scope\":\"openid profile\",\"state\":\"Vz6G2zZf95/FCOQALrpvd4bS6jx5xvRos2pVldFAiw4=\"}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103030609732115389415260839021644201259064885298\",\"type\":\"f\",\"user_agent\":\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\"},\"log_id\":\"90020211103030609732115389415260839021644201259064885298\"}",
+        "outcome": "failure",
         "type": [
-            "info",
-            "start"
+            "info"
         ]
     },
     "input": {
         "type": "http_endpoint"
     },
     "log": {
-        "level": "info"
+        "level": "error"
     },
     "network": {
         "type": "ipv4"
@@ -255,16 +218,12 @@ An example event for `logs` looks as following:
         "forwarded",
         "auth0-logstream"
     ],
-    "user": {
-        "id": "auth0|6182002f34f4dd006b05b5c7",
-        "name": "neo@test.com"
-    },
     "user_agent": {
         "device": {
             "name": "Other"
         },
         "name": "Firefox",
-        "original": "Mozilla/5.0 (X11;Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0",
+        "original": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0",
         "os": {
             "name": "Ubuntu"
         },

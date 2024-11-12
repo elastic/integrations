@@ -1,0 +1,203 @@
+rules:
+  - path: /auth/external
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - "application/json"
+    request_body: '{"accessKey":"accessKey","clientId":"clientId"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "success": true,
+            "data": {
+              "token": "XnbabcdefghijklmnopqrstuvwxyztYWHWXRy7---s",
+              "csrf": "32057d5e-abcd-1234-abcd-123456789087",
+              "expires": "Mon, 14 Oct 2030 07:20:18 GMT",
+              "expiresIn": 1800
+            }
+          }
+  - path: /app/hec-api/v1.0/event/query
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer XnbabcdefghijklmnopqrstuvwxyztYWHWXRy7---s"
+      X-Av-Req-Id:
+        - .*
+    request_body: /^\{"requestData":\{"endDate":.*,"scrollId":"e9c8c0e01abcdefabcdef456789000cf","startDate":.*\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "responseEnvelope": {
+              "requestId": "{{ .request.headers.Get "X-Av-Req-Id" }}",
+              "responseCode": 200,
+              "responseText": "",
+              "additionalText": "",
+              "recordsNumber": 4,
+              "scrollId": null
+            },
+            "responseData": []
+          }
+  - path: /app/hec-api/v1.0/event/query
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer XnbabcdefghijklmnopqrstuvwxyztYWHWXRy7---s"
+      X-Av-Req-Id:
+        - .*
+    request_body: /^\{"requestData":\{"endDate":.*,"scrollId":"e9c8c0e01234567890123456789000cf","startDate":.*\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "responseEnvelope": {
+              "requestId": "{{ .request.headers.Get "X-Av-Req-Id" }}",
+              "responseCode": 200,
+              "responseText": "",
+              "additionalText": "",
+              "recordsNumber": 4,
+              "scrollId": "e9c8c0e01abcdefabcdef456789000cf"
+            },
+            "responseData": [
+              {
+                "eventId": "a6d8674a04c30123456789e4d3ebd98",
+                "customerId": "exampletest",
+                "saas": "google_mail",
+                "entityId": "25e0c50123456789e351b0dafa6aafa6",
+                "state": "pending",
+                "type": "shadow_it",
+                "confidenceIndicator": "detected",
+                "eventCreated": "2024-10-14T07:02:11.229935+00:00",
+                "severity": "3",
+                "description": "Shadow IT - john@example.com is using google.com (Search Engine)",
+                "data": "#{\"entity_id\": \"a6d8674a04c30123456789e4d3ebd98\", \"entity_type\": \"google_mail_email\", \"label\": \"Shadow IT\"} - #{\"entity_id\": \"113012345678906535444\", \"entity_type\": \"google_user\", \"label\": \"john@example.com\"} is using #{\"entity_id\": \"google.com\", \"entity_type\": \"av_dns_info\", \"label\": \"google.com (Search Engine)\"}",
+                "additionalData": null,
+                "availableEventActions": null,
+                "actions": [],
+                "senderAddress": "google-workspace-alerts-noreply@google.com",
+                "entityLink": "https://in.portal.checkpoint.com/dashboard/email&collaboration/CGS1?route=cHJvZmlsZS9nsfhvbksdvnjhvdfVBsdbdfFbdbdBDBBdbrtHyujYJNtnhtnhtnOTIxZTM1MWIwZGFmYTZhYWZhNg=="
+              },
+              {
+                "eventId": "abaabcdef01234567894115b9e64da71",
+                "customerId": "exampletest",
+                "saas": "google_mail",
+                "entityId": "6fd32d1acccf146b03725eb513886822",
+                "state": "exception",
+                "type": "phishing",
+                "confidenceIndicator": "malicious",
+                "eventCreated": "2024-10-15T06:08:40.022596+00:00",
+                "severity": "5",
+                "description": "Phishing attempt detected in an email from info@example.in - 'Support: Link' (alex@example.com's mailbox)",
+                "data": "#{\"entity_id\": \"6fd32d1acccf10123456789513886822\", \"entity_type\": \"avanan_ap_scan\", \"label\": \"Phishing\"} attempt detected in an email from #{\"entity_id\": null, \"entity_type\": \"google_user\", \"disable_link\": true, \"label\": \"info@example.in\"} - '#{\"entity_id\": \"6fd32d1aabcdef012345678913886822\", \"entity_type\": \"google_mail_email\", \"label\": \"Support: Link\"}' (#{\"entity_id\": \"113301234567896535444\", \"entity_type\": \"google_user\", \"label\": \"alex@example.com\"}'s mailbox)",
+                "additionalData": null,
+                "availableEventActions": null,
+                "actions": [
+                  {
+                    "actionType": "quarantine_email",
+                    "createTime": "2024-10-15T07:02:54.452012Z",
+                    "relatedEntityId": "abaabcdef01234567894115b9e64da71"
+                  },
+                  {
+                    "actionType": "google_mail_email_change_subject",
+                    "createTime": "2024-10-15T07:03:16.882267Z",
+                    "relatedEntityId": "abaabcdef01234567894115b9e64da71"
+                  },
+                  {
+                    "actionType": "restore_email",
+                    "createTime": "2024-10-15T07:03:24.885973Z",
+                    "relatedEntityId": "abaabcdef01234567894115b9e64da71"
+                  },
+                  {
+                    "actionType": "move_to_spam",
+                    "createTime": "2024-10-15T07:04:27.507214Z",
+                    "relatedEntityId": "abaabcdef01234567894115b9e64da71"
+                  },
+                  {
+                    "actionType": "google_mail_email_change_subject",
+                    "createTime": "2024-10-15T07:08:47.587776Z",
+                    "relatedEntityId": "abaabcdef01234567894115b9e64da71"
+                  }
+                ],
+                "senderAddress": "info@example.in",
+                "entityLink": "https://in.portal.checkpoint.com/dashboard/email&collaboration/CGS1?route=cHJvZmlsZS9nb29nbGregevTTevfVETgervfdvrGETGEFVefvefgqergERVeriMDM3MjVlYjUxMzg4NjgyMg=="
+              }
+            ]
+          }
+  - path: /app/hec-api/v1.0/event/query
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer XnbabcdefghijklmnopqrstuvwxyztYWHWXRy7---s"
+      X-Av-Req-Id:
+        - .*
+    request_body: /^\{"requestData":\{"endDate":.*,"startDate":.*\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "responseEnvelope": {
+              "requestId": "{{ .request.headers.Get "X-Av-Req-Id" }}",
+              "responseCode": 200,
+              "responseText": "",
+              "additionalText": "",
+              "recordsNumber": 4,
+              "scrollId": "e9c8c0e01234567890123456789000cf"
+            },
+            "responseData": [
+              {
+                "eventId": "13007abcdef01234567896d00f44a7dd4",
+                "customerId": "elasticteam",
+                "saas": "google_mail",
+                "entityId": "ad6ada66e6fabcdefabcdefc240dd9d0",
+                "state": "new",
+                "type": "phishing",
+                "confidenceIndicator": "malicious",
+                "eventCreated": "2024-10-15T09:47:06.592720+00:00",
+                "severity": "4",
+                "description": "Phishing attempt detected in an email from google-support@webnotifications.net - 'Office Holiday Party - Folder Share' (team@example.com's mailbox)",
+                "data": "#{\"entity_id\": \"ad6ada66e6fabcdefabcdefc240dd9d0\", \"entity_type\": \"avanan_ap_scan\", \"label\": \"Phishing\"} attempt detected in an email from #{\"entity_id\": null, \"entity_type\": \"google_user\", \"disable_link\": true, \"label\": \"google-support@webnotifications.net\"} - '#{\"entity_id\": \"ad6ada66e6fabcdefabcdefc240dd9d0\", \"entity_type\": \"google_mail_email\", \"label\": \"Office Holiday Party - Folder Share\"}' (#{\"entity_id\": \"113310123456789535444\", \"entity_type\": \"google_user\", \"label\": \"team@example.com\"}'s mailbox)",
+                "additionalData": null,
+                "availableEventActions": null,
+                "actions": [],
+                "senderAddress": "google-support@webnotifications.net",
+                "entityLink": "https://in.portal.checkpoint.com/dashboard/email&collaboration/CGS1?route=cHJvZmlsZsdverberGRTHTYJbgbrtHYNRTGbdfbtryrtM2YyNTlkYTY0MmMyNDBkZDlkMA=="
+              },
+              {
+                "eventId": "73af5abcdef0123456789d08abfce324",
+                "customerId": "elastictest",
+                "saas": "google_mail",
+                "entityId": "4abcdefabcdefabcdefc44ca3798cb2f",
+                "state": "dismissed",
+                "type": "dlp",
+                "confidenceIndicator": "detected",
+                "eventCreated": "2024-10-15T10:27:40.294099+00:00",
+                "severity": "3",
+                "description": "SmartDLP has detected PII leak in 'Resume' (alice@example.io's mailbox)",
+                "data": "#{\"entity_id\": \"81555d1d0defabcdefabcdabcdcb6c1aa44\", \"entity_type\": \"avanan_dlp\", \"disable_link\": true, \"label\": \"SmartDLP\"} has detected #{\"entity_id\": \"81555d1d0defabcdefabcdabcdcb6c1aa44\", \"entity_type\": \"avanan_dlp\", \"disable_link\": true, \"label\": \"PII\"} leak in '#{\"entity_id\": \"40d926d7c01234567890123456789b2f\", \"entity_type\": \"google_mail_email\", \"label\": \"Resume\"}' (#{\"entity_id\": \"113310123456789535444\", \"entity_type\": \"google_user\", \"label\": \"alice@example.io\"}'s mailbox)",
+                "additionalData": null,
+                "availableEventActions": null,
+                "actions": [],
+                "senderAddress": "alice@example.io",
+                "entityLink": "https://in.portal.checkpoint.com/dashboard/email&collaboration/CGS1?route=cHJvZmlsZS9nb29nbGVfbWFpbF9gysdjvvsvDFGERgfvsdverERBERsdvsdv2EzNzk4Y2IyZg=="
+              }
+            ]
+          }

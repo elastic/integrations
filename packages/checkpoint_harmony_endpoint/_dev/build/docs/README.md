@@ -16,7 +16,7 @@ For details please refer to the [Harmony Endpoint Admin guide](https://sc1.check
 
 To use this integration generate an API Key. API key consists of Client ID and Secret Key. Users can create API Keys by browsing to Infinity Portal at GLOBAL SETTINGS > API Keys. When creating an API Key, make sure that Service is set to Logs as a Service.
 
-To create an API key please refer to Check Point's [Infinity API Guide](https://app.swaggerhub.com/apis-docs/Check-Point/infinity-events-api/1.0.0#/Authentication/getAuthToken).
+To create an API key please refer to Check Point's [Infinity API Guide](https://app.swaggerhub.com/apis-docs/Check-Point/infinity-events-api/1.0.0#/Authentication/getAuthToken). A list of servers can also be found there.
 
 ### Following are optional parameters which are used for fine-tuning:
 
