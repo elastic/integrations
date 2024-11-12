@@ -8,8 +8,8 @@ The Microsoft SQL Server integration collects two types of data streams: logs an
 
 **Log** data streams provide records of events happening in Microsoft SQL Server:
 
-* `audit` - Events from the configured Windows event log channel, providing detailed auditing information. See [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
-* `logs` - Error logs created by the Microsoft SQL server for troubleshooting and system events.
+* `audit`: Events from the configured Windows event log channel, providing detailed auditing information. See [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
+* `logs`: Error logs created by the Microsoft SQL server for troubleshooting and system events.
 
 Other log sources, such as files, are not supported.
 
