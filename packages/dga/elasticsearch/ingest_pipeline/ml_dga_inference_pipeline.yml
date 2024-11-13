@@ -271,13 +271,13 @@ processors:
             dashCount++;
           }
         }
-        ctx['f']['digitCount'] = digitCount;
-        ctx['f']['dashCount'] = dashCount;
+        // ctx['f']['digitCount'] = digitCount;
+        // ctx['f']['dashCount'] = dashCount;
 
         String digitCountBin;
-        if (dashCount == 0) {
+        if (digitCount == 0) {
           digitCountBin = "0";
-        } else if (dashCount <= 9) {
+        } else if (digitCount <= 9) {
           digitCountBin = "1-9";
         } else {
           digitCountBin = "10+";
@@ -299,9 +299,9 @@ processors:
         double stringEntropy = calculateShannonEntropy(sld);
         double stringEntropyRatio = calculateShannonEntropyRatio(sld);
 
-        ctx['f']['stringLength'] = stringLength;
-        ctx['f']['stringEntropy'] = stringEntropy;
-        ctx['f']['stringEntropyRatio'] = stringEntropyRatio;
+        // ctx['f']['stringLength'] = stringLength;
+        // ctx['f']['stringEntropy'] = stringEntropy;
+        // ctx['f']['stringEntropyRatio'] = stringEntropyRatio;
 
         String stringEntropyBin;
         if (stringEntropy < 2.75) {
@@ -309,7 +309,15 @@ processors:
         } else {
           stringEntropyBin = "high";
         }
-        ctx['f']['stringLengthBin'] = stringEntropyBin;
+        ctx['f']['stringEntropyBin'] = stringEntropyBin;
+
+        String stringEntropyRatioBin;
+        if (stringEntropy <= 0.425) {
+          stringEntropyRatioBin = "low";
+        } else {
+          stringEntropyRatioBin = "high";
+        }
+        ctx['f']['stringEntropyRatioBin'] = stringEntropyRatioBin;
 
         String stringLengthBin;
         if (stringLength <= 11) {
@@ -324,18 +332,28 @@ processors:
         String[] vocab = params.vocab.splitOnToken("|");
         String sldLower = sld.toLowerCase();
 
+        //List matches = getVocabMatches(vocab, sldLower, false, 1.0);
+        //List matchesFiltered = filterTokenSubsets(matches);
+        //List matchesCursored = filterTokensLeftToRight(matchesFiltered, sldLower, true, 1.0);
         List matchesApproximate = getVocabMatches(vocab, sldLower, true, 0.8);
         List matchesFilteredApproximate = filterTokenSubsets(matchesApproximate);
         List matchesCursoredApproximate = filterTokensLeftToRight(matchesFilteredApproximate, sldLower, true, 0.8);
 
+        //ctx['f']['matches'] = matchesCursored;
+        //ctx['f']['matchesCount'] = matchesCursored.size().toString();
+        //ctx['f']['matchesLengths'] = getTokenLengthCounts(matchesCursored);
+        //ctx['f']['matchesApproximate'] = matchesCursoredApproximate;
+        //ctx['f']['matchesCountApproximate'] = matchesCursoredApproximate.size().toString();
+        //ctx['f']['matchesLengthsApproximate'] = getTokenLengthCounts(matchesCursoredApproximate);
+
         int matchesCount = matchesCursoredApproximate.size();
 
         String matchesCountBin;
-        if (dashCount == 0) {
+        if (matchesCount == 0) {
           matchesCountBin = "0";
-        } else if (dashCount <= 1) {
+        } else if (matchesCount <= 1) {
           matchesCountBin = "1";
-        } else if (dashCount <= 2) {
+        } else if (matchesCount <= 2) {
           matchesCountBin = "2";
         } else {
           matchesCountBin = "3+";
@@ -343,26 +361,19 @@ processors:
         ctx['f']['matchesCountBin'] = matchesCountBin;
 
         int sumMatchesLength = 0;
-        for (match in matches) {
+        for (match in matchesCursoredApproximate) {
           sumMatchesLength += match.length();
         }
 
         String sumMatchesLengthBin;
-        if (dashCount <= 4) {
+        if (sumMatchesLength <= 4) {
           sumMatchesLengthBin = "0-4";
-        } else if (dashCount <= 18) {
+        } else if (sumMatchesLength <= 18) {
           sumMatchesLengthBin = "5-18";
         } else {
           sumMatchesLengthBin = "19+";
         }
         ctx['f']['sumMatchesLengthBin'] = sumMatchesLengthBin;
-
-        ctx['f']['matches'] = matchesCursored;
-        ctx['f']['matchesCount'] = matchesCursored.size().toString();
-        ctx['f']['matchesLengths'] = getTokenLengthCounts(matchesCursored);
-        ctx['f']['matchesApproximate'] = matchesCursoredApproximate;
-        ctx['f']['matchesCountApproximate'] = matchesCursoredApproximate.size().toString();
-        ctx['f']['matchesLengthsApproximate'] = getTokenLengthCounts(matchesCursoredApproximate);
       params:
         dynamic_domains:
           avsvmcloud.com: 0
