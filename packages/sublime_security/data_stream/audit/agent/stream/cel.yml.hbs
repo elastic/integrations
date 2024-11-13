@@ -34,7 +34,7 @@ program: |
         "Authorization": ["Bearer " + state.api_key],
       },
     }).do_request().as(resp, resp.StatusCode == 200 ?
-      state.?latest.optMap(t, timestamp(t)).as(latest,
+      state.?cursor.latest.optMap(t, timestamp(t)).as(latest,
         bytes(resp.Body).decode_json().as(body, {
           "events": body.events.map(e,
             // Filter on timestamp to reduce the risk of duplicate events
