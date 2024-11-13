@@ -113,7 +113,7 @@ Note: Descriptions have not been filled out
 | <as_number>       | aruba.bgp.as_number       |
 | <id>              | aruba.bgp.id              |
 | <error-code>      | error.code                |
-| <error-subcode>   | aruba.bgp.error-subcode   |
+| <error-subcode>   | aruba.bgp.error_subcode   |
 | <local_as>        | client.as.number          |
 | <pg_name>         | aruba.bgp.pg_name         |
 | <remote-addr>     | destination.address       |
@@ -1301,7 +1301,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.bfd.remote_state |  | keyword |
 | aruba.bfd.requested_interval |  | long |
 | aruba.bgp.as_number |  | long |
-| aruba.bgp.error-subcode |  | keyword |
+| aruba.bgp.error_subcode |  | keyword |
 | aruba.bgp.id |  | keyword |
 | aruba.bgp.pg_name |  | keyword |
 | aruba.bgp.threshold_limit |  | long |

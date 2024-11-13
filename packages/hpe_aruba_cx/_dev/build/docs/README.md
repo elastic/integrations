@@ -113,7 +113,7 @@ Note: Descriptions have not been filled out
 | <as_number>       | aruba.bgp.as_number       |
 | <id>              | aruba.bgp.id              |
 | <error-code>      | error.code                |
-| <error-subcode>   | aruba.bgp.error-subcode   |
+| <error-subcode>   | aruba.bgp.error_subcode   |
 | <local_as>        | client.as.number          |
 | <pg_name>         | aruba.bgp.pg_name         |
 | <remote-addr>     | destination.address       |
