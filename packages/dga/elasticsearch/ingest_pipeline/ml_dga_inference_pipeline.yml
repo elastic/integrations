@@ -45,6 +45,33 @@ processors:
         return result;
       }
 
+      double calculateShannonEntropyRatio(String inputString) {
+        Map m = new HashMap();
+        m.put("is_alpha", 0);
+        m.put("is_digit", 0);
+        m.put("is_other", 0);
+
+        for (int i=0; i<inputString.length(); i++){
+          char c = inputString.charAt(i);
+          if  (Character.isAlphabetic(c) == true) {
+            m.put("is_alpha", m.get("is_alpha")+1)
+          } else if (Character.isDigit(c) == true) {
+            m.put("is_digit", m.get("is_digit")+1)
+          } else {
+            m.put("is_other", m.get("is_other")+1)
+          }
+        }
+
+        double result = 0.0;
+        for (String s : m.keySet()) {
+          if (m.get(s) != 0) {
+            double frequency = (double) m.get(s) / inputString.length();
+            result -= frequency * (Math.log(frequency) / Math.log(2));
+          }
+        }
+        return result;
+      }
+
       double levensteinDistance(String a, String b) {
         int[][] dp = new int[a.length() + 1][b.length() + 1];
   
@@ -247,43 +274,88 @@ processors:
       ctx['f']['digitCount'] = digitCount;
       ctx['f']['dashCount'] = dashCount;
 
+      String digitCountBin;
+      if (dashCount == 0) {
+        digitCountBin = "0";
+      } else if (dashCount <= 9) {
+        digitCountBin = "1-9";
+      } else {
+        digitCountBin = "10+";
+      }
+      ctx['f']['digitCountBin'] = digitCountBin;
+
+      String dashCountBin;
+      if (dashCount <= 2) {
+        dashCountBin = "0-2";
+      } else if (dashCount <= 4) {
+        dashCountBin = "2-4";
+      } else {
+        dashCountBin = "5+";
+      }
+      ctx['f']['dashCountBin'] = dashCountBin;
+
+
       int stringLength = sld.length();
       double stringEntropy = calculateShannonEntropy(sld);
+      double stringEntropyRatio = calculateShannonEntropyRatio(sld);
 
       ctx['f']['stringLength'] = stringLength;
       ctx['f']['stringEntropy'] = stringEntropy;
+      ctx['f']['stringEntropyRatio'] = stringEntropyRatio;
 
-      // TODO: bin features
-      //String stringEntropyBin;
-      //if (stringEntropy < 2.5) {
-      //  stringEntropyBin = "low";
-      //} else if (stringEntropy < 3.5) {
-      //  stringEntropyBin = "med";
-      //} else {
-      //  stringEntropyBin = "high";
-      //}
-      //ctx['f']['stringLengthBin'] = stringEntropyBin;
+      String stringEntropyBin;
+      if (stringEntropy < 2.75) {
+        stringEntropyBin = "low";
+      } else {
+        stringEntropyBin = "high";
+      }
+      ctx['f']['stringLengthBin'] = stringEntropyBin;
 
-      //String stringLengthBin;
-      //if (stringLength < 3) {
-      //  stringLengthBin = "low";
-      //} else if (stringLength <= 10) {
-      //  stringLengthBin = "med";
-      //} else {
-      //  stringLengthBin = "high";
-      //}
-      //ctx['f']['stringLengthBin'] = stringLengthBin;
+      String stringLengthBin;
+      if (stringLength <= 11) {
+        stringLengthBin = "1-11";
+      } else if (stringLength <= 17) {
+        stringLengthBin = "12-17";
+      } else {
+        stringLengthBin = "18+";
+      }
+      ctx['f']['stringLengthBin'] = stringLengthBin;
 
       String[] vocab = params.vocab.splitOnToken("|");
       String sldLower = sld.toLowerCase();
 
-      List matches = getVocabMatches(vocab, sldLower, false, 1);
-      List matchesFiltered = filterTokenSubsets(matches);
-      List matchesCursored = filterTokensLeftToRight(matchesFiltered, sldLower, false, 1);
-
       List matchesApproximate = getVocabMatches(vocab, sldLower, true, 0.8);
       List matchesFilteredApproximate = filterTokenSubsets(matchesApproximate);
       List matchesCursoredApproximate = filterTokensLeftToRight(matchesFilteredApproximate, sldLower, true, 0.8);
+
+      int matchesCount = matchesCursoredApproximate.size();
+
+      String matchesCountBin;
+      if (dashCount == 0) {
+        matchesCountBin = "0";
+      } else if (dashCount <= 1) {
+        matchesCountBin = "1";
+      } else if (dashCount <= 2) {
+        matchesCountBin = "2";
+      } else {
+        matchesCountBin = "3+";
+      }
+      ctx['f']['matchesCountBin'] = matchesCountBin;
+
+      int sumMatchesLength = 0;
+      for (match in matches) {
+        sumMatchesLength += match.length();
+      }
+
+      String sumMatchesLengthBin;
+      if (dashCount <= 4) {
+        sumMatchesLengthBin = "0-4";
+      } else if (dashCount <= 18) {
+        sumMatchesLengthBin = "5-18";
+      } else {
+        sumMatchesLengthBin = "19+";
+      }
+      ctx['f']['sumMatchesLengthBin'] = sumMatchesLengthBin;
 
       ctx['f']['matches'] = matchesCursored;
       ctx['f']['matchesCount'] = matchesCursored.size().toString();
