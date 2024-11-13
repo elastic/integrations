@@ -132,7 +132,21 @@ processors:
         patterns:
             - "ECMP error: %{DATA:aruba.ecmp.err}$"
 
-    # ERPS Events
+    # CPU_RX Events (75xx)
+    - dissect:
+        field: message
+        tag: cpu_rx_event_7501
+        description: "Event raised when a kernel filter cannot be created or deleted"
+        if: "ctx.event?.code == '7501'"
+        pattern: "Kernel filter \"%{event.action}\" failed on unit %{aruba.instance.id} for %{aruba.cpu_rx.filter_description}"
+    - dissect:
+        field: message
+        tag: cpu_rx_event_7502
+        description: "Event raised when a kernel filter cannot be created because all filters are in use"
+        if: "ctx.event?.code == '7502'"
+        pattern: "Cannot create kernel filter on unit %{aruba.instance.id} for %{aruba.cpu_rx.filter_description}. All filters are in use. Configuring fewer per-port features can help with this issue."
+
+    # ERPS Events (85xx)
     - dissect:
         field: message
         tag: erps_event_8501
