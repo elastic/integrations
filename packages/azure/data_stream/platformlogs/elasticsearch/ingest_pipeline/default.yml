@@ -55,6 +55,12 @@ processors:
             value: ["preserve_original_event"]
             ignore_failure: true
   - rename:
+      field: azure.platformlogs.properties
+      if: "ctx.azure?.platformlogs?.properties instanceof String"
+      target_field: azure.platformlogs.properties.raw
+      ignore_missing: true
+      description: 'Rename the field to `properties.raw` to avoid parse errors with the `properties` containing a string.'
+  - rename:
       field: azure.platformlogs.identity
       if: "ctx.azure?.platformlogs?.identity instanceof String"
       target_field: azure.platformlogs.identity_name
