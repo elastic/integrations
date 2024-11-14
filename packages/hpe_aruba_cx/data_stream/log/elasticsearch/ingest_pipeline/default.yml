@@ -154,6 +154,79 @@ processors:
         if: "ctx.event?.code == '8515'"
         pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to Initializing with reason %{event.reason}"
 
+    # EVPN Events
+    - grok:
+        field: message
+        tag: evpn_event_9501_9502
+        description: "Logs EVPN EVI create|delete event."
+        if: "['9501', '9502'].contains(ctx.event?.code)"
+        patterns:
+          - "EVPN EVI: %{DATA:network.vlan.id} (created|deleted)"
+    - dissect:
+        field: message
+        tag: evpn_event_9503
+        description: "Logs EVPN RD update event for an EVI."
+        if: "ctx.event?.code == '9503'"
+        pattern: "EVPN RD: %{aruba.evpn.rd} updated for EVI: %{network.vlan.id}"
+    - dissect:
+        field: message
+        tag: evpn_event_9504
+        description: "Logs EVPN RD delete event for an EVI."
+        if: "ctx.event?.code == '9504'"
+        pattern: "EVPN RD deleted for EVI: %{network.vlan.id}"
+    - grok:
+        field: message
+        tag: evpn_event_9505_9506_9507
+        description: "Logs EVPN RT create|delete|update event for an EVI."
+        if: "['9505', '9506', '9507'].contains(ctx.event?.code)"
+        patterns:
+          - "EVPN RT: %{DATA:aruba.evpn.rd} (created|deleted|updated) for EVI: %{DATA:network.vlan.id}$"
+    - grok:
+        field: message
+        tag: evpn_event_9508_9509
+        description: "Logs EVPN VTEP VNI add|delete event."
+        if: "['9508', '9509'].contains(ctx.event?.code)"
+        patterns:
+          - "VNI: %{DATA:aruba.evpn.vni} is (added|deleted) for EVPN Peer VTEP: %{DATA:aruba.evpn.vtep_ip}$"
+    - dissect:
+        field: message
+        tag: evpn_event_9510
+        description: "Logs EVPN static MAC conflict event."
+        if: "ctx.event?.code == '9510'"
+        pattern: "EVPN static MAC conflict %{event.action}, MAC: %{client.mac}, IP address: %{client.ip}, VTEP: %{aruba.evpn.vtep_ip}"
+    - dissect:
+        field: message
+        tag: evpn_event_9511
+        description: "Logs EVPN static MAC conflict event."
+        if: "ctx.event?.code == '9511'"
+        pattern: "EVPN static MAC conflict %{event.action}, MAC: %{client.mac}"
+    - dissect:
+        field: message
+        tag: evpn_event_9512
+        description: "Logs EVPN duplicate MAC dampening event."
+        if: "ctx.event?.code == '9512'"
+        pattern: "EVPN duplicate MAC dampening %{event.action}, MAC: %{client.mac}"
+    - grok:
+        field: message
+        tag: evpn_event_9513_9514
+        description: "Logs EVPN VRF create|delete event."
+        if: "ctx.event?.code == '9513'"
+        patterns:
+          - "EVPN VRF: %{DATA:aruba.vrf.id} (created|deleted)"
+    - dissect:
+        field: message
+        tag: evpn_event_9515
+        description: "Logs EVPN VRF RD update event."
+        if: "ctx.event?.code == '9515'"
+        pattern: "EVPN RD: %{aruba.evpn.rd} updated for VRF: %{aruba.vrf.id}"
+    - grok:
+        field: message
+        tag: evpn_event_9516_9517_9518
+        description: "Logs EVPN VRF RT create|delete|update event."
+        if: "['9516', '9517', '9518'].contains(ctx.event?.code)"
+        patterns:
+          - "EVPN RT: %{DATA:aruba.evpn.rd} (created|deleted|updated) for VRF: %{DATA:aruba.vrf.id}$"
+
     # DCBX Events
     - grok:
         field: message
