@@ -137,7 +137,9 @@ The User ID of the registered user.
 
 ### Password
 
-The password used to authenticate the user.
+The password used to authenticate the user with your Salesforce instance.
+
+When using a Salesforce instance with a security token, append the token directly to your password without spaces or special characters. For example, if your password is `password` and your security token is `12345`, enter: `password12345`.
 
 ### Token URL
 
