@@ -547,14 +547,15 @@ processors:
       patterns:
         - "^CDP neighbor %{MAC:source.mac} is (added|updated|deleted) on %{GREEDYDATA:aruba.interface.name}"
 
-  # EVPN Events
+  # EVPN Events (95xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EVPN.htm
   - grok:
       field: message
       tag: evpn_event_9501_9502
       description: "Logs EVPN EVI create|delete event."
       if: "['9501', '9502'].contains(ctx.event?.code)"
       patterns:
-          - "EVPN EVI: %{DATA:network.vlan.id} (created|deleted)"
+          - "^EVPN EVI: %{DATA:network.vlan.id} (created|deleted)"
   - dissect:
       field: message
       tag: evpn_event_9503
@@ -573,14 +574,14 @@ processors:
       description: "Logs EVPN RT create|delete|update event for an EVI."
       if: "['9505', '9506', '9507'].contains(ctx.event?.code)"
       patterns:
-          - "EVPN RT: %{DATA:aruba.evpn.rt} (created|deleted|updated) for EVI: %{DATA:network.vlan.id}$"
+          - "^EVPN RT: %{DATA:aruba.evpn.rt} (created|deleted|updated) for EVI: %{DATA:network.vlan.id}$"
   - grok:
       field: message
       tag: evpn_event_9508_9509
       description: "Logs EVPN VTEP VNI add|delete event."
       if: "['9508', '9509'].contains(ctx.event?.code)"
       patterns:
-          - "VNI: %{DATA:aruba.evpn.vni} is (added|deleted) for EVPN Peer VTEP: %{DATA:aruba.evpn.vtep_ip}$"
+          - "^VNI: %{DATA:aruba.evpn.vni} is (added|deleted) for EVPN Peer VTEP: %{DATA:aruba.evpn.vtep_ip}$"
   - dissect:
       field: message
       tag: evpn_event_9510
@@ -605,7 +606,7 @@ processors:
       description: "Logs EVPN VRF create|delete event."
       if: "['9513', '9514'].contains(ctx.event?.code)"
       patterns:
-          - "EVPN VRF: %{DATA:aruba.vrf.id} (created|deleted)"
+          - "^EVPN VRF: %{DATA:aruba.vrf.id} (created|deleted)"
   - dissect:
       field: message
       tag: evpn_event_9515
@@ -618,7 +619,7 @@ processors:
       description: "Logs EVPN VRF RT create|delete|update event."
       if: "['9516', '9517', '9518'].contains(ctx.event?.code)"
       patterns:
-          - "EVPN RT: %{DATA:aruba.evpn.rt} (created|deleted|updated) for VRF: %{DATA:aruba.vrf.id}$"
+          - "^EVPN RT: %{DATA:aruba.evpn.rt} (created|deleted|updated) for VRF: %{DATA:aruba.vrf.id}$"
 
   # DCBX Events
   - grok:
