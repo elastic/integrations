@@ -274,17 +274,17 @@ Note: Descriptions have not been filled out
 | <vlandID>            |             |      | network.vlan.id              |
 
 #### [EVPN events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EVPN.htm)
-| Field              | Description | Type | Common           |
-|--------------------|-------------|------|------------------|
-| aruba.evpn.action  |             |      | event.action     |
-| aruba.evpn.evi     |             |      | network.vlan.id  |
-| aruba.evpn.ip_addr |             |      | client.ip        |
-| aruba.evpn.mac_addr|             |      | client.mac       |
-| aruba.evpn.rd      |             |      |                  |
-| aruba.evpn.rt      |             |      |                  |
-| aruba.evpn.vni     |             |      |                  |
-| aruba.evpn.vrf     |             |      | aruba.vrf.id     |
-| aruba.evpn.vtep_ip |             |      |                  |
+| Doc Field |  Schema Mapping   |
+|-----------|-------------------|
+| <action>  |  event.action     |
+| <evi>     |  network.vlan.id  |
+| <ip_addr> |  client.ip        |
+| <mac_addr>|  client.mac       |
+| <rd>      |  aruba.evpn.rd    |
+| <rt>      |  aruba.evpn.rt    |
+| <vni>     |  aruba.evpn.vni   |
+| <vrf>     |  aruba.vrf.id     |
+| <vtep_ip> |  aruba.evpn.vtep_ip|
 
 #### [External Storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EXTERNAL-STORAGE.htm)
 | Field                | Description | Type | Common             |
