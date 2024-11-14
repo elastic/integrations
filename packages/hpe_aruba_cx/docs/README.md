@@ -168,18 +168,17 @@ Note: Descriptions have not been filled out
 | aruba.container.name         | Name of container | keyword | container.name   |
 
 #### [CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm)
-| Field                        | Description | Type | Common           |
-|------------------------------|-------------|------|------------------|
-| aruba.copp.class             |             |      |                  |
-| aruba.copp.slot              |             |      | aruba.slot       |
-
+| Doc Field                    | Schema Mapping      |
+|------------------------------|---------------------|
+| <class>                      | aruba.copp.class    |
+| <slot>                       | aruba.slot          |
 
 #### [CPU_RX events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CPU_RX.htm)
-| Field                        | Description | Type | Common           |
-|------------------------------|-------------|------|------------------|
-| aruba.cpu_rx.action          |             |      | event.action     |
-| aruba.cpu_rx.filter_description |          |      |                  |
-| aruba.cpu_rx.unit            |             |      | aruba.instance.id|
+| Doc Field                    | Schema Mapping                  |
+|------------------------------|---------------------------------|
+| <action>                     | event.action                    |
+| <filter_description>         | aruba.cpu_rx.filter_description |
+| <unit>                       | aruba.instance.id               |
 
 #### [Credential Manager events DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm)
 | Field                | Description | Type | Common   |
@@ -1318,7 +1317,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.config.to |  | keyword |
 | aruba.config.type |  | keyword |
 | aruba.config.value |  | keyword |
-| aruba.copp.class |  | keyword |
+| aruba.copp.class | Control Plane Policing (CoPP) class | keyword |
 | aruba.cpu_rx.filter_description |  | keyword |
 | aruba.dcbx.intf_name | Interface name as reported by the system | keyword |
 | aruba.dhcp.config |  | keyword |
