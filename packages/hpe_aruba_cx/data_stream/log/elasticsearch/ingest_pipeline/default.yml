@@ -2,225 +2,602 @@
 description: Pipeline for processing HPE Aruba logs.
 
 processors:
-    - set:
-        field: event.original
-        copy_from: message
-    - remove:
-        field: message
-        ignore_missing: true
-    - set:
-        field: ecs.version
-        value: '8.11.0'
-    - set:
-        field: event.category
-        value: [ network ]
+  - set:
+      field: event.original
+      copy_from: message
+  - remove:
+      field: message
+      ignore_missing: true
+  - redact:
+      field: "event.original"
+      tag: redact_passkey
+      description: "Reacting passkey updates"
+      prefix: "passkey update:   -> "
+      patterns:
+        - "passkey %{GREEDYDATA:reacted}"
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - set:
+      field: event.category
+      value: [network]
   #
   # Parse the syslog message
   # This grok pattern is based on the syslog message format used by HPE Aruba CX switches.
   #
-    - grok:
-        field: event.original
-        tag: grok_event_original
-        if: ctx.event?.original != null
-        patterns:
-            - "%{SYSLOG_HEADER}%{GREEDYDATA:message}"
-        pattern_definitions:
-            SYSLOG_HEADER: "%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.syslog.appname}\\[%{POSINT:log.syslog.procid}\\]:\\s+%{WORD:aruba.event_type}\\|(?:%{OPTIONAL_HEADER})?"
-            OPTIONAL_HEADER: "%{POSINT:event.code}\\|%{USER:log.level}\\|(?:%{USER:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
-    - grok:
-        field: aruba.sequence
-        if: ctx.aruba?.sequence != null && ctx.aruba.sequence.contains("/")
-        tag: parse_sequence
-        patterns:
-            - "%{POSINT:event.sequence:long}\\/%{POSINT}"
-    - lowercase:
-        field: event.kind
-        tag: lowercase_event_kind
-        ignore_missing: true
-    
-    # ECMP Events
-    - grok:
-        field: message
-        tag: ecmp_event_1801
-        description: "logs errors while creating ecmp group."
-        if: "ctx.event?.code == '1801'"
-        patterns:
-            - "Failed to update ecmp object for route %{DATA:aruba.ecmp.route}, error: %{DATA:aruba.ecmp.err}$"
-    - grok:
-        field: message
-        tag: ecmp_event_1802
-        description: "logs while creating ecmp group."
-        if: "ctx.event?.code == '1802'"
-        patterns:
-            - "Update ecmp object for route %{DATA:aruba.ecmp.route}$"
-    - grok:
-        field: message
-        tag: ecmp_event_1803
-        description: "logs errors while deleting ecmp group."
-        if: "ctx.event?.code == '1803'"
-        patterns:
-            - "Failed to delete ecmp egress object %{DATA:aruba.ecmp.egressid}, error: %{DATA:aruba.ecmp.err}$"
-    - dissect:
-        field: message
-        tag: ecmp_event_1804
-        description: "logs while deleting ecmp group."
-        if: "ctx.event?.code == '1804'"
-        pattern: "Delete ecmp egress object %{aruba.ecmp.egressid}"
-    - grok:
-        field: message
-        tag: ecmp_event_1805
-        description: "logs for ECMP setup errors."
-        if: "ctx.event?.code == '1805'"
-        patterns:
-            - "ECMP error: %{DATA:aruba.ecmp.err}$"
+  - grok:
+      field: event.original
+      tag: grok_event_original
+      if: ctx.event?.original != null
+      patterns:
+        - "%{SYSLOG_HEADER}%{GREEDYDATA:message}"
+      pattern_definitions:
+        SYSLOG_HEADER: "%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.syslog.appname}\\[%{POSINT:log.syslog.procid}\\]:\\s+%{WORD:aruba.event_type}\\|(?:%{OPTIONAL_HEADER})?"
+        OPTIONAL_HEADER: "%{POSINT:event.code}\\|%{USER:log.level}\\|(?:%{USER:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
+  - grok:
+      field: aruba.sequence
+      if: ctx.aruba?.sequence != null && ctx.aruba.sequence.contains("/")
+      tag: parse_sequence
+      patterns:
+        - "%{POSINT:event.sequence:long}\\/%{POSINT}"
+  - lowercase:
+      field: event.kind
+      tag: lowercase_event_kind
+      ignore_missing: true
 
-    # ERPS Events
-    - dissect:
-        field: message
-        tag: erps_event_8501
-        description: "Log event when RAPS messages are not received for a certain time interval"
-        if: "ctx.event?.code == '8501'"
-        pattern: "Expected R-APS packets not received on %{observer.ingress.interface.id} in ring %{aruba.erps.ring_id} with control VLAN %{network.vlan.id}"
-    - dissect:
-        field: message
-        tag: erps_event_8502
-        description: "Log event when a ring misconfiguration happens"
-        if: "ctx.event?.code == '8502'"
-        pattern: "Misconfiguration detected on ring %{aruba.erps.ring_id} with control VLAN %{network.vlan.id}. Another node in the ring with mac %{client.mac} is also operating as an RPL owner"
-    - dissect:
-        field: message
-        tag: erps_event_8503
-        description: "Log state transition of ring instance"
-        if: "ctx.event?.code == '8503'"
-        pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to %{aruba.status}"
-    - dissect:
-        field: message
-        tag: erps_event_8504
-        description: "Log event when ring is configured with a non-L2 port"
-        if: "ctx.event?.code == '8504'"
-        pattern: "%{observer.ingress.interface.name} is not an L2 port"
-    - dissect:
-        field: message
-        tag: erps_event_8505
-        description: "Log event when an interface which is already associated to a ring port is getting mapped to other ring port as well"
-        if: "ctx.event?.code == '8505'"
-        pattern: "%{observer.ingress.interface.name} is already associated with %{aruba.erps.port_name} of ERPS ring %{aruba.erps.ring_id}"
-    - dissect:
-        field: message
-        tag: erps_event_8506
-        description: "Log event when control-channel VLAN is part of the protected-vlans"
-        if: "ctx.event?.code == '8506'"
-        pattern: "Configured control-channel VLAN %{network.vlan.id} is already protected by ERPS ring %{aruba.erps.ring_id}, instance %{aruba.instance.id}"
-    - dissect:
-        field: message
-        tag: erps_event_8507
-        description: "Log event when control-channel VLAN overlaps with another control-channel of same ring"
-        if: "ctx.event?.code == '8507'"
-        pattern: "VLAN %{network.vlan.id} is already configured as control-channel for instance %{aruba.instance.id} of ring %{aruba.erps.ring_id}"
-    - dissect:
-        field: message
-        tag: erps_event_8508
-        description: "Log event when protected-vlan(s) overlap"
-        if: "ctx.event?.code == '8508'"
-        pattern: "Vlan %{network.vlan.id} is already part of the protected VLAN set of ring %{aruba.erps.ring_id} instance %{aruba.instance.id}"
-    - dissect:
-        field: message
-        tag: erps_event_8510
-        description: "Log event when parent-ring id is configured to be the same as sub-ring"
-        if: "ctx.event?.code == '8510'"
-        pattern: "Parent-ring %{aruba.erps.ring_id} is same as sub-ring"
-    - dissect:
-        field: message
-        tag: erps_event_8511
-        description: "Log event when VLAN from the protected-vlans list is already configured as control-channel VLAN"
-        if: "ctx.event?.code == '8511'"
-        pattern: "VLAN %{network.vlan.id} in the protected VLANs list is also configured as the control-channel"
-    - dissect:
-        field: message
-        tag: erps_event_8512
-        description: "Log event if the same ring port is configured as RPL port for more than one instance"
-        if: "ctx.event?.code == '8512'"
-        pattern: "%{aruba.erps.port_name} is already configured as RPL port for instance %{aruba.instance.id}"
-    - dissect:
-        field: message
-        tag: erps_event_8513
-        description: "Log event if ring port which is also an ISL is being configured as RPL"
-        if: "ctx.event?.code == '8513'"
-        pattern: "RPL configuration is not allowed on ISL port %{observer.ingress.interface.name}"
-    - dissect:
-        field: message
-        tag: erps_event_8515
-        description: "Log transition of state of ring instance to initializing and the reason for it"
-        if: "ctx.event?.code == '8515'"
-        pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to Initializing with reason %{event.reason}"
+  # ECMP Events
+  - grok:
+      field: message
+      tag: ecmp_event_1801
+      description: "logs errors while creating ecmp group."
+      if: "ctx.event?.code == '1801'"
+      patterns:
+        - "Failed to update ecmp object for route %{DATA:aruba.ecmp.route}, error: %{DATA:aruba.ecmp.err}$"
+  - grok:
+      field: message
+      tag: ecmp_event_1802
+      description: "logs while creating ecmp group."
+      if: "ctx.event?.code == '1802'"
+      patterns:
+        - "Update ecmp object for route %{DATA:aruba.ecmp.route}$"
+  - grok:
+      field: message
+      tag: ecmp_event_1803
+      description: "logs errors while deleting ecmp group."
+      if: "ctx.event?.code == '1803'"
+      patterns:
+        - "Failed to delete ecmp egress object %{DATA:aruba.ecmp.egressid}, error: %{DATA:aruba.ecmp.err}$"
+  - dissect:
+      field: message
+      tag: ecmp_event_1804
+      description: "logs while deleting ecmp group."
+      if: "ctx.event?.code == '1804'"
+      pattern: "Delete ecmp egress object %{aruba.ecmp.egressid}"
+  - grok:
+      field: message
+      tag: ecmp_event_1805
+      description: "logs for ECMP setup errors."
+      if: "ctx.event?.code == '1805'"
+      patterns:
+        - "ECMP error: %{DATA:aruba.ecmp.err}$"
 
-    # DCBX Events
-    - grok:
-        field: message
-        tag: dcbx_event_9203_9204
-        if: "['9203', '9204'].contains(ctx.event?.code)"
-        patterns:
-            - "DCBX is (dis|en)abled on interface %{DATA:aruba.dcbx.intf_name}$"
-    - grok:
-        field: message
-        tag: dcbx_event_9205_9206
-        if: "['9205', '9206'].contains(ctx.event?.code)"
-        patterns:
-            - "DCBX status (in)?active on interface %{DATA:aruba.dcbx.intf_name}$"
-    - grok:
-        field: message
-        tag: dcbx_event_9207_9208
-        if: "['9207', '9208'].contains(ctx.event?.code)"
-        patterns:
-            - "PFC TLV status (in)?active on interface %{DATA:aruba.dcbx.intf_name}$"
-    - grok:
-        field: message
-        tag: dcbx_event
-        if: "['9209'].contains(ctx.event?.code)"
-        patterns:
-            - "PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
+  # AAA events
+  - grok:
+      if: "ctx.event.code == '2301'"
+      tag: parse_2301
+      field: "message"
+      description: "Logs AAA Authentication/Authorization/Accounting/fail-through"
+      patterns:
+        - "^AAA %{DATA:aruba.aaa.config_type} update\\s?:\\s?%{GREEDYDATA:aruba.aaa.config_event}"
+  - grok:
+      if: "ctx.event.code == '2302'"
+      tag: parse_2302
+      field: "message"
+      description: "Logs TACACS+ server update, server group update and global default update"
+      patterns:
+        - "^TACACS %{GREEDYDATA:aruba.aaa.tacacs_type} %{DATA:aruba.aaa.tacacs_action}:\\s?%{GREEDYDATA:aruba.aaa.tacacs_event}"
+  - grok:
+      if: "ctx.event.code == '2303'"
+      tag: parse_2303
+      field: "message"
+      description: "Logs RADIUS server update, server group update and global default update"
+      patterns:
+        - "^RADIUS %{GREEDYDATA:aruba.aaa.radius_type} %{DATA:aruba.aaa.radius_action}:\\s?%{GREEDYDATA:aruba.aaa.radius_event}"
+  - dissect:
+      if: "ctx.event.code == '2304'"
+      tag: parse_2304
+      field: "message"
+      description: "Logs changes in RADIUS server reachability status"
+      pattern: 'RADIUS Server with Address: %{server.address}, Authport:%{aruba.port}, VRF_ID:%{aruba.vrf.id} is "%{aruba.status}"'
+  - dissect:
+      if: "ctx.event.code == '2305'"
+      tag: parse_2305
+      field: "message"
+      description: "Logs changes in TACACS server reachability status"
+      pattern: "TACACS server host %{server.address} port %{aruba.port} vrf %{aruba.vrf.id} %{aruba.status}"
 
-    # DPSE Events
-    - dissect:
-        field: message
-        tag: dpse_event_10901
-        description: "A line card hit a backplane sequence error that triggered a recovery operation"
-        if: "ctx.event?.code == '10901'"
-        pattern: "Line card module %{aruba.dpse.linecard_name} triggered backplane sequence recovery"
-    - dissect:
-        field: message
-        tag: dpse_event_10904
-        description: "The system completed backplane sequence recovery triggered by line card error"
-        if: "ctx.event?.code == '10904'"
-        pattern: "Line card module %{aruba.dpse.linecard_name} completed backplane sequence recovery"
-    
-    # CFM Events
-    - dissect:
-        field: message
-        tag: cfm_event_11601
-        if: "ctx.event?.code == '11601'"
-        pattern: "Connection lost for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
-    - dissect:
-        field: message
-        tag: cfm_event_11602
-        if: "ctx.event?.code == '11602'"
-        pattern: "Connection restored for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
-    
-    # Container Manager Events
-    - dissect:
-        field: message
-        tag: container_manager_11801_11802_11803
-        if: "['11801', '11802', '11803'].contains(ctx.event?.code)"
-        pattern: "Container %{container.name} is %{?ignore_action}"
+  # BGP events
+  - dissect:
+      if: "ctx.event.code == '2901'"
+      tag: parse_2901
+      field: "message"
+      description: "Logs the changes in BGP connection state."
+      pattern: "%{destination.address}: Peer up. vrf-name: %{aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event.code == '2902'"
+      tag: parse_2902
+      field: "message"
+      description: "Logs the failure in BGP connection state changes."
+      pattern: "%{destination.address}: Peer down. error-code: %{error.code}, error-sub-code: %{aruba.bgp.error_subcode}. vrf-name: %{aruba.vrf.name}"
+  - grok:
+      if: "['2903', '2904'].contains(ctx.event?.code)"
+      tag: parse_2903_2904
+      field: "message"
+      description: "Trap when the number of received prefix reached the [threshold|maximum prefix] value."
+      patterns:
+        - "^%{IPORHOST:destination.address}: Peer has received prefix equal to (Maximum Prefix|Threshold) value configured. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
+  - grok:
+      if: "['2905', '2906'].contains(ctx.event?.code)"
+      tag: parse_2905_2906
+      field: "message"
+      description: "Logs BGP enable event | Logs BGP disable event"
+      patterns:
+        - "^BGP AS %{NUMBER:aruba.bgp.as_number:long} %{WORD}. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event.code == '2907'"
+      tag: parse_2907
+      field: "message"
+      description: "Logs BGP router-id change."
+      pattern: "BGP router-id changed. vrf-name: %{aruba.vrf.name}"
+  - grok:
+      if: "ctx.event.code == '2908'"
+      tag: parse_2908
+      field: "message"
+      description: "Logs creation of BGP peer."
+      patterns:
+        - "^%{IPORHOST:destination.address}: Peer configured, AS %{NUMBER:destination.as.number:long}. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event.code == '2909'"
+      tag: parse_2909
+      field: "message"
+      description: "Logs BGP peer session reset event."
+      pattern: "%{destination.address}: User reset request. vrf-name: %{aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event.code == '2910'"
+      tag: parse_2910
+      field: "message"
+      description: "Logs BGP peer password change event."
+      pattern: "%{destination.address}: Peer password changed. vrf-name: %{aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event.code == '2911'"
+      tag: parse_2911
+      field: "message"
+      description: "Logs deletion of BGP peer."
+      pattern: "%{destination.address}: Peer deleted. vrf-name: %{aruba.vrf.name}"
+  - grok:
+      if: "['2912', '2913'].contains(ctx.event?.code)"
+      tag: parse_2912_2913
+      field: "message"
+      description: "Logs BGP peer admin enable/disable event."
+      patterns:
+        - "^%{IPORHOST:destination.address}: Peer admin (dis|en)abled. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
+  - grok:
+      if: "ctx.event.code == '2914'"
+      tag: parse_2914
+      field: "message"
+      description: "Logs BGP peer remote-as change event."
+      patterns:
+        - "^%{IPORHOST:destination.address}: Peer remote-as changed to %{NUMBER:destination.as.number:long}. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
+  - grok:
+      if: "ctx.event.code == '2915'"
+      tag: parse_2915
+      field: "message"
+      description: "BGP peer local-as change event."
+      patterns:
+        - "^%{IPORHOST:destination.address}: Peer local-as changed to %{NUMBER:client.as.number:long}. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
+  - grok:
+      if: "ctx.event.code == '2916'"
+      tag: parse_2916
+      field: "message"
+      description: "Logs peer source address change event."
+      patterns:
+        - "^%{IPORHOST:destination.address}: Peer source-address changed to %{IP:source.ip}. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event.code == '2917'"
+      tag: parse_2917
+      field: "message"
+      description: "Logs configuration of peer remove-private-as."
+      pattern: "%{destination.address}: Peer remove-private-as configuration changed. vrf-name: %{aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event.code == '2918'"
+      tag: parse_2918
+      field: "message"
+      description: "Logs peer identifier has been matched with local identifier."
+      pattern: "%{aruba.bgp.id}: BGP identifier sent by Peer %{destination.address} matches ours. BGP session may not established. vrf-name: %{aruba.vrf.name}"
+  - grok:
+      if: "ctx.event.code == '2919'"
+      tag: parse_2919
+      field: "message"
+      description: "Trap when the rib size reaches the threshold value."
+      patterns:
+        - "^The BGP RIB has reached the threshold limit of %{DATA:aruba.bgp.threshold_limit:long} for VRF %{DATA:aruba.vrf.name}': yes"
+  - grok:
+      if: "ctx.event.code == '2920'"
+      tag: parse_2920
+      field: "message"
+      description: "BGP peer local-as change event."
+      patterns:
+        - "^%{DATA:aruba.bgp.pg_name}: Peer-group configured with remote-as %{NUMBER:destination.as.number:long}. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
 
-    # DNS Client Events
-    - grok:
-        field: message
-        tag: dns_client_event_11901
-        description: "Event reported when DNS event triggered"
-        if: "['11901'].contains(ctx.event?.code)"
-        patterns:
-            - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}$"
+  # Config Management events
+  - dissect:
+      if: "ctx.event.code == '6801'"
+      tag: parse_6801
+      field: "message"
+      description: "Logs a message when configs copying from one format to another"
+      pattern: "Copying configs from: %{aruba.config.from} to: %{aruba.config.to}"
+  - dissect:
+      if: "['6802', '6804'].contains(ctx.event?.code)"
+      tag: parse_6802_6804
+      field: "message"
+      description: "Logs a message when copying config has some error | Logs a message when copying config to shadowdb has some error"
+      pattern: "Error while copying configs. Error: %{event.reason}"
+  - dissect:
+      if: "ctx.event.code == '6803'"
+      tag: parse_6803
+      field: "message"
+      description: "Logs a message when config validation prunes tables/columns in startup-config or when errors are encountered"
+      pattern: "%{aruba.config.type}:%{aruba.config.value}"
+  - dissect:
+      if: "ctx.event.code == '6805'"
+      tag: parse_6805
+      field: "message"
+      description: "Logs a message when copying config has some information"
+      pattern: "Information while copying configs. Info: %{event.reason}"
+
+  # BFD events
+  - grok:
+      if: "['7305', '7306'].contains(ctx.event?.code)"
+      tag: parse_7305_7306
+      field: "message"
+      description: "Event raised when BFD echo is enabled/disable on an interface"
+      patterns:
+        - "^BFD echo was (en|dis)abled on interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "['7307', '7308', '7309', '7315'].contains(ctx.event?.code)"
+      tag: parse_7307_7308_7309_7315
+      field: "message"
+      description: "Event raised when BFD echo is enabled/disable on an interface | administratively down | becomes unidirectional"
+      patterns:
+        - "^BFD session is (up|down|administratively down|unidirectional). session_id=%{DATA:aruba.session.id}, vrf=%{DATA:aruba.vrf.name}, op_mode=%{DATA:aruba.bfd.op_mode}, src_port=%{DATA:aruba.port}, dest_ip=%{IP:destination.ip}, local_state=%{DATA:aruba.bfd.local_state}, local_diag=%{DATA:aruba.bfd.local_diag}, remote_state=%{DATA:aruba.bfd.remote_state}, remote_diag=%{GREEDYDATA:aruba.bfd.remote_diag}"
+  - grok:
+      if: "['7311', '7312'].contains(ctx.event?.code)"
+      tag: parse_7311_7312
+      field: "message"
+      description: "Port can[not] forward BFD traffic"
+      patterns:
+        - "^Port %{DATA:aruba.port} (can|can not) forward BFD traffic"
+  - dissect:
+      if: "ctx.event.code == '7314'"
+      tag: parse_7314
+      field: "message"
+      description: "Event raised when an Echo session is created without a valid echo_source IP address configured"
+      pattern: "The echo function for the BFD session %{aruba.session.id} will not become active until a global echo source IP address is configured"
+  - dissect:
+      if: "ctx.event.code == '7316'"
+      tag: parse_7316
+      field: "message"
+      description: "Event raised when BFD echo is enabled on a Tunnel interface"
+      pattern: "BFD echo cannot be enabled on tunnels. interface=%{aruba.interface.id}"
+  - grok:
+      if: "ctx.event.code == '7318'"
+      tag: parse_7318
+      field: "message"
+      description: "Event raised when SRC or DST IP Version doesn't match the session's IP Version"
+      patterns:
+        - "^IP Version mismatch for BFD. session_id=%{DATA:aruba.session.id}, vrf=%{DATA:aruba.vrf.name}, op_mode=%{DATA:aruba.bfd.op_mode}, src_port=%{DATA:aruba.port}, dest_ip=%{IP:destination.ip}, local_state=%{DATA:aruba.bfd.local_state}, local_diag=%{DATA:aruba.bfd.local_diag}, remote_state=%{DATA:aruba.bfd.remote_state}, remote_diag=%{GREEDYDATA:aruba.bfd.remote_diag}, from=%{DATA:aruba.bfd.from}, ip_version=%{DATA:aruba.bfd.ip_version}, Invalid IP address: %{IPORHOST:aruba.bfd.invalid_ip}"
+  - dissect:
+      if: "ctx.event.code == '7319'"
+      tag: parse_7319
+      field: "message"
+      description: "Event raised when a BFD single-hop session source port is a loopback"
+      pattern: "BFD single-hop is not supported on interface %{aruba.interface.id}"
+  - dissect:
+      if: "ctx.event.code == '7320'"
+      tag: parse_7320
+      field: "message"
+      description: "Event raised when a BFD session specifies an interval for a protocol that does not support override"
+      pattern: "BFD session interval override not supported for protocol %{aruba.bfd.from}"
+  - grok:
+      if: "ctx.event.code == '7321'"
+      tag: parse_7321
+      field: "message"
+      description: "Event raised when a BFD session specifies an interval outside the specified bounds"
+      patterns:
+        - "^BFD session %{DATA:aruba.bfd.direction} interval override of %{NUMBER:aruba.bfd.requested_interval:long} ms is out of bounds for protocol %{DATA:aruba.bfd.from}, using %{NUMBER:aruba.bfd.applied_interval:long} ms instead"
+
+  # Certificate management events
+  - grok:
+      if: "['7701', '7702', '7703', '7704'].contains(ctx.event?.code)"
+      tag: parse_7701_7702_7703_7704
+      field: "message"
+      description: "Event raised when a ta profile is created/delete | Leaf certificate import/deleted"
+      patterns:
+        - "^(TA Profile|Leaf certificate) %{DATA:aruba.cm.cert_name} (created|deleted|imported|deleted)"
+  - grok:
+      if: "ctx.event.code == '7705'"
+      tag: parse_7705
+      field: "message"
+      description: "Event raised when an installed certifiate will expire within 60 days"
+      patterns:
+        - "^Certificate %{DATA:aruba.cm.cert_name} will expire within %{NUMBER:aruba.cm.days:long} days"
+  - grok:
+      if: "['7706', '7707', '7708'].contains(ctx.event?.code)"
+      tag: parse_7706_7707_7708
+      field: "message"
+      description: "Event raised when an installed certifiate is not yet past its start date/expired or is verified"
+      patterns:
+        - "^Certificate %{DATA:aruba.cm.cert_name} has not yet reached its start date"
+        - "^Certificate %{DATA:aruba.cm.cert_name} has expired and can no longer be used"
+        - "^Certificate %{DATA:aruba.cm.cert_name} verified and accepted"
+  - dissect:
+      if: "ctx.event.code == '7709'"
+      tag: parse_7709
+      field: "message"
+      description: "Event raised when a certificate chain is rejected"
+      pattern: "Certificate %{aruba.cm.cert_name} rejected due to verification failure (%{event.reason})"
+  - grok:
+      if: "['7710', '7711', '7712'].contains(ctx.event?.code)"
+      tag: parse_7710_7711_7712
+      field: "message"
+      description: "Event raised when a (self-signed) certificate signing request is created on the switch | invalid certificate association is made"
+      patterns:
+        - "^(Certificate signing request|Self-signed certificate) %{DATA:aruba.cm.cert_name} created"
+        - "^Application association with the %{DATA:aruba.cm.cert_name} certificate is not permitted"
+  - dissect:
+      if: "ctx.event.code == '7713'"
+      tag: parse_7713
+      field: "message"
+      description: "Event raised when a certificate is verified due to optional OCSP enforcement"
+      pattern: "Certificate %{aruba.cm.cert_name} failed OCSP verification (%{aruba.status}), but was accepted because OCSP enforcement is set to optional."
+  - grok:
+      if: "['7714', '7715'].contains(ctx.event?.code)"
+      tag: parse_7714_7715
+      field: "message"
+      description: "Event raised when CA certificates were [successfully|could not be] downloaded from an EST server"
+      patterns:
+        - "^(CA certificates successfully downloaded|Failed to download CA certificates) from EST server %{GREEDYDATA:aruba.cm.cert_name}"
+  - grok:
+      if: "['7716', '7717', '7718', '7719'].contains(ctx.event?.code)"
+      tag: parse_7716_7717_7718_7719
+      field: "message"
+      description: "Certificate is successfully enrolled with EST | Certificate (re)enrollment with an EST server fails | Certificate is successfully reenrolled with EST"
+      patterns:
+        - "^Certificate %{DATA:aruba.cm.cert_name} successfully (re)?enrolled by EST server %{GREEDYDATA:aruba.cm.est_name}"
+        - "^Failed to (re)?enroll certificate %{DATA:aruba.cm.cert_name} with EST server %{GREEDYDATA:aruba.cm.est_name}"
+  - grok:
+      if: "['7720', '7721'].contains(ctx.event?.code)"
+      tag: parse_7720_7721
+      field: "message"
+      description: "A signer certifiate is not set for signing | An installed certifiate is invalid or malformed"
+      patterns:
+        - "^Certificate %{DATA:aruba.cm.cert_name} is (not set for signing purpose|invalid or malformed)"
+
+  # Bluetooth Management events
+  - grok:
+      if: "['8001', '8003'].contains(ctx.event?.code)"
+      tag: parse_8001
+      field: "message"
+      description: "Event raised when Bluetooth is enabled or disabled | receives signal for Bluetooth adapter"
+      patterns:
+        - "^Bluetooth (has been|adapter) %{GREEDYDATA:event.action}"
+  - grok:
+      if: "ctx.event.code == '8004'"
+      tag: parse_8004
+      field: "message"
+      description: "Event raised when btd receives signal for Bluetooth device event"
+      patterns:
+        - "^Bluetooth device %{DATA:event.action}: %{MAC:client.mac}"
+
+  # ERPS Events
+  - dissect:
+      field: message
+      tag: erps_event_8501
+      description: "Log event when RAPS messages are not received for a certain time interval"
+      if: "ctx.event?.code == '8501'"
+      pattern: "Expected R-APS packets not received on %{observer.ingress.interface.id} in ring %{aruba.erps.ring_id} with control VLAN %{network.vlan.id}"
+  - dissect:
+      field: message
+      tag: erps_event_8502
+      description: "Log event when a ring misconfiguration happens"
+      if: "ctx.event?.code == '8502'"
+      pattern: "Misconfiguration detected on ring %{aruba.erps.ring_id} with control VLAN %{network.vlan.id}. Another node in the ring with mac %{client.mac} is also operating as an RPL owner"
+  - dissect:
+      field: message
+      tag: erps_event_8503
+      description: "Log state transition of ring instance"
+      if: "ctx.event?.code == '8503'"
+      pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to %{aruba.status}"
+  - dissect:
+      field: message
+      tag: erps_event_8504
+      description: "Log event when ring is configured with a non-L2 port"
+      if: "ctx.event?.code == '8504'"
+      pattern: "%{observer.ingress.interface.name} is not an L2 port"
+  - dissect:
+      field: message
+      tag: erps_event_8505
+      description: "Log event when an interface which is already associated to a ring port is getting mapped to other ring port as well"
+      if: "ctx.event?.code == '8505'"
+      pattern: "%{observer.ingress.interface.name} is already associated with %{aruba.erps.port_name} of ERPS ring %{aruba.erps.ring_id}"
+  - dissect:
+      field: message
+      tag: erps_event_8506
+      description: "Log event when control-channel VLAN is part of the protected-vlans"
+      if: "ctx.event?.code == '8506'"
+      pattern: "Configured control-channel VLAN %{network.vlan.id} is already protected by ERPS ring %{aruba.erps.ring_id}, instance %{aruba.instance.id}"
+  - dissect:
+      field: message
+      tag: erps_event_8507
+      description: "Log event when control-channel VLAN overlaps with another control-channel of same ring"
+      if: "ctx.event?.code == '8507'"
+      pattern: "VLAN %{network.vlan.id} is already configured as control-channel for instance %{aruba.instance.id} of ring %{aruba.erps.ring_id}"
+  - dissect:
+      field: message
+      tag: erps_event_8508
+      description: "Log event when protected-vlan(s) overlap"
+      if: "ctx.event?.code == '8508'"
+      pattern: "Vlan %{network.vlan.id} is already part of the protected VLAN set of ring %{aruba.erps.ring_id} instance %{aruba.instance.id}"
+  - dissect:
+      field: message
+      tag: erps_event_8510
+      description: "Log event when parent-ring id is configured to be the same as sub-ring"
+      if: "ctx.event?.code == '8510'"
+      pattern: "Parent-ring %{aruba.erps.ring_id} is same as sub-ring"
+  - dissect:
+      field: message
+      tag: erps_event_8511
+      description: "Log event when VLAN from the protected-vlans list is already configured as control-channel VLAN"
+      if: "ctx.event?.code == '8511'"
+      pattern: "VLAN %{network.vlan.id} in the protected VLANs list is also configured as the control-channel"
+  - dissect:
+      field: message
+      tag: erps_event_8512
+      description: "Log event if the same ring port is configured as RPL port for more than one instance"
+      if: "ctx.event?.code == '8512'"
+      pattern: "%{aruba.erps.port_name} is already configured as RPL port for instance %{aruba.instance.id}"
+  - dissect:
+      field: message
+      tag: erps_event_8513
+      description: "Log event if ring port which is also an ISL is being configured as RPL"
+      if: "ctx.event?.code == '8513'"
+      pattern: "RPL configuration is not allowed on ISL port %{observer.ingress.interface.name}"
+  - dissect:
+      field: message
+      tag: erps_event_8515
+      description: "Log transition of state of ring instance to initializing and the reason for it"
+      if: "ctx.event?.code == '8515'"
+      pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to Initializing with reason %{event.reason}"
+
+  # CDP events
+  - grok:
+      if: "['8903', '8904', '8905'].contains(ctx.event?.code)"
+      tag: parse_8903_8904_8905
+      field: "message"
+      description: "Log to indicate CDP neighbor addition/modification/deletion"
+      patterns:
+        - "^CDP neighbor %{MAC:source.mac} is (added|updated|deleted) on %{GREEDYDATA:aruba.interface.name}"
+
+  # DCBX Events
+  - grok:
+      field: message
+      tag: dcbx_event_9203_9204
+      if: "['9203', '9204'].contains(ctx.event?.code)"
+      patterns:
+        - "^DCBX is (dis|en)abled on interface %{DATA:aruba.dcbx.intf_name}$"
+  - grok:
+      field: message
+      tag: dcbx_event_9205_9206
+      if: "['9205', '9206'].contains(ctx.event?.code)"
+      patterns:
+        - "^DCBX status (in)?active on interface %{DATA:aruba.dcbx.intf_name}$"
+  - grok:
+      field: message
+      tag: dcbx_event_9207_9208
+      if: "['9207', '9208'].contains(ctx.event?.code)"
+      patterns:
+        - "^PFC TLV status (in)?active on interface %{DATA:aruba.dcbx.intf_name}$"
+  - grok:
+      field: message
+      tag: dcbx_event
+      if: "['9209'].contains(ctx.event?.code)"
+      patterns:
+        - "^PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
+
+  # ACLs events
+  - grok:
+      if: "ctx.event.code == '10002'"
+      tag: parse_10002
+      field: "message"
+      description: "ACL log statistics"
+      patterns:
+        - "^%{DATA:aruba.acl.name} on %{DATA:aruba.interface.name} \\(%{DATA:aruba.acl.direction}\\): %{NUMBER:aruba.acl.hit_delta:long} %{GREEDYDATA:aruba.acl.ace_string}"
+  - dissect:
+      if: "ctx.event.code == '10003'"
+      tag: parse_10003
+      field: "message"
+      description: "ACL application failure"
+      pattern: "ACL %{aruba.acl.type} %{aruba.acl.name} failed to apply on %{aruba.acl.application}"
+
+  # ARP security events
+  - grok:
+      if: "['10401', '10402'].contains(ctx.event?.code)"
+      tag: parse_10401_10402
+      field: "message"
+      description: "ARP inspection configuration on VLAN | ARP inspection port mode configuration"
+      patterns:
+        - "^ARP inspection %{DATA:aruba.status} on vlan %{GREEDYDATA:network.vlan.id}."
+        - "^ARP inspection %{DATA:aruba.status} on port %{GREEDYDATA:aruba.port}."
+
+  # DPSE Events
+  - dissect:
+      field: message
+      tag: dpse_event_10901
+      description: "A line card hit a backplane sequence error that triggered a recovery operation"
+      if: "ctx.event?.code == '10901'"
+      pattern: "Line card module %{aruba.dpse.linecard_name} triggered backplane sequence recovery"
+  - dissect:
+      field: message
+      tag: dpse_event_10904
+      description: "The system completed backplane sequence recovery triggered by line card error"
+      if: "ctx.event?.code == '10904'"
+      pattern: "Line card module %{aruba.dpse.linecard_name} completed backplane sequence recovery"
+
+  # CFM Events
+  - dissect:
+      field: message
+      tag: cfm_event_11601
+      if: "ctx.event?.code == '11601'"
+      pattern: "Connection lost for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
+  - dissect:
+      field: message
+      tag: cfm_event_11602
+      if: "ctx.event?.code == '11602'"
+      pattern: "Connection restored for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
+
+  # Container Manager Events
+  - dissect:
+      field: message
+      tag: container_manager_11801_11802_11803
+      if: "['11801', '11802', '11803'].contains(ctx.event?.code)"
+      pattern: "Container %{container.name} is %{?ignore_action}"
+
+  # DNS Client Events
+  - grok:
+      field: message
+      tag: dns_client_event_11901
+      description: "Event reported when DNS event triggered"
+      if: "['11901'].contains(ctx.event?.code)"
+      patterns:
+        - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}$"
+
+  # Cleanup MAC addresses for different fields
+  - uppercase:
+      field: client.mac
+      ignore_missing: true
+  - gsub:
+      field: client.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+  - gsub:
+      field: source.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
 
 on_failure:
   - set:
@@ -228,4 +605,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: "{{{ _ingest.on_failure_message }}}"
