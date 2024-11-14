@@ -45,7 +45,66 @@ processors:
       tag: lowercase_event_kind
       ignore_missing: true
 
-  # ECMP Events
+    # CoPP Events (15xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm
+
+    # The following Event IDs do not need further processing
+    # * 1501
+    # * 1502
+    # * 1503
+    # * 1504
+    # * 1505
+  - dissect:
+      field: message
+      tag: copp_event_1506
+      description: "Logs failure of programming queue for a CoPP packet class"
+      if: "ctx.event?.code == '1506'"
+      pattern: "Packet class programming failed for %{aruba.copp.class}"
+  - dissect:
+      field: message
+      tag: copp_event_1507
+      description: "Logs failure of programming ingress field processor for a COPP class"
+      if: "ctx.event?.code == '1507'"
+      pattern: "Failed to program ingress field processor rule for %{aruba.copp.class}"
+  - dissect:
+      field: message
+      tag: copp_event_1508
+      description: "Logs failure of programming egress field processor for a COPP class"
+      if: "ctx.event?.code == '1508'"
+      pattern: "Failed to program egress rule for %{aruba.copp.class}"
+  - dissect:
+      field: message
+      tag: copp_event_1509
+      description: "Logs CoPP initial initialization failure on a slot"
+      if: "ctx.event?.code == '1509'"
+      pattern: "CoPP initial initialization failed on slot %{aruba.slot}"
+  - dissect:
+      field: message
+      tag: copp_event_1510
+      description: "Logs CoPP final initialization failure on a slot"
+      if: "ctx.event?.code == '1510'"
+      pattern: "CoPP final initialization failed on slot %{aruba.slot}"
+  - dissect:
+      field: message
+      tag: copp_event_1511
+      description: "Logs CoPP deinitialization failure on a slot"
+      if: "ctx.event?.code == '1511'"
+      pattern: "CoPP deinitialization failed on slot %{aruba.slot}"
+  - dissect:
+      field: message
+      tag: copp_event_1512
+      description: "Logs failure while configuring hardware on a slot for a CoPP class"
+      if: "ctx.event?.code == '1512'"
+      pattern: "Failed to configure hardware for CoPP on slot %{aruba.slot} class %{aruba.copp.class}"
+  - dissect:
+      field: message
+      tag: copp_event_1513
+      description: "Logs failure while retrieving statistics on a slot for a CoPP class"
+      if: "ctx.event?.code == '1513'"
+      pattern: "Failed to retrieve CoPP statistics from slot %{aruba.slot} class %{aruba.copp.class}"
+
+
+  # ECMP Events (18xx)
   - grok:
       field: message
       tag: ecmp_event_1801
@@ -598,6 +657,15 @@ processors:
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
+
+  # Convert aruba.slot from a string to a long
+  # Dissect processor sets everything to a string type
+  - convert:
+      tag: convert_aruba_slot
+      field: aruba.slot
+      type: long
+      ignore_missing: true
+
 
 on_failure:
   - set:

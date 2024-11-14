@@ -168,10 +168,10 @@ Note: Descriptions have not been filled out
 | aruba.container.name         | Name of container | keyword | container.name   |
 
 #### [CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm)
-| Field                        | Description | Type | Common           |
-|------------------------------|-------------|------|------------------|
-| aruba.copp.class             |             |      |                  |
-| aruba.copp.slot              |             |      | aruba.slot       |
+| Doc Field                    | Schema Mapping      |
+|------------------------------|---------------------|
+| <class>                      | aruba.copp.class    |
+| <slot>                       | aruba.slot          |
 
 
 #### [CPU_RX events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CPU_RX.htm)
