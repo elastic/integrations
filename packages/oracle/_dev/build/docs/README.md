@@ -76,7 +76,7 @@ user="sys" password="Oradoc_db1" connectString="0.0.0.0:1521/ORCLCDB.localdomain
 
 In the first, URL-based format, special characters should be URL encoded.
 
-In the seoncd, logfmt-encoded DSN format, if the password contains a backslash
+In the second, logfmt-encoded DSN format, if the password contains a backslash
 character (`\`), it must be escaped with another backslash. For example, if the
 password is `my\_password`, it must be written as `my\\_password`.
 
