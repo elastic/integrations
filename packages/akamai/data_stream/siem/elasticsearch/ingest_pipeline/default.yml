@@ -13,7 +13,7 @@ processors:
       field: event.original
       target_field: json
   - drop:
-      if: 'ctx?.json?.offset != null'
+      if: ctx.json.offset != null
   - set:
       field: observer.vendor
       value: akamai
@@ -26,9 +26,12 @@ processors:
         - UNIX
       timezone: UTC
       target_field: "@timestamp"
+      # 500s do not include a timestamp.
+      if: ctx.json.httpMessage?.start != null
   - set:
       field: "event.start"
       copy_from: "@timestamp"
+      ignore_empty_value: true
   - rename:
       field: json.httpMessage.status
       target_field: http.response.status_code
@@ -71,11 +74,22 @@ processors:
       field: json.httpMessage.path
       target_field: url.path
       ignore_missing: true
+      on_failure:
+        # We see some illegal character, if we can't decode, at least give the data that exists.
+        - set:
+            field: url.path
+            copy_from: json.httpMessage.path
   - urldecode:
       tag: urldecode_httpMessage_query
       field: json.httpMessage.query
       target_field: url.query
       ignore_missing: true
+      on_failure:
+        # Assume a failure is due to the query already being decoded.
+        - rename:
+            field: json.httpMessage.query
+            target_field: url.query
+            ignore_failure: true
   - rename:
       field: json.httpMessage.port
       target_field: url.port
@@ -89,7 +103,7 @@ processors:
       field: json.httpMessage.responseHeaders
       ignore_missing: true
   - kv:
-      if: ctx.json?.httpMessage?.responseHeaders != ""
+      if: ctx.json.httpMessage?.responseHeaders != ""
       tag: kv_httpMessage_responseHeaders
       field: json.httpMessage.responseHeaders
       target_field: akamai.siem.response.headers
@@ -101,7 +115,7 @@ processors:
       field: json.httpMessage.requestHeaders
       ignore_missing: true
   - kv:
-      if: ctx.json?.httpMessage?.requestHeaders != ""
+      if: ctx.json.httpMessage?.requestHeaders != ""
       tag: kv_httpMessage_requestHeaders
       field: json.httpMessage.requestHeaders
       target_field: akamai.siem.request.headers
@@ -112,21 +126,24 @@ processors:
       lang: painless
       description: This script builds the `url.full` field out of the available `url.*` parts.
       source: |
-        def full = "";
-        if(ctx.url.scheme != null && ctx.url.scheme != "") {
-            full += ctx.url.scheme+"://";
+        String full = '';
+        if (ctx.url?.scheme != null && ctx.url.scheme != "") {
+          full += ctx.url.scheme+"://";
         }
-        if(ctx.url.domain != null && ctx.url.domain != "") {
-            full += ctx.url.domain;
+        if (ctx.url?.domain != null && ctx.url.domain != "") {
+          full += ctx.url.domain;
         }
-        if(ctx.json.httpMessage.path != null && ctx.json.httpMessage.path != "") {
-            full += ctx.json.httpMessage.path;
+        if (ctx.json.httpMessage?.path != null && ctx.json.httpMessage.path != "") {
+          full += ctx.json.httpMessage.path;
         }
-        if(ctx.json.httpMessage.query != null && ctx.json.httpMessage.query != "") {
-            full += "?"+ctx.json.httpMessage.query;
+        if (ctx.json.httpMessage?.query != null && ctx.json.httpMessage.query != "") {
+          full += "?"+ctx.json.httpMessage.query;
         }
-        if(full != "") {
-            ctx.url.full = full
+        if (full != "") {
+          if (ctx.url == null) {
+            ctx.url = [:];
+          }
+          ctx.url.full = full
         }
   - dissect:
       field: json.httpMessage.protocol
@@ -138,7 +155,7 @@ processors:
   - set:
       field: network.transport
       value: tcp
-      if: ctx?.network?.protocol != null && ctx?.network?.protocol == 'http'
+      if: ctx.network?.protocol != null && ctx.network.protocol == 'http'
   - dissect:
       field: json.httpMessage.tls
       pattern: "%{tls.version_protocol}v%{tls.version}"
@@ -165,17 +182,17 @@ processors:
       field: json.geo.country
       target_field: source.geo.country_iso_code
       ignore_missing: true
-      if: ctx?.source?.geo?.country_iso_code == null
+      if: ctx.source?.geo?.country_iso_code == null
   - set:
       field: source.geo.region_iso_code
       value: "{{{json.geo.country}}}-{{{json.geo.regionCode}}}"
       ignore_empty_value: true
-      if: ctx?.source?.geo?.region_iso_code == null
+      if: ctx.source?.geo?.region_iso_code == null
   - rename:
       field: json.geo.city
       target_field: source.geo.city_name
       ignore_missing: true
-      if: ctx?.source?.geo?.city_name == null
+      if: ctx.source?.geo?.city_name == null
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -193,7 +210,7 @@ processors:
       target_field: source.as.number
       type: long
       ignore_missing: true
-      if: ctx?.source?.as?.number == null
+      if: ctx.source?.as?.number == null
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
@@ -209,6 +226,7 @@ processors:
       target_field: json.attackData.ruleActions
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleData
       field: json.attackData.ruleData
@@ -219,6 +237,7 @@ processors:
       target_field: json.attackData.ruleData
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleMessages
       field: json.attackData.ruleMessages
@@ -229,6 +248,7 @@ processors:
       target_field: json.attackData.ruleMessages
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleSelectors
       field: json.attackData.ruleSelectors
@@ -239,6 +259,7 @@ processors:
       target_field: json.attackData.ruleSelectors
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleTags
       field: json.attackData.ruleTags
@@ -249,6 +270,7 @@ processors:
       target_field: json.attackData.ruleTags
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleVersions
       field: json.attackData.ruleVersions
@@ -259,6 +281,7 @@ processors:
       target_field: json.attackData.ruleVersions
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_rules
       field: json.attackData.rules
@@ -269,30 +292,53 @@ processors:
       target_field: json.attackData.rules
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - script:
       lang: painless
       description: Base64 Decode the json.attackData.rule* fields
       tag: script_base64_decode_attackData_rule
+      params:
+        items:
+          - rules
+          - ruleActions
+          - ruleData
+          - ruleMessages
+          - ruleTags
+          - ruleSelectors
+          - ruleVersions
+      if: ctx.json.attackData?.rules instanceof List
       source: |
-        ArrayList items = new ArrayList(["rules", "ruleActions", "ruleData", "ruleMessages", "ruleTags", "ruleSelectors", "ruleVersions"]);
         ArrayList rules_array = new ArrayList();
         ArrayList rule_actions = new ArrayList();
         ArrayList rule_tags = new ArrayList();
         for (def i = 0; i < ctx.json.attackData.rules.length; i++) {
-            HashMap map = new HashMap();
-            for (def j = 0; j < items.length; j++) {
-                String key = items[j];
-                if (i < ctx.json.attackData[key].length ) {
-                    String value = ctx.json.attackData[key][i].replace(" ", "").decodeBase64();
-                    map.put(key, value);
-                    if (key == "ruleTags") {
-                        rule_tags.add(value.toLowerCase());
-                    } else if (key == "ruleActions") {
-                        rule_actions.add(value.toLowerCase());
-                    }
+          HashMap map = new HashMap();
+          for (String key: params.items) {
+            if (i < ctx.json.attackData[key].length) {
+              String data = ctx.json.attackData[key][i].replace(" ", "");
+              try {
+                String value = data.decodeBase64();
+                map.put(key, value);
+                if (key == "ruleTags") {
+                  rule_tags.add(value.toLowerCase());
+                } else if (key == "ruleActions") {
+                  rule_actions.add(value.toLowerCase());
                 }
+              }
+              catch (Exception e) {
+                if (data.length() > 10) {
+                  data = data.substring(0,10)+"..."
+                }
+                String error = e.toString();
+                if (error.startsWith("java.lang.IllegalArgumentException: ")) {
+                  error = error.substring("java.lang.IllegalArgumentException: ".length());
+                }
+                String warning = "failed to decode base64 data: " + error + ": " + data;
+                map.put(key, warning);
+              }
             }
-            rules_array.add(map);
+          }
+          rules_array.add(map);
         }
         ctx.akamai.siem.rules = rules_array;
         ctx._rule_actions = rule_actions;
@@ -393,6 +439,7 @@ processors:
       field: json.userRiskData.score
       target_field: akamai.siem.user_risk.score
       type: long
+      if: ctx.json.userRiskData?.score != null && ctx.json.userRiskData.score != ''
       ignore_missing: true
   - convert:
       field: json.userRiskData.allow
@@ -400,7 +447,7 @@ processors:
       type: long
       ignore_missing: true
   - kv:
-      if: ctx.json?.userRiskData?.risk != ""
+      if: ctx.json.userRiskData?.risk != ""
       tag: kv_userRiskData_risk
       field: json.userRiskData.risk
       target_field: akamai.siem.user_risk.risk
@@ -408,21 +455,48 @@ processors:
       value_split: ':'
       ignore_missing: true
   - kv:
-      if: ctx.json?.userRiskData?.trust != ""
+      if: ctx.json.userRiskData?.trust != ""
       tag: kv_userRiskData_trust
       field: json.userRiskData.trust
       target_field: akamai.siem.user_risk.trust
       field_split: '\|'
       value_split: ':'
       ignore_missing: true
-  - kv:
-      if: ctx.json?.userRiskData?.general != ""
-      tag: kv_userRiskData_general
-      field: json.userRiskData.general
-      target_field: akamai.siem.user_risk.general
-      field_split: '\|'
-      value_split: ':'
-      ignore_missing: true
+  - script:
+      description: Process key-value pairs, preserving keys without values.
+      lang: painless
+      tag: script_userRiskData_general
+      if: ctx.json.userRiskData?.general instanceof String && ctx.json.userRiskData.general != ""
+      source: |
+        String text = ctx.json.userRiskData.general.trim();
+        if (text != "") {
+          def m = new HashMap();
+          for (String f: /\|/.split(text)) {
+            if (f == "") {
+              continue;
+            }
+            int idx = f.indexOf(':');
+            if (idx == -1) {
+              m.put(f, "-"); // Include a non-empty string to prevent the field being removed.
+              continue;
+            }
+            String k = f.substring(0, idx);
+            String v = f.substring(idx+1);
+            m.put(k, v);
+          }
+          if (m.size() > 0) {
+            if (ctx.akamai == null) {
+              ctx.akamai = new HashMap();
+            }
+            if (ctx.akamai.siem == null) {
+              ctx.akamai.siem = new HashMap();
+            }
+            if (ctx.akamai.siem.user_risk == null) {
+              ctx.akamai.siem.user_risk = new HashMap();
+            }
+            ctx.akamai.siem.user_risk.general = m;
+          }
+        }
   ##
   - append:
       field: related.ip

@@ -289,6 +289,11 @@ processors:
       tag: set_virus_url
       field: url.original
       copy_from: panw.panos.misc
+  - set:
+      if: 'ctx.panw?.panos?.sub_type == "vulnerability" && ctx.panw?.panos?.misc instanceof String && ctx.panw.panos.misc.contains("/")'
+      tag: set_vulnerability_url
+      field: url.original
+      copy_from: panw.panos.misc
   # Crude implementation of `uri_parts` as its not working well due to lack of scheme.
   # When the scheme of the URL is absent, this script parses the URL in `ctx.panw.panos.misc` into components namely 
   # `url.original`, `url.domain`, `url.port`, `url.path`, `url.query`, `url.extension`
@@ -356,9 +361,16 @@ processors:
         }
         ctx.file["name"] = ctx.file.path.substring(idx+1);
   - set:
-      if: '["file", "virus"].contains(ctx.panw?.panos?.sub_type) && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains("/") || ctx.panw.panos.misc.contains("\\"))'
+      if: '["file", "virus", "vulnerability"].contains(ctx.panw?.panos?.sub_type) && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains("/") || ctx.panw.panos.misc.contains("\\"))'
       field: file.name
       copy_from: panw.panos.misc
+      ignore_failure: true
+
+  # vulnerability can be either file or url. If it's a file, remove all url fields it was parsed into
+  - remove:
+      if: '"vulnerability" == ctx.panw?.panos?.sub_type && ctx.file?.name != null'
+      tag: remove_url
+      field: url
       ignore_failure: true
   - set:
       field: panw.panos.user_agent

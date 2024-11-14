@@ -54,8 +54,8 @@ processors:
           %{NOTSPACE:aws.elb.listener}
           %{ELBSOURCE}
           %{ELBBACKEND}
-          %{NUMBER:aws.elb.connection_time.ms:float}
-          %{NUMBER:aws.elb.tls_handshake_time.ms:float}
+          (?:-|%{NUMBER:aws.elb.connection_time.ms:float})
+          (?:-|%{NUMBER:aws.elb.tls_handshake_time.ms:float})
           %{NUMBER:source.bytes:long}
           %{NUMBER:destination.bytes:long}
           (?:-|%{NUMBER:aws.elb.incoming_tls_alert})
@@ -64,6 +64,10 @@ processors:
           %{ELBSSL}
           (?:-|%{NOTSPACE:aws.elb.ssl_named_group})
           (?:-|%{NOTSPACE:destination.domain})
+          (?:-|%{NOTSPACE:aws.elb.alpn_fe_protocol})
+          (?:-|%{NOTSPACE:aws.elb.alpn_be_protocol})
+          (?:-|\\?\"%{DATA:aws.elb.alpn_client_preference_list}\\?\")
+          (?:%{TIMESTAMP_ISO8601:aws.elb.tls_connection_creation_time_str}|-)
 
       pattern_definitions:
         ELBTIMESTAMP: '%{TIMESTAMP_ISO8601:_tmp.timestamp}'
@@ -221,6 +225,15 @@ processors:
       field:
         - _tmp
       ignore_missing: true
+  - date:
+      field: aws.elb.tls_connection_creation_time_str
+      target_field: aws.elb.tls_connection_creation_time
+      formats:  ["ISO8601"]
+      "if": "ctx.aws?.elb?.tls_connection_creation_time_str != null && ctx.aws?.elb?.tls_connection_creation_time_str != '-' && ctx.aws?.elb?.tls_connection_creation_time_str != ''"
+  - remove:
+      field: aws.elb.tls_connection_creation_time_str
+      ignore_missing: true
+      
 on_failure:
   - set:
       field: event.kind

@@ -70,25 +70,20 @@ processors:
   # Here we want to add as much categorization information as possible
   # We can do this by parsing mimecast.eventInfo differently based on
   # what event.action is, etc.
-  ### 
-  - dissect:
+  ###
+
+  - grok:
+      tag: grok_logon_authentication_failed
       field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{?key}:%{mimecast.email.address}[%{mimecast.email.metadata}] %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
-      if: 'ctx.event?.action=="logon-authentication-failed"'
+      if: ctx.event?.action=="logon-authentication-failed"
+      patterns:
+        - '^%{GREEDYDATA:mimecast.info},\sDate:\s%{DATE:mimecast.date},\sTime:\s%{TIME:mimecast.time} %{TIMEZONE:mimecast.timezone},\sIP:\s%{IP:client.ip},\sApplication:\s%{NOTSPACE:mimecast.application},(?:\sMethod:\s%{DATA:mimecast.method},)?\sReason:\s%{DATA:event.reason}$'
+        - '^%{GREEDYDATA:mimecast.info},\sDate:\s%{DATE:mimecast.date},\sTime:\s%{TIME:mimecast.time}%{TIMEZONE:mimecast.timezone},\sIP:\s%{IP:client.ip},\sApplication:\s%{NOTSPACE:mimecast.application},\sRemote IP is %{IP:mimecast.remote_ip}$'
+        - '^%{GREEDYDATA:mimecast.info},\s%{WORD} ?: ?%{DATA:mimecast.email.address}\[%{DATA:mimecast.email.metadata}\] remote IP ?: ?%{IP:mimecast.remote_ip} application ?: ?%{NOTSPACE:mimecast.application}$'
+      pattern_definitions:
+        DATE: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}'
+        TIMEZONE: '(?:[A-Z]{3,4}|(?:GMT)?[-+][0-9]{2}:?[0-9]{2})'
       ignore_missing: true
-      ignore_failure: true
-  - dissect:
-       field: mimecast.eventInfo
-       pattern: "%{mimecast.info}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time} %{mimecast.timezone}, %{?key}: : %{client.ip},, %{?key}: %{mimecast.application}, %{?key}: %{event.reason}"
-       if: 'ctx.event?.action=="logon-authentication-failed"'
-       ignore_missing: true
-       ignore_failure: true
-  - dissect:
-       field: mimecast.eventInfo
-       pattern: "%{mimecast.info}, %{?key} : %{mimecast.date}, %{?key} : %{mimecast.time}, %{?key} : %{client.ip}, %{?key} : %{mimecast.application}, %{mimecast.remote}"
-       if: 'ctx.event?.action=="logon-authentication-failed"'
-       ignore_missing: true
-       ignore_failure: true
   - dissect:
       field: mimecast.eventInfo
       pattern: "%{mimecast.info}>, %{mimecast.rest_of_event_info}"
@@ -119,6 +114,7 @@ processors:
       value: "{{{mimecast.rest_of_event_info}}}"
       if: 'ctx.event?.action=="user-logged-on" && ctx?.mimecast?.event_info_parts?.IP == null'
   - grok:
+      tag: grok_mimecast_remote
       field: mimecast.remote
       patterns:
         - "%{IP:mimecast.remote_ip}"
@@ -183,6 +179,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - grok:
+      tag: grok_rest_of_event_info
       field: mimecast.rest_of_event_info
       patterns:
         - "%{IP:client.ip}"
@@ -287,7 +284,12 @@ processors:
       field: related.ip
       value: "{{{client.ip}}}"
       allow_duplicates: false
-      if: 'ctx?.client?.ip !=null'
+      if: ctx.client?.ip !=null
+  - append:
+      field: related.ip
+      value: "{{{mimecast.remote_ip}}}"
+      allow_duplicates: false
+      if: ctx.mimecast?.remote_ip !=null
   - append:
       field: related.user
       value: "{{{user.name}}}"
@@ -355,4 +357,7 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
