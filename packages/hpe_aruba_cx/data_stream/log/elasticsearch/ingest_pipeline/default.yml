@@ -45,6 +45,7 @@ processors:
       tag: lowercase_event_kind
       ignore_missing: true
 
+
     # CoPP Events (15xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm
 
@@ -105,6 +106,7 @@ processors:
 
 
   # ECMP Events (18xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ECMP.htm
   - grok:
       field: message
       tag: ecmp_event_1801
@@ -140,7 +142,8 @@ processors:
       patterns:
         - "ECMP error: %{DATA:aruba.ecmp.err}$"
 
-  # AAA events
+  # AAA events (23xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm
   - grok:
       if: "ctx.event.code == '2301'"
       tag: parse_2301
@@ -175,7 +178,8 @@ processors:
       description: "Logs changes in TACACS server reachability status"
       pattern: "TACACS server host %{server.address} port %{aruba.port} vrf %{aruba.vrf.id} %{aruba.status}"
 
-  # BGP events
+  # BGP events (29xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BGP.htm
   - dissect:
       if: "ctx.event.code == '2901'"
       tag: parse_2901
@@ -288,7 +292,8 @@ processors:
       patterns:
         - "^%{DATA:aruba.bgp.pg_name}: Peer-group configured with remote-as %{NUMBER:destination.as.number:long}. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
 
-  # Config Management events
+  # Config Management events (68xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONFIG_MGMT.htm
   - dissect:
       if: "ctx.event.code == '6801'"
       tag: parse_6801
@@ -314,7 +319,8 @@ processors:
       description: "Logs a message when copying config has some information"
       pattern: "Information while copying configs. Info: %{event.reason}"
 
-  # BFD events
+  # BFD events (73xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BFD.htm
   - grok:
       if: "['7305', '7306'].contains(ctx.event?.code)"
       tag: parse_7305_7306
@@ -375,7 +381,23 @@ processors:
       patterns:
         - "^BFD session %{DATA:aruba.bfd.direction} interval override of %{NUMBER:aruba.bfd.requested_interval:long} ms is out of bounds for protocol %{DATA:aruba.bfd.from}, using %{NUMBER:aruba.bfd.applied_interval:long} ms instead"
 
-  # Certificate management events
+  # CPU_RX Events (75xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CPU_RX.htm
+  - dissect:
+      field: message
+      tag: cpu_rx_event_7501
+      description: "Event raised when a kernel filter cannot be created or deleted"
+      if: "ctx.event?.code == '7501'"
+      pattern: "Kernel filter \"%{event.action}\" failed on unit %{aruba.instance.id} for %{aruba.cpu_rx.filter_description}"
+  - dissect:
+      field: message
+      tag: cpu_rx_event_7502
+      description: "Event raised when a kernel filter cannot be created because all filters are in use"
+      if: "ctx.event?.code == '7502'"
+      pattern: "Cannot create kernel filter on unit %{aruba.instance.id} for %{aruba.cpu_rx.filter_description}. All filters are in use. Configuring fewer per-port features can help with this issue."
+
+  # Certificate management events (77xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CERTMGR.htm
   - grok:
       if: "['7701', '7702', '7703', '7704'].contains(ctx.event?.code)"
       tag: parse_7701_7702_7703_7704
@@ -442,7 +464,8 @@ processors:
       patterns:
         - "^Certificate %{DATA:aruba.cm.cert_name} is (not set for signing purpose|invalid or malformed)"
 
-  # Bluetooth Management events
+  # Bluetooth Management events (80xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BLUETOOTH_MGMT.htm
   - grok:
       if: "['8001', '8003'].contains(ctx.event?.code)"
       tag: parse_8001
@@ -458,7 +481,8 @@ processors:
       patterns:
         - "^Bluetooth device %{DATA:event.action}: %{MAC:client.mac}"
 
-  # ERPS Events
+  # ERPS Events (85xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm
   - dissect:
       field: message
       tag: erps_event_8501
@@ -538,7 +562,8 @@ processors:
       if: "ctx.event?.code == '8515'"
       pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to Initializing with reason %{event.reason}"
 
-  # CDP events
+  # CDP events (89xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CDP.htm
   - grok:
       if: "['8903', '8904', '8905'].contains(ctx.event?.code)"
       tag: parse_8903_8904_8905
@@ -547,7 +572,8 @@ processors:
       patterns:
         - "^CDP neighbor %{MAC:source.mac} is (added|updated|deleted) on %{GREEDYDATA:aruba.interface.name}"
 
-  # DCBX Events
+  # DCBX Events (92xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DCBX.htm
   - grok:
       field: message
       tag: dcbx_event_9203_9204
@@ -573,7 +599,8 @@ processors:
       patterns:
         - "^PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
 
-  # ACLs events
+  # ACLs events (100xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ACL.htm
   - grok:
       if: "ctx.event.code == '10002'"
       tag: parse_10002
@@ -588,7 +615,8 @@ processors:
       description: "ACL application failure"
       pattern: "ACL %{aruba.acl.type} %{aruba.acl.name} failed to apply on %{aruba.acl.application}"
 
-  # ARP security events
+  # ARP security events (104xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm
   - grok:
       if: "['10401', '10402'].contains(ctx.event?.code)"
       tag: parse_10401_10402
@@ -598,7 +626,8 @@ processors:
         - "^ARP inspection %{DATA:aruba.status} on vlan %{GREEDYDATA:network.vlan.id}."
         - "^ARP inspection %{DATA:aruba.status} on port %{GREEDYDATA:aruba.port}."
 
-  # DPSE Events
+  # DPSE Events (109xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DPSE.htm
   - dissect:
       field: message
       tag: dpse_event_10901
@@ -612,7 +641,8 @@ processors:
       if: "ctx.event?.code == '10904'"
       pattern: "Line card module %{aruba.dpse.linecard_name} completed backplane sequence recovery"
 
-  # CFM Events
+  # CFM Events (116xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm
   - dissect:
       field: message
       tag: cfm_event_11601
@@ -624,14 +654,16 @@ processors:
       if: "ctx.event?.code == '11602'"
       pattern: "Connection restored for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
 
-  # Container Manager Events
+  # Container Manager Events (118xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm
   - dissect:
       field: message
       tag: container_manager_11801_11802_11803
       if: "['11801', '11802', '11803'].contains(ctx.event?.code)"
       pattern: "Container %{container.name} is %{?ignore_action}"
 
-  # DNS Client Events
+  # DNS Client Events (119xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DNS_CLIENT.htm
   - grok:
       field: message
       tag: dns_client_event_11901
