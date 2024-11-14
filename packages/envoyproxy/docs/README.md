@@ -38,43 +38,39 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-04-06T06:20:05.972Z",
+    "@timestamp": "2019-04-08T16:16:55.931Z",
     "agent": {
-        "ephemeral_id": "56211845-a50f-4eac-b02f-85202fae2d9a",
-        "id": "da88c03c-0c6b-4998-ad72-2ca34550d7aa",
-        "name": "elastic-agent-65996",
+        "ephemeral_id": "b251a806-74d2-4f75-bb84-142e7f931c17",
+        "id": "c3ca3082-b848-456d-b798-5b7c6044cec3",
+        "name": "elastic-agent-33100",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.15.1"
     },
     "data_stream": {
         "dataset": "envoyproxy.log",
-        "namespace": "21844",
+        "namespace": "34940",
         "type": "logs"
     },
     "destination": {
-        "address": "127.0.0.1",
-        "bytes": 0,
-        "ip": "127.0.0.1",
-        "port": 9200
+        "address": "172.27.0.3",
+        "ip": "172.27.0.3",
+        "port": 80
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "da88c03c-0c6b-4998-ad72-2ca34550d7aa",
+        "id": "c3ca3082-b848-456d-b798-5b7c6044cec3",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.15.1"
     },
     "envoyproxy": {
         "log": {
-            "authority": "-",
+            "authority": "localhost:8000",
             "log_type": "ACCESS",
-            "proxy_type": "tcp",
-            "request_id": "-",
-            "response_flags": [
-                "UF",
-                "URX"
-            ]
+            "proxy_type": "http",
+            "request_id": "c219f6da-2b7f-483e-9ced-ec323d9330a9",
+            "upstream_service_time": 4000000
         }
     },
     "event": {
@@ -82,59 +78,69 @@ An example event for `log` looks as following:
         "category": [
             "network"
         ],
-        "created": "2024-09-23T12:28:25.950Z",
+        "created": "2024-11-14T14:19:50.685Z",
         "dataset": "envoyproxy.log",
-        "duration": 0,
-        "ingested": "2024-09-23T12:28:26Z",
+        "duration": 5000000,
+        "ingested": "2024-11-14T14:19:51Z",
         "kind": "event",
-        "original": "ACCESS [2019-04-06T06:20:05.972Z] \"- - -\" 0 UF,URX 0 0 0 - \"-\" \"-\" \"-\" \"-\" \"127.0.0.1:9200\"",
-        "outcome": "failure",
+        "original": "[2019-04-08T16:16:55.931Z] \"GET /service/1 HTTP/1.1\" 200 - 0 89 5 4 \"-\" \"curl/7.54.0\" \"c219f6da-2b7f-483e-9ced-ec323d9330a9\" \"localhost:8000\" \"172.27.0.3:80\"",
+        "outcome": "success",
         "type": [
             "connection",
-            "connection"
+            "protocol"
         ]
     },
-    "input": {
-        "type": "log"
+    "http": {
+        "request": {
+            "body": {
+                "bytes": 89
+            },
+            "method": "GET"
+        },
+        "response": {
+            "body": {
+                "bytes": 0
+            },
+            "status_code": 200
+        },
+        "version": "1.1"
     },
-    "kubernetes": {
-        "container": {
-            "name": "ambassador"
-        },
-        "labels": {
-            "service": "ambassador"
-        },
-        "namespace": "default",
-        "node": {
-            "name": "minikube"
-        },
-        "pod": {
-            "name": "ambassador-76c58d9df4-jwhsg",
-            "uid": "e57d545e-2a9d-11e9-995f-08002730e0dc"
-        }
+    "input": {
+        "type": "filestream"
     },
     "log": {
         "file": {
+            "device_id": "30",
+            "inode": "57",
             "path": "/tmp/service_logs/envoy.log"
         },
-        "offset": 1263
+        "offset": 82
     },
     "network": {
-        "transport": "tcp"
+        "protocol": "http"
     },
     "related": {
         "ip": [
-            "127.0.0.1"
+            "172.27.0.3"
         ]
-    },
-    "source": {
-        "bytes": 0
     },
     "tags": [
         "preserve_original_event",
         "envoy-proxy",
         "forwarded"
-    ]
+    ],
+    "url": {
+        "domain": "localhost:8000",
+        "path": "/service/1"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "curl",
+        "original": "curl/7.54.0",
+        "version": "7.54.0"
+    }
 }
 ```
 
@@ -172,53 +178,54 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-10-07T16:44:58.823Z",
+    "@timestamp": "2024-11-14T14:22:18.283Z",
     "agent": {
-        "ephemeral_id": "ba3ce7a8-014c-47bf-b028-d28e8aff0ece",
-        "id": "03cf6855-47b2-4244-a94f-31d360efaf98",
-        "name": "elastic-agent-63319",
+        "ephemeral_id": "08892539-8525-4ceb-afb8-95ea3c128d4c",
+        "id": "13047bf7-6360-4d6d-b1a0-9a923610b76e",
+        "name": "elastic-agent-25985",
         "type": "metricbeat",
-        "version": "8.15.2"
+        "version": "8.15.1"
     },
     "data_stream": {
         "dataset": "envoyproxy.stats",
-        "namespace": "98577",
+        "namespace": "42696",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "03cf6855-47b2-4244-a94f-31d360efaf98",
+        "id": "13047bf7-6360-4d6d-b1a0-9a923610b76e",
         "snapshot": false,
-        "version": "8.15.2"
+        "version": "8.15.1"
     },
     "envoyproxy": {
-        "cluster_name": "service_test",
-        "envoy_cluster_warming_state": {
-            "value": 0
-        }
+        "envoy_http_downstream_cx_destroy_remote": {
+            "count": 1
+        },
+        "http_conn_manager_prefix": "ingress_http"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "envoyproxy.stats",
-        "ingested": "2024-10-07T16:44:58Z",
+        "ingested": "2024-11-14T14:22:18Z",
+        "kind": "metric",
         "module": "statsd"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-63319",
-        "id": "93db770e92a444c98362aee1860ae326",
+        "hostname": "elastic-agent-25985",
+        "id": "0fba6dd9e2a445ca80a4261bd56fec54",
         "ip": [
             "172.18.0.4",
-            "192.168.16.2"
+            "172.31.0.2"
         ],
         "mac": [
             "02-42-AC-12-00-04",
-            "02-42-C0-A8-10-02"
+            "02-42-AC-1F-00-02"
         ],
-        "name": "elastic-agent-63319",
+        "name": "elastic-agent-25985",
         "os": {
             "codename": "focal",
             "family": "debian",
