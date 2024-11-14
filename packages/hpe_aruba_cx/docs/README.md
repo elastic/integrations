@@ -173,13 +173,12 @@ Note: Descriptions have not been filled out
 | <class>                      | aruba.copp.class    |
 | <slot>                       | aruba.slot          |
 
-
 #### [CPU_RX events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CPU_RX.htm)
-| Field                        | Description | Type | Common           |
-|------------------------------|-------------|------|------------------|
-| aruba.cpu_rx.action          |             |      | event.action     |
-| aruba.cpu_rx.filter_description |          |      |                  |
-| aruba.cpu_rx.unit            |             |      | aruba.instance.id|
+| Doc Field                    | Schema Mapping                  |
+|------------------------------|---------------------------------|
+| <action>                     | event.action                    |
+| <filter_description>         | aruba.cpu_rx.filter_description |
+| <unit>                       | aruba.instance.id               |
 
 #### [Credential Manager events DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm)
 | Field                | Description | Type | Common   |
