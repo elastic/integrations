@@ -33,7 +33,8 @@ processors:
         - "%{SYSLOG_HEADER}%{GREEDYDATA:message}"
       pattern_definitions:
         SYSLOG_HEADER: "%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.syslog.appname}\\[%{POSINT:log.syslog.procid}\\]:\\s+%{WORD:aruba.event_type}\\|(?:%{OPTIONAL_HEADER})?"
-        OPTIONAL_HEADER: "%{POSINT:event.code}\\|%{USER:log.level}\\|(?:%{USER:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
+        OPTIONAL_HEADER: "%{POSINT:event.code}\\|%{USER:log.level}\\|(?:%{CATEGORY:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
+        CATEGORY: "[-_0-9a-zA-Z]+( [-_0-9a-zA-Z]+)*?"
   - grok:
       field: aruba.sequence
       if: ctx.aruba?.sequence != null && ctx.aruba.sequence.contains("/")
