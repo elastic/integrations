@@ -100,6 +100,16 @@ processors:
       pattern: "<%{email.to.address}>"
       ignore_missing: true
       ignore_failure: true
+  - foreach:
+      field: mimecast.tagMap.DangerousFileExt
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        gsub:
+          field: _ingest._key
+          pattern: ':'
+          replacement: '_'
+          ignore_missing: true
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.

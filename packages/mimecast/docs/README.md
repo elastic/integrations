@@ -1274,6 +1274,16 @@ An example event for `ttp_url` looks as following:
 | mimecast.scanResult | The result of the URL scan. | keyword |
 | mimecast.sendingIp | The IP of user who triggers the event. | keyword |
 | mimecast.subject | The subject of the email. | keyword |
+| mimecast.tagMap.DangerousFileExt.ContentCheck_ContentScannersBlocked |  | keyword |
+| mimecast.tagMap.DangerousFileExt.ContentCheck_DangerousExtsUrlFileDownload |  | keyword |
+| mimecast.tagMap.DangerousFileExt.ContentCheck_DangerousMimetypesUrlFileDownload |  | keyword |
+| mimecast.tagMap.DangerousFileExt.Inspect_FileExts |  | keyword |
+| mimecast.tagMap.DangerousFileExt.Inspect_MimeTypes |  | keyword |
+| mimecast.tagMap.DangerousFileExt.Status |  | keyword |
+| mimecast.tagMap.UrlReputationScan.Status |  | keyword |
+| mimecast.tagMap.UrlReputationScan.Type |  | keyword |
+| mimecast.tagMap.UrlReputationScan.Url |  | keyword |
+| mimecast.tagMap.UrlReputationScan.UrlBlock |  | keyword |
 | mimecast.ttpDefinition | The description of the definition that triggered the URL to be rewritten by Mimecast. | keyword |
 | mimecast.url | The url clicked. | keyword |
 | mimecast.userAwarenessAction | The action taken by the user if user awareness was applied. | keyword |
