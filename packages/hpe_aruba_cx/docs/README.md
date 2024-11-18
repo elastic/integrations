@@ -1340,6 +1340,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.evpn.rt |  | keyword |
 | aruba.evpn.vni |  | keyword |
 | aruba.evpn.vtep_ip |  | ip |
+| aruba.external_storage.name |  | keyword |
 | aruba.fan.air_flow_direction |  | keyword |
 | aruba.fan.compare_mode |  | keyword |
 | aruba.fan.en_dis |  | keyword |
