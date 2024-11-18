@@ -516,6 +516,35 @@ processors:
       patterns:
         - "^Certificate %{DATA:aruba.cm.cert_name} is (not set for signing purpose|invalid or malformed)"
 
+  # External Storage events (78xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EXTERNAL-STORAGE.htm
+  - grok:
+      field: message
+      tag: external_storage_event_7801_7802
+      description: "Event raised when a share fails to mount | dismount"
+      if: "['7801', '7802'].contains(ctx.event?.code)"
+      patterns:
+        - "^Share %{DATA:aruba.storage.name} (dis)?mount failure"
+  - grok:
+      field: message
+      tag: external_storage_event_7803_7804
+      description: "Event raised when a share mounts | dismounts"
+      if: "['7803', '7804'].contains(ctx.event?.code)"
+      patterns:
+        - "^Share %{DATA:aruba.storage.name} is (dis)?mounted"
+  - dissect:
+      field: message
+      tag: external_storage_event_7805
+      description: "Event raised when a mount times out or aborts due to a config change"
+      if: "ctx.event?.code == '7805'"
+      pattern: "Share %{aruba.storage.name} mount is aborted"
+  - dissect:
+      field: message
+      tag: external_storage_event_7806
+      description: "USB device mounted or unmounted."
+      if: "ctx.event?.code == '7806'"
+      pattern: "USB device %{aruba.status}."
+
   # Bluetooth Management events (80xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BLUETOOTH_MGMT.htm
   - grok:

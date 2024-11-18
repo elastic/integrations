@@ -287,10 +287,10 @@ Note: Descriptions have not been filled out
 | <vtep_ip> |  aruba.evpn.vtep_ip|
 
 #### [External Storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EXTERNAL-STORAGE.htm)
-| Field                | Description | Type | Common             |
-|----------------------|-------------|------|--------------------|
-| aruba.storage.name   |             |      |                    |
-| aruba.storage.status |             |      | aruba.status       |
+| Doc Field | Schema Mapping              |
+|-----------|-----------------------------|
+| <name>    | aruba.storage.name |
+| <status>  | aruba.status                |
 
 #### [Fan events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm)
 | Field                     | Description | Type | Common                       |
