@@ -1,0 +1,459 @@
+---
+description: Pipeline for processing Incident logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.id
+        - json.properties.lastModifiedTimeUtc
+      tag: fingerprint_incident_pipeline
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      tag: rename_etag
+      target_field: microsoft_sentinel.incident.etag
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: microsoft_sentinel.incident.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_incident_id
+      copy_from: microsoft_sentinel.incident.id
+      ignore_empty_value: true
+  - rename:
+      field: json.name
+      tag: rename_name
+      target_field: microsoft_sentinel.incident.name
+      ignore_missing: true
+  - rename:
+      field: json.properties.additionalData.alertProductNames
+      tag: rename_properties_additionalData_alertProductNames
+      target_field: microsoft_sentinel.incident.properties.additional_data.alert.product_names
+      ignore_missing: true
+  - convert:
+      field: json.properties.additionalData.alertsCount
+      tag: convert_properties_additionalData_alertsCount_to_long
+      target_field: microsoft_sentinel.incident.properties.additional_data.alerts.count
+      type: long
+      if: ctx.json?.properties?.additionalData?.alertsCount != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.additionalData.bookmarksCount
+      tag: convert_properties_additionalData_bookmarksCount_to_long
+      target_field: microsoft_sentinel.incident.properties.additional_data.bookmarks_count
+      type: long
+      if: ctx.json?.properties?.additionalData?.bookmarksCount != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.additionalData.commentsCount
+      tag: convert_properties_additionalData_commentsCount_to_long
+      target_field: microsoft_sentinel.incident.properties.additional_data.comments_count
+      type: long
+      if: ctx.json?.properties?.additionalData?.commentsCount != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.additionalData.providerIncidentUrl
+      tag: rename_properties_additionalData_providerIncidentUrl
+      target_field: microsoft_sentinel.incident.properties.additional_data.provider_incident_url
+      ignore_missing: true
+  - rename:
+      field: json.properties.additionalData.tactics
+      tag: rename_properties_additionalData_tactics
+      target_field: microsoft_sentinel.incident.properties.additional_data.tactics
+      ignore_missing: true
+  - foreach:
+      field: microsoft_sentinel.incident.properties.additional_data.tactics
+      if: ctx.microsoft_sentinel?.incident?.properties?.additional_data?.tactics instanceof List
+      processor:
+        append:
+          field: threat.tactic.name
+          tag: append_microsoft_sentinel_incident_properties_additional_data_tactics_into_threat_tactic_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.properties.classification
+      tag: rename_properties_classification
+      target_field: microsoft_sentinel.incident.properties.classification
+      ignore_missing: true
+  - rename:
+      field: json.properties.classificationComment
+      tag: rename_properties_classificationComment
+      target_field: microsoft_sentinel.incident.properties.classification_comment
+      ignore_missing: true
+  - rename:
+      field: json.properties.classificationReason
+      tag: rename_properties_classificationReason
+      target_field: microsoft_sentinel.incident.properties.classification_reason
+      ignore_missing: true
+  - date:
+      field: json.properties.createdTimeUtc
+      tag: date_properties_createdTimeUtc
+      target_field: microsoft_sentinel.incident.properties.created_time_utc
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.createdTimeUtc != null && ctx.json.properties.createdTimeUtc != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_incident_properties_created_time_utc
+      copy_from: microsoft_sentinel.incident.properties.created_time_utc
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.description
+      tag: rename_properties_description
+      target_field: microsoft_sentinel.incident.properties.description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_incident_properties_description
+      copy_from: microsoft_sentinel.incident.properties.description
+      ignore_empty_value: true
+  - date:
+      field: json.properties.firstActivityTimeUtc
+      tag: date_properties_firstActivityTimeUtc
+      target_field: microsoft_sentinel.incident.properties.first_activity_time_utc
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.firstActivityTimeUtc != null && ctx.json.properties.firstActivityTimeUtc != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.incidentNumber
+      tag: convert_properties_incidentNumber_to_long
+      target_field: microsoft_sentinel.incident.properties.incident.number
+      type: long
+      if: ctx.json?.properties?.incidentNumber != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.incidentUrl
+      tag: rename_properties_incidentUrl
+      target_field: microsoft_sentinel.incident.properties.incident.url
+      ignore_missing: true
+  - set:
+      field: event.url
+      tag: set_event_url_from_incident_properties_incident_url
+      copy_from: microsoft_sentinel.incident.properties.incident.url
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.labels.labelName
+      tag: rename_properties_labels_labelName
+      target_field: microsoft_sentinel.incident.properties.labels.name
+      ignore_missing: true
+  - rename:
+      field: json.properties.labels.labelType
+      tag: rename_properties_labels_labelType
+      target_field: microsoft_sentinel.incident.properties.labels.type
+      ignore_missing: true
+  - date:
+      field: json.properties.lastActivityTimeUtc
+      tag: date_properties_lastActivityTimeUtc
+      target_field: microsoft_sentinel.incident.properties.last_activity_time_utc
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.lastActivityTimeUtc != null && ctx.json.properties.lastActivityTimeUtc != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.lastModifiedTimeUtc
+      tag: date_properties_lastModifiedTimeUtc
+      target_field: microsoft_sentinel.incident.properties.last_modified_time_utc
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.lastModifiedTimeUtc != null && ctx.json.properties.lastModifiedTimeUtc != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_incident_properties_last_modified_time_utc
+      copy_from: microsoft_sentinel.incident.properties.last_modified_time_utc
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.owner.assignedTo
+      tag: rename_properties_owner_assignedTo
+      target_field: microsoft_sentinel.incident.properties.owner.assigned_to
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_incident_properties_owner_assigned_to
+      copy_from: microsoft_sentinel.incident.properties.owner.assigned_to
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - rename:
+      field: json.properties.owner.email
+      tag: rename_properties_owner_email
+      target_field: microsoft_sentinel.incident.properties.owner.email
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_incident_properties_owner_email
+      copy_from: microsoft_sentinel.incident.properties.owner.email
+      ignore_empty_value: true
+  - dissect:
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+      tag: dissect_user_email
+      field: user.email
+      pattern: '%{_temp}@%{user.domain}'
+  - append:
+      field: related.user
+      tag: append_user_email_into_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - rename:
+      field: json.properties.owner.objectId
+      tag: rename_properties_owner_objectId
+      target_field: microsoft_sentinel.incident.properties.owner.object_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.owner.ownerType
+      tag: rename_properties_owner_ownerType
+      target_field: microsoft_sentinel.incident.properties.owner.type
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_owner_object_id_into_related_user
+      value: '{{{microsoft_sentinel.incident.properties.owner.object_id}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_sentinel?.incident?.properties?.owner?.object_id != null && ctx.microsoft_sentinel?.incident?.properties?.owner?.type?.toLowerCase() == 'user'
+  - rename:
+      field: json.properties.owner.userPrincipalName
+      tag: rename_properties_owner_userPrincipalName
+      target_field: microsoft_sentinel.incident.properties.owner.user_principal_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_principal_name_into_related_user
+      value: '{{{microsoft_sentinel.incident.properties.owner.user_principal_name}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_sentinel?.incident?.properties?.owner?.user_principal_name != null
+  - rename:
+      field: json.properties.providerIncidentId
+      tag: rename_properties_providerIncidentId
+      target_field: microsoft_sentinel.incident.properties.provider.incident_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.providerName
+      tag: rename_properties_providerName
+      target_field: microsoft_sentinel.incident.properties.provider.name
+      ignore_missing: true
+  - rename:
+      field: json.properties.relatedAnalyticRuleIds
+      tag: rename_properties_relatedAnalyticRuleIds
+      target_field: microsoft_sentinel.incident.properties.related_analytic_rule_ids
+      ignore_missing: true
+  - foreach:
+      field: microsoft_sentinel.incident.properties.related_analytic_rule_ids
+      if: ctx.microsoft_sentinel?.incident?.properties?.related_analytic_rule_ids instanceof List
+      processor:
+        append:
+          field: rule.id
+          tag: append_rule_id_from_incident_properties_related_analytic_rule_ids
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.properties.severity
+      tag: rename_properties_severity
+      target_field: microsoft_sentinel.incident.properties.severity
+      ignore_missing: true
+  - script:
+      description: Script to set the event severity.
+      tag: script_to_set_event_severity
+      lang: painless
+      if: ctx.microsoft_sentinel?.incident?.properties?.severity != null
+      source: >-
+        def temp = ctx.microsoft_sentinel.incident.properties.severity.toLowerCase();
+        if (temp == 'informational') {
+          ctx.event.severity = 0;
+        } else if (temp == 'low') {
+          ctx.event.severity = 1;
+        } else if (temp == 'medium') {
+          ctx.event.severity = 2;
+        } else if (temp == 'high') {
+          ctx.event.severity = 3;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.status
+      tag: rename_properties_status
+      target_field: microsoft_sentinel.incident.properties.status
+      ignore_missing: true
+  - rename:
+      field: json.properties.title
+      tag: rename_properties_title
+      target_field: microsoft_sentinel.incident.properties.title
+      ignore_missing: true
+  - date:
+      field: json.systemData.createdAt
+      tag: date_systemData_createdAt
+      target_field: microsoft_sentinel.incident.system_data.created_at
+      formats:
+        - ISO8601
+      if: ctx.json?.systemData?.createdAt != null && ctx.json.systemData.createdAt != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.systemData.createdBy
+      tag: rename_systemData_createdBy
+      target_field: microsoft_sentinel.incident.system_data.created_by
+      ignore_missing: true
+  - rename:
+      field: json.systemData.createdByType
+      tag: rename_systemData_createdByType
+      target_field: microsoft_sentinel.incident.system_data.created_by_type
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_system_data_created_by_into_related_user
+      value: '{{{microsoft_sentinel.incident.system_data.created_by}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_sentinel?.incident?.system_data?.created_by != null && ctx.microsoft_sentinel?.incident?.system_data?.created_by_type?.toLowerCase() == 'user'
+  - date:
+      field: json.systemData.lastModifiedAt
+      tag: date_systemData_lastModifiedAt
+      target_field: microsoft_sentinel.incident.system_data.last_modified_at
+      formats:
+        - ISO8601
+      if: ctx.json?.systemData?.lastModifiedAt != null && ctx.json.systemData.lastModifiedAt != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.systemData.lastModifiedBy
+      tag: rename_systemData_lastModifiedBy
+      target_field: microsoft_sentinel.incident.system_data.last_modified_by
+      ignore_missing: true
+  - rename:
+      field: json.systemData.lastModifiedByType
+      tag: rename_systemData_lastModifiedByType
+      target_field: microsoft_sentinel.incident.system_data.last_modified_by_type
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_system_data_last_modified_by_into_related_user
+      value: '{{{microsoft_sentinel.incident.system_data.last_modified_by}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_sentinel?.incident?.system_data?.last_modified_by != null && ctx.microsoft_sentinel?.incident?.system_data?.last_modified_by_type?.toLowerCase() == 'user'
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: microsoft_sentinel.incident.type
+      ignore_missing: true
+  - remove:
+      field:
+        - microsoft_sentinel.incident.id
+        - microsoft_sentinel.incident.properties.additional_data.tactics
+        - microsoft_sentinel.incident.properties.created_time_utc
+        - microsoft_sentinel.incident.properties.description
+        - microsoft_sentinel.incident.properties.incident.url
+        - microsoft_sentinel.incident.properties.last_modified_time_utc
+        - microsoft_sentinel.incident.properties.owner.assigned_to
+        - microsoft_sentinel.incident.properties.owner.email
+        - microsoft_sentinel.incident.properties.related_analytic_rule_ids
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - _temp
+        - json
+      tag: remove_json_and_temp
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_in_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
