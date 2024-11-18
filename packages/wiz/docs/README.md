@@ -329,6 +329,7 @@ An example event for `cloud_configuration_finding` looks as following:
 | wiz.cloud_configuration_finding.evidence.current_value |  | text |
 | wiz.cloud_configuration_finding.evidence.expected_value |  | text |
 | wiz.cloud_configuration_finding.id |  | keyword |
+| wiz.cloud_configuration_finding.name |  | keyword |
 | wiz.cloud_configuration_finding.resource.cloud_platform |  | keyword |
 | wiz.cloud_configuration_finding.resource.id |  | keyword |
 | wiz.cloud_configuration_finding.resource.name |  | keyword |
@@ -345,6 +346,7 @@ An example event for `cloud_configuration_finding` looks as following:
 | wiz.cloud_configuration_finding.rule.name |  | keyword |
 | wiz.cloud_configuration_finding.rule.remediation_instructions |  | text |
 | wiz.cloud_configuration_finding.rule.short_id |  | keyword |
+| wiz.cloud_configuration_finding.status |  | keyword |
 
 
 ### Issue

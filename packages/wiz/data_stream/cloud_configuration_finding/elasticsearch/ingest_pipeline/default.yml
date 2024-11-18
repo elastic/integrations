@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Cloud Configuration Finding logs
+description: Pipeline for processing Cloud Configuration Finding full posture
 processors:
   - set:
       field: ecs.version
@@ -119,30 +119,29 @@ processors:
       value: state
       tag: set_event_kind
   - rename:
+      field: json.name
+      tag: rename_name
+      target_field: wiz.cloud_configuration_finding.name
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: wiz.cloud_configuration_finding.name
+      ignore_empty_value: true
+  - rename:
       field: json.rule.description
       tag: rename_rule_description
       target_field: wiz.cloud_configuration_finding.rule.description
       ignore_missing: true
   - set:
-      field: message
-      tag: set_message
-      copy_from: wiz.cloud_configuration_finding.rule.description
-      ignore_empty_value: true
-  - set:
       field: rule.description
       tag: set_rule_description
       copy_from: wiz.cloud_configuration_finding.rule.description
       ignore_empty_value: true
-  - date:
-      field: json.analyzedAt
-      tag: date_set_timestamp
-      formats:
-        - ISO8601
-      if: ctx.json?.analyzedAt != null && ctx.json.analyzedAt != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_timestamp
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
   - rename:
       field: json.rule.id
       tag: rename_rule_id
@@ -338,6 +337,11 @@ processors:
       tag: set_rule_reference
       copy_from: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
       ignore_empty_value: true
+  - rename:
+      field: json.status
+      tag: rename_status
+      target_field: wiz.cloud_configuration_finding.status
+      ignore_missing: true
   - remove:
       field: json
       tag: remove_json
@@ -363,6 +367,7 @@ processors:
         - wiz.cloud_configuration_finding.evidence.current_value
         - wiz.cloud_configuration_finding.evidence.configuration_path
         - wiz.cloud_configuration_finding.evidence.cloud_configuration_link
+        - wiz.cloud_configuration_finding.status
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
