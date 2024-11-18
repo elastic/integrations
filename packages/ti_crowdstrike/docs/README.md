@@ -454,4 +454,4 @@ An example event for `ioc` looks as following:
 | ti_crowdstrike.ioc.severity | Indicates the severity level associated with the detection. | keyword |
 | ti_crowdstrike.ioc.tags | Tags associated with the IOC. | keyword |
 | ti_crowdstrike.ioc.type | The type of indicator. | keyword |
-| ti_crowdstrike.ioc.value | The specific value of the indicator. | ip |
+| ti_crowdstrike.ioc.value | The specific value of the indicator. | keyword |
