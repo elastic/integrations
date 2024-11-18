@@ -46,6 +46,153 @@ processors:
       ignore_missing: true
 
 
+  # Fan Events (2xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm
+  - dissect:
+      field: message
+      tag: fan_event_201
+      description: "Log the total number of fans in the subsystem"
+      if: "ctx.event?.code == '201'"
+      pattern: "There are %{event.count} total fans in subsystem %{aruba.subsystem}"
+  - dissect:
+      field: message
+      tag: fan_event_202
+      description: "Log the fan speed set"
+      if: "ctx.event?.code == '202'"
+      pattern: "Subsystem %{aruba.subsystem} setting fan speed control register to %{aruba.speedval}: %{aruba.value}"
+  - dissect:
+      field: message
+      tag: fan_event_203
+      description: "Log the air flow direction"
+      if: "ctx.event?.code == '203'"
+      pattern: "Air flow direction: %{aruba.value}"
+  - dissect:
+      field: message
+      tag: fan_event_204
+      description: "Log event when a fan tray is removed from the chassis"
+      if: "ctx.event?.code == '204'"
+      pattern: "Fan tray %{aruba.fan_tray_number} was removed"
+  - dissect:
+      field: message
+      tag: fan_event_205
+      description: "Log event when a fan tray is inserted into the chassis"
+      if: "ctx.event?.code == '205'"
+      pattern: "Fan tray %{aruba.fan_tray_number} was inserted"
+  - dissect:
+      field: message
+      tag: fan_event_206
+      description: "Log event when a fan module is removed from a fan tray"
+      if: "ctx.event?.code == '206'"
+      pattern: "Fan module %{aruba.fan_module_number} in fan tray %{aruba.fan_tray_number} was removed"
+  - dissect:
+      field: message
+      tag: fan_event_207
+      description: "Log event when a fan module is inserted into a fan tray"
+      if: "ctx.event?.code == '207'"
+      pattern: "Fan module %{aruba.fan_module_number} in fan tray %{aruba.fan_tray_number} was inserted"
+  - dissect:
+      field: message
+      tag: fan_event_208
+      description: "Log event when an unsupported fan tray is inserted"
+      if: "ctx.event?.code == '208'"
+      pattern: "Unsupported fan tray %{aruba.fan_tray_number} detected. Please insert a standard fan tray"
+  - dissect:
+      field: message
+      tag: fan_event_209
+      description: "Log error when system shutdown is initiated due to critical fan faults"
+      if: "ctx.event?.code == '209'"
+      pattern: "Shutting down system now because %{aruba.num_of_failure} %{aruba.failure_type} %{aruba.compare_mode} limit of %{aruba.num_of_failure_limit}"
+  - dissect:
+      field: message
+      tag: fan_event_211
+      description: "Log error when the number of failures exceed the allowable limit"
+      if: "ctx.event?.code == '211'"
+      pattern: "Shutting down system in %{aruba.seconds} seconds because %{aruba.num_of_failure} %{aruba.failure_type} %{aruba.compare_mode} limit of %{aruba.num_of_failure_limit}"
+  - dissect:
+      field: message
+      tag: fan_event_212
+      description: "Log event when the shutdown timer is cancelled"
+      if: "ctx.event?.code == '212'"
+      pattern: "System shutdown timer is cancelled"
+  - dissect:
+      field: message
+      tag: fan_event_213
+      description: "Log error when there are fan faults"
+      if: "ctx.event?.code == '213'"
+      pattern: "%{aruba.num_of_failure} %{aruba.failure_type} in the system"
+  - dissect:
+      field: message
+      tag: fan_event_214
+      description: "List out the faulty or missing fan names"
+      if: "ctx.event?.code == '214'"
+      pattern: "%{aruba.function}: Fan fault in tray %{aruba.tray_index}, module %{aruba.fan_index}, reason: %{aruba.reason}"
+  - dissect:
+      field: message
+      tag: fan_event_215
+      description: "Log the fan status"
+      if: "ctx.event?.code == '215'"
+      pattern: "%{aruba.fan_name} fan is %{aruba.fan_status}"
+  - dissect:
+      field: message
+      tag: fan_event_216
+      description: "Log the change in fan status"
+      if: "ctx.event?.code == '216'"
+      pattern: "Status of fan %{aruba.fan_module_index} in tray %{aruba.fan_tray_index} has changed from %{aruba.old_status} to %{aruba.new_status}"
+  - dissect:
+      field: message
+      tag: fan_event_217
+      description: "Log when minimum number of fans are not present"
+      if: "ctx.event?.code == '217'"
+      pattern: "Operational fan count below minimum. %{aruba.fan_count} fans operating, but %{aruba.fan_minimum} are required"
+  - dissect:
+      field: message
+      tag: fan_event_218
+      description: "Log when the fan speed index changes to and from the maximum for each thermal zone"
+      if: "ctx.event?.code == '218'"
+      pattern: "Fan speed index for thermal zone %{aruba.zone_index} is %{aruba.fan_speed_index_status}"
+  - dissect:
+      field: message
+      tag: fan_event_219
+      description: "Log event when a fan tray is powered on or off"
+      if: "ctx.event?.code == '219'"
+      pattern: "Fan tray %{aruba.fan_tray_number} powered %{aruba.status}"
+  - dissect:
+      field: message
+      tag: fan_event_220
+      description: "Log event when a fan tray is inserted specifying its airflow direction"
+      if: "ctx.event?.code == '220'"
+      pattern: "Fan tray %{aruba.fan_tray_number} airflow is %{aruba.fan_tray_direction}"
+  - dissect:
+      field: message
+      tag: fan_event_221
+      description: "Log event when a fan tray airflow is not matching with system airflow"
+      if: "ctx.event?.code == '221'"
+      pattern: "%{aruba.fan_tray_airflow_current} airflow fan tray %{aruba.fan_tray_number} unsupported; this system requires %{aruba.fan_tray_airflow_required} airflow"
+  - dissect:
+      field: message
+      tag: fan_event_222
+      description: "Log error when number of faulty/supported fans does not meet the allowable limit"
+      if: "ctx.event?.code == '222'"
+      pattern: "%{aruba.num_of_failure} %{aruba.failure_type} %{aruba.compare_mode} limit of %{aruba.num_of_failure_limit}"
+  - dissect:
+      field: message
+      tag: fan_event_223
+      description: "Log when fan tray SKU ID in FRU is mismatched"
+      if: "ctx.event?.code == '223'"
+      pattern: "Fan tray %{aruba.fan_tray_number} FRU EPPROM is incorrectly programmed"
+  - dissect:
+      field: message
+      tag: fan_event_224
+      description: "Log event when a fan tray airflow is not matching with system airflow and is disabled"
+      if: "ctx.event?.code == '224'"
+      pattern: "%{aruba.fan_tray_airflow_current} airflow fan tray %{aruba.fan_tray_number} disabled; this system requires %{aruba.fan_tray_airflow_required} airflow"
+  - dissect:
+      field: message
+      tag: fan_event_225
+      description: "Log event when a misconfigured fan tray is enabled or disabled"
+      if: "ctx.event?.code == '225'"
+      pattern: "fan tray %{aruba.fan_tray_number} misconfigured; this fan tray has been %{aruba.en_dis}"
+
     # CoPP Events (15xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm
 
