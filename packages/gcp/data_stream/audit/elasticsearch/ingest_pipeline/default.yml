@@ -48,7 +48,7 @@ processors:
       pattern: "%{}%2F%{event.provider}"
       ignore_missing: true
       # NOTE test data fails the spec
-      ignore_failure: true 
+      ignore_failure: true
 
   - set:
       field: event.kind
@@ -105,6 +105,118 @@ processors:
         API_VERSION: (v\d+([a-z]+)?(\d+)?)
         RESOURCE_TYPE: ([a-z]+((\.[a-z0-9]+)+)?)
       ignore_missing: true
+  - script:
+      description: Appends any relevant entity to `related.entity` for all events
+      lang: painless
+      on_failure:
+        - set:
+            description: Adds error reason to the document
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
+      source: |
+        void addFields(Set entities, String[] fields) {
+            for (String field : fields) {
+              addField(entities, field);
+            }
+        }
+
+        void addField(Set entities, String fieldName) {
+          addValue(entities, field(fieldName).get(null));
+        }
+
+        boolean addValues(Set entities, String[] values) {
+            boolean addedAll = true;
+            for (String value : values) {
+              addedAll = addedAll && addValue(entities, value);
+            }
+
+            return addedAll;
+        }
+
+        boolean addValue(Set entities, String value) {
+          if (value == null || value == "") {
+            return false;
+          }
+
+         return entities.add(value);
+        }
+
+        boolean isKubernetes = false;
+        if (ctx.json?.resource?.type != null) {
+          String resType = ctx.json.resource.type;
+          if (resType == "k8s_cluster" || resType == "gke_cluster" || resType == "kubernetes") {
+            isKubernetes = true;
+          }
+        }
+
+        // Using tree set to ensure a sorting is kept (testing purposes)
+        TreeSet entities = new TreeSet();
+
+        addField(entities, "json.proyoPayload.request.parent");
+        if (!isKubernetes) {
+            addFields(entities, new String[]{
+              "json.protoPayload.resourceName",
+              "json.protoPayload.response.user"
+            });
+        }
+
+
+        HashMap authInfo = field("json.protoPayload.authenticationInfo").get(new HashMap());
+        if (!isKubernetes) {
+          addValue(entities, authInfo.principalEmail);
+        }
+        addValues(entities, new String[]{
+          authInfo.principalSubject,
+          authInfo.serviceAccountKeyName
+        });
+        if (authInfo.serviceAccountDelegationInfo != null) {
+          if (!(authInfo.serviceAccountDelegationInfo instanceof List)) {
+            authInfo.serviceAccountDelegationInfo.get(new ArrayList()).stream().forEach(
+              delegInfo -> {
+                addValues(entities, new String[]{
+                  delegInfo.principalSubject,
+                  delegInfo.firstPartyPrincipal.principalEmail,
+                  delegInfo.thirdPartyPrincipal.principalEmail
+                });
+              }
+            );
+          }
+        }
+
+        String serviceName = field("json.protoPayload.serviceName").get(null);
+
+        if (serviceName == "compute.googleapis.com") {
+          field("json.protoPayload.request.networkInterfaces").get(new ArrayList()).stream().forEach(
+            f -> addValue(entities, f.network)
+          );
+
+          field("json.protoPayload.request.serviceAccounts").get(new ArrayList()).stream().forEach(
+            f -> addValue(entities, f.email)
+          );
+
+          field("json.protoPayload.request.disks").get(new ArrayList()).stream().forEach(
+            f -> addValue(entities, f.source)
+          );
+        } else if (serviceName == "cloudresourcemanager.googleapis.com") {
+          field("json.protoPayload.request.policy.bindings").get(new ArrayList()).stream().forEach(
+            f -> {
+              addValue(entities, f.role);
+              f.members.forEach(m -> addValue(entities, m));
+            }
+          );
+          field("json.protoPayload.response.bindings").get(new ArrayList()).stream().forEach(
+            f -> {
+              addValue(entities, f.role);
+              f.members.forEach(m -> addValue(entities, m));
+            }
+          );
+        } else if (serviceName == "iamcredentials.googleapis.com") {
+          field("json.protoPayload.metadata.identityDelegationChain").get(new ArrayList()).stream().forEach(
+            f -> addValue(entities, f)
+          );
+        }
+
+        field("related.entity").set(entities);
 
 ##
 # AuthenticationInfo
@@ -370,9 +482,9 @@ processors:
 
 ##
 # if gcp.audit.authorization_info.[0].granted is true then
-# set event.category [network, configuration] and event.type to [access, allowed]; 
+# set event.category [network, configuration] and event.type to [access, allowed];
 # Caveat
-# 1. protoPayload.resourceName is a single value while authorization_info[].resource 
+# 1. protoPayload.resourceName is a single value while authorization_info[].resource
 # is a list.
 # 2. as per test data authorization_info may not be as per spec.
 ##
