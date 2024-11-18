@@ -294,6 +294,12 @@ processors:
       tag: set_vulnerability_url
       field: url.original
       copy_from: panw.panos.misc
+  # It's been observed that URL is in future_use3 field when sub_type == 'file', but theres' no documentation on this usage
+  - set:
+      if: 'ctx.panw?.panos?.sub_type == "file" && ctx._temp_?.future_use3 instanceof String && ctx._temp_.future_use3.contains("/")'
+      tag: set_url_from_file
+      field: url.original
+      copy_from: _temp_.future_use3
   # Crude implementation of `uri_parts` as its not working well due to lack of scheme.
   # When the scheme of the URL is absent, this script parses the URL in `ctx.panw.panos.misc` into components namely 
   # `url.original`, `url.domain`, `url.port`, `url.path`, `url.query`, `url.extension`
