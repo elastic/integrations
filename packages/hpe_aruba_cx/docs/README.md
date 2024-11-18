@@ -289,7 +289,7 @@ Note: Descriptions have not been filled out
 #### [External Storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EXTERNAL-STORAGE.htm)
 | Doc Field | Schema Mapping              |
 |-----------|-----------------------------|
-| <name>    | aruba.external_storage.name |
+| <name>    | aruba.storage.name |
 | <status>  | aruba.status                |
 
 #### [Fan events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm)
@@ -1340,7 +1340,6 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.evpn.rt |  | keyword |
 | aruba.evpn.vni |  | keyword |
 | aruba.evpn.vtep_ip |  | ip |
-| aruba.external_storage.name |  | keyword |
 | aruba.fan.air_flow_direction |  | keyword |
 | aruba.fan.compare_mode |  | keyword |
 | aruba.fan.en_dis |  | keyword |

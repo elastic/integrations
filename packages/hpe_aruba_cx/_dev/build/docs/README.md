@@ -289,7 +289,7 @@ Note: Descriptions have not been filled out
 #### [External Storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EXTERNAL-STORAGE.htm)
 | Doc Field | Schema Mapping              |
 |-----------|-----------------------------|
-| <name>    | aruba.external_storage.name |
+| <name>    | aruba.storage.name |
 | <status>  | aruba.status                |
 
 #### [Fan events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm)
