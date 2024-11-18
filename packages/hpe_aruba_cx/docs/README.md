@@ -343,31 +343,31 @@ Note: Descriptions have not been filled out
 | aruba.firmware.user       |             |      | user.name                    |
 
 #### [Hardware Health Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm)
-| Doc Fields              | Schema Mapping               |
-|-------------------------|------------------------------|
-| <addr>                    | aruba.hardware.addr          |
-| <bus>                     | aruba.hardware.bus           |
-| <cap>                     | aruba.hardware.cap           |
-| <cecount>                 | aruba.hardware.cecount           |
-| <channel>                 | aruba.hardware.channel       |
-| <cpus>                    | aruba.hardware.cpus          |
-| <device>                  | aruba.hardware.device        |
-| <error_code>              | error.code                   |
-| <function>                | aruba.hardware.function      |
-| <level>                   | aruba.hardware.level         |
-| <location>                | aruba.hardware.location      |
-| <mcgstatus>               | aruba.hardware.mcgstatus     |
-| <misc>                    | aruba.hardware.misc          |
-| <offlined>                | aruba.hardware.offlined      |
-| <origin>                  | aruba.hardware.origin        |
-| <page>                    | aruba.hardware.page          |
-| <seg>                     | aruba.hardware.seg           |
-| <slot>                    | aruba.slot                   |
-| <socket>                  | aruba.hardware.socket        |
-| <status>                  | aruba.status                 |
-| <test_name>               | aruba.hardware.test_name     |
-| <threshold>               | aruba.limit                  |
-| <type>                    | aruba.hardware.type          |
+| Doc Fields   | Schema Mapping          |
+|--------------|-------------------------|
+| <addr>       | aruba.hardware.addr     |
+| <bus>        | aruba.hardware.bus      |
+| <cap>        | aruba.hardware.cap      |
+| <cecount>    | aruba.hardware.cecount  |
+| <channel>    | aruba.hardware.channel  |
+| <cpus>       | aruba.hardware.cpus     |
+| <device>     | aruba.hardware.device   |
+| <error_code> | error.code              |
+| <function>   | aruba.hardware.function |
+| <level>      | aruba.hardware.level    |
+| <location>   | aruba.hardware.location |
+| <mcgstatus>  | aruba.hardware.mcgstatus|
+| <misc>       | aruba.hardware.misc     |
+| <offlined>   | aruba.hardware.offlined |
+| <origin>     | aruba.hardware.origin   |
+| <page>       | aruba.hardware.page     |
+| <seg>        | aruba.hardware.seg      |
+| <slot>       | aruba.slot              |
+| <socket>     | aruba.hardware.socket   |
+| <status>     | aruba.status            |
+| <test_name>  | aruba.hardware.test_name|
+| <threshold>  | aruba.limit             |
+| <type>       | aruba.hardware.type     |
 
 #### [Hardware Switch controller sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm)
 | Field               | Description | Type | Common                       |
