@@ -11,7 +11,7 @@ The `logstash` package works with Logstash 8.5.0 and later
 ## Metrics Collection
 
 Metric collection for the Logstash integration can be done via Elastic Agent (preferred) or with Stack Monitoring. 
-By utilizing Elastic Agent we are able to query additional monitoring APIs and provide addtional dashboards, which include provide the best view into your Logstash deployment and pipeline execution.
+By utilizing Elastic Agent we are able to query additional monitoring APIs and provide addtional dashboards, which provide the best view into your Logstash deployment and pipeline execution.
 
 Metrics colleciton is not compatible with the Stack Monitoring UI inside Kibana, only only type of Metrics collection should be selected with this integration.
 Users that prefer the Stack Monitoring UI should uncheck `Metrics (Elastic Agent)` and continue to use `Metrics (Stack Monitoring)`. 
