@@ -1,0 +1,628 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "7a497074-f1b2-4a24-ba89-1d1b365fe009": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "source.geo.country_name.keyword",
+                        "grow": true,
+                        "id": "7a497074-f1b2-4a24-ba89-1d1b365fe009",
+                        "searchTechnique": "prefix",
+                        "title": "Source Country",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "8c215384-0324-42f2-886e-f49cb3ca49d2": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "destination.geo.country_name.keyword",
+                        "grow": true,
+                        "id": "8c215384-0324-42f2-886e-f49cb3ca49d2",
+                        "searchTechnique": "prefix",
+                        "title": "Destination Country",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "f2a5f25a-42d3-4076-99a0-108afeb7f947": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "data_stream.dataset",
+                        "grow": true,
+                        "id": "f2a5f25a-42d3-4076-99a0-108afeb7f947",
+                        "searchTechnique": "prefix",
+                        "title": "data_stream.dataset",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
+        },
+        "description": "Custom visualization to show network traffic from source to destination",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\n    \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n    \"config\": {\n        \"kibana\": {\n\t\t\t\"type\": \"map\",\n\t\t\t\"latitude\": 10,\n\t\t\t\"longitude\": 0,\n\t\t\t\"zoom\": 1.2,\n\t\t\t\"mapStyle\": true,\n\t\t\t\"emsTileServiceId\": \"road_map\",\n\t\t\t\"minZoom\": 0,\n\t\t\t\"zoomControl\": true,\n\t\t\t\"scrollWheelZoom\": false,\n\t\t\t\"delayRepaint\": true,\n\t\t\t\"tooltips\": {\n\t\t\t\t\"position\": \"top\",\n\t\t\t\t\"padding\": 15,\n\t\t\t\t\"textTruncate\": true\n\t\t\t}\n        }\n    },\n    \"signals\": [\n        {\n\t\t\t\"name\": \"zoom\",\n\t\t\t\"description\": \"The current zoom level of the map\",\n\t\t\t\"value\": 1\n        },\n        {\n\t\t\t\"name\": \"latitude\",\n\t\t\t\"description\": \"The starting latitude of the map\",\n\t\t\t\"value\": 0\n        },\n        {\n\t\t\t\"name\": \"longitude\",\n\t\t\t\"description\": \"The starting longitude of the map\",\n\t\t\t\"value\": 0\n        },\n        {\n\t\t\t\"name\": \"width\",\n\t\t\t\"description\": \"The width of the map\",\n\t\t\t\"value\": 900\n        },\n        {\n\t\t\t\"name\": \"height\",\n\t\t\t\"description\": \"The height of the map\",\n\t\t\t\"value\": 560\n        },\n        {\n\t\t\t\"name\": \"timer\",\n\t\t\t\"description\": \"A timer to animate an arrow on the interpolation of the path\",\n\t\t\t\"value\": 0,\n\t\t\t\"on\": [\n\t\t\t\t{\n\t\t\t\t\"events\": { \"type\": \"timer\", \"throttle\": 10 },\n\t\t\t\t\"update\": \"if(timer \u003e= 2000, 0, timer + 10)\"\n\t\t\t\t}\n\t\t\t]\n        },\n        {\n\t\t\t\"name\": \"fraction\",\n\t\t\t\"description\": \"A time-based variable to animate an arrow on the interpolation of the path\",\n\t\t\t\"value\": 0,\n\t\t\t\"on\": [\n\t\t\t\t{\n\t\t\t\t\"events\": { \"signal\": \"timer\" },\n\t\t\t\t\"update\": \"timer / 2000\"\n\t\t\t\t}\n\t\t\t]\n        },\n        {\n\t\t\t\"name\": \"fraction2\",\n\t\t\t\"description\": \"A fraction to control the animation of the circle\",\n\t\t\t\"value\": 0,\n\t\t\t\"on\": [\n\t\t\t\t{\n\t\t\t\t\"events\": { \"signal\": \"timer\" },\n\t\t\t\t\"update\": \"(timer % 500) / 500\"\n\t\t\t\t}\n\t\t\t]\n        },\n        {\n\t\t\t\"name\": \"radius\",\n\t\t\t\"description\": \"The animated radius of an arc\",\n\t\t\t\"update\": \"20 * fraction2\"\n        }\n    ],\n    \"data\": [\n        {\n\t\t\t\"name\": \"routes\",\n\t\t\t\"url\": {\n\t\"%context%\": true,\n\t\"%timefield%\": \"@timestamp\",\n\t\"index\": \"_all\",\n\t\"body\": {\n  \"aggs\": {\n    \"source_geo_filter\": {\n      \"filter\": {\n        \"exists\": {\n          \"field\": \"source.geo.location\"\n        }\n      },\n      \"aggs\": {\n        \"destination_geo_filter\": {\n          \"filter\": {\n            \"exists\": {\n              \"field\": \"destination.geo.location\"\n            }\n          },\n          \"aggs\": {\n            \"top_documents\": {\n              \"top_hits\": {\n                \"_source\": true,\n                \"size\": 100\n              }\n            }\n          }\n        }\n      }\n    }\n  },\n  \"size\": 0\n}\n},\n\t\t\t\"format\": { \"property\": \"aggregations.source_geo_filter.destination_geo_filter.top_documents.hits.hits\" },\n\t\t\t\"transform\": [\n\t\t\t\t{\"type\": \"filter\", \"expr\": \"datum._source.source \u0026\u0026 datum._source.source.geo \u0026\u0026 datum._source.source.geo.location \u0026\u0026 datum._source.source.geo.location.lat \u0026\u0026 datum._source.source.geo.location.lon \u0026\u0026 datum._source.destination \u0026\u0026 datum._source.destination.geo \u0026\u0026 datum._source.destination.geo.location \u0026\u0026 datum._source.destination.geo.location.lat \u0026\u0026 datum._source.destination.geo.location.lon\"},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"geopoint\",\n\t\t\t\t\t\"projection\": \"projection\",\n\t\t\t\t\t\"fields\": [\"_source.source.geo.location.lon\", \"_source.source.geo.location.lat\"],\n\t\t\t\t\t\"as\": [\"sourceX\", \"sourceY\"]\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"geopoint\",\n\t\t\t\t\t\"projection\": \"projection\",\n\t\t\t\t\t\"fields\": [\"_source.destination.geo.location.lon\", \"_source.destination.geo.location.lat\"],\n\t\t\t\t\t\"as\": [\"targetX\", \"targetY\"]\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"linkpath\",\n\t\t\t\t\t\"shape\": \"curve\",\n\t\t\t\t\t\"sourceX\": { \"field\": \"sourceX\" },\n\t\t\t\t\t\"sourceY\": { \"field\": \"sourceY\" },\n\t\t\t\t\t\"targetX\": { \"field\": \"targetX\" },\n\t\t\t\t\t\"targetY\": { \"field\": \"targetY\" }\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"formula\",\n\t\t\t\t\t\"as\": \"control1X\",\n\t\t\t\t\t\"expr\": \"datum.sourceX + 0.2 * ((datum.targetX - datum.sourceX) + (datum.targetY - datum.sourceY))\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"formula\",\n\t\t\t\t\t\"as\": \"control1Y\",\n\t\t\t\t\t\"expr\": \"datum.sourceY + 0.2 * ((datum.targetY - datum.sourceY) - (datum.targetX - datum.sourceX))\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"formula\",\n\t\t\t\t\t\"as\": \"control2X\",\n\t\t\t\t\t\"expr\": \"datum.targetX + 0.2 * ((datum.targetY - datum.sourceY) - (datum.targetX - datum.sourceX))\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"formula\",\n\t\t\t\t\t\"as\": \"control2Y\",\n\t\t\t\t\t\"expr\": \"datum.targetY - 0.2 * ((datum.targetX - datum.sourceX) + (datum.targetY - datum.sourceY))\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"formula\",\n\t\t\t\t\t\"as\": \"tooltip_data\",\n\t\t\t\t\t\"expr\": \"{source_ountry: datum._source.source.geo.country_name,destination_country: datum._source.destination.geo.country_name, source_IP: datum._source.source.ip, destination_IP: datum._source.destination.ip}\"\n\t\t\t\t}\n\t\t\t]\n        }\n    ],\n    \"marks\": [\n        {\n\t\t\t\"name\": \"linkpath-curve\",\n\t\t\t\"description\": \"The curve generated using the linkpath transform\",\n\t\t\t\"type\": \"path\",\n\t\t\t\"from\": { \"data\": \"routes\" },\n\t\t\t\"encode\": {\n\t\t\t\t\"enter\": { \"strokeWidth\": { \"value\": 1 }},\n\t\t\t\t\"update\": {\n\t\t\t\t\"path\": { \"field\": \"path\" },\n\t\t\t\t\"stroke\": [\n\t\t\t\t\t{ \"test\": \"datum._source.color \u0026\u0026 datum._source.color != ''\", \"field\": \"_source.color\" },\n\t\t\t\t\t{ \"value\": \"steelblue\" }\n\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n        },\n        {\n\t\t\t\"name\": \"shadow-path\",\n\t\t\t\"type\": \"path\",\n\t\t\t\"from\": {\"data\": \"routes\"},\n\t\t\t\"encode\": {\n\t\t\t\t\"enter\": {\n\t\t\t\t\"tooltip\": {\"field\": \"tooltip_data\"},\n\t\t\t\t\"strokeWidth\": {\"value\": 10},\n\t\t\t\t\"strokeOpacity\": {\"value\": 0.05}\n\t\t\t\t},\n\t\t\t\t\"update\": {\n\t\t\t\t\"path\": {\"field\": \"path\"},\n\t\t\t\t\"stroke\": [\n\t\t\t\t\t{ \"test\": \"datum._source.color \u0026\u0026 datum._source.color != ''\", \"field\": \"_source.color\" },\n\t\t\t\t\t{ \"value\": \"steelblue\" }\n\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n        },\n        {\n\t\t\t\"name\": \"moving-missile-arrow\",\n\t\t\t\"description\": \"The arrow that moves on the curved path\",\n\t\t\t\"type\": \"text\",\n\t\t\t\"from\": { \"data\": \"routes\" },\n\t\t\t\"encode\": {\n\t\t\t\t\"enter\": {\n\t\t\t\t\"text\": {\"value\": \"➤\"},\n\t\t\t\t\t\"align\": {\"value\": \"center\"},\n\t\t\t\t\t\"baseline\": {\"value\": \"middle\"},\n\t\t\t\t\t\"fontWeight\": {\"value\": \"bold\"},\n\t\t\t\t\t\"fontSize\": {\"value\": 11},\n\t\t\t\t\t\"dy\": {\"value\": 1},\n\t\t\t\t\"fill\": [\n\t\t\t\t\t{ \"test\": \"datum._source.color \u0026\u0026 datum._source.color != ''\", \"field\": \"_source.color\" },\n\t\t\t\t\t{ \"value\": \"steelblue\" }\n\t\t\t\t]\n\t\t\t\t},\n\t\t\t\t\"update\": {\n\t\t\t\t\"x\": { \"signal\": \"pow(1 - fraction, 3) * datum.sourceX + 3 * pow(1 - fraction, 2) * fraction * datum.control1X + 3 * (1 - fraction) * pow(fraction, 2) * datum.control2X + pow(fraction, 3) * datum.targetX\"},\n\t\t\t\t\"y\": { \"signal\": \"pow(1 - fraction, 3) * datum.sourceY + 3 * pow(1 - fraction, 2) * fraction * datum.control1Y + 3 * (1 - fraction) * pow(fraction, 2) * datum.control2Y + pow(fraction, 3) * datum.targetY\"},\n\t\t\t\t\"angle\": { \"signal\": \"atan2(3 * pow(1 - fraction, 2) * (datum.control1Y - datum.sourceY) + 6 * (1 - fraction) * fraction * (datum.control2Y - datum.control1Y) + 3 * pow(fraction, 2) * (datum.targetY - datum.control2Y), 3 * pow(1 - fraction, 2) * (datum.control1X - datum.sourceX) + 6 * (1 - fraction) * fraction * (datum.control2X - datum.control1X) + 3 * pow(fraction, 2) * (datum.targetX - datum.control2X)) * 180 / PI\"},\n\t\t\t\t\"opacity\": [\n\t\t\t\t\t{ \"test\": \"datum._source.animate \u0026\u0026 datum._source.animate == true\", \"value\": 1 },\n\t\t\t\t\t{ \"value\": 0 }\n\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n        },\n        {\n\t\t\t\"name\": \"moving-path\",\n\t\t\t\"description\": \"The stroke that moves on the curved path\",\n\t\t\t\"type\": \"path\",\n\t\t\t\"from\": {\"data\": \"routes\"},\n\t\t\t\"encode\": {\n\t\t\t\t\"enter\": {\n\t\t\t\t\"strokeWidth\": {\"value\": 2},\n\t\t\t\t\"stroke\": [\n\t\t\t\t\t{ \"test\": \"datum._source.color \u0026\u0026 datum._source.color != ''\", \"field\": \"_source.color\" },\n\t\t\t\t\t{ \"value\": \"steelblue\" }\n\t\t\t\t]\n\t\t\t\t},\n\t\t\t\t\"update\": {\n\t\t\t\t\"path\": {\"signal\": \"'M' + (pow(1 - (fraction - 0.05), 3) * datum.sourceX + 3 * pow(1 - (fraction - 0.05), 2) * (fraction - 0.05) * datum.control1X + 3 * (1 - (fraction - 0.05)) * pow((fraction - 0.05), 2) * datum.control2X + pow((fraction - 0.05), 3) * datum.targetX) + ',' + (pow(1 - (fraction - 0.05), 3) * datum.sourceY + 3 * pow(1 - (fraction - 0.05), 2) * (fraction - 0.05) * datum.control1Y + 3 * (1 - (fraction - 0.05)) * pow((fraction - 0.05), 2) * datum.control2Y + pow((fraction - 0.05), 3) * datum.targetY) + 'L' + (pow(1 - fraction, 3) * datum.sourceX + 3 * pow(1 - fraction, 2) * fraction * datum.control1X + 3 * (1 - fraction) * pow(fraction, 2) * datum.control2X + pow(fraction, 3) * datum.targetX) + ',' + (pow(1 - fraction, 3) * datum.sourceY + 3 * pow(1 - fraction, 2) * fraction * datum.control1Y + 3 * (1 - fraction) * pow(fraction, 2) * datum.control2Y + pow(fraction, 3) * datum.targetY)\"},\n\t\t\t\t\"opacity\": [\n\t\t\t\t\t{ \"test\": \"datum._source.animate \u0026\u0026 datum._source.animate == true\", \"value\": 1 },\n\t\t\t\t\t{ \"value\": 0 }\n\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n        },\n        {\n\t\t\t\"name\": \"fixed-arrow\",\n\t\t\t\"description\": \"A fixed arrow at the end of the path\",\n\t\t\t\t\"type\": \"text\",\n\t\t\t\t\"from\": {\"data\": \"routes\"},\n\t\t\t\t\"encode\": {\n\t\t\t\t\"enter\": {\n\t\t\t\t\t\"fontWeight\": {\"value\": \"bold\"},\n\t\t\t\t\t\"fontSize\": {\"value\": 11},\n\t\t\t\t\t\"text\": {\"value\": \"➤\"},\n\t\t\t\t\t\"align\": {\"value\": \"center\"},\n\t\t\t\t\t\"baseline\": {\"value\": \"middle\"},\n\t\t\t\t\t\"fill\": [\n\t\t\t\t\t{ \"test\": \"datum._source.color \u0026\u0026 datum._source.color != ''\", \"field\": \"_source.color\" },\n\t\t\t\t\t{ \"value\": \"steelblue\" }\n\t\t\t\t],\n\t\t\t\t\t\"dy\": {\"value\": 1}\n\t\t\t\t},\n\t\t\t\t\"update\": {\n\t\t\t\t\t\"x\": {\"field\": \"targetX\"},\n\t\t\t\t\t\"y\": {\"field\": \"targetY\"},\n\t\t\t\t\t\"angle\": { \"signal\": \"atan2(datum.targetY - datum.control2Y, datum.targetX - datum.control2X) * 180 / PI\"}\n\t\t\t\t}\n\t\t\t}\n        },\n        {\n            \"name\": \"source-labels\",\n            \"description\": \"The lables to show at the start of the path\",\n            \"type\": \"text\",\n            \"from\": {\"data\": \"routes\"},\n            \"encode\": {\n\t\t\t\t\"enter\": {\n\t\t\t\t\t\"text\": {\"field\": \"_source.source_label\"},\n\t\t\t\t\t\"fill\": {\"value\": \"steelblue\"},\n\t\t\t\t\t\"align\": {\"value\": \"center\"},\n\t\t\t\t\t\"baseline\": {\"value\": \"middle\"},\n\t\t\t\t\t\"fontWeight\": {\"value\": \"bold\"},\n\t\t\t\t\t\"fontSize\": {\"value\": 11}\n\t\t\t\t},\n\t\t\t\t\"update\": {\n\t\t\t\t\t\"x\": {\"field\": \"sourceX\"},\n\t\t\t\t\t\"y\": {\"field\": \"sourceY\"}\n\t\t\t\t}\n            }\n        },\n        {\n            \"name\": \"destination-labels\",\n            \"description\": \"The lables to show at the end of the path\",\n            \"type\": \"text\",\n            \"from\": {\"data\": \"routes\"},\n            \"encode\": {\n\t\t\t\t\"enter\": {\n\t\t\t\t\t\"text\": {\"field\": \"_source.destination_label\"},\n\t\t\t\t\t\"fill\": {\"value\": \"steelblue\"},\n\t\t\t\t\t\"fontSize\": {\"value\": 11},\n\t\t\t\t\t\"align\": {\"value\": \"center\"},\n\t\t\t\t\t\"baseline\": {\"value\": \"middle\"},\n\t\t\t\t\t\"fontWeight\": {\"value\": \"bold\"}\n\t\t\t\t},\n\t\t\t\t\"update\": {\n\t\t\t\t\t\"x\": {\"field\": \"targetX\"},\n\t\t\t\t\t\"y\": {\"field\": \"targetY\"}\n\t\t\t\t}\n            }\n        },\n        {\n\t\t\t\"name\": \"pulsing-circle\",\n\t\t\t\"description\": \"A circle pulsing at the end of the path\",\n\t\t\t\"type\": \"arc\",\n\t\t\t\"from\": { \"data\": \"routes\" },\n\t\t\t\"encode\": {\n\t\t\t\t\"enter\": {\n\t\t\t\t\t\"x\": { \"field\": \"targetX\" },\n\t\t\t\t\t\"y\": { \"field\": \"targetY\" },\n\t\t\t\t\t\"startAngle\": { \"value\": 0 },\n\t\t\t\t\t\"endAngle\": { \"value\": 6.29 },\n\t\t\t\t\t\"innerRadius\": { \"value\": 0 },\n\t\t\t\t\t\"stroke\": [\n\t\t\t\t\t\t{ \"test\": \"datum._source.color \u0026\u0026 datum._source.color != ''\", \"field\": \"_source.color\" },\n\t\t\t\t\t\t{ \"value\": \"steelblue\" }\n\t\t\t\t\t],\n\t\t\t\t\t\"strokeWidth\": { \"value\": 1 }\n\t\t\t\t},\n\t\t\t\t\"update\": {\n\t\t\t\t\t\"x\": { \"field\": \"targetX\" },\n\t\t\t\t\t\"y\": { \"field\": \"targetY\" },\n\t\t\t\t\t\"outerRadius\": { \"signal\": \"radius\" },\n\t\t\t\t\t\"strokeOpacity\": { \"signal\": \"1 - fraction2\" },\n\t\t\t\t\t\"opacity\": [\n\t\t\t\t\t\t{ \"test\": \"datum._source.animate \u0026\u0026 datum._source.animate == true\", \"value\": 1 },\n\t\t\t\t\t\t{ \"value\": 0 }\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n        }\n    ]\n}"
+                        },
+                        "title": "",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 18,
+                    "i": "4e352d79-5f01-49dc-9bc7-171a2840245b",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "4e352d79-5f01-49dc-9bc7-171a2840245b",
+                "title": "Missile Map",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "44ffbd84-cb4f-4427-bce5-c0b7fe73e849": {
+                                            "columnOrder": [
+                                                "149fa62b-33d0-4a35-a3cb-122b12df5ceb",
+                                                "0820b3d3-67c4-4785-a3ab-c04a1f3a3257"
+                                            ],
+                                            "columns": {
+                                                "0820b3d3-67c4-4785-a3ab-c04a1f3a3257": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "149fa62b-33d0-4a35-a3cb-122b12df5ceb": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Location",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0820b3d3-67c4-4785-a3ab-c04a1f3a3257",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.geo.country_name.keyword"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "149fa62b-33d0-4a35-a3cb-122b12df5ceb",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "0820b3d3-67c4-4785-a3ab-c04a1f3a3257",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "b569b571-8e19-4502-a969-ef2f72591459",
+                    "w": 12,
+                    "x": 0,
+                    "y": 18
+                },
+                "panelIndex": "b569b571-8e19-4502-a969-ef2f72591459",
+                "title": "Source Countries",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "44ffbd84-cb4f-4427-bce5-c0b7fe73e849": {
+                                            "columnOrder": [
+                                                "149fa62b-33d0-4a35-a3cb-122b12df5ceb",
+                                                "0820b3d3-67c4-4785-a3ab-c04a1f3a3257"
+                                            ],
+                                            "columns": {
+                                                "0820b3d3-67c4-4785-a3ab-c04a1f3a3257": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "149fa62b-33d0-4a35-a3cb-122b12df5ceb": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Location",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0820b3d3-67c4-4785-a3ab-c04a1f3a3257",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.geo.country_name.keyword"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "149fa62b-33d0-4a35-a3cb-122b12df5ceb",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "0820b3d3-67c4-4785-a3ab-c04a1f3a3257",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "59c55648-5ee7-4612-af7c-be2f2ca5a3c7",
+                    "w": 12,
+                    "x": 12,
+                    "y": 18
+                },
+                "panelIndex": "59c55648-5ee7-4612-af7c-be2f2ca5a3c7",
+                "title": "Destination Countries",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "44ffbd84-cb4f-4427-bce5-c0b7fe73e849": {
+                                            "columnOrder": [
+                                                "149fa62b-33d0-4a35-a3cb-122b12df5ceb",
+                                                "0820b3d3-67c4-4785-a3ab-c04a1f3a3257"
+                                            ],
+                                            "columns": {
+                                                "0820b3d3-67c4-4785-a3ab-c04a1f3a3257": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "149fa62b-33d0-4a35-a3cb-122b12df5ceb": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "IP Address",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0820b3d3-67c4-4785-a3ab-c04a1f3a3257",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.ip.keyword"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "149fa62b-33d0-4a35-a3cb-122b12df5ceb",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "0820b3d3-67c4-4785-a3ab-c04a1f3a3257",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "beb980d2-256d-4ad6-b69f-ccb26c79a6ca",
+                    "w": 12,
+                    "x": 24,
+                    "y": 18
+                },
+                "panelIndex": "beb980d2-256d-4ad6-b69f-ccb26c79a6ca",
+                "title": "Source IP",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "44ffbd84-cb4f-4427-bce5-c0b7fe73e849": {
+                                            "columnOrder": [
+                                                "149fa62b-33d0-4a35-a3cb-122b12df5ceb",
+                                                "0820b3d3-67c4-4785-a3ab-c04a1f3a3257"
+                                            ],
+                                            "columns": {
+                                                "0820b3d3-67c4-4785-a3ab-c04a1f3a3257": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "149fa62b-33d0-4a35-a3cb-122b12df5ceb": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "IP Address",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0820b3d3-67c4-4785-a3ab-c04a1f3a3257",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.ip.keyword"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "149fa62b-33d0-4a35-a3cb-122b12df5ceb",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "0820b3d3-67c4-4785-a3ab-c04a1f3a3257",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "6d6381c8-0a7f-4d14-a4a7-fcdde4be8943",
+                    "w": 12,
+                    "x": 36,
+                    "y": 18
+                },
+                "panelIndex": "6d6381c8-0a7f-4d14-a4a7-fcdde4be8943",
+                "title": "Destination IP",
+                "type": "lens"
+            }
+        ],
+        "timeRestore": false,
+        "title": "Missile Map",
+        "version": 2
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-11-15T11:15:33.268Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "missile_map-7b9c1c24-64b0-4e75-b321-dce264eb0776",
+    "managed": false,
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "b569b571-8e19-4502-a969-ef2f72591459:indexpattern-datasource-layer-44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "59c55648-5ee7-4612-af7c-be2f2ca5a3c7:indexpattern-datasource-layer-44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "beb980d2-256d-4ad6-b69f-ccb26c79a6ca:indexpattern-datasource-layer-44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6d6381c8-0a7f-4d14-a4a7-fcdde4be8943:indexpattern-datasource-layer-44ffbd84-cb4f-4427-bce5-c0b7fe73e849",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_8c215384-0324-42f2-886e-f49cb3ca49d2:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_7a497074-f1b2-4a24-ba89-1d1b365fe009:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_f2a5f25a-42d3-4076-99a0-108afeb7f947:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
