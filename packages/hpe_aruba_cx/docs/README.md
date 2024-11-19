@@ -1344,8 +1344,11 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.evpn.rt |  | keyword |
 | aruba.evpn.vni |  | keyword |
 | aruba.evpn.vtep_ip |  | ip |
+| aruba.fan.air_flow_direction |  | keyword |
 | aruba.fan.compare_mode |  | keyword |
 | aruba.fan.count |  | long |
+| aruba.fan.en_dis |  | keyword |
+| aruba.fan.fan_index |  | long |
 | aruba.fan.fmod_num |  | keyword |
 | aruba.fan.ft_air_curr |  | keyword |
 | aruba.fan.ft_air_req |  | keyword |
@@ -1356,9 +1359,10 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fan.minimum |  | long |
 | aruba.fan.module_idx |  | long |
 | aruba.fan.name |  | keyword |
+| aruba.fan.new_status |  | keyword |
 | aruba.fan.old_status |  | keyword |
 | aruba.fan.speed_idx_status |  | keyword |
-| aruba.fan.speedval |  | keyword|
+| aruba.fan.speedval |  | keyword |
 | aruba.fan.status |  | keyword |
 | aruba.fan.tray_idx |  | long |
 | aruba.fan.value |  | keyword |
