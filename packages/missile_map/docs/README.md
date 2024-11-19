@@ -48,7 +48,8 @@ There are two types of visualizations used in the Missile Map dashboard:
     - `weight`: Configures the width of a path.
     - `source_label` and `destination_label`: Text that is shown at the start and end of a path respectively.
 
-    The map visualization can be expanded by clicking on the three dots on the top right corner and selecting `⤢ Maximize` from the dropdown. 
+    The map visualization can be expanded by clicking on the three dots on the top right corner and selecting `⤢ Maximize` from the dropdown.
+    The map follows an auto-switch dark-light behavior, meaning it will sync with the Kibana UI theme. See more [here](https://www.elastic.co/blog/whats-new-kibana-ml-8-8-0).
 
 2. **Panels**
 
@@ -70,4 +71,4 @@ There are two types of visualizations used in the Missile Map dashboard:
 Kibana allow users to filter data by writing KQL (Kibana Query Language) in the query bar on the top.
 Users can filter data by selecting the time range provided in the right corner.
 
-By default, the time window is set to the last 15 minutes. To display a path on the map, adjust the time range. A maximum of 100 records can be displayed.
+By default, the time window is set to the last 30 minutes. To display a path on the map, adjust the time range. A maximum of 10000 records can be displayed.
