@@ -25,3 +25,14 @@ The `log` writes the complete file state.
 7. The fingerprint file identity is used by default.
 
 More information can be found on the {{ url "filebeat-input-filestream" "Filestream documentation page" }}
+
+As Filestream configures a new input, configuring it to collect data
+from a file that was previously collected by Custom Logs integration
+will result in duplicate data. You may wish to configure
+`ignore_older` or temporarily set `ignore_inactive: since_first_start`
+to limit the amount of duplicate data collected.
+
+If the Custom Logs integration is removed and the Custom Filestream
+Logs is added in the same policy change, there risk of data being
+missed between the last entry ingested by the Custom Logs and the
+first one ingested by the Custom Filestream Logs.
