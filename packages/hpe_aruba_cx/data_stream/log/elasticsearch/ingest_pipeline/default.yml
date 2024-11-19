@@ -344,6 +344,39 @@ processors:
         3011_3012_3013_COMMON: "correctable memory error count %{NUMBER:aruba.hardware.cecount:long} exceeded threshold %{NUMBER:aruba.limit:long}(?:%{3011_3012_3013_OPTIONAL})?"
         3011_3012_3013_OPTIONAL: " and %{NUMBER:aruba.hardware.offlined:long}"
 
+  # Credential Manager events (65xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
+  #
+  # The following event IDs do not need further processing:
+  # * 6501
+  # * 6502
+  # * 6504
+  # * 6505
+  - dissect:
+      if: "ctx.event.code == '6506'"
+      tag: credmgr_event_6506
+      field: "message"
+      description: "Logs a message when SSH authorized keys are added for a user"
+      pattern: "SSH authorized keys were added for user %{user.name}"
+  - dissect:
+      if: "ctx.event.code == '6507'"
+      tag: credmgr_event_6507
+      field: "message"
+      description: "Logs a message after a failure to write SSH authorized keys for a user"
+      pattern: "Failed to write SSH authorized keys for user %{user.name}"
+  - dissect:
+      if: "ctx.event.code == '6508'"
+      tag: credmgr_event_6508
+      field: "message"
+      description: "Logs a message after deleting SSH authorized keys for a user"
+      pattern: "SSH authorized keys deleted for user %{user.name}"
+  - dissect:
+      if: "ctx.event.code == '6509'"
+      tag: credmgr_event_6509
+      field: "message"
+      description: "Logs a message when SSH authorized key fails validation check"
+      pattern: "User %{user.name} has configured an invalid SSH authorized key with key identifier %{user.id}"
+
   # Config Management events (68xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONFIG_MGMT.htm
   - dissect:
