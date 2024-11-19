@@ -301,21 +301,21 @@ Note: Descriptions have not been filled out
 | <value>                  | aruba.fan.value              |
 | <FT_Num>                 | aruba.fan.ft_num             |
 | <FMod_Num>               | aruba.fan.fmod_num           |
-| <num_of_failure>         | error.code                   |
+| <num_of_failure>         | aruba.error.count            |
 | <failure_type>           | error.type                   |
 | <compare_mode>           | aruba.fan.compare_mode       |
 | <num_of_failure_limit>   | aruba.limit                  |
 | <seconds>                | aruba.time.seconds           |
 | <reason>                 | event.reason                 |
 | <function>               | aruba.fan.function           |
-| <tray_index>             | aruba.fan.tray_index         |
-| <fan_index>              | aruba.fan.fan_index          |
+| <tray_index>             | aruba.fan.tray_idx           |
+| <fan_index>              | aruba.fan.index              |
 | <FanName>                | aruba.fan.name               |
 | <FanStatus>              | aruba.fan.status             |
 | <FanModuleIdx>           | aruba.fan.module_idx         |
-| <FanTrayIdx>             | aruba.fan.tray_index         |
+| <FanTrayIdx>             | aruba.fan.tray_idx           |
 | <OldStatus>              | aruba.fan.old_status         |
-| <NewStatus>              | aruba.fan.new_status         |
+| <NewStatus>              | aruba.fan.status             |
 | <FanCount>               | aruba.fan.count              |
 | <FanMinimum>             | aruba.fan.minimum            |
 | <ZoneIdx>                | aruba.fan.zone_idx           |
@@ -324,7 +324,7 @@ Note: Descriptions have not been filled out
 | <FT_Dir>                 | aruba.fan.ft_dir             |
 | <FT_air_curr>            | aruba.fan.ft_air_curr        |
 | <FT_air_req>             | aruba.fan.ft_air_req         |
-| <En_Dis>                 | aruba.fan.en_dis             |
+| <En_Dis>                 | aruba.fan.status             |
 
 #### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm)
 | Field                       | Description | Type | Common                       |
