@@ -157,15 +157,15 @@ Note: Descriptions have not been filled out
 | <value>      | aruba.config.value   |
 
 #### [Connectivity Fault Management (CFM) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm)
-| Field                        | Description | Type | Common                       |
-|------------------------------|-------------|------|------------------------------|
-| aruba.cfm.id                 | Maintenance Endpoint ID | keyword | aruba.instance.id            |
-| aruba.cfm.interface          | Interface name | keyword |                        |
+| Doc Fields  | Schema Mapping      |
+|-------------|---------------------|
+| <id>        | aruba.cfm.id        |
+| <interface> | aruba.cfm.interfact |
 
-#### [Container manager events CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
-| Field                        | Description | Type | Common           |
-|------------------------------|-------------|------|------------------|
-| aruba.container.name         | Name of container | keyword | container.name   |
+#### [Container manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
+| Doc Fields | Schema Mapping   |
+|------------|------------------|
+| <name>     | container.name   |
 
 #### [CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm)
 | Doc Field                    | Schema Mapping      |
@@ -187,8 +187,8 @@ Note: Descriptions have not been filled out
 | <user>    | user.name      |
 
 #### [DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-RELAY.htm)
-| Field | Description | Type | Common |
-|-------|-------------|------|--------|
+| Doc Field | Schema Mapping |
+|-----------|----------------|
 
 #### [DHCP Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-SERVER.htm)
 | Field                | Description | Type | Common           |
