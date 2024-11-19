@@ -28,7 +28,10 @@ program: |
             state
         :
             state.with({
-                "mintime": string(int(state.?cursor.last_published.orValue(int(now - duration(state.initial_interval)) * 1000))),
+                "mintime": has(state.?cursor.last_published) ?
+                    string(int(state.cursor.last_published.parse_time(time_layout.RFC3339Nano)) * 1000)
+                :
+                    string(int(now - duration(state.initial_interval)) * 1000)
             })
     ).as(state, state.with({
         // calculate maxtime to be the current time minus a buffer (2 minutes) to avoid potential synchronization issues.
