@@ -1338,6 +1338,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.ecmp.route |  | keyword |
 | aruba.erps.port_name |  | keyword |
 | aruba.erps.ring_id |  | keyword |
+| aruba.error.count |  | long |
 | aruba.event_type |  | keyword |
 | aruba.evpn.rd |  | keyword |
 | aruba.evpn.rt |  | keyword |
@@ -1347,12 +1348,13 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fan.compare_mode |  | keyword |
 | aruba.fan.en_dis |  | keyword |
 | aruba.fan.fan_index |  | long |
-| aruba.fan.fmod_num |  | long |
+| aruba.fan.fmod_num |  | keyword |
 | aruba.fan.ft_air_curr |  | keyword |
 | aruba.fan.ft_air_req |  | keyword |
 | aruba.fan.ft_dir |  | keyword |
-| aruba.fan.ft_num |  | long |
+| aruba.fan.ft_num |  | keyword |
 | aruba.fan.function |  | keyword |
+| aruba.fan.index |  | long |
 | aruba.fan.minimum |  | long |
 | aruba.fan.module_idx |  | keyword |
 | aruba.fan.name |  | keyword |
@@ -1360,7 +1362,9 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fan.old_status |  | keyword |
 | aruba.fan.speed_idx_status |  | keyword |
 | aruba.fan.speedval |  | long |
-| aruba.fan.tray_index |  | long |
+| aruba.fan.status |  | keyword |
+| aruba.fan.tray_idx |  | long |
+| aruba.fan.value |  | keyword |
 | aruba.fan.zone_idx |  | keyword |
 | aruba.firmware.dnld_type |  | keyword |
 | aruba.firmware.image_profile |  | keyword |
@@ -1471,6 +1475,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.status |  | keyword |
 | aruba.storage.name |  | keyword |
 | aruba.storage.usage |  | keyword |
+| aruba.subsystem |  | keyword |
 | aruba.system.devicespec |  | keyword |
 | aruba.system.modspec |  | keyword |
 | aruba.system.numdevs |  | long |
@@ -1494,6 +1499,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
+| error.type | The type of the error, for example the class name of the exception. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |

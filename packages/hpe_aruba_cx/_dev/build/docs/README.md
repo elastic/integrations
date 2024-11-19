@@ -326,7 +326,6 @@ Note: Descriptions have not been filled out
 | <FT_air_req>             | aruba.fan.ft_air_req         |
 | <En_Dis>                 | aruba.fan.status             |
 
-
 #### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm)
 | Field                       | Description | Type | Common                       |
 |-----------------------------|-------------|------|------------------------------|
