@@ -426,6 +426,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.cid |  | keyword |
 | crowdstrike.alert.cloud_indicator |  | boolean |
 | crowdstrike.alert.cmdline |  | keyword |
+| crowdstrike.alert.command_line |  | keyword |
 | crowdstrike.alert.comment |  | keyword |
 | crowdstrike.alert.composite_id |  | keyword |
 | crowdstrike.alert.confidence |  | long |
@@ -437,6 +438,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.created_timestamp |  | date |
 | crowdstrike.alert.data_domains |  | keyword |
 | crowdstrike.alert.description |  | keyword |
+| crowdstrike.alert.detect_type |  | keyword |
 | crowdstrike.alert.device.agent_load_flags |  | long |
 | crowdstrike.alert.device.agent_local_time |  | date |
 | crowdstrike.alert.device.agent_version |  | keyword |
@@ -507,6 +509,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.grandparent_details.user_id |  | keyword |
 | crowdstrike.alert.grandparent_details.user_name |  | keyword |
 | crowdstrike.alert.has_script_or_module_ioc |  | boolean |
+| crowdstrike.alert.host_name |  | keyword |
+| crowdstrike.alert.host_type |  | keyword |
 | crowdstrike.alert.id |  | keyword |
 | crowdstrike.alert.idp_policy.enforced_externally |  | long |
 | crowdstrike.alert.idp_policy.mfa_factor_type |  | long |
@@ -515,6 +519,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.idp_policy.rule_id |  | keyword |
 | crowdstrike.alert.idp_policy.rule_name |  | keyword |
 | crowdstrike.alert.idp_policy.rule_trigger |  | long |
+| crowdstrike.alert.image_file_name |  | keyword |
 | crowdstrike.alert.incident.created |  | date |
 | crowdstrike.alert.incident.end |  | date |
 | crowdstrike.alert.incident.id |  | keyword |
@@ -555,6 +560,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.network_accesses.remote_address |  | ip |
 | crowdstrike.alert.network_accesses.remote_port |  | long |
 | crowdstrike.alert.objective |  | keyword |
+| crowdstrike.alert.operating_system |  | keyword |
 | crowdstrike.alert.os_name |  | keyword |
 | crowdstrike.alert.parent_details.cmdline |  | keyword |
 | crowdstrike.alert.parent_details.filename |  | keyword |
