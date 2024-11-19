@@ -1358,7 +1358,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fan.name |  | keyword |
 | aruba.fan.old_status |  | keyword |
 | aruba.fan.speed_idx_status |  | keyword |
-| aruba.fan.speedval |  | long |
+| aruba.fan.speedval |  | keyword|
 | aruba.fan.status |  | keyword |
 | aruba.fan.tray_idx |  | long |
 | aruba.fan.value |  | keyword |

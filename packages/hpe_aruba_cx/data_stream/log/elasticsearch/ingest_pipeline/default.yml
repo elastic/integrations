@@ -64,7 +64,9 @@ processors:
       description: "Log the fan speed set"
       if: "ctx.event?.code == '202'"
       patterns:
-        - "^Subsystem %{DATA:aruba.subsystem} setting fan speed control register to %{NUMBER:aruba.fan.speedval:long}: %{NUMBER:aruba.fan.value}"
+        - "^Subsystem %{DATA:aruba.subsystem} setting fan speed control register to %{DATA:aruba.fan.speedval}: %{FAN_VALUE:aruba.fan.value}"
+      pattern_definitions:
+        FAN_VALUE: "[-_0-9a-zA-Z]+"
   - grok:
       field: message
       tag: fan_event_203
