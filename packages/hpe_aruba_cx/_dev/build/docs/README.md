@@ -181,10 +181,10 @@ Note: Descriptions have not been filled out
 | <unit>                       | aruba.instance.id               |
 
 #### [Credential Manager events DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm)
-| Field                | Description | Type | Common   |
-|----------------------|-------------|------|----------|
-| aruba.cred_mgr.key_id|             |      | user.id  |
-| aruba.cred_mgr.user  |             |      | user.name|
+| Doc Field | Schema Mapping |
+|-----------|----------------|
+| <key-id>  | user.id        |
+| <user>    | user.name      |
 
 #### [DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-RELAY.htm)
 | Field | Description | Type | Common |
