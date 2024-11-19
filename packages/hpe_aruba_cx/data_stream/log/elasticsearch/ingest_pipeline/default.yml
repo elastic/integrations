@@ -133,7 +133,9 @@ processors:
       description: "Log the fan status"
       if: "ctx.event?.code == '215'"
       patterns:
-        - "^%{DATA:aruba.fan.name} fan is %{DATA:aruba.fan.status}"
+        - "^%{DATA:aruba.fan.name} fan is %{FAN_STATUS:aruba.fan.status}"
+      pattern_definitions:
+        FAN_STATUS: "[-_0-9a-zA-Z]+"
   - grok:
       field: message
       tag: fan_event_216
