@@ -8,18 +8,22 @@ processors:
       target_field: event.original
       ignore_missing: true
   - pipeline:
-      if: ctx?.input?.type == "journald"
+      if: ctx.input?.type == "journald"
       name: '{{ IngestPipeline "journald" }}'
   - pipeline:
-      if: ctx?.input?.type == "log"
+      if: ctx.input?.type == "log"
       name: '{{ IngestPipeline "log" }}'
   - remove:
       tag: remove_event-original
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+
