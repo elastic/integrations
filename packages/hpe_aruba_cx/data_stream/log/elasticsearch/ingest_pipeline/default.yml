@@ -833,6 +833,67 @@ processors:
       if: "ctx.event?.code == '10904'"
       pattern: "Line card module %{aruba.dpse.linecard_name} completed backplane sequence recovery"
 
+  # Fault Monitor Events (111xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm
+  - grok:
+      field: message
+      tag: fault_monitor_event_11101_11102
+      description: >
+        Logs event when a fault is detected on an interface.
+        Logs event and shutdown the interface when a fault is detected on an interface.
+      if: "['11101', '11102'].contains(ctx.event?.code)"
+      patterns:
+          - "^Interface %{DATA:aruba.interface.name}: %{DATA:aruba.fault.type} fault detected( and port disabled)?"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11103
+      description: "Interface is auto-enabled on timer expiry."
+      if: "ctx.event?.code == '11103'"
+      patterns:
+          - "^Interface %{DATA:aruba.interface.name}: %{DATA:aruba.fault.type} fault re-enable time expired, port enabled"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11104
+      description: "Interface is auto-enabled on profile configuration change."
+      if: "ctx.event?.code == '11104'"
+      patterns:
+          - "^Interface %{DATA:aruba.interface.name}: %{DATA:aruba.fault.type} fault disable cancelled due to configuration change"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11105
+      description: "Interface is auto-enabled on admin state change."
+      if: "ctx.event?.code == '11105'"
+      patterns:
+          - "^Admin state changed and interface: %{DATA:aruba.interface.name} is auto-enabled"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11106
+      description: "Logs event when disabling of a faulty interface failed."
+      if: "ctx.event?.code == '11106'"
+      patterns:
+          - "^Interface %{DATA:aruba.interface.name}: %{DATA:aruba.fault.type} fault detected, port is already disabled by another fault"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11107
+      description: "Logs event when a packet drop is detected for MAC Lockout MAC as source address."
+      if: "ctx.event?.code == '11107'"
+      patterns:
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source address: %{NUMBER:aruba.fault.sa_diff_count:long}"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11108
+      description: "Logs event when a packet drop is detected for MAC Lockout MAC as destination address."
+      if: "ctx.event?.code == '11108'"
+      patterns:
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as destination address: %{NUMBER:aruba.fault.da_diff_count:long}"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11109
+      description: "Logs event when a packet drop is detected for MAC Lockout."
+      if: "ctx.event?.code == '11109'"
+      patterns:
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source: %{NUMBER:aruba.fault.sa_diff_count:long} and destination: %{NUMBER:aruba.fault.da_diff_count:long} address"
+
   # CFM Events (116xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm
   - dissect:

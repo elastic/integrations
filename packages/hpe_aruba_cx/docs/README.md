@@ -324,13 +324,13 @@ Note: Descriptions have not been filled out
 
 
 #### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.fault.da_diff_count   |             |      | network.packets              |
-| aruba.fault.id              |             |      | event.code                   |
-| aruba.fault.interface       |             |      | observer.ingress.interface.name |
-| aruba.fault.mac             |             |      | client.mac                   |
-| aruba.fault.sa_diff_count   |             |      | network.packets              |
+| Doc Fields              | Schema Mapping                   |
+|-------------------------|----------------------------------|
+| <fault>                 | aruba.fault.type                 |
+| <interface>             | aruba.interface.name             |
+| <mac>                   | client.mac                       |
+| <sa_diff_count>         | aruba.fault.sa_diff_count        |
+| <da_diff_count>         | aruba.fault.da_diff_count        |
 
 #### [Firmware Update events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/UPDATE.htm)
 | Field                     | Description | Type | Common                       |
@@ -1359,6 +1359,9 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fan.speedval |  | long |
 | aruba.fan.tray_index |  | long |
 | aruba.fan.zone_idx |  | keyword |
+| aruba.fault.da_diff_count |  | long |
+| aruba.fault.sa_diff_count |  | long |
+| aruba.fault.type |  | keyword |
 | aruba.firmware.dnld_type |  | keyword |
 | aruba.firmware.image_profile |  | keyword |
 | aruba.hardware.addr |  | keyword |
