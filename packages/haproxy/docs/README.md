@@ -592,7 +592,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | haproxy.stat.connection.retried | Number of times a connection to a server was retried. | long | counter |
 | haproxy.stat.connection.reuse.total | Number of connection reuses. | long | counter |
 | haproxy.stat.connection.time.avg | Average connect time in ms over the last 1024 requests. | long | gauge |
-| haproxy.stat.connection.total | Cumulative number of connections. | long | counter |
+| haproxy.stat.connection.total | Cumulative number of frontend connections. | long | counter |
 | haproxy.stat.cookie | Cookie value of the server or the name of the cookie of the backend. | keyword |  |
 | haproxy.stat.downtime | Total downtime (in seconds). For backends, this value is the downtime for the whole backend, not the sum of the downtime for the servers. | long | counter |
 | haproxy.stat.header.rewrite.failed.total | Number of failed header rewrite warnings. | long | counter |
