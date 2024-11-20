@@ -28,7 +28,13 @@ program: |
             state
         :
             state.with({
-                "mintime": string(int(state.?cursor.last_published.orValue(int(now - duration(state.initial_interval)) * 1000))),
+                "mintime": string(1000 * int(
+                    state.?cursor.last_published.optMap(t,
+                        t.parse_time(time_layout.RFC3339Nano)
+                    ).orValue(
+                        now - duration(state.initial_interval)
+                    )
+                )),
             })
     ).as(state, state.with({
         // the duration between maxtime and mintime should be less than 180d to avoid error_code 400 from API.
