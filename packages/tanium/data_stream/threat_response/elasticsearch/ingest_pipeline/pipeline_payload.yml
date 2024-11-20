@@ -4,7 +4,7 @@ processors:
   - script:
       description: Decode base64 json field.
       lang: painless
-      if: ctx.tanium.threat_response.other_parameters.log_details.payload != null
+      if: ctx.tanium.threat_response.other_parameters?.log_details?.payload != null
       source: ctx.tanium.threat_response.other_parameters.log_details.payload_decoded = ctx.tanium.threat_response.other_parameters.log_details.payload.decodeBase64()
       on_failure:
         - append:
@@ -14,11 +14,21 @@ processors:
   - json:
       field: tanium.threat_response.other_parameters.log_details.payload_decoded
       target_field: tanium.threat_response.other_parameters.log_details.payload_decoded
+      if: ctx.tanium.threat_response.other_parameters?.log_details?.payload_decoded instanceof String
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
+  - script:
+      description: Handle 'Match Details' content the same as when it appears in an encoded payload.
+      lang: painless
+      if: ctx.json['Match Details'] instanceof Map
+      source: |
+        if (ctx.tanium.threat_response.other_parameters == null) ctx.tanium.threat_response.other_parameters = [:];
+        if (ctx.tanium.threat_response.other_parameters.log_details == null) ctx.tanium.threat_response.other_parameters.log_details = [:];
+        if (ctx.tanium.threat_response.other_parameters.log_details.payload_decoded == null) ctx.tanium.threat_response.other_parameters.log_details.payload_decoded = [:];
+        ctx.tanium.threat_response.other_parameters.log_details.payload_decoded.putAll(ctx.json['Match Details']);
   - rename:
       field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.file.fullpath
       target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.file.full_path
