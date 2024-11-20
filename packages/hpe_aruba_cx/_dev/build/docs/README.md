@@ -328,7 +328,7 @@ Note: Descriptions have not been filled out
 |-------------------------|----------------------------------|
 | <fault>                 | aruba.fault.type                 |
 | <interface>             | aruba.interface.name             |
-| <mac>                   | host.mac                         |
+| <mac>                   | client.mac                       |
 | <sa_diff_count>         | aruba.fault.sa_diff_count        |
 | <da_diff_count>         | aruba.fault.da_diff_count        |
 

@@ -764,14 +764,14 @@ processors:
       description: "Logs event when a packet drop is detected for MAC Lockout MAC as source address."
       if: "ctx.event?.code == '11107'"
       patterns:
-          - "^MAC Lockout packet drop detected for %{MAC:host.mac} as source address: %{NUMBER:aruba.fault.sa_diff_count:long}"
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source address: %{NUMBER:aruba.fault.sa_diff_count:long}"
   - grok:
       field: message
       tag: fault_monitor_event_11108
       description: "Logs event when a packet drop is detected for MAC Lockout MAC as destination address."
       if: "ctx.event?.code == '11108'"
       patterns:
-          - "^MAC Lockout packet drop detected for %{MAC:host.mac} as destination address: %{NUMBER:aruba.fault.da_diff_count:long}"
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as destination address: %{NUMBER:aruba.fault.da_diff_count:long}"
   - grok:
       field: message
       tag: fault_monitor_event_11109
@@ -825,14 +825,6 @@ processors:
       ignore_missing: true
   - gsub:
       field: source.mac
-      pattern: "[:.]"
-      replacement: "-"
-      ignore_missing: true
-  - uppercase:
-      field: host.mac
-      ignore_missing: true
-  - gsub:
-      field: host.mac
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
