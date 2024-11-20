@@ -55,7 +55,7 @@ processors:
       description: "Log the total number of fans in the subsystem"
       if: "ctx.event?.code == '201'"
       patterns:
-        - "^There are %{INT:event.count} total fans in subsystem %{ARUBA_SUBSYSTEM:aruba.subsystem}"
+        - "^There are %{INT:aruba.fan.count:long} total fans in subsystem %{ARUBA_SUBSYSTEM:aruba.subsystem}"
       pattern_definitions:
         ARUBA_SUBSYSTEM: "[-_0-9a-zA-Z]+"
   - grok:
@@ -176,7 +176,7 @@ processors:
       description: "Log event when a fan tray is inserted specifying its airflow direction"
       if: "ctx.event?.code == '220'"
       patterns:
-        - "Fan tray %{DATA:aruba.fan.ft_num} airflow is %{FAN_DIRECTION:aruba.fan.ft_dir}"
+        - "^Fan tray %{DATA:aruba.fan.ft_num} airflow is %{FAN_DIRECTION:aruba.fan.ft_dir}"
       pattern_definitions:
         FAN_DIRECTION: "[-_0-9a-zA-Z]+"
   - dissect:
