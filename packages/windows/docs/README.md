@@ -2811,24 +2811,24 @@ An example event for `windows_defender` looks as following:
 {
     "@timestamp": "2024-09-25T19:30:20.339Z",
     "agent": {
-        "ephemeral_id": "8b5286b8-9d5e-4a19-921b-48b6cdf2881d",
-        "id": "1f365586-06e0-4a4b-8787-c5c088f44de5",
-        "name": "elastic-agent-28855",
+        "ephemeral_id": "e9af23ec-c024-4b56-a624-39e242319c16",
+        "id": "4a0bc7fa-6bfd-41c2-9cb6-17a1560abba7",
+        "name": "elastic-agent-41982",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "8.15.2"
     },
     "data_stream": {
         "dataset": "windows.windows_defender",
-        "namespace": "39980",
+        "namespace": "97455",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1f365586-06e0-4a4b-8787-c5c088f44de5",
+        "id": "4a0bc7fa-6bfd-41c2-9cb6-17a1560abba7",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.15.2"
     },
     "event": {
         "action": "malware-quarantined",
@@ -2837,9 +2837,9 @@ An example event for `windows_defender` looks as following:
             "malware"
         ],
         "code": "1117",
-        "created": "2024-09-26T15:59:35.718Z",
+        "created": "2024-11-04T23:00:42.213Z",
         "dataset": "windows.windows_defender",
-        "ingested": "2024-09-26T15:59:38Z",
+        "ingested": "2024-11-04T23:00:45Z",
         "kind": "event",
         "original": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Windows Defender' Guid='{11cd958a-c507-4ef3-b3f2-5fd9dfbd2c78}'/><EventID>1117</EventID><Version>0</Version><Level>4</Level><Task>0</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='2024-09-25T19:30:20.3397185Z'/><EventRecordID>22399</EventRecordID><Correlation ActivityID='{e8e94442-2856-4bab-a775-454654f7ec59}'/><Execution ProcessID='3168' ThreadID='13904'/><Channel>Microsoft-Windows-Windows Defender/Operational</Channel><Computer>el33t-b00k-1.org.local</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='Product Name'>Microsoft Defender Antivirus</Data><Data Name='Product Version'>4.18.24080.9</Data><Data Name='Detection ID'>{4E4D1D41-19CC-4EE2-BDB0-950A07B81378}</Data><Data Name='Detection Time'>2024-09-25T19:29:38.198Z</Data><Data Name='Unused'></Data><Data Name='Unused2'></Data><Data Name='Threat ID'>2147680291</Data><Data Name='Threat Name'>Trojan:Win32/Detplock</Data><Data Name='Severity ID'>5</Data><Data Name='Severity Name'>Severe</Data><Data Name='Category ID'>8</Data><Data Name='Category Name'>Trojan</Data><Data Name='FWLink'>https://go.microsoft.com/fwlink/?linkid=37020&amp;name=Trojan:Win32/Detplock&amp;threatid=2147680291&amp;enterprise=1</Data><Data Name='Status Code'>3</Data><Data Name='Status Description'></Data><Data Name='State'>2</Data><Data Name='Source ID'>3</Data><Data Name='Source Name'>Real-Time Protection</Data><Data Name='Process Name'>C:\\Program Files\\Notepad++\\notepad++.exe</Data><Data Name='Detection User'>ORG\\Topsy</Data><Data Name='Unused3'></Data><Data Name='Path'>file:_C:\\Users\\Topsy\\Desktop\\eat_dem_yams.exe</Data><Data Name='Origin ID'>1</Data><Data Name='Origin Name'>Local machine</Data><Data Name='Execution ID'>1</Data><Data Name='Execution Name'>Suspended</Data><Data Name='Type ID'>8</Data><Data Name='Type Name'>FastPath</Data><Data Name='Pre Execution Status'>0</Data><Data Name='Action ID'>2</Data><Data Name='Action Name'>Quarantine</Data><Data Name='Unused4'></Data><Data Name='Error Code'>0x00000000</Data><Data Name='Error Description'>The operation completed successfully. </Data><Data Name='Unused5'></Data><Data Name='Post Clean Status'>0</Data><Data Name='Additional Actions ID'>0</Data><Data Name='Additional Actions String'>No additional actions required</Data><Data Name='Remediation User'>NT AUTHORITY\\SYSTEM</Data><Data Name='Unused6'></Data><Data Name='Security intelligence Version'>AV: 1.419.163.0, AS: 1.419.163.0, NIS: 1.419.163.0</Data><Data Name='Engine Version'>AM: 1.1.24080.9, NIS: 1.1.24080.9</Data></EventData><RenderingInfo Culture='en-US'><Message>Microsoft Defender Antivirus has taken action to protect this machine from malware or other potentially unwanted software.&#13;&#10; For more information please see the following:&#13;&#10;https://go.microsoft.com/fwlink/?linkid=37020&amp;name=Trojan:Win32/Detplock&amp;threatid=2147680291&amp;enterprise=1&#13;&#10; &#9;Name: Trojan:Win32/Detplock&#13;&#10; &#9;ID: 2147680291&#13;&#10; &#9;Severity: Severe&#13;&#10; &#9;Category: Trojan&#13;&#10; &#9;Path: file:_C:\\Users\\Topsy\\Desktop\\eat_dem_yams.exe&#13;&#10; &#9;Detection Origin: Local machine&#13;&#10; &#9;Detection Type: FastPath&#13;&#10; &#9;Detection Source: Real-Time Protection&#13;&#10; &#9;User: NT AUTHORITY\\SYSTEM&#13;&#10; &#9;Process Name: C:\\Program Files\\Notepad++\\notepad++.exe&#13;&#10; &#9;Action: Quarantine&#13;&#10; &#9;Action Status:  No additional actions required&#13;&#10; &#9;Error Code: 0x00000000&#13;&#10; &#9;Error description: The operation completed successfully. &#13;&#10; &#9;Security intelligence Version: AV: 1.419.163.0, AS: 1.419.163.0, NIS: 1.419.163.0&#13;&#10; &#9;Engine Version: AM: 1.1.24080.9, NIS: 1.1.24080.9</Message><Level>Information</Level><Opcode>Info</Opcode><Provider>Microsoft-Windows-Windows Defender</Provider></RenderingInfo></Event>",
         "outcome": "success",
@@ -2875,6 +2875,11 @@ An example event for `windows_defender` looks as following:
     "user": {
         "domain": "ORG",
         "name": "Topsy"
+    },
+    "windows_defender": {
+        "evidence_paths": [
+            "C:\\Users\\Topsy\\Desktop\\eat_dem_yams.exe"
+        ]
     },
     "winlog": {
         "activity_id": "{e8e94442-2856-4bab-a775-454654f7ec59}",
@@ -2954,6 +2959,7 @@ An example event for `windows_defender` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| windows_defender.evidence_paths | One or more paths found in the event. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
@@ -2963,6 +2969,10 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.AS_security_intelligence_version |  | keyword |
 | winlog.event_data.AV_security_intelligence_creation_time |  | date |
 | winlog.event_data.AV_security_intelligence_version |  | keyword |
+| winlog.event_data.Action_ID |  | keyword |
+| winlog.event_data.Action_Name |  | keyword |
+| winlog.event_data.Additional_Actions_ID |  | keyword |
+| winlog.event_data.Additional_Actions_String |  | keyword |
 | winlog.event_data.AuthenticationPackageName |  | keyword |
 | winlog.event_data.BM_state |  | keyword |
 | winlog.event_data.Binary |  | keyword |
@@ -2970,24 +2980,38 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.BootMode |  | keyword |
 | winlog.event_data.BootType |  | keyword |
 | winlog.event_data.BuildVersion |  | keyword |
+| winlog.event_data.Category_ID |  | keyword |
+| winlog.event_data.Category_Name |  | keyword |
 | winlog.event_data.Company |  | keyword |
 | winlog.event_data.CorruptionActionState |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
+| winlog.event_data.Current_Engine_Version |  | keyword |
+| winlog.event_data.Current_security_intelligence_Version |  | keyword |
 | winlog.event_data.Description |  | keyword |
 | winlog.event_data.Detail |  | keyword |
+| winlog.event_data.Detection_ID |  | keyword |
+| winlog.event_data.Detection_Time |  | date |
+| winlog.event_data.Detection_User |  | keyword |
 | winlog.event_data.DeviceName |  | keyword |
 | winlog.event_data.DeviceNameLength |  | keyword |
 | winlog.event_data.DeviceTime |  | keyword |
 | winlog.event_data.DeviceVersionMajor |  | keyword |
 | winlog.event_data.DeviceVersionMinor |  | keyword |
+| winlog.event_data.Domain |  | keyword |
 | winlog.event_data.DriveName |  | keyword |
 | winlog.event_data.DriverName |  | keyword |
 | winlog.event_data.DriverNameLength |  | keyword |
 | winlog.event_data.DwordVal |  | keyword |
+| winlog.event_data.Engine_Version |  | keyword |
 | winlog.event_data.Engine_up-to-date |  | keyword |
 | winlog.event_data.Engine_version |  | keyword |
 | winlog.event_data.EntryCount |  | keyword |
+| winlog.event_data.Error_Code |  | keyword |
+| winlog.event_data.Error_Description |  | keyword |
+| winlog.event_data.Execution_ID |  | keyword |
+| winlog.event_data.Execution_Name |  | keyword |
 | winlog.event_data.ExtraInfo |  | keyword |
+| winlog.event_data.FWLink |  | keyword |
 | winlog.event_data.FailureName |  | keyword |
 | winlog.event_data.FailureNameLength |  | keyword |
 | winlog.event_data.FileVersion |  | keyword |
@@ -3038,13 +3062,19 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.OA_state |  | keyword |
 | winlog.event_data.OldSchemeGuid |  | keyword |
 | winlog.event_data.OldTime |  | keyword |
+| winlog.event_data.Origin_ID |  | keyword |
+| winlog.event_data.Origin_Name |  | keyword |
 | winlog.event_data.OriginalFileName |  | keyword |
 | winlog.event_data.Path |  | keyword |
 | winlog.event_data.PerformanceImplementation |  | keyword |
 | winlog.event_data.Platform_up-to-date |  | keyword |
 | winlog.event_data.Platform_version |  | keyword |
+| winlog.event_data.Post_Clean_Status |  | keyword |
+| winlog.event_data.Pre_Execution_Status |  | keyword |
 | winlog.event_data.PreviousCreationUtcTime |  | keyword |
 | winlog.event_data.PreviousTime |  | keyword |
+| winlog.event_data.Previous_Engine_Version |  | keyword |
+| winlog.event_data.Previous_security_intelligence_Version |  | keyword |
 | winlog.event_data.PrivilegeList |  | keyword |
 | winlog.event_data.ProcessId |  | keyword |
 | winlog.event_data.ProcessName |  | keyword |
@@ -3052,25 +3082,42 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.ProcessPid |  | keyword |
 | winlog.event_data.Product |  | keyword |
 | winlog.event_data.Product_Name |  | keyword |
+| winlog.event_data.Product_Version |  | keyword |
 | winlog.event_data.Product_status |  | keyword |
 | winlog.event_data.PuaCount |  | keyword |
 | winlog.event_data.PuaPolicyId |  | keyword |
 | winlog.event_data.QfeVersion |  | keyword |
 | winlog.event_data.RTP_state |  | keyword |
 | winlog.event_data.Reason |  | keyword |
+| winlog.event_data.Remediation_User |  | keyword |
+| winlog.event_data.SID |  | keyword |
+| winlog.event_data.Scan_ID |  | keyword |
+| winlog.event_data.Scan_Parameters |  | keyword |
+| winlog.event_data.Scan_Parameters_Index |  | keyword |
+| winlog.event_data.Scan_Type |  | keyword |
+| winlog.event_data.Scan_Type_Index |  | keyword |
 | winlog.event_data.SchemaVersion |  | keyword |
 | winlog.event_data.ScriptBlockText |  | keyword |
+| winlog.event_data.Security_intelligence_Type |  | keyword |
+| winlog.event_data.Security_intelligence_Type_Index |  | keyword |
+| winlog.event_data.Security_intelligence_Version |  | keyword |
+| winlog.event_data.Security_intelligence_version |  | keyword |
 | winlog.event_data.ServiceName |  | keyword |
 | winlog.event_data.ServiceVersion |  | keyword |
+| winlog.event_data.Severity_ID |  | keyword |
+| winlog.event_data.Severity_Name |  | keyword |
 | winlog.event_data.ShutdownActionType |  | keyword |
 | winlog.event_data.ShutdownEventCode |  | keyword |
 | winlog.event_data.ShutdownReason |  | keyword |
 | winlog.event_data.Signature |  | keyword |
 | winlog.event_data.SignatureStatus |  | keyword |
 | winlog.event_data.Signed |  | keyword |
+| winlog.event_data.Source_ID |  | keyword |
+| winlog.event_data.Source_Name |  | keyword |
 | winlog.event_data.StartTime |  | keyword |
 | winlog.event_data.State |  | keyword |
 | winlog.event_data.Status |  | keyword |
+| winlog.event_data.Status_Code |  | keyword |
 | winlog.event_data.StopTime |  | keyword |
 | winlog.event_data.SubjectDomainName |  | keyword |
 | winlog.event_data.SubjectLogonId |  | keyword |
@@ -3085,8 +3132,15 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.TargetUserName |  | keyword |
 | winlog.event_data.TargetUserSid |  | keyword |
 | winlog.event_data.TerminalSessionId |  | keyword |
+| winlog.event_data.Threat_ID |  | keyword |
+| winlog.event_data.Threat_Name |  | keyword |
 | winlog.event_data.TokenElevationType |  | keyword |
 | winlog.event_data.TransmittedServices |  | keyword |
+| winlog.event_data.Type_ID |  | keyword |
+| winlog.event_data.Type_Name |  | keyword |
+| winlog.event_data.Update_Type |  | keyword |
+| winlog.event_data.Update_Type_Index |  | keyword |
+| winlog.event_data.User |  | keyword |
 | winlog.event_data.UserSid |  | keyword |
 | winlog.event_data.Version |  | keyword |
 | winlog.event_data.Workstation |  | keyword |
