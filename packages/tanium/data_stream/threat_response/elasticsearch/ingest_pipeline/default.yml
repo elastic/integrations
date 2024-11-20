@@ -115,6 +115,10 @@ processors:
       field: json.revision
       target_field: tanium.threat_response.revision
       ignore_missing: true
+  - rename:
+      field: json.state
+      target_field: tanium.threat_response.state
+      if: ctx.json?.state instanceof Map
   - json:
       field: json.state
       target_field: tanium.threat_response.state
@@ -124,14 +128,39 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
-  - rename:
-      field: tanium.threat_response.state.connectionId
-      target_field: tanium.threat_response.state.connection_id
-      ignore_missing: true
-  - rename:
-      field: tanium.threat_response.state.sessionId
-      target_field: tanium.threat_response.state.session_id
-      ignore_missing: true
+  - script:
+      description: Convert state keys to snake case.
+      tag: state_keys_to_snake_case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+
+        if(ctx.tanium?.threat_response?.state != null) {
+          ctx.tanium.threat_response.state = keysToSnakeCase(ctx.tanium.threat_response.state);
+        }
   - set:
       field: host.hostname
       copy_from: tanium.threat_response.state.target.hostname
