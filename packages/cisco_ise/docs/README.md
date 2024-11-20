@@ -288,11 +288,7 @@ An example event for `log` looks as following:
 | cisco_ise.log.calling_station_id |  | keyword |
 | cisco_ise.log.category.name |  | keyword |
 | cisco_ise.log.cause |  | keyword |
-| cisco_ise.log.cisco_av_pair.coa-push |  | boolean |
-| cisco_ise.log.cisco_av_pair.cts-device-capability |  | keyword |
-| cisco_ise.log.cisco_av_pair.cts-environment-data |  | keyword |
-| cisco_ise.log.cisco_av_pair.cts-environment-version |  | keyword |
-| cisco_ise.log.cisco_av_pair.cts-pac-opaque |  | keyword |
+| cisco_ise.log.cisco_av_pair |  | object |
 | cisco_ise.log.class |  | keyword |
 | cisco_ise.log.client.latency |  | long |
 | cisco_ise.log.cmdset |  | keyword |
@@ -459,6 +455,7 @@ An example event for `log` looks as following:
 | client.geo.region_name | Region name. | keyword |
 | client.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.port | Port of the client. | long |
 | client.user.name | Short name or login of the user. | keyword |
 | client.user.name.text | Multi-field of `client.user.name`. | match_only_text |

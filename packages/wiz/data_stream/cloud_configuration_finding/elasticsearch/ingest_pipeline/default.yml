@@ -195,9 +195,15 @@ processors:
       ignore_missing: true
   - set:
       field: resource.id
-      tag: set_resource_id
+      tag: set_resource_id_from_provider_id
       copy_from: wiz.cloud_configuration_finding.resource.provider_id
       ignore_empty_value: true
+  - set:
+      field: resource.id
+      tag: set_resource_id_from_resource_id
+      copy_from: wiz.cloud_configuration_finding.resource.id
+      ignore_empty_value: true
+      override: false  # This ensures the value isn't overwritten if already set
   - rename:
       field: json.resource.name
       tag: rename_resource_name
@@ -330,11 +336,6 @@ processors:
   - set:
       field: rule.reference
       tag: set_rule_reference
-      copy_from: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
-      ignore_empty_value: true
-  - set:
-      field: rule.references
-      tag: set_rule_references
       copy_from: wiz.cloud_configuration_finding.evidence.cloud_configuration_link
       ignore_empty_value: true
   - remove:

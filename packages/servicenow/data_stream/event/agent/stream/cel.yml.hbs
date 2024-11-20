@@ -1,0 +1,112 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+state:
+  table_name: {{table_name}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+regexp:
+  next_link: '<([^,]*)>;rel="next"'
+redact:
+  fields: ~
+program: |
+  state.with(
+    state.?cursor.last_event.orValue((now - duration(state.initial_interval)).format("2006-01-02 15:04:05")).as(start, get(
+      state.?cursor.?next_page.orValue(
+        state.url.trim_right("/")+"/api/now/table/"+state.table_name+"?"+{
+          "sysparm_display_value": ["all"],
+          "sysparm_exclude_reference_link": ["true"],
+          "sysparm_limit": [string(state.batch_size)],
+          "sysparm_query": ["ORDERBYsys_updated_on^sys_updated_on>"+start],
+        }.format_query()
+      )
+    )).as(resp, resp.StatusCode == 200 ?
+      (
+        (has(resp.?Header.Link) && size(resp.Header.Link) != 0) ?
+          resp.Header.Link[0].re_find_submatch("next_link")[?1]
+        :
+          optional.none()
+      ).as(next_page,
+        bytes(resp.Body).decode_json().as(body, {
+          "events": body.?result.orValue([]).map(evt, evt.with({
+            "table_name": state.table_name
+          }).as(modEvt, {
+            "message": modEvt.encode_json()
+          })),
+          "cursor": {
+            "last_event": (
+              has(body.result) && size(body.result) > 0 ?
+                (
+                  has(state.?cursor.last_event) ?
+                    max([body.result.map(e, e.sys_updated_on.value).max(), state.cursor.last_event])
+                  :
+                    body.result.map(e, e.sys_updated_on.value).max()
+                )
+              :
+                state.?cursor.last_event.orValue(now)
+            ),
+            ?"next_page": next_page,
+          },
+          "want_more": next_page.hasValue() && body.?result.orValue([]).size() != 0,
+        })
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#if table_name}}
+  - {{table_name}}
+{{/if}}
+{{#if hide_sensitive}}
+  - hide_sensitive
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+fields_under_root: true
+fields:
+  _conf:
+    timezone: {{timezone}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

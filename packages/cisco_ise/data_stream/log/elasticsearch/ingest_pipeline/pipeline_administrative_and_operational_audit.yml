@@ -30,12 +30,12 @@ processors:
             target_field: cisco_ise.log.log_details
             field_split: ', '
             value_split: =
-  - grok:
+  - kv:
       field: cisco_ise.log.log_details_raw
       if: ctx.cisco_ise?.log?.message?.code == "52001"
-      ignore_failure: true
-      patterns:
-        - "ConfigVersionId=%{DATA:cisco_ise.log.log_details.ConfigVersionId}, FailureFlag=%{DATA:cisco_ise.log.log_details.FailureFlag}, RequestResponseType=%{DATA:cisco_ise.log.log_details.RequestResponseType}, AdminInterface=%{DATA:cisco_ise.log.log_details.AdminInterface}, AdminIPAddress=%{DATA:cisco_ise.log.log_details.AdminIPAddress}, AdminName=%{DATA:cisco_ise.log.log_details.AdminName}, %{GREEDYDATA:cisco_ise.log.log_details.log_detail}"
+      target_field: cisco_ise.log.log_details
+      field_split: '(?<!\\), '
+      value_split: =
   - grok:
       field: cisco_ise.log.log_details.log_detail
       if: ctx.cisco_ise?.log?.message?.code == "52001"

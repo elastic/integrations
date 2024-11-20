@@ -1,0 +1,212 @@
+---
+description: Pipeline for processing Department and Location logs.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_asset_cmn_location_department
+      value: asset
+  - append:
+      field: event.type
+      tag: append_event_type_cmn_location_department
+      value: info
+  - append:
+      field: event.category
+      tag: append_event_category_cmn_location_department
+      value: iam
+  - set:
+      field: user.full_name
+      tag: set_user_full_name_from_event_dept_head_display_value
+      copy_from: servicenow.event.dept_head.display_value
+      ignore_empty_value: true
+  - convert:
+      field: servicenow.event.head_count.value
+      tag: convert_head_count_value_to_long
+      type: long
+      ignore_missing: true
+      if: ctx.servicenow?.event?.head_count?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.head_count.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_servicenow_event_dept_head_display_value_into_related_user
+      value: '{{{servicenow.event.dept_head.display_value}}}'
+      allow_duplicates: false
+      if: ctx.servicenow?.event?.dept_head?.display_value != null
+  - convert:
+      field: servicenow.event.duplicate.display_value
+      tag: convert_duplicate_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.duplicate?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.duplicate.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.duplicate.value
+      tag: convert_duplicate_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.duplicate?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.duplicate.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.latitude.display_value
+      tag: convert_latitude_display_value_to_double
+      type: double
+      ignore_missing: true
+      if: ctx.servicenow?.event?.latitude?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.latitude.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.latitude.value
+      tag: convert_latitude_value_to_double
+      type: double
+      ignore_missing: true
+      if: ctx.servicenow?.event?.latitude?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.latitude.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.longitude.display_value
+      tag: convert_longitude_display_value_to_double
+      type: double
+      ignore_missing: true
+      if: ctx.servicenow?.event?.longitude?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.longitude.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.longitude.value
+      tag: convert_longitude_value_to_double
+      type: double
+      ignore_missing: true
+      if: ctx.servicenow?.event?.longitude?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.longitude.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.stock_room.display_value
+      tag: convert_stock_room_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.stock_room?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.stock_room.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.stock_room.value
+      tag: convert_stock_room_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.stock_room?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.stock_room.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.coordinates_retrieved_on.display_value
+      tag: date_coordinates_retrieved_on_display_value
+      target_field: servicenow.event.coordinates_retrieved_on.display_value
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.coordinates_retrieved_on?.display_value != null && ctx.servicenow.event.coordinates_retrieved_on.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.coordinates_retrieved_on.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.coordinates_retrieved_on.value
+      tag: date_coordinates_retrieved_on_value
+      target_field: servicenow.event.coordinates_retrieved_on.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.coordinates_retrieved_on?.value != null && ctx.servicenow.event.coordinates_retrieved_on.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.coordinates_retrieved_on.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

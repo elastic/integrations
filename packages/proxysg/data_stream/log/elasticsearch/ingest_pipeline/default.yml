@@ -30,6 +30,18 @@ processors:
       tag: main_pipeline
       name: '{{ IngestPipeline "main" }}'
       if: ctx._temp_._conf == 'main'
+  - pipeline:
+      tag: bcreportermain_v1_pipeline
+      name: '{{ IngestPipeline "bcreportermain_v1" }}'
+      if: ctx._temp_._conf == 'bcreportermain_v1'
+  - pipeline:
+      tag: bcreporterssl_v1_pipeline
+      name: '{{ IngestPipeline "bcreporterssl_v1" }}'
+      if: ctx._temp_._conf == 'bcreporterssl_v1'
+  - pipeline:
+      tag: ssl_pipeline
+      name: '{{ IngestPipeline "ssl" }}'
+      if: ctx._temp_._conf == 'ssl'
 
   - set:
       tag: set_timestamp
@@ -40,6 +52,26 @@ processors:
   - remove:
       field: "_temp_"
       ignore_failure: true
+
+  # ProxySG uses '-' to indicate unset fields; remove these.
+  - script:
+      description: remove unset fields
+      tag: remove_unset
+      lang: painless
+      source: |
+        boolean dropUnsetFields(Object object) {
+          if (object == "-") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropUnsetFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropUnsetFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropUnsetFields(ctx);
 
   # Type conversions
   - convert:
@@ -77,8 +109,16 @@ processors:
       copy_from: proxysg.client.ip
       ignore_failure: true
   - set:
+      field: client.address
+      copy_from: client.ip
+      ignore_failure: true
+  - set:
       field: server.ip
       copy_from: proxysg.server.ip
+      ignore_failure: true
+  - set:
+      field: server.address
+      copy_from: server.ip
       ignore_failure: true
   - set:
       field: url.scheme
@@ -195,13 +235,11 @@ processors:
       value: "{{{remote.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
-
   - append:
       field: related.hosts
       value: "{{{url.domain}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
-
   - append:
       field: related.user
       value: "{{{client.user.name}}}"
@@ -217,3 +255,6 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - remove:
+      field: "_temp_"
+      ignore_failure: true

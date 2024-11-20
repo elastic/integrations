@@ -120,7 +120,7 @@ Note: Descriptions have not been filled out
 | <remote_as>       | destination.as.number     |
 | <src_ipaddr>      | source.ip                 |
 | <threshold_limit> | aruba.bgp.threshold_limit |
-| vrf-<name>        | aruba.vrf.name            |
+| <vrf-name>        | aruba.vrf.name            |
 
 #### [Bluetooth Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BLUETOOTH_MGMT.htm)
 | Doc Fields               | Schema Mapping               |
@@ -149,23 +149,23 @@ Note: Descriptions have not been filled out
 #### [Config Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONFIG_MGMT.htm)
 | Doc Fields | Schema Mapping       |
 |------------|----------------------|
-| error      | event.reason         |
-| from       | aruba.config.from    |
-| info       | event.action         |
-| to         | aruba.config.to      |
-| type       | aruba.config.type    |
-| value      | aruba.config.value   |
+| <error>      | event.reason         |
+| <from>       | aruba.config.from    |
+| <info>       | event.action         |
+| <to>         | aruba.config.to      |
+| <type>       | aruba.config.type    |
+| <value>      | aruba.config.value   |
 
 #### [Connectivity Fault Management (CFM) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm)
-| Field                        | Description | Type | Common                       |
-|------------------------------|-------------|------|------------------------------|
-| aruba.cfm.id                 | Maintenance Endpoint ID | keyword | aruba.instance.id            |
-| aruba.cfm.interface          | Interface name | keyword |                        |
+| Doc Fields  | Schema Mapping      |
+|-------------|---------------------|
+| <id>        | aruba.cfm.id        |
+| <interface> | aruba.cfm.interfact |
 
-#### [Container manager events CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
-| Field                        | Description | Type | Common           |
-|------------------------------|-------------|------|------------------|
-| aruba.container.name         | Name of container | keyword | container.name   |
+#### [Container manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
+| Doc Fields | Schema Mapping   |
+|------------|------------------|
+| <name>     | container.name   |
 
 #### [CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm)
 | Doc Field                    | Schema Mapping      |
@@ -181,14 +181,14 @@ Note: Descriptions have not been filled out
 | <unit>                       | aruba.instance.id               |
 
 #### [Credential Manager events DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm)
-| Field                | Description | Type | Common   |
-|----------------------|-------------|------|----------|
-| aruba.cred_mgr.key_id|             |      | user.id  |
-| aruba.cred_mgr.user  |             |      | user.name|
+| Doc Field | Schema Mapping |
+|-----------|----------------|
+| <key-id>  | user.id        |
+| <user>    | user.name      |
 
 #### [DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-RELAY.htm)
-| Field | Description | Type | Common |
-|-------|-------------|------|--------|
+| Doc Field | Schema Mapping |
+|-----------|----------------|
 
 #### [DHCP Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-SERVER.htm)
 | Field                | Description | Type | Common           |
@@ -287,10 +287,10 @@ Note: Descriptions have not been filled out
 | <vtep_ip> |  aruba.evpn.vtep_ip|
 
 #### [External Storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EXTERNAL-STORAGE.htm)
-| Field                | Description | Type | Common             |
-|----------------------|-------------|------|--------------------|
-| aruba.storage.name   |             |      |                    |
-| aruba.storage.status |             |      | aruba.status       |
+| Doc Field | Schema Mapping              |
+|-----------|-----------------------------|
+| <name>    | aruba.storage.name |
+| <status>  | aruba.status                |
 
 #### [Fan events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm)
 | Field                     | Description | Type | Common                       |
@@ -324,13 +324,13 @@ Note: Descriptions have not been filled out
 
 
 #### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.fault.da_diff_count   |             |      | network.packets              |
-| aruba.fault.id              |             |      | event.code                   |
-| aruba.fault.interface       |             |      | observer.ingress.interface.name |
-| aruba.fault.mac             |             |      | client.mac                   |
-| aruba.fault.sa_diff_count   |             |      | network.packets              |
+| Doc Fields              | Schema Mapping                   |
+|-------------------------|----------------------------------|
+| <fault>                 | aruba.fault.type                 |
+| <interface>             | aruba.interface.name             |
+| <mac>                   | client.mac                       |
+| <sa_diff_count>         | aruba.fault.sa_diff_count        |
+| <da_diff_count>         | aruba.fault.da_diff_count        |
 
 #### [Firmware Update events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/UPDATE.htm)
 | Doc Fields      | Schema Mapping               |
@@ -343,31 +343,31 @@ Note: Descriptions have not been filled out
 | <after>         | aruba.firmware.after         |
 
 #### [Hardware Health Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm)
-| Field                   | Description | Type | Common                       |
-|-------------------------|-------------|------|------------------------------|
-| aruba.hardware.addr     |             |      |                              |
-| aruba.hardware.bus      |             |      |                              |
-| aruba.hardware.cap      |             |      |                              |
-| aruba.hardware.cecount  |             |      | error.count                  |
-| aruba.hardware.channel  |             |      |                              |
-| aruba.hardware.cpus     |             |      |                              |
-| aruba.hardware.device   |             |      |                              |
-| aruba.hardware.error_code |           |      | error.code                   |
-| aruba.hardware.function |             |      |                              |
-| aruba.hardware.level    |             |      |                              |
-| aruba.hardware.location |             |      |                              |
-| aruba.hardware.mcgstatus|             |      |                              |
-| aruba.hardware.misc     |             |      |                              |
-| aruba.hardware.offlined |             |      |                              |
-| aruba.hardware.origin   |             |      |                              |
-| aruba.hardware.page     |             |      |                              |
-| aruba.hardware.seg      |             |      |                              |
-| aruba.hardware.slot     |             |      | aruba.slot                   |
-| aruba.hardware.socket   |             |      |                              |
-| aruba.hardware.status   |             |      | aruba.status                 |
-| aruba.hardware.test_name|             |      |                              |
-| aruba.hardware.threshold|             |      | aruba.limit                  |
-| aruba.hardware.type     |             |      |                              |
+| Doc Fields   | Schema Mapping          |
+|--------------|-------------------------|
+| <addr>       | aruba.hardware.addr     |
+| <bus>        | aruba.hardware.bus      |
+| <cap>        | aruba.hardware.cap      |
+| <cecount>    | aruba.hardware.cecount  |
+| <channel>    | aruba.hardware.channel  |
+| <cpus>       | aruba.hardware.cpus     |
+| <device>     | aruba.hardware.device   |
+| <error_code> | error.code              |
+| <function>   | aruba.hardware.function |
+| <level>      | aruba.hardware.level    |
+| <location>   | aruba.hardware.location |
+| <mcgstatus>  | aruba.hardware.mcgstatus|
+| <misc>       | aruba.hardware.misc     |
+| <offlined>   | aruba.hardware.offlined |
+| <origin>     | aruba.hardware.origin   |
+| <page>       | aruba.hardware.page     |
+| <seg>        | aruba.hardware.seg      |
+| <slot>       | aruba.slot              |
+| <socket>     | aruba.hardware.socket   |
+| <status>     | aruba.status            |
+| <test_name>  | aruba.hardware.test_name|
+| <threshold>  | aruba.limit             |
+| <type>       | aruba.hardware.type     |
 
 #### [Hardware Switch controller sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm)
 | Field               | Description | Type | Common                       |
@@ -1359,6 +1359,9 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fan.speedval |  | long |
 | aruba.fan.tray_index |  | long |
 | aruba.fan.zone_idx |  | keyword |
+| aruba.fault.da_diff_count |  | long |
+| aruba.fault.sa_diff_count |  | long |
+| aruba.fault.type |  | keyword |
 | aruba.firmware.after |  | keyword |
 | aruba.firmware.before |  | keyword |
 | aruba.firmware.dnld_type |  | keyword |
@@ -1366,6 +1369,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.hardware.addr |  | keyword |
 | aruba.hardware.bus |  | keyword |
 | aruba.hardware.cap |  | keyword |
+| aruba.hardware.cecount |  | long |
 | aruba.hardware.channel |  | keyword |
 | aruba.hardware.cpus |  | long |
 | aruba.hardware.device |  | keyword |
