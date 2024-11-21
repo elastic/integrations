@@ -157,15 +157,15 @@ Note: Descriptions have not been filled out
 | <value>      | aruba.config.value   |
 
 #### [Connectivity Fault Management (CFM) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm)
-| Field                        | Description | Type | Common                       |
-|------------------------------|-------------|------|------------------------------|
-| aruba.cfm.id                 | Maintenance Endpoint ID | keyword | aruba.instance.id            |
-| aruba.cfm.interface          | Interface name | keyword |                        |
+| Doc Fields  | Schema Mapping      |
+|-------------|---------------------|
+| <id>        | aruba.cfm.id        |
+| <interface> | aruba.cfm.interfact |
 
-#### [Container manager events CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
-| Field                        | Description | Type | Common           |
-|------------------------------|-------------|------|------------------|
-| aruba.container.name         | Name of container | keyword | container.name   |
+#### [Container manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
+| Doc Fields | Schema Mapping   |
+|------------|------------------|
+| <name>     | container.name   |
 
 #### [CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm)
 | Doc Field                    | Schema Mapping      |
@@ -187,8 +187,8 @@ Note: Descriptions have not been filled out
 | <user>    | user.name      |
 
 #### [DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-RELAY.htm)
-| Field | Description | Type | Common |
-|-------|-------------|------|--------|
+| Doc Field | Schema Mapping |
+|-----------|----------------|
 
 #### [DHCP Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-SERVER.htm)
 | Field                | Description | Type | Common           |
@@ -327,23 +327,23 @@ Note: Descriptions have not been filled out
 | <En_Dis>                 | aruba.fan.status             |
 
 #### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.fault.da_diff_count   |             |      | network.packets              |
-| aruba.fault.id              |             |      | event.code                   |
-| aruba.fault.interface       |             |      | observer.ingress.interface.name |
-| aruba.fault.mac             |             |      | client.mac                   |
-| aruba.fault.sa_diff_count   |             |      | network.packets              |
+| Doc Fields              | Schema Mapping                   |
+|-------------------------|----------------------------------|
+| <fault>                 | aruba.fault.type                 |
+| <interface>             | aruba.interface.name             |
+| <mac>                   | client.mac                       |
+| <sa_diff_count>         | aruba.fault.sa_diff_count        |
+| <da_diff_count>         | aruba.fault.da_diff_count        |
 
 #### [Firmware Update events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/UPDATE.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.firmware.after      |             |      | package.version              |
-| aruba.firmware.before     |             |      | package.installed            |
-| aruba.firmware.dnld_type  |             |      |                              |
-| aruba.firmware.host       |             |      | host.name                    |
-| aruba.firmware.image_profile |          |      |                              |
-| aruba.firmware.user       |             |      | user.name                    |
+| Doc Fields      | Schema Mapping               |
+|-----------------|------------------------------|
+| <user>          | user.name                    |
+| <image_profile> | aruba.firmware.image_profile |
+| <dnld_type>     | aruba.firmware.dnld_type     |
+| <host>          | source.address               |
+| <before>        | aruba.firmware.before        |
+| <after>         | aruba.firmware.after         |
 
 #### [Hardware Health Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm)
 | Doc Fields   | Schema Mapping          |

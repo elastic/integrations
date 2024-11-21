@@ -213,4 +213,5 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| related.entity | All the entity identifiers related to the document. If the document contains multiple entities, identifiers belonging to different entities will be present. Example identifiers include cloud resource IDs, ARNs, email addresses, or hostnames. | keyword |
 

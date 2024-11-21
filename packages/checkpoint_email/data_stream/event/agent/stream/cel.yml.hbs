@@ -1,0 +1,159 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - client_id
+    - client_secret
+program: |
+  (
+    has(state.expiry) && timestamp(state.expiry) > now ?
+      {
+        "access_token": state.access_token,
+        "expiry": state.expiry,
+      }
+    :
+      post_request(
+        state.url.trim_right("/") + "/auth/external", "application/json", {
+          "clientId": state.client_id,
+          "accessKey": state.client_secret
+        }.encode_json()
+      ).do_request().as(resp, resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body, {
+          "access_token": body.data.token,
+          "expiry": body.data.expires.parse_time(time_layout.RFC1123),
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+  ).as(token,
+    state.?want_more.orValue(false) ?
+      token.with({
+        "start_date": state.start_date,
+        "end_date": state.end_date
+      })
+    :
+      token.with({
+        "start_date": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+        "end_date": now.format(time_layout.RFC3339),
+      })
+  ).as(token,
+    has(token.events) ? token : // Exit early due to POST failure.
+      state.with(
+        post_request(
+          state.url.trim_right("/") + "/app/hec-api/v1.0/event/query", "application/json", {
+            "requestData": {
+              "startDate": token.start_date,
+              "endDate": token.end_date,
+              ?"scrollId": state.?scroll_id.orValue(null) == null ? optional.none() : optional.of(state.scroll_id),
+            }
+          }.encode_json()
+        ).with({
+          "Header":{
+            "Authorization": ["Bearer " + string(token.access_token)],
+            "x-av-req-id": [uuid()],
+            "Content-Type": ["application/json"],
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body, {
+            "events": body.responseData.map(e, {
+              "message": e.encode_json(),
+            }),
+            "want_more": body.?responseEnvelope.scrollId.orValue(null) != null,
+            "scroll_id": body.?responseEnvelope.scrollId.orValue(null),
+            "start_date": token.start_date,
+            "end_date": token.end_date,
+            "access_token": token.access_token,
+            "expiry": token.expiry,
+            "cursor": (
+              size(body.responseData) > 0 ?
+                body.responseData.map(e, e.eventCreated).map(t, timestamp(t)).max().as(batch_max_time, (
+                  has(state.?cursor.max_time) ?
+                    (
+                      batch_max_time > timestamp(state.cursor.max_time) ?
+                        batch_max_time
+                      :
+                        state.cursor.max_time
+                    )
+                  :
+                    batch_max_time
+                ))
+              :
+                token.end_date
+            ).as(max_time, {
+              "last_timestamp": (
+                body.?responseEnvelope.scrollId.orValue(null) != null ?
+                  token.start_date
+                :
+                  max_time
+              ),
+              "max_time": max_time,
+            }),
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST:"+(
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

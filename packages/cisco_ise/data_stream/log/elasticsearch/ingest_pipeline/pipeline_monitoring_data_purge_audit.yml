@@ -1,0 +1,80 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: message
+      patterns:
+        - '%{TIMEONLYSTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:_tmp.timezone} %{DATA:event.sequence:long} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},'
+      pattern_definitions:
+        TIMEONLYSTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[ ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?' 
+  - trim:
+      field: cisco_ise.log.log_details_raw
+      ignore_failure: true
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - gsub:
+      field: cisco_ise.log.log_details_raw
+      pattern: \\,
+      replacement: ''
+  - script:
+      tag: cisco_ise_log_log_details_raw_split
+      source: |-
+        def m = ctx.cisco_ise.log["log_details"];
+        if (!(m instanceof Map)) {
+          m = new HashMap();
+        }
+        int pos = ctx.cisco_ise.log.log_details_raw.indexOf("=");
+        if (pos == -1) {
+            m[ctx.cisco_ise.log.log_details_raw] = null;
+        } else {
+            m[ctx.cisco_ise.log.log_details_raw.substring(0,pos)] = ctx.cisco_ise.log.log_details_raw.substring(pos+1);
+        }
+        ctx.cisco_ise.log["log_details"] = m;
+  - date:
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
