@@ -390,7 +390,7 @@ processors:
       copy_from: crowdstrike.alert.device.hostname
       ignore_empty_value: true
   - append:
-      field: related.hash
+      field: related.hosts
       value: '{{{host.hostname}}}'
       allow_duplicates: false
       if: ctx.host?.hostname != null
@@ -2523,6 +2523,39 @@ processors:
       value: '{{{crowdstrike.alert.user_principal}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.user_principal != null
+
+  - grok:
+      field: crowdstrike.alert.name
+      patterns:
+        - "%{NOTSPACE:_username_from_name} on %{NOTSPACE:_hostname_from_name}"
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: _username_from_name
+      if: ctx.user?.name == null || ctx.user.name == ''
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{_username_from_name}}}'
+      allow_duplicates: false
+      if: ctx._username_from_name != null && ctx._username_from_name != ''
+  - set:
+      field: host.name
+      copy_from: _hostname_from_name
+      if: ctx.host?.name == null || ctx.host.name == ''
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{_hostname_from_name}}}'
+      allow_duplicates: false
+      if: ctx._hostname_from_name != null && ctx._hostname_from_name != ''
+  - remove:
+      field:
+        - _username_from_name
+        - _hostname_from_name
+      ignore_missing: true
+
   - fingerprint:
       fields:
         - event.id
