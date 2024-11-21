@@ -1367,6 +1367,9 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fan.tray_idx |  | long |
 | aruba.fan.value |  | keyword |
 | aruba.fan.zone_idx |  | long |
+| aruba.fault.da_diff_count |  | long |
+| aruba.fault.sa_diff_count |  | long |
+| aruba.fault.type |  | keyword |
 | aruba.firmware.dnld_type |  | keyword |
 | aruba.firmware.image_profile |  | keyword |
 | aruba.hardware.addr |  | keyword |
