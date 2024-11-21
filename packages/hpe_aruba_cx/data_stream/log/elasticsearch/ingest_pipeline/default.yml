@@ -913,6 +913,24 @@ processors:
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+
+  # Make sure that host.ip and host.mac are arrays
+  - set:
+      field: host.ip
+      value: ['{{{host.ip}}}']
+      if: ctx.host?.ip instanceof String
+  - set:
+      field: host.mac
+      value: ['{{{host.mac}}}']
+      if: ctx.host?.mac instanceof String
 
   # Convert aruba.slot from a string to a long
   # Dissect processor sets everything to a string type
