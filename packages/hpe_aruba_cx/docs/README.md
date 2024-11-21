@@ -197,8 +197,8 @@ Note: Descriptions have not been filled out
 | <config>      | aruba.dhcp.config |
 | <expiry_time> | event.end         |
 | <host>        | host.name         |
-| <ip>          | client.ip         |
-| <mac>         | client.mac        |
+| <ip>          | host.ip           |
+| <mac>         | host.mac         |
 | <vfr>         | aruba.vrf.id      |
 | <vfr_name>    | aruba.vrf.name    |
 
