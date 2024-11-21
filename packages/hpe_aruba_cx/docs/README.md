@@ -1356,14 +1356,25 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fan.new_status |  | keyword |
 | aruba.fan.old_status |  | keyword |
 | aruba.fan.speed_idx_status |  | keyword |
+<<<<<<< Updated upstream
+=======
+| aruba.fan.speedval |  | keyword |
+| aruba.fan.status |  | keyword |
+| aruba.fan.tray_idx |  | long |
+| aruba.fan.value |  | keyword |
+| aruba.fan.zone_idx |  | long |
+>>>>>>> Stashed changes
 | aruba.fan.speedval |  | long |
 | aruba.fan.tray_index |  | long |
 | aruba.fan.zone_idx |  | keyword |
 | aruba.fault.da_diff_count |  | long |
 | aruba.fault.sa_diff_count |  | long |
 | aruba.fault.type |  | keyword |
+<<<<<<< Updated upstream
 | aruba.firmware.after |  | keyword |
 | aruba.firmware.before |  | keyword |
+=======
+>>>>>>> Stashed changes
 | aruba.firmware.dnld_type |  | keyword |
 | aruba.firmware.image_profile |  | keyword |
 | aruba.hardware.addr |  | keyword |
@@ -1535,6 +1546,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | server.user.name.text | Multi-field of `server.user.name`. | match_only_text |
 | service.target.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
