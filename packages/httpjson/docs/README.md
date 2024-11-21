@@ -4,7 +4,7 @@ The custom API input integration is used to ingest data from custom RESTful API'
 
 The input itself supports sending both GET and POST requests, transform requests and responses during runtime, paginate and keep a running state on information from the last collected events.
 
-If you are starting development of a new custom HTTP API input, we recommend that you use the [Common Expression Language input](../cel/overview) which provides greater flexibility and an improved developer experience.
+If you are starting development of a new custom HTTP API input, we recommend that you use the [Common Expression Language input](https://www.elastic.co/docs/current/integrations/cel) which provides greater flexibility and an improved developer experience.
 
 ## Configuration
 
