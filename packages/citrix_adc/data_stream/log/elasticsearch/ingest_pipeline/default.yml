@@ -264,6 +264,16 @@ processors:
       copy_from: citrix_adc.log.end_time
       ignore_empty_value: true
 
+  - script:
+      lang: painless
+      description: Calculates duration from event.start and event.end, as its easer than parsing citrix_adc.log.duration
+      if: ctx?.event?.start != null && ctx?.event?.end != null && ctx?.event?.duration == null
+      source: >-
+        ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
+        ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
+        ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+      tag: calculate_event_duration
+
   - geoip:
       field: client.ip
       tag: geoip_client_ip_to_client_geo
@@ -274,6 +284,7 @@ processors:
       tag: geoip_source_ip_to_source_geo
       target_field: source.geo
       ignore_missing: true
+
   # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
