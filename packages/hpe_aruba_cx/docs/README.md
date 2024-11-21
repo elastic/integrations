@@ -1356,25 +1356,14 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fan.new_status |  | keyword |
 | aruba.fan.old_status |  | keyword |
 | aruba.fan.speed_idx_status |  | keyword |
-<<<<<<< Updated upstream
-=======
-| aruba.fan.speedval |  | keyword |
-| aruba.fan.status |  | keyword |
-| aruba.fan.tray_idx |  | long |
-| aruba.fan.value |  | keyword |
-| aruba.fan.zone_idx |  | long |
->>>>>>> Stashed changes
 | aruba.fan.speedval |  | long |
 | aruba.fan.tray_index |  | long |
 | aruba.fan.zone_idx |  | keyword |
 | aruba.fault.da_diff_count |  | long |
 | aruba.fault.sa_diff_count |  | long |
 | aruba.fault.type |  | keyword |
-<<<<<<< Updated upstream
 | aruba.firmware.after |  | keyword |
 | aruba.firmware.before |  | keyword |
-=======
->>>>>>> Stashed changes
 | aruba.firmware.dnld_type |  | keyword |
 | aruba.firmware.image_profile |  | keyword |
 | aruba.hardware.addr |  | keyword |
