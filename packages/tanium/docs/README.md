@@ -1097,10 +1097,23 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.revision | Revision of the threat response. | keyword |
 | tanium.threat_response.row_id | Row id for the threat response. | keyword |
 | tanium.threat_response.severity | Severity of the threat response. | keyword |
+| tanium.threat_response.state.action_expiration | Action expiration. | date |
+| tanium.threat_response.state.action_id_unix | UNIX action ID. | integer |
+| tanium.threat_response.state.action_id_windows | Windows action ID. | integer |
+| tanium.threat_response.state.computer_group_id | Computer group ID. | integer |
+| tanium.threat_response.state.computer_ip_address | Computer IP address. | integer |
+| tanium.threat_response.state.computer_name | Computer name. | keyword |
 | tanium.threat_response.state.connection_id | Connection id of the threat response state. | keyword |
+| tanium.threat_response.state.created_at | Creation time. | date |
+| tanium.threat_response.state.id | ID. | integer |
+| tanium.threat_response.state.intel_id | Intel ID. | integer |
+| tanium.threat_response.state.legacy_type | Legacy type. | keyword |
+| tanium.threat_response.state.service_id | Service ID. | keyword |
 | tanium.threat_response.state.session_id | Session id of the threat response state. | keyword |
 | tanium.threat_response.state.target.eid | Target eid of the threat response state. | keyword |
 | tanium.threat_response.state.target.hostname | Target hostname of the threat response state. | keyword |
+| tanium.threat_response.state.updated_at | Update time. | date |
+| tanium.threat_response.state.user_id | User ID. | integer |
 | tanium.threat_response.table | Table for the threat response. | keyword |
 | tanium.threat_response.timestamp | Timestamp of the event. | date |
 | tanium.threat_response.updated_at | Threat response update time. | date |
