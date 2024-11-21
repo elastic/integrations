@@ -1,0 +1,109 @@
+config_version: 2
+interval: {{interval}}
+auth.oauth2:
+    client.id: {{client_id}}
+    client.secret: {{client_secret}}
+    provider: azure
+    scopes:
+{{#each token_scopes as |token_scope|}}
+      - {{token_scope}}
+{{/each}}
+    endpoint_params: 
+        grant_type: client_credentials
+{{#if token_url}}
+    token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+    azure.tenant_id: {{azure_tenant_id}}
+{{/if}}
+
+{{#if resource_ssl}}
+resource.ssl: 
+  {{resource_ssl}}
+{{/if}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+state:
+  want_more: false
+  base:
+    tenant_id: "{{azure_tenant_id}}"
+  file_counts_url: "{{file_counts_url}}"
+  account_counts_url: "{{account_counts_url}}"
+
+redact:
+  fields:
+    - base.tenant_id
+
+program: |
+  state.with(
+    request(
+      "GET",
+      state.account_counts_url
+    ).do_request().as(resp_account,
+      resp_account.StatusCode == 200
+      ?
+        bytes(resp_account.Body).mime("text/csv; header=present").as(account_events, {
+          "account_events": account_events.map(e, {"accountcounts": e.encode_json()}),
+        })
+      :
+        {
+          "account_events": {
+            "error": {
+              "code": string(resp_account.StatusCode),
+              "id": string(resp_account.Status),
+              "message": "GET:" + (
+                size(resp_account.Body) != 0 ?
+                  string(resp_account.Body)
+                :
+                  string(resp_account.Status) + ' (' + string(resp_account.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+    ).as(account_result, state.with(
+      request(
+        "GET",
+        state.file_counts_url
+      ).do_request().as(resp_file,
+        resp_file.StatusCode == 200
+        ?
+          bytes(resp_file.Body).mime("text/csv; header=present").as(file_events, {
+            "file_events": file_events.map(e, {"filecounts": e.encode_json()}),
+          })
+        :
+          {
+            "file_events": {
+              "error": {
+                "code": string(resp_file.StatusCode),
+                "id": string(resp_file.Status),
+                "message": "GET:" + (
+                  size(resp_file.Body) != 0 ?
+                    string(resp_file.Body)
+                  :
+                    string(resp_file.Status) + ' (' + string(resp_file.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    ))
+  )

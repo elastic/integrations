@@ -1,0 +1,63 @@
+---
+description: Pipeline for renaming object
+processors:
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - json:
+      field: accountcounts
+      target_field: o365metrics.accountcounts   
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under o365metrics.accountcounts.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.o365metrics?.accountcounts instanceof Map
+      source: |
+        String underscore(String s) {
+          return /[ -]/.matcher(s).replaceAll('');
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365metrics.accountcounts.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365metrics.accountcounts = out;
+
+  - remove:
+      if: ctx.accountcounts != null
+      field: accountcounts
+      ignore_missing: true
+
+
+  - json:
+      field: filecounts
+      target_field: o365metrics.filecounts   
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under o365metrics.filecounts.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.o365metrics?.filecounts instanceof Map
+      source: |
+        String underscore(String s) {
+          return /[ -]/.matcher(s).replaceAll('');
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365metrics.filecounts.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365metrics.filecounts = out;
+
+  - remove:
+      if: ctx.filecounts != null
+      field: filecounts
+      ignore_missing: true                                  
+
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
