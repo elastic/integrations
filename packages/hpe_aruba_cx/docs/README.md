@@ -333,14 +333,14 @@ Note: Descriptions have not been filled out
 | <da_diff_count>         | aruba.fault.da_diff_count        |
 
 #### [Firmware Update events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/UPDATE.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.firmware.after      |             |      | package.version              |
-| aruba.firmware.before     |             |      | package.installed            |
-| aruba.firmware.dnld_type  |             |      |                              |
-| aruba.firmware.host       |             |      | host.name                    |
-| aruba.firmware.image_profile |          |      |                              |
-| aruba.firmware.user       |             |      | user.name                    |
+| Doc Fields      | Schema Mapping               |
+|-----------------|------------------------------|
+| <user>          | user.name                    |
+| <image_profile> | aruba.firmware.image_profile |
+| <dnld_type>     | aruba.firmware.dnld_type     |
+| <host>          | source.address               |
+| <before>        | aruba.firmware.before        |
+| <after>         | aruba.firmware.after         |
 
 #### [Hardware Health Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm)
 | Doc Fields   | Schema Mapping          |
@@ -1362,6 +1362,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.fault.da_diff_count |  | long |
 | aruba.fault.sa_diff_count |  | long |
 | aruba.fault.type |  | keyword |
+| aruba.firmware.after |  | keyword |
+| aruba.firmware.before |  | keyword |
 | aruba.firmware.dnld_type |  | keyword |
 | aruba.firmware.image_profile |  | keyword |
 | aruba.hardware.addr |  | keyword |
@@ -1533,6 +1535,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | server.user.name.text | Multi-field of `server.user.name`. | match_only_text |
 | service.target.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tags | List of keywords used to tag each event. | keyword |

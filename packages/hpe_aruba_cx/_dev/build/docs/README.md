@@ -333,14 +333,14 @@ Note: Descriptions have not been filled out
 | <da_diff_count>         | aruba.fault.da_diff_count        |
 
 #### [Firmware Update events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/UPDATE.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.firmware.after      |             |      | package.version              |
-| aruba.firmware.before     |             |      | package.installed            |
-| aruba.firmware.dnld_type  |             |      |                              |
-| aruba.firmware.host       |             |      | host.name                    |
-| aruba.firmware.image_profile |          |      |                              |
-| aruba.firmware.user       |             |      | user.name                    |
+| Doc Fields      | Schema Mapping               |
+|-----------------|------------------------------|
+| <user>          | user.name                    |
+| <image_profile> | aruba.firmware.image_profile |
+| <dnld_type>     | aruba.firmware.dnld_type     |
+| <host>          | source.address               |
+| <before>        | aruba.firmware.before        |
+| <after>         | aruba.firmware.after         |
 
 #### [Hardware Health Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm)
 | Doc Fields   | Schema Mapping          |

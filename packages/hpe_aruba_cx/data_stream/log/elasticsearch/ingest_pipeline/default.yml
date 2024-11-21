@@ -344,6 +344,27 @@ processors:
         3011_3012_3013_COMMON: "correctable memory error count %{NUMBER:aruba.hardware.cecount:long} exceeded threshold %{NUMBER:aruba.limit:long}(?:%{3011_3012_3013_OPTIONAL})?"
         3011_3012_3013_OPTIONAL: " and %{NUMBER:aruba.hardware.offlined:long}"
 
+  # Firmware Update events (44xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FIRMWARE_UPDATE.htm
+  # Following events do not need further processing
+  #   * 4405
+  #   * 4406
+  #   * 4407
+  - grok:
+      if: "['4401', '4402'].contains(ctx.event?.code)"
+      tag: firmware_update_event_4401_4402
+      field: "message"
+      description: "Indicates that the switch firmware was successfully updated from a remote or local source"
+      patterns:
+        - "^User %{DATA:user.name}: %{DATA:aruba.firmware.image_profile} image updated via %{DATA:aruba.firmware.dnld_type}( from %{HOSTNAME:source.address})?. Firmware version, Before Update: %{DATA:aruba.firmware.before} After Update: %{DATA:aruba.firmware.after}$"
+  - grok:
+      if: "['4403', '4404'].contains(ctx.event?.code)"
+      tag: firmware_update_event_4403_4404
+      field: "message"
+      description: "Indicates that a switch firmware update failed from a remote or local source"
+      patterns:
+        - "^User %{DATA:user.name}: %{DATA:aruba.firmware.image_profile} image update failed via %{DATA:aruba.firmware.dnld_type}( from %{HOSTNAME:source.address})?$"
+
   # Credential Manager events (65xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
   #
