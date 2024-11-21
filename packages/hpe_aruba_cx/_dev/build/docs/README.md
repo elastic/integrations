@@ -198,7 +198,7 @@ Note: Descriptions have not been filled out
 | <expiry_time> | event.end         |
 | <host>        | host.name         |
 | <ip>          | host.ip           |
-| <mac>         | host.mac         |
+| <mac>         | host.mac          |
 | <vfr>         | aruba.vrf.id      |
 | <vfr_name>    | aruba.vrf.name    |
 
