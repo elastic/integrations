@@ -168,6 +168,7 @@ make sure these permissions are given:
 * `ec2:DescribeInstances`
 * `ec2:DescribeRegions`
 * `iam:ListAccountAliases`
+* `inspector2:ListFindings`
 * `logs:DescribeLogGroups`
 * `logs:FilterLogEvents`
 * `organizations:ListAccounts`
