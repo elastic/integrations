@@ -814,6 +814,51 @@ processors:
       patterns:
         - "^Bluetooth device %{DATA:event.action}: %{MAC:client.mac}"
 
+  # DHCP Snooping events (82xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv4-SNOOPING.htm
+  - grok:
+      field: message
+      tag: dhcp_snoop_event_8201
+      description: "Log event when packet dropped while server packet received on untrusted port."
+      if: "ctx.event?.code == '8201'"
+      patterns:
+        - "^Server %{IP:server.ip} packet received on untrusted port %{DATA:aruba.port} dropped.$"
+  - grok:
+      field: message
+      tag: dhcp_snoop_event_8202
+      description: "Log event when client packet dropped while packet destined to untrusted port."
+      if: "ctx.event?.code == '8202'"
+      patterns:
+        - "^Client packet destined to untrusted port %{DATA:aruba.port} dropped.$"
+  - grok:
+      field: message
+      tag: dhcp_snoop_event_8203
+      description: "Log event when packet dropped while packet received from unauthorized server."
+      if: "ctx.event?.code == '8203'"
+      patterns:
+        - "^Packet received from unauthorized server %{IP:server.ip} on port %{DATA:aruba.port}.$"
+  - grok:
+      field: message
+      tag: dhcp_snoop_event_8204
+      description: "Log event when client packet received with untrusted relay info."
+      if: "ctx.event?.code == '8204'"
+      patterns:
+        - "^Received untrusted relay info from client %{MAC:client.mac} on port %{DATA:aruba.port}.$"
+  - grok:
+      field: message
+      tag: dhcp_snoop_event_8205
+      description: "Log event when client address not equal to source MAC."
+      if: "ctx.event?.code == '8205'"
+      patterns:
+        - "^Client address %{MAC:client.mac} not equal to source MAC %{MAC:source.mac} detected on port %{DATA:aruba.port}.$"
+  - grok:
+      field: message
+      tag: dhcp_snoop_event_8206
+      description: "Log event when release packet received on incorrect port."
+      if: "ctx.event?.code == '8206'"
+      patterns:
+        - "^Binding for %{IP:client.ip}:%{MAC:client.mac} exists on port %{DATA:aruba.port}. Dropping release request received for the binding on %{DATA:aruba.new_port}.$"
+
   # ERPS Events (85xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm
   - dissect:
