@@ -143,16 +143,24 @@ processors:
   - script:
       tag: foreach_av_pair
       if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['cisco-av-pair'] instanceof List
+      params:
+        'coa-push': true
+        'cts-device-capability': true
+        'cts-environment-data': true
+        'cts-environment-version': true
+        'cts-pac-opaque': true
       source: |-
         def m = new HashMap();
         for (val in ctx.cisco_ise.log.log_details['cisco-av-pair']) {
           int pos = val.indexOf("=");
           if (pos == -1) {
-            m[val] = null;
+            if(params.containsKey(val)) m[val] = null;
           } else {
-            m[val.substring(0,pos)] = val.substring(pos+1);
+            def key = val.substring(0,pos);
+            if(params.containsKey(key)) m[key] = val.substring(pos+1);
           }
         }
+        
         ctx.cisco_ise.log["cisco_av_pair"] = m;
   - kv:
       tag: kv_av_pair
