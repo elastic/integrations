@@ -21,6 +21,8 @@ The [AWS Inspector](https://docs.aws.amazon.com/inspector/) integration collects
 ## Note
 
   - For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
+  - This data stream doesn't support setting a Role ARN.
+  - Ensure your IAM has the `inspector2:ListFindings` permission granted. Without this permission, API requests will be denied.
 
 ## Logs
 
@@ -355,3 +357,4 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+
