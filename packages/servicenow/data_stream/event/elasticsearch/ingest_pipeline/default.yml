@@ -31,11 +31,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: _conf.timestamp_field
-      tag: rename_timestamp_field
-      target_field: temp
-      ignore_missing: true
   - script:
       lang: painless
       tag: script_to_search_timestamp_field
@@ -43,8 +38,8 @@ processors:
       if: ctx.servicenow?.event != null
       source: >-
         def obj = ctx.servicenow.event;
-        if (obj.containsKey(ctx.temp)) {
-            ctx.servicenow.event.timestamp_field = obj.get(ctx.temp);
+        if (obj.containsKey(ctx._conf.timestamp_field)) {
+            ctx.servicenow.event.timestamp_field = obj.get(ctx._conf.timestamp_field);
         }
   - rename:
       field: _conf.table_name
@@ -3268,7 +3263,7 @@ processors:
   - remove:
       field:
         - servicenow.event.table_name
-        - temp
+        - _conf.timestamp_field
         - servicenow.event.timestamp_field
       tag: remove_non_required_fields
       ignore_missing: true
