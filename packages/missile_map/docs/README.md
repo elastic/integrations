@@ -1,74 +1,112 @@
-## Missile Map
+# Missile Map
 
-The Missile Map dashboard provides insights into the flow of network traffic between two regions. It displays animated paths from the source to the destination, with missile-like arrows along the path and a pulsing arc at the end.
+The **Missile Map** dashboard visualizes network traffic flow between regions using animated paths. It includes missile-like arrows indicating direction and pulsing arcs at the destination.
 
-> **Note:** Animated paths may result in increased browser CPU usage.
-> 
+> **Note:** The animations may increase browser CPU usage.
 
-## Pre-requisities
+---
 
-- Kibana version `8.10.0` or higher is required.
-- The documents must contain a `@timestamp` field, which is required for filtering by time range.
-- A [GeoIP](https://www.elastic.co/guide/en/elasticsearch/reference/current/geoip-processor.html) processor must be applied to the IP field, providing location data for both the source and destination. This data should be available in the `source.geo.location` and `destination.geo.location` fields.
-- Documents should be accessible via the `logs-*` data view.
+## Prerequisites
 
-## Data
+To use the Missile Map visualization, ensure the following:
 
-Data is retrieved from Elasticsearch using the `_all` index search endpoint.
+- **Kibana Version:** `8.10.0` or higher.
+- **Timestamp Field:** Documents must contain a `@timestamp` field for time-range filtering.
+- **GeoIP Processor:** Apply a [GeoIP](https://www.elastic.co/guide/en/elasticsearch/reference/current/geoip-processor.html) processor to the IP field. Location data should populate the `source.geo.location` and `destination.geo.location` fields.
+- **Data View:** Use documents accessible via the `logs-*` data view.
 
-The visualization looks for the following fields in a document:
+---
 
-  * source.geo.location.lat: Latitude of the source. (required)
-  * source.geo.location.lon: Longitude of the source. (required)
-  * source.geo.country_name: Country name of the source. (required)
-  * source.ip: IP address of the source. (required)
-  * destination.geo.location.lat: Latitude of the destination. (required)
-  * destination.geo.location.lon: Longitude of the destination. (required)
-  * destination.geo.country_name: Country name of the destination. (required)
-  * destination.ip: IP address of the destination. (required)
-  * color: Arc color (optional, default "steelblue")
-  * animate: Determines if the arc is animated (optional, default "false")
-  * weight: Arc line thickness. (optional, default 1)
-  * source_label: Label at the arc’s start. If multiple arcs share the same start point, this label should be the same for consistency.
-  * destination_label: Label at the arc’s end. If multiple arcs share the same end point, this label should be the same for consistency.
+## Data Format
+
+Data is retrieved from Elasticsearch using the `_all` index search endpoint. Ensure the following fields exist in each document:
+
+| Field                         | Description                                                        | Required/Optional | Default Value |
+|-------------------------------|--------------------------------------------------------------------|-------------------|---------------|
+| `source.geo.location.lat`     | Latitude of the source                                             | Required          |               |
+| `source.geo.location.lon`     | Longitude of the source                                            | Required          |               |
+| `source.geo.country_name`     | Country name of the source                                         | Required          |               |
+| `source.ip`                   | IP address of the source                                           | Required          |               |
+| `destination.geo.location.lat`| Latitude of the destination                                        | Required          |               |
+| `destination.geo.location.lon`| Longitude of the destination                                       | Required          |               |
+| `destination.geo.country_name`| Country name of the destination                                    | Required          |               |
+| `destination.ip`              | IP address of the destination                                      | Required          |               |
+| `color`                       | Arc color                                                          | Optional          | `"#54B399"`   |
+| `animate`                     | Determines if the arc is animated                                  | Optional          | `false`       |
+| `weight`                      | Arc line thickness                                                 | Optional          | `1`           |
+| `source_label`                | Label at the source location                                       | Optional          |               |
+| `destination_label`           | Label at the destination location                                  | Optional          |               |
+| `pulse_at_source`             | If true, the pulse begins at the source instead of the destination | Optional          | `false`       |
+
+---
+
+## Usage
+
+The Missile Map visualization can be added to other dashboards in two ways:
+
+### 1. Duplicate the Entire Dashboard
+- Click the **Duplicate** button in the top-right corner of the dashboard.
+- A clone of the dashboard will be created for your customizations.
+
+### 2. Copy Visualization to a Dashboard
+- Click the three dots in the top-right corner of the visualization and select **Copy to Dashboard**.
+- Choose one of the following options:
+  - **Existing Dashboard:** Select an existing dashboard from the dropdown, then click **Copy and Go to Dashboard**.
+  - **New Dashboard:** Create a new dashboard with the visualization.
+
+![Copy to dashboard](../img/copy-to-dashboard.png)
+---
 
 ## Visualizations
 
-There are two types of visualizations used in the Missile Map dashboard:
+The Missile Map dashboard includes the following visualizations:
 
-1. **Map**
+### 1. Map
+- **Framework:** Utilizes [Vega](https://vega.github.io/vega/) within Kibana.
+- **Fields Used:** `source.geo.location`, `destination.geo.location`, `color`, `animate`, `weight`, `source_label`, and `destination_label`.
+- **Customization:**
+  - Click the three dots in the top-right corner and select **Maximize** to enlarge.
+  - The map adapts to Kibana's dark/light mode automatically. [Read more](https://www.elastic.co/blog/whats-new-kibana-ml-8-8-0).
 
-    The map visualization uses the Elastic Map Service to add a basemap. For the marks (path, text, arc, etc.) and animations, it uses the [Vega](https://vega.github.io/vega/) visualization framework within Kibana.
+### 2. Panels
+Includes four tables for analyzing traffic flow:
+- **Source/Destination Countries:** Shows the top 5 countries with the highest traffic flow.
+- **Source/Destination IPs:** Shows the top 5 IPs with the highest traffic flow.
 
-    The map visualization is based on the following fields: `source.geo.location`, `destination.geo.location`, `color`, `animate`, `weight`, `source_label`, and `destination_label`.
+Data in panels can be sorted by clicking on the **Count** column header.
 
-    The document may include the following optional fields to configure each path on the map:
-    - `color`: Accepts a color name or hash code.
-    - `animate`: A boolean that can be set to configure a path as animating.
-    - `weight`: Configures the width of a path.
-    - `source_label` and `destination_label`: Text that is shown at the start and end of a path respectively.
+---
 
-    The map visualization can be expanded by clicking on the three dots on the top right corner and selecting `⤢ Maximize` from the dropdown.
-    The map follows an auto-switch dark-light behavior, meaning it will sync with the Kibana UI theme. See more [here](https://www.elastic.co/blog/whats-new-kibana-ml-8-8-0).
+## Filtering Data
 
-2. **Panels**
+### Global Filters
+- Use **KQL (Kibana Query Language)** in the query bar at the top of the dashboard.
+- Adjust the time range using the selector in the top-right corner (default: last 30 minutes).
+- Maximum records displayed: **10,000**.
 
-    There are four tables to analyze the network traffic flow. These tables are based on the `source.ip`, `destination.ip`, `source.geo.country_name`, and `destination.geo.country_name` fields.
+### Visualization-Specific Filters
+- Click the three dots in the top-right corner of the map and select **Edit Visualization**.
+- Apply a filter using the query bar.
+- Click **Save and Return** to apply changes.
 
+![Visualization-Specific Filters](../img/query-bar.png)
+---
 
-   - **Source/Destination Countries**
+## Customization Options
 
-        These panels show the top 5 source/destination countries with the highest traffic flow.
+The following options are available for customization:
 
-   - **Source/Destination IP**
+| Option              | Description                                               | Default Value         |
+|---------------------|-----------------------------------------------------------|-----------------------|
+| `emsTileServiceId`  | Sets the EMS-layer for the map.                           | `"undefined"`         |
+| `Latitude`          | Starting latitude of the map                              |  `10`                 |
+| `Longitude`         | Starting longitude of the map                             |  `0`                  |
+| `Zoom`              | Starting zoom level of the map                            |  `1.3`                |
+| `scrollWheelZoom`   | If true, disables mouse wheel zoom to avoid accidental zooming | `falses`         |
 
-        These panels show the top 5 source/destination IP addresses with the highest traffic flow.
+To customize these options, click on **Edit visualization** from the dropdown in the top right corner of the visualization. A Vega editor will open, where you can modify the following configurations.
 
-    Users can sort the data by clicking on the Count column header and selecting the sorting order.
+For additional customization options, see the [Vega Kibana Guide](https://www.elastic.co/guide/en/kibana/current/vega.html#vega-with-a-map).
 
-## Filter data
-
-Kibana allow users to filter data by writing KQL (Kibana Query Language) in the query bar on the top.
-Users can filter data by selecting the time range provided in the right corner.
-
-By default, the time window is set to the last 30 minutes. To display a path on the map, adjust the time range. A maximum of 10000 records can be displayed.
+![Customization options](../img/customization-options.png)
+---
