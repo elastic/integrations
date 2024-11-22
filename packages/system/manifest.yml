@@ -8,7 +8,7 @@ categories:
   - os_system
 conditions:
   kibana:
-    version: "^8.16.0"
+    version: "^8.13.0"
 screenshots:
   - src: /img/system-overview.png
     title: system overview
@@ -34,22 +34,36 @@ policy_templates:
         vars:
           - name: condition
             title: Condition
-            description: Condition to filter when to apply this datastream. Refer to [Host provider](https://www.elastic.co/guide/en/fleet/current/host-provider.html) to find the available keys and to [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions) on how to use the available keys in conditions.
+            description: |
+              Condition to filter when to apply this input. Refer to
+              [Host provider](https://www.elastic.co/guide/en/fleet/current/host-provider.html)
+              to find the available keys and to
+              [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions)
+              on how to use the available keys in conditions. It defaults to
+              '${host.os_version} != "12 (bookworm)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023")'
             type: text
             multi: false
             required: false
             show_user: false
+            default: ${host.os_version} != "12 (bookworm)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023")
       - type: journald
         title: Collect logs from System instances using Journald
         description: Collecting System auth and syslog logs using Journald
         vars:
           - name: condition
             title: Condition
-            description: Condition to filter when to apply this datastream. Refer to [Host provider](https://www.elastic.co/guide/en/fleet/current/host-provider.html) to find the available keys and to [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions) on how to use the available keys in conditions.
+            description: |
+              Condition to filter when to apply this input. Refer to
+              [Host provider](https://www.elastic.co/guide/en/fleet/current/host-provider.html)
+              to find the available keys and to
+              [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions)
+              on how to use the available keys in conditions. It defaults to
+              '${host.os_version} == "12 (bookworm)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023")'
             type: text
             multi: false
             required: false
             show_user: false
+            default: ${host.os_version} == "12 (bookworm)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023")
       - type: winlog
         title: "Collect events from the Windows event log"
         description: "Collecting events from Windows event log"
