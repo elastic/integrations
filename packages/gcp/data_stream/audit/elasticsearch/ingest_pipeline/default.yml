@@ -138,7 +138,7 @@ processors:
             return false;
           }
 
-         return entities.add(value);
+          return entities.add(value);
         }
 
         boolean isKubernetes = false;
@@ -152,7 +152,7 @@ processors:
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet entities = new TreeSet();
 
-        addField(entities, "json.proyoPayload.request.parent");
+        addField(entities, "json.protoPayload.request.parent");
         if (!isKubernetes) {
             addFields(entities, new String[]{
               "json.protoPayload.resourceName",
@@ -169,18 +169,16 @@ processors:
           authInfo.principalSubject,
           authInfo.serviceAccountKeyName
         });
-        if (authInfo.serviceAccountDelegationInfo != null) {
-          if (!(authInfo.serviceAccountDelegationInfo instanceof List)) {
-            authInfo.serviceAccountDelegationInfo.get(new ArrayList()).stream().forEach(
-              delegInfo -> {
-                addValues(entities, new String[]{
-                  delegInfo.principalSubject,
-                  delegInfo.firstPartyPrincipal.principalEmail,
-                  delegInfo.thirdPartyPrincipal.principalEmail
-                });
-              }
-            );
-          }
+        if (authInfo.serviceAccountDelegationInfo != null && !(authInfo.serviceAccountDelegationInfo instanceof List)) {
+          authInfo.serviceAccountDelegationInfo.get(new ArrayList()).stream().forEach(
+            delegInfo -> {
+              addValues(entities, new String[]{
+                delegInfo.principalSubject,
+                delegInfo.firstPartyPrincipal?.principalEmail,
+                delegInfo.thirdPartyPrincipal?.principalEmail
+              });
+            }
+          );
         }
 
         String serviceName = field("json.protoPayload.serviceName").get(null);
