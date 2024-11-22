@@ -293,35 +293,38 @@ Note: Descriptions have not been filled out
 | <status>  | aruba.status                |
 
 #### [Fan events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.fan.compare_mode    |             |      |                              |
-| aruba.fan.count           |             |      | aruba.count                  |
-| aruba.fan.en_dis          |             |      |                              |
-| aruba.fan.failure_type    |             |      | error.type                   |
-| aruba.fan.fan_index       |             |      |                              |
-| aruba.fan.fmod_num        |             |      |                              |
-| aruba.fan.ft_air_curr     |             |      |                              |
-| aruba.fan.ft_air_req      |             |      |                              |
-| aruba.fan.ft_dir          |             |      |                              |
-| aruba.fan.ft_num          |             |      |                              |
-| aruba.fan.function        |             |      |                              |
-| aruba.fan.minimum         |             |      |                              |
-| aruba.fan.module_idx      |             |      |                              |
-| aruba.fan.name            |             |      |                              |
-| aruba.fan.new_status      |             |      |                              |
-| aruba.fan.num_of_failure  |             |      | error.code                   |
-| aruba.fan.num_of_failure_limit |        |      | aruba.limit                  |
-| aruba.fan.old_status      |             |      |                              |
-| aruba.fan.reason          |             |      | event.reason                 |
-| aruba.fan.speed_idx_status|             |      |                              |
-| aruba.fan.speedval        |             |      |                              |
-| aruba.fan.status          |             |      | aruba.status                 |
-| aruba.fan.subsystem       |             |      | aruba.subsystem              |
-| aruba.fan.tray_index      |             |      |                              |
-| aruba.fan.air_flow_direction|           |      |                              |
-| aruba.fan.zone_idx        |             |      |                              |
-
+| Doc Field                | Schema Mapping               |
+|--------------------------|------------------------------|
+| <count>                  | aruba.fan.count              |
+| <subsystem>              | aruba.subsystem              |
+| <speedval>               | aruba.fan.speedval           |
+| <value>                  | aruba.fan.value              |
+| <FT_Num>                 | aruba.fan.ft_num             |
+| <FMod_Num>               | aruba.fan.fmod_num           |
+| <num_of_failure>         | aruba.error.count            |
+| <failure_type>           | error.type                   |
+| <compare_mode>           | aruba.fan.compare_mode       |
+| <num_of_failure_limit>   | aruba.limit                  |
+| <seconds>                | aruba.time.seconds           |
+| <reason>                 | event.reason                 |
+| <function>               | aruba.fan.function           |
+| <tray_index>             | aruba.fan.tray_idx           |
+| <fan_index>              | aruba.fan.index              |
+| <FanName>                | aruba.fan.name               |
+| <FanStatus>              | aruba.fan.status             |
+| <FanModuleIdx>           | aruba.fan.module_idx         |
+| <FanTrayIdx>             | aruba.fan.tray_idx           |
+| <OldStatus>              | aruba.fan.old_status         |
+| <NewStatus>              | aruba.fan.status             |
+| <FanCount>               | aruba.fan.count              |
+| <FanMinimum>             | aruba.fan.minimum            |
+| <ZoneIdx>                | aruba.fan.zone_idx           |
+| <FanSpdIdxStatus>        | aruba.fan.speed_idx_status   |
+| <Status>                 | aruba.fan.status             |
+| <FT_Dir>                 | aruba.fan.ft_dir             |
+| <FT_air_curr>            | aruba.fan.ft_air_curr        |
+| <FT_air_req>             | aruba.fan.ft_air_req         |
+| <En_Dis>                 | aruba.fan.status             |
 
 #### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm)
 | Doc Fields              | Schema Mapping                   |
@@ -1335,6 +1338,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.ecmp.route |  | keyword |
 | aruba.erps.port_name |  | keyword |
 | aruba.erps.ring_id |  | keyword |
+| aruba.error.count |  | long |
 | aruba.event_type |  | keyword |
 | aruba.evpn.rd |  | keyword |
 | aruba.evpn.rt |  | keyword |
@@ -1342,23 +1346,27 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.evpn.vtep_ip |  | ip |
 | aruba.fan.air_flow_direction |  | keyword |
 | aruba.fan.compare_mode |  | keyword |
+| aruba.fan.count |  | long |
 | aruba.fan.en_dis |  | keyword |
 | aruba.fan.fan_index |  | long |
-| aruba.fan.fmod_num |  | long |
+| aruba.fan.fmod_num |  | keyword |
 | aruba.fan.ft_air_curr |  | keyword |
 | aruba.fan.ft_air_req |  | keyword |
 | aruba.fan.ft_dir |  | keyword |
-| aruba.fan.ft_num |  | long |
+| aruba.fan.ft_num |  | keyword |
 | aruba.fan.function |  | keyword |
+| aruba.fan.index |  | long |
 | aruba.fan.minimum |  | long |
-| aruba.fan.module_idx |  | keyword |
+| aruba.fan.module_idx |  | long |
 | aruba.fan.name |  | keyword |
 | aruba.fan.new_status |  | keyword |
 | aruba.fan.old_status |  | keyword |
 | aruba.fan.speed_idx_status |  | keyword |
-| aruba.fan.speedval |  | long |
-| aruba.fan.tray_index |  | long |
-| aruba.fan.zone_idx |  | keyword |
+| aruba.fan.speedval |  | keyword |
+| aruba.fan.status |  | keyword |
+| aruba.fan.tray_idx |  | long |
+| aruba.fan.value |  | keyword |
+| aruba.fan.zone_idx |  | long |
 | aruba.fault.da_diff_count |  | long |
 | aruba.fault.sa_diff_count |  | long |
 | aruba.fault.type |  | keyword |
@@ -1473,10 +1481,12 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.status |  | keyword |
 | aruba.storage.name |  | keyword |
 | aruba.storage.usage |  | keyword |
+| aruba.subsystem |  | keyword |
 | aruba.system.devicespec |  | keyword |
 | aruba.system.modspec |  | keyword |
 | aruba.system.numdevs |  | long |
 | aruba.system.time |  | date |
+| aruba.time.seconds |  | long |
 | aruba.tunnel.ttl |  | keyword |
 | aruba.tunnel.type |  | keyword |
 | aruba.vrf.id |  | keyword |
@@ -1496,6 +1506,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
+| error.type | The type of the error, for example the class name of the exception. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |

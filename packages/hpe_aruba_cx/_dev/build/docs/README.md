@@ -293,35 +293,38 @@ Note: Descriptions have not been filled out
 | <status>  | aruba.status                |
 
 #### [Fan events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.fan.compare_mode    |             |      |                              |
-| aruba.fan.count           |             |      | aruba.count                  |
-| aruba.fan.en_dis          |             |      |                              |
-| aruba.fan.failure_type    |             |      | error.type                   |
-| aruba.fan.fan_index       |             |      |                              |
-| aruba.fan.fmod_num        |             |      |                              |
-| aruba.fan.ft_air_curr     |             |      |                              |
-| aruba.fan.ft_air_req      |             |      |                              |
-| aruba.fan.ft_dir          |             |      |                              |
-| aruba.fan.ft_num          |             |      |                              |
-| aruba.fan.function        |             |      |                              |
-| aruba.fan.minimum         |             |      |                              |
-| aruba.fan.module_idx      |             |      |                              |
-| aruba.fan.name            |             |      |                              |
-| aruba.fan.new_status      |             |      |                              |
-| aruba.fan.num_of_failure  |             |      | error.code                   |
-| aruba.fan.num_of_failure_limit |        |      | aruba.limit                  |
-| aruba.fan.old_status      |             |      |                              |
-| aruba.fan.reason          |             |      | event.reason                 |
-| aruba.fan.speed_idx_status|             |      |                              |
-| aruba.fan.speedval        |             |      |                              |
-| aruba.fan.status          |             |      | aruba.status                 |
-| aruba.fan.subsystem       |             |      | aruba.subsystem              |
-| aruba.fan.tray_index      |             |      |                              |
-| aruba.fan.air_flow_direction|           |      |                              |
-| aruba.fan.zone_idx        |             |      |                              |
-
+| Doc Field                | Schema Mapping               |
+|--------------------------|------------------------------|
+| <count>                  | aruba.fan.count              |
+| <subsystem>              | aruba.subsystem              |
+| <speedval>               | aruba.fan.speedval           |
+| <value>                  | aruba.fan.value              |
+| <FT_Num>                 | aruba.fan.ft_num             |
+| <FMod_Num>               | aruba.fan.fmod_num           |
+| <num_of_failure>         | aruba.error.count            |
+| <failure_type>           | error.type                   |
+| <compare_mode>           | aruba.fan.compare_mode       |
+| <num_of_failure_limit>   | aruba.limit                  |
+| <seconds>                | aruba.time.seconds           |
+| <reason>                 | event.reason                 |
+| <function>               | aruba.fan.function           |
+| <tray_index>             | aruba.fan.tray_idx           |
+| <fan_index>              | aruba.fan.index              |
+| <FanName>                | aruba.fan.name               |
+| <FanStatus>              | aruba.fan.status             |
+| <FanModuleIdx>           | aruba.fan.module_idx         |
+| <FanTrayIdx>             | aruba.fan.tray_idx           |
+| <OldStatus>              | aruba.fan.old_status         |
+| <NewStatus>              | aruba.fan.status             |
+| <FanCount>               | aruba.fan.count              |
+| <FanMinimum>             | aruba.fan.minimum            |
+| <ZoneIdx>                | aruba.fan.zone_idx           |
+| <FanSpdIdxStatus>        | aruba.fan.speed_idx_status   |
+| <Status>                 | aruba.fan.status             |
+| <FT_Dir>                 | aruba.fan.ft_dir             |
+| <FT_air_curr>            | aruba.fan.ft_air_curr        |
+| <FT_air_req>             | aruba.fan.ft_air_req         |
+| <En_Dis>                 | aruba.fan.status             |
 
 #### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm)
 | Doc Fields              | Schema Mapping                   |
