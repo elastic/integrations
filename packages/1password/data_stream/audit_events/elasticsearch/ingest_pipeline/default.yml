@@ -40,6 +40,11 @@ processors:
   #########################
   - append:
       field: related.user
+      value: "{{{onepassword.actor_details.name}}}"
+      allow_duplicates: false
+      if: ctx.onepassword?.actor_details?.name != null
+  - append:
+      field: related.user
       value: "{{{onepassword.actor_uuid}}}"
       allow_duplicates: false
       if: ctx.onepassword?.actor_uuid != null
@@ -77,8 +82,12 @@ processors:
       ignore_missing: true
   - rename:
       field: onepassword.actor_details.name
-      target_field: user.name
+      target_field: user.full_name
       ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: user.full_name
+      ignore_empty_value: true
   - rename:
       field: onepassword.actor_details.email
       target_field: user.email
