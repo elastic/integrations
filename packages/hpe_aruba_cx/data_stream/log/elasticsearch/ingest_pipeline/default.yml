@@ -142,6 +142,38 @@ processors:
       patterns:
         - "ECMP error: %{DATA:aruba.ecmp.err}$"
 
+  # DHCP Server events (19xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-SERVER.htm
+  - grok:
+      field: message
+      tag: dhcp_server_event_1901_through_1906
+      description: "Logs DHCP lease addition, deletion, or update"
+      if: "['1901', '1902', '1903', '1904', '1905', '1906'].contains(ctx.event?.code)"
+      patterns:
+        - "^DHCP Lease (added|addition|deleted|deletion|update|updated)( failed)? %{DHCP_EXPIRE_TIME_FMT:event.end} %{MAC:host.mac} %{IP:host.ip} %{HOSTNAME:host.name} %{DATA:user.id}$"
+      pattern_definitions:
+        DHCP_EXPIRE_TIME_FMT: "(?:(?:[0-9]{2}:){2}([0-9]){2})"
+  - grok:
+      field: message
+      tag: dhcp_server_event_1907_1908
+      description: "Logs enable or disable of DHCP server on a VRF"
+      if: "['1907', '1908'].contains(ctx.event?.code)"
+      patterns:
+        - "^DHCP server (en|dis)abled on VRF %{DATA:aruba.vrf.name}$"
+  - dissect:
+      field: message
+      tag: dhcp_server_event_1909
+      description: "Event raised when user configures an invalid DHCP configuration"
+      if: "ctx.event.code == '1909'"
+      pattern: "Invalid DHCP configuration: %{aruba.dhcp.config} provided on DHCP Server instance running on VRF %{aruba.vrf.name}. Ignoring this config."
+  - grok:
+      field: message
+      tag: dhcp_server_event_1910_1911
+      description: "Event raised when DHCP or DHCPv6 Server Lease on the VRF is cleared"
+      if: "['1910', '1911'].contains(ctx.event?.code)"
+      patterns:
+        - "^(DHCP|DHCPv6) Server Lease cleared on vrf %{DATA:aruba.vrf.name}\\.$"
+
   # AAA events (23xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm
   - grok:
@@ -963,6 +995,24 @@ processors:
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+
+  # Make sure that host.ip and host.mac are arrays
+  - set:
+      field: host.ip
+      value: ['{{{host.ip}}}']
+      if: ctx.host?.ip instanceof String
+  - set:
+      field: host.mac
+      value: ['{{{host.mac}}}']
+      if: ctx.host?.mac instanceof String
 
   # Convert aruba.slot from a string to a long
   # Dissect processor sets everything to a string type

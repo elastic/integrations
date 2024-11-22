@@ -191,16 +191,16 @@ Note: Descriptions have not been filled out
 |-----------|----------------|
 
 #### [DHCP Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-SERVER.htm)
-| Field                | Description | Type | Common           |
-|----------------------|-------------|------|------------------|
-| aruba.dhcp.client_id |             |      | user.id          |
-| aruba.dhcp.config    |             |      |                  |
-| aruba.dhcp.expiry_time |           |      | event.end        |
-| aruba.dhcp.host      |             |      | host.name        |
-| aruba.dhcp.ip        |             |      | client.ip        |
-| aruba.dhcp.mac       |             |      | client.mac       |
-| aruba.dhcp.vfr       |             |      | aruba.vrf.id     |
-| aruba.dhcp.vfr_name  |             |      | aruba.vrf.name   |
+| Doc Field     | Schema Mapping    |
+|---------------|-------------------|
+| <client_id>   | user.id           |
+| <config>      | aruba.dhcp.config |
+| <expiry_time> | event.end         |
+| <host>        | host.name         |
+| <ip>          | host.ip           |
+| <mac>         | host.mac          |
+| <vfr>         | aruba.vrf.id      |
+| <vfr_name>    | aruba.vrf.name    |
 
 #### [DHCPv4 Snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv4-SNOOPING.htm)
 | Field                    | Description | Type | Common             |
