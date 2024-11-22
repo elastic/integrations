@@ -677,6 +677,31 @@ processors:
       if: "ctx.event?.code == '8515'"
       pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to Initializing with reason %{event.reason}"
 
+
+  # Hardware switch controller sync events (88xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm
+  - grok:
+    if: "['8802', '8803'].contains(ctx.event?.code)"
+    tag: hardware_event_8802_8803
+    field: "message"
+    description: "Log when physical port is [created|deleted] in hardware VTEP DB"
+    patterns:
+      - "^Physical Port %{DATA:aruba.port} is (created|deleted) in Hardware VTEP DB"
+  - grok:
+    if: "['8806', '8807'].contains(ctx.event?.code)"
+    tag: hardware_event_8806_8807
+    field: "message"
+    description: "Logs when local MAC learn on VLAN is [updated|removed] in the Hardwar VTEP DB"
+    patterns:
+      - "^Local MAC %{MAC:source.mac} learnt on VLAN %{network.vlan.id} is (updated in|removed from) the Hardware VTEP DB"
+  - grok:
+    if: "['8808', '8809'].contains(ctx.event?.code)"
+    tag: hardware_event_8808_8809
+    field: "message"
+    description: "Logs when VXLAN IP is [updated|removed] in the Hardware VTEP DB"
+    patterns:
+      - "^VXLAN IP %{IP:server.ip} is (updated in the|removed from Switch and) Hardware VTEP DB"
+
   # CDP events (89xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CDP.htm
   - grok:

@@ -370,12 +370,12 @@ Note: Descriptions have not been filled out
 | <type>       | aruba.hardware.type     |
 
 #### [Hardware Switch controller sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.hardware.ip   |             |      | server.ip                    |
-| aruba.hardware.mac  |             |      | server.mac                   |
-| aruba.hardware.port |             |      | server.port                  |
-| aruba.hardware.vni  |             |      | network.vlan.id              |
+| Doc Fields | Schema Mapping   |
+|------------|------------------|
+| <ip>       | server.ip        |
+| <mac>      | server.mac       |
+| <port>     | aruba.port       |
+| <vni>      | network.vlan.id  |
 
 #### [HTTPS Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm)
 | Field | Description | Type | Common |
