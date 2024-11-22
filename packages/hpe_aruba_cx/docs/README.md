@@ -191,16 +191,16 @@ Note: Descriptions have not been filled out
 |-----------|----------------|
 
 #### [DHCP Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-SERVER.htm)
-| Field                | Description | Type | Common           |
-|----------------------|-------------|------|------------------|
-| aruba.dhcp.client_id |             |      | user.id          |
-| aruba.dhcp.config    |             |      |                  |
-| aruba.dhcp.expiry_time |           |      | event.end        |
-| aruba.dhcp.host      |             |      | host.name        |
-| aruba.dhcp.ip        |             |      | client.ip        |
-| aruba.dhcp.mac       |             |      | client.mac       |
-| aruba.dhcp.vfr       |             |      | aruba.vrf.id     |
-| aruba.dhcp.vfr_name  |             |      | aruba.vrf.name   |
+| Doc Field     | Schema Mapping    |
+|---------------|-------------------|
+| <client_id>   | user.id           |
+| <config>      | aruba.dhcp.config |
+| <expiry_time> | event.end         |
+| <host>        | host.name         |
+| <ip>          | host.ip           |
+| <mac>         | host.mac          |
+| <vfr>         | aruba.vrf.id      |
+| <vfr_name>    | aruba.vrf.name    |
 
 #### [DHCPv4 Snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv4-SNOOPING.htm)
 | Field                    | Description | Type | Common             |
@@ -293,54 +293,57 @@ Note: Descriptions have not been filled out
 | <status>  | aruba.status                |
 
 #### [Fan events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.fan.compare_mode    |             |      |                              |
-| aruba.fan.count           |             |      | aruba.count                  |
-| aruba.fan.en_dis          |             |      |                              |
-| aruba.fan.failure_type    |             |      | error.type                   |
-| aruba.fan.fan_index       |             |      |                              |
-| aruba.fan.fmod_num        |             |      |                              |
-| aruba.fan.ft_air_curr     |             |      |                              |
-| aruba.fan.ft_air_req      |             |      |                              |
-| aruba.fan.ft_dir          |             |      |                              |
-| aruba.fan.ft_num          |             |      |                              |
-| aruba.fan.function        |             |      |                              |
-| aruba.fan.minimum         |             |      |                              |
-| aruba.fan.module_idx      |             |      |                              |
-| aruba.fan.name            |             |      |                              |
-| aruba.fan.new_status      |             |      |                              |
-| aruba.fan.num_of_failure  |             |      | error.code                   |
-| aruba.fan.num_of_failure_limit |        |      | aruba.limit                  |
-| aruba.fan.old_status      |             |      |                              |
-| aruba.fan.reason          |             |      | event.reason                 |
-| aruba.fan.speed_idx_status|             |      |                              |
-| aruba.fan.speedval        |             |      |                              |
-| aruba.fan.status          |             |      | aruba.status                 |
-| aruba.fan.subsystem       |             |      | aruba.subsystem              |
-| aruba.fan.tray_index      |             |      |                              |
-| aruba.fan.air_flow_direction|           |      |                              |
-| aruba.fan.zone_idx        |             |      |                              |
-
+| Doc Field                | Schema Mapping               |
+|--------------------------|------------------------------|
+| <count>                  | aruba.fan.count              |
+| <subsystem>              | aruba.subsystem              |
+| <speedval>               | aruba.fan.speedval           |
+| <value>                  | aruba.fan.value              |
+| <FT_Num>                 | aruba.fan.ft_num             |
+| <FMod_Num>               | aruba.fan.fmod_num           |
+| <num_of_failure>         | aruba.error.count            |
+| <failure_type>           | error.type                   |
+| <compare_mode>           | aruba.fan.compare_mode       |
+| <num_of_failure_limit>   | aruba.limit                  |
+| <seconds>                | aruba.time.seconds           |
+| <reason>                 | event.reason                 |
+| <function>               | aruba.fan.function           |
+| <tray_index>             | aruba.fan.tray_idx           |
+| <fan_index>              | aruba.fan.index              |
+| <FanName>                | aruba.fan.name               |
+| <FanStatus>              | aruba.fan.status             |
+| <FanModuleIdx>           | aruba.fan.module_idx         |
+| <FanTrayIdx>             | aruba.fan.tray_idx           |
+| <OldStatus>              | aruba.fan.old_status         |
+| <NewStatus>              | aruba.fan.status             |
+| <FanCount>               | aruba.fan.count              |
+| <FanMinimum>             | aruba.fan.minimum            |
+| <ZoneIdx>                | aruba.fan.zone_idx           |
+| <FanSpdIdxStatus>        | aruba.fan.speed_idx_status   |
+| <Status>                 | aruba.fan.status             |
+| <FT_Dir>                 | aruba.fan.ft_dir             |
+| <FT_air_curr>            | aruba.fan.ft_air_curr        |
+| <FT_air_req>             | aruba.fan.ft_air_req         |
+| <En_Dis>                 | aruba.fan.status             |
 
 #### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.fault.da_diff_count   |             |      | network.packets              |
-| aruba.fault.id              |             |      | event.code                   |
-| aruba.fault.interface       |             |      | observer.ingress.interface.name |
-| aruba.fault.mac             |             |      | client.mac                   |
-| aruba.fault.sa_diff_count   |             |      | network.packets              |
+| Doc Fields              | Schema Mapping                   |
+|-------------------------|----------------------------------|
+| <fault>                 | aruba.fault.type                 |
+| <interface>             | aruba.interface.name             |
+| <mac>                   | client.mac                       |
+| <sa_diff_count>         | aruba.fault.sa_diff_count        |
+| <da_diff_count>         | aruba.fault.da_diff_count        |
 
 #### [Firmware Update events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/UPDATE.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.firmware.after      |             |      | package.version              |
-| aruba.firmware.before     |             |      | package.installed            |
-| aruba.firmware.dnld_type  |             |      |                              |
-| aruba.firmware.host       |             |      | host.name                    |
-| aruba.firmware.image_profile |          |      |                              |
-| aruba.firmware.user       |             |      | user.name                    |
+| Doc Fields      | Schema Mapping               |
+|-----------------|------------------------------|
+| <user>          | user.name                    |
+| <image_profile> | aruba.firmware.image_profile |
+| <dnld_type>     | aruba.firmware.dnld_type     |
+| <host>          | source.address               |
+| <before>        | aruba.firmware.before        |
+| <after>         | aruba.firmware.after         |
 
 #### [Hardware Health Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm)
 | Doc Fields   | Schema Mapping          |
@@ -1335,6 +1338,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.ecmp.route |  | keyword |
 | aruba.erps.port_name |  | keyword |
 | aruba.erps.ring_id |  | keyword |
+| aruba.error.count |  | long |
 | aruba.event_type |  | keyword |
 | aruba.evpn.rd |  | keyword |
 | aruba.evpn.rt |  | keyword |
@@ -1342,23 +1346,32 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.evpn.vtep_ip |  | ip |
 | aruba.fan.air_flow_direction |  | keyword |
 | aruba.fan.compare_mode |  | keyword |
+| aruba.fan.count |  | long |
 | aruba.fan.en_dis |  | keyword |
 | aruba.fan.fan_index |  | long |
-| aruba.fan.fmod_num |  | long |
+| aruba.fan.fmod_num |  | keyword |
 | aruba.fan.ft_air_curr |  | keyword |
 | aruba.fan.ft_air_req |  | keyword |
 | aruba.fan.ft_dir |  | keyword |
-| aruba.fan.ft_num |  | long |
+| aruba.fan.ft_num |  | keyword |
 | aruba.fan.function |  | keyword |
+| aruba.fan.index |  | long |
 | aruba.fan.minimum |  | long |
-| aruba.fan.module_idx |  | keyword |
+| aruba.fan.module_idx |  | long |
 | aruba.fan.name |  | keyword |
 | aruba.fan.new_status |  | keyword |
 | aruba.fan.old_status |  | keyword |
 | aruba.fan.speed_idx_status |  | keyword |
-| aruba.fan.speedval |  | long |
-| aruba.fan.tray_index |  | long |
-| aruba.fan.zone_idx |  | keyword |
+| aruba.fan.speedval |  | keyword |
+| aruba.fan.status |  | keyword |
+| aruba.fan.tray_idx |  | long |
+| aruba.fan.value |  | keyword |
+| aruba.fan.zone_idx |  | long |
+| aruba.fault.da_diff_count |  | long |
+| aruba.fault.sa_diff_count |  | long |
+| aruba.fault.type |  | keyword |
+| aruba.firmware.after |  | keyword |
+| aruba.firmware.before |  | keyword |
 | aruba.firmware.dnld_type |  | keyword |
 | aruba.firmware.image_profile |  | keyword |
 | aruba.hardware.addr |  | keyword |
@@ -1468,10 +1481,12 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.status |  | keyword |
 | aruba.storage.name |  | keyword |
 | aruba.storage.usage |  | keyword |
+| aruba.subsystem |  | keyword |
 | aruba.system.devicespec |  | keyword |
 | aruba.system.modspec |  | keyword |
 | aruba.system.numdevs |  | long |
 | aruba.system.time |  | date |
+| aruba.time.seconds |  | long |
 | aruba.tunnel.ttl |  | keyword |
 | aruba.tunnel.type |  | keyword |
 | aruba.vrf.id |  | keyword |
@@ -1491,6 +1506,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
+| error.type | The type of the error, for example the class name of the exception. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
@@ -1501,6 +1517,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type | Input type | keyword |
 | log.file.device_id | Device Id of the log file this event came from. | keyword |
@@ -1530,6 +1548,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | server.user.name.text | Multi-field of `server.user.name`. | match_only_text |
 | service.target.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tags | List of keywords used to tag each event. | keyword |

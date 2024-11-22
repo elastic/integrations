@@ -46,6 +46,172 @@ processors:
       ignore_missing: true
 
 
+  # Fan Events (2xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm
+  # * 212 is not included as it does not require further processing.
+  - grok:
+      field: message
+      tag: fan_event_201
+      description: "Log the total number of fans in the subsystem"
+      if: "ctx.event?.code == '201'"
+      patterns:
+        - "^There are %{INT:aruba.fan.count:long} total fans in subsystem %{DATA:aruba.subsystem}\\.?$"
+  - grok:
+      field: message
+      tag: fan_event_202
+      description: "Log the fan speed set"
+      if: "ctx.event?.code == '202'"
+      patterns:
+        - "^Subsystem %{DATA:aruba.subsystem} setting fan speed control register to %{DATA:aruba.fan.speedval}: %{FAN_VALUE:aruba.fan.value}"
+      pattern_definitions:
+        FAN_VALUE: "[-_0-9a-zA-Z]+"
+  - grok:
+      field: message
+      tag: fan_event_203
+      description: "Log the air flow direction"
+      if: "ctx.event?.code == '203'"
+      patterns:
+        - "^Air flow direction: %{FAN_VALUE:aruba.fan.value}"
+      pattern_definitions:
+        FAN_VALUE: "[-_0-9a-zA-Z]+"
+  - grok:
+      field: message
+      tag: fan_event_204_205
+      description: "log event when a fan tray is removed|inserted from|into the chassis"
+      if: "['204', '205'].contains(ctx.event?.code)"
+      patterns:
+        - "^Fan tray %{DATA:aruba.fan.ft_num} was (removed|inserted)"
+  - grok:
+      field: message
+      tag: fan_event_206_207
+      description: "log event when a fan module is removed|inserted from|into a fan tray"
+      if: "['206', '207'].contains(ctx.event?.code)"
+      patterns:
+        - "^Fan module %{DATA:aruba.fan.fmod_num}( in fan tray %{DATA:aruba.fan.ft_num})? was (removed|inserted)"
+  - grok:
+      field: message
+      tag: fan_event_208
+      description: "Log event when an unsupported fan tray is inserted"
+      if: "ctx.event?.code == '208'"
+      patterns:
+        - "^Unsupported fan tray %{DATA:aruba.fan.ft_num} detected. Please insert a standard fan tray"
+  - grok:
+      field: message
+      tag: fan_event_209
+      description: "Log error when system shutdown is initiated due to critical fan faults"
+      if: "ctx.event?.code == '209'"
+      patterns:
+        - "^Shutting down system now because %{NUMBER:aruba.error.count:long} %{DATA:error.type} %{DATA:aruba.fan.compare_mode} limit of %{NUMBER:aruba.limit:long}"
+  - grok:
+      field: message
+      tag: fan_event_211
+      description: "Log error when the number of failures exceed the allowable limit"
+      if: "ctx.event?.code == '211'"
+      patterns:
+        - "^Shutting down system in %{NUMBER:aruba.time.seconds:long} seconds because %{NUMBER:aruba.error.count:long} %{DATA:error.type} %{DATA:aruba.fan.compare_mode} limit of %{NUMBER:aruba.limit:long}"
+  - grok:
+      field: message
+      tag: fan_event_213
+      description: "Log error when there are fan faults"
+      if: "ctx.event?.code == '213'"
+      patterns:
+        - "^%{NUMBER:aruba.error.count:long} %{DATA:error.type} in the system"
+  - grok:
+      field: message
+      tag: fan_event_214
+      description: "List out the faulty or missing fan names"
+      if: "ctx.event?.code == '214'"
+      patterns:
+        - "^%{DATA:aruba.fan.function}: Fan fault in tray %{DATA:aruba.fan.tray_idx:long}, module %{NUMBER:aruba.fan.index:long}, reason: %{EVENT_REASON:event.reason}"
+      pattern_definitions:
+        EVENT_REASON: "[-_0-9a-zA-Z]+"
+  - grok:
+      field: message
+      tag: fan_event_215
+      description: "Log the fan status"
+      if: "ctx.event?.code == '215'"
+      patterns:
+        - "^%{DATA:aruba.fan.name} fan is %{FAN_STATUS:aruba.fan.status}"
+      pattern_definitions:
+        FAN_STATUS: "[-_0-9a-zA-Z]+"
+  - grok:
+      field: message
+      tag: fan_event_216
+      description: "Log the change in fan status"
+      if: "ctx.event?.code == '216'"
+      patterns:
+        - "^Status of fan %{NUMBER:aruba.fan.module_idx:long} in tray %{NUMBER:aruba.fan.tray_idx:long} has changed from %{DATA:aruba.fan.old_status} to %{FAN_STATUS:aruba.fan.status}"
+      pattern_definitions:
+        FAN_STATUS: "[-_0-9a-zA-Z]+"
+  - grok:
+      field: message
+      tag: fan_event_217
+      description: "Log when minimum number of fans are not present"
+      if: "ctx.event?.code == '217'"
+      patterns:
+        - "^Operational fan count below minimum. %{NUMBER:aruba.fan.count:long} fans operating, but %{NUMBER:aruba.fan.minimum:long} are required"
+  - grok:
+      field: message
+      tag: fan_event_218
+      description: "Log when the fan speed index changes to and from the maximum for each thermal zone"
+      if: "ctx.event?.code == '218'"
+      patterns:
+        - "^Fan speed index for thermal zone %{NUMBER:aruba.fan.zone_idx:long} is %{SPEED_STATUS:aruba.fan.speed_idx_status}"
+      pattern_definitions:
+        SPEED_STATUS: "[-_0-9a-zA-Z]+"
+  - grok:
+      field: message
+      tag: fan_event_219
+      description: "Log event when a fan tray is powered on or off"
+      if: "ctx.event?.code == '219'"
+      patterns:
+        - "^Fan tray %{DATA:aruba.fan.ft_num} powered %{FAN_STATUS:aruba.fan.status}"
+      pattern_definitions:
+        FAN_STATUS: "[-_0-9a-zA-Z]+"
+  - grok:
+      field: message
+      tag: fan_event_220
+      description: "Log event when a fan tray is inserted specifying its airflow direction"
+      if: "ctx.event?.code == '220'"
+      patterns:
+        - "^Fan tray %{DATA:aruba.fan.ft_num} airflow is %{FAN_DIRECTION:aruba.fan.ft_dir}"
+      pattern_definitions:
+        FAN_DIRECTION: "[-_0-9a-zA-Z]+"
+  - dissect:
+      field: message
+      tag: fan_event_221
+      description: "Log event when a fan tray airflow is not matching with system airflow"
+      if: "ctx.event?.code == '221'"
+      pattern: "%{aruba.fan.ft_air_curr} airflow fan tray %{aruba.fan.ft_num} unsupported; this system requires %{aruba.fan.ft_air_req} airflow"
+  - grok:
+      field: message
+      tag: fan_event_222
+      description: "Log error when number of faulty/supported fans does not meet the allowable limit"
+      if: "ctx.event?.code == '222'"
+      patterns:
+        - "^%{NUMBER:aruba.error.count:long} %{DATA:error.type} %{DATA:aruba.fan.compare_mode} limit of %{NUMBER:aruba.limit:long}"
+  - dissect:
+      field: message
+      tag: fan_event_223
+      description: "Log when fan tray SKU ID in FRU is mismatched"
+      if: "ctx.event?.code == '223'"
+      pattern: "Fan tray %{aruba.fan.ft_num} FRU EPPROM is incorrectly programmed"
+  - dissect:
+      field: message
+      tag: fan_event_224
+      description: "Log event when a fan tray airflow is not matching with system airflow and is disabled"
+      if: "ctx.event?.code == '224'"
+      pattern: "%{aruba.fan.ft_air_curr} airflow fan tray %{aruba.fan.ft_num} disabled; this system requires %{aruba.fan.ft_air_req} airflow"
+  - grok:
+      field: message
+      tag: fan_event_225
+      description: "Log event when a misconfigured fan tray is enabled or disabled"
+      if: "ctx.event?.code == '225'"
+      patterns:
+        - "^Fan tray %{DATA:aruba.fan.ft_num} misconfigured; this fan tray has been %{FAN_STATUS:aruba.fan.status}"
+      pattern_definitions:
+        FAN_STATUS: "[-_0-9a-zA-Z]+"
+
     # CoPP Events (15xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm
 
@@ -141,6 +307,38 @@ processors:
       if: "ctx.event?.code == '1805'"
       patterns:
         - "ECMP error: %{DATA:aruba.ecmp.err}$"
+
+  # DHCP Server events (19xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-SERVER.htm
+  - grok:
+      field: message
+      tag: dhcp_server_event_1901_through_1906
+      description: "Logs DHCP lease addition, deletion, or update"
+      if: "['1901', '1902', '1903', '1904', '1905', '1906'].contains(ctx.event?.code)"
+      patterns:
+        - "^DHCP Lease (added|addition|deleted|deletion|update|updated)( failed)? %{DHCP_EXPIRE_TIME_FMT:event.end} %{MAC:host.mac} %{IP:host.ip} %{HOSTNAME:host.name} %{DATA:user.id}$"
+      pattern_definitions:
+        DHCP_EXPIRE_TIME_FMT: "(?:(?:[0-9]{2}:){2}([0-9]){2})"
+  - grok:
+      field: message
+      tag: dhcp_server_event_1907_1908
+      description: "Logs enable or disable of DHCP server on a VRF"
+      if: "['1907', '1908'].contains(ctx.event?.code)"
+      patterns:
+        - "^DHCP server (en|dis)abled on VRF %{DATA:aruba.vrf.name}$"
+  - dissect:
+      field: message
+      tag: dhcp_server_event_1909
+      description: "Event raised when user configures an invalid DHCP configuration"
+      if: "ctx.event.code == '1909'"
+      pattern: "Invalid DHCP configuration: %{aruba.dhcp.config} provided on DHCP Server instance running on VRF %{aruba.vrf.name}. Ignoring this config."
+  - grok:
+      field: message
+      tag: dhcp_server_event_1910_1911
+      description: "Event raised when DHCP or DHCPv6 Server Lease on the VRF is cleared"
+      if: "['1910', '1911'].contains(ctx.event?.code)"
+      patterns:
+        - "^(DHCP|DHCPv6) Server Lease cleared on vrf %{DATA:aruba.vrf.name}\\.$"
 
   # AAA events (23xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm
@@ -343,6 +541,27 @@ processors:
       pattern_definitions:
         3011_3012_3013_COMMON: "correctable memory error count %{NUMBER:aruba.hardware.cecount:long} exceeded threshold %{NUMBER:aruba.limit:long}(?:%{3011_3012_3013_OPTIONAL})?"
         3011_3012_3013_OPTIONAL: " and %{NUMBER:aruba.hardware.offlined:long}"
+
+  # Firmware Update events (44xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FIRMWARE_UPDATE.htm
+  # Following events do not need further processing
+  #   * 4405
+  #   * 4406
+  #   * 4407
+  - grok:
+      if: "['4401', '4402'].contains(ctx.event?.code)"
+      tag: firmware_update_event_4401_4402
+      field: "message"
+      description: "Indicates that the switch firmware was successfully updated from a remote or local source"
+      patterns:
+        - "^User %{DATA:user.name}: %{DATA:aruba.firmware.image_profile} image updated via %{DATA:aruba.firmware.dnld_type}( from %{HOSTNAME:source.address})?. Firmware version, Before Update: %{DATA:aruba.firmware.before} After Update: %{DATA:aruba.firmware.after}$"
+  - grok:
+      if: "['4403', '4404'].contains(ctx.event?.code)"
+      tag: firmware_update_event_4403_4404
+      field: "message"
+      description: "Indicates that a switch firmware update failed from a remote or local source"
+      patterns:
+        - "^User %{DATA:user.name}: %{DATA:aruba.firmware.image_profile} image update failed via %{DATA:aruba.firmware.dnld_type}( from %{HOSTNAME:source.address})?$"
 
   # Credential Manager events (65xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
@@ -858,6 +1077,67 @@ processors:
       if: "ctx.event?.code == '10904'"
       pattern: "Line card module %{aruba.dpse.linecard_name} completed backplane sequence recovery"
 
+  # Fault Monitor Events (111xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm
+  - grok:
+      field: message
+      tag: fault_monitor_event_11101_11102
+      description: >
+        Logs event when a fault is detected on an interface.
+        Logs event and shutdown the interface when a fault is detected on an interface.
+      if: "['11101', '11102'].contains(ctx.event?.code)"
+      patterns:
+          - "^Interface %{DATA:aruba.interface.name}: %{DATA:aruba.fault.type} fault detected( and port disabled)?"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11103
+      description: "Interface is auto-enabled on timer expiry."
+      if: "ctx.event?.code == '11103'"
+      patterns:
+          - "^Interface %{DATA:aruba.interface.name}: %{DATA:aruba.fault.type} fault re-enable time expired, port enabled"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11104
+      description: "Interface is auto-enabled on profile configuration change."
+      if: "ctx.event?.code == '11104'"
+      patterns:
+          - "^Interface %{DATA:aruba.interface.name}: %{DATA:aruba.fault.type} fault disable cancelled due to configuration change"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11105
+      description: "Interface is auto-enabled on admin state change."
+      if: "ctx.event?.code == '11105'"
+      patterns:
+          - "^Admin state changed and interface: %{DATA:aruba.interface.name} is auto-enabled"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11106
+      description: "Logs event when disabling of a faulty interface failed."
+      if: "ctx.event?.code == '11106'"
+      patterns:
+          - "^Interface %{DATA:aruba.interface.name}: %{DATA:aruba.fault.type} fault detected, port is already disabled by another fault"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11107
+      description: "Logs event when a packet drop is detected for MAC Lockout MAC as source address."
+      if: "ctx.event?.code == '11107'"
+      patterns:
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source address: %{NUMBER:aruba.fault.sa_diff_count:long}"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11108
+      description: "Logs event when a packet drop is detected for MAC Lockout MAC as destination address."
+      if: "ctx.event?.code == '11108'"
+      patterns:
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as destination address: %{NUMBER:aruba.fault.da_diff_count:long}"
+  - grok:
+      field: message
+      tag: fault_monitor_event_11109
+      description: "Logs event when a packet drop is detected for MAC Lockout."
+      if: "ctx.event?.code == '11109'"
+      patterns:
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source: %{NUMBER:aruba.fault.sa_diff_count:long} and destination: %{NUMBER:aruba.fault.da_diff_count:long} address"
+
   # CFM Events (116xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm
   - dissect:
@@ -906,6 +1186,24 @@ processors:
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+
+  # Make sure that host.ip and host.mac are arrays
+  - set:
+      field: host.ip
+      value: ['{{{host.ip}}}']
+      if: ctx.host?.ip instanceof String
+  - set:
+      field: host.mac
+      value: ['{{{host.mac}}}']
+      if: ctx.host?.mac instanceof String
 
   # Convert aruba.slot from a string to a long
   # Dissect processor sets everything to a string type
