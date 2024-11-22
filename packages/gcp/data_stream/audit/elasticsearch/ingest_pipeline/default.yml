@@ -114,7 +114,7 @@ processors:
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
       source: |
-        void addFields(Set entities, String[] fields) {
+        void addFields(Set entities, List fields) {
             for (String field : fields) {
               addField(entities, field);
             }
@@ -124,7 +124,7 @@ processors:
           addValue(entities, field(fieldName).get(null));
         }
 
-        boolean addValues(Set entities, String[] values) {
+        boolean addValues(Set entities, List values) {
             boolean addedAll = true;
             for (String value : values) {
               addedAll = addedAll && addValue(entities, value);
@@ -154,10 +154,10 @@ processors:
 
         addField(entities, "json.protoPayload.request.parent");
         if (!isKubernetes) {
-            addFields(entities, new String[]{
+            addFields(entities, [
               "json.protoPayload.resourceName",
               "json.protoPayload.response.user"
-            });
+            ]);
         }
 
 
@@ -165,18 +165,18 @@ processors:
         if (!isKubernetes) {
           addValue(entities, authInfo.principalEmail);
         }
-        addValues(entities, new String[]{
+        addValues(entities, [
           authInfo.principalSubject,
           authInfo.serviceAccountKeyName
-        });
+        ]);
         if (authInfo.serviceAccountDelegationInfo != null && !(authInfo.serviceAccountDelegationInfo instanceof List)) {
           authInfo.serviceAccountDelegationInfo.get(new ArrayList()).stream().forEach(
             delegInfo -> {
-              addValues(entities, new String[]{
+              addValues(entities, [
                 delegInfo.principalSubject,
                 delegInfo.firstPartyPrincipal?.principalEmail,
                 delegInfo.thirdPartyPrincipal?.principalEmail
-              });
+              ]);
             }
           );
         }
