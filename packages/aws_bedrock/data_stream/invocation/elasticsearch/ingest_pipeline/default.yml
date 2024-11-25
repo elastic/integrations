@@ -414,8 +414,7 @@ processors:
         ctx.gen_ai.policy.match_detail = nameAndDetailsOfPolicies.stream()
           .filter(policy -> ['word_policy', 'sensitive_information_policy'].contains(policy.name))
           .map(policy -> policy.details)
-          .sorted()
-          .distinct()
+          .distinct()  // no sort because HashMap isn't Comparable
           .collect(Collectors.toList());
 
         ctx.gen_ai.policy.confidence = contentPolicyDetailsHavingType.stream()
