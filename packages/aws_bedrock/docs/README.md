@@ -176,6 +176,7 @@ list log events from the specified log group.
 | gen_ai.compliance.response_triggered | Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks. | keyword |
 | gen_ai.compliance.violation_code | Code identifying the specific compliance rule that was violated. | keyword |
 | gen_ai.compliance.violation_detected | Indicates if any compliance violation was detected during the interaction. | boolean |
+| gen_ai.guardrail_id | Guardrail ID if a guardrail was executed. | keyword |
 | gen_ai.owasp.description | Description of the OWASP risk triggered. | text |
 | gen_ai.owasp.id | Identifier for the OWASP risk addressed. | keyword |
 | gen_ai.performance.request_size | Size of the request payload in bytes. | long |

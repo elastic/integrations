@@ -355,8 +355,10 @@ processors:
         def confidences = new HashSet();
         def violations = new HashSet();
         def matches = new HashSet();
+        def guardrailIDs = new HashSet();
+        ctx._debug = new ArrayList();
         for (def e: body) {
-          if (e.amazon_bedrock_guardrail_action == 'INTERVENED' || e.stop_reason == 'guardrail_intervened') {
+          if (e.amazon_bedrock_guardrail_action == 'INTERVENED' || e.stop_reason == 'guardrail_intervened' || e.stop_reason == 'end_turn') {
             if (ctx.gen_ai == null) {
               ctx.gen_ai = new HashMap();
             }
@@ -366,10 +368,16 @@ processors:
             if (ctx.gen_ai.compliance == null) {
               ctx.gen_ai.compliance = new HashMap();
             }
-            ctx.gen_ai.compliance.violation_detected = true;
-            ctx.event.outcome = 'failure';
+            if (e.stop_reason != 'end_turn') {
+              ctx.gen_ai.compliance.violation_detected = true;
+              ctx.event.outcome = 'failure';
+            }
             if (e.trace?.guardrail?.inputAssessment instanceof HashMap) {
               for (def o: e.trace.guardrail.inputAssessment.entrySet()) {
+                guardrailIDs.add(o.getKey());
+                if (e.stop_reason == 'end_turn') {
+                  continue;
+                }
                 for (def i: o.getValue().entrySet()) {
                   String policy_name = i.getKey();
                   if (!policy_name.endsWith('_policy')) {
@@ -394,6 +402,10 @@ processors:
               }
             } else if (e.amazon_bedrock_trace?.guardrail?.input instanceof HashMap) {
               for (def o: e.amazon_bedrock_trace.guardrail.input.entrySet()) {
+                guardrailIDs.add(o.getKey());
+                if (e.stop_reason == 'end_turn') {
+                  continue;
+                }
                 for (def i: o.getValue().entrySet()) {
                   String policy_name = i.getKey();
                   if (!policy_name.endsWith('_policy')) {
@@ -418,6 +430,13 @@ processors:
               }
             }
           }
+        }
+        if (guardrailIDs.size() != 0) {
+          ctx.gen_ai.guardrail_id = new ArrayList();
+          for (def e: guardrailIDs) {
+            ctx.gen_ai.guardrail_id.add(e);
+          }
+          Collections.sort(ctx.gen_ai.guardrail_id);
         }
         if (actions.size() != 0) {
           ctx.gen_ai.policy.action = new ArrayList();
