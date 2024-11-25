@@ -858,6 +858,21 @@ processors:
       if: "ctx.event?.code == '8206'"
       patterns:
         - "^Binding for %{IP:client.ip}:%{MAC:client.mac} exists on port %{DATA:aruba.port}. Dropping release request received for the binding on %{DATA:aruba.new_port}.$"
+  - grok:
+      field: message
+      tag: dhcp_snoop_event_8207
+      description: "Log event when dynamic binding for a port was replaced with a manual binding."
+      if: "ctx.event?.code == '8207'"
+      patterns:
+        - "^The dynamic binding for %{MAC:client.mac} on port %{DATA:aruba.port} was replaced with a manual binding.$"
+  - grok:
+      field: message
+      tag: dhcp_snoop_event_8208
+      description: "Log event when drop client request for already assigned ip."
+      if: "ctx.event?.code == '8208'"
+      patterns:
+        - "^Drop request from %{MAC:client.mac} for already assigned address %{IP:client.ip}.$"
+
 
   # ERPS Events (85xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm
