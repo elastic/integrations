@@ -371,12 +371,6 @@ processors:
           )
           .collect(Collectors.toList());
 
-        def contentPolicyDetailsHavingType = nameAndDetailsOfPolicies.stream()
-          .filter(policy -> policy.name == 'content_policy')
-          .filter(policy -> policy.details.type != null)
-          .map(policy -> policy.details)
-          .collect(Collectors.toSet());
-
 
         if (ctx.gen_ai == null) ctx.gen_ai = [:];
         if (ctx.gen_ai.compliance == null) ctx.gen_ai.compliance = [:];
@@ -412,15 +406,16 @@ processors:
           .distinct()  // no sort because HashMap isn't Comparable
           .collect(Collectors.toList());
 
-        ctx.gen_ai.policy.confidence = contentPolicyDetailsHavingType.stream()
-          .map(details -> details.confidence)
-          .filter(confidence -> confidence != null)
+        ctx.gen_ai.policy.confidence = nameAndDetailsOfPolicies.stream()
+          .map(policy -> policy.details.confidence)
+          .filter(Objects::nonNull)
           .distinct()
           .sorted()
           .collect(Collectors.toList());
 
-        ctx.gen_ai.compliance.violation_code = contentPolicyDetailsHavingType.stream()
-          .map(details -> details.type)
+        ctx.gen_ai.compliance.violation_code = nameAndDetailsOfPolicies.stream()
+          .map(policy -> policy.details.type)
+          .filter(Objects::nonNull)
           .distinct()
           .sorted()
           .collect(Collectors.toList());
