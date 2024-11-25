@@ -6,3 +6,14 @@ services:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  crowdstrike-streaming:
+    image: golang:1.21-alpine
+    hostname: crowdstrike
+    working_dir: /app
+    volumes:
+      - ./streaming-mock-service:/app
+    ports:
+      - "8090:8090"
+    environment:
+      PORT: '8090'
+    command: ["go", "run", "main.go"]
