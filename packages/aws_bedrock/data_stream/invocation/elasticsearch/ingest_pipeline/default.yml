@@ -355,12 +355,15 @@ processors:
             body.stop_reason == 'guardrail_intervened'
           )
           .flatMap(body -> [
-            body.trace?.guardrail?.inputAssessment,
-            body.amazon_bedrock_trace?.guardrail?.input
+            [body.trace?.guardrail?.inputAssessment],
+            [body.amazon_bedrock_trace?.guardrail?.input],
+            body.amazon_bedrock_trace?.guardrail?.outputs
           ].stream())
-          .filter(input -> input instanceof HashMap)
-          .flatMap(input -> input.entrySet().stream())
-          .flatMap(inputEntry -> inputEntry.getValue().entrySet().stream())
+          .filter(Objects::nonNull)
+          .flatMap(List::stream)
+          .filter(Objects::nonNull)
+          .flatMap(assessment -> assessment.entrySet().stream())
+          .flatMap(assessmentEntry -> assessmentEntry.getValue().entrySet().stream())
           .filter(policyEntry -> policyEntry.getKey().endsWith('_policy'))
           .flatMap(policyEntry ->
             policyEntry.getValue().entrySet().stream()
