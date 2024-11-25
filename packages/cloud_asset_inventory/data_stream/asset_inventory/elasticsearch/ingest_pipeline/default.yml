@@ -1,0 +1,11 @@
+---
+description: Pipeline for processing Asset Invetory logs.
+processors:
+  - pipeline:
+      name: 'entity-keyword-builder@platform'
+      tag: entities-keyword-builder
+      ignore_missing_pipeline: true
+      on_failure:
+        - set:  
+            field: "error.message"
+            value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message }}"
