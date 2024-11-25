@@ -8,11 +8,32 @@ The **Missile Map** dashboard visualizes network traffic flow between regions us
 
 ## Prerequisites
 
-To use the Missile Map visualization, ensure the following:
+To use the Missile Map dashboard, ensure the following:
 
-- **Kibana Version:** `8.10.0` or higher.
 - **Timestamp Field:** Documents must contain a `@timestamp` field for time-range filtering.
-- **GeoIP Processor:** Apply a [GeoIP](https://www.elastic.co/guide/en/elasticsearch/reference/current/geoip-processor.html) processor to the IP field. Location data should populate the `source.geo.location` and `destination.geo.location` fields.
+- **GeoIP Processor:** Apply a [GeoIP](https://www.elastic.co/guide/en/elasticsearch/reference/current/geoip-processor.html) processor to the IP field. The resulting document should contain `source.geo` and `destination.geo` fields.
+  - Here is an example of an ingest pipeline that adds the geographical information to the `geo` field based on the `ip` field.
+
+    ```
+    PUT _ingest/pipeline/geoip
+    {
+      "description" : "Add ip geolocation info",
+      "processors" : [
+        {
+          "geoip" : {
+            "field" : "source.ip",
+            "target_field" : "source.geo"
+          }
+        },
+        {
+          "geoip" : {
+            "field" : "destination.ip",
+            "target_field" : "destination.geo"
+          }
+        }
+      ]
+    }
+    ```
 - **Data View:** Use documents accessible via the `logs-*` data view.
 
 ---
@@ -38,15 +59,17 @@ Data is retrieved from Elasticsearch using the `_all` index search endpoint. Ens
 | `destination_label`           | Label at the destination location                                  | Optional          |               |
 | `pulse_at_source`             | If true, the pulse begins at the source instead of the destination | Optional          | `false`       |
 
+> **Note:** These fields can be added or modified using `Custom pipeline`. [Read more](https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
+
 ---
 
 ## Usage
 
 The Missile Map visualization can be added to other dashboards in two ways:
 
-### 1. Duplicate the Entire Dashboard
+### 1. Duplicate the Dashboard
 - Click the **Duplicate** button in the top-right corner of the dashboard.
-- A clone of the dashboard will be created for your customizations.
+- A clone of the dashboard will be created for your customization.
 
 ### 2. Copy Visualization to a Dashboard
 - Click the three dots in the top-right corner of the visualization and select **Copy to Dashboard**.
