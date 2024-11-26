@@ -1033,7 +1033,7 @@ processors:
       field: "message"
       description: "Logs when local MAC learn on VLAN is [updated|removed] in the Hardwar VTEP DB"
       patterns:
-        - "^Local MAC %{MAC:source.mac} learnt on VLAN %{DATA:network.vlan.id} is (updated in|removed from) the Hardware VTEP DB"
+        - "^Local MAC %{MAC:server.mac} learnt on VLAN %{DATA:network.vlan.id} is (updated in|removed from) the Hardware VTEP DB"
   - grok:
       if: "['8808', '8809'].contains(ctx.event?.code)"
       tag: hardware_event_8808_8809
@@ -1047,7 +1047,7 @@ processors:
       field: "message"
       description: "Logs when unicast remote MAC learnt on VNI is [added|removed] to the switch"
       patterns:
-        - "^Unicast Remote MAC %{MAC:source.mac} learnt on VNI %{DATA:network.vlan.id} is (added to|removed from) the switch"
+        - "^Unicast Remote MAC %{MAC:destination.mac} learnt on VNI %{DATA:network.vlan.id} is (added to|removed from) the switch"
   - grok:
       if: "ctx.event?.code == '8812'"
       tag: hardware_event_8812
@@ -1369,6 +1369,22 @@ processors:
       ignore_missing: true
   - gsub:
       field: host.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+  - uppercase:
+      field: server.mac
+      ignore_missing: true
+  - gsub:
+      field: server.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+  - gsub:
+      field: destination.mac
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true

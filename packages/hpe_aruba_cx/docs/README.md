@@ -377,6 +377,7 @@ Note: Descriptions have not been filled out
 |------------|------------------|
 | <ip>       | server.ip        |
 | <mac>      | server.mac       |
+| <mac>      | destination.mac  |
 | <port>     | aruba.port       |
 | <vni>      | network.vlan.id  |
 
@@ -1511,6 +1512,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.type | The type of the error, for example the class name of the exception. | keyword |

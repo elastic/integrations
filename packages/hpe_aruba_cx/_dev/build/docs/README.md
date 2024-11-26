@@ -377,6 +377,7 @@ Note: Descriptions have not been filled out
 |------------|------------------|
 | <ip>       | server.ip        |
 | <mac>      | server.mac       |
+| <mac>      | destination.mac  |
 | <port>     | aruba.port       |
 | <vni>      | network.vlan.id  |
 
