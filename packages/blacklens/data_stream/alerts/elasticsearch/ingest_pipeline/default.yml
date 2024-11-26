@@ -1,0 +1,104 @@
+---
+description: Pipeline for processing alert logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+  - append:
+      field: event.category
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: indicator
+      allow_duplicates: false
+  - json:
+      field: event.original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.id
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.created_date
+      formats:
+        - ISO8601
+  - date:
+      field: json.updated_date
+      target_field: blacklens.alert.updated_date
+      formats:
+        - ISO8601
+  - convert:
+      field: json.id
+      target_field: event.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: blacklens.alert.id
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      target_field: blacklens.alert.severity
+      ignore_missing: true
+  - rename:
+      field: json.alert_status
+      target_field: blacklens.alert.status
+      ignore_missing: true
+  - rename:
+      field: json.alert_outcome
+      target_field: blacklens.alert.outcome
+      ignore_missing: true
+  - rename:
+      field: json.details.engine
+      target_field: blacklens.alert.type
+      ignore_missing: true
+  - rename:
+      field: json.type_id
+      target_field: blacklens.alert.type_id
+      ignore_missing: true
+  - rename:
+      field: json.details.title
+      target_field: blacklens.alert.title
+      ignore_missing: true
+  - rename:
+      field: json.alert_payload
+      target_field: blacklens.alert.details
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
