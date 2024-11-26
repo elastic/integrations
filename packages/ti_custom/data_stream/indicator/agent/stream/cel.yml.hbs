@@ -5,6 +5,9 @@ resource.url: {{url}}
 {{#if ssl}}
 resource.ssl: {{ssl}}
 {{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
 {{#if oauth2}}
 auth.oauth2: {{oauth2}}
 {{/if}}
@@ -60,8 +63,8 @@ program: |
                 state.next_url
             : (has(state.initial_interval) && state.initial_interval != "") ?
                 (
-                    state.url.trim_right("/") + "?" + {
-                        "date_added": [(now() - duration(state.initial_interval)).format(time_layout.RFC3339)],
+                    state.url.trim_right("/") + "/?" + {
+                        "added_after": [(now() - duration(state.initial_interval)).format(time_layout.RFC3339)],
                     }.format_query()
                 )
                 :
@@ -79,7 +82,7 @@ program: |
                         []
                 },
             }
-        ).do_request().as(resp, (resp.StatusCode == 200) ?
+        ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
             bytes(resp.Body).decode_json().as(body,
                 {
                     "events": body.objects.map(e,
@@ -94,7 +97,7 @@ program: |
                     "want_more": has(body.next) && body.next != null && body.next != "",
                     "next_url": (has(body.next) && body.next != null && body.next != "") ?
                         (
-                            state.url.trim_right("/") + "?" + {
+                            state.url.trim_right("/") + "/?" + {
                                 "next": [string(body.next)],
                             }.format_query()
                         )
