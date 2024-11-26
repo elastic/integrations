@@ -1060,7 +1060,7 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2023-11-02T13:41:34.000Z",
     "agent": {
-        "ephemeral_id": "15e08fe3-d195-449b-b73c-b8b2a9dee02a",
+        "ephemeral_id": "4e0b57dd-e769-443c-abe6-91b91aa2cf94",
         "id": "60ae74ae-652f-4e24-9a9e-e5a00ceb1c1c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -1080,7 +1080,7 @@ An example event for `falcon` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.falcon",
-        "namespace": "59294",
+        "namespace": "24027",
         "type": "logs"
     },
     "ecs": {
@@ -1102,7 +1102,7 @@ An example event for `falcon` looks as following:
         ],
         "created": "2023-11-02T13:41:34.000Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2024-11-25T08:23:15Z",
+        "ingested": "2024-11-26T14:32:01Z",
         "kind": "event",
         "original": "{\"event\":{\"AgentIdString\":\"fffffffff33333\",\"HostnameField\":\"UKCHUDL00206\",\"SessionId\":\"1111-fffff-4bb4-99c1-74c13cfc3e5a\",\"StartTimestamp\":1698932494,\"UserName\":\"admin.rose@example.com\"},\"metadata\":{\"customerIDString\":\"abcabcabc22221\",\"eventCreationTime\":1698932494000,\"eventType\":\"RemoteResponseSessionStartEvent\",\"offset\":8695284,\"version\":\"1.0\"}}",
         "start": "2023-11-02T13:41:34.000Z",
