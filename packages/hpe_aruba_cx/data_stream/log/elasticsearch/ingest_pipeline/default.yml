@@ -227,7 +227,7 @@ processors:
       description: "Log when interface link status is [up|down]"
       if: "['403', '404'].contains(ctx.event?.code)"
       patterns:
-        - "^Link status for interface %{DATA:aruba.interface.id} is (up|%{GREEDYDATA:aruba.status})"
+        - "^Link status for interface %{DATA:aruba.interface.id} is (up|%{GREEDYDATA:aruba.interface.state})"
   - grok:
       field: message
       tag: copp_event_406_407_408
@@ -802,7 +802,7 @@ processors:
         - "^%{IP_SLA_SESSION_NAME} failed to (bind source|initialize socket), reason:%{GREEDYDATA:event.reason}"
         - "^%{IP_SLA_SESSION_NAME}: %{GREEDYDATA:event.action}"
         - "^%{IP_SLA_SESSION_NAME} is incomplete to schedule"
-        - "^%{IP_SLA_SESSION_NAME} interface %{DATA:aruba.interface.name} is( not)? ready and SLA is (disabled|enabled)"
+        - "^%{IP_SLA_SESSION_NAME} interface %{DATA:aruba.interface.id} is( not)? ready and SLA is (disabled|enabled)"
       pattern_definitions:
         IP_SLA_SESSION_NAME: "IP-SLA (session:)?%{DATA:aruba.ip_sla.name}"
 

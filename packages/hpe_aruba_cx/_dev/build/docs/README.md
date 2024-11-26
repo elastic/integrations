@@ -409,7 +409,7 @@ Note: Descriptions have not been filled out
 |--------------|----------------------------|
 | <interface>  | aruba.interface.id         |
 | <port_speed> | aruba.interface.port_speed |
-| <state>      | aruba.status               |
+| <state>      | aruba.interface.state      |
 
 #### [Internal storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/INTERNAL-STORAGE.htm)
 | Doc Fields    | Schema Mapping        |
@@ -439,7 +439,7 @@ Note: Descriptions have not been filled out
 #### [IP-SLA events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPSLA.htm)
 | Doc Fields | Schema Mapping         |
 |------------|------------------------|
-| <interface> | aruba.interface.name  |
+| <interface> | aruba.interface.id    |
 | <name>      | aruba.ip_sla.name     |
 | <operation> | event.action          |
 | <reason>    | event.reason          |
