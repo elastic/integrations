@@ -114,107 +114,85 @@ processors:
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
       source: |
-        void addFields(Set entities, List fields) {
-            for (String field : fields) {
-              addField(entities, field);
-            }
-        }
-
-        void addField(Set entities, String fieldName) {
-          addValue(entities, field(fieldName).get(null));
-        }
-
-        boolean addValues(Set entities, List values) {
-            boolean addedAll = true;
-            for (String value : values) {
-              addedAll = addedAll && addValue(entities, value);
-            }
-
-            return addedAll;
-        }
-
-        boolean addValue(Set entities, String value) {
-          if (value == null || value == "") {
-            return false;
+        void addValue(Set entities, def value) {
+          if (value != null && value != "") {
+            entities.add(value);
           }
-
-          return entities.add(value);
         }
 
         boolean isKubernetes = false;
         if (ctx.json?.resource?.type != null) {
-          String resType = ctx.json.resource.type;
-          if (resType == "k8s_cluster" || resType == "gke_cluster" || resType == "kubernetes") {
-            isKubernetes = true;
-          }
+          String typ = ctx.json.resource.type;
+          isKubernetes = (typ == "k8s_cluster" || typ == "gke_cluster" || typ == "kubernetes");
         }
 
         // Using tree set to ensure a sorting is kept (testing purposes)
         TreeSet entities = new TreeSet();
 
-        addField(entities, "json.protoPayload.request.parent");
+        addValue(entities, ctx.json?.protoPayload?.request?.parent);
         if (!isKubernetes) {
-            addFields(entities, [
-              "json.protoPayload.resourceName",
-              "json.protoPayload.response.user"
-            ]);
+          addValue(entities, ctx.json?.protoPayload?.resourceName);
+          addValue(entities, ctx.json?.protoPayload?.response?.user);
         }
 
-
-        HashMap authInfo = field("json.protoPayload.authenticationInfo").get(new HashMap());
+        HashMap authInfo = ctx.json?.protoPayload?.authenticationInfo ?: new HashMap();
         if (!isKubernetes) {
           addValue(entities, authInfo.principalEmail);
         }
-        addValues(entities, [
-          authInfo.principalSubject,
-          authInfo.serviceAccountKeyName
-        ]);
-        if (authInfo.serviceAccountDelegationInfo != null && !(authInfo.serviceAccountDelegationInfo instanceof List)) {
-          authInfo.serviceAccountDelegationInfo.get(new ArrayList()).stream().forEach(
-            delegInfo -> {
-              addValues(entities, [
-                delegInfo.principalSubject,
-                delegInfo.firstPartyPrincipal?.principalEmail,
-                delegInfo.thirdPartyPrincipal?.principalEmail
-              ]);
-            }
-          );
+        addValue(entities, authInfo.principalSubject);
+        addValue(entities, authInfo.serviceAccountKeyName);
+        if (authInfo.serviceAccountDelegationInfo instanceof List) {
+          for (def i: authInfo.serviceAccountDelegationInfo) {
+            addValue(entities, i.principalSubject);
+            addValue(entities, i.firstPartyPrincipal?.principalEmail);
+            addValue(entities, i.thirdPartyPrincipal?.principalEmail);
+          }
         }
 
-        String serviceName = field("json.protoPayload.serviceName").get(null);
-
+        String serviceName = ctx.json?.protoPayload?.serviceName ?: '';
         if (serviceName == "compute.googleapis.com") {
-          field("json.protoPayload.request.networkInterfaces").get(new ArrayList()).stream().forEach(
-            f -> addValue(entities, f.network)
-          );
-
-          field("json.protoPayload.request.serviceAccounts").get(new ArrayList()).stream().forEach(
-            f -> addValue(entities, f.email)
-          );
-
-          field("json.protoPayload.request.disks").get(new ArrayList()).stream().forEach(
-            f -> addValue(entities, f.source)
-          );
+          if (ctx.json?.protoPayload?.request?.networkInterfaces instanceof List) {
+            for (def e: ctx.json.protoPayload.request.networkInterfaces) {
+              addValue(entities, e.network);
+            }
+          }
+          if (ctx.json?.protoPayload?.request?.serviceAccounts instanceof List) {
+            for (def e: ctx.json.protoPayload.request.serviceAccounts) {
+              addValue(entities, e.email);
+            }
+          }
+          if (ctx.json?.protoPayload?.request?.disks instanceof List) {
+            for (def e: ctx.json.protoPayload.request.disks) {
+              addValue(entities, e.source);
+            }
+          }
         } else if (serviceName == "cloudresourcemanager.googleapis.com") {
-          field("json.protoPayload.request.policy.bindings").get(new ArrayList()).stream().forEach(
-            f -> {
-              addValue(entities, f.role);
-              f.members.forEach(m -> addValue(entities, m));
+          if (ctx.json?.protoPayload?.request?.policy?.bindings instanceof List) {
+            for (def e: ctx.json.protoPayload.request.policy.bindings) {
+              addValue(entities, e.role);
+              for (def m: e.members) {
+                addValue(entities, m);
+              }
             }
-          );
-          field("json.protoPayload.response.bindings").get(new ArrayList()).stream().forEach(
-            f -> {
-              addValue(entities, f.role);
-              f.members.forEach(m -> addValue(entities, m));
+          }
+          if (ctx.json?.protoPayload?.response?.bindings instanceof List) {
+            for (def e: ctx.json.protoPayload.response.bindings) {
+              addValue(entities, e.role);
+              for (def m: e.members) {
+                addValue(entities, m);
+              }
             }
-          );
+          }
         } else if (serviceName == "iamcredentials.googleapis.com") {
-          field("json.protoPayload.metadata.identityDelegationChain").get(new ArrayList()).stream().forEach(
-            f -> addValue(entities, f)
-          );
+          if (ctx.json?.protoPayload?.metadata?.identityDelegationChain instanceof List) {
+            for (def e: ctx.json.protoPayload.metadata.identityDelegationChain) {
+              addValue(entities, e);
+            }
+          }
         }
 
-        field("related.entity").set(entities);
+        ctx.related = ctx.related ?: [:];
+        ctx.related.entity = entities;
 
 ##
 # AuthenticationInfo
