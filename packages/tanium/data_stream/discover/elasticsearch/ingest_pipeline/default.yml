@@ -2,21 +2,26 @@
 description: Pipeline for processing Discover logs.
 processors:
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
   - append:
+      tag: append_event_kind
       field: event.kind
       value: event
       allow_duplicates: false
   - set:
+      tag: set_event_type
       field: event.type
       value: [info]
   - rename:
+      tag: rename_message
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
+      tag: json_event_original
       field: event.original
       target_field: json
       on_failure:
@@ -25,6 +30,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - date:
+      tag: date_json_updatedat
       field: json.UpdatedAt
       target_field: tanium.discover.updated_at
       if: ctx.json?.UpdatedAt != null  && ctx.json.UpdatedAt != ''
@@ -37,10 +43,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_timestamp
       field: '@timestamp'
       copy_from: tanium.discover.updated_at
       ignore_empty_value: true
   - convert:
+      tag: convert_json_awsapi
       field: json.AwsApi
       target_field: tanium.discover.aws_api
       type: double
@@ -51,14 +59,17 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
+      tag: rename_json_profile
       field: json.Profile
       target_field: tanium.discover.profile
       ignore_missing: true
   - set:
+      tag: set_observer_ingress_interface_name
       field: observer.ingress.interface.name
       copy_from: tanium.discover.profile
       ignore_empty_value: true
   - convert:
+      tag: convert_json_taniumcomputerid
       field: json.TaniumComputerId
       target_field: tanium.discover.computer_id
       type: long
@@ -69,6 +80,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
+      tag: convert_json_id
       field: json.id
       target_field: tanium.discover.id
       type: string
@@ -79,10 +91,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_event_id
       field: event.id
       copy_from: tanium.discover.id
       ignore_empty_value: true
   - date:
+      tag: date_json_lastdiscoveredat
       field: json.LastDiscoveredAt
       target_field: tanium.discover.last.discovered_at
       if: ctx.json?.LastDiscoveredAt != null && ctx.json.LastDiscoveredAt != ''
@@ -95,10 +109,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_event_end
       field: event.end
       copy_from: tanium.discover.last.discovered_at
       ignore_empty_value: true
   - date:
+      tag: date_json_createdat
       field: json.CreatedAt
       target_field: tanium.discover.created_at
       if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt != ''
@@ -111,41 +127,51 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_event_start
       field: event.start
       copy_from: tanium.discover.created_at
       ignore_empty_value: true
   - rename:
+      tag: rename_json_os
       field: json.Os
       target_field: tanium.discover.os
       ignore_missing: true
   - lowercase:
+      tag: lowercase_tanium_discover_os
       field: tanium.discover.os
       ignore_missing: true
   - set:
+      tag: set_os_type
       field: os.type
       copy_from: tanium.discover.os
       ignore_empty_value: true
   - gsub:
+      tag: gsub_json_macaddress
       field: json.MacAddress
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_json_macaddress
       field: json.MacAddress
       ignore_missing: true
   - rename:
+      tag: rename_json_macaddress
       field: json.MacAddress
       target_field: tanium.discover.mac_address
       ignore_missing: true
   - set:
+      tag: set_source_mac
       field: source.mac
       copy_from: tanium.discover.mac_address
       ignore_empty_value: true
   - rename:
+      tag: rename_json_locations
       field: json.Locations
       target_field: tanium.discover.locations
       ignore_missing: true
   - convert:
+      tag: convert_json_ipaddress
       field: json.IpAddress
       target_field: tanium.discover.ip_address
       type: ip
@@ -156,26 +182,32 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_source_ip
       field: source.ip
       copy_from: tanium.discover.ip_address
       ignore_empty_value: true
   - append:
+      tag: append_related_ip
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
   - rename:
+      tag: rename_json_hostname
       field: json.HostName
       target_field: tanium.discover.host_name
       ignore_missing: true
   - set:
+      tag: set_host_hostname
       field: host.hostname
       copy_from: tanium.discover.host_name
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts
       field: related.hosts
       value: '{{{host.hostname}}}'
       allow_duplicates: false
   - convert:
+      tag: convert_json_natipaddress
       field: json.NatIpAddress
       target_field: tanium.discover.nat_ip_address
       if: ctx.json?.NatIpAddress != null && ctx.json.NatIpAddress != ''
@@ -187,26 +219,32 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_source_nat_ip
       field: source.nat.ip
       copy_from: tanium.discover.nat_ip_address
       ignore_empty_value: true
   - rename:
+      tag: rename_json_labels
       field: json.Labels
       target_field: tanium.discover.labels
       ignore_missing: true
   - set:
+      tag: set_labels
       field: labels
       copy_from: tanium.discover.labels
       ignore_empty_value: true
   - rename:
+      tag: rename_json_satellitename
       field: json.SatelliteName
       target_field: tanium.discover.satellite.name
       ignore_missing: true
   - rename:
+      tag: rename_json_satellitenmap
       field: json.SatelliteNmap
       target_field: tanium.discover.satellite.nmap
       ignore_missing: true
   - date:
+      tag: date_json_lastmanagedat
       field: json.LastManagedAt
       target_field: tanium.discover.last.managed_at
       if: ctx.json?.LastManagedAt != null && ctx.json.LastManagedAt != ''
@@ -219,6 +257,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
+      tag: convert_json_unmanageable
       field: json.Unmanageable
       target_field: tanium.discover.unmanageable
       ignore_missing: true
@@ -229,14 +268,17 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
+      tag: rename_json_macorganization
       field: json.MacOrganization
       target_field: tanium.discover.mac_organization
       ignore_missing: true
   - rename:
+      tag: rename_json_ports
       field: json.Ports
       target_field: tanium.discover.ports
       ignore_missing: true
   - convert:
+      tag: convert_json_arp
       field: json.Arp
       target_field: tanium.discover.arp
       ignore_missing: true
@@ -247,10 +289,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
+      tag: rename_json_satellitenmap_2
       field: json.SatelliteNmap
       target_field: tanium.discover.satellite.nmap
       ignore_missing: true
   - convert:
+      tag: convert_json_connected
       field: json.Connected
       target_field: tanium.discover.connected
       ignore_missing: true
@@ -261,6 +305,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
+      tag: convert_json_centralizednmap
       field: json.CentralizedNmap
       target_field: tanium.discover.centralized_nmap
       ignore_missing: true
@@ -271,6 +316,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
+      tag: convert_json_ping
       field: json.Ping
       target_field: tanium.discover.ping
       ignore_missing: true
@@ -281,14 +327,17 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
+      tag: rename_json_osgeneration
       field: json.OsGeneration
       target_field: tanium.discover.os_generation
       ignore_missing: true
   - rename:
+      tag: rename_json_firstmanagedat
       field: json.FirstManagedAt
       target_field: tanium.discover.first_managed_at
       ignore_missing: true
   - date:
+      tag: date_json_firstmanagedat
       field: json.FirstManagedAt
       target_field: tanium.discover.first_managed_at
       if: ctx.json?.FirstManagedAt != null && ctx.json.FirstManagedAt != ''
@@ -301,10 +350,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_os_full
       field: os.full
       copy_from: tanium.discover.os_generation
       ignore_empty_value: true
   - convert:
+      tag: convert_json_managed
       field: json.Managed
       target_field: tanium.discover.managed
       ignore_missing: true
@@ -315,6 +366,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
+      tag: convert_json_nmap
       field: json.Nmap
       target_field: tanium.discover.nmap
       ignore_missing: true
@@ -325,22 +377,27 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
+      tag: rename_json_satellitedecid
       field: json.SatelliteDecId
       target_field: tanium.discover.satellite.dec_id
       ignore_missing: true
   - append:
+      tag: append_event_kind_pipline_error_if_error_message
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null && ctx.error.message != ''
       allow_duplicates: false
   - remove:
+      tag: remove_json
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_event_original
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_missing: true
   - remove:
+      tag: remove_duplicate_custom_fields
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - tanium.discover.profile
@@ -357,6 +414,7 @@ processors:
         - tanium.discover.updated_at
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -379,4 +437,8 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
