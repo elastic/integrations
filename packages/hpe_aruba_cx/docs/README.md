@@ -451,56 +451,57 @@ Note: Descriptions have not been filled out
 | aruba.ipv6_router.prefixlen |             |      | aruba.len                    |
 
 #### [IRDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IRDP.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.irdp.interface        |             |      | observer.ingress.interface.name |
+| Docs Field | Schema Mapping       |
+|------------|----------------------|
+| <interface> | aruba.interface.id   |
 
 #### [L3 Encap capacity events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.l3.encaps_allocated   |             |      |                              |
-| aruba.l3.encaps_free        |             |      |                              |
+| Docs Field          | Schema Mapping               |
+|---------------------|------------------------------|
+| <encaps_allocated>  | aruba.l3.encaps_allocated    |
+| <encaps_free>       | aruba.l3.encaps_free         |
 
 #### [L3 Resource Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_RESMGR.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.l3.prefix             |             |      | aruba.prefix                 |
+| Docs Field | Schema Mapping  |
+|------------|-----------------|
+| <prefix>   | aruba.prefix    |
 
 #### [LACP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LACP.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.lacp.actor_state      |             |      |                              |
-| aruba.lacp.fallback         |             |      |                              |
-| aruba.lacp.fsm_state        |             |      |                              |
-| aruba.lacp.intf_id          |             |      | observer.ingress.interface.id|
-| aruba.lacp.lacp_fallback_mode |           |      |                              |
-| aruba.lacp.lacp_fallback_timeout |        |      | aruba.timeout                |
-| aruba.lacp.lacp_mode        |             |      |                              |
-| aruba.lacp.lacp_rate        |             |      |                              |
-| aruba.lacp.lag_id           |             |      | aruba.instance.id            |
-| aruba.lacp.lag_number       |             |      |                              |
-| aruba.lacp.lag_speed        |             |      |                              |
-| aruba.lacp.mode             |             |      |                              |
-| aruba.lacp.partner_state    |             |      |                              |
-| aruba.lacp.partner_sys_id   |             |      |                              |
-| aruba.lacp.port_speed       |             |      |                              |
-| aruba.lacp.system_id        |             |      |                              |
-| aruba.lacp.system_priority  |             |      |                              |
+| Docs Field              | Schema Mapping            |
+|-------------------------|---------------------------|
+| <actor_state>           | aruba.lacp.actor_state    |
+| <fallback>              | aruba.lacp.fallback       |
+| <fsm_state>             | aruba.lacp.fsm_state      |
+| <intf_id>               | aruba.interface.id        |
+| <intf_id>               | aruba.interface.prev_id   |
+| <lacp_fallback_mode>    | aruba.lacp.fallback_mode  |
+| <lacp_fallback_timeout> | aruba.timeout             |
+| <mode>                  | aruba.lacp.mode           |
+| <lacp_rate>             | aruba.lacp.rate           |
+| <lag_id>                | aruba.instance.id         |
+| <lag_number>            | aruba.lacp.lag_number     |
+| <lag_speed>             | aruba.lacp.lag_speed      |
+| <lacp_mode>             | aruba.lacp.lacp_mode      |
+| <partner_state>         | aruba.lacp.partner_state  |
+| <partner_sys_id>        | aruba.lacp.partner_sys_id |
+| <port_speed>            | aruba.lacp.port_speed     |
+| <system_id>             | aruba.lacp.system_id      |
+| <system_priority>       | aruba.lacp.system_priority|
 
 #### [LAG events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LAG.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.lag.error     |             |      | error.message                |
-| aruba.lag.hw_port   |             |      | server.port                  |
-| aruba.lag.interface |             |      | observer.ingress.interface.name |
-| aruba.lag.lag_id    |             |      | aruba.instance.id            |
-| aruba.lag.mode      |             |      | event.type                   |
-| aruba.lag.port      |             |      | server.port                  |
-| aruba.lag.psc       |             |      |                              |
-| aruba.lag.rc        |             |      | error.code                   |
-| aruba.lag.tid       |             |      | process.thread.id            |
-| aruba.lag.unit      |             |      | aruba.unit                   |
-| aruba.lag.vlan      |             |      | network.vlan.id              |
+| Docs Field | Schema Mapping               |
+|------------|------------------------------|
+| <error>    | event.reason                 |
+| <hw_port>  | aruba.port                   |
+| <interface>| aruba.interface.id           |
+| <lag_id>   | aruba.instance.id            |
+| <mode>     | aruba.lag.mode               |
+| <port>     | aruba.port                   |
+| <psc>      | aruba.lag.psc                |
+| <rc>       | error.code                   |
+| <tid>      | process.thread.id            |
+| <unit>     | aruba.unit                   |
+| <vlan>     | network.vlan.id              |
 
 #### [Layer 3 Interface events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3INTERFACE.htm)
 | Field               | Description | Type | Common                       |
@@ -519,40 +520,39 @@ Note: Descriptions have not been filled out
 | aruba.l3.vlanid     |             |      | network.vlan.id              |
 
 #### [LED events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LED.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.led.count     |             |      | aruba.count                  |
-| aruba.led.subsystem |             |      | aruba.subsystem              |
+| Docs Field  | Schema Mapping         |
+|-------------|------------------------|
+| <count>     | aruba.count            |
+| <subsystem> | aruba.subsystem        |
 
 #### [LLDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LLDP.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.lldp.chassisid   |             |      | aruba.instance.id            |
-| aruba.lldp.interface   |             |      | observer.ingress.interface.name |
-| aruba.lldp.ip          |             |      | source.ip                    |
-| aruba.lldp.ninterface  |             |      |                              |
-| aruba.lldp.npvid       |             |      |                              |
-| aruba.lldp.port        |             |      | server.port                  |
-| aruba.lldp.pvid        |             |      | network.vlan.id              |
-| aruba.lldp.reinit_delay|             |      |                              |
-| aruba.lldp.tx_delay    |             |      |                              |
-| aruba.lldp.tx_hold     |             |      |                              |
-| aruba.lldp.tx_timer    |             |      |                              |
+| Docs Field   | Schema Mapping               |
+|--------------|------------------------------|
+| <chassisid>  | aruba.instance.id            |
+| <interface>  | aruba.interface.id           |
+| <ninterface> | aruba.lldp.ninterface        |
+| <npvid>      | aruba.lldp.npvid             |
+| <pvid>       | aruba.lldp.pvid              |
+| <hold>       | aruba.lldp.tx_hold           |
+| <value>      | aruba.lldp.tx_delay          |
+| <value>      | aruba.lldp.reinit_delay      |
+| <value>      | aruba.lldp.tx_timer          |
+| <value>      | server.ip                    |
 
 
 #### [Loop Protect events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOP-PROTECT.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.loop.portName    |             |      | source.port                  |
-| aruba.loop.rx_port     |             |      |                              |
-| aruba.loop.tx_port     |             |      |                              |
-| aruba.loop.vlan        |             |      | network.vlan.id              |
+| Docs Field   | Schema Mapping         |
+|--------------|------------------------|
+| <portName>   | aruba.port             |
+| <rxportName> | aruba.loop.rx_port     |
+| <txportName> | aruba.loop.tx_port     |
+| <vlan>       | network.vlan.id        |
 
 #### [Loopback events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.loopback.interface |           |      | observer.ingress.interface.name |
-| aruba.loopback.status  |             |      | aruba.status                 |
+| Docs Field | Schema Mapping       |
+|------------|----------------------|
+| <interface> | aruba.interface.id   |
+| <state>     | aruba.status         |
 
 
 #### [MAC Address mode configuration events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_MAC_ADDRESS_CONFIGURATION.htm)
@@ -1321,6 +1321,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.config.type |  | keyword |
 | aruba.config.value |  | keyword |
 | aruba.copp.class | Control Plane Policing (CoPP) class | keyword |
+| aruba.count |  | long |
 | aruba.cpu_rx.filter_description |  | keyword |
 | aruba.dcbx.intf_name | Interface name as reported by the system | keyword |
 | aruba.dhcp.config |  | keyword |
@@ -1398,47 +1399,37 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.instance.id |  | keyword |
 | aruba.interface.id |  | keyword |
 | aruba.interface.name |  | keyword |
+| aruba.interface.prev_id |  | keyword |
 | aruba.ip_sla.name |  | keyword |
 | aruba.l3.encaps_allocated |  | keyword |
 | aruba.l3.encaps_free |  | keyword |
+| aruba.l3.nexthop |  | keyword |
 | aruba.lacp.actor_state |  | keyword |
 | aruba.lacp.fallback |  | keyword |
+| aruba.lacp.fallback_mode |  | keyword |
 | aruba.lacp.fsm_state |  | keyword |
-| aruba.lacp.lacp_fallback_mode |  | keyword |
-| aruba.lacp.lacp_mode |  | keyword |
-| aruba.lacp.lacp_rate |  | long |
 | aruba.lacp.lag_number |  | long |
 | aruba.lacp.lag_speed |  | long |
 | aruba.lacp.mode |  | keyword |
 | aruba.lacp.partner_state |  | keyword |
-| aruba.lacp.partner_sys_id |  | long |
+| aruba.lacp.partner_sys_id |  | keyword |
 | aruba.lacp.port_speed |  | long |
-| aruba.lacp.system_id |  | long |
+| aruba.lacp.rate |  | keyword |
+| aruba.lacp.system_id |  | keyword |
 | aruba.lacp.system_priority |  | keyword |
-| aruba.lag.actor_state |  | keyword |
-| aruba.lag.fallback |  | keyword |
-| aruba.lag.fsm_state |  | keyword |
-| aruba.lag.lacp_fallback_mode |  | keyword |
-| aruba.lag.lacp_mode |  | keyword |
-| aruba.lag.lacp_rate |  | long |
-| aruba.lag.lag_number |  | long |
-| aruba.lag.lag_speed |  | long |
 | aruba.lag.mode |  | keyword |
-| aruba.lag.partner_state |  | keyword |
-| aruba.lag.partner_sys_id |  | long |
-| aruba.lag.port_speed |  | long |
-| aruba.lag.system_id |  | long |
-| aruba.lag.system_priority |  | keyword |
+| aruba.lag.psc |  | keyword |
 | aruba.len |  | long |
 | aruba.limit |  | long |
 | aruba.lldp.ninterface |  | keyword |
 | aruba.lldp.npvid |  | long |
+| aruba.lldp.pvid |  | long |
 | aruba.lldp.reinit_delay |  | long |
 | aruba.lldp.tx_delay |  | long |
 | aruba.lldp.tx_hold |  | long |
 | aruba.lldp.tx_timer |  | long |
-| aruba.loop.rx_port |  | long |
-| aruba.loop.tx_port |  | long |
+| aruba.loop.rx_port |  | keyword |
+| aruba.loop.tx_port |  | keyword |
 | aruba.mac.ckn |  | keyword |
 | aruba.mac.latest_an |  | keyword |
 | aruba.mac.latest_kn |  | keyword |
@@ -1487,8 +1478,10 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.system.numdevs |  | long |
 | aruba.system.time |  | date |
 | aruba.time.seconds |  | long |
+| aruba.timeout |  | long |
 | aruba.tunnel.ttl |  | keyword |
 | aruba.tunnel.type |  | keyword |
+| aruba.unit |  | long |
 | aruba.vrf.id |  | keyword |
 | aruba.vrf.name |  | keyword |
 | aruba.zero_touch.central_location |  | keyword |
