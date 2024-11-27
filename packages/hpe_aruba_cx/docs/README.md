@@ -346,75 +346,78 @@ Note: Descriptions have not been filled out
 | <after>         | aruba.firmware.after         |
 
 #### [Hardware Health Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm)
-| Doc Fields   | Schema Mapping          |
-|--------------|-------------------------|
-| <addr>       | aruba.hardware.addr     |
-| <bus>        | aruba.hardware.bus      |
-| <cap>        | aruba.hardware.cap      |
-| <cecount>    | aruba.hardware.cecount  |
-| <channel>    | aruba.hardware.channel  |
-| <cpus>       | aruba.hardware.cpus     |
-| <device>     | aruba.hardware.device   |
-| <error_code> | error.code              |
-| <function>   | aruba.hardware.function |
-| <level>      | aruba.hardware.level    |
-| <location>   | aruba.hardware.location |
-| <mcgstatus>  | aruba.hardware.mcgstatus|
-| <misc>       | aruba.hardware.misc     |
-| <offlined>   | aruba.hardware.offlined |
-| <origin>     | aruba.hardware.origin   |
-| <page>       | aruba.hardware.page     |
-| <seg>        | aruba.hardware.seg      |
-| <slot>       | aruba.slot              |
-| <socket>     | aruba.hardware.socket   |
-| <status>     | aruba.status            |
-| <test_name>  | aruba.hardware.test_name|
-| <threshold>  | aruba.limit             |
-| <type>       | aruba.hardware.type     |
+| Doc Fields   | Schema Mapping           |
+|--------------|--------------------------|
+| <addr>       | aruba.hardware.addr      |
+| <bus>        | aruba.hardware.bus       |
+| <cap>        | aruba.hardware.cap       |
+| <cecount>    | aruba.hardware.cecount   |
+| <channel>    | aruba.hardware.channel   |
+| <cpus>       | aruba.hardware.cpus      |
+| <device>     | aruba.hardware.device    |
+| <error_code> | error.code               |
+| <function>   | aruba.hardware.function  |
+| <level>      | aruba.hardware.level     |
+| <location>   | aruba.hardware.location  |
+| <mcgstatus>  | aruba.hardware.mcgstatus |
+| <misc>       | aruba.hardware.misc      |
+| <offlined>   | aruba.hardware.offlined  |
+| <origin>     | aruba.hardware.origin    |
+| <page>       | aruba.hardware.page      |
+| <seg>        | aruba.hardware.seg       |
+| <slot>       | aruba.slot               |
+| <socket>     | aruba.hardware.socket    |
+| <status>     | aruba.status             |
+| <test_name>  | aruba.hardware.test_name |
+| <threshold>  | aruba.limit              |
+| <type>       | aruba.hardware.type      |
 
 #### [Hardware Switch controller sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.hardware.ip   |             |      | server.ip                    |
-| aruba.hardware.mac  |             |      | server.mac                   |
-| aruba.hardware.port |             |      | server.port                  |
-| aruba.hardware.vni  |             |      | network.vlan.id              |
+| Doc Fields | Schema Mapping   |
+|------------|------------------|
+| <ip>       | server.ip        |
+| <mac>      | server.mac       |
+| <mac>      | destination.mac  |
+| <port>     | aruba.port       |
+| <vni>      | network.vlan.id  |
 
 #### [HTTPS Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm)
-| Field | Description | Type | Common |
-|-------|-------------|------|--------|
-| aruba.server.sessions | | | |
-| aruba.server.status  | | | aruba.status |
-| aruba.server.timeout | | | |
-| aruba.server.user    | | | server.user.name |
-| aruba.server.vrf     | | | aruba.vrf.id |
+| Doc Fields | Schema Mapping        |
+|------------|-----------------------|
+| <mode>     | aruba.server.mode     |
+| <sessions> | aruba.server.sessions |
+| <status>   | aruba.status          |
+| <timeout>  | aruba.timeout         |
+| <user>     | server.user.name      |
+| <vrf>      | aruba.vrf.id          |
 
 #### [In-System Programming events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ISP.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.system.devicespec|             |      | |
-| aruba.system.file      |             |      | file.name                    |
-| aruba.system.fromver   |             |      | service.version              |
-| aruba.system.line      |             |      | log.syslog.severity.name     |
-| aruba.system.modspec   |             |      | |
-| aruba.system.numdevs   |             |      | |
-| aruba.system.pass      |             |      | event.action                 |
-| aruba.system.time      |             |      | |
-| aruba.system.tover     |             |      | service.target.version       |
+| Doc Fields   | Schema Mapping           |
+|--------------|--------------------------|
+| <devicespec> | aruba.system.devicespec  |
+| <file>       | file.name                |
+| <fromver>    | service.version          |
+| <line>       | aruba.system.line        |
+| <modspec>    | aruba.system.modspec     |
+| <numdevs>    | aruba.system.numdevs     |
+| <pass>       | event.action             |
+| <time>       | aruba.system.time        |
+| <tover>      | service.target.version   |
 
 #### [Interface events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/INTERFACE.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.interface.interface |             |      | observer.ingress.interface.name |
-| aruba.interface.state     |             |      | aruba.status                 |
+| Doc Fields   | Schema Mapping             |
+|--------------|----------------------------|
+| <interface>  | aruba.interface.id         |
+| <port_speed> | aruba.interface.port_speed |
+| <state>      | aruba.interface.state      |
 
 #### [Internal storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/INTERNAL-STORAGE.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.storage.error       |             |      | error.message                |
-| aruba.storage.module_num  |             |      | aruba.slot                   |
-| aruba.storage.name        |             |      |                              |
-| aruba.storage.usage       |             |      |                              |
+| Doc Fields    | Schema Mapping        |
+|---------------|-----------------------|
+| <error>       | event.reason          |
+| <module_num>  | aruba.slot            |
+| <name>        | aruba.storage.name    |
+| <usage>       | aruba.storage.usage   |
 
 #### [IP source lockdown events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_SOURCE_LOCKDOWN.htm)
 | Field                              | Description | Type | Common                       |
@@ -423,32 +426,32 @@ Note: Descriptions have not been filled out
 | aruba.lockdown.max_supported_limit |             |      | aruba.limit                  |
 
 #### [IP tunnels events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_TUNNEL.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.tunnel.dest_ip|             |      | destination.ip               |
-| aruba.tunnel.ip_mtu |             |      | aruba.mtu                    |
-| aruba.tunnel.name   |             |      | observer.ingress.interface.name |
-| aruba.tunnel.src_ip |             |      | source.ip                    |
-| aruba.tunnel.ttl    |             |      |                              |
-| aruba.tunnel.type   |             |      |                              |
-| aruba.tunnel.vrf    |             |      | aruba.vrf.id                 |
+| Doc Fields   | Schema Mapping            |
+|--------------|---------------------------|
+| <dst_ip>     | destination.ip            |
+| <ip_mtu>     | aruba.mtu                 |
+| <tunnel_name>| aruba.tunnel.name         |
+| <src_ip>     | source.ip                 |
+| <ttl>        | aruba.tunnel.ttl          |
+| <type>       | aruba.tunnel.type         |
+| <vrf>        | aruba.vrf.id              |
 
 #### [IP-SLA events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPSLA.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.ip_sla.interface |             |      | observer.ingress.interface.name |
-| aruba.ip_sla.name      |             |      |                              |
-| aruba.ip_sla.operation |             |      | event.action                 |
-| aruba.ip_sla.reason    |             |      | event.reason                 |
-| aruba.ip_sla.state     |             |      | aruba.status                 |
+| Doc Fields | Schema Mapping         |
+|------------|------------------------|
+| <interface> | aruba.interface.id    |
+| <name>      | aruba.ip_sla.name     |
+| <operation> | event.action          |
+| <reason>    | event.reason          |
+| <state>     | aruba.status          |
 
 #### [IPv6 Router Advertisement events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPV6-RA.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.ipv6_router.intf      |             |      | observer.ingress.interface.name |
-| aruba.ipv6_router.ipv6_addr |             |      | server.ip                    |
-| aruba.ipv6_router.prefix    |             |      | aruba.prefix                 |
-| aruba.ipv6_router.prefixlen |             |      | aruba.len                    |
+| Doc Fields  | Schema Mapping       |
+|-------------|----------------------|
+| <intf>      | aruba.interface.id   |
+| <ipv6_addr> | server.ip            |
+| <prefix>    | aruba.prefix         |
+| <prefixlen> | aruba.len            |
 
 #### [IRDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IRDP.htm)
 | Field                       | Description | Type | Common                       |
@@ -1398,6 +1401,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.instance.id |  | keyword |
 | aruba.interface.id |  | keyword |
 | aruba.interface.name |  | keyword |
+| aruba.interface.port_speed |  | long |
+| aruba.interface.state |  | keyword |
 | aruba.ip_sla.name |  | keyword |
 | aruba.l3.encaps_allocated |  | keyword |
 | aruba.l3.encaps_free |  | keyword |
@@ -1473,20 +1478,24 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.port |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.sequence |  | keyword |
-| aruba.server.sessions |  | keyword |
-| aruba.server.timeout |  | long |
+| aruba.server.mode |  | keyword |
+| aruba.server.sessions |  | long |
 | aruba.session.id |  | keyword |
 | aruba.session.name |  | keyword |
 | aruba.slot |  | long |
 | aruba.status |  | keyword |
 | aruba.storage.name |  | keyword |
-| aruba.storage.usage |  | keyword |
+| aruba.storage.usage |  | long |
 | aruba.subsystem |  | keyword |
 | aruba.system.devicespec |  | keyword |
+| aruba.system.line |  | long |
 | aruba.system.modspec |  | keyword |
 | aruba.system.numdevs |  | long |
-| aruba.system.time |  | date |
+| aruba.system.pass |  | keyword |
+| aruba.system.time |  | long |
 | aruba.time.seconds |  | long |
+| aruba.timeout |  | long |
+| aruba.tunnel.name |  | keyword |
 | aruba.tunnel.ttl |  | keyword |
 | aruba.tunnel.type |  | keyword |
 | aruba.vrf.id |  | keyword |
@@ -1504,6 +1513,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.type | The type of the error, for example the class name of the exception. | keyword |

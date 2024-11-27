@@ -212,6 +212,32 @@ processors:
       pattern_definitions:
         FAN_STATUS: "[-_0-9a-zA-Z]+"
 
+    # Interface events (40x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/INTERFACE.htm
+  - grok:
+      field: message
+      tag: copp_event_401_402
+      description: "Log when interface port_admin set to [up|down]"
+      if: "['401', '402'].contains(ctx.event?.code)"
+      patterns:
+        - "^Interface port_admin set to (up|down) for %{DATA:aruba.interface.id} interface"
+  - grok:
+      field: message
+      tag: copp_event_403_404
+      description: "Log when interface link status is [up|down]"
+      if: "['403', '404'].contains(ctx.event?.code)"
+      patterns:
+        - "^Link status for interface %{DATA:aruba.interface.id} is (up|%{GREEDYDATA:aruba.interface.state})"
+  - grok:
+      field: message
+      tag: copp_event_406_407_408
+      description: "Log when interface encountered an error that requires user intervention | a downshift | is down due to incompatible MACsec and PFC configutration"
+      if: "['406', '407', '408'].contains(ctx.event?.code)"
+      patterns:
+        - "^Interface %{DATA:aruba.interface.id} %{407_PATTERN}?"
+      pattern_definitions:
+        407_PATTERN: "downshifted to speed %{NUMBER:aruba.interface.port_speed:long} Mbps because link attempt failed at higher speed"
+
     # CoPP Events (15xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm
 
@@ -542,6 +568,22 @@ processors:
         3011_3012_3013_COMMON: "correctable memory error count %{NUMBER:aruba.hardware.cecount:long} exceeded threshold %{NUMBER:aruba.limit:long}(?:%{3011_3012_3013_OPTIONAL})?"
         3011_3012_3013_OPTIONAL: " and %{NUMBER:aruba.hardware.offlined:long}"
 
+  # IPv6 Router Advertisement events (39xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPV6-RA.htm
+  - grok:
+      if: "['3901', '3902', '3903', '3904', '3905', '3906', '3907', '3908', '3909', '3910', '3911', '3912', '3913', '3914', '3915', '3916', '3917', '3918', '3919'].contains(ctx.event?.code)"
+      tag: ipv6_router_event
+      field: "message"
+      description: "Event raised when ipv6 router changes occurs"
+      patterns:
+        - "^ipv6 ra (dis|en)abled on interface: %{GREEDYDATA:aruba.interface.id}"
+        - "^(Dis|En)abled sending (MTU|RDNSS|DNSSL) in Router-Advertisement messages on %{GREEDYDATA:aruba.interface.id}"
+        - "^Interface: %{DATA:aruba.interface.id} is (added to|deleted from) router discovery"
+        - "^(Added|Deleted) ipv6 prefix: %{IP:server.ip}/%{NUMBER:aruba.len:long} (on|from) interface: %{GREEDYDATA:aruba.interface.id}"
+        - "^(Added|Deleted) RA Prefix: %{DATA:aruba.prefix} on interface: %{DATA:aruba.interface.id} (to|from) prefix list"
+        - "^default prefix is configured on interface %{GREEDYDATA:aruba.interface.id}"
+        - "^(RDNSS|DNSSL) is (added|deleted) on interface: %{GREEDYDATA:aruba.interface.id}"
+
   # Firmware Update events (44xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FIRMWARE_UPDATE.htm
   # Following events do not need further processing
@@ -562,6 +604,22 @@ processors:
       description: "Indicates that a switch firmware update failed from a remote or local source"
       patterns:
         - "^User %{DATA:user.name}: %{DATA:aruba.firmware.image_profile} image update failed via %{DATA:aruba.firmware.dnld_type}( from %{HOSTNAME:source.address})?$"
+
+  # HTTPS Server events (560x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm
+  - grok:
+      if: "['5601', '5602', '5603', '5604', '5605'].contains(ctx.event?.code)"
+      tag: server_event_5601_5602_5603_5604_5605
+      field: "message"
+      description: "Logs a message when a user changes REST mode | enable/disable VFR config | closes HTTPS session | changes max user sessions | changes idle timeout"
+      patterns:
+        - "^User %{DATA:server.user.name} (%{5601_PATTERN}|%{5602_PATTERN}|%{5603_PATTERN}|%{5604_PATTERN}|%{5605_PATTERN})$"
+      pattern_definitions:
+        5601_PATTERN: "has enabled %{DATA:aruba.server.mode} for REST mode"
+        5602_PATTERN: "has %{DATA:aruba.status} HTTPS Server on VRF %{DATA:aruba.vrf.id}"
+        5603_PATTERN: "closed all HTTPS sessions"
+        5604_PATTERN: "changed the HTTPS Server max user sessions amount to %{NUMBER:aruba.server.sessions:long}"
+        5605_PATTERN: "changed the HTTPS Server idle timeout to %{NUMBER:aruba.timeout:long}"
 
   # Credential Manager events (65xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
@@ -622,6 +680,53 @@ processors:
       field: "message"
       description: "Logs a message when copying config has some information"
       pattern: "Information while copying configs. Info: %{event.reason}"
+
+  # In-System Programming events (72xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ISP.htm
+  - grok:
+      if: "ctx.event?.code == '7200'"
+      tag: system_event_7200
+      field: "message"
+      description: "ISP internal fatal error"
+      patterns: 
+        - "^Internal fatal error at %{DATA:file.name}\\s?:\\s?%{NUMBER:aruba.system.line:long}"
+  - grok:
+      if: "['7210', '7211'].contains(ctx.event?.code)"
+      tag: system_event_7210_7211
+      field: "message"
+      description: "A non-failsafe device update is needed, but the allow-unsafe-updates command has not yet been run | about to start, so do not interrupt it"
+      patterns:
+        - "^Non-failsafe update needed for %{DATA:aruba.system.devicespec}. Please run the allow-unsafe-updates command"
+        - "^Do not interrupt non-failsafe update for %{GREEDYDATA:aruba.system.devicespec}"
+  - grok:
+      if: "['7212', '7213'].contains(ctx.event?.code)"
+      tag: system_event_7210_7211
+      field: "message"
+      description: "A device update is about to start | was successful or in some cases was successfully arranged to be performed later"
+      patterns:
+        - "^(Starting update|Update successful) for %{DATA:aruba.system.devicespec} from version %{DATA:service.version} to version %{GREEDYDATA:service.target.version}"
+  - grok:
+      if: "['7214', '7215', '7217'].contains(ctx.event?.code)"
+      tag: system_event_7214_7215_7217
+      field: "message"
+      description: "A device update failed | was postponed until after an automatic reset of its module | Unable to update non-redundant power supply"
+      patterns:
+        - "^Update failed for %{GREEDYDATA:aruba.system.devicespec}"
+        - "^Deferred update for %{DATA:aruba.system.devicespec} will be performed after an automatic module reset"
+        - "^Insufficient redundant power is available to update %{GREEDYDATA:aruba.system.devicespec}"
+  - grok:
+      if: "ctx.event?.code == '7216'"
+      tag: system_event_7216
+      field: "message"
+      description: "Indicates the approximate remaining update time for a module"
+      patterns: 
+        - "^Approximately %{NUMBER:aruba.system.time:long} minute\\(s\\) remaining to update %{NUMBER:aruba.system.numdevs:long} device\\(s\\) on %{GREEDYDATA:aruba.system.modspec}"
+  - dissect:
+      if: "ctx.event.code == '7219'"
+      tag: system_event_7219
+      field: "message"
+      description: "Failed to write-protect a module or device"
+      pattern: "Failed to write-protect %{aruba.system.devicespec} (pass %{aruba.system.pass})"
 
   # BFD events (73xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BFD.htm
@@ -684,6 +789,22 @@ processors:
       description: "Event raised when a BFD session specifies an interval outside the specified bounds"
       patterns:
         - "^BFD session %{DATA:aruba.bfd.direction} interval override of %{NUMBER:aruba.bfd.requested_interval:long} ms is out of bounds for protocol %{DATA:aruba.bfd.from}, using %{NUMBER:aruba.bfd.applied_interval:long} ms instead"
+
+  # IP-SLA events (740x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPSLA.htm
+  - grok:
+      if: "['7401', '7402', '7403', '7404', '7405', '7406', '7407', '7408'].contains(ctx.event?.code)"
+      tag: storage_event_7401_7402_7403_7404_7405_7406_7407_7408
+      field: "message"
+      description: "Event raised for IP-SLA events"
+      patterns:
+        - "^%{IP_SLA_SESSION_NAME} state changed to( failed)? %{DATA:aruba.status} due to reason %{GREEDYDATA:event.reason}"
+        - "^%{IP_SLA_SESSION_NAME} failed to (bind source|initialize socket), reason:%{GREEDYDATA:event.reason}"
+        - "^%{IP_SLA_SESSION_NAME}: %{GREEDYDATA:event.action}"
+        - "^%{IP_SLA_SESSION_NAME} is incomplete to schedule"
+        - "^%{IP_SLA_SESSION_NAME} interface %{DATA:aruba.interface.id} is( not)? ready and SLA is (disabled|enabled)"
+      pattern_definitions:
+        IP_SLA_SESSION_NAME: "IP-SLA (session:)?%{DATA:aruba.ip_sla.name}"
 
   # CPU_RX Events (75xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CPU_RX.htm
@@ -896,6 +1017,45 @@ processors:
       if: "ctx.event?.code == '8515'"
       pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to Initializing with reason %{event.reason}"
 
+
+  # Hardware switch controller sync events (88xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm
+  - grok:
+      if: "['8802', '8803'].contains(ctx.event?.code)"
+      tag: hardware_event_8802_8803
+      field: message
+      description: "Log when physical port is [created|deleted] in hardware VTEP DB"
+      patterns:
+        - "^Physical Port %{DATA:aruba.port} is (created|deleted) (in|from) Hardware VTEP DB"
+  - grok:
+      if: "['8806', '8807'].contains(ctx.event?.code)"
+      tag: hardware_event_8806_8807
+      field: "message"
+      description: "Logs when local MAC learn on VLAN is [updated|removed] in the Hardwar VTEP DB"
+      patterns:
+        - "^Local MAC %{MAC:server.mac} learnt on VLAN %{DATA:network.vlan.id} is (updated in|removed from) the Hardware VTEP DB"
+  - grok:
+      if: "['8808', '8809'].contains(ctx.event?.code)"
+      tag: hardware_event_8808_8809
+      field: "message"
+      description: "Logs when VXLAN IP is [updated|removed] in the Hardware VTEP DB"
+      patterns:
+        - "^VXLAN IP %{IP:server.ip} is (updated in the|removed from Switch and) Hardware VTEP DB"
+  - grok:
+      if: "['8810', '8811'].contains(ctx.event?.code)"
+      tag: hardware_event_8810_8811
+      field: "message"
+      description: "Logs when unicast remote MAC learnt on VNI is [added|removed] to the switch"
+      patterns:
+        - "^Unicast Remote MAC %{MAC:destination.mac} learnt on VNI %{DATA:network.vlan.id} is (added to|removed from) the switch"
+  - grok:
+      if: "ctx.event?.code == '8812'"
+      tag: hardware_event_8812
+      field: "message"
+      description: "Logs when tunnel is removed from Hardware VTEP DB"
+      patterns:
+        - "^Tunnel %{IP:server.ip} is removed from Hardware VTEP DB"
+
   # CDP events (89xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CDP.htm
   - grok:
@@ -905,6 +1065,17 @@ processors:
       description: "Log to indicate CDP neighbor addition/modification/deletion"
       patterns:
         - "^CDP neighbor %{MAC:source.mac} is (added|updated|deleted) on %{GREEDYDATA:aruba.interface.name}"
+
+  # Internal storage events (910x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/INTERNAL-STORAGE.htm
+  - grok:
+      if: "['9101', '9102', '9103', '9104'].contains(ctx.event?.code)"
+      tag: storage_event_9101_9102_9103_9104
+      field: "message"
+      description: "Event raised when there is a storage reporting failure | health deteriorates | change in storage endurance | failure is imminent"
+      patterns:
+        - "^Failed to report storage %{DATA:aruba.storage.name} details for module %{NUMBER:aruba.slot:long}. Error: %{GREEDYDATA:event.reason}"
+        - "^Storage %{DATA:aruba.storage.name} (health alert. E|e)ndurance utilization at %{NUMBER:aruba.storage.usage:long}\\% in module %{NUMBER:aruba.slot:long}(. Failure is imminent. Please backup data)?"
 
   # DCBX Events (92xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DCBX.htm
@@ -1009,6 +1180,38 @@ processors:
       if: "['9516', '9517', '9518'].contains(ctx.event?.code)"
       patterns:
           - "^EVPN RT: %{DATA:aruba.evpn.rt} (created|deleted|updated) for VRF: %{DATA:aruba.vrf.id}$"
+
+  # IP tunnels events (96xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_TUNNEL.htm
+  - grok:
+      if: "['9601', '9602', '9603', '9604', '9605', '9606', '9607', '9608', '9609', '9610', '9611', '9612', '9613', '9614', '9615', '9616'].contains(ctx.event?.code)"
+      tag: storage_event_9601_9602_9603_9604_9605_9606_9607_9608_9609_9610_9611_9612_9613_9614_9615_9616
+      field: "message"
+      description: "Event raised when tunnel events"
+      patterns:
+        - "^Tunnel (Creation Failed|Created|Deletion Failed|Deleted) - %{TUNNEL_NAME} %{TUNNEL_TYPE} %{TUNNEL_VFR} %{TUNNEL_LOCAL_IP} %{TUNNEL_REMOTE_IP}"
+        - "^Tunnel (Source|Destination) IP Modified - %{TUNNEL_NAME} %{TUNNEL_TYPE} %{TUNNEL_VFR} %{TUNNEL_LOCAL_IP} %{TUNNEL_REMOTE_IP}"
+        - "^Tunnel (TTL Modified|Modification Failed) - %{TUNNEL_NAME} %{TUNNEL_TYPE} %{TUNNEL_VFR} %{TUNNEL_LOCAL_IP} %{TUNNEL_REMOTE_IP} TTL \\(%{DATA:aruba.tunnel.ttl}\\)"
+        - "^Tunnel MTU (Modified|Modification Failed) - %{TUNNEL_NAME} %{TUNNEL_TYPE} %{TUNNEL_VFR} %{TUNNEL_LOCAL_IP} %{TUNNEL_REMOTE_IP} MTU \\(%{DATA:aruba.mtu}\\)"
+        - "^Tunnel Nexthop (Add Failed|Added|Modify Failed|Modified|Delete Failed|Deleted) - %{TUNNEL_NAME} %{TUNNEL_TYPE} %{TUNNEL_VFR} %{TUNNEL_LOCAL_IP} %{TUNNEL_REMOTE_IP}" 
+      pattern_definitions:
+        TUNNEL_NAME: "Name \\(%{DATA:aruba.tunnel.name}\\)"
+        TUNNEL_TYPE: "Type \\(%{DATA:aruba.tunnel.type}\\)"
+        TUNNEL_VFR: "VRF \\(%{DATA:aruba.vrf.id}\\)"
+        TUNNEL_LOCAL_IP: "Local IP \\(%{IP:source.ip}\\)"
+        TUNNEL_REMOTE_IP: "Remote IP \\(%{IP:destination.ip}\\)"
+
+  # IP source lockdown events (980x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_SOURCE_LOCKDOWN.htm
+  - grok:
+      if: "['9801', '9802', '9803', '9804', '9805', '9806', '9807'].contains(ctx.event?.code)"
+      tag: storage_event_9801_9802_9803_9804_9805_9806_9807
+      field: "message"
+      description: "This log event informs the user that IP_SOURCE_LOCKDOWN resource utilization has reached 80 percent of the supported limits"
+      patterns:
+        - "^IP_SOURCE_LOCKDOWN resource utilization has (reached|reduced)( below)? 80 percent of the supported limit of %{NUMBER:aruba.limit:long} on the system"
+        - "^IP_SOURCE_LOCKDOWN resource utilization has exceeded maximum supported limit of %{NUMBER:aruba.limit:long} on the system. IP source-lockdown functionality will not work for new entries"
+        - "^(IPV4_SOURCE_LOCKDOWN|IPV6_SOURCE_LOCKDOWN) is (enabled|disabled) on interface %{GREEDYDATA:aruba.interface.id}"
 
   # ACLs events (100xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ACL.htm
@@ -1166,6 +1369,22 @@ processors:
       ignore_missing: true
   - gsub:
       field: host.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+  - uppercase:
+      field: server.mac
+      ignore_missing: true
+  - gsub:
+      field: server.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+  - gsub:
+      field: destination.mac
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
