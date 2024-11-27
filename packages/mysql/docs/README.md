@@ -40,6 +40,7 @@ Data streams:
          
 ## Note:
 - MySQL and Percona from version `8.0.22` onwards and MariaDB from version `10.5.1` onwards support the `SHOW REPLICA STATUS;` query. Versions prior to these use the `SHOW SLAVE STATUS;` query.
+- The `replica_status` data stream supports master-slave or master-replica replication configurations as specified in the [MySQL Replication Configuration](https://dev.mysql.com/doc/refman/8.4/en/replication-configuration.html) documentation.
 
 ## Prerequisites
 
