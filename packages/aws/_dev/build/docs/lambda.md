@@ -13,7 +13,11 @@ For example, you could use this integration to track throttled lambda functions,
 The AWS Lambda integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of AWS Lambda.
-Metrics collected by the AWS Lambda integration include the number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error, and more. See more details in the [Metrics reference](#metrics-reference).
+Metrics collected by the AWS Lambda integration include the number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error, and more.
+
+This integration will also collect Event Source Mapping metrics. Event source mapping metrics provide insights into the processing behavior of your event source mapping. To receive these metrics in AWS CloudWatch, you must opt-in. If your event source mapping is disabled, you won't receive event source mapping metrics. You may also see missing metrics if CloudWatch or Lambda is experiencing degraded availability. See more details about [Event Source Mapping Metrics](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.html#event-source-mapping-metrics).
+
+See more details in the [Metrics reference](#metrics-reference).
 
 ## Requirements
 
