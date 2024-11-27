@@ -13,11 +13,11 @@ import (
 )
 
 var (
-    mockClientID     = flag.String("client_id", "", "Mock Client ID")
-    mockClientSecret = flag.String("client_secret", "", "Mock Client Secret")
-    mockAccessToken  = flag.String("access_token", "", "Mock Access Token")
-    mockSessionToken = flag.String("session_token", "", "Mock Session Token")
-    filePath         = flag.String("file", "", "Path to the input file")
+	mockClientID     = flag.String("client_id", "", "Mock Client ID")
+	mockClientSecret = flag.String("client_secret", "", "Mock Client Secret")
+	mockAccessToken  = flag.String("access_token", "", "Mock Access Token")
+	mockSessionToken = flag.String("session_token", "", "Mock Session Token")
+	filePath         = flag.String("file", "", "Path to the input file")
 	mockDataFeedURL  = flag.String("mock_datafeed_url", "", "Mock DataFeed URL")
 	datafeedCalled   = flag.Bool("datafeed_called", false, "Mock Datafeed Called")
 )
@@ -25,9 +25,9 @@ var (
 func main() {
 	flag.Parse()
 	// Setup routes
-	http.HandleFunc("/oauth2/token", mockTokenHandler)                // Token endpoint
-	http.HandleFunc("/sensors/entities/datafeed/v2", resourceHandler) // Resource endpoint
-	http.HandleFunc("/", streamData)                                  // Event stream endpoint
+	http.HandleFunc("POST /oauth2/token", mockTokenHandler)
+	http.HandleFunc("GET /sensors/entities/datafeed/v2", resourceHandler) // Resource endpoint
+	http.HandleFunc("GET /", streamData)                                  // Event stream endpoint
 
 	// Start the server
 	port := ":8090"
@@ -42,11 +42,6 @@ func main() {
 func mockTokenHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received request: Method=%s, URL=%s", r.Method, r.URL.String())
 	log.Printf("Headers: %+v", r.Header)
-	// Only allow POST method
-	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
 
 	// Parse form data (client credentials)
 	err := r.ParseForm()
@@ -182,6 +177,9 @@ func (s *streamReader) Read(p []byte) (n int, err error) {
 	}
 	chunk := s.data[s.index]
 	s.index++
+	if len(chunk) > len(p) {
+		p = append(p, make([]byte, len(chunk)-len(p))...)
+	}
 	copy(p, chunk)
 	return len(chunk), nil
 }
