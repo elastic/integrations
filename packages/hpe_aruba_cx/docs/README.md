@@ -454,8 +454,8 @@ Note: Descriptions have not been filled out
 | <prefixlen> | aruba.len            |
 
 #### [IRDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IRDP.htm)
-| Docs Field | Schema Mapping       |
-|------------|----------------------|
+| Docs Field  | Schema Mapping       |
+|-------------|----------------------|
 | <interface> | aruba.interface.id   |
 
 #### [L3 Encap capacity events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm)
@@ -470,26 +470,27 @@ Note: Descriptions have not been filled out
 | <prefix>   | aruba.prefix    |
 
 #### [LACP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LACP.htm)
-| Docs Field              | Schema Mapping            |
-|-------------------------|---------------------------|
-| <actor_state>           | aruba.lacp.actor_state    |
-| <fallback>              | aruba.lacp.fallback       |
-| <fsm_state>             | aruba.lacp.fsm_state      |
-| <intf_id>               | aruba.interface.id        |
-| <intf_id>               | aruba.interface.prev_id   |
-| <lacp_fallback_mode>    | aruba.lacp.fallback_mode  |
-| <lacp_fallback_timeout> | aruba.timeout             |
-| <mode>                  | aruba.lacp.mode           |
-| <lacp_rate>             | aruba.lacp.rate           |
-| <lag_id>                | aruba.instance.id         |
-| <lag_number>            | aruba.lacp.lag_number     |
-| <lag_speed>             | aruba.lacp.lag_speed      |
-| <lacp_mode>             | aruba.lacp.lacp_mode      |
-| <partner_state>         | aruba.lacp.partner_state  |
-| <partner_sys_id>        | aruba.lacp.partner_sys_id |
-| <port_speed>            | aruba.lacp.port_speed     |
-| <system_id>             | aruba.lacp.system_id      |
-| <system_priority>       | aruba.lacp.system_priority|
+| Docs Field              | Schema Mapping             |
+|-------------------------|----------------------------|
+| <actor_state>           | aruba.lacp.actor_state     |
+| <fallback>              | aruba.lacp.fallback        |
+| <fsm_state>             | aruba.lacp.fsm_state       |
+| <intf_id>               | aruba.interface.id         |
+| <intf_id>               | aruba.interface.prev_id    |
+| <intf_name>             | aruba.interface.name       |
+| <lacp_fallback_mode>    | aruba.lacp.fallback_mode   |
+| <lacp_fallback_timeout> | aruba.timeout              |
+| <mode>                  | aruba.lacp.mode            |
+| <lacp_rate>             | aruba.lacp.rate            |
+| <lag_id>                | aruba.instance.id          |
+| <lag_number>            | aruba.lacp.lag_number      |
+| <lag_speed>             | aruba.lacp.lag_speed       |
+| <lacp_mode>             | aruba.lacp.lacp_mode       |
+| <partner_state>         | aruba.lacp.partner_state   |
+| <partner_sys_id>        | aruba.lacp.partner_sys_id  |
+| <port_speed>            | aruba.lacp.port_speed      |
+| <system_id>             | aruba.lacp.system_id       |
+| <system_priority>       | aruba.lacp.system_priority |
 
 #### [LAG events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LAG.htm)
 | Docs Field | Schema Mapping               |
@@ -507,20 +508,22 @@ Note: Descriptions have not been filled out
 | <vlan>     | network.vlan.id              |
 
 #### [Layer 3 Interface events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3INTERFACE.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.l3.addr       |             |      | destination.address          |
-| aruba.l3.addr_status|             |      | aruba.status                 |
-| aruba.l3.egress_id  |             |      | observer.egress.interface.id |
-| aruba.l3.err        |             |      | error.message                |
-| aruba.l3.interface  |             |      | observer.ingress.interface.name |
-| aruba.l3.ipaddr     |             |      | destination.ip               |
-| aruba.l3.mtu        |             |      | aruba.mtu                    |
-| aruba.l3.nexthop    |             |      | destination.address          |
-| aruba.l3.port       |             |      | server.port                  |
-| aruba.l3.prefix     |             |      | aruba.prefix                 |
-| aruba.l3.state      |             |      | aruba.status                 |
-| aruba.l3.vlanid     |             |      | network.vlan.id              |
+| Docs Field      | Schema Mapping               |
+|----------------|-------------------------------|
+| <addr>        | server.address                 |
+| <addr_status> | aruba.status                   |
+| <egress_id>   | observer.egress.interface.id   |
+| <err>         | event.reason                   |
+| <interface>   | aruba.interface.id             |
+| <intf>        | aruba.interface.id             |
+| <ipaddr>      | host.ip                        |
+| <mtu>         | aruba.mtu                      |
+| <nexthop>     | aruba.l3.nexthop               |
+| <port>        | aruba.port                     |
+| <prefix>      | aruba.prefix                   |
+| <state>       | aruba.status                   |
+| <value>       | server.ip                      |
+| <vlanid>      | network.vlan.id                |
 
 #### [LED events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LED.htm)
 | Docs Field  | Schema Mapping         |
@@ -1403,8 +1406,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.interface.id |  | keyword |
 | aruba.interface.name |  | keyword |
 | aruba.interface.port_speed |  | long |
-| aruba.interface.state |  | keyword |
 | aruba.interface.prev_id |  | keyword |
+| aruba.interface.state |  | keyword |
 | aruba.ip_sla.name |  | keyword |
 | aruba.l3.encaps_allocated |  | keyword |
 | aruba.l3.encaps_free |  | keyword |
@@ -1485,6 +1488,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.system.pass |  | keyword |
 | aruba.system.time |  | long |
 | aruba.time.seconds |  | long |
+| aruba.timeout |  | long |
+| aruba.tunnel.name |  | keyword |
 | aruba.tunnel.ttl |  | keyword |
 | aruba.tunnel.type |  | keyword |
 | aruba.unit |  | long |

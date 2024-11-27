@@ -49,7 +49,7 @@ processors:
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LLDP.htm
   - grok:
       field: message
-      tag: lldp_event_101_through_113
+      tag: lldp_event_103_through_113
       description: "Logs event when LLDP (Link Layer Discovery Protocol) feature"
       if: "['103','104','105','106','107','108','109','110','113'].contains(ctx.event?.code)"
       patterns:
@@ -273,7 +273,7 @@ processors:
       description: "Log when loopback interface event is triggered"
       if: "['901','902','903'].contains(ctx.event?.code)"
       patterns:
-        - "^Loopback Interface %{DATA:aruba.interface.id}, (created|deleted|configured administratively %{DATA:aruba.status})"
+        - "^Loopback Interface %{DATA:aruba.interface.id}, (created|deleted|configured administratively %{GREEDYDATA:aruba.status})"
 
     # LACP events (13xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LACP.htm
@@ -292,8 +292,8 @@ processors:
         - "^LACP rate set to %{DATA:aruba.lacp.rate} for %{LAG_ID_GREEDY}"
         - "^Partner is detected for %{INTF_ID} %{LAG_ID}\\s?: %{DATA:aruba.lacp.partner_sys_id}. %{ACTOR_STATE}, %{PARTNER_STATE}"
         - "^Partner is out of sync for %{INTF_ID} %{LAG_ID}. %{ACTOR_STATE}, %{PARTNER_STATE}"
-        - "^Partner is lost \\(timed out\\) for %{INTF_ID} %{LAG_ID}. State: %{DATA:aruba.lacp.fsm_state}"
-        - "^Failed to create %{LAG_ID}"
+        - "^Partner is lost \\(timed out\\) for %{INTF_ID} %{LAG_ID}. State: %{GREEDYDATA:aruba.lacp.fsm_state}"
+        - "^Failed to create %{LAG_ID_GREEDY}"
         - "^%{LAG_ID} set as VSX"
         - "^%{LAG_ID} not sending LACPDUs through %{INTF_ID} because VSX information is not complete"
         - "^LACP fallback mode set to %{DATA:aruba.lacp.fallback_mode} for %{LAG_ID_GREEDY}"
@@ -302,12 +302,13 @@ processors:
         - "^LAG global load balancing mode is set to %{GREEDYDATA:aruba.lacp.mode}"
         - "^LAG load balancing mode is set to %{DATA:aruba.lacp.mode} for %{LAG_ID_GREEDY}"
         - "^%{LAG_ID} State change for interface %{DATA:aruba.interface.id}: %{ACTOR_STATE}, %{PARTNER_STATE}"
-        - "^%{INTF_ID} cannot be part of Lag %{NUMBER:aruba.lacp.lag_number:long}. Speed mismatched \\(Interface speed %{NUMBER:aruba.lacp.port_speed:long}Mbps Lag base speed %{NUMBER:aruba.lacp.lag_speed:long}Mbps\\)."
-        - "^Fallback is %{DATA:aruba.lacp.fallback} for %{LAG_ID}"
+        - "^%{INTF_NAME} cannot be part of Lag %{NUMBER:aruba.lacp.lag_number:long}. Speed mismatched \\(Interface speed %{NUMBER:aruba.lacp.port_speed:long}Mbps Lag base speed %{NUMBER:aruba.lacp.lag_speed:long}Mbps\\)."
+        - "^Fallback is %{DATA:aruba.lacp.fallback} for %{LAG_ID_GREEDY}"
       pattern_definitions:
         LAG_ID: "(LAG|lag) %{DATA:aruba.instance.id}"
         LAG_ID_GREEDY: "(LAG|lag) %{GREEDYDATA:aruba.instance.id}"
         INTF_ID: "(I|i)nterface %{DATA:aruba.interface.id}"
+        INTF_NAME: "(I|i)nterface %{DATA:aruba.interface.name}"
         ACTOR_STATE: "Actor state: %{DATA:aruba.lacp.actor_state}"
         PARTNER_STATE: "(P|p)artner state %{GREEDYDATA:aruba.lacp.partner_state}"
 
@@ -397,11 +398,11 @@ processors:
       pattern: "Failed to retrieve CoPP statistics from slot %{aruba.slot} class %{aruba.copp.class}"
 
     # Layer 3 Interface events (17xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LAG.htm
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3INTERFACE.htm
   - grok:
       field: message
-      tag: lacp_event_1401_through_1414
-      description: "Dynamic LAG has event has been raised"
+      tag: l3_event_1701_through_1731
+      description: "Logs to L3 interface events"
       if: "['1701','1702','1703','1704','1705','1706','1707','1708','1709','1710','1711','1712','1713','1714','1715','1716','1717','1718','1719','1720','1721','1722','1723','1724','1725','1726','1727','1728','1729','1730','1731'].contains(ctx.event?.code)"
       patterns:
         - "^L3-%{INTERFACE}, (created|deleted)"
@@ -412,10 +413,11 @@ processors:
         - "^(Added|Deleted|Failed to get) %{HOST_IP}"
         - "^L3 interface %{ERROR}"
         - "^(Delete|Added) %{NEXTHOP}(, egress_id %{DATA:observer.egress.interface.id},)? for route %{GREEDYDATA:aruba.prefix}"
-        - "^(Delete|Added|Add) route %{DATA:aruba.prefix}(, %{ERROR})?"
+        # Note: sequence matters here, putting greedy data at the end
+        - "^(Delete|Added|Add) route (%{DATA:aruba.prefix}, %{ERROR}|%{GREEDYDATA:aruba.prefix})"
         - "^Update: route state: %{GREEDYDATA:aruba.status}"
         - "^Error (deleting|creating) egress object for %{PORT}, %{ERROR}"
-        - "^(Deleted|Created) L3 egress ID %{DATA:observer.egress.interface.id} for %{PORT}( intf %{DATA:aruba.interface.id})?"
+        - "^(Deleted|Created) L3 egress ID %{DATA:observer.egress.interface.id} for (%{PORT} intf %{GREEDYDATA:aruba.interface.id}|%{PORT_GREEDY})"
         - "^%{INTERFACE},( configured with)? %{SERVER_IP}"
         - "^IPv6 Address Status: %{INTERFACE}, address %{IPORHOST:server.address}, status %{GREEDYDATA:aruba.status}"
         - "^%{INTERFACE}, configured with secondary %{SERVER_IP}"
@@ -429,6 +431,7 @@ processors:
         INTERFACE_GREEDY: "(I|i)nterface %{GREEDYDATA:aruba.interface.id}"
         NEXTHOP: "Nexthop %{IP:aruba.l3.nexthop}"
         PORT: "port %{DATA:aruba.port}"
+        PORT_GREEDY: "port %{GREEDYDATA:aruba.port}"
 
   # ECMP Events (18xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ECMP.htm
@@ -540,14 +543,14 @@ processors:
   - grok:
       field: message
       tag: loop_protect_event_2801_through_2808
-      description: "Logs event when LLDP (Link Layer Discovery Protocol) feature"
+      description: "Logs Loop protect events"
       if: "['2801','2802','2803','2804','2805','2806','2807','2808'].contains(ctx.event?.code)"
       patterns:
         - "^Ports TX %{DATA:aruba.loop.tx_port} and RX %{DATA:aruba.loop.rx_port} are disabled by Loop-protect after loop detection on VLAN %{GREEDYDATA:network.vlan.id}"
         - "^(Loop detected on port|Port) %{DATA:aruba.port}( is disabled by Loop-protection after loop detection)? on VLAN %{GREEDYDATA:network.vlan.id}"
         - "^Port %{DATA:aruba.port} enabled after disable time expired"
         - "^Port %{DATA:aruba.port} (added for|deleted from) loop-protection"
-        - "^Loop-Protection stats cleared for port %{DATA:aruba.port}"
+        - "^Loop-Protection stats cleared for port %{GREEDYDATA:aruba.port}"
         - "^Ports TX %{DATA:aruba.loop.tx_port} and RX %{DATA:aruba.loop.rx_port} are involved during TX port disabling"
 
   # BGP events (29xx)
