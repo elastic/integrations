@@ -7,17 +7,23 @@ This integration is for Envoy proxy [access logs](https://www.envoyproxy.io/docs
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
+Requires version ^8.15.0 of Elastic Agent
+
+## Compatibility
+
+This integration was tested using Envoy proxy version 1.32.1
+
 ## Setup
 
 ### Logs
 
-Update the path to your logs in the integration if access logs are not being written to `/var/log/envoy.log` (default location).
+Update `paths` in the integration configuration to the location of your envoyproxy logs if access logs are not being written to `/var/log/envoy.log` (default location).
 
 For Kubernetes deployment see [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-kubernetes-autodiscovery.html) for autodiscovery with Elastic Agent.
 
 ### Stats
 
-Update your Envoy config to point statsd output to the IP address of the agent running this integration.
+Add the following to your envoy configuration and set `address` to the IP address of the Elastic Agent running this integration.
 
 > NOTE: Hostnames are not supported by Envoy and must use the IP address where Elastic Agent is installed
 
@@ -28,7 +34,7 @@ stats_sinks:
       "@type": type.googleapis.com/envoy.extensions.stat_sinks.graphite_statsd.v3.GraphiteStatsdSink
       address:
         socket_address:
-          address: 127.0.0.1
+          address: 127.0.0.1 # Replace with the IP of elastic-agent
           port_value: 8125
 ```
 
