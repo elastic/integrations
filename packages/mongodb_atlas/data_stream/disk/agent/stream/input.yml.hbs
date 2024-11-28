@@ -123,7 +123,7 @@ program: |
             },
           }).do_request().as(res, (res.StatusCode == 200) ?
           {
-            "events": bytes(res.Body).decode_json().as(f,
+            "events": [bytes(res.Body).decode_json().as(f,
               f.with(
                 {
                   "response": zip(
@@ -133,7 +133,7 @@ program: |
                   ),
                 }
               ).drop(["measurements", "links"])
-            ),
+            )],
             "disk_list": (int(state.disk_next) + 1 < size(state.disk_list)) ? state.disk_list : [],
             "disk_next": (int(state.disk_next) + 1 < size(state.disk_list)) ? (int(state.disk_next) + 1) : 0,
             "disk_page_num": state.disk_page_num,
@@ -159,8 +159,8 @@ program: |
                 ),
               },
             },
-          "want_more": false,
-        }
+            "want_more": false,
+          }
+        )
       )
     )
-  )
