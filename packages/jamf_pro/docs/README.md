@@ -257,7 +257,7 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.general.last_reported_ip |  | ip |
 | jamf_pro.inventory.general.management_id |  | keyword |
 | jamf_pro.inventory.general.mdm_capable.capable |  | boolean |
-| jamf_pro.inventory.general.mdm_capable.capable_users |  | nested |
+| jamf_pro.inventory.general.mdm_capable.capable_users |  | keyword |
 | jamf_pro.inventory.general.mdm_profile_expiration |  | date |
 | jamf_pro.inventory.general.name |  | keyword |
 | jamf_pro.inventory.general.platform |  | keyword |

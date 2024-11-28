@@ -362,9 +362,23 @@ processors:
       copy_from: ses.device_mac
       ignore_empty_value: true
   - set:
-      field: source.address
-      tag: set_source_address_from_device_name
+      field: host.hostname
+      tag: set_host_hostname_from_device_name
       copy_from: ses.device_name
+      ignore_empty_value: true
+  - rename:
+      field: host.hostname
+      target_field: host.name
+      tag: set_host_name_from_device_name
+      ignore_missing: true
+      if: ctx.ses?.device_name != null && ctx.ses.device_name.contains('.')
+  - lowercase:
+      field: host.name
+      ignore_missing: true
+  - set:
+      field: source.address
+      tag: set_source_address_from_host_name
+      copy_from: host.name
       ignore_empty_value: true
   - convert:
       field: ses.device_os_bits
