@@ -1,15 +1,17 @@
 source:
-  index: "logs-*"
+  index: "infosec_logs-okta.system"
   query:
     bool:
       filter:
         - range:
               '@timestamp':
-                gte: now-1M
+                gte: now-6M
         - exists:
             field: okta.event_type
         - term:
             'data_stream.dataset': "okta.system"
+        - term:
+            'okta.outcome.result': "SUCCESS"
         - terms:
             'okta.event_type': ["user.session.start","user.session.end"]
 dest:
@@ -25,24 +27,21 @@ pivot:
   aggregations:
     okta_distinct_ips:
       cardinality:
-        field: source.ip
+        field: client.ip
     okta_distinct_countries:
       cardinality:
-        field: source.geo.country_name
+        field: client.geo.country_name
     'okta_session_info.has_end_event':
       filter:
         term:
           'okta.event_type': "user.session.end"
-    'okta_session_info.ips':
-      terms:
-        field: source.ip
-    'okta_session_info.locations':
-      terms:
-        field: source.geo.country_name
   group_by:
     'okta.user.name':
       terms:
-        field: user.name
+        field: source.user.name
+    'okta.agent.name':
+      terms:
+        field: agent.name
     'okta.user.full_name':
       terms:
         field: source.user.full_name
