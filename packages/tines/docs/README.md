@@ -75,6 +75,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.id | A unique ID for the audit log event | long |
 | tines.audit_log.inputs.actionIds |  | long |
 | tines.audit_log.inputs.diagramNoteIds |  | long |
+| tines.audit_log.inputs.fieldId |  | long |
 | tines.audit_log.inputs.inputs.actionId |  | long |
 | tines.audit_log.inputs.inputs.actionIds |  | long |
 | tines.audit_log.inputs.inputs.actions.actionId |  | long |
@@ -89,6 +90,8 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.awsAssumedRoleExternalId |  | keyword |
 | tines.audit_log.inputs.inputs.awsAuthenticationType |  | keyword |
 | tines.audit_log.inputs.inputs.awsSecretKey |  | keyword |
+| tines.audit_log.inputs.inputs.content |  | match_only_text |
+| tines.audit_log.inputs.inputs.dateMode |  | keyword |
 | tines.audit_log.inputs.inputs.delta.x |  | long |
 | tines.audit_log.inputs.inputs.delta.y |  | long |
 | tines.audit_log.inputs.inputs.description |  | keyword |
@@ -96,6 +99,8 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.diagramNotes |  | flattened |
 | tines.audit_log.inputs.inputs.editingSource |  | keyword |
 | tines.audit_log.inputs.inputs.eventName |  | keyword |
+| tines.audit_log.inputs.inputs.graphDirection |  | keyword |
+| tines.audit_log.inputs.inputs.graphType |  | keyword |
 | tines.audit_log.inputs.inputs.httpRequestLocationOfToken |  | keyword |
 | tines.audit_log.inputs.inputs.httpRequestOptions |  | keyword |
 | tines.audit_log.inputs.inputs.icon |  | keyword |
@@ -111,6 +116,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.mtlsClientCertificate |  | keyword |
 | tines.audit_log.inputs.inputs.mtlsClientPrivateKey |  | keyword |
 | tines.audit_log.inputs.inputs.mtlsRootCertificate |  | keyword |
+| tines.audit_log.inputs.inputs.multiSelect |  | boolean |
 | tines.audit_log.inputs.inputs.name |  | keyword |
 | tines.audit_log.inputs.inputs.oauthClientId |  | keyword |
 | tines.audit_log.inputs.inputs.oauthClientSecret |  | keyword |
@@ -119,12 +125,15 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.oauthScope |  | keyword |
 | tines.audit_log.inputs.inputs.oauthTokenUrl |  | keyword |
 | tines.audit_log.inputs.inputs.oauthUrl |  | keyword |
+| tines.audit_log.inputs.inputs.options |  | object |
 | tines.audit_log.inputs.inputs.options.createFormEmptyState |  | boolean |
 | tines.audit_log.inputs.inputs.readAccess |  | keyword |
+| tines.audit_log.inputs.inputs.required |  | boolean |
 | tines.audit_log.inputs.inputs.sharedTeamSlugs |  | keyword |
 | tines.audit_log.inputs.inputs.source |  | keyword |
 | tines.audit_log.inputs.inputs.standardLibVersion |  | keyword |
 | tines.audit_log.inputs.inputs.storyId |  | long |
+| tines.audit_log.inputs.inputs.style |  | keyword |
 | tines.audit_log.inputs.inputs.teamId |  | long |
 | tines.audit_log.inputs.inputs.value |  | keyword |
 | tines.audit_log.inputs.linkIds |  | long |
