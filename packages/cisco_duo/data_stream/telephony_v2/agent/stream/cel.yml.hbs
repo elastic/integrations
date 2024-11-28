@@ -3,6 +3,15 @@ interval: {{interval}}
 resource.url: {{hostname}}
 resource.rate_limit.burst: 1
 resource.rate_limit.limit: {{rate_limit}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
 
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
@@ -28,7 +37,13 @@ program: |
             state
         :
             state.with({
-                "mintime": string(int(state.?cursor.last_published.orValue(int(now - duration(state.initial_interval)) * 1000))),
+                "mintime": string(1000 * int(
+                    state.?cursor.last_published.optMap(t,
+                        t.parse_time(time_layout.RFC3339Nano)
+                    ).orValue(
+                        now - duration(state.initial_interval)
+                    )
+                )),
             })
     ).as(state, state.with({
         // calculate maxtime to be the current time minus a buffer (2 minutes) to avoid potential synchronization issues.
@@ -42,7 +57,7 @@ program: |
     })).as(state, state.with(
         {
             // prepare request data dynamically for each request to prevent 40103 error.
-            "date": now().format(time_layout.RFC1123Z),
+            "date": now.format(time_layout.RFC1123Z),
             "method": "GET",
             "url_base": state.url.trim_right("/"),
             "url_path": "/admin/v2/logs/telephony",
@@ -85,7 +100,7 @@ program: |
                                 "message": item.encode_json(),
                             }
                         ),
-                        "want_more": has(body.?response.?metadata.next_offset),
+                        "want_more": has(body.?response.metadata.next_offset),
                         ?"next_offset": (body.?response.metadata.next_offset.orValue(null) != null) ?
                             optional.of(string(body.response.metadata.next_offset))
                         :

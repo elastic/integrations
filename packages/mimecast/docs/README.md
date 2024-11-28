@@ -205,6 +205,7 @@ An example event for `audit_events` looks as following:
 | mimecast.method | Method which triggers audit events. | keyword |
 | mimecast.remote | Info about remote IP trying to access the API. | keyword |
 | mimecast.remote_ip | Remote IP. | ip |
+| mimecast.timezone | Timezone reported in the event message. | keyword |
 
 
 ### DLP Logs

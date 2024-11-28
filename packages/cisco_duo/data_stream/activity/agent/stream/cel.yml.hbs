@@ -3,15 +3,21 @@ interval: {{interval}}
 resource.url: {{hostname}}
 resource.rate_limit.burst: 1
 resource.rate_limit.limit: {{rate_limit}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
 
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
 resource.tracer.maxsize: 5
 {{/if}}
-
-regexp:
-  "next_offset_timestamp": '^\d+'
 
 state:
   url: {{hostname}}
@@ -31,113 +37,118 @@ program: |
             state
         :
             state.with({
-                "mintime": state.?cursor.last_published.orValue(int(now - duration(state.initial_interval)) * 1000),
-                "maxtime": int(now - duration("2m")) * 1000,
-                "date": now.format(time_layout.RFC1123Z),
+                "mintime": string(1000 * int(
+                    state.?cursor.last_published.optMap(t,
+                        t.parse_time(time_layout.RFC3339Nano)
+                    ).orValue(
+                        now - duration(state.initial_interval)
+                    )
+                )),
             })
-    ).as(state, state.with(
-        request(
-            "GET",
-            state.?want_more.orValue(false) ?
-                state.next_url
-            :
-                state.url.trim_right("/") + "/admin/v2/logs/activity?" + {
-                    "limit": [string(int(state.limit))],
-                    "maxtime": [string(int(state.maxtime))],
-                    "mintime": [string(int(state.mintime))],
-                    "sort": ["ts:asc"],
-                }.format_query()
-        ).with(
-            {
+    ).as(state, state.with({
+        // the duration between maxtime and mintime should be less than 180d to avoid error_code 400 from API.
+        "maxtime": state.want_more ?
+            string(state.maxtime)
+        :
+            string(int([
+                int(timestamp(int(state.mintime)/1000) + duration("4320h")),
+                int(now - duration("2m"))
+            ].min()) * 1000)
+    })).as(state, state.with(
+        // prepare request data
+        {
+            // data should be calculated for each request to avoid error 40103
+            "date": now.format(time_layout.RFC1123Z),
+            "method": "GET",
+            "url_base": state.url.trim_right("/"),
+            "url_path": "/admin/v2/logs/activity",
+            "query_string": {
+                 "limit": [string(dyn(state).limit)],
+                 "maxtime": [string(state.maxtime)],
+                 "mintime": [string(state.mintime)],
+                 ?"next_offset": state.?next_offset.optMap(v, [string(v)]),
+                 "sort": ["ts:asc"],
+            }.format_query(),
+        }.as(r, r.with({
+            // add an authorization header value
+            "authorization": "Basic " + (
+                state.integration_key + ":" + (
+                    [
+                        r.date,
+                        r.method,
+                        r.url_base.trim_prefix("https://"),
+                        r.url_path,
+                        r.query_string,
+                    ].join("\n")
+                    .hmac("sha1", bytes(state.secret_key))
+                    .hex()
+                )
+            ).base64(),
+        })).as(r,
+            // do the request using the prepared data
+            request(
+                r.method,
+                [r.url_base, r.url_path, "?", r.query_string].join("")
+            ).with({
                 "Header": {
                     "Content-Type": ["application/x-www-form-urlencoded"],
-                    "Date": [state.date],
-                    "Authorization": ["Basic " + (
-                        state.integration_key + ":" + (
-                            [
-                                state.date,
-                                "GET",
-                                state.url.trim_prefix("https://"),
-                                "/admin/v2/logs/activity",
-                                {
-                                    "limit": [string(int(state.limit))],
-                                    "maxtime": [string(int(state.maxtime))],
-                                    "mintime": [string(int(state.mintime))],
-                                    ?"next_offset": has(state.next_offset) ?
-                                        optional.of([string(state.next_offset)])
-                                    :
-                                        optional.none(),
-                                    "sort": ["ts:asc"],
-                                }.format_query()
-                            ].join("\n")
-                            .hmac("sha1", bytes(state.secret_key))
-                            .hex()
-                        )
-                    ).base64()],
+                    "Date": [r.date],
+                    "Authorization": [r.authorization],
                 },
-            }
-        ).do_request().as(resp, (resp.StatusCode == 200) ?
-            bytes(resp.Body).decode_json().as(body, has(body.?response.items) && size(body.response.items) > 0 ?
-                {
-                    "events": body.response.items.map(item,
-                        {
-                            "message": item.encode_json(),
-                        }
-                    ),
-                    "url": state.url,
-                    "integration_key": state.integration_key,
-                    "secret_key": state.secret_key,
-                    "limit": state.limit,
-                    "mintime": state.mintime,
-                    "maxtime": state.maxtime,
-                    "want_more": has(body.?response.?metadata.next_offset),
-                    ?"next_offset": (body.?response.metadata.next_offset.orValue(null) != null) ?
-                        optional.of(string(body.response.metadata.next_offset))
-                    :
-                        optional.none(),
-                    "next_url": (body.?response.metadata.next_offset.orValue(null) != null) ?
-                        (
-                            state.url.trim_right("/") + "/admin/v2/logs/activity?" + {
-                                "limit": [string(int(state.limit))],
-                                "maxtime": [string(int(state.maxtime))],
-                                "mintime": [string(int(state.mintime))],
-                                "next_offset": [string(body.response.metadata.next_offset)],
-                                "sort": ["ts:asc"],
-                            }.format_query()
-                        )
-                    :
-                        state.url,
-                    "cursor": {
-                        ?"last_published": (body.?response.metadata.next_offset.orValue(null) != null) ?
-                            optional.of(body.response.metadata.next_offset.re_find("next_offset_timestamp"))
+            }).do_request().as(resp, (resp.StatusCode == 200) ?
+                bytes(resp.Body).decode_json().as(body, has(body.?response.items) && size(body.response.items) > 0 ?
+                    {
+                        "events": body.response.items.map(item,
+                            {
+                                "message": item.encode_json(),
+                            }
+                        ),
+                        "want_more": has(body.?response.metadata.next_offset),
+                        ?"next_offset": (body.?response.metadata.next_offset.orValue(null) != null) ?
+                            optional.of(string(body.response.metadata.next_offset))
                         :
                             optional.none(),
+                        "cursor": {
+                            ?"last_published": (has(body.?response.items) && size(body.response.items) > 0) ?
+                                optional.of(
+                                    body.response.items.map(i, i.ts).max().as(last_timestamp,
+                                        !has(dyn(state).?cursor.last_published) ?
+                                            last_timestamp
+                                        : (last_timestamp < dyn(state).cursor.last_published) ?
+                                            dyn(state).cursor.last_published
+                                        :
+                                            last_timestamp
+                                    )
+                                )
+                            :
+                                dyn(state).?cursor.last_published,
+                        }
                     }
-                }
-            :
-                {
-                    "events":[],
-                    "want_more": false,
-                }
+                :
+                    {
+                        "events":[],
+                        "want_more": false,
+                    }
 
-            )
-        :
-            bytes(resp.Body).decode_json().as(body,
-                {
-                    "events": {
-                        "error": {
-                            "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
-                            "id": string(resp.Status),
-                            "message": "GET:"+(
-                                size(resp.Body) != 0 ?
-                                    string(resp.Body)
-                                :
-                                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                            ),
+                )
+            :
+                bytes(resp.Body).decode_json().as(body,
+                    {
+                        "events": {
+                            "error": {
+                                "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
+                                "id": string(resp.Status),
+                                "message": "GET:"+(
+                                    size(resp.Body) != 0 ?
+                                        string(resp.Body)
+                                    :
+                                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                                ),
+                            },
                         },
-                    },
-                    "want_more": false,
-                }
+                        "want_more": false,
+                    }
+                )
             )
         )
     ))
