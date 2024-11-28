@@ -1,6 +1,6 @@
-# Missile Map
+# Threat Map
 
-The **Missile Map** dashboard visualizes network traffic flow between regions using animated paths. It includes missile-like arrows indicating direction and pulsing arcs at the destination.
+The **Threat Map** dashboard visualizes network traffic flow between regions using directed paths and animations. It includes arrows indicating direction and pulsing arcs at the destination.
 
 > **Note:** The animations may increase browser CPU usage.
 
@@ -8,7 +8,7 @@ The **Missile Map** dashboard visualizes network traffic flow between regions us
 
 ## Prerequisites
 
-To use the Missile Map dashboard, ensure the following:
+To use the Threat Map dashboard, ensure the following:
 
 - **Timestamp Field:** Documents must contain a `@timestamp` field for time-range filtering.
 - **GeoIP Processor:** Apply a [GeoIP](https://www.elastic.co/guide/en/elasticsearch/reference/current/geoip-processor.html) processor to the IP field. The resulting document should contain `source.geo` and `destination.geo` fields.
@@ -65,7 +65,7 @@ Data is retrieved from Elasticsearch using the `_all` index search endpoint. Ens
 
 ## Usage
 
-The Missile Map visualization can be added to other dashboards in two ways:
+The Threat Map visualization can be added to other dashboards in two ways:
 
 ### 1. Duplicate the Dashboard
 - Click the **Duplicate** button in the top-right corner of the dashboard.
@@ -82,7 +82,7 @@ The Missile Map visualization can be added to other dashboards in two ways:
 
 ## Visualizations
 
-The Missile Map dashboard includes the following visualizations:
+The Threat Map dashboard includes the following visualizations:
 
 ### 1. Map
 - **Framework:** Utilizes [Vega](https://vega.github.io/vega/) within Kibana.
