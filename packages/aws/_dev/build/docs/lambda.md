@@ -15,9 +15,18 @@ The AWS Lambda integration collects one type of data: metrics.
 **Metrics** give you insight into the state of AWS Lambda.
 Metrics collected by the AWS Lambda integration include the number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error, and more.
 
-This integration will also collect Event Source Mapping metrics. Event source mapping metrics provide insights into the processing behavior of your event source mapping. To receive these metrics in AWS CloudWatch, you must opt-in. If your event source mapping is disabled, you won't receive event source mapping metrics. You may also see missing metrics if CloudWatch or Lambda is experiencing degraded availability. See more details about [Event Source Mapping Metrics](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.html#event-source-mapping-metrics).
-
 See more details in the [Metrics reference](#metrics-reference).
+
+## Event Source Mapping Metrics
+
+This integration can also collect Event Source Mapping metrics. Event Source Mapping metrics track how your Lambda function processes records from event sources (like Amazon SQS, DynamoDB, or Kinesis). These metrics are collected when you set up an Event Source Mapping (trigger) for your Lambda function if you enable the __Enable metrics__ option. Enabling this feature incurs additional costs.
+
+Important notes:
+- Metrics are only available when your Event Source Mapping is active and __Enable metrics__ is selected.
+- Not all metrics are available for every event source type
+- Metric collection may be affected by CloudWatch or Lambda service availability
+
+See more details about [Event Source Mapping Metrics](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.html#event-source-mapping-metrics).
 
 ## Requirements
 
