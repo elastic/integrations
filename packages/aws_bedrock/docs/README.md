@@ -186,6 +186,8 @@ list log events from the specified log group.
 | gen_ai.policy.action | Action taken due to a policy violation, such as blocking, alerting, or modifying the content. | keyword |
 | gen_ai.policy.confidence | Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria. | keyword |
 | gen_ai.policy.match_detail.\* |  | object |
+| gen_ai.policy.match_detail.score |  | float |
+| gen_ai.policy.match_detail.threshold |  | float |
 | gen_ai.policy.name | Name of the specific policy that was triggered. | keyword |
 | gen_ai.policy.violation | Specifies if a security policy was violated. | boolean |
 | gen_ai.prompt | The full text of the user's request to the gen_ai. | text |
