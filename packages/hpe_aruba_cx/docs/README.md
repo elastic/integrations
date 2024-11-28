@@ -555,10 +555,10 @@ Note: Descriptions have not been filled out
 | <vlan>       | network.vlan.id        |
 
 #### [Loopback events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm)
-| Docs Field | Schema Mapping       |
-|------------|----------------------|
-| <interface> | aruba.interface.id   |
-| <state>     | aruba.status         |
+| Docs Field  | Schema Mapping        |
+|-------------|-----------------------|
+| <interface> | aruba.interface.id    |
+| <state>     | aruba.interface.state |
 
 
 #### [MAC Address mode configuration events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_MAC_ADDRESS_CONFIGURATION.htm)
@@ -1505,7 +1505,6 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.system.numdevs |  | long |
 | aruba.system.pass |  | keyword |
 | aruba.system.time |  | long |
-| aruba.temp.config |  | keyword |
 | aruba.time.seconds |  | long |
 | aruba.timeout |  | long |
 | aruba.tunnel.name |  | keyword |
