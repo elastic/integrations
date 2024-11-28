@@ -405,21 +405,11 @@ processors:
           .sorted()
           .collect(Collectors.toList());
 
-        ctx.gen_ai.policy.match_detail = Stream.concat(
-          nameAndDetailsOfPolicies.stream()
-            .filter(policy -> policy.details.match != null || policy.name == 'contextual_grounding_policy')
-            .map(policy -> policy.details),
-          allBodies.stream()
-            .filter(body -> body.trace?.guardrail?.outputAssessments instanceof List)
-            .flatMap(body -> body.trace.guardrail.outputAssessments.stream())
-            .filter(output -> output instanceof HashMap)
-            .flatMap(output -> output.entrySet().stream())
-            .map(assessment -> assessment.getValue())
-            .filter(details -> details.contextualGroundingPolicy?.filters instanceof List)
-            .flatMap(details -> details.contextualGroundingPolicy.filters.stream())
-        )
-        .distinct()  // no sort because HashMap isn't Comparable
-        .collect(Collectors.toList());
+        ctx.gen_ai.policy.match_detail = nameAndDetailsOfPolicies.stream()
+          .filter(policy -> policy.details.match != null || policy.name == 'contextual_grounding_policy')
+          .map(policy -> policy.details)
+          .distinct()  // no sort because HashMap isn't Comparable
+          .collect(Collectors.toList());
 
         ctx.gen_ai.policy.confidence = nameAndDetailsOfPolicies.stream()
           .map(policy -> policy.details.confidence)
