@@ -157,22 +157,22 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-09-24T05:39:40.000Z",
     "agent": {
-        "ephemeral_id": "46c20579-a05b-4d10-9050-910b0357621f",
-        "id": "7415adc4-fbf0-4c7e-9a6c-1d225d2f823b",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "dbb2059a-3aaa-4bcb-abd4-7685e8b9f7e5",
+        "id": "9fef3fff-5365-4b70-a28a-260b4fdeffac",
+        "name": "elastic-agent-99156",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "servicenow.event",
-        "namespace": "14470",
+        "namespace": "62419",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7415adc4-fbf0-4c7e-9a6c-1d225d2f823b",
+        "id": "9fef3fff-5365-4b70-a28a-260b4fdeffac",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -185,7 +185,7 @@ An example event for `event` looks as following:
         "created": "2016-12-12T15:19:57.000Z",
         "dataset": "servicenow.event",
         "id": "1c741bd70b2322007518478d83673af3",
-        "ingested": "2024-11-13T11:04:01Z",
+        "ingested": "2024-11-27T06:15:07Z",
         "kind": "event",
         "severity": 3,
         "timezone": "America/Los_Angeles",
@@ -261,7 +261,8 @@ An example event for `event` looks as following:
             "sys_updated_on": {
                 "display_value": "2024-09-23T22:39:40.000-07:00",
                 "value": "2024-09-24T05:39:40.000Z"
-            }
+            },
+            "table_name": "incident"
         }
     },
     "tags": [
@@ -1156,6 +1157,7 @@ An example event for `event` looks as following:
 | servicenow.event.sys_updated_on.value |  | date |
 | servicenow.event.sys_view_count.display_value |  | keyword |
 | servicenow.event.sys_view_count.value |  | long |
+| servicenow.event.table_name |  | keyword |
 | servicenow.event.task.display_value |  | keyword |
 | servicenow.event.task.value |  | keyword |
 | servicenow.event.task_effective_number.display_value |  | keyword |
