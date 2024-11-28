@@ -473,8 +473,8 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.cvss_v3.vector_string |  | keyword |
 | qualys_vmdr.knowledge_base.cvss_v3.version |  | keyword |
 | qualys_vmdr.knowledge_base.detection_info |  | keyword |
-| qualys_vmdr.knowledge_base.diagnosis.comment |  | keyword |
-| qualys_vmdr.knowledge_base.diagnosis.value |  | keyword |
+| qualys_vmdr.knowledge_base.diagnosis.comment |  | match_only_text |
+| qualys_vmdr.knowledge_base.diagnosis.value |  | match_only_text |
 | qualys_vmdr.knowledge_base.discovery.additional_info |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.auth_type_list.value |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.remote |  | long |
@@ -493,8 +493,8 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.severity_level |  | keyword |
 | qualys_vmdr.knowledge_base.software_list.product |  | keyword |
 | qualys_vmdr.knowledge_base.software_list.vendor |  | keyword |
-| qualys_vmdr.knowledge_base.solution.comment |  | keyword |
-| qualys_vmdr.knowledge_base.solution.value |  | keyword |
+| qualys_vmdr.knowledge_base.solution.comment |  | match_only_text |
+| qualys_vmdr.knowledge_base.solution.value |  | match_only_text |
 | qualys_vmdr.knowledge_base.supported_modules |  | keyword |
 | qualys_vmdr.knowledge_base.threat_intelligence.intel.id |  | keyword |
 | qualys_vmdr.knowledge_base.threat_intelligence.intel.text |  | keyword |
