@@ -170,6 +170,7 @@ processors:
         "topicPolicy": "topic_policy"
         "customWords": "custom_words"
         "sensitiveInformationPolicy": "sensitive_information_policy"
+        "contextualGroundingPolicy": "contextual_grounding_policy"
         "invocationMetrics": "invocation_metrics"
         "guardrailCoverage": "guardrail_coverage"
         "textCharacters": "text_characters"
@@ -356,6 +357,7 @@ processors:
           )
           .flatMap(body -> [
             [body.trace?.guardrail?.inputAssessment],
+            body.trace?.guardrail?.outputAssessments,
             [body.amazon_bedrock_trace?.guardrail?.input],
             body.amazon_bedrock_trace?.guardrail?.outputs
           ].stream())
@@ -404,7 +406,7 @@ processors:
           .collect(Collectors.toList());
 
         ctx.gen_ai.policy.match_detail = nameAndDetailsOfPolicies.stream()
-          .filter(policy -> policy.details.match != null)
+          .filter(policy -> policy.details.match != null || policy.name == 'contextual_grounding_policy')
           .map(policy -> policy.details)
           .distinct()  // no sort because HashMap isn't Comparable
           .collect(Collectors.toList());
