@@ -562,91 +562,96 @@ Note: Descriptions have not been filled out
 
 
 #### [MAC Address mode configuration events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_MAC_ADDRESS_CONFIGURATION.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.mac.mac       |             |      | server.mac                   |
-| aruba.mac.new_mode  |             |      |                              |
-| aruba.mac.old_mode  |             |      |                              |
-| aruba.mac.vlan      |             |      | network.vlan.id              |
+| Docs Field | Schema Mapping       |
+|------------|----------------------|
+| <mac>      | server.mac           |
+| <new_mode> | aruba.mac.new_mode   |
+| <old_mode> | aruba.mac.old_mode   |
+| <vlan>     | network.vlan.id      |
 
 #### [MAC Learning events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MAC-LEARN.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.mac.from-intf |             |      | observer.ingress.interface.name |
-| aruba.mac.mac       |             |      | server.mac                   |
-| aruba.mac.to-intf   |             |      | observer.egress.interface.name |
-| aruba.mac.vlan      |             |      | network.vlan.id              |
+| Docs Field  | Schema Mapping               |
+|-------------|------------------------------|
+| <from-intf> | aruba.interface.prev_id      |
+| <intf>      | aruba.interface.id           |
+| <mac>       | server.mac                   |
+| <to-intf>   | aruba.mac.interface.id       |
+| <vlan>      | network.vlan.id              |
 
 #### [MACsec events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MACSEC.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.mac.ckn       |             |      |                              |
-| aruba.mac.ifname    |             |      | observer.ingress.interface.name |
-| aruba.mac.latest_an |             |      |                              |
-| aruba.mac.latest_kn |             |      |                              |
-| aruba.mac.old_an    |             |      |                              |
-| aruba.mac.old_kn    |             |      |                              |
-| aruba.mac.sci       |             |      |                              |
+| Docs Field   | Schema Mapping               |
+|--------------|------------------------------|
+| <ckn>        | aruba.mac.ckn                |
+| <ifname>     | aruba.interface.name         |
+| <latest_an>  | aruba.mac.latest_an          |
+| <latest_kn>  | aruba.mac.latest_kn          |
+| <old_an>     | aruba.mac.old_an             |
+| <old_kn>     | aruba.mac.old_kn             |
+| <sci>        | aruba.mac.sci                |
 
 #### [Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMT.htm)
-| Field                                      | Description | Type | Common                       |
-|--------------------------------------------|-------------|------|------------------------------|
-| aruba.management.mgmt_intf_config_crit     |             |      | log.syslog.severity.name     |
-| aruba.management.mgmt_intf_config_err      |             |      | error.message                |
-| aruba.management.config_param              |             |      |                              |
+| Docs Field                  | Schema Mapping           |
+|-----------------------------|--------------------------|
+| <mgmt_intf_config_crit>     | aruba.mgmt.config_crit   |
+| <mgmt_intf_config_err>      | aruba.mgmt.config_err    |
+| <mgmt_intf_config_param>    | aruba.mgmt.config_param  |
 
 #### [MDNS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MDNS.htm)
-| Field                                      | Description | Type | Common                       |
-|--------------------------------------------|-------------|------|------------------------------|
+| Docs Field                  | Schema Mapping           |
+|-----------------------------|--------------------------|
 
 
 #### [MGMD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMD.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.mgmd.if_name     |             |      | observer.ingress.interface.name |
-| aruba.mgmd.ip_address  |             |      | client.ip                    |
-| aruba.mgmd.l3Port      |             |      |                              |
-| aruba.mgmd.pkt_type    |             |      |                              |
-| aruba.mgmd.port        |             |      | server.port                  |
-| aruba.mgmd.ring_id     |             |      | aruba.instance.id            |
-| aruba.mgmd.size_value  |             |      | aruba.len                    |
-| aruba.mgmd.state       |             |      | aruba.status                 |
-| aruba.mgmd.status      |             |      | aruba.status                 |
-| aruba.mgmd.sub_system  |             |      | aruba.subsystem              |
-| aruba.mgmd.vlan        |             |      | network.vlan.id              |
+| Docs Field  | Schema Mapping              |
+|-------------|-----------------------------|
+| <if_name>   | aruba.interface.name        |
+| <ip_address>| client.ip                   |
+| <l3Port>    | aruba.mgmd.l3_port          |
+| <mgmd_type> | aruba.mgmd.mgmd_type        |
+| <pkt_type>  | aruba.mgmd.pkt_type         |
+| <port>      | aruba.port                  |
+| <port0>     | aruba.port                  |
+| <port1>     | aruba.mgmd.port1            |
+| <ring_id>   | aruba.mgmd.ring_id          |
+| <size_value>| aruba.len                   |
+| <state>     | aruba.status                |
+| <status>    | aruba.status                |
+| <sub_system>| aruba.subsystem             |
+| <type>      | aruba.mgmd.type             |
+| <vlan>      | network.vlan.id             |
 
 #### [Mirroring events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MIRRORING.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.mirroring.session|             |      | aruba.session.id             |
+| Docs Field | Schema Mapping       |
+|------------|----------------------|
+| <number>   | aruba.session.id     |
 
 #### [Module events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MODULE.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.module.name      |             |      | observer.ingress.interface.name |
-| aruba.module.part_number |           |      | aruba.unit                   |
-| aruba.module.priority  |             |      | aruba.priority               |
-| aruba.module.reason    |             |      | event.reason                 |
-| aruba.module.type      |             |      |                              |
+| Docs Field    | Schema Mapping         |
+|---------------|------------------------|
+| <name>        | aruba.module.name      |
+| <part_number> | aruba.unit             |
+| <priority>    | aruba.priority         |
+| <reason>      | event.reason           |
+| <type>        | aruba.module.type      |
 
 #### [MSDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSDP.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.msdp.grp_ip      |             |      |                              |
-| aruba.msdp.if_name     |             |      | observer.ingress.interface.name |
-| aruba.msdp.peer_ip     |             |      | client.ip                    |
-| aruba.msdp.port        |             |      | server.port                  |
-| aruba.msdp.rp_ip       |             |      |                              |
-| aruba.msdp.src_ip      |             |      | source.ip                    |
-| aruba.msdp.state       |             |      | aruba.status                 |
-| aruba.msdp.status      |             |      | aruba.status                 |
-| aruba.msdp.tcp_entity  |             |      |                              |
-| aruba.msdp.vrf_name    |             |      | aruba.vrf.name               |
+| Docs Field  | Schema Mapping               |
+|-------------|------------------------------|
+| <grp_ip>    | aruba.msdp.grp_ip            |
+| <if_name>   | aruba.interface.name         |
+| <peer_ip>   | client.ip                    |
+| <port>      | aruba.port                   |
+| <rp_ip>     | aruba.msdp.rp_ip             |
+| <src_ip>    | source.ip                    |
+| <state>     | aruba.status                 |
+| <status>    | aruba.status                 |
+| <tcp_entity>| aruba.msdp.tcp_entity        |
+| <vrf_name>  | aruba.vrf.name               |
 
 #### [Multicast Traffic Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MTM.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.multicast.limit  |             |      | aruba.limit                  |
+| Docs Field | Schema Mapping |
+|------------|----------------|
+| <limit>    | aruba.limit    |
 
 #### [Multiple spanning tree protocol events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSTP.htm)
 | Field                       | Description | Type | Common                       |
