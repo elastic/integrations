@@ -19,7 +19,13 @@ See more details in the [Metrics reference](#metrics-reference).
 
 ## Event Source Mapping Metrics
 
-This integration can also collect Event Source Mapping metrics. Event Source Mapping metrics track how your Lambda function processes records from event sources (like Amazon SQS, DynamoDB, or Kinesis). These metrics are collected when you set up an Event Source Mapping (trigger) for your Lambda function if you enable the __Enable metrics__ option. Enabling this feature incurs additional costs.
+This integration can also collect Event Source Mapping (ESM) metrics, which track how your Lambda function processes records from event sources like Amazon SQS, DynamoDB, or Kinesis. 
+
+To collect these metrics, you must:  
+1. Enable Event Source Mapping for your Lambda function by following the steps outlined in the [AWS documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.html#event-source-mapping-metrics).  
+2. Enable the configuration flag `Collect Event Source Mapping metrics`.  
+
+**Note:** Enabling this feature may incur additional costs.
 
 Important notes:
 - Metrics are only available when your Event Source Mapping is active and __Enable metrics__ is selected.
@@ -157,7 +163,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.lambda.metrics.Errors.avg | The average number of invocations that result in a function error. | double |  | gauge |
 | aws.lambda.metrics.Errors.sum | The total number of invocations that result in a function error. | double |  | gauge |
 | aws.lambda.metrics.FailedInvokeEventCount.sum | The number of events that Lambda tried to invoke your function with, but failed. | double |  | gauge |
-| aws.lambda.metrics.FilteredOutEventCount.sum | For event source mapping with a filter criteria, the number of events filtered out by that filter criteria. | double |  | gauge |
+| aws.lambda.metrics.FilteredOutEventCount.sum | For event source mapping with a filter criteria, the number of events excluded based on the specified criteria. | double |  | gauge |
 | aws.lambda.metrics.Invocations.avg | The average number of times your function code is executed, including successful executions and executions that result in a function error. | double |  | gauge |
 | aws.lambda.metrics.Invocations.sum | The total number of times your function code is executed, including successful executions and executions that result in a function error. | double |  | gauge |
 | aws.lambda.metrics.InvokedEventCount.sum | The number of events that invoked your Lambda function. Use this metric to verify that events are properly invoking your function. | double |  | gauge |
