@@ -105,6 +105,25 @@ processors:
         API_VERSION: (v\d+([a-z]+)?(\d+)?)
         RESOURCE_TYPE: ([a-z]+((\.[a-z0-9]+)+)?)
       ignore_missing: true
+
+##
+# Extract origin, target, and related entity IDs
+##
+  - set:
+      field: origin.id
+      copy_from: json.protoPayload.authenticationInfo.principalSubject
+      ignore_empty_value: true
+      if: ctx.json?.protoPayload?.authenticationInfo?.principalSubject != null
+  - set:
+      field: origin.id
+      copy_from: json.protoPayload.authenticationInfo.principalEmail
+      ignore_empty_value: true
+      if: ctx.json?.protoPayload?.authenticationInfo?.principalSubject == null
+  - set:
+      field: target.id
+      copy_from: json.protoPayload.resourceName
+      ignore_empty_value: true
+      if: ctx.json?.resource?.type != 'k8s_cluster'
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
