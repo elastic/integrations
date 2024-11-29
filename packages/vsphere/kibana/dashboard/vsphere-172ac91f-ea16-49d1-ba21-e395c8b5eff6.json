@@ -23,7 +23,7 @@
                         },
                         "title": "Resource pool name"
                     },
-                    "grow": false,
+                    "grow": true,
                     "order": 1,
                     "type": "optionsListControl",
                     "width": "medium"
@@ -41,7 +41,7 @@
                         },
                         "title": "Resource pool ID"
                     },
-                    "grow": false,
+                    "grow": true,
                     "order": 0,
                     "type": "optionsListControl",
                     "width": "medium"
@@ -292,7 +292,7 @@
                                     "isVisible": true,
                                     "maxLines": 3,
                                     "position": "right",
-                                    "showSingleSeries": false
+                                    "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "area",
                                 "title": "Empty XY chart",
@@ -314,7 +314,7 @@
                     "y": 0
                 },
                 "panelIndex": "b4f9db05-00fc-4f76-a4f9-69190f2eb99f",
-                "title": "Resource pool activity over time [Metrics VSphere]",
+                "title": "Event count by resource pool",
                 "type": "lens"
             },
             {
@@ -688,7 +688,7 @@
                     "y": 18
                 },
                 "panelIndex": "41c3fd67-16c6-4f55-9c80-929234552ab9",
-                "title": "Top resource pool host memory usage [Metrics VSphere]",
+                "title": "Top resource pool host memory usage",
                 "type": "lens"
             },
             {
@@ -857,7 +857,7 @@
                     "y": 18
                 },
                 "panelIndex": "5fd8a989-3af5-4b69-99a2-73be897f4dea",
-                "title": "Top resource pool guest memory usage [Metrics VSphere]",
+                "title": "Top resource pool guest memory usage",
                 "type": "lens"
             },
             {
@@ -1108,7 +1108,205 @@
                     "y": 33
                 },
                 "panelIndex": "cf5734d8-a7d3-4084-8842-76eeee739915",
-                "title": "Private vs Shared memory usage [Metrics VSphere]",
+                "title": "Private vs Shared memory usage",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-4a4b6a4a-4c43-4fd8-9aee-48d7e50c6d53",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "4a4b6a4a-4c43-4fd8-9aee-48d7e50c6d53": {
+                                            "columnOrder": [
+                                                "7f5d6711-eae4-4bdc-a93d-373be80374a7",
+                                                "8d520dc9-585e-4994-b724-9231c3317522",
+                                                "3e494fa7-da8f-4527-a973-b963db4530f6",
+                                                "9785a7d1-ea3c-4238-b31e-923b4e1b4935"
+                                            ],
+                                            "columns": {
+                                                "3e494fa7-da8f-4527-a973-b963db4530f6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"vsphere.resourcepool.cpu.demand.mhz\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "CPU demand",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0,
+                                                                "suffix": " MHz"
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "vsphere.resourcepool.cpu.demand.mhz"
+                                                },
+                                                "7f5d6711-eae4-4bdc-a93d-373be80374a7": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of vsphere.resourcepool.id + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": true,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "3e494fa7-da8f-4527-a973-b963db4530f6",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "vsphere.resourcepool.name"
+                                                        ],
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "vsphere.resourcepool.id"
+                                                },
+                                                "8d520dc9-585e-4994-b724-9231c3317522": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "9785a7d1-ea3c-4238-b31e-923b4e1b4935": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"vsphere.resourcepool.cpu.usage.mhz\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "CPU usage",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "MHz"
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "vsphere.resourcepool.cpu.usage.mhz"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "emphasizeFitting": true,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "3e494fa7-da8f-4527-a973-b963db4530f6",
+                                            "9785a7d1-ea3c-4238-b31e-923b4e1b4935"
+                                        ],
+                                        "layerId": "4a4b6a4a-4c43-4fd8-9aee-48d7e50c6d53",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "splitAccessor": "7f5d6711-eae4-4bdc-a93d-373be80374a7",
+                                        "xAccessor": "8d520dc9-585e-4994-b724-9231c3317522"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 3,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "CPU"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "40097c1f-ec23-46f1-9ed4-5ccaf7279941",
+                    "w": 24,
+                    "x": 24,
+                    "y": 33
+                },
+                "panelIndex": "40097c1f-ec23-46f1-9ed4-5ccaf7279941",
+                "title": "Top resource pool CPU demand and usage (MHz)",
                 "type": "lens"
             },
             {
@@ -1266,11 +1464,11 @@
                     "h": 15,
                     "i": "8f366deb-d28b-488c-8f33-8f0041570750",
                     "w": 24,
-                    "x": 24,
-                    "y": 33
+                    "x": 0,
+                    "y": 63
                 },
                 "panelIndex": "8f366deb-d28b-488c-8f33-8f0041570750",
-                "title": "Virtual machine associated with resource pool [Metrics VSphere]",
+                "title": "Virtual machine associated with resource pool",
                 "type": "lens"
             },
             {
@@ -1502,7 +1700,7 @@
                                     "isVisible": true,
                                     "maxLines": 3,
                                     "position": "right",
-                                    "showSingleSeries": false
+                                    "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "area",
                                 "title": "Empty XY chart",
@@ -1519,11 +1717,11 @@
                     "h": 15,
                     "i": "88b05475-e0ac-466c-855a-646d1598a411",
                     "w": 24,
-                    "x": 0,
+                    "x": 24,
                     "y": 48
                 },
                 "panelIndex": "88b05475-e0ac-466c-855a-646d1598a411",
-                "title": "CPU entitlement over time [Metrics VSphere]",
+                "title": "CPU entitlement over time",
                 "type": "lens"
             },
             {
@@ -1752,7 +1950,7 @@
                                     "isVisible": true,
                                     "maxLines": 3,
                                     "position": "right",
-                                    "showSingleSeries": false
+                                    "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "area",
                                 "title": "Empty XY chart",
@@ -1769,367 +1967,20 @@
                     "h": 15,
                     "i": "c246c892-6d2c-4f79-8180-c4c606ab3376",
                     "w": 24,
-                    "x": 24,
+                    "x": 0,
                     "y": 48
                 },
                 "panelIndex": "c246c892-6d2c-4f79-8180-c4c606ab3376",
-                "title": "Memory entitlement over time [Metrics VSphere]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-4a4b6a4a-4c43-4fd8-9aee-48d7e50c6d53",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {
-                                        "4a4b6a4a-4c43-4fd8-9aee-48d7e50c6d53": {
-                                            "columnOrder": [
-                                                "7f5d6711-eae4-4bdc-a93d-373be80374a7",
-                                                "8d520dc9-585e-4994-b724-9231c3317522",
-                                                "3e494fa7-da8f-4527-a973-b963db4530f6"
-                                            ],
-                                            "columns": {
-                                                "3e494fa7-da8f-4527-a973-b963db4530f6": {
-                                                    "customLabel": false,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"vsphere.resourcepool.cpu.demand.mhz\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Last value of vsphere.resourcepool.cpu.demand.mhz",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "compact": false,
-                                                                "decimals": 0,
-                                                                "suffix": " MHz"
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "vsphere.resourcepool.cpu.demand.mhz"
-                                                },
-                                                "7f5d6711-eae4-4bdc-a93d-373be80374a7": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top values of vsphere.resourcepool.id + 1 other",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "accuracyMode": true,
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "3e494fa7-da8f-4527-a973-b963db4530f6",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "multi_terms"
-                                                        },
-                                                        "secondaryFields": [
-                                                            "vsphere.resourcepool.name"
-                                                        ],
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "vsphere.resourcepool.id"
-                                                },
-                                                "8d520dc9-585e-4994-b724-9231c3317522": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "emphasizeFitting": true,
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "3e494fa7-da8f-4527-a973-b963db4530f6"
-                                        ],
-                                        "layerId": "4a4b6a4a-4c43-4fd8-9aee-48d7e50c6d53",
-                                        "layerType": "data",
-                                        "seriesType": "area",
-                                        "splitAccessor": "7f5d6711-eae4-4bdc-a93d-373be80374a7",
-                                        "xAccessor": "8d520dc9-585e-4994-b724-9231c3317522"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 3,
-                                    "position": "right",
-                                    "showSingleSeries": false
-                                },
-                                "preferredSeriesType": "area",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "yTitle": "Resource pool CPU demand"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "40097c1f-ec23-46f1-9ed4-5ccaf7279941",
-                    "w": 24,
-                    "x": 0,
-                    "y": 63
-                },
-                "panelIndex": "40097c1f-ec23-46f1-9ed4-5ccaf7279941",
-                "title": "Top resource pool CPU demand (MHz) [Metrics VSphere]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-b9efbb76-635d-4481-8e2e-20d1c1ae59e8",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {
-                                        "b9efbb76-635d-4481-8e2e-20d1c1ae59e8": {
-                                            "columnOrder": [
-                                                "4e78eafe-d34d-4572-87a7-6adf50d3e657",
-                                                "bdc5c91c-d2bd-4a96-bafd-9eb003c44011",
-                                                "02b14bf8-4dda-4023-85d0-8447c9042c7e"
-                                            ],
-                                            "columns": {
-                                                "02b14bf8-4dda-4023-85d0-8447c9042c7e": {
-                                                    "customLabel": false,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"vsphere.resourcepool.cpu.usage.mhz\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Last value of vsphere.resourcepool.cpu.usage.mhz",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "compact": false,
-                                                                "decimals": 0,
-                                                                "suffix": " MHz"
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "vsphere.resourcepool.cpu.usage.mhz"
-                                                },
-                                                "4e78eafe-d34d-4572-87a7-6adf50d3e657": {
-                                                    "customLabel": false,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top values of vsphere.resourcepool.id + 1 other",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "accuracyMode": true,
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "02b14bf8-4dda-4023-85d0-8447c9042c7e",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "multi_terms"
-                                                        },
-                                                        "secondaryFields": [
-                                                            "vsphere.resourcepool.name"
-                                                        ],
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "vsphere.resourcepool.id"
-                                                },
-                                                "bdc5c91c-d2bd-4a96-bafd-9eb003c44011": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "emphasizeFitting": true,
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "02b14bf8-4dda-4023-85d0-8447c9042c7e"
-                                        ],
-                                        "layerId": "b9efbb76-635d-4481-8e2e-20d1c1ae59e8",
-                                        "layerType": "data",
-                                        "seriesType": "area",
-                                        "splitAccessor": "4e78eafe-d34d-4572-87a7-6adf50d3e657",
-                                        "xAccessor": "bdc5c91c-d2bd-4a96-bafd-9eb003c44011"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 3,
-                                    "position": "right",
-                                    "showSingleSeries": false
-                                },
-                                "preferredSeriesType": "area",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "yTitle": "Resource pool CPU usage"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "082c65dd-921f-4c18-853f-46e9ae52b06f",
-                    "w": 24,
-                    "x": 24,
-                    "y": 63
-                },
-                "panelIndex": "082c65dd-921f-4c18-853f-46e9ae52b06f",
-                "title": "Top resource pool CPU util (MHz) [Metrics VSphere]",
+                "title": "Memory entitlement over time",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics VSphere] Resource Pools Overview",
-        "version": 3
+        "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-11-20T08:07:15.876Z",
+    "created_at": "2024-11-29T05:02:27.986Z",
     "id": "vsphere-172ac91f-ea16-49d1-ba21-e395c8b5eff6",
     "managed": false,
     "references": [
@@ -2180,6 +2031,11 @@
         },
         {
             "id": "metrics-*",
+            "name": "40097c1f-ec23-46f1-9ed4-5ccaf7279941:indexpattern-datasource-layer-4a4b6a4a-4c43-4fd8-9aee-48d7e50c6d53",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
             "name": "8f366deb-d28b-488c-8f33-8f0041570750:indexpattern-datasource-layer-011545be-e252-4d8e-b510-9b297bacff0a",
             "type": "index-pattern"
         },
@@ -2205,26 +2061,15 @@
         },
         {
             "id": "metrics-*",
-            "name": "40097c1f-ec23-46f1-9ed4-5ccaf7279941:indexpattern-datasource-layer-4a4b6a4a-4c43-4fd8-9aee-48d7e50c6d53",
+            "name": "controlGroup_e33f20f2-8024-4b8f-9269-2fc41c79dbe5:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "082c65dd-921f-4c18-853f-46e9ae52b06f:indexpattern-datasource-layer-b9efbb76-635d-4481-8e2e-20d1c1ae59e8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "controlGroup_4d702876-f09d-474c-9c4c-0767af6904b1:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "controlGroup_92cbaeff-fcba-469d-b3a7-f36bb95b217b:optionsListDataView",
+            "name": "controlGroup_9e3d8ec8-2671-4c72-a7d5-835058716a90:optionsListDataView",
             "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.2.0"
 }
