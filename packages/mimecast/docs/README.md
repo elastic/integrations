@@ -4,10 +4,22 @@ The Mimecast integration collects events from the [Mimecast API](https://integra
 
 ## Configuration
 
+### v1 API Endpoints
+
 Authorization parameters for the Mimecast API (`Application Key`, `Application
 ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
 representative for this integration. Under `Advanced options` you can set the
 time interval between two API requests as well as the API URL. A Mimecast
+representative should also be able to give you this information in case you need
+to change the defaults.
+
+> Note: Rate limit quotas may require you to set up different credentials for the different available log types.
+
+### v2 API Endpoints
+
+Authorization parameters for the Mimecast API (`Client ID` and `Client Key`) should
+be provided by a Mimecast representative for this integration. Under `Advanced options`
+you can set the time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need
 to change the defaults.
 
@@ -49,9 +61,6 @@ An example event for `archive_search` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": [
-            "api"
-        ],
         "created": "2024-11-12T16:21:27.000Z",
         "dataset": "mimecast.archive_search_logs",
         "ingested": "2024-11-21T02:02:20Z",
@@ -96,6 +105,7 @@ An example event for `archive_search` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -194,6 +204,7 @@ An example event for `audit_events` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -350,9 +361,6 @@ An example event for `message_release` looks as following:
     "event": {
         "action": "rejected",
         "agent_id_status": "verified",
-        "category": [
-            "email"
-        ],
         "dataset": "mimecast.message_release_logs",
         "id": "eNoNjt0KgjAYQN9ltwlNMVZBF...",
         "ingested": "2024-11-21T02:12:00Z",
@@ -486,6 +494,7 @@ An example event for `message_release` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -995,6 +1004,7 @@ An example event for `ttp_ap` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1118,6 +1128,7 @@ An example event for `ttp_ip` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1247,6 +1258,7 @@ An example event for `ttp_url` looks as following:
             "54.243.138.179"
         ],
         "user": [
+            "gregoryhunt@thejunglegroup.b41.one",
             "mike.a.roberts@demo-int.elastic.mime-api.com"
         ]
     },
@@ -1262,7 +1274,11 @@ An example event for `ttp_url` looks as following:
         "mimecast-ttp-url"
     ],
     "url": {
-        "original": "https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe"
+        "domain": "oneclient.sfx.ms",
+        "extension": "exe",
+        "original": "https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe",
+        "path": "/Win/Preview/OneDriveSetup.exe",
+        "scheme": "https"
     },
     "user": {
         "email": [
@@ -1281,6 +1297,7 @@ An example event for `ttp_url` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
