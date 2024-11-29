@@ -4,16 +4,16 @@
 
 [ServiceNow](https://www.servicenow.com/?state=seamless) is a cloud-based platform that helps organizations improve their workflows and business processes, mainly in IT service management. It offers features like workflow automation, a self-service portal for users, integration with other systems, and helpful reporting tools.
 
-ServiceNow uses tables to store data, making it easy to manage and retrieve information. A key part of the platform is the [Configuration Management Database](https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html) (CMDB), which keeps track of IT assets and how they are connected. This helps organizations monitor changes, manage configurations, and ensure reliable services. Overall, ServiceNow boosts efficiency, visibility, and user satisfaction, making it a popular choice for various industries.
+ServiceNow uses tables to store data, making it easy to manage and retrieve information. A key part of the platform is the [Configuration Management Database](https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html) (CMDB), which keeps track of IT assets and how they are connected.
 
 The ServiceNow integration can be used in three different modes to collect logs:
-- AWS S3 polling mode: ServiceNow writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files. Refer to the [ServiceNow documentation](https://www.servicenow.com/community/now-platform-forum/aws-s3-integration-with-servicenow/td-p/1121852) for how to integrate AWS S3 with ServiceNow for retrieving logs into an S3 bucket.
-- AWS S3 SQS mode: ServiceNow writes data to S3; S3 sends a notification of a new object to SQS; the Elastic Agent receives the notification from SQS and then reads the S3 object. Multiple agents can be used in this mode.
-- REST API mode: ServiceNow offers table APIs to retrieve data from its tables; the Elastic Agent polls these APIs to list their contents and read any new data. Visit this [page](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET) for additional information about REST APIs.
+- **AWS S3 polling mode**: ServiceNow writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files. Refer to the [ServiceNow documentation](https://www.servicenow.com/community/now-platform-forum/aws-s3-integration-with-servicenow/td-p/1121852) for how to integrate AWS S3 with ServiceNow for retrieving logs into an S3 bucket.
+- **AWS S3 SQS mode**: ServiceNow writes data to S3; S3 sends a notification of a new object to SQS; the Elastic Agent receives the notification from SQS and then reads the S3 object. Multiple agents can be used in this mode.
+- **REST API mode**: ServiceNow offers table APIs to retrieve data from its tables; the Elastic Agent polls these APIs to list their contents and read any new data. Visit this [page](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET) for additional information about REST APIs.
 
 ## Compatibility
 
-This module has been tested against the latest (updated Aug 1, 2024) ServiceNow API.
+This module has been tested with the latest(updated as of August 1, 2024) version of Xanadu on ServiceNow.
 
 ## Data streams
 
@@ -55,7 +55,7 @@ Below is a list of the default ones.
 **Note**:
 
 1. This integration currently supports ECS mapping for default ServiceNow tables listed above. For custom tables created by users, ECS mapping is not automatically provided. If you want to add mappings for custom tables, please refer to this [tutorial guide](https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
-2. For each table, a tag will be added based on the name of the table from which data is fetched.
+2. A tag will be added to each table based on its name. For example, if logs are ingested from the `alm_hardware` table, users can view them in Discover by using the query `tags: "alm_hardware"`.
 
 ## Requirements
 
@@ -114,27 +114,34 @@ There are some minimum requirements for running Elastic Agent. For more informat
 3. Click on the "ServiceNow" integration from the search results.
 4. Click on the "Add ServiceNow" button to add the integration.
 5. While adding the integration, if you want to collect logs via REST API, then you have to put the following details:
+   - collect logs via REST API toggled on
    - API URL
    - username
    - password
    - table name
+   - timestamp field
    - timezone
-   - collect logs via REST API toggled on
 
    or if you want to collect logs via AWS S3, then you have to put the following details:
+   - collect logs via S3 Bucket toggled on
    - access key id
    - secret access key
    - bucket arn
+   - table name
+   - timestamp field
    - timezone
-   - collect logs via S3 Bucket toggled on
 
    or if you want to collect logs via AWS SQS, then you have to put the following details:
+   - collect logs via S3 Bucket toggled off
    - access key id
    - secret access key
    - queue url
+   - table name
+   - timestamp field
    - timezone
-   - collect logs via S3 Bucket toggled off
 6. Click on "Save and Continue" to save the integration.
+
+**Note**: To fetch parquet file data, enable the toggle, `Parquet Codec`
 
 ## Logs Reference
 
@@ -150,22 +157,22 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-09-24T05:39:40.000Z",
     "agent": {
-        "ephemeral_id": "aba7282e-8755-44b7-bf51-aab726b3bb4d",
-        "id": "243ebe11-4a3c-4c33-8b0b-2df4c8097581",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "dbb2059a-3aaa-4bcb-abd4-7685e8b9f7e5",
+        "id": "9fef3fff-5365-4b70-a28a-260b4fdeffac",
+        "name": "elastic-agent-99156",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "servicenow.event",
-        "namespace": "38350",
+        "namespace": "62419",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "243ebe11-4a3c-4c33-8b0b-2df4c8097581",
+        "id": "9fef3fff-5365-4b70-a28a-260b4fdeffac",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -178,7 +185,7 @@ An example event for `event` looks as following:
         "created": "2016-12-12T15:19:57.000Z",
         "dataset": "servicenow.event",
         "id": "1c741bd70b2322007518478d83673af3",
-        "ingested": "2024-11-01T08:19:10Z",
+        "ingested": "2024-11-27T06:15:07Z",
         "kind": "event",
         "severity": 3,
         "timezone": "America/Los_Angeles",
@@ -252,8 +259,10 @@ An example event for `event` looks as following:
                 "value": "admin"
             },
             "sys_updated_on": {
-                "display_value": "2024-09-23T22:39:40.000-07:00"
-            }
+                "display_value": "2024-09-23T22:39:40.000-07:00",
+                "value": "2024-09-24T05:39:40.000Z"
+            },
+            "table_name": "incident"
         }
     },
     "tags": [
@@ -1148,6 +1157,7 @@ An example event for `event` looks as following:
 | servicenow.event.sys_updated_on.value |  | date |
 | servicenow.event.sys_view_count.display_value |  | keyword |
 | servicenow.event.sys_view_count.value |  | long |
+| servicenow.event.table_name |  | keyword |
 | servicenow.event.task.display_value |  | keyword |
 | servicenow.event.task.value |  | keyword |
 | servicenow.event.task_effective_number.display_value |  | keyword |

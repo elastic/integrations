@@ -31,6 +31,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_search_timestamp_field
+      description: Script to search timestamp field
+      if: ctx.servicenow?.event != null
+      source: >-
+        def obj = ctx.servicenow.event;
+        if (obj.containsKey(ctx._conf.timestamp_field)) {
+            ctx.servicenow.event.timestamp_field = obj.get(ctx._conf.timestamp_field);
+        }
   - rename:
       field: _conf.table_name
       tag: rename_table_name
@@ -40,7 +50,7 @@ processors:
   - fingerprint:
       fields:
         - servicenow.event.sys_id.value
-        - servicenow.event.sys_updated_on.value
+        - servicenow.event.timestamp_field.value
         - servicenow.event.table_name
       target_field: _id
       ignore_missing: true
@@ -2866,8 +2876,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_event_sys_updated_on_value
-      copy_from: servicenow.event.sys_updated_on.value
+      tag: set_@timestamp_from_event_timestamp_field_value
+      copy_from: servicenow.event.timestamp_field.value
       ignore_empty_value: true
   - convert:
       field: servicenow.event.port.value
@@ -3217,10 +3227,6 @@ processors:
       if: ctx.servicenow?.event?.table_name == 'task_ci'
   - remove:
       field:
-        - _conf.table_name
-      ignore_missing: true
-  - remove:
-      field:
         - servicenow.event.asset.display_value
         - servicenow.event.city.display_value
         - servicenow.event.company.display_value
@@ -3244,7 +3250,6 @@ processors:
         - servicenow.event.sys_created_on.value
         - servicenow.event.sys_id.display_value
         - servicenow.event.sys_tags.display_value
-        - servicenow.event.sys_updated_on.value
         - servicenow.event.time_zone.display_value
         - servicenow.event.dept_head.display_value
         - servicenow.event.severity.value
@@ -3256,8 +3261,10 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
-      field: servicenow.event.table_name
-      tag: remove_event_table_name
+      field:
+        - _conf.timestamp_field
+        - servicenow.event.timestamp_field
+      tag: remove_non_required_fields
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values

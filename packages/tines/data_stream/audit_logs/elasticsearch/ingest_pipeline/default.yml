@@ -113,6 +113,52 @@ processors:
       field: tines.audit_log.request_user_agent
       ignore_missing: true
       ignore_failure: true
+  ### extraneous type assertions
+  - convert:
+      tag: convert_field_id_long
+      field: tines.audit_log.inputs.fieldId
+      type: long
+      if: ctx.tines?.audit_log?.inputs?.fieldId != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: tines.audit_log.inputs.fieldId
+            ignore_failure: true
+  - convert:
+      tag: convert_field_id_long
+      field: tines.audit_log.inputs.inputs.multiSelect
+      type: boolean
+      if: ctx.tines?.audit_log?.inputs?.inputs?.multiSelect != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: tines.audit_log.inputs.inputs.multiSelect
+            ignore_failure: true
+  - convert:
+      tag: convert_field_id_long
+      field: tines.audit_log.inputs.inputs.required
+      type: boolean
+      if: ctx.tines?.audit_log?.inputs?.inputs?.required != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: tines.audit_log.inputs.inputs.required
+            ignore_failure: true
   ### cleanup
   - script:
       description: Drops null/empty values recursively.

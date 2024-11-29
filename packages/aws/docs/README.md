@@ -64,6 +64,9 @@ You can further utilize `owning_account` parameter to refine the cross account o
 If configured, metrics will be extracted from this specified linked/owning account.
 This parameter [utilize OwningAccount](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_ListMetrics.html#API_ListMetrics_RequestParameters) parameter of the ListMetrics API request.
 
+For logs, integration supports monitoring log groups from linked accounts when log groups are extracted using `log_group_name_prefix` option.
+You can enable `include_linked_accounts_for_prefix_mode` to include log groups from linked accounts. This is disabled by default.
+
 *_Note_:* Users should ensure that the necessary IAM roles and policies are properly set up in order to link the monitoring
 account and source accounts together. 
 Please see [Link monitoring accounts with source accounts](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Unified-Cross-Account-Setup.html#CloudWatch-Unified-Cross-Account-Setup-permissions) for more details.
@@ -168,6 +171,7 @@ make sure these permissions are given:
 * `ec2:DescribeInstances`
 * `ec2:DescribeRegions`
 * `iam:ListAccountAliases`
+* `inspector2:ListFindings`
 * `logs:DescribeLogGroups`
 * `logs:FilterLogEvents`
 * `organizations:ListAccounts`
