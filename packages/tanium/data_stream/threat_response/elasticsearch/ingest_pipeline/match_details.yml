@@ -1,28 +1,28 @@
 ---
-description: Pipeline for processing other payload field in events log of threat response.
+description: Pipeline for processing match details in threat response.
 processors:
   - rename:
-      tag: rename_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_file_fullpath
+      tag: rename_tanium_threat_response_match_details_match_properties_file_fullpath
       field: tanium.threat_response.match_details.match.properties.file.fullpath
       target_field: tanium.threat_response.match_details.match.properties.file.full_path
       ignore_missing: true
   - rename:
-      tag: rename_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_parent_file_fullpath
+      tag: rename_tanium_threat_response_match_details_match_properties_parent_file_fullpath
       field: tanium.threat_response.match_details.match.properties.parent.file.fullpath
       target_field: tanium.threat_response.match_details.match.properties.parent.file.full_path
       ignore_missing: true
   - rename:
-      tag: rename_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_finding_id
+      tag: rename_tanium_threat_response_match_details_finding_finding_id
       field: tanium.threat_response.match_details.finding.finding_id
       target_field: tanium.threat_response.match_details.finding.id
       ignore_missing: true
   - rename:
-      tag: rename_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_parent_parent_file_fullpath
+      tag: rename_tanium_threat_response_match_details_match_properties_parent_parent_file_fullpath
       field: tanium.threat_response.match_details.match.properties.parent.parent.file.fullpath
       target_field: tanium.threat_response.match_details.match.properties.parent.parent.file.full_path
       ignore_missing: true
   - grok:
-      tag: grok_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_system_info_os
+      tag: grok_tanium_threat_response_match_details_finding_system_info_os
       field: tanium.threat_response.match_details.finding.system_info.os
       patterns:
         - "^%{DATA:tanium.threat_response.match_details.finding.system_info.os_platform} %{GREEDYDATA:tanium.threat_response.match_details.finding.system_info.os_version}$"
@@ -34,12 +34,12 @@ processors:
             allow_duplicates: false
       ignore_missing: true
   - rename:
-      tag: rename_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_system_info_os
+      tag: rename_tanium_threat_response_match_details_finding_system_info_os
       field: tanium.threat_response.match_details.finding.system_info.os
       target_field: tanium.threat_response.match_details.finding.system_info.os.value
       ignore_missing: true
   - rename:
-      tag: rename_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_system_info_os_platform
+      tag: rename_tanium_threat_response_match_details_finding_system_info_os_platform
       field: tanium.threat_response.match_details.finding.system_info.os_platform
       target_field: tanium.threat_response.match_details.finding.system_info.os.platform
       ignore_missing: true
@@ -49,7 +49,7 @@ processors:
       copy_from: tanium.threat_response.match_details.finding.system_info.os.platform
       ignore_empty_value: true
   - rename:
-      tag: rename_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_system_info_os_version
+      tag: rename_tanium_threat_response_match_details_finding_system_info_os_version
       field: tanium.threat_response.match_details.finding.system_info.os_version
       target_field: tanium.threat_response.match_details.finding.system_info.os.version
       ignore_missing: true
@@ -59,7 +59,7 @@ processors:
       copy_from: tanium.threat_response.match_details.finding.system_info.os.version
       ignore_empty_value: true
   - lowercase:
-      tag: lowercase_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_system_info_platform
+      tag: lowercase_tanium_threat_response_match_details_finding_system_info_platform
       field: tanium.threat_response.match_details.finding.system_info.platform
       ignore_missing: true
   - set:
@@ -68,7 +68,7 @@ processors:
       copy_from: tanium.threat_response.match_details.finding.system_info.platform
       ignore_empty_value: true
   - convert:
-      tag: convert_tanium_threat_response_other_parameters_log_details_payload_decoded_config_id
+      tag: convert_tanium_threat_response_match_details_config_id
       field: tanium.threat_response.match_details.config_id
       type: string
       ignore_missing: true
@@ -79,7 +79,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_tanium_threat_response_other_parameters_log_details_payload_decoded_config_rev_id
+      tag: convert_tanium_threat_response_match_details_config_rev_id
       field: tanium.threat_response.match_details.config_rev_id
       type: string
       ignore_missing: true
@@ -90,7 +90,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_system_info_bits
+      tag: convert_tanium_threat_response_match_details_finding_system_info_bits
       field: tanium.threat_response.match_details.finding.system_info.bits
       type: long
       ignore_missing: true
@@ -101,7 +101,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats
+      tag: foreach_tanium_threat_response_match_details_finding_whats
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -111,7 +111,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.user.domain
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_2
+      tag: foreach_tanium_threat_response_match_details_finding_whats_2
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -121,7 +121,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.user.name
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_3
+      tag: foreach_tanium_threat_response_match_details_finding_whats_3
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -131,7 +131,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.user.id
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_4
+      tag: foreach_tanium_threat_response_match_details_finding_whats_4
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -141,7 +141,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.user.domain
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_5
+      tag: foreach_tanium_threat_response_match_details_finding_whats_5
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -151,7 +151,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.user.name
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_6
+      tag: foreach_tanium_threat_response_match_details_finding_whats_6
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -161,7 +161,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.user.id
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_7
+      tag: foreach_tanium_threat_response_match_details_finding_whats_7
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -171,7 +171,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.user.domain
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_8
+      tag: foreach_tanium_threat_response_match_details_finding_whats_8
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -181,7 +181,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.user.group_id
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_9
+      tag: foreach_tanium_threat_response_match_details_finding_whats_9
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -191,7 +191,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.user.name
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_10
+      tag: foreach_tanium_threat_response_match_details_finding_whats_10
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -201,7 +201,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.user.id
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_11
+      tag: foreach_tanium_threat_response_match_details_finding_whats_11
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -211,7 +211,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.file.path
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_12
+      tag: foreach_tanium_threat_response_match_details_finding_whats_12
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -221,7 +221,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.file.path
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_13
+      tag: foreach_tanium_threat_response_match_details_finding_whats_13
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -231,7 +231,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.file.hash.md5
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_14
+      tag: foreach_tanium_threat_response_match_details_finding_whats_14
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -241,7 +241,7 @@ processors:
           target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.file.path
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_match_contexts
+      tag: foreach_tanium_threat_response_match_details_match_contexts
       field: tanium.threat_response.match_details.match.contexts
       if: ctx.tanium?.threat_response?.match_details?.match?.contexts instanceof List
       processor:
@@ -251,7 +251,7 @@ processors:
           target_field: _ingest._value.file.unique_event_id
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_match_contexts_2
+      tag: foreach_tanium_threat_response_match_details_match_contexts_2
       field: tanium.threat_response.match_details.match.contexts
       if: ctx.tanium?.threat_response?.match_details?.match?.contexts instanceof List
       processor:
@@ -261,7 +261,7 @@ processors:
           target_field: _ingest._value.event.file_create.path
           ignore_missing: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_15
+      tag: foreach_tanium_threat_response_match_details_finding_whats_15
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -276,7 +276,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_16
+      tag: foreach_tanium_threat_response_match_details_finding_whats_16
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -291,7 +291,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_17
+      tag: foreach_tanium_threat_response_match_details_finding_whats_17
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -306,7 +306,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_18
+      tag: foreach_tanium_threat_response_match_details_finding_whats_18
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -321,14 +321,16 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
   - foreach:
+      tag: foreach_tanium_threat_response_match_details_finding_whats_19
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_intel_intra_ids
           field: _ingest._value.intel_intra_ids
           processor:
             convert:
-              tag: convert_ingest_value_intel_intra_ids_id
+              tag: convert_ingest_value_id
               field: _ingest._value.id
               type: string
               ignore_missing: true
@@ -338,7 +340,7 @@ processors:
                     value: '{{{_ingest.on_failure_message}}}'
                     allow_duplicates: false
   - convert:
-      tag: convert_tanium_threat_response_other_parameters_log_details_payload_decoded_intel_id
+      tag: convert_tanium_threat_response_match_details_intel_id
       field: tanium.threat_response.match_details.intel_id
       type: string
       ignore_missing: true
@@ -349,7 +351,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_parent_parent_pid
+      tag: convert_tanium_threat_response_match_details_match_properties_parent_parent_pid
       field: tanium.threat_response.match_details.match.properties.parent.parent.pid
       type: string
       ignore_missing: true
@@ -360,7 +362,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_parent_pid
+      tag: convert_tanium_threat_response_match_details_match_properties_parent_pid
       field: tanium.threat_response.match_details.match.properties.parent.pid
       type: string
       ignore_missing: true
@@ -371,7 +373,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_parent_ppid
+      tag: convert_tanium_threat_response_match_details_match_properties_parent_ppid
       field: tanium.threat_response.match_details.match.properties.parent.ppid
       type: string
       ignore_missing: true
@@ -382,7 +384,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_pid
+      tag: convert_tanium_threat_response_match_details_match_properties_pid
       field: tanium.threat_response.match_details.match.properties.pid
       type: string
       ignore_missing: true
@@ -393,7 +395,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
-      tag: convert_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_ppid
+      tag: convert_tanium_threat_response_match_details_match_properties_ppid
       field: tanium.threat_response.match_details.match.properties.ppid
       type: string
       ignore_missing: true
@@ -404,7 +406,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - date:
-      tag: date_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_first_seen
+      tag: date_tanium_threat_response_match_details_finding_first_seen
       field: tanium.threat_response.match_details.finding.first_seen
       target_field: tanium.threat_response.match_details.finding.first_seen
       if: ctx.tanium?.threat_response?.match_details?.finding?.first_seen != null
@@ -416,7 +418,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - date:
-      tag: date_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_last_seen
+      tag: date_tanium_threat_response_match_details_finding_last_seen
       field: tanium.threat_response.match_details.finding.last_seen
       target_field: tanium.threat_response.match_details.finding.last_seen
       if: ctx.tanium?.threat_response?.match_details?.finding?.last_seen != null
@@ -428,7 +430,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_20
+      tag: foreach_tanium_threat_response_match_details_finding_whats_20
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -444,7 +446,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_21
+      tag: foreach_tanium_threat_response_match_details_finding_whats_21
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -460,7 +462,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_22
+      tag: foreach_tanium_threat_response_match_details_finding_whats_22
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -476,7 +478,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_23
+      tag: foreach_tanium_threat_response_match_details_finding_whats_23
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -496,7 +498,7 @@ processors:
                     value: '{{{_ingest.on_failure_message}}}'
                     allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_24
+      tag: foreach_tanium_threat_response_match_details_finding_whats_24
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -516,7 +518,7 @@ processors:
                     value: '{{{_ingest.on_failure_message}}}'
                     allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_25
+      tag: foreach_tanium_threat_response_match_details_finding_whats_25
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -536,7 +538,7 @@ processors:
                     value: '{{{_ingest.on_failure_message}}}'
                     allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_match_contexts_3
+      tag: foreach_tanium_threat_response_match_details_match_contexts_3
       field: tanium.threat_response.match_details.match.contexts
       if: ctx.tanium?.threat_response?.match_details?.match?.contexts instanceof List
       processor:
@@ -552,7 +554,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
   - date:
-      tag: date_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_parent_parent_start_time
+      tag: date_tanium_threat_response_match_details_match_properties_parent_parent_start_time
       field: tanium.threat_response.match_details.match.properties.parent.parent.start_time
       target_field: tanium.threat_response.match_details.match.properties.parent.parent.start_time
       if: ctx.tanium?.threat_response?.match_details?.match?.properties?.parent?.parent?.start_time != null
@@ -564,7 +566,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - date:
-      tag: date_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_parent_start_time
+      tag: date_tanium_threat_response_match_details_match_properties_parent_start_time
       field: tanium.threat_response.match_details.match.properties.parent.start_time
       target_field: tanium.threat_response.match_details.match.properties.parent.start_time
       if: ctx.tanium?.threat_response?.match_details?.match?.properties?.parent?.start_time != null
@@ -576,7 +578,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - date:
-      tag: date_tanium_threat_response_other_parameters_log_details_payload_decoded_match_properties_start_time
+      tag: date_tanium_threat_response_match_details_match_properties_start_time
       field: tanium.threat_response.match_details.match.properties.start_time
       target_field: tanium.threat_response.match_details.match.properties.start_time
       if: ctx.tanium?.threat_response?.match_details?.match?.properties?.start_time != null
@@ -588,7 +590,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_26
+      tag: foreach_tanium_threat_response_match_details_finding_whats_26
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -610,7 +612,7 @@ processors:
                     value: '{{{_ingest.on_failure_message}}}'
                     allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_27
+      tag: foreach_tanium_threat_response_match_details_finding_whats_27
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -631,7 +633,7 @@ processors:
                     value: '{{{_ingest.on_failure_message}}}'
                     allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_28
+      tag: foreach_tanium_threat_response_match_details_finding_whats_28
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -652,7 +654,7 @@ processors:
                     value: '{{{_ingest.on_failure_message}}}'
                     allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_29
+      tag: foreach_tanium_threat_response_match_details_finding_whats_29
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -667,7 +669,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
                 allow_duplicates: false
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_30
+      tag: foreach_tanium_threat_response_match_details_finding_whats_30
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -682,7 +684,7 @@ processors:
               allow_duplicates: false
               ignore_failure: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_31
+      tag: foreach_tanium_threat_response_match_details_finding_whats_31
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -697,7 +699,7 @@ processors:
               allow_duplicates: false
               ignore_failure: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_32
+      tag: foreach_tanium_threat_response_match_details_finding_whats_32
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -712,7 +714,7 @@ processors:
               allow_duplicates: false
               ignore_failure: true
   - foreach:
-      tag: foreach_tanium_threat_response_other_parameters_log_details_payload_decoded_finding_whats_33
+      tag: foreach_tanium_threat_response_match_details_finding_whats_33
       field: tanium.threat_response.match_details.finding.whats
       if: ctx.tanium?.threat_response?.match_details?.finding?.whats instanceof List
       processor:
@@ -761,9 +763,11 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

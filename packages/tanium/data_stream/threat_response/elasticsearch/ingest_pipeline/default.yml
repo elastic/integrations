@@ -342,7 +342,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - json:
-      tag: json_tanium_threat_response_other_parameters_log_details_payload_decoded
+      tag: json_tanium_threat_response_other_parameters_payload_json
       field: tanium.threat_response.other_parameters.payload_json
       target_field: tanium.threat_response.match_details
       if: ctx.tanium.threat_response.other_parameters?.payload_json instanceof String
@@ -423,9 +423,11 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"
