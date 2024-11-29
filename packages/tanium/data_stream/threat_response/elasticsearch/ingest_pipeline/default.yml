@@ -316,15 +316,12 @@ processors:
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
-  - rename:
-      tag: rename_json_other_parameters
-      field: json.Other Parameters
-      target_field: tanium.threat_response.other_parameters.original
-      ignore_missing: true
+
+  # Parse 'Other Parameters', decode any payload value and store it as match details data
   - kv:
-      tag: kv_tanium_threat_response_other_parameters_original
-      field: tanium.threat_response.other_parameters.original
-      target_field: tanium.threat_response.other_parameters.log_details
+      tag: kv_json_other_parameters
+      field: json.Other Parameters
+      target_field: tanium.threat_response.other_parameters
       field_split: "\\|"
       value_split: "="
       ignore_missing: true
@@ -333,10 +330,49 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
+  - script:
+      tag: script_decode_base64_json_field
+      description: Decode base64 json field.
+      lang: painless
+      if: ctx.tanium.threat_response.other_parameters?.payload != null
+      source: ctx.tanium.threat_response.other_parameters.payload_json = ctx.tanium.threat_response.other_parameters.payload.decodeBase64()
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - json:
+      tag: json_tanium_threat_response_other_parameters_log_details_payload_decoded
+      field: tanium.threat_response.other_parameters.payload_json
+      target_field: tanium.threat_response.match_details
+      if: ctx.tanium.threat_response.other_parameters?.payload_json instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - remove:
+      field:
+        - tanium.threat_response.other_parameters.payload
+        - tanium.threat_response.other_parameters.payload_json
+      ignore_missing: true
+
+  # Add the data from the Match Details column to any other match details data
+  - script:
+      tag: script_handle_match_details_content_the_same_as_when_it_appears_in_an_encoded_payload
+      description: Handle 'Match Details' content the same as when it appears in an encoded payload.
+      lang: painless
+      if: ctx.json['Match Details'] instanceof Map
+      source: |
+        if (ctx.tanium.threat_response.match_details == null) ctx.tanium.threat_response.match_details = [:];
+        ctx.tanium.threat_response.match_details.putAll(ctx.json['Match Details']);
+
+  # Process match details data
   - pipeline:
       tag: pipeline_payload
       name: '{{ IngestPipeline "pipeline_payload" }}'
-      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload != null || ctx.json['Match Details'] instanceof Map
+      if: ctx.tanium?.threat_response?.match_details instanceof Map
+
   - append:
       tag: append_event_kind_pipeline_error_if_error_message
       field: event.kind
