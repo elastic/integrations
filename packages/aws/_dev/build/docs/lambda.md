@@ -19,7 +19,13 @@ See more details in the [Metrics reference](#metrics-reference).
 
 ## Event Source Mapping Metrics
 
-This integration can also collect Event Source Mapping metrics. Event Source Mapping metrics track how your Lambda function processes records from event sources (like Amazon SQS, DynamoDB, or Kinesis). These metrics are collected when you set up an Event Source Mapping (trigger) for your Lambda function if you enable the __Enable metrics__ option. Enabling this feature incurs additional costs.
+This integration can also collect Event Source Mapping (ESM) metrics, which track how your Lambda function processes records from event sources like Amazon SQS, DynamoDB, or Kinesis. 
+
+To collect these metrics, you must:  
+1. Enable Event Source Mapping for your Lambda function by following the steps outlined in the [AWS documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.html#event-source-mapping-metrics).  
+2. Enable the configuration flag `Collect Event Source Mapping metrics`.  
+
+**Note:** Enabling this feature may incur additional costs.
 
 Important notes:
 - Metrics are only available when your Event Source Mapping is active and __Enable metrics__ is selected.
