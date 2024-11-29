@@ -1,14 +1,7 @@
 # Endace
 
-Endace provides always-on hybrid cloud packet capture, delivering hard evidence
-to combat cybersecurity threats and proactively resolve network and IT problems.
-This integration allows users to ingest Network flow data from either EndaceFlow
-via syslog input or using Elastic Agent to generate and ship NetFlow data to
-an Elastic deployment. Both methods add the `event.reference` field to
-each event when ingested into Elasticsearch.  This field provides a clickable
-URL that will pivot users into a pre-populated EndaceVision Investigation,
-which enables rapid search and drill down into the estate-wide packet level
-history relevant to the event under investigation.
+Endace is a company known for its network recording, traffic capture, and analysis technology. Endace's solutions are often used for network security, performance monitoring, and troubleshooting.
+This integration allows users to ingest Network flow data from either Endace Flow via syslog input or use Elastic Agent to generate and ship Network Flow data to an Elastic deployment. Both of these methods add the `event.reference` field to each event when ingested into Elasticsearch which is a URL used to pivot to Endace.   
 
 
 ## Additional Setup
@@ -43,19 +36,17 @@ POST kbn:/api/kibana/settings
 
 ## Integration Variables
 #### `endace_url`
-The base URL for the target EndaceProbe to pivot to.  Use an
-InvestigationManager for estate-wide searches. Example: https://myvprobe.com
+The base URL for Endace UI. Example: https://myvprobe.com
 
 #### `endace_datasources`
-The Data Source within Endace to pivot to. Example: tag:rotation-file
+The datasource within Endace to pivot to. Example: tag:rotation-file
 
 #### `endace_tools`
-The default investigation tools to include in the EndaceVision Investigation. Example:
-trafficOverTime_by_app,conversations_by_ipaddress
+The tools to use within the Endace Pivot. Example: trafficOverTime_by_app,conversations_by_ipaddress
+
 
 #### `endace_view_window`
-The size of the search window in minutes centered on the event time.  The
-default is 10m, resulting in a search from 5m before to 5m after the event.
+The size of the search window in minutes centered on the event time. The default is 10m, resulting in a search from 5m before to 5m after the event.
 
 ## Endace Flow
 #### `map_to_ecs`
@@ -75,7 +66,7 @@ making the change. Users who need to retain data collected with the legacy
 mappings may need to re-index their older documents. Instructions for doing
 this are available [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
 The pipeline used to perform ECS remapping for each data stream can be found
-in `Stack Management``Ingest Pipelines` and searching for
+in `Stack Management`›`Ingest Pipelines` and and searching for
 "logs-network_traffic compatibility".
 
 The deprecation and retirement timeline for legacy behavior is available
@@ -96,7 +87,7 @@ Exception: For ICMP the option `enabled` has to be used instead.
 The ports where Network Packet Capture will look to capture traffic for specific
 protocols. Network Packet Capture installs a
 [BPF](https://en.wikipedia.org/wiki/Berkeley_Packet_Filter) filter based
-on the ports specified in this section. If a packet doesn't match the
+on the ports specified in this section. If a packet doesn’t match the
 filter, very little CPU is required to discard the packet. Network Packet Capture
 also uses the ports specified here to determine which parser to use for
 each packet.
