@@ -24,7 +24,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ### Setup
 
-For step-by-step instructions on how to set up an integration, see the
+For step-by-step instructions on how to set up an integration, check the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 ### WAF Events
