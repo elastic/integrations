@@ -7,14 +7,14 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   crowdstrike-streaming:
-    image: golang:1.23-alpine
-    hostname: crowdstrike
-    working_dir: /app
-    volumes:
-      - ./sample_logs:/sample_logs:ro
-      - ./streaming-mock-service:/app
+    image: docker.elastic.co/observability/stream:v0.17.1
     ports:
-      - "8090:8090"
+      - 8080
+    volumes:
+      - ./files:/files:ro
     environment:
-      PORT: '8090'
-    command: ["go", "run", "main.go", "--client_id", "xxxx", "--client_secret", "xxxx", "--access_token", "abcd", "--session_token", "xyz", "--file", "/sample_logs/falcon-event-stream.log", "--mock_datafeed_url", "http://svc-crowdstrike-streaming:8090/events"]
+      PORT: 8080
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/files/config.yml
