@@ -712,18 +712,22 @@
                                                 "537d8f07-0a3c-440b-81f7-c357e525c6c5": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"gpu.utilization\": *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "GPU Utilization",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 1,
                                                                 "suffix": "%"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gpu.utilization"
@@ -758,7 +762,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats"
+                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats and gpu.utilization:*"
                             },
                             "visualization": {
                                 "labelMajorMode": "auto",
@@ -801,7 +805,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "3a6cbb5a-de88-4c00-92b1-7082af725a29": {
                                             "columnOrder": [
@@ -853,7 +856,7 @@
                                                                 "suffix": "%"
                                                             }
                                                         },
-                                                        "formula": "max(gpu.framebuffer.size.used)/(max(gpu.framebuffer.size.free)+max(gpu.framebuffer.size.used))\n",
+                                                        "formula": "last_value(gpu.framebuffer.size.used)/(last_value(gpu.framebuffer.size.free)+last_value(gpu.framebuffer.size.used))\n",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -864,11 +867,15 @@
                                                 "537d8f07-0a3c-440b-81f7-c357e525c6c5X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"gpu.framebuffer.size.used\": *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of Memory Utilization",
-                                                    "operationType": "max",
+                                                    "label": "Part of Framebuffer Utilization (Memory)",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gpu.framebuffer.size.used"
@@ -876,11 +883,15 @@
                                                 "537d8f07-0a3c-440b-81f7-c357e525c6c5X1": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"gpu.framebuffer.size.free\": *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of Memory Utilization",
-                                                    "operationType": "max",
+                                                    "label": "Part of Framebuffer Utilization (Memory)",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gpu.framebuffer.size.free"
@@ -888,11 +899,15 @@
                                                 "537d8f07-0a3c-440b-81f7-c357e525c6c5X2": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"gpu.framebuffer.size.used\": *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of Memory Utilization",
-                                                    "operationType": "max",
+                                                    "label": "Part of Framebuffer Utilization (Memory)",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gpu.framebuffer.size.used"
@@ -901,7 +916,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Memory Utilization",
+                                                    "label": "Part of Framebuffer Utilization (Memory)",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -913,20 +928,20 @@
                                                                         "537d8f07-0a3c-440b-81f7-c357e525c6c5X2"
                                                                     ],
                                                                     "location": {
-                                                                        "max": 93,
-                                                                        "min": 32
+                                                                        "max": 114,
+                                                                        "min": 39
                                                                     },
                                                                     "name": "add",
-                                                                    "text": "max(gpu.framebuffer.size.free)+max(gpu.framebuffer.size.used)",
+                                                                    "text": "last_value(gpu.framebuffer.size.free)+last_value(gpu.framebuffer.size.used)",
                                                                     "type": "function"
                                                                 }
                                                             ],
                                                             "location": {
-                                                                "max": 95,
+                                                                "max": 116,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "max(gpu.framebuffer.size.used)/(max(gpu.framebuffer.size.free)+max(gpu.framebuffer.size.used))\n",
+                                                            "text": "last_value(gpu.framebuffer.size.used)/(last_value(gpu.framebuffer.size.free)+last_value(gpu.framebuffer.size.used))\n",
                                                             "type": "function"
                                                         }
                                                     },
@@ -952,7 +967,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -968,7 +982,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats"
+                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats and gpu.utilization:*"
                             },
                             "visualization": {
                                 "labelMajorMode": "auto",
@@ -1011,7 +1025,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "3a6cbb5a-de88-4c00-92b1-7082af725a29": {
                                             "columnOrder": [
@@ -1048,18 +1061,22 @@
                                                 "537d8f07-0a3c-440b-81f7-c357e525c6c5": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"gpu.encoder.utilization\": *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Encoder Utilization",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 1,
                                                                 "suffix": "%"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gpu.encoder.utilization"
@@ -1079,7 +1096,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1095,7 +1111,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats"
+                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats and gpu.utilization:*"
                             },
                             "visualization": {
                                 "labelMajorMode": "auto",
@@ -1174,18 +1190,22 @@
                                                 "537d8f07-0a3c-440b-81f7-c357e525c6c5": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"gpu.decoder.utilization\": *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Decoder Utilization",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 1,
                                                                 "suffix": "%"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gpu.decoder.utilization"
@@ -1220,7 +1240,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats"
+                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats and gpu.utilization:*"
                             },
                             "visualization": {
                                 "labelMajorMode": "auto",
@@ -1263,7 +1283,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "3a6cbb5a-de88-4c00-92b1-7082af725a29": {
                                             "columnOrder": [
@@ -1300,18 +1319,22 @@
                                                 "537d8f07-0a3c-440b-81f7-c357e525c6c5": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"gpu.memory.copy_utilization\": *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Memory Copy Engine Utilization",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 1,
                                                                 "suffix": "%"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "gpu.memory.copy_utilization"
@@ -1331,7 +1354,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1347,7 +1369,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats"
+                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats and gpu.utilization:*"
                             },
                             "visualization": {
                                 "labelMajorMode": "auto",
@@ -1374,6 +1396,156 @@
                     "y": 12
                 },
                 "panelIndex": "f33ab5fc-6c0d-4cc9-afeb-ef6a815a76b1",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-3a6cbb5a-de88-4c00-92b1-7082af725a29",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "3a6cbb5a-de88-4c00-92b1-7082af725a29": {
+                                            "columnOrder": [
+                                                "d1bbfa53-3b7f-4b6b-91d2-5821e9ca304f",
+                                                "537d8f07-0a3c-440b-81f7-c357e525c6c5"
+                                            ],
+                                            "columns": {
+                                                "537d8f07-0a3c-440b-81f7-c357e525c6c5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "GPU Utilization",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gpu.utilization"
+                                                },
+                                                "d1bbfa53-3b7f-4b6b-91d2-5821e9ca304f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "data_stream.type : metrics and data_stream.dataset : nvidia_gpu.stats"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "537d8f07-0a3c-440b-81f7-c357e525c6c5"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "3a6cbb5a-de88-4c00-92b1-7082af725a29",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "d1bbfa53-3b7f-4b6b-91d2-5821e9ca304f"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "f42dd770-5684-46ee-8ca6-5888947d9ffe",
+                    "w": 48,
+                    "x": 0,
+                    "y": 22
+                },
+                "panelIndex": "f42dd770-5684-46ee-8ca6-5888947d9ffe",
                 "type": "lens"
             },
             {
@@ -1411,7 +1583,7 @@
                     "i": "2880af70-98c6-4aa3-b790-8b57ca31b6c6",
                     "w": 48,
                     "x": 0,
-                    "y": 22
+                    "y": 32
                 },
                 "panelIndex": "2880af70-98c6-4aa3-b790-8b57ca31b6c6",
                 "title": "",
@@ -1500,7 +1672,7 @@
                     "i": "b8cc1323-2996-4167-a311-f819a90dfd4f",
                     "w": 23,
                     "x": 0,
-                    "y": 26
+                    "y": 36
                 },
                 "panelIndex": "b8cc1323-2996-4167-a311-f819a90dfd4f",
                 "title": "",
@@ -1589,7 +1761,7 @@
                     "i": "32858f76-8501-4681-823f-4441b34d565b",
                     "w": 25,
                     "x": 23,
-                    "y": 26
+                    "y": 36
                 },
                 "panelIndex": "32858f76-8501-4681-823f-4441b34d565b",
                 "title": "",
@@ -1766,7 +1938,7 @@
                     "i": "4317faf8-ca0e-498a-9b6c-99d3099f3fa9",
                     "w": 48,
                     "x": 0,
-                    "y": 31
+                    "y": 41
                 },
                 "panelIndex": "4317faf8-ca0e-498a-9b6c-99d3099f3fa9",
                 "title": "Power Consumption",
@@ -1807,7 +1979,7 @@
                     "i": "27c5e85e-f60b-4d79-ba85-30ef0e2eb36f",
                     "w": 48,
                     "x": 0,
-                    "y": 44
+                    "y": 54
                 },
                 "panelIndex": "27c5e85e-f60b-4d79-ba85-30ef0e2eb36f",
                 "title": "",
@@ -1886,7 +2058,7 @@
                     "i": "969a7903-e17c-418b-adc2-e0dd53117b28",
                     "w": 9,
                     "x": 0,
-                    "y": 48
+                    "y": 58
                 },
                 "panelIndex": "969a7903-e17c-418b-adc2-e0dd53117b28",
                 "title": "",
@@ -2040,7 +2212,7 @@
                     "i": "708b82ce-d8c9-4f4f-94c3-5de5a5a0ba68",
                     "w": 39,
                     "x": 9,
-                    "y": 48
+                    "y": 58
                 },
                 "panelIndex": "708b82ce-d8c9-4f4f-94c3-5de5a5a0ba68",
                 "title": "PCIe Packet Replays per Second",
@@ -2119,7 +2291,7 @@
                     "i": "be5f296b-1b90-44b3-9886-d4d439aee9af",
                     "w": 9,
                     "x": 0,
-                    "y": 52
+                    "y": 62
                 },
                 "panelIndex": "be5f296b-1b90-44b3-9886-d4d439aee9af",
                 "title": "",
@@ -2198,7 +2370,7 @@
                     "i": "bcfaa8ee-21af-4563-bac1-68e1d9ae3b60",
                     "w": 9,
                     "x": 0,
-                    "y": 56
+                    "y": 66
                 },
                 "panelIndex": "bcfaa8ee-21af-4563-bac1-68e1d9ae3b60",
                 "title": "",
@@ -2239,7 +2411,7 @@
                     "i": "8eeaa9cc-f47b-4254-b5b4-1d3812c1cb04",
                     "w": 48,
                     "x": 0,
-                    "y": 60
+                    "y": 70
                 },
                 "panelIndex": "8eeaa9cc-f47b-4254-b5b4-1d3812c1cb04",
                 "title": "",
@@ -2465,7 +2637,7 @@
                     "i": "313e1d01-32b5-447f-a62f-29133f3ef378",
                     "w": 8,
                     "x": 0,
-                    "y": 64
+                    "y": 74
                 },
                 "panelIndex": "313e1d01-32b5-447f-a62f-29133f3ef378",
                 "title": "",
@@ -2835,7 +3007,7 @@
                     "i": "0b03013d-c45b-41c6-81d3-b57428a7a8a6",
                     "w": 40,
                     "x": 8,
-                    "y": 64
+                    "y": 74
                 },
                 "panelIndex": "0b03013d-c45b-41c6-81d3-b57428a7a8a6",
                 "title": "",
@@ -2887,6 +3059,13 @@
                                                     "label": "Reliability Limited",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "μs"
+                                                            }
+                                                        },
                                                         "formula": "counter_rate(max(gpu.throttling.reliability)) ",
                                                         "isFormulaBroken": false
                                                     },
@@ -2899,7 +3078,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of counter_rate(max(gpu.throttling.reliability)) ",
+                                                    "label": "Part of Reliability Limited",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -2911,7 +3090,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of counter_rate(max(gpu.throttling.reliability)) ",
+                                                    "label": "Part of Reliability Limited",
                                                     "operationType": "counter_rate",
                                                     "references": [
                                                         "0fdf8523-bae1-4e22-bf82-11c7a39f415bX0"
@@ -2926,6 +3105,13 @@
                                                     "label": "Low Utilization",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "μs"
+                                                            }
+                                                        },
                                                         "formula": "counter_rate(max(gpu.throttling.low_utilization))",
                                                         "isFormulaBroken": false
                                                     },
@@ -2966,6 +3152,13 @@
                                                     "label": "Power Limited",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "μs"
+                                                            }
+                                                        },
                                                         "formula": "counter_rate(max(gpu.throttling.power))",
                                                         "isFormulaBroken": false
                                                     },
@@ -2978,7 +3171,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of counter_rate(max(gpu.throttling.power))",
+                                                    "label": "Part of Power Limited",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -2990,7 +3183,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of counter_rate(max(gpu.throttling.power))",
+                                                    "label": "Part of Power Limited",
                                                     "operationType": "counter_rate",
                                                     "references": [
                                                         "4da7efe0-7bbc-4b9e-930e-957708588099X0"
@@ -3024,7 +3217,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Time spent throttled",
+                                                    "label": "Part of Board Limited",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -3036,7 +3229,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Time spent throttled",
+                                                    "label": "Part of Board Limited",
                                                     "operationType": "counter_rate",
                                                     "references": [
                                                         "537d8f07-0a3c-440b-81f7-c357e525c6c5X0"
@@ -3064,6 +3257,13 @@
                                                     "label": "Sync Boost Limited",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "μs"
+                                                            }
+                                                        },
                                                         "formula": "counter_rate(max(gpu.throttling.sync_boost))",
                                                         "isFormulaBroken": false
                                                     },
@@ -3076,7 +3276,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of counter_rate(max(gpu.throttling.sync_boost))",
+                                                    "label": "Part of Sync Boost Limited",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -3088,7 +3288,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of counter_rate(max(gpu.throttling.sync_boost))",
+                                                    "label": "Part of Sync Boost Limited",
                                                     "operationType": "counter_rate",
                                                     "references": [
                                                         "77b81114-280e-46d2-a299-a436f8007f95X0"
@@ -3103,6 +3303,13 @@
                                                     "label": "Thermally Limited",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "μs"
+                                                            }
+                                                        },
                                                         "formula": "counter_rate(max(gpu.throttling.thermal))",
                                                         "isFormulaBroken": false
                                                     },
@@ -3115,7 +3322,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of counter_rate(max(gpu.throttling.thermal))",
+                                                    "label": "Part of Thermally Limited",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -3127,7 +3334,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of counter_rate(max(gpu.throttling.thermal))",
+                                                    "label": "Part of Thermally Limited",
                                                     "operationType": "counter_rate",
                                                     "references": [
                                                         "c436daa7-959c-4195-9f64-a813e322407fX0"
@@ -3232,7 +3439,7 @@
                     "i": "042690b1-aff1-4cfb-878e-cb8dd4eebd1c",
                     "w": 48,
                     "x": 0,
-                    "y": 74
+                    "y": 84
                 },
                 "panelIndex": "042690b1-aff1-4cfb-878e-cb8dd4eebd1c",
                 "title": "Throttle duration by reason",
@@ -3273,7 +3480,7 @@
                     "i": "e30e1939-d469-48eb-869d-e52802636bd4",
                     "w": 48,
                     "x": 0,
-                    "y": 87
+                    "y": 97
                 },
                 "panelIndex": "e30e1939-d469-48eb-869d-e52802636bd4",
                 "title": "",
@@ -3422,7 +3629,7 @@
                     "i": "f6421632-ebfe-4e44-b356-d670a0712644",
                     "w": 23,
                     "x": 0,
-                    "y": 91
+                    "y": 101
                 },
                 "panelIndex": "f6421632-ebfe-4e44-b356-d670a0712644",
                 "title": "Streaming Multiprocessor Frequency",
@@ -3600,7 +3807,7 @@
                     "i": "979c8732-bc79-4702-855e-3a608f5462a2",
                     "w": 25,
                     "x": 23,
-                    "y": 91
+                    "y": 101
                 },
                 "panelIndex": "979c8732-bc79-4702-855e-3a608f5462a2",
                 "title": "Memory Frequency",
@@ -3670,6 +3877,11 @@
         {
             "id": "metrics-*",
             "name": "f33ab5fc-6c0d-4cc9-afeb-ef6a815a76b1:indexpattern-datasource-layer-3a6cbb5a-de88-4c00-92b1-7082af725a29",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f42dd770-5684-46ee-8ca6-5888947d9ffe:indexpattern-datasource-layer-3a6cbb5a-de88-4c00-92b1-7082af725a29",
             "type": "index-pattern"
         },
         {
