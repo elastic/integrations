@@ -11,8 +11,8 @@ The GitHub audit log records all events related to the GitHub organization/enter
 To use this integration, the following prerequisites must be met:
 
 For GitHub Enterprise Cloud:
- - You must be an enterprise owner.
- - Your enterprise account must be on a GitHub Enterprise Cloud plan that includes audit log access.
+  - You must be an enterprise owner.
+  - Your enterprise account must be on a GitHub Enterprise Cloud plan that includes audit log access.
 
 For GitHub Enterprise Server:
   - You need to be a site administrator to access the audit log for the entire instance.
