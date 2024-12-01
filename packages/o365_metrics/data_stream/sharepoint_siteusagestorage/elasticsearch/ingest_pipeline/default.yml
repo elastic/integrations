@@ -4,33 +4,37 @@ processors:
   - set:
       field: ecs.version
       value: "8.11.0"             
-on_failure:
-  - append:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
   - json:
-      field: onedrive_usagestorage
-      target_field: o365metrics.onedrive_usagestorage   
+      field: sharepoint_siteusagestorage
+      target_field: o365metrics.sharepoint_siteusagestorage   
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365metrics.onedrive_usagestorage.
+      description: Replace spaces and dashes in field names under o365metrics.sharepoint_siteusagestorage.
       tag: painless_purge_spaces_and_dashes
-      if: ctx.o365metrics?.onedrive_usagestorage instanceof Map
+      if: ctx.o365metrics?.sharepoint_siteusagestorage instanceof Map
       source: |
         String underscore(String s) {
           return /[ -]/.matcher(s).replaceAll('');
         }
         
         def out = [:];
-        for (def item : ctx.o365metrics.onedrive_usagestorage.entrySet()) {
+        for (def item : ctx.o365metrics.sharepoint_siteusagestorage.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365metrics.onedrive_usagestorage = out;
+        ctx.o365metrics.sharepoint_siteusagestorage = out;
   - remove:
-      if: ctx.onedrive_usagestorage != null
-      field: onedrive_usagestorage
-      ignore_missing: true             
+      if: ctx.sharepoint_siteusagestorage != null
+      field: sharepoint_siteusagestorage
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusagestorage.StorageUsed(Byte)
+      target_field: o365metrics.sharepoint_siteusagestorage.StorageUsedByte
+      ignore_missing: true
 
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
   - append:
       field: event.kind
       value: pipeline_error

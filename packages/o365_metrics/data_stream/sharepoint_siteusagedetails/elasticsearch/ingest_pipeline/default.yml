@@ -4,33 +4,33 @@ processors:
   - set:
       field: ecs.version
       value: "8.11.0"             
-on_failure:
-  - append:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
   - json:
-      field: onedrive_usagefilecounts
-      target_field: o365metrics.onedrive_usagefilecounts   
+      field: sharepoint_siteusagedetails
+      target_field: o365metrics.sharepoint_siteusagedetails   
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365metrics.onedrive_usagefilecounts.
+      description: Replace spaces and dashes in field names under o365metrics.sharepoint_siteusagedetails.
       tag: painless_purge_spaces_and_dashes
-      if: ctx.o365metrics?.onedrive_usagefilecounts instanceof Map
+      if: ctx.o365metrics?.sharepoint_siteusagedetails instanceof Map
       source: |
         String underscore(String s) {
           return /[ -]/.matcher(s).replaceAll('');
         }
         
         def out = [:];
-        for (def item : ctx.o365metrics.onedrive_usagefilecounts.entrySet()) {
+        for (def item : ctx.o365metrics.sharepoint_siteusagedetails.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365metrics.onedrive_usagefilecounts = out;
+        ctx.o365metrics.sharepoint_siteusagedetails = out;
   - remove:
-      if: ctx.onedrive_usagefilecounts != null
-      field: onedrive_usagefilecounts
+      if: ctx.sharepoint_siteusagedetails != null
+      field: sharepoint_siteusagedetails
       ignore_missing: true             
 
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
   - append:
       field: event.kind
       value: pipeline_error
