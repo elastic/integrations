@@ -4,10 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: "8.11.0"             
-on_failure:
-  - append:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
   - json:
       field: onedrive_usagestorage
       target_field: o365metrics.onedrive_usagestorage   
@@ -26,11 +22,19 @@ on_failure:
           out[underscore(item.getKey())] = item.getValue();
         }
         ctx.o365metrics.onedrive_usagestorage = out;
+  - rename:
+      field: o365metrics.onedrive_usagestorage.StorageUsed(Byte)
+      target_field: o365metrics.onedrive_usagestorage.StorageUsedByte
+      ignore_missing: true
   - remove:
       if: ctx.onedrive_usagestorage != null
       field: onedrive_usagestorage
       ignore_missing: true             
 
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
   - append:
       field: event.kind
       value: pipeline_error

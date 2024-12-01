@@ -4,10 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: "8.11.0"             
-on_failure:
-  - append:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
   - json:
       field: onedrive_usagefilecounts
       target_field: o365metrics.onedrive_usagefilecounts   
@@ -31,6 +27,10 @@ on_failure:
       field: onedrive_usagefilecounts
       ignore_missing: true             
 
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
   - append:
       field: event.kind
       value: pipeline_error
