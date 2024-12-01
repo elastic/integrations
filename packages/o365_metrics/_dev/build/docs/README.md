@@ -34,11 +34,11 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 
 
-## Logs
+## Metrics
 
-### MailboxQuotastatus
+### One Drive Usage Storage
 
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
 
 
-{{fields "mailboxquotastatus"}}
+{{fields "onedrive_usagestorage"}}
