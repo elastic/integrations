@@ -41,4 +41,19 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
 
 
+{{fields "onedrive_usagestorageaccounts"}}
+
+### One Drive Usage Storage
+
+Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
+
+
 {{fields "onedrive_usagestorage"}}
+
+
+### One Drive Usage File Counts
+
+Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
+
+
+{{fields "onedrive_usagefile counts"}}

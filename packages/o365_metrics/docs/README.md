@@ -34,9 +34,45 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 
 
-## Logs
+## Metrics
 
-### MailboxQuotastatus
+### One Drive Usage Storage
+
+Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
+
+
+**Exported fields**
+
+(no fields available)
+
+
+### One Drive Usage Storage
+
+Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
+
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| o365metrics.onedrive_usagestorage.ReportDate | The date the OneDrive storage usage report was generated. | date |
+| o365metrics.onedrive_usagestorage.ReportPeriod | The duration of the reporting period for OneDrive storage usage, in days. | integer |
+| o365metrics.onedrive_usagestorage.ReportRefreshDate | The date when the OneDrive storage usage data was last refreshed. | date |
+| o365metrics.onedrive_usagestorage.SiteType | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
+| o365metrics.onedrive_usagestorage.StorageUsedByte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
+
+
+
+### One Drive Usage File Counts
 
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
 
