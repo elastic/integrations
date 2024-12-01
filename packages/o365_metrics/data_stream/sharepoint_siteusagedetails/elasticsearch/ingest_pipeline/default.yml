@@ -1,0 +1,37 @@
+---
+description: Pipeline for renaming object
+processors:
+  - set:
+      field: ecs.version
+      value: "8.11.0"             
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
+  - json:
+      field: onedrive_usagefilecounts
+      target_field: o365metrics.onedrive_usagefilecounts   
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under o365metrics.onedrive_usagefilecounts.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.o365metrics?.onedrive_usagefilecounts instanceof Map
+      source: |
+        String underscore(String s) {
+          return /[ -]/.matcher(s).replaceAll('');
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365metrics.onedrive_usagefilecounts.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365metrics.onedrive_usagefilecounts = out;
+  - remove:
+      if: ctx.onedrive_usagefilecounts != null
+      field: onedrive_usagefilecounts
+      ignore_missing: true             
+
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
