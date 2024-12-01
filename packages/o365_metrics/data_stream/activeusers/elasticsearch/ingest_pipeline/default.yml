@@ -3,11 +3,7 @@ description: Pipeline for renaming object
 processors:
   - set:
       field: ecs.version
-      value: "8.11.0"             
-on_failure:
-  - append:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: "8.11.0"
   - json:
       field: activeusers
       target_field: o365metrics.activeusers   
@@ -26,11 +22,16 @@ on_failure:
           out[underscore(item.getKey())] = item.getValue();
         }
         ctx.o365metrics.activeusers = out;
+
   - remove:
       if: ctx.activeusers != null
       field: activeusers
-      ignore_missing: true             
+      ignore_missing: true                               
 
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
   - append:
       field: event.kind
       value: pipeline_error
