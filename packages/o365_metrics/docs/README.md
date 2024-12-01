@@ -36,14 +36,30 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
-### One Drive Usage Storage
+### One Drive Usage Account Counts
 
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
 
 
 **Exported fields**
 
-(no fields available)
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| o365metrics.onedrive_usageaccountcounts.Active | The number of OneDrive accounts that were active during the reporting period. | integer |
+| o365metrics.onedrive_usageaccountcounts.ReportDate | The date the OneDrive account usage report was generated. | date |
+| o365metrics.onedrive_usageaccountcounts.ReportPeriod | The duration of the reporting period for OneDrive account activity, in days. | integer |
+| o365metrics.onedrive_usageaccountcounts.ReportRefreshDate | The date when the OneDrive account usage data was last refreshed. | date |
+| o365metrics.onedrive_usageaccountcounts.SiteType | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
+| o365metrics.onedrive_usageaccountcounts.Total | The total number of OneDrive accounts evaluated in the report. | integer |
 
 
 ### One Drive Usage Storage
@@ -79,5 +95,21 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
 **Exported fields**
 
-(no fields available)
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| o365metrics.onedrive_usagefilecounts.Active | The number of OneDrive accounts with active file usage during the reporting period. | integer |
+| o365metrics.onedrive_usagefilecounts.ReportDate | The date the report was generated. | date |
+| o365metrics.onedrive_usagefilecounts.ReportPeriod | The duration of the reporting period, in days. | integer |
+| o365metrics.onedrive_usagefilecounts.ReportRefreshDate | The date when the data in the report was last refreshed. | date |
+| o365metrics.onedrive_usagefilecounts.SiteType | The type of sites included in the OneDrive usage report (e.g., All). | keyword |
+| o365metrics.onedrive_usagefilecounts.Total | The total number of OneDrive accounts included in the report. | integer |
 
