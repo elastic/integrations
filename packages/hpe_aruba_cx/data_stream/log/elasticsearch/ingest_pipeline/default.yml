@@ -935,6 +935,118 @@ processors:
       patterns:
         - "^Bluetooth device %{DATA:event.action}: %{MAC:client.mac}"
 
+  # DHCPv4 Snooping events (82xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv4-SNOOPING.htm
+  #
+  # The following event ID does not need further processing:
+  # * 8212
+  #
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8201
+      description: "Log event when packet dropped while server packet received on untrusted port."
+      if: "ctx.event?.code == '8201'"
+      patterns:
+        - "^Server %{IP:server.ip} packet received on untrusted port %{DATA:aruba.port} dropped.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8202
+      description: "Log event when client packet dropped while packet destined to untrusted port."
+      if: "ctx.event?.code == '8202'"
+      patterns:
+        - "^Client packet destined to untrusted port %{DATA:aruba.port} dropped.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8203
+      description: "Log event when packet dropped while packet received from unauthorized server."
+      if: "ctx.event?.code == '8203'"
+      patterns:
+        - "^Packet received from unauthorized server %{IP:server.ip} on port %{DATA:aruba.port}.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8204
+      description: "Log event when client packet received with untrusted relay info."
+      if: "ctx.event?.code == '8204'"
+      patterns:
+        - "^Received untrusted relay info from client %{MAC:client.mac} on port %{DATA:aruba.port}.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8205
+      description: "Log event when client address not equal to source MAC."
+      if: "ctx.event?.code == '8205'"
+      patterns:
+        - "^Client address %{MAC:client.mac} not equal to source MAC %{MAC:source.mac} detected on port %{DATA:aruba.port}.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8206
+      description: "Log event when release packet received on incorrect port."
+      if: "ctx.event?.code == '8206'"
+      patterns:
+        - "^Binding for %{IP:client.ip}:%{MAC:client.mac} exists on port %{DATA:aruba.port}. Dropping release request received for the binding on %{DATA:aruba.dhcp.new_port}.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8207
+      description: "Log event when dynamic binding for a port was replaced with a manual binding."
+      if: "ctx.event?.code == '8207'"
+      patterns:
+        - "^The dynamic binding for %{MAC:client.mac} on port %{DATA:aruba.port} was replaced with a manual binding.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8208
+      description: "Log event when drop client request for already assigned ip."
+      if: "ctx.event?.code == '8208'"
+      patterns:
+        - "^Drop request from %{MAC:client.mac} for already assigned address %{IP:client.ip}.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8209
+      description: "Log event when drop server offer for already assigned ip."
+      if: "ctx.event?.code == '8209'"
+      patterns:
+        - "^Drop offer from %{IP:server.ip} of already assigned address %{IP:client.ip} to %{MAC:client.mac}.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8210
+      description: "Log event when drop server offer for illegal ip."
+      if: "ctx.event?.code == '8210'"
+      patterns:
+        - "^Drop offer from %{IP:server.ip} of %{IP:client.ip} address is illegal.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8211
+      description: "Log event when binding limit reached on port."
+      if: "ctx.event?.code == '8211'"
+      patterns:
+        - "^Maximum bindings limit reached on port %{DATA:aruba.port}, dropping request from %{MAC:client.mac}.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8213
+      description: "Log event when all dynamic binding entries on a port are cleared."
+      if: "ctx.event?.code == '8213'"
+      patterns:
+        - "^Dynamic binding entries on the port %{DATA:aruba.port} were cleared.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8214
+      description: "Log event when all dynamic binding entries on a vlan are cleared."
+      if: "ctx.event?.code == '8214'"
+      patterns:
+        - "^Dynamic binding entries on the VLAN %{DATA:network.vlan.id} were cleared.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8215
+      description: "Log event when a specific dynamic binding entry on a vlan is cleared."
+      if: "ctx.event?.code == '8215'"
+      patterns:
+        - "^Dynamic binding entry with ip %{IP:client.ip} on the VLAN %{DATA:network.vlan.id} was cleared.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8216
+      description: "Log event when failed to import dynamic ip binding entries from external storage."
+      if: "ctx.event?.code == '8216'"
+      patterns:
+        - "^Failed to import dynamic ip binding entries from external storage. volume: %{DATA:aruba.dhcp.volume_name}, filename: %{DATA:file.name}.$"
+
   # ERPS Events (85xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm
   - dissect:
