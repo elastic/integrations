@@ -993,6 +993,13 @@ processors:
       if: "ctx.event?.code == '8208'"
       patterns:
         - "^Drop request from %{MAC:client.mac} for already assigned address %{IP:client.ip}.$"
+  - grok:
+      field: message
+      tag: dhcp_snoop_event_8209
+      description: "Log event when drop server offer for already assigned ip."
+      if: "ctx.event?.code == '8209'"
+      patterns:
+        - "^Drop offer from %{IP:server.ip} of already assigned address %{IP:client.ip} to %{MAC:client.mac}.$"
 
 
   # ERPS Events (85xx)
