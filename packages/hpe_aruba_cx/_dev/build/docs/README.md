@@ -203,20 +203,20 @@ Note: Descriptions have not been filled out
 | <vfr_name>    | aruba.vrf.name    |
 
 #### [DHCPv4 Snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv4-SNOOPING.htm)
-| Doc Field           | Schema Mapping    |
-|---------------------|-------------------|
-| <client_mac>        | client.mac        |
-| <existing_port>     | server.port       |
-| <filename>          | file.name         |
-| <ip_address>        | client.ip         |
-| <lease_ip_address>  | destination.ip    |
-| <mac>               | client.mac        |
-| <new_port>          | aruba.new_port    |
-| <port>              | aruba.port        |
-| <server_ip_address> | server.ip         |
-| <source_mac>        | client.mac        |
-| <vid>               | network.vlan.id   |
-| <volume_name>       | aruba.volume_name |
+| Doc Field           | Schema Mapping      |
+|---------------------|---------------------|
+| <client_mac>        | client.mac          |
+| <existing_port>     | server.port         |
+| <filename>          | file.name           |
+| <ip_address>        | client.ip           |
+| <lease_ip_address>  | destination.ip      |
+| <mac>               | client.mac          |
+| <new_port>          | aruba.dhcp.new_port |
+| <port>              | aruba.port          |
+| <server_ip_address> | server.ip           |
+| <source_mac>        | client.mac          |
+| <vid>               | network.vlan.id     |
+| <volume_name>       | aruba.volume_name   |
 
 #### [DHCPv6 Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv6-RELAY.htm)
 | Field | Description | Type | Common |
