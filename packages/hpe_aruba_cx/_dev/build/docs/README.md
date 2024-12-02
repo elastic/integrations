@@ -224,16 +224,23 @@ Note: Descriptions have not been filled out
 
 
 #### [DHCPv6 snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv6-SNOOPING.htm)
-| Field                    | Description | Type | Common             |
-|--------------------------|-------------|------|--------------------|
-| aruba.dhcp.existing_port |             |      | server.port        |
-| aruba.dhcp.filename      |             |      | file.name          |
-| aruba.dhcp.ipv6_address  |             |      | client.ip          |
-| aruba.dhcp.mac           |             |      | client.mac         |
-| aruba.dhcp.new_port      |             |      |                    |
-| aruba.dhcp.port          |             |      | server.port        |
-| aruba.dhcp.vid           |             |      | network.vlan.id    |
-| aruba.dhcp.volume_name   |             |      |                    |
+
+| Doc Fields                     | Schema Mapping       |
+|--------------------------------|----------------------|
+| <event>                        | event.code           |
+| <severity>                     | log.level            |
+| <message>                      | message              |
+| <category>                     | event.category       |
+| <description>                  | event.reason         |
+| <ipv6_address>                 | client.ip            |
+| <port>                         | server.port          |
+| <mac>                          | client.mac           |
+| <existing_port>                | server.port          |
+| <new_port>                     | server.port          |
+| <ip>                           | client.ip            |
+| <vid>                          | network.vlan.id      |
+| <volume_name>                  | file.name            |
+| <file_name>                    | file.name            |
 
 #### [Discovery and Capability Exchange (DCBx) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DCBX.htm)
 | Field                | Description | Type | Common                          |
