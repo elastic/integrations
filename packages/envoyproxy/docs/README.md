@@ -184,62 +184,60 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-14T14:22:18.283Z",
+    "@timestamp": "2024-12-02T13:39:34.540Z",
     "agent": {
-        "ephemeral_id": "08892539-8525-4ceb-afb8-95ea3c128d4c",
-        "id": "13047bf7-6360-4d6d-b1a0-9a923610b76e",
-        "name": "elastic-agent-25985",
+        "ephemeral_id": "1076a4ee-a067-4a6d-8b03-1c1d2f559873",
+        "id": "3d2a68b1-45d8-418b-bdcd-63a1bc7f6458",
+        "name": "elastic-agent-79840",
         "type": "metricbeat",
-        "version": "8.15.1"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "envoyproxy.stats",
-        "namespace": "42696",
+        "namespace": "10169",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "13047bf7-6360-4d6d-b1a0-9a923610b76e",
+        "id": "3d2a68b1-45d8-418b-bdcd-63a1bc7f6458",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.16.0"
     },
-    "envoyproxy": {
-        "envoy_http_downstream_cx_destroy_remote": {
+    "envoy": {
+        "envoy_http_downstream_rq_xx": {
             "count": 1
         },
-        "http_conn_manager_prefix": "ingress_http"
+        "http_conn_manager_prefix": "ingress_http",
+        "response_code_class": "2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "envoyproxy.stats",
-        "ingested": "2024-11-14T14:22:18Z",
+        "ingested": "2024-12-02T13:39:34Z",
         "kind": "metric",
         "module": "statsd"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-25985",
-        "id": "0fba6dd9e2a445ca80a4261bd56fec54",
+        "hostname": "elastic-agent-79840",
         "ip": [
             "172.18.0.4",
-            "172.31.0.2"
+            "172.19.0.2"
         ],
         "mac": [
             "02-42-AC-12-00-04",
-            "02-42-AC-1F-00-02"
+            "02-42-AC-13-00-02"
         ],
-        "name": "elastic-agent-25985",
+        "name": "elastic-agent-79840",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "6.6.31-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "6.10.11-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "service": {
@@ -253,63 +251,75 @@ An example event for `stats` looks as following:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| envoyproxy.\*.count | Envoyproxy counters | object | counter |
-| envoyproxy.\*.max | Envoyproxy max timers metric | object |  |
-| envoyproxy.\*.mean | Envoyproxy mean timers metric | object |  |
-| envoyproxy.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
-| envoyproxy.\*.median | Envoyproxy median timers metric | object |  |
-| envoyproxy.\*.min | Envoyproxy min timers metric | object |  |
-| envoyproxy.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
-| envoyproxy.\*.value | Envoyproxy gauges | object | gauge |
-| envoyproxy.cipher_suite | SSL cipher suite | keyword |  |
-| envoyproxy.clientssl_prefix | Stats prefix for the Client SSL Auth network filter | keyword |  |
-| envoyproxy.cluster_name | Cluster name tag | keyword |  |
-| envoyproxy.connection_limit_prefix | Stats prefix for the Connection limit filter | keyword |  |
-| envoyproxy.dns_filter_prefix | Stats prefix for the dns filter | keyword |  |
-| envoyproxy.dynamo_operation | Operation name for the Dynamo http filter | keyword |  |
-| envoyproxy.dynamo_partition_id | Partition ID for the Dynamo http filter | keyword |  |
-| envoyproxy.dynamo_table | Table name for the Dynamo http filter | keyword |  |
-| envoyproxy.ext_authz_prefix | Stats prefix for the ext_authz HTTP filter | keyword |  |
-| envoyproxy.fault_downstream_cluster | Downstream cluster for the Fault http filter | keyword |  |
-| envoyproxy.grpc_bridge_method | Request method name for the GRPC Bridge http filter | keyword |  |
-| envoyproxy.grpc_bridge_service | Request service name GRPC Bridge http filter | keyword |  |
-| envoyproxy.http_conn_manager_prefix | Stats prefix for HttpConnectionManager | keyword |  |
-| envoyproxy.http_user_agent | User agent for a connection | keyword |  |
-| envoyproxy.listener_address | Listener port tag | keyword |  |
-| envoyproxy.local_http_ratelimit_prefix | Stats prefix for the Local Ratelimit network filter | keyword |  |
-| envoyproxy.local_listener_ratelimit_prefix | Stats prefix for the Local Ratelimit listener filter | keyword |  |
-| envoyproxy.local_network_ratelimit_prefix | Stats prefix for the Local Ratelimit network filter | keyword |  |
-| envoyproxy.mongo_callsite | Request callsite for the Mongo Proxy network filter | keyword |  |
-| envoyproxy.mongo_cmd | Request command for the Mongo Proxy network filter | keyword |  |
-| envoyproxy.mongo_collection | Request collection for the Mongo Proxy network filter | keyword |  |
-| envoyproxy.mongo_prefix | Stats prefix for the Mongo Proxy network filter | keyword |  |
-| envoyproxy.proxy_protocol_prefix | Stats prefix for the proxy protocol listener filter. | keyword |  |
-| envoyproxy.proxy_protocol_version | Proxy Protocol version for a connection (Proxy Protocol listener filter). | keyword |  |
-| envoyproxy.ratelimit_prefix | Stats prefix for the Ratelimit network filter | keyword |  |
-| envoyproxy.rbac_http_prefix | Stats prefix for the RBAC http filter | keyword |  |
-| envoyproxy.rbac_policy_name | Policy name for the RBAC http filter | keyword |  |
-| envoyproxy.rbac_prefix | Stats prefix for the RBAC network filter | keyword |  |
-| envoyproxy.rds_route_config | Route config name for RDS updates | keyword |  |
-| envoyproxy.redis_prefix | Stats prefix for the Redis Proxy network filter | keyword |  |
-| envoyproxy.response_code | Request response code | keyword |  |
-| envoyproxy.response_code_class | Request response code class | keyword |  |
-| envoyproxy.route | Request route given by the Router http filter | keyword |  |
-| envoyproxy.scoped_rds_config | Scoped route config name for RDS updates | keyword |  |
-| envoyproxy.ssl_cipher | SSL cipher for a connection | keyword |  |
-| envoyproxy.ssl_curve | SSL curve for a connection | keyword |  |
-| envoyproxy.ssl_sigalg | SSL signature algorithm for a connection | keyword |  |
-| envoyproxy.ssl_version | SSL version for a connection | keyword |  |
-| envoyproxy.tcp_prefix | Stats prefix for the TCP Proxy network filter | keyword |  |
-| envoyproxy.thrift_prefix | Stats prefix for the Thrift Proxy network filter | keyword |  |
-| envoyproxy.udp_prefix | Stats prefix for the UDP Proxy network filter | keyword |  |
-| envoyproxy.virtual_cluster | Request virtual cluster given by the Router http filter | keyword |  |
-| envoyproxy.virtual_host | Request virtual host given by the Router http filter | keyword |  |
-| envoyproxy.worker_id | Listener manager worker id | keyword |  |
+| envoy.\*.count | Envoyproxy counters | object | counter |
+| envoy.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.cipher_suite | SSL cipher suite | keyword |  |
+| envoy.clientssl_prefix | Stats prefix for the Client SSL Auth network filter | keyword |  |
+| envoy.cluster_name | Cluster name tag | keyword |  |
+| envoy.connection_limit_prefix | Stats prefix for the Connection limit filter | keyword |  |
+| envoy.dns_filter_prefix | Stats prefix for the dns filter | keyword |  |
+| envoy.dynamo_operation | Operation name for the Dynamo http filter | keyword |  |
+| envoy.dynamo_partition_id | Partition ID for the Dynamo http filter | keyword |  |
+| envoy.dynamo_table | Table name for the Dynamo http filter | keyword |  |
+| envoy.ext_authz_prefix | Stats prefix for the ext_authz HTTP filter | keyword |  |
+| envoy.fault_downstream_cluster | Downstream cluster for the Fault http filter | keyword |  |
+| envoy.grpc_bridge_method | Request method name for the GRPC Bridge http filter | keyword |  |
+| envoy.grpc_bridge_service | Request service name GRPC Bridge http filter | keyword |  |
+| envoy.http_conn_manager_prefix | Stats prefix for HttpConnectionManager | keyword |  |
+| envoy.http_user_agent | User agent for a connection | keyword |  |
+| envoy.listener_address | Listener port tag | keyword |  |
+| envoy.local_http_ratelimit_prefix | Stats prefix for the Local Ratelimit network filter | keyword |  |
+| envoy.local_listener_ratelimit_prefix | Stats prefix for the Local Ratelimit listener filter | keyword |  |
+| envoy.local_network_ratelimit_prefix | Stats prefix for the Local Ratelimit network filter | keyword |  |
+| envoy.mongo_callsite | Request callsite for the Mongo Proxy network filter | keyword |  |
+| envoy.mongo_cmd | Request command for the Mongo Proxy network filter | keyword |  |
+| envoy.mongo_collection | Request collection for the Mongo Proxy network filter | keyword |  |
+| envoy.mongo_prefix | Stats prefix for the Mongo Proxy network filter | keyword |  |
+| envoy.proxy_protocol_prefix | Stats prefix for the proxy protocol listener filter. | keyword |  |
+| envoy.proxy_protocol_version | Proxy Protocol version for a connection (Proxy Protocol listener filter). | keyword |  |
+| envoy.ratelimit_prefix | Stats prefix for the Ratelimit network filter | keyword |  |
+| envoy.rbac_http_prefix | Stats prefix for the RBAC http filter | keyword |  |
+| envoy.rbac_policy_name | Policy name for the RBAC http filter | keyword |  |
+| envoy.rbac_prefix | Stats prefix for the RBAC network filter | keyword |  |
+| envoy.rds_route_config | Route config name for RDS updates | keyword |  |
+| envoy.redis_prefix | Stats prefix for the Redis Proxy network filter | keyword |  |
+| envoy.response_code | Request response code | keyword |  |
+| envoy.response_code_class | Request response code class | keyword |  |
+| envoy.route | Request route given by the Router http filter | keyword |  |
+| envoy.scoped_rds_config | Scoped route config name for RDS updates | keyword |  |
+| envoy.ssl_cipher | SSL cipher for a connection | keyword |  |
+| envoy.ssl_curve | SSL curve for a connection | keyword |  |
+| envoy.ssl_sigalg | SSL signature algorithm for a connection | keyword |  |
+| envoy.ssl_version | SSL version for a connection | keyword |  |
+| envoy.tcp_prefix | Stats prefix for the TCP Proxy network filter | keyword |  |
+| envoy.thrift_prefix | Stats prefix for the Thrift Proxy network filter | keyword |  |
+| envoy.udp_prefix | Stats prefix for the UDP Proxy network filter | keyword |  |
+| envoy.virtual_cluster | Request virtual cluster given by the Router http filter | keyword |  |
+| envoy.virtual_host | Request virtual host given by the Router http filter | keyword |  |
+| envoy.worker_id | Listener manager worker id | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
 | input.type | Type of Filebeat input. | keyword |  |
 | log.offset | Log offset. | long |  |
+| service.address | Service address | keyword |  |
 | tags | User defined tags. | keyword |  |
 
