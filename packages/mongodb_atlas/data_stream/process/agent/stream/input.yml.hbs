@@ -52,8 +52,16 @@ program: |
                   "Accept": ["application/vnd.atlas." + string(now.getFullYear()) + "-01-01+json"],
                 },
               }
-            ).do_request().as(resp,
-              bytes(resp.Body).decode_json().as(body, has(body.error) ?
+            ).do_request().as(resp, (resp.StatusCode == 200) ?
+              bytes(resp.Body).decode_json().as(body,
+                {
+                  "hostlist": body.results.map(e, state.url + "/api/atlas/v2/groups/" + state.group_id + "/processes/" + e.id + state.query),
+                  "next": 0,
+                  "page_num": body.links.exists_one(res, res.rel == "next") ? (int(state.page_num) + 1) : 1,
+                }
+              )
+            :
+              bytes(resp.Body).decode_json().as(body, (body != null) ?
                 {
                   "events": [
                     {
@@ -67,9 +75,15 @@ program: |
                 }
               :
                 {
-                  "hostlist": body.results.map(e, state.url + "/api/atlas/v2/groups/" + state.group_id + "/processes/" + e.id + state.query),
-                  "next": 0,
-                  "page_num": body.links.exists_one(res, res.rel == "next") ? (int(state.page_num) + 1) : 1,
+                  "events": [
+                    {
+                      "error": {
+                        "code": resp.StatusCode,
+                        "message": resp.Status,
+                      },
+                    },
+                  ],
+                  "want_more": false,
                 }
               )
             )
@@ -85,20 +99,8 @@ program: |
               "Accept": ["application/vnd.atlas." + string(now.getFullYear()) + "-01-01+json"],
             },
           }
-        ).do_request().as(res,
-          bytes(res.Body).decode_json().as(body, has(body.error) ?
-            {
-              "events": [
-                {
-                  "error": {
-                    "code": body.error,
-                    "message": body.detail,
-                  },
-                },
-              ],
-              "want_more": false,
-            }
-          :
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          bytes(resp.Body).decode_json().as(body,
             {
               "events": [
                 body.with(
@@ -117,6 +119,32 @@ program: |
               "page_num": state.page_num,
               "group_id": state.group_id,
               "query": state.query,
+            }
+          )
+        :
+          bytes(resp.Body).decode_json().as(body, (body != null) ?
+            {
+              "events": [
+                {
+                  "error": {
+                    "code": body.error,
+                    "message": body.detail,
+                  },
+                },
+              ],
+              "want_more": false,
+            }
+          :
+            {
+              "events": [
+                {
+                  "error": {
+                    "code": resp.StatusCode,
+                    "message": resp.Status,
+                  },
+                },
+              ],
+              "want_more": false,
             }
           )
         )
