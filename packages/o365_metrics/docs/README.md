@@ -54,14 +54,14 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| o365metrics.mailboxquotastatus.indeterminate | Indeterminate. | integer |
-| o365metrics.mailboxquotastatus.report_date | Report Date. | date |
-| o365metrics.mailboxquotastatus.report_period | Report Period. | integer |
-| o365metrics.mailboxquotastatus.report_refresh_date | Report Refresh Date. | date |
-| o365metrics.mailboxquotastatus.send/receive_prohibited | Send/ReceiveProhibited | integer |
-| o365metrics.mailboxquotastatus.send_prohibited | Send Prohibited. | integer |
-| o365metrics.mailboxquotastatus.under_limit | Under Limit | integer |
-| o365metrics.mailboxquotastatus.warning_issued | Warning Issued | integer |
+| o365metrics.mailboxquotastatus.indeterminate | The number of mailboxes where the quota status could not be determined. | integer |
+| o365metrics.mailboxquotastatus.report_date | The specific date for which the report data applies. | date |
+| o365metrics.mailboxquotastatus.report_period | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer |
+| o365metrics.mailboxquotastatus.report_refresh_date | The date when the report data was last updated. | date |
+| o365metrics.mailboxquotastatus.send/receive_prohibited | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | integer |
+| o365metrics.mailboxquotastatus.send_prohibited | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | integer |
+| o365metrics.mailboxquotastatus.under_limit | The number of mailboxes operating within their assigned quota limits during the reporting period. | integer |
+| o365metrics.mailboxquotastatus.warning_issued | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | integer |
 
 
 
@@ -83,12 +83,12 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| o365metrics.outlook_app_usage.outlook_2007 | Outlook 2007 | integer |
-| o365metrics.outlook_app_usage.outlook_2010 | Outlook 2010 | date |
-| o365metrics.outlook_app_usage.outlook_2013 | Outlook 2013 | integer |
-| o365metrics.outlook_app_usage.outlook_2016 | Outlook 2016 | integer |
-| o365metrics.outlook_app_usage.outlook_2019 | Outlook 2019 | integer |
-| o365metrics.outlook_app_usage.outlook_m365 | Outlook M365 | integer |
-| o365metrics.outlook_app_usage.report_period | Report Period | integer |
-| o365metrics.outlook_app_usage.report_refresh_date | Report Refresh Date. | date |
-| o365metrics.outlook_app_usage.undetermined | Undetermined | integer |
+| o365metrics.outlook_app_usage.outlook_2007 | The count of unique users using Outlook 2007 during the reporting period. | integer |
+| o365metrics.outlook_app_usage.outlook_2010 | The count of unique users using Outlook 2010 during the reporting period. | integer |
+| o365metrics.outlook_app_usage.outlook_2013 | The count of unique users using Outlook 2013 during the reporting period. | integer |
+| o365metrics.outlook_app_usage.outlook_2016 | The count of unique users using Outlook 2016 during the reporting period. | integer |
+| o365metrics.outlook_app_usage.outlook_2019 | The count of unique users using Outlook 2019 during the reporting period. | integer |
+| o365metrics.outlook_app_usage.outlook_m365 | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | integer |
+| o365metrics.outlook_app_usage.report_period | The duration (e.g., 7 days) over which the report data is aggregated. | integer |
+| o365metrics.outlook_app_usage.report_refresh_date | The date when the report data was last updated. | date |
+| o365metrics.outlook_app_usage.undetermined | The count of unique users whose Outlook version could not be identified. | integer |
