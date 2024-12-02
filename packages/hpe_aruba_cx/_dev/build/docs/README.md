@@ -209,7 +209,7 @@ Note: Descriptions have not been filled out
 | <existing_port>     | server.port         |
 | <filename>          | file.name           |
 | <ip_address>        | client.ip           |
-| <lease_ip_address>  | destination.ip      |
+| <lease_ip_address>  | client.ip           |
 | <mac>               | client.mac          |
 | <new_port>          | aruba.dhcp.new_port |
 | <port>              | aruba.port          |
