@@ -984,9 +984,11 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.match_details.finding.reporting_id | Finding reporting id. | keyword |
 | tanium.threat_response.match_details.finding.source_name | Source name. | keyword |
 | tanium.threat_response.match_details.finding.system_info.bits | Bits. | long |
+| tanium.threat_response.match_details.finding.system_info.build_number | Build number. | keyword |
 | tanium.threat_response.match_details.finding.system_info.os.platform | OS platform. | keyword |
 | tanium.threat_response.match_details.finding.system_info.os.value | OS value. | keyword |
 | tanium.threat_response.match_details.finding.system_info.os.version | OS version. | version |
+| tanium.threat_response.match_details.finding.system_info.patch_level | Patch level. | keyword |
 | tanium.threat_response.match_details.finding.system_info.platform | OS type. | keyword |
 | tanium.threat_response.match_details.finding.threat_id | Threat id. | keyword |
 | tanium.threat_response.match_details.finding.whats |  | nested |
@@ -1041,8 +1043,8 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.tanium_recorder_event_table_id | Tanium recorder event table id. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.artifact_hash | Artifact hash of file. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.md5 | MD5 hash. | keyword |
-| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha1 | MD5 sha1. | keyword |
-| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha256 | MD5 sha256. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha1 | SHA1 hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha256 | SHA256 hash. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.instance_hash | Instance hash. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.instance_hash_salt | Instance hash salt. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.magic_number_hex | Magic number. | keyword |
@@ -1050,10 +1052,81 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.path | Path of file. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.size_bytes | File size in bytes. | long |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.is_intel_target | Is an intel target. | boolean |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.connection_time | Connection time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.local_ip | Local IP. | ip |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.local_port | Local port. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.file.signature_data.issuer | Signature issuer. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.file.signature_data.status | Signature status. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.file.signature_data.subject | Signature subject. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.name | Name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.file.signature_data.issuer | Signature issuer. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.file.signature_data.status | Signature status. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.file.signature_data.subject | Signature subject. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.name | Name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.file.signature_data.issuer | Signature issuer. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.file.signature_data.status | Signature status. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.file.signature_data.subject | Signature subject. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.name | Name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.file.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.name | Name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.parent.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.user.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.user.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.user.user.user_id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.user.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.user.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.user.user.user_id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.user.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.user.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.user.user.user_id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.user.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.user.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.user.user.user_id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.remote_ip | Remote IP. | ip |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.remote_port | Remote port. | long |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.timestamp | Timestamp. | date |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.verb | Verb. | long |
 | tanium.threat_response.match_details.finding.whats.intel_intra_ids |  | nested |
-| tanium.threat_response.match_details.finding.whats.intel_intra_ids.id | Array of intel intra id. | keyword |
+| tanium.threat_response.match_details.finding.whats.intel_intra_ids.id | Array of intel intra ids. | keyword |
+| tanium.threat_response.match_details.finding.whats.intel_intra_ids.id_v2 | Array of v2 intel intra ids. | keyword |
 | tanium.threat_response.match_details.finding.whats.source_name | Source name. | keyword |
 | tanium.threat_response.match_details.intel_id | Intel id. | keyword |
 | tanium.threat_response.match_details.match.contexts |  | nested |
@@ -1063,6 +1136,10 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.match_details.match.hash | Hash value. | keyword |
 | tanium.threat_response.match_details.match.properties.args | Property arguments. | keyword |
 | tanium.threat_response.match_details.match.properties.file.full_path | Full path of file. | keyword |
+| tanium.threat_response.match_details.match.properties.fullpath | Full path. | keyword |
+| tanium.threat_response.match_details.match.properties.local_ip | Local IP. | ip |
+| tanium.threat_response.match_details.match.properties.local_port | Local port. | long |
+| tanium.threat_response.match_details.match.properties.md5 | MD5 hash. | keyword |
 | tanium.threat_response.match_details.match.properties.name | Property name. | keyword |
 | tanium.threat_response.match_details.match.properties.parent.args | Parent arguments. | keyword |
 | tanium.threat_response.match_details.match.properties.parent.file.full_path | Full path of file. | keyword |
@@ -1082,7 +1159,20 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.match_details.match.properties.parent.user | User. | keyword |
 | tanium.threat_response.match_details.match.properties.pid | Process id. | keyword |
 | tanium.threat_response.match_details.match.properties.ppid | Parent process id. | keyword |
+| tanium.threat_response.match_details.match.properties.process.args | Process arguments. | keyword |
+| tanium.threat_response.match_details.match.properties.process.file.fullpath | Full path. | keyword |
+| tanium.threat_response.match_details.match.properties.process.name | Name. | keyword |
+| tanium.threat_response.match_details.match.properties.process.pid | Process id. | long |
+| tanium.threat_response.match_details.match.properties.process.ppid | Parent process id. | long |
+| tanium.threat_response.match_details.match.properties.process.recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.match.properties.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.match.properties.process.user | User. | keyword |
 | tanium.threat_response.match_details.match.properties.recorder_unique_id | Recorder unique id. | keyword |
+| tanium.threat_response.match_details.match.properties.remote_ip | Remote IP. | ip |
+| tanium.threat_response.match_details.match.properties.remote_port | Remote port. | long |
+| tanium.threat_response.match_details.match.properties.sha1 | SHA1 hash. | keyword |
+| tanium.threat_response.match_details.match.properties.sha256 | SHA256 hash. | keyword |
+| tanium.threat_response.match_details.match.properties.size | Size. | keyword |
 | tanium.threat_response.match_details.match.properties.start_time | Start time. | date |
 | tanium.threat_response.match_details.match.properties.user | User. | keyword |
 | tanium.threat_response.match_details.match.source | Finding source. | keyword |
