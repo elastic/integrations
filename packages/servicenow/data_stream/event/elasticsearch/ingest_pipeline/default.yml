@@ -156,9 +156,10 @@ processors:
           ctx.servicenow.event.table_name == 'cmdb_ci_hyper_v_server'
         )
   - rename:
-      field: _conf.timezone
-      tag: rename_timezone
+      field: _conf.tz_offset
+      tag: rename_tz_offset
       target_field: event.timezone
+      if: ctx._conf?.tz_offset != null
       ignore_missing: true
   - set:
       field: event.timezone
