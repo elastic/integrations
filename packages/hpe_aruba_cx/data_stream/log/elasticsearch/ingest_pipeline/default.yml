@@ -937,6 +937,10 @@ processors:
 
   # DHCPv4 Snooping events (82xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv4-SNOOPING.htm
+  #
+  # The following event ID does not need further processing:
+  # * 8212
+  #
   - grok:
       field: message
       tag: dhcpv4_snoop_event_8201
@@ -1014,7 +1018,34 @@ processors:
       if: "ctx.event?.code == '8211'"
       patterns:
         - "^Maximum bindings limit reached on port %{DATA:aruba.port}, dropping request from %{MAC:client.mac}.$"
-
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8213
+      description: "Log event when all dynamic binding entries on a port are cleared."
+      if: "ctx.event?.code == '8213'"
+      patterns:
+        - "^Dynamic binding entries on the port %{DATA:aruba.port} were cleared.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8214
+      description: "Log event when all dynamic binding entries on a vlan are cleared."
+      if: "ctx.event?.code == '8214'"
+      patterns:
+        - "^Dynamic binding entries on the VLAN %{DATA:network.vlan.id} were cleared.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8215
+      description: "Log event when a specific dynamic binding entry on a vlan is cleared."
+      if: "ctx.event?.code == '8215'"
+      patterns:
+        - "^Dynamic binding entry with ip %{IP:client.ip} on the VLAN %{DATA:network.vlan.id} was cleared.$"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8216
+      description: "Log event when failed to import dynamic ip binding entries from external storage."
+      if: "ctx.event?.code == '8216'"
+      patterns:
+        - "^Failed to import dynamic ip binding entries from external storage. volume: %{DATA:aruba.dhcp.volume_name}, filename: %{DATA:file.name}.$"
 
   # ERPS Events (85xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm
