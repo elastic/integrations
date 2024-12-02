@@ -751,7 +751,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'aws$|zeek|network_traffic|amazon_security_lake|aws_bedrock|aws_logs|canva|cisco_umbrella|crowdstrike|imperva_cloud_waf|sentinel_one_cloud_funnel|sublime_security|symantec_endpoint_security|trellix_edr_cloud'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
 }
 
 check_package() {
