@@ -109,21 +109,18 @@ processors:
 ##
 # Extract origin, target, and related entity IDs
 ##
-  - set:
+  - append:
       field: origin.id
-      copy_from: json.protoPayload.authenticationInfo.principalSubject
-      ignore_empty_value: true
+      value: "{{{json.protoPayload.authenticationInfo.principalSubject}}}"
       if: ctx.json?.protoPayload?.authenticationInfo?.principalSubject != null
-  - set:
+  - append:
       field: origin.id
-      copy_from: json.protoPayload.authenticationInfo.principalEmail
-      ignore_empty_value: true
-      if: ctx.json?.protoPayload?.authenticationInfo?.principalSubject == null
-  - set:
+      value: "{{{json.protoPayload.authenticationInfo.principalEmail}}}"
+      if: ctx.json?.protoPayload?.authenticationInfo?.principalEmail != null
+  - append:
       field: target.id
-      copy_from: json.protoPayload.resourceName
-      ignore_empty_value: true
-      if: ctx.json?.resource?.type != 'k8s_cluster'
+      value: "{{{json.protoPayload.resourceName}}}"
+      if: ctx.json?.resource?.type != 'k8s_cluster' && ctx.json?.protoPayload?.resourceName != null
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
