@@ -404,6 +404,56 @@ processors:
         - tanium.threat_response.user.domain
       ignore_missing: true
   - script:
+      tag: script_truncate_at_a_maximum_depth
+      description: Truncate at a maximum depth.
+      lang: painless
+      source: |
+        Map truncateMap(Map node, int depth, int maxDepth, List truncations) {
+            if (depth > maxDepth) {
+                truncations.add(node);
+                return null; // Return null if max depth is exceeded
+            }
+            for (entry in node.entrySet()) {
+                Object key = entry.getKey();
+                Object value = entry.getValue();
+                if (value instanceof Map) {
+                    node.put(key, truncateMap((Map) value, depth + 1, maxDepth, truncations));
+                } else if (value instanceof List) {
+                    // A list in a map doesn't add depth - multiple values are treated the same as a single value
+                    node.put(key, truncateList((List) value, depth, maxDepth, truncations));
+                } else {
+                    node.put(key, value); // It's a plain value
+                }
+            }
+            return node;
+        }
+        List truncateList(List node, int depth, int maxDepth, List truncations) {
+            List input = new ArrayList(node);
+            node.clear();
+            if (depth > maxDepth) {
+                truncations.add(node);
+                return null;
+            }
+            for (item in input) {
+                if (item instanceof Map) {
+                    node.add(truncateMap((Map) item, depth + 1, maxDepth, truncations));
+                } else if (item instanceof List) {
+                    // A list in a list adds depth - but isn't common in our data
+                    node.add(truncateList((List) item, depth + 1, maxDepth, truncations));
+                } else {
+                    node.add(item); // It's a plain value
+                }
+            }
+            return node;
+        }
+        int maxDepth = 20;
+        List truncations = [];
+        truncateMap(ctx, 1, maxDepth, truncations);
+        if (truncations.size() > 0) {
+          if (ctx.labels == null) ctx.labels = [:];
+          ctx.labels.truncations = truncations.size().toString();
+        }
+  - script:
       tag: script_drops_null_empty_values_recursively
       description: Drops null/empty values recursively.
       lang: painless
