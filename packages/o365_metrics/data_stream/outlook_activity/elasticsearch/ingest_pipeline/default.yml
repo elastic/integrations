@@ -1,0 +1,38 @@
+---
+description: Pipeline for renaming object
+processors:
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - json:
+      field: outlookactivity
+      target_field: o365metrics.outlookactivity   
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under o365metrics.outlookactivity.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.o365metrics?.outlookactivity instanceof Map
+      source: |
+        String underscore(String s) {
+          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365metrics.outlookactivity.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365metrics.outlookactivity = out;
+
+  - remove:
+      if: ctx.outlookactivity != null
+      field: outlookactivity
+      ignore_missing: true                               
+
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
