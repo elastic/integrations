@@ -25,10 +25,8 @@ To collect these metrics, you must:
 1. Enable Event Source Mapping for your Lambda function by following the steps outlined in the [AWS documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.html#event-source-mapping-metrics).  
 2. Enable the configuration flag `Collect Event Source Mapping metrics`.  
 
-**Note:** Enabling this feature may incur additional costs.
-
 Important notes:
-- Metrics are only available when your Event Source Mapping is active and __Enable metrics__ is selected.
+- Enabling this feature may incur additional costs
 - Not all metrics are available for every event source type
 - Metric collection may be affected by CloudWatch or Lambda service availability
 
