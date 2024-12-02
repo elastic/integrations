@@ -44,7 +44,29 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.9.0**.
+### Permissions
+
+#### Asset Host Detection
+
+| Role                    | Permission                                     |
+|-------------------------|------------------------------------------------|
+| _Managers_              | All VM scanned hosts in subscription           |
+| _Unit Managers_         | VM scanned hosts in user’s business unit       |
+| _Scanners_              | VM scanned hosts in user’s account             |
+| _Readers_               | VM scanned hosts in user’s account             |
+
+#### Knowledge Base
+
+_Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download vulnerability data from the KnowledgeBase.
+
+#### User Activity Log
+
+| Role                    | Permission                                     |
+|-------------------------|------------------------------------------------|
+| _Managers_              | All actions taken by all users                 |
+| _Unit Managers_         | Actions taken by users in their business unit  |
+| _Scanners_              | Own actions only                               |
+| _Readers_               | Own actions only                               |
 
 ## Setup
 
@@ -473,8 +495,8 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.cvss_v3.vector_string |  | keyword |
 | qualys_vmdr.knowledge_base.cvss_v3.version |  | keyword |
 | qualys_vmdr.knowledge_base.detection_info |  | keyword |
-| qualys_vmdr.knowledge_base.diagnosis.comment |  | keyword |
-| qualys_vmdr.knowledge_base.diagnosis.value |  | keyword |
+| qualys_vmdr.knowledge_base.diagnosis.comment |  | match_only_text |
+| qualys_vmdr.knowledge_base.diagnosis.value |  | match_only_text |
 | qualys_vmdr.knowledge_base.discovery.additional_info |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.auth_type_list.value |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.remote |  | long |
@@ -493,8 +515,8 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.severity_level |  | keyword |
 | qualys_vmdr.knowledge_base.software_list.product |  | keyword |
 | qualys_vmdr.knowledge_base.software_list.vendor |  | keyword |
-| qualys_vmdr.knowledge_base.solution.comment |  | keyword |
-| qualys_vmdr.knowledge_base.solution.value |  | keyword |
+| qualys_vmdr.knowledge_base.solution.comment |  | match_only_text |
+| qualys_vmdr.knowledge_base.solution.value |  | match_only_text |
 | qualys_vmdr.knowledge_base.supported_modules |  | keyword |
 | qualys_vmdr.knowledge_base.threat_intelligence.intel.id |  | keyword |
 | qualys_vmdr.knowledge_base.threat_intelligence.intel.text |  | keyword |

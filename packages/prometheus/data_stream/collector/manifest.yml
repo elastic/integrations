@@ -2,6 +2,9 @@ title: Prometheus collector metrics
 type: metrics
 elasticsearch:
   index_mode: "time_series"
+  # Ensures agents have permissions to write data to `metrics-*-*`
+  dynamic_dataset: true
+  dynamic_namespace: true
 streams:
   - input: prometheus/metrics
     vars:
@@ -166,6 +169,15 @@ streams:
         default: prometheus.collector
         required: true
         show_user: true
+      - name: metrics_count
+        type: bool
+        title: Metrics Count
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: >
+          Enable `Metrics Count` to get the total number of Prometheus metrics contained within the Elasticsearch document.
       - name: processors
         type: yaml
         title: Processors

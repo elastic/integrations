@@ -1,0 +1,44 @@
+title: "Cisco Meraki Device Health Metrics"
+type: metrics
+streams:
+  - input: meraki/metrics
+    title: Cisco Meraki Device Health Metrics
+    description: Collect device health metrics from the Meraki Dashboard API with Elastic Agent.
+    vars:
+      - name: apiKey
+        type: text
+        title: Meraki Dashboard API key
+        secret: true
+        required: true
+      - name: organizations
+        type: text
+        title: Meraki organization IDs
+        multi: true
+        required: true
+      - name: apiBaseUrl
+        type: url
+        title: Meraki Dashboard API base URL
+        default: api.meraki.com
+      - name: period
+        type: text
+        title: Collection interval
+        default: 60s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - cisco_meraki_metrics-device_health
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+elasticsearch:
+  source_mode: synthetic
+  index_mode: time_series

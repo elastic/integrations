@@ -50,22 +50,22 @@ processors:
   #########################
   - append:
       field: related.user
-      value: "{{onepassword.target_user.uuid}}"
+      value: "{{{onepassword.target_user.uuid}}}"
       allow_duplicates: false
       if: ctx?.onepassword?.target_user?.uuid != null
   - append:
       field: related.user
-      value: "{{onepassword.target_user.email}}"
+      value: "{{{onepassword.target_user.email}}}"
       allow_duplicates: false
       if: ctx?.onepassword?.target_user?.email != null
   - append:
       field: related.user
-      value: "{{onepassword.target_user.name}}"
+      value: "{{{onepassword.target_user.name}}}"
       allow_duplicates: false
       if: ctx?.onepassword?.target_user?.name != null
   - append:
       field: related.ip
-      value: "{{onepassword.client.ip_address}}"
+      value: "{{{onepassword.client.ip_address}}}"
       allow_duplicates: false
       if: ctx?.onepassword?.client?.ip_address != null
   ######################
@@ -79,6 +79,10 @@ processors:
       field: onepassword.target_user.name
       target_field: user.full_name
       ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: user.full_name
+      ignore_empty_value: true
   - rename:
       field: onepassword.target_user.email
       target_field: user.email

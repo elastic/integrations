@@ -17,13 +17,13 @@ processors:
       tag: grok_event_original
   - set:
       field: event.timezone
-      value: "{{_tmp.tz_offset}}"
+      value: "{{{_tmp.tz_offset}}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
       tag: set_event_timezone
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
-      timezone: "{{ event.timezone }}"
+      timezone: "{{{ event.timezone }}}"
       formats:
         - yyyy-MM-dd HH:mm:ss,SSS
       if: ctx.event?.timezone != null
@@ -83,7 +83,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

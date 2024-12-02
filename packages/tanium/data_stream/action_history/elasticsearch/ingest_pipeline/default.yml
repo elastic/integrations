@@ -2,24 +2,30 @@
 description: Pipeline for processing action history logs.
 processors:
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
   - append:
+      tag: append_event_kind
       field: event.kind
       value: event
       allow_duplicates: false
   - set:
+      tag: set_event_category
       field: event.category
       value: [host]
   - set:
+      tag: set_event_type
       field: event.type
       value: [info]
   - rename:
+      tag: rename_message
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
+      tag: json_event_original
       field: event.original
       target_field: json
       on_failure:
@@ -28,14 +34,17 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
+      tag: rename_json_issuer
       field: json.Issuer
       target_field: tanium.action_history.issuer
       ignore_missing: true
   - set:
+      tag: set_event_provider
       field: event.provider
       copy_from: tanium.action_history.issuer
       ignore_empty_value: true
   - convert:
+      tag: convert_json_sourceid
       field: json.SourceId
       target_field: tanium.action_history.source_id
       type: long
@@ -46,6 +55,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - date:
+      tag: date_json_expiration
       field: json.Expiration
       target_field: tanium.action_history.expiration
       if: ctx.json?.Expiration!= null && ctx.json.Expiration!= ''
@@ -57,46 +67,57 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_event_end
       field: event.end
       copy_from: tanium.action_history.expiration
       ignore_empty_value: true
   - rename:
+      tag: rename_json_actionname
       field: json.ActionName
       target_field: tanium.action_history.action.name
       ignore_missing: true
   - set:
+      tag: set_event_action
       field: event.action
       copy_from: tanium.action_history.action.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_command
       field: json.Command
       target_field: tanium.action_history.command
       ignore_missing: true
   - set:
+      tag: set_process_command_line
       field: process.command_line
       copy_from: tanium.action_history.command
       ignore_empty_value: true
   - rename:
+      tag: rename_json_approver
       field: json.Approver
       target_field: tanium.action_history.approver
       ignore_missing: true
   - rename:
+      tag: rename_json_status
       field: json.Status
       target_field: tanium.action_history.status
       ignore_missing: true
   - rename:
+      tag: rename_json_distributeover
       field: json.DistributeOver
       target_field: tanium.action_history.distribute_over
       ignore_missing: true
   - rename:
+      tag: rename_json_packagename
       field: json.PackageName
       target_field: tanium.action_history.package_name
       ignore_missing: true
   - rename:
+      tag: rename_json_comment
       field: json.Comment
       target_field: tanium.action_history.comment
       ignore_missing: true
   - date:
+      tag: date_json_starttime
       field: json.StartTime
       target_field: tanium.action_history.start_time
       if: ctx.json?.StartTime!= null && ctx.json?.StartTime!= ''
@@ -108,10 +129,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_event_start
       field: event.start
       copy_from: tanium.action_history.start_time
       ignore_empty_value: true
   - date:
+      tag: date_json_inserttime
       field: json.InsertTime
       target_field: tanium.action_history.insert_time
       if: ctx.json?.InsertTime!= null && ctx.json.InsertTime!= ''
@@ -123,6 +146,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
+      tag: convert_json_actionid
       field: json.ActionId
       target_field: tanium.action_history.action.id
       type: long
@@ -133,14 +157,17 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - append:
+      tag: append_event_kind_pipeline_error_if_error_message
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null && ctx.error.message != ''
       allow_duplicates: false
   - remove:
+      tag: remove_json
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_duplicate_custom_fields
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - tanium.action_history.expiration
@@ -150,10 +177,12 @@ processors:
         - tanium.action_history.command
       ignore_missing: true
   - remove:
+      tag: remove_event_original
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -176,4 +205,8 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"

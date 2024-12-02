@@ -1,0 +1,606 @@
+---
+description: Pipeline for parsing Anomali ThreatStream Intelligence
+processors:
+
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: enrichment
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [threat]
+  - set:
+      tag: set_event_type
+      field: event.type
+      value: [indicator]
+
+  # data is in json.*
+
+  - set:
+      tag: set_timestamp
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+  - rename:
+      tag: rename_json_created_ts
+      field: json.created_ts
+      target_field: event.created
+      ignore_missing: true
+
+  - rename:
+      tag: rename_json_modified_ts
+      field: json.modified_ts
+      target_field: threat.indicator.modified_at
+
+  - script:
+      tag: script_calculate_deletion_scheduled_at
+      lang: painless
+      description: Calculate deletion_scheduled_at
+      source: |
+        def calculate(String now, String duration, String expiration_ts) {
+          def result = [:];
+          def start = ZonedDateTime.parse(now);
+          ZonedDateTime end;
+          char time_unit = duration.charAt(duration.length() - 1);
+          def time_value = Long.parseLong(duration.substring(0, duration.length() - 1));
+          if (time_unit == (char)'d') {
+            end = start.plusDays(time_value);
+          } else if (time_unit == (char)'h') {
+            end = start.plusHours(time_value);
+          } else if (time_unit == (char)'m') {
+            end = start.plusMinutes(time_value);
+          } else {
+            result["message"] = "Invalid ioc_duration_before_deletion: using default of 90 days";
+            end = start.plusDays(90L);
+          }
+          ZonedDateTime upstream_expiration = null;
+          if (expiration_ts != null && expiration_ts != "") {
+            upstream_expiration = ZonedDateTime.parse(expiration_ts);
+          }
+          if (upstream_expiration != null && upstream_expiration.isBefore(end)) {
+            result["time"] = upstream_expiration;
+          } else {
+            result["time"] = end;
+          }
+          return result;
+        }
+        def result = calculate(ctx["@timestamp"], ctx._conf.ioc_duration_before_deletion, ctx.json.expiration_ts);
+        if (result.message != null) {
+          if (ctx.error == null) {
+            ctx.error = [:];
+          }
+          if (ctx.error.message == null) {
+            ctx.error.message = [];
+          }
+          ctx.error.message.add(result.message);
+        }
+        ctx.json["deletion_scheduled_at"] = result.time;
+
+  # Map itype field to STIX 2.0 Cyber Observable values (threat.indicator.type)
+  - script:
+      tag: script_map_itype_field_to_stix_types
+      lang: painless
+      description: >
+        Map itype field to STIX 2.0 Cyber Observable values (threat.indicator.type)
+      params:
+        actor_ip: ipv4-addr
+        actor_ipv6: ipv6-addr
+        actor_subject: null
+        adware_domain: domain-name
+        adware_registry_key: windows-registry-key
+        anon_proxy: ipv4-addr
+        anon_proxy_ipv6: ipv6-addr
+        anon_vpn: ipv4-addr
+        anon_vpn_ipv6: ipv6-addr
+        apt_domain: domain-name
+        apt_email: email-addr
+        apt_email_subject_line: email
+        apt_file_name: file
+        apt_file_path: directory
+        apt_ip: ipv4-addr
+        apt_ipv6: ipv6-addr
+        apt_md5: file
+        apt_mta: null
+        apt_mutex: mutex
+        apt_registry_key: windows-registry-key
+        apt_service_description: null
+        apt_service_displayname: null
+        apt_service_name: null
+        apt_ssdeep: file
+        apt_subject: email
+        apt_ua: url
+        apt_url: url
+        bot_domain: domain-name
+        bot_ip: ipv4-addr
+        bot_ipv6: ipv6-addr
+        bot_md5: file
+        bot_url: url
+        browser_extension_id: null
+        brute_ip: ipv4-addr
+        brute_ipv6: ipv6-addr
+        c2_domain: domain-name
+        c2_ip: ipv4-addr
+        c2_ipv6: ipv6-addr
+        c2_url: url
+        comm_proxy_domain: domain-name
+        comm_proxy_ip: ipv4-addr
+        compromised_domain: domain-name
+        compromised_email: email-addr
+        compromised_email_subject: email
+        compromised_ip: ipv4-addr
+        compromised_ipv6: ipv6-addr
+        compromised_serv_account: user-account
+        compromised_url: url
+        compromised_username: user-account
+        crypto_hash: file
+        crypto_ip: ipv4-addr
+        crypto_pool: domain
+        crypto_url: url
+        crypto_wallet: file
+        ddos_ip: ipv4-addr
+        ddos_ipv6: ipv6-addr
+        disposable_email_domain: domain-name
+        downloader_domain: domain-name
+        downloader_hash: file
+        downloader_ip: ipv4-addr
+        downloader_ipv6: ipv6-addr
+        downloader_url: url
+        dyn_dns: domain-name
+        email_attachment_subject: email
+        exfil_domain: domain-name
+        exfil_ip: ipv4-addr
+        exfil_ipv6: ipv6-addr
+        exfil_url: url
+        exploit_domain: domain-name
+        exploit_ip: ipv4-addr
+        exploit_ipv6: ipv6-addr
+        exploit_md5: file
+        exploit_url: url
+        fraud_domain: domain-name
+        fraud_email: email-addr
+        fraud_email_subject: email
+        fraud_ip: ipv4-addr
+        fraud_ipv6: ipv6-addr
+        fraud_md5: file
+        fraud_url: url
+        free_email_domain: domain-name
+        geolocation_url: url
+        hack_tool: file
+        hack_tool_md5: file
+        i2p_ip: ipv4-addr
+        i2p_ipv6: ipv6-addr
+        image_hash: file
+        infostealer_domain: domain-name
+        infostealer_hash: file
+        infostealer_ip: ipv4-addr
+        infostealer_ipv6: ipv6-addr
+        infostealer_url: url
+        iot_domain: domain-name
+        iot_hash: file
+        iot_ip: ipv4-addr
+        iot_ipv6: ipv6-addr
+        iot_url: url
+        ipcheck_url: url
+        mal_domain: domain-name
+        mal_email: email-addr
+        mal_email_subject: email
+        mal_file_name: file
+        mal_file_path: file
+        mal_ip: ipv4-addr
+        mal_ipv6: ipv6-addr
+        mal_md5: file
+        mal_mutex: mutex
+        mal_registry_key: windows-registry-key
+        mal_service_description: null
+        mal_service_displayname: null
+        mal_service_name: null
+        mal_ssdeep: file
+        mal_sslcert_sh1: x509-certificate
+        mal_sslcert_sha1: x509-certificate
+        mal_ua: url
+        mal_url: url
+        p2pcnc: ipv4-addr
+        p2pcnc_ipv6: ipv6-addr
+        parked_domain: domain-name
+        parked_ip: ipv4-addr
+        parked_ipv6: ipv6-addr
+        parked_url: url
+        pastesite_url: url
+        phish_domain: domain-name
+        phish_email: email-addr
+        phish_email_subject: email
+        phish_ip: ipv4-addr
+        phish_ipv6: ipv6-addr
+        phish_md5: file
+        phish_url: url
+        pos_domain: domain-name
+        pos_hash: file
+        pos_ip: ipv4-addr
+        pos_ipv6: ipv6-addr
+        pos_url: url
+        proxy_ip: ipv4-addr
+        proxy_ipv6: ipv6-addr
+        ransomware_domain: domain-name
+        ransomware_hash: file
+        ransomware_ip: ipv4-addr
+        ransomware_ipv6: ipv6-addr
+        ransomware_url: url
+        rootkit_hash: file
+        scan_ip: ipv4-addr
+        scan_ipv6: ipv6-addr
+        sinkhole_domain: domain-name
+        sinkhole_ip: ipv4-addr
+        sinkhole_ipv6: ipv6-addr
+        social_media_url: url
+        spam_domain: domain-name
+        spam_email: email-addr
+        spam_email_subject: email
+        spam_ip: ipv4-addr
+        spam_ipv6: ipv6-addr
+        spam_mta: null
+        spam_url: url
+        speedtest_url: url
+        ssh_ip: ipv4-addr
+        ssh_ipv6: ipv6-addr
+        ssl_cert_serial_number: null
+        suppress: suppress
+        suspicious_domain: domain-name
+        suspicious_email: email-addr
+        suspicious_email_subject: email
+        suspicious_ip: ipv4-addr
+        suspicious_reg_email: email-addr
+        suspicious_url: url
+        tor_ip: ipv4-addr
+        tor_ipv6: ipv6-addr
+        torrent_tracker_url: url
+        trojan_domain: domain-name
+        trojan_hash: file
+        trojan_ip: ipv4-addr
+        trojan_ipv6: ipv6-addr
+        trojan_url: url
+        vpn_domain: domain-name
+        vps_ip: ipv4-addr
+        vps_ipv6: ipv6-addr
+        whois_bulk_reg_email: email-addr
+        whois_privacy_domain: domain-name
+        whois_privacy_email: email-addr
+      source: >
+        if (params.containsKey(ctx.json.itype) && params[ctx.json.itype] != null) {
+          if (ctx.threat == null) {
+            ctx.threat = [:];
+          }
+          if (ctx.threat.indicator == null) {
+            ctx.threat.indicator = [:];
+          }
+          ctx.threat.indicator.type = params[ctx.json.itype];
+        } else {
+          throw new IllegalArgumentException("indicator type not found from itype");
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Unable to determine STIX 2.0 indicator type from itype "{{{ json.itype }}}": {{{ _ingest.on_failure_message }}}'
+
+  # Detect ipv6 for ipv4-addr types
+  - set:
+      tag: set_threat_indicator_type
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: ctx.threat?.indicator?.type == "ipv4-addr" && ctx.json.ip != null && ctx.json.ip.contains(":")
+
+  # Map IP geolocation fields.
+  - convert:
+      tag: convert_json_latitude
+      field: json.latitude
+      target_field: threat.indicator.geo.location.lat
+      type: double
+      if: ctx.json.latitude != null && ctx.json.longitude != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Cannot convert latitude field "{{{ json.latitude }}}" to double: {{{ _ingest.on_failure_message }}}'
+  - convert:
+      tag: convert_json_longitude
+      field: json.longitude
+      target_field: threat.indicator.geo.location.lon
+      type: double
+      if: "ctx.json.latitude != null && ctx.json.longitude != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Cannot convert longitude field "{{{ json.longitude }}}" to double: {{{ _ingest.on_failure_message }}}'
+  - remove:
+      tag: remove_json_latitude_json_longitude
+      field:
+        - json.latitude
+        - json.longitude
+      ignore_missing: true
+
+  - rename:
+      tag: rename_json_tlp
+      field: json.tlp
+      target_field: threat.indicator.marking.tlp
+      ignore_missing: true
+  - uppercase:
+      tag: uppercase_threat_indicator_marking_tlp
+      field: threat.indicator.marking.tlp
+      ignore_missing: true
+  - set:
+      tag: set_threat_indicator_marking_tlp
+      field: threat.indicator.marking.tlp
+      value: AMBER
+      if: 'ctx.threat?.indicator?.marking?.tlp == null && !ctx.json.is_public'
+  - set:
+      tag: set_threat_indicator_marking_tlp_2
+      field: threat.indicator.marking.tlp
+      value: WHITE
+      if: 'ctx.threat?.indicator?.marking?.tlp == null && ctx.json.is_public'
+
+  - script:
+      tag: script_normalize_confidence_to_stix_values
+      lang: painless
+      if: ctx.json.confidence != null
+      description: Normalize confidence to STIX values
+      source: >
+        if (ctx.threat == null) {
+          ctx.threat = [:];
+        }
+        if (ctx.threat.indicator == null) {
+          ctx.threat.indicator = [:];
+        }
+        def value = ctx.json.confidence;
+        if (value == null) {
+          ctx.threat.indicator.confidence = "Not Specified";
+        } else if (value <= 0.0 || 100.0 < value) {
+          ctx.threat.indicator.confidence = "None";
+        } else if (value < 30.0) {
+          ctx.threat.indicator.confidence = "Low";
+        } else if (value < 70.0) {
+          ctx.threat.indicator.confidence = "Medium";
+        } else {
+          ctx.threat.indicator.confidence = "High";
+        }
+
+  # Convert asn field.
+  - convert:
+      tag: convert_json_asn
+      field: json.asn
+      target_field: threat.indicator.as.number
+      type: long
+      ignore_missing: true
+      if: "ctx.json.asn != null && ctx.json.asn != ''"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Cannot convert asn field `{{{ json.asn }}}` to long: {{{ _ingest.on_failure_message }}}"
+  - remove:
+      tag: remove_json_asn
+      field: json.asn
+      ignore_missing: true
+
+  - rename:
+      tag: rename_json_org
+      field: json.org
+      target_field: threat.indicator.as.organization.name
+      if: ctx.json.org != null && ctx.json.org != ""
+
+  - rename:
+      tag: rename_json_country
+      field: json.country
+      target_field: threat.indicator.geo.country_iso_code
+      ignore_missing: true
+
+  - rename:
+      tag: rename_json_ip
+      field: json.ip
+      target_field: threat.indicator.ip
+      ignore_missing: true
+
+  - set:
+      tag: set_threat_indicator_email_address
+      field: threat.indicator.email.address
+      copy_from: json.value
+      if: ctx.json.type == 'email'
+      ignore_empty_value: true
+
+  - set:
+      tag: set_threat_indicator_url_domain
+      field: threat.indicator.url.domain
+      copy_from: json.value
+      if: ctx.json.type == 'domain'
+      ignore_empty_value: true
+
+  - uri_parts:
+      tag: uri_parts_json_value
+      field: json.value
+      target_field: threat.indicator.url
+      if: ctx.json.type == 'url'
+      keep_original: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Cannot parse url value `{{{ json.value }}}`: {{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_threat_indicator_url_full
+      field: threat.indicator.url.full
+      copy_from: threat.indicator.url.original
+      ignore_empty_value: true
+
+  - set:
+      tag: set_threat_indicator_file_hash_md5
+      field: threat.indicator.file.hash.md5
+      copy_from: json.value
+      if: ctx.json.type == 'md5' && ctx.json.subtype == 'MD5'
+  - set:
+      tag: set_threat_indicator_file_hash_sha1
+      field: threat.indicator.file.hash.sha1
+      copy_from: json.value
+      if: ctx.json.type == 'md5' && ctx.json.subtype == 'SHA1'
+  - set:
+      tag: set_threat_indicator_file_hash_sha256
+      field: threat.indicator.file.hash.sha256
+      copy_from: json.value
+      if: ctx.json.type == 'md5' && ctx.json.subtype == 'SHA256'
+  - set:
+      tag: set_threat_indicator_file_hash_sha512
+      field: threat.indicator.file.hash.sha512
+      copy_from: json.value
+      if: ctx.json.type == 'md5' && ctx.json.subtype == 'SHA512'
+  - remove:
+      tag: remove_json_subtype
+      field: json.subtype
+      ignore_missing: true
+
+  - set:
+      tag: set_threat_indicator_file_hash_ssdeep
+      field: threat.indicator.file.hash.ssdeep
+      copy_from: json.value
+      if: ctx.json.itype.endsWith('_ssdeep')
+
+  - set:
+      tag: set_threat_indicator_file_path
+      field: threat.indicator.file.path
+      copy_from: json.value
+      if: ctx.json.itype.endsWith('_file_name')
+
+  - rename:
+      tag: rename_json_source
+      field: json.source
+      target_field: threat.indicator.provider
+      ignore_missing: true
+
+  # Map the severity field to event.severity
+  - set:
+      tag: set_event_severity_low
+      field: event.severity
+      value: 3
+      if: 'ctx.json.meta?.severity == "low"'
+  - set:
+      tag: set_event_severity_medium
+      field: event.severity
+      value: 5
+      if: 'ctx.json.meta?.severity == "medium"'
+  - set:
+      tag: set_event_severity_high
+      field: event.severity
+      value: 7
+      if: 'ctx.json.meta?.severity == "high"'
+  - set:
+      tag: set_event_severity_very_high
+      field: event.severity
+      value: 9
+      if: 'ctx.json.meta?.severity == "very-high"'
+
+  # map tag names, ignore other tag data that's sometimes available: json.tags.{id, org_id, tlp, _valid}
+  - foreach:
+      tag: foreach_json_tags
+      field: json.tags
+      ignore_missing: true
+      processor:
+        append:
+          tag: append_tags
+          field: tags
+          value: "{{{ _ingest._value.name }}}"
+          on_failure:
+            - append:
+                field: error.message
+                value: "Found a tag without a name `{{{ _ingest._value }}}`: {{{ _ingest.on_failure_message }}}"
+  - remove:
+      tag: remove_json_tags
+      field: json.tags
+      ignore_missing: true
+
+  - script:
+      tag: script_convert_a_large_integer
+      description: Convert a large integer that arrives as a Double to a string without an exponent
+      lang: painless
+      source: ctx.json.id = Long.toString((long) ctx.json.id);
+      if: "!(ctx.json.id instanceof String)"
+
+  # restructure meta.registrant_* to meta.registrant.*
+  - rename:
+      tag: rename_json_meta_registrant_address
+      field: json.meta.registrant_address
+      target_field: json.meta.registrant.address
+      ignore_missing: true
+  - rename:
+      tag: rename_json_meta_registrant_email
+      field: json.meta.registrant_email
+      target_field: json.meta.registrant.email
+      ignore_missing: true
+  - rename:
+      tag: rename_json_meta_registrant_name
+      field: json.meta.registrant_name
+      target_field: json.meta.registrant.name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_meta_registrant_org
+      field: json.meta.registrant_org
+      target_field: json.meta.registrant.org
+      ignore_missing: true
+  - rename:
+      tag: rename_json_meta_registrant_phone
+      field: json.meta.registrant_phone
+      target_field: json.meta.registrant.phone
+      ignore_missing: true
+
+  # Clean up fields. These may be undocumented, documented as for internal use, or contain repeated or interesting data.
+  - remove:
+      tag: remove_various_fields
+      field:
+        - _conf
+        - json.created_by
+        - json.description
+        - json.locations
+        - json.meta.detail
+        - json.meta.detail2
+        - json.resource_uri
+        - json.sort
+        - json.source_locations
+        - json.target_industry
+        - json.threatscore
+        - json.workgroups
+      ignore_missing: true
+
+  - script:
+      tag: script_drop_null_empty_values_recursively
+      description: Drop null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx.json);
+
+  # Keep any remaining fields under a prefix
+  - rename:
+      tag: rename_json
+      field: json
+      target_field: anomali.threatstream
+
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_event_kind_on_failure
+      field: event.kind
+      value: pipeline_error

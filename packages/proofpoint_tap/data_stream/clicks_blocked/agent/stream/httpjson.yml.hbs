@@ -20,19 +20,79 @@ request.transforms:
       value: json
   - set:
       target: url.params.interval
-      value: '[[if (le (formatDate ((parseDate .cursor.last_received_time "RFC3339").Add (parseDuration "1h"))) (formatDate (now)))]][[formatDate (parseDate .cursor.last_received_time "RFC3339")]]/[[formatDate ((parseDate .cursor.last_received_time "RFC3339").Add (parseDuration "1h"))]][[else]][[formatDate (parseDate .cursor.last_received_time "RFC3339")]]/[[formatDate now]][[end]]'
-      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]/[[formatDate ((now (parseDuration "-{{initial_interval}}")).Add (parseDuration "1h"))]]'
+      value: |-
+        [[- $last := (parseDate .cursor.last_received_time "RFC3339") -]]
+        [[- $hour := (parseDuration "1h") -]]
+        [[- $week_ago := (now (parseDuration "-167h55m")) -]]
+        [[- with $last -]]
+          [[- if .Before $week_ago -]]
+            [[- $last = $week_ago -]]
+          [[- end -]]
+        [[- end -]]
+        [[- $end := 0 -]][[- /* Predeclare $end. */ -]]
+        [[- with $last -]]
+          [[- $end = .Add $hour -]]
+        [[- end -]]
+        [[- with $end -]]
+          [[- if .After now -]]
+            [[- $end = now -]]
+          [[- end -]]
+        [[- end -]]
+        [[- formatDate $last ]]/[[ formatDate $end -]]
+      default: |-
+        [[- $start := (now (parseDuration "-{{initial_interval}}")) -]]
+        [[- $hour := (parseDuration "1h") -]]
+        [[- $week_ago := (now (parseDuration "-167h55m")) -]]
+        [[- with $start -]]
+          [[- if .Before $week_ago -]]
+            [[- $start = $week_ago -]]
+          [[- end -]]
+        [[- end -]]
+        [[- $end := 0 -]][[- /* Predeclare $end. */ -]]
+        [[- with $start -]]
+          [[- $end = .Add $hour -]]
+        [[- end -]]
+        [[- with $end -]]
+          [[- if .After now -]]
+            [[- $end = now -]]
+          [[- end -]]
+        [[- end -]]
+        [[- formatDate $start ]]/[[ formatDate $end -]]
 response.pagination:
   - set:
       target: url.params.interval
-      value: '[[if (le (formatDate ((parseDate .last_response.body.queryEndTime "RFC3339").Add (parseDuration "1h"))) (formatDate (now)))]][[formatDate (parseDate .last_response.body.queryEndTime "RFC3339")]]/[[formatDate ((parseDate .last_response.body.queryEndTime "RFC3339").Add (parseDuration "1h"))]][[end]]'
+      value: |-
+        [[- if ne (len .last_response.body.clicksBlocked) 0 -]]
+          [[- $last := (parseDate .last_response.body.queryEndTime "RFC3339") -]]
+          [[- $hour := (parseDuration "1h") -]]
+          [[- $week_ago := (now (parseDuration "-167h55m")) -]]
+          [[- with $last -]][[- /* We should never be in this situation, but done defensively */ -]]
+            [[- if .Before $week_ago -]]
+              [[- $last = $week_ago -]]
+            [[- end -]]
+          [[- end -]]
+          [[- $end := 0 -]][[- /* Predeclare $end. */ -]]
+          [[- with $last -]]
+            [[- $end = .Add $hour -]]
+          [[- end -]]
+          [[- with $end -]]
+            [[- if .After now -]]
+              [[- $end = now -]]
+            [[- end -]]
+          [[- end -]]
+          [[- with $end -]]
+            [[- if ge (.Sub $last) (parseDuration "30s") ]]
+              [[- formatDate $last ]]/[[ formatDate $end -]]
+            [[- end -]]
+          [[- end -]]
+        [[- end -]]
       fail_on_template_error: true
 cursor:
   last_received_time:
     value: '[[.last_response.body.queryEndTime]]'
 response.split:
   target: body.clicksBlocked
-  ignore_empty_value: true
+  ignore_empty_value: false
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

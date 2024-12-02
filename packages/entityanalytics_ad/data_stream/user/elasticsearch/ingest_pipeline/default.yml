@@ -6,6 +6,11 @@ processors:
       tag: set_ecs_version
       value: 8.11.0
 
+  - remove:
+      field: event.action
+      if: ctx.event?.action != "started" && ctx.event?.action != "completed"
+      ignore_missing: true
+
   - pipeline:
       name: '{{ IngestPipeline "entity" }}'
       if: ctx.activedirectory != null

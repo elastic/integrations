@@ -1233,6 +1233,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | citrix_adc.log.access_type |  | keyword |
 | citrix_adc.log.action |  | keyword |
 | citrix_adc.log.adm_user |  | keyword |
+| citrix_adc.log.alert_level |  | keyword |
+| citrix_adc.log.alert_type |  | keyword |
 | citrix_adc.log.app.launch_time |  | keyword |
 | citrix_adc.log.app.name |  | keyword |
 | citrix_adc.log.app.process_id |  | long |

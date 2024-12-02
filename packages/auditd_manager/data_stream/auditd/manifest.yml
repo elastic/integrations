@@ -33,6 +33,19 @@ streams:
 
           If `auto` is selected, `elastic-agent` will attempt to use multicast sockets, falling
           back to unicast if multicast is not available.
+      - name: session_data
+        type: bool
+        title: Session data
+        show_user: true
+        multi: false
+        default: false
+        description: |
+          Turn this on to capture the extended process data required for Session View. 
+          Session View provides you a visual representation of session and process execution data.
+          
+          Session View data is organized according to the Linux process model to help you 
+          investigate process, user, and service activity on your Linux infrastructure.
+          [Learn more](https://www.elastic.co/guide/en/security/current/session-view.html) 
       - name: immutable
         type: bool
         title: Immutable
@@ -177,3 +190,14 @@ streams:
         description: |
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
           This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: session_data_processors
+        type: yaml
+        title: Session data processors
+        required: false
+        show_user: false
+        multi: false
+        description: |
+          These processors will be appended to the processors configuration if Session Data is enabled.
+        default: >2-
+            - add_session_metadata:
+               backend: "auto"

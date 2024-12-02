@@ -62,7 +62,7 @@ processors:
       ignore_missing: true
   - set:
       field: threat.feed.reference
-      value: "https://maltiverse.com/feed/{{ maltiverse.feed }}"
+      value: "https://maltiverse.com/feed/{{{ maltiverse.feed }}}"
       if: ctx.maltiverse?.feed != null
 ## blacklist fields
   - date:
@@ -142,7 +142,7 @@ processors:
       if: 'ctx.maltiverse?.type == "ip"'
   - set:
       field: threat.indicator.reference
-      value: "https://maltiverse.com/ip/{{ threat.indicator.ip }}"
+      value: "https://maltiverse.com/ip/{{{ threat.indicator.ip }}}"
       if: 'ctx.maltiverse?.type == "ip"'
 ## TODO: match the AS regex
   - rename:
@@ -198,7 +198,7 @@ processors:
       if: 'ctx.maltiverse?.type == "hostname"'
   - set:
       field: threat.indicator.reference
-      value: "https://maltiverse.com/hostname/{{ threat.indicator.url.domain }}"
+      value: "https://maltiverse.com/hostname/{{{ threat.indicator.url.domain }}}"
       if: 'ctx.maltiverse?.type == "hostname"'
 ## TODO: match the AS regex
 ## URL fields
@@ -224,7 +224,7 @@ processors:
       if: 'ctx.maltiverse?.type == "url" && ctx.maltiverse?.domain != null'
   - set:
       field: threat.indicator.reference
-      value: "https://maltiverse.com/url/{{ maltiverse.urlchecksum }}"
+      value: "https://maltiverse.com/url/{{{ maltiverse.urlchecksum }}}"
       if: 'ctx.maltiverse?.type == "url" && ctx.maltiverse?.urlchecksum != null'
 ## Sample fields
   - rename:
@@ -254,7 +254,7 @@ processors:
       if: 'ctx.maltiverse?.type == "sample" && ctx.maltiverse?.size != null'
   - set:
       field: threat.indicator.reference
-      value: "https://maltiverse.com/sample/{{ threat.indicator.file.hash.sha256 }}"
+      value: "https://maltiverse.com/sample/{{{ threat.indicator.file.hash.sha256 }}}"
       if: 'ctx.maltiverse?.type == "sample"'
 
 # Generate an event ID based on the original event
@@ -302,7 +302,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

@@ -150,7 +150,7 @@ processors:
       if: ctx.abusech?.threatfox?.ioc_type != null && ctx.abusech?.threatfox?.ioc_type.endsWith('_hash')
   - rename:
       field: abusech.threatfox.ioc
-      target_field: threat.indicator.file.hash.{{_tmp.hashtype}}
+      target_field: threat.indicator.file.hash.{{{_tmp.hashtype}}}
       if: "ctx.abusech?.threatfox?.ioc_type != null && ctx.abusech.threatfox.ioc_type.endsWith('_hash') && ctx._tmp.hashtype != null"
   # Copy tags (either as list or comma-separated string) and remove
   - foreach:
@@ -284,4 +284,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: 'Processor {{ _ingest.on_failure_processor_type }} {{#_ingest.on_failure_processor_tag}}with tag {{ _ingest.on_failure_processor_tag }} {{/_ingest.on_failure_processor_tag}}in pipeline {{_ingest.pipeline}} failed with message {{ _ingest.on_failure_message }}'
+      value: 'Processor {{{ _ingest.on_failure_processor_type }}} {{{#_ingest.on_failure_processor_tag}}}with tag {{{ _ingest.on_failure_processor_tag }}} {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}} failed with message {{{ _ingest.on_failure_message }}}'
