@@ -18,7 +18,7 @@ The Abnormal Security integration collects four types of logs:
 
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the instructions on how to [install Elastic Agents](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+You need to install Elastic Agent. For detailed guidance, refer to the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent
 
