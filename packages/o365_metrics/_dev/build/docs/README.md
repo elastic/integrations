@@ -34,7 +34,7 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 
 
-## Logs
+## Metrics
 
 ### MailboxQuotastatus
 
@@ -42,3 +42,11 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
 
 {{fields "mailboxquotastatus"}}
+
+
+### OutlookAppUsage
+
+Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
+
+
+{{fields "outlook_app_usage"}}

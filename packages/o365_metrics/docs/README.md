@@ -34,7 +34,7 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 
 
-## Logs
+## Metrics
 
 ### MailboxQuotastatus
 
@@ -54,12 +54,41 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| o365metrics.mailboxquotastatus.Indeterminate | Indeterminate. | integer |
-| o365metrics.mailboxquotastatus.ReportDate | Report Date. | date |
-| o365metrics.mailboxquotastatus.ReportPeriod | Report Period. | integer |
-| o365metrics.mailboxquotastatus.ReportRefreshDate | Report Refresh Date. | date |
-| o365metrics.mailboxquotastatus.Send/ReceiveProhibited | Send/ReceiveProhibited | integer |
-| o365metrics.mailboxquotastatus.SendProhibited | Send Prohibited. | integer |
-| o365metrics.mailboxquotastatus.UnderLimit | Under Limit | integer |
-| o365metrics.mailboxquotastatus.WarningIssued | Warning Issued | integer |
+| o365metrics.mailboxquotastatus.indeterminate | Indeterminate. | integer |
+| o365metrics.mailboxquotastatus.report_date | Report Date. | date |
+| o365metrics.mailboxquotastatus.report_period | Report Period. | integer |
+| o365metrics.mailboxquotastatus.report_refresh_date | Report Refresh Date. | date |
+| o365metrics.mailboxquotastatus.send/receive_prohibited | Send/ReceiveProhibited | integer |
+| o365metrics.mailboxquotastatus.send_prohibited | Send Prohibited. | integer |
+| o365metrics.mailboxquotastatus.under_limit | Under Limit | integer |
+| o365metrics.mailboxquotastatus.warning_issued | Warning Issued | integer |
 
+
+
+### OutlookAppUsage
+
+Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
+
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| o365metrics.outlook_app_usage.outlook_2007 | Outlook 2007 | integer |
+| o365metrics.outlook_app_usage.outlook_2010 | Outlook 2010 | date |
+| o365metrics.outlook_app_usage.outlook_2013 | Outlook 2013 | integer |
+| o365metrics.outlook_app_usage.outlook_2016 | Outlook 2016 | integer |
+| o365metrics.outlook_app_usage.outlook_2019 | Outlook 2019 | integer |
+| o365metrics.outlook_app_usage.outlook_m365 | Outlook M365 | integer |
+| o365metrics.outlook_app_usage.report_period | Report Period | integer |
+| o365metrics.outlook_app_usage.report_refresh_date | Report Refresh Date. | date |
+| o365metrics.outlook_app_usage.undetermined | Undetermined | integer |
