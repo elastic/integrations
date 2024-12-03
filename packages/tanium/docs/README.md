@@ -1197,4 +1197,5 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.user.domain | User domain of the threat response. | keyword |
 | tanium.threat_response.user.id | User id for the threat response. | keyword |
 | tanium.threat_response.user.name | User name for the threat response. | keyword |
+| tanium.truncations | JSON paths that were removed to avoid excessive depth. | keyword |
 
