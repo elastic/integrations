@@ -675,11 +675,11 @@ Note: Descriptions have not been filled out
 
 
 #### [MVRP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MVRP.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.mvrp.port     |             |      | server.port                  |
-| aruba.mvrp.vlan     |             |      | network.vlan.id              |
-| aruba.mvrp.vlan_max |             |      | aruba.limit                  |
+| Docs Field | Schema Mapping     |
+|------------|--------------------|
+| <port>     | aruba.port         |
+| <vlan>     | network.vlan.id    |
+| <vlan_max> | aruba.limit        |
 
 #### [NAE Agents events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NAE_ALERT.htm)
 | Field               | Description | Type | Common                       |
