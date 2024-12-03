@@ -414,16 +414,14 @@ processors:
                 return null; // Return null if max depth is exceeded
             }
             for (entry in node.entrySet()) {
-                Object key = entry.getKey();
                 Object value = entry.getValue();
                 if (value instanceof Map) {
-                    node.put(key, truncateMap((Map) value, depth + 1, maxDepth, truncations));
+                    entry.setValue(truncateMap((Map) value, depth + 1, maxDepth, truncations));
                 } else if (value instanceof List) {
                     // A list in a map doesn't add depth - multiple values are treated the same as a single value
-                    node.put(key, truncateList((List) value, depth, maxDepth, truncations));
-                } else {
-                    node.put(key, value); // It's a plain value
+                    entry.setValue(truncateList((List) value, depth, maxDepth, truncations));
                 }
+                // Otherwise it's a plain value, so leave it
             }
             return node;
         }
