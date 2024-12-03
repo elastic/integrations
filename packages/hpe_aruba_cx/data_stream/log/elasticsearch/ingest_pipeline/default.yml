@@ -45,7 +45,24 @@ processors:
       tag: lowercase_event_kind
       ignore_missing: true
 
-
+    # LLDP events (1xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LLDP.htm
+  - grok:
+      field: message
+      tag: lldp_event_103_through_113
+      description: "Logs event when LLDP (Link Layer Discovery Protocol) feature"
+      if: "['103','104','105','106','107','108','109','110','113'].contains(ctx.event?.code)"
+      patterns:
+        - "^LLDP neighbor %{DATA:aruba.instance.id} (added|updated|deleted) on %{GREEDYDATA:aruba.interface.id}"
+        - "^Configured LLDP (%{TX_TIMER}|%{TX_HOLD}|%{TX_DELAY}|%{REINIT_DELAY}|%{MANAGEMENT_IP})"
+        - "^PVID mismatch on %{DATA:aruba.interface.id} pvid = %{NUMBER:aruba.lldp.pvid:long}, Neighbor %{DATA:aruba.instance.id} port_id = %{DATA:aruba.lldp.ninterface} pvid = %{NUMBER:aruba.lldp.npvid:long}"
+      pattern_definitions:
+        TX_TIMER: "tx-timer to %{NUMBER:aruba.lldp.tx_timer:long}"
+        TX_HOLD: "tx-hold to %{NUMBER:aruba.lldp.tx_hold:long}"
+        TX_DELAY: "tx-delay to %{NUMBER:aruba.lldp.tx_delay:long}"
+        REINIT_DELAY: "reinit-delay to %{NUMBER:aruba.lldp.reinit_delay:long}"
+        MANAGEMENT_IP: "Management IP %{IP:server.ip}"
+  
   # Fan Events (2xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm
   # * 212 is not included as it does not require further processing.
@@ -238,9 +255,120 @@ processors:
       pattern_definitions:
         407_PATTERN: "downshifted to speed %{NUMBER:aruba.interface.port_speed:long} Mbps because link attempt failed at higher speed"
 
+    # LED events (50x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LED.htm
+  - grok:
+      field: message
+      tag: led_event_501_502
+      description: "Log about number of LED [types|config] in subsystem"
+      if: "['501','502'].contains(ctx.event?.code)"
+      patterns:
+        - "^There are %{NUMBER:aruba.count:long} LED (types|configs) in subsystem %{GREEDYDATA:aruba.subsystem}"
+
+    # Loopback events (90x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm
+  - grok:
+      field: message
+      tag: loop_901_902_903
+      description: "Log when loopback interface event is triggered"
+      if: "['901','902','903'].contains(ctx.event?.code)"
+      patterns:
+        - "^Loopback Interface %{DATA:aruba.interface.id}, (created|deleted|configured administratively %{GREEDYDATA:aruba.interface.state})"
+
+    # LACP events (13xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LACP.htm
+  - grok:
+      field: message
+      tag: lacp_event_1301_1302_1312_1313
+      description: "Dynamic LAG|VSX has been created|deleted"
+      if: "['1301','1302', '1312', '1313'].contains(ctx.event?.code)"
+      patterns:
+        - "^(Dynamic )?LAG %{DATA:aruba.instance.id} (created|deleted|set as VSX)"
+        - "^Failed to create LAG %{GREEDYDATA:aruba.instance.id}"
+  - dissect:
+      field: message
+      tag: lacp_event_1305
+      description: "Log when LACP system priority is set"
+      if: "['1305'].contains(ctx.event?.code)"
+      pattern: "LACP system priority set to %{aruba.lacp.system_priority}"
+  - dissect:
+      field: message
+      tag: lacp_event_1307
+      description: "Log when LACP system ID is set"
+      if: "['1307'].contains(ctx.event?.code)"
+      pattern: "LACP system ID set to %{aruba.lacp.system_id}"
+  - grok:
+      field: message
+      tag: lacp_event_1303_1304_1311_1314_1318
+      description: "Log when interface has been added|removed to LAG"
+      if: "['1303','1304','1311','1314','1318'].contains(ctx.event?.code)"
+      patterns:
+        - "^Interface %{DATA:aruba.interface.id} added to LAG %{DATA:aruba.instance.id}. Existing configuration on interface %{DATA:aruba.interface.prev_id} will be removed"
+        - "^Interface %{DATA:aruba.interface.id} removed from LAG %{DATA:aruba.instance.id}. It will be set with default configuration with admin down state"
+        - "^Partner is lost \\(timed out\\) for interface %{DATA:aruba.interface.id} LAG %{DATA:aruba.instance.id}. State: %{GREEDYDATA:aruba.lacp.fsm_state}"
+        - "^LAG %{DATA:aruba.instance.id} not sending LACPDUs through interface %{DATA:aruba.interface.id} because VSX information is not complete"
+        - "^Interface %{DATA:aruba.interface.id} enabled by fallback for lag %{GREEDYDATA:aruba.instance.id}"
+  - grok:
+      field: message
+      tag: lacp_event_1306_1308_1315_1316_1317_1320_1323
+      description: "Log when LACP mode|rate|mode|timeout is set|expired | Logs to set global load balancing mode for LAG interfaces | Logs to capture if fallback is changed for LAG interface"
+      if: "['1306','1308','1315','1316','1317','1320','1323'].contains(ctx.event?.code)"
+      patterns:
+        - "^LACP (mode set to %{DATA:aruba.lacp.mode}|rate set to %{DATA:aruba.lacp.rate}) for %{LAG_ID_GREEDY}"
+        - "^LACP fallback mode set to %{DATA:aruba.lacp.fallback_mode} for %{LAG_ID_GREEDY}"
+        - "^LACP fallback timeout( set to)? %{NUMBER:aruba.timeout:long}( expired)? for %{LAG_ID_GREEDY}"
+        - "^LAG load balancing mode is set to %{DATA:aruba.lacp.mode} for %{LAG_ID_GREEDY}"
+        - "^Fallback is %{DATA:aruba.lacp.fallback} for %{LAG_ID_GREEDY}"
+      pattern_definitions:
+        LAG_ID_GREEDY: "(LAG|lag) %{GREEDYDATA:aruba.instance.id}"
+  - grok:
+      field: message
+      tag: lacp_event_1309_1310_1319_1321_1322
+      description: "Dynamic LAG has event has been raised"
+      if: "['1309','1310','1319','1321','1322'].contains(ctx.event?.code)"
+      patterns:
+        - "^Partner is detected for %{INTF_ID} %{LAG_ID}\\s?: %{DATA:aruba.lacp.partner_sys_id}. %{ACTOR_STATE}, %{PARTNER_STATE}"
+        - "^Partner is out of sync for %{INTF_ID} %{LAG_ID}. %{ACTOR_STATE}, %{PARTNER_STATE}"
+        - "^LAG global load balancing mode is set to %{GREEDYDATA:aruba.lacp.mode}"
+        - "^%{LAG_ID} State change for interface %{DATA:aruba.interface.id}: %{ACTOR_STATE}, %{PARTNER_STATE}"
+        - "^%{INTF_NAME} cannot be part of Lag %{NUMBER:aruba.lacp.lag_number:long}. Speed mismatched \\(Interface speed %{NUMBER:aruba.lacp.port_speed:long}Mbps Lag base speed %{NUMBER:aruba.lacp.lag_speed:long}Mbps\\)."
+      pattern_definitions:
+        LAG_ID: "(LAG|lag) %{DATA:aruba.instance.id}"
+        INTF_ID: "(I|i)nterface %{DATA:aruba.interface.id}"
+        INTF_NAME: "(I|i)nterface %{DATA:aruba.interface.name}"
+        ACTOR_STATE: "Actor state: %{DATA:aruba.lacp.actor_state}"
+        PARTNER_STATE: "(P|p)artner state %{GREEDYDATA:aruba.lacp.partner_state}"
+
+    # LAG events (14xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LAG.htm
+  - grok:
+      field: message
+      tag: lacp_event_1401_through_1414
+      description: "Dynamic LAG has event has been raised"
+      if: "['1401','1402','1403','1404','1405','1406','1407','1408','1409','1410','1411','1412','1413','1414'].contains(ctx.event?.code)"
+      patterns:
+        - "^Trunk set succeeds %{UNIT} %{LAG_ID_GREEDY}"
+        - "^(Lag creation|Destroy lag) failed( on)? %{UNIT} %{LAG_ID} %{RC} %{ERROR}"
+        - "^Trunk member add port succeeds on %{UNIT} %{PORT} %{TID}"
+        - "^(Trunk port attach error on|Failed to set egress enable on|Failed to delete) %{PORT}( from)? %{TID} %{RC} %{ERROR}"
+        - "^Trunk psc set failed on %{UNIT} %{LAG_ID} psc %{DATA:aruba.lag.psc} %{RC} %{ERROR}"
+        - "^%{LAG_INTERFACE}, set to load balance mode to %{GREEDYDATA:aruba.lag.mode}"
+        - "^(Remove|Add) %{PORT} (from|to) %{LAG_INTERFACE_GREEDY}"
+        - "^(Remove|Add) %{PORT} to vlan %{DATA:network.vlan.id} for L3 %{LAG_INTERFACE_GREEDY}"
+        - "^Destroy L3 %{LAG_INTERFACE_GREEDY}"
+      pattern_definitions:
+        ERROR: "(error )?%{GREEDYDATA:event.reason}"
+        LAG_ID: "lag_id %{DATA:aruba.instance.id}"
+        LAG_ID_GREEDY: "lag_id %{GREEDYDATA:aruba.instance.id}"
+        LAG_INTERFACE: "LAG( interface)? %{DATA:aruba.interface.id}"
+        LAG_INTERFACE_GREEDY: "LAG( interface)? %{GREEDYDATA:aruba.interface.id}"
+        PORT: "(hw_)?port %{DATA:aruba.port}"
+        RC: "rc %{DATA:error.code}"
+        TID: "tid %{NUMBER:process.thread.id:long}"
+        UNIT: "unit %{DATA:aruba.unit}"
+
     # CoPP Events (15xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm
-
     # The following Event IDs do not need further processing
     # * 1501
     # * 1502
@@ -296,6 +424,66 @@ processors:
       if: "ctx.event?.code == '1513'"
       pattern: "Failed to retrieve CoPP statistics from slot %{aruba.slot} class %{aruba.copp.class}"
 
+    # Layer 3 Interface events (17xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3INTERFACE.htm
+  - grok:
+      field: message
+      tag: l3_event_1701_1702
+      description: "logs to create|deleted L3 interface"
+      if: "['1701','1702'].contains(ctx.event?.code)"
+      patterns:
+        - "^L3-Interface %{DATA:aruba.interface.id}, (created|deleted)"
+  - dissect:
+      field: message
+      tag: l3_event_1703
+      description: "logs for admin state of L3 interface"
+      if: "['1703'].contains(ctx.event?.code)"
+      pattern: "Interface %{aruba.interface.id}, configured administratively %{aruba.status}"
+  - dissect:
+      field: message
+      tag: l3_event_1704
+      description: "logs errors while creating vlan for layer 3 interfaces."
+      if: "['1704'].contains(ctx.event?.code)"
+      pattern: "Failed to create %{network.vlan.id} for layer 3 interface %{aruba.interface.id}"
+  - grok:
+      field: message
+      tag: l3_event_1705_1706
+      description: "logs errors while destroying vlan for layer 3 interfaces | logs errors while destroying layer 3 interface."
+      if: "['1705','1706'].contains(ctx.event?.code)"
+      patterns:
+        - "^Failed to (destroy layer |delete an l)3 interface %{DATA:aruba.interface.id}( vlan %{DATA:network.vlan.id})?, error: %{GREEDYDATA:event.reason}"
+  - grok:
+      field: message
+      tag: l3_event_1707_1708_1709_1710_1711_1712_1715_1716_1717_1718_1719_1720_1722
+      description: "adding l3 hosts | deleting l3 hosts | [adding|deleted|failed] to get l3 hosts | "
+      if: "['1707','1708','1709','1710','1711','1712','1715','1716','1717','1718','1719','1720','1722'].contains(ctx.event?.code)"
+      patterns:
+        - "^Failed to (delete|add) %{HOST_IP}, %{ERROR}"
+        - "^(Added|Deleted|Failed to get) %{HOST_IP}"
+        - "^L3 interface %{ERROR}"
+        # Note: sequence matters here, putting greedy data at the end
+        - "^(Delete|Added|Add) route (%{DATA:aruba.prefix}, %{ERROR}|%{GREEDYDATA:aruba.prefix})"
+        - "^Update: route state: %{GREEDYDATA:aruba.status}"
+        - "^Error (deleting|creating) egress object for port %{DATA:aruba.port}, %{ERROR}"
+      pattern_definitions:
+        HOST_IP: "L3 host (entry|hit) for ip %{IP:host.ip}"
+        ERROR: "error: %{GREEDYDATA:event.reason}"
+  - grok:
+      field: message
+      tag: l3_event_1713_1714_1721_1723_1724_1725_1726_1727_1728_1729_1730_1731
+      description: "nexthop [addition|deletion] | egress object [creation|deletion] | [ipv4|ipv6] address [update|delete] on interface | configuring hardware for IPMTU"
+      if: "['1713','1714','1721','1723','1724','1725','1726','1727','1728','1729','1730','1731'].contains(ctx.event?.code)"
+      patterns:
+        - "^(Delete|Added) Nexthop %{IP:aruba.l3.nexthop}(, egress_id %{DATA:observer.egress.interface.id},)? for route %{GREEDYDATA:aruba.prefix}"
+        - "^(Deleted|Created) L3 egress ID %{DATA:observer.egress.interface.id} for port (%{DATA:aruba.port} intf %{GREEDYDATA:aruba.interface.id}|%{GREEDYDATA:aruba.port})"
+        - "^%{INTERFACE},( configured with)? %{SERVER_IP}"
+        - "^IPv6 Address Status: %{INTERFACE}, address %{IPORHOST:server.address}, status %{GREEDYDATA:aruba.status}"
+        - "^%{INTERFACE}, configured with secondary %{SERVER_IP}"
+        - "^%{INTERFACE}, secondary %{SERVER_IP}"
+        - "^IP MTU %{DATA:aruba.mtu} not applied due to hardware resource limitation"
+      pattern_definitions:
+        SERVER_IP: "(ipv6|ipv4) address( deleted)? %{IP:server.ip}"
+        INTERFACE: "(I|i)nterface %{DATA:aruba.interface.id}"
 
   # ECMP Events (18xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ECMP.htm
@@ -401,6 +589,57 @@ processors:
       field: "message"
       description: "Logs changes in TACACS server reachability status"
       pattern: "TACACS server host %{server.address} port %{aruba.port} vrf %{aruba.vrf.id} %{aruba.status}"
+
+    # MGMD events (26xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOP-PROTECT.htm
+  - grok:
+      field: message
+      tag: mgmd_event_2601_through_2622
+      description: "The following are the events related to MGMD"
+      if: "['2601','2602','2603','2604','2605','2606','2607','2608','2609','2610','2611','2612','2613','2614','2619','2620','2621','2622'].contains(ctx.event?.code)"
+      patterns:
+        - "^Failed to alloc a %{DATA:aruba.mgmd.pkt_type} pkt\\(%{VLAN}\\)"
+        - "^Received (IGMPv1|IGMPv2|MLDV1|MLDV2) query from %{IP:client.ip} when the device is configured for"
+        - "^Unable to alloc a buf of size %{NUMBER:aruba.len:long} for %{GREEDYDATA:aruba.subsystem}"
+        - "^%{INTERFACE}: Other Querier detected for %{GREEDYDATA:aruba.mgmd.mgmd_type}"
+        - "^%{INTERFACE}: End %{DATA:aruba.mgmd.mgmd_type} Querier role"
+        - "^%{DATA:aruba.mgmd.mgmd_type} Querier Election in progress for %{INTERFACE} with IP address %{IP:client.ip}"
+        - "^%{INTERFACE}: Start %{DATA:aruba.mgmd.mgmd_type} Querier role addr: %{IP:client.ip}"
+        - "^Received packet from %{IP:client.ip}, type %{DATA:aruba.mgmd.mgmd_type}, on invalid port %{GREEDYDATA:aruba.port}"
+        - "^%{DATA:aruba.mgmd.mgmd_type} snooping is %{DATA:aruba.status} on %{VLAN}."
+        - "^%{DATA:aruba.mgmd.mgmd_type} is %{DATA:aruba.status} on %{INTERFACE_GREEDY}"
+        - "^Port %{DATA:aruba.port} on %{VLAN} is set to %{DATA:aruba.status} mode for %{DATA:aruba.mgmd.mgmd_type}."
+        - "^%{DATA:aruba.mgmd.mgmd_type} is not operational on VLAN %{DATA:network.vlan.id} due to resource unavailability"
+        - "^Received IGMPv3 query from %{IP:client.ip} when the device is configured for IGMPv2"
+        - "^Flood mode is temporarily activated on ERPS ports %{DATA:aruba.port} and %{DATA:aruba.mgmd.port1} as ring state for ring id %{DATA:aruba.mgmd.ring_id} changed to %{GREEDYDATA:aruba.status}."
+      pattern_definitions:
+        VLAN: "(vlan|VLAN|interface) %{DATA:network.vlan.id}"
+        VLAN_GREEDY: "(vlan|VLAN|interface) %{GREEDYDATA:network.vlan.id}"
+        INTERFACE: "(I|i)nterface %{DATA:aruba.interface.id}"
+        INTERFACE_GREEDY: "(I|i)nterface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      field: message
+      tag: mgmd_event_2615_2618
+      description: "IGMP/MLD is disabled on a L3 interface due to internal errors | IGMP/MLD snooping is operational"
+      if: "['2615','2618'].contains(ctx.event?.code)"
+      patterns:
+        - "^%{DATA:aruba.mgmd.mgmd_type} is not operational on interface %{DATA:aruba.mgmd.l3_port} due to resource unavailability"
+        - "^%{DATA:aruba.mgmd.mgmd_type} snooping is %{DATA:aruba.status} on VLAN %{GREEDYDATA:network.vlan.id}."
+
+    # Loop Protect events (280x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOP-PROTECT.htm
+  - grok:
+      field: message
+      tag: loop_protect_event_2801_through_2808
+      description: "Logs Loop protect events"
+      if: "['2801','2802','2803','2804','2805','2806','2807','2808'].contains(ctx.event?.code)"
+      patterns:
+        - "^Ports TX %{DATA:aruba.loop.tx_port} and RX %{DATA:aruba.loop.rx_port} are disabled by Loop-protect after loop detection on VLAN %{GREEDYDATA:network.vlan.id}"
+        - "^(Loop detected on port|Port) %{DATA:aruba.port}( is disabled by Loop-protection after loop detection)? on VLAN %{GREEDYDATA:network.vlan.id}"
+        - "^Port %{DATA:aruba.port} enabled after disable time expired"
+        - "^Port %{DATA:aruba.port} (added for|deleted from) loop-protection"
+        - "^Loop-Protection stats cleared for port %{GREEDYDATA:aruba.port}"
+        - "^Ports TX %{DATA:aruba.loop.tx_port} and RX %{DATA:aruba.loop.rx_port} are involved during TX port disabling"
 
   # BGP events (29xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BGP.htm
@@ -568,6 +807,40 @@ processors:
         3011_3012_3013_COMMON: "correctable memory error count %{NUMBER:aruba.hardware.cecount:long} exceeded threshold %{NUMBER:aruba.limit:long}(?:%{3011_3012_3013_OPTIONAL})?"
         3011_3012_3013_OPTIONAL: " and %{NUMBER:aruba.hardware.offlined:long}"
 
+    # Module events (32xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MODULE.htm
+  - grok:
+      field: message
+      tag: module_event_3201_through_3240_common
+      description: "The following are the events related to module."
+      if: "['3201','3202','3203','3204','3206','3208','3209','3210','3211','3212','3213','3214','3216','3217','3218','3219','3220','3221','3222','3224','3225','3227','3228','3234','3235','3236','3237','3238','3240'].contains(ctx.event?.code)"
+      patterns:
+        - "%{DATA:aruba.module.type} module %{DATA:aruba.module.name}\\s"
+  - grok:
+      field: message
+      tag: module_event_3205_3207_3215_3223_3226_3229_3230_3231_3232_3233_3239
+      description: "The following are the events related to module that exhibit extra fields other than module type and name."
+      if: "['3205','3207','3215','3223','3226','3229','3230','3231','3232','3233','3239'].contains(ctx.event?.code)"
+      patterns:
+        - "^%{DATA:aruba.module.type} module %{DATA:aruba.module.name} (is down|has failed): %{GREEDYDATA:event.reason}"
+        - "^%{DATA:aruba.module.type} module %{DATA:aruba.module.name} device initialization failed: %{GREEDYDATA:event.reason}"
+        - "^%{DATA:aruba.module.type} module %{DATA:aruba.module.name} ASIC (denitialization|deinitialization|initialization) failed: %{GREEDYDATA:event.reason}"
+        - "^%{DATA:aruba.module.type} module %{DATA:aruba.module.name} disabling front-end power: %{GREEDYDATA:event.reason}"
+        - "^%{DATA:aruba.module.type} module %{DATA:aruba.module.name} configured with product number %{GREEDYDATA:aruba.unit}"
+        - "^%{DATA:aruba.module.type} module %{DATA:aruba.module.name} is requesting to power on with priority %{GREEDYDATA:aruba.priority}"
+        - "^%{DATA:aruba.module.name} is starting zeroization"
+        - "^%{DATA:aruba.module.name} zeroization (completed|failed)"
+
+  # IRDP events (350x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IRDP.htm
+  - grok:
+      if: "['3501', '3502'].contains(ctx.event?.code)"
+      tag: firmware_update_event_3501_3502
+      field: "message"
+      description: "This command [enables|disable] the IRDP (ICMP Router Discovery Protocol) feature on interface."
+      patterns:
+        - "^IRDP (en|dis)abled on interface %{GREEDYDATA:aruba.interface.id}"
+
   # IPv6 Router Advertisement events (39xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPV6-RA.htm
   - grok:
@@ -583,6 +856,51 @@ processors:
         - "^(Added|Deleted) RA Prefix: %{DATA:aruba.prefix} on interface: %{DATA:aruba.interface.id} (to|from) prefix list"
         - "^default prefix is configured on interface %{GREEDYDATA:aruba.interface.id}"
         - "^(RDNSS|DNSSL) is (added|deleted) on interface: %{GREEDYDATA:aruba.interface.id}"
+
+    # Multicast Traffic Manager events (400x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MTM.htm
+  - dissect:
+      field: message
+      tag: multicast_traffic_mgr_event_4001
+      description: "Event raised when the maximum number of multicast L3 Bridge Control Forwarding entries is reached"
+      if: "ctx.event?.code == '4001'"
+      pattern: "The Multicast L3 Bridge Control Forwarding entries limit was reached: %{aruba.limit}"
+
+    # Management events (430x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMT.htm
+  - grok:
+      field: message
+      tag: mgmt_event_4301
+      description: "Logs related to management interface configurations"
+      if: "ctx.event?.code == '4301'"
+      patterns: 
+        - "MGMT_INTF: (Static parameter : \\[%{GREEDYDATA:_temp.config}\\]|%{GREEDYDATA:aruba.mgmt.config_param})"
+  - grok:
+      field: message
+      tag: mgmt_event_4302
+      description: "Logs related to management interface configurations"
+      if: "ctx.event?.code == '4302'"
+      patterns: 
+        - "MGMT_INTF: (Static parameter : \\[%{GREEDYDATA:_temp.config}\\]|%{GREEDYDATA:aruba.mgmt.config_err})"
+  - grok:
+      field: message
+      tag: mgmt_event_4303
+      description: "Logs related to management interface configurations"
+      if: "ctx.event?.code == '4303'"
+      patterns: 
+        - "MGMT_INTF: (Static parameter : \\[%{GREEDYDATA:_temp.config}\\]|%{GREEDYDATA:aruba.mgmt.config_crit})"
+  - json:
+      if: "ctx.event?.code == '4301' && ctx._temp?.config != null"
+      field: _temp.config
+      target_field: aruba.mgmt.config_param
+  - json:
+      if: "ctx.event?.code == '4302' && ctx._temp?.config != null"
+      field: _temp.config
+      target_field: aruba.mgmt.config_err
+  - json:
+      if: "ctx.event?.code == '4303' && ctx._temp?.config != null"
+      field: _temp.config
+      target_field: aruba.mgmt.config_crit
 
   # Firmware Update events (44xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FIRMWARE_UPDATE.htm
@@ -604,6 +922,18 @@ processors:
       description: "Indicates that a switch firmware update failed from a remote or local source"
       patterns:
         - "^User %{DATA:user.name}: %{DATA:aruba.firmware.image_profile} image update failed via %{DATA:aruba.firmware.dnld_type}( from %{HOSTNAME:source.address})?$"
+
+    # MAC Learning events (480x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MAC-LEARN.htm
+  - grok:
+      field: message
+      tag: mac_learn_event_4801_through_4805
+      description: "The following are the events related to MAC learning."
+      if: "['4801','4802','4803','4804','4805'].contains(ctx.event?.code)"
+      patterns:
+        - "^MAC %{MAC:server.mac} moved from port %{DATA:aruba.interface.prev_id} to port %{DATA:aruba.interface.id} on VLAN %{GREEDYDATA:network.vlan.id}"
+        - "^All dynamic MAC addresses on VLAN %{DATA:network.vlan.id} were flushed"
+        - "^All dynamic MAC addresses on port %{DATA:aruba.interface.id} were flushed"
 
   # HTTPS Server events (560x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm
@@ -653,6 +983,17 @@ processors:
       field: "message"
       description: "Logs a message when SSH authorized key fails validation check"
       pattern: "User %{user.name} has configured an invalid SSH authorized key with key identifier %{user.id}"
+
+    # Mirroring events (670x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MIRRORING.htm
+  - grok:
+      field: message
+      tag: mirror_event_6701_through_6706
+      description: "The following are the events related to mirroring."
+      if: "['6701','6702','6703','6704','6705','6706'].contains(ctx.event?.code)"
+      patterns:
+        - "session %{DATA:aruba.session.id} (created|deleted|updated)"
+        - "session %{GREEDYDATA:aruba.session.id}"
 
   # Config Management events (68xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONFIG_MGMT.htm
@@ -1129,6 +1470,22 @@ processors:
       if: "ctx.event?.code == '8515'"
       pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to Initializing with reason %{event.reason}"
 
+    # MSDP events (860x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSDP.htm
+  - grok:
+      field: message
+      tag: msdp_event_8601_through_8609
+      description: "The following are the events related to MSDP"
+      if: "['8601','8602','8603','8604','8605','8606','8607','8608','8609'].contains(ctx.event?.code)"
+      patterns:
+        - "^Router MSDP is %{DATA:aruba.status} on VRF %{GREEDYDATA:aruba.vrf.name}"
+        - "^Forwarding state of interface %{DATA:aruba.interface.name} has been changed to %{GREEDYDATA:aruba.status}"
+        - "^MSDP Peer %{IP:client.ip}\\(%{DATA:aruba.msdp.tcp_entity}\\) with connection source %{DATA:aruba.interface.name} has entered %{DATA:aruba.status} state"
+        - "^Port %{DATA:aruba.port} is %{DATA:aruba.status} to MSDP Peer %{IP:client.ip}"
+        - "^MSDP Peer %{IP:client.ip} is %{DATA:aruba.status} on VRF %{DATA:aruba.vrf.name}. Interface %{DATA:aruba.interface.name} is added to the Peer"
+        - "^Start %{DATA:aruba.msdp.tcp_entity} role for MSDP peer %{IP:client.ip}"
+        - "^Finish packet was received on MSDP Peer %{IP:client.ip}"
+        - "^Failed to add SA Cache entry: S=%{IP:source.ip}, G=%{IP:aruba.msdp.grp_ip}, R=%{IP:aruba.msdp.rp_ip} for Peer %{IP:client.ip} as MSDP SA Cache Limit is reached"
 
   # Hardware switch controller sync events (88xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm
@@ -1352,6 +1709,19 @@ processors:
         - "^ARP inspection %{DATA:aruba.status} on vlan %{GREEDYDATA:network.vlan.id}."
         - "^ARP inspection %{DATA:aruba.status} on port %{GREEDYDATA:aruba.port}."
 
+  # L3 Encap capacity events (1060x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm
+  - grok:
+      field: message
+      tag: l3_event_10601_10602_10603
+      description: "Logs event when a L3 encapsulation is added to a port"
+      if: "['10601', '10602', '10603'].contains(ctx.event?.code)"
+      patterns:
+        - "^L3 resources critical for neighbor and route forwarding are (at safe levels|low). %{L3_ENCAP_COMMON}"
+        - "^Out of L3 resources critical for neighbor and route forwarding. %{L3_ENCAP_COMMON}"
+      pattern_definitions:
+        L3_ENCAP_COMMON: "Used: %{DATA:aruba.l3.encaps_allocated}, Available: %{GREEDYDATA:aruba.l3.encaps_free}"
+
   # DPSE Events (109xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DPSE.htm
   - dissect:
@@ -1366,6 +1736,17 @@ processors:
       description: "The system completed backplane sequence recovery triggered by line card error"
       if: "ctx.event?.code == '10904'"
       pattern: "Line card module %{aruba.dpse.linecard_name} completed backplane sequence recovery"
+
+  # MAC Address mode configuration events (1100x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm
+  - grok:
+      field: message
+      tag: mac_event_11001_11002_11003
+      description: "The following are the events related to MAC Address mode configuration"
+      if: "['11001','11002','11003'].contains(ctx.event?.code)"
+      patterns:
+        - "^The MAC Address (configured|operational) mode changed from %{DATA:aruba.mac.old_mode} to %{GREEDYDATA:aruba.mac.new_mode}"
+        - "^Station MAC add failure due to hardware full, mac=%{MAC:server.mac} vlan=%{GREEDYDATA:network.vlan.id}"
 
   # Fault Monitor Events (111xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm
@@ -1427,6 +1808,27 @@ processors:
       if: "ctx.event?.code == '11109'"
       patterns:
           - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source: %{NUMBER:aruba.fault.sa_diff_count:long} and destination: %{NUMBER:aruba.fault.da_diff_count:long} address"
+
+    # MACsec events (1120x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MACSEC.htm
+  - grok:
+      field: message
+      tag: macsec_event_11201_through_11204
+      description: "The following are the events related to MACsec"
+      if: "['11201','11202','11203','11204'].contains(ctx.event?.code)"
+      patterns:
+        - "^MACsec session established on Rx Secure Channel %{DATA:aruba.mac.sci} on interface %{GREEDYDATA:aruba.interface.name}"
+        - "^MKA session secured for Connectivity Association %{DATA:aruba.mac.ckn} on interface %{GREEDYDATA:aruba.interface.name}"
+        - "^Secure Association key updated for Connectivity Association %{DATA:aruba.mac.ckn} on interface %{DATA:aruba.interface.name} - Latest AN/KN %{DATA:aruba.mac.latest_an}/%{DATA:aruba.mac.latest_kn}, Old AN/KN %{DATA:aruba.mac.old_an}/%{GREEDYDATA:aruba.mac.old_kn}"
+        - "^Possible replay attempt detected on the Secure Channel %{GREEDYDATA:aruba.mac.sci}."
+
+  # L3 Resource Manager events (1150x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_RESMGR.htm
+  - dissect:
+      field: message
+      tag: l3_rsmgr_event_11501
+      if: "ctx.event?.code == '11501'"
+      pattern: "IPv6 route prefix %{aruba.prefix} is not supported on this platform"
 
   # CFM Events (116xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm
@@ -1511,14 +1913,22 @@ processors:
       value: ['{{{host.mac}}}']
       if: ctx.host?.mac instanceof String
 
-  # Convert aruba.slot from a string to a long
-  # Dissect processor sets everything to a string type
+  # Convert due to dissect processing
+  # - aruba.slot
+  # - aruba.limit
   - convert:
-      tag: convert_aruba_slot
       field: aruba.slot
       type: long
       ignore_missing: true
+  - convert:
+      field: aruba.limit
+      type: long
+      ignore_missing: true
 
+  - remove:
+      field:
+        - _temp.config
+      ignore_missing: true
 
 on_failure:
   - set:

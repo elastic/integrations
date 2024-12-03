@@ -454,196 +454,204 @@ Note: Descriptions have not been filled out
 | <prefixlen> | aruba.len            |
 
 #### [IRDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IRDP.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.irdp.interface        |             |      | observer.ingress.interface.name |
+| Docs Field  | Schema Mapping       |
+|-------------|----------------------|
+| <interface> | aruba.interface.id   |
 
 #### [L3 Encap capacity events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.l3.encaps_allocated   |             |      |                              |
-| aruba.l3.encaps_free        |             |      |                              |
+| Docs Field          | Schema Mapping               |
+|---------------------|------------------------------|
+| <encaps_allocated>  | aruba.l3.encaps_allocated    |
+| <encaps_free>       | aruba.l3.encaps_free         |
 
 #### [L3 Resource Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_RESMGR.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.l3.prefix             |             |      | aruba.prefix                 |
+| Docs Field | Schema Mapping  |
+|------------|-----------------|
+| <prefix>   | aruba.prefix    |
 
 #### [LACP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LACP.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.lacp.actor_state      |             |      |                              |
-| aruba.lacp.fallback         |             |      |                              |
-| aruba.lacp.fsm_state        |             |      |                              |
-| aruba.lacp.intf_id          |             |      | observer.ingress.interface.id|
-| aruba.lacp.lacp_fallback_mode |           |      |                              |
-| aruba.lacp.lacp_fallback_timeout |        |      | aruba.timeout                |
-| aruba.lacp.lacp_mode        |             |      |                              |
-| aruba.lacp.lacp_rate        |             |      |                              |
-| aruba.lacp.lag_id           |             |      | aruba.instance.id            |
-| aruba.lacp.lag_number       |             |      |                              |
-| aruba.lacp.lag_speed        |             |      |                              |
-| aruba.lacp.mode             |             |      |                              |
-| aruba.lacp.partner_state    |             |      |                              |
-| aruba.lacp.partner_sys_id   |             |      |                              |
-| aruba.lacp.port_speed       |             |      |                              |
-| aruba.lacp.system_id        |             |      |                              |
-| aruba.lacp.system_priority  |             |      |                              |
+| Docs Field              | Schema Mapping             |
+|-------------------------|----------------------------|
+| <actor_state>           | aruba.lacp.actor_state     |
+| <fallback>              | aruba.lacp.fallback        |
+| <fsm_state>             | aruba.lacp.fsm_state       |
+| <intf_id>               | aruba.interface.id         |
+| <intf_id>               | aruba.interface.prev_id    |
+| <intf_name>             | aruba.interface.name       |
+| <lacp_fallback_mode>    | aruba.lacp.fallback_mode   |
+| <lacp_fallback_timeout> | aruba.timeout              |
+| <mode>                  | aruba.lacp.mode            |
+| <lacp_rate>             | aruba.lacp.rate            |
+| <lag_id>                | aruba.instance.id          |
+| <lag_number>            | aruba.lacp.lag_number      |
+| <lag_speed>             | aruba.lacp.lag_speed       |
+| <lacp_mode>             | aruba.lacp.lacp_mode       |
+| <partner_state>         | aruba.lacp.partner_state   |
+| <partner_sys_id>        | aruba.lacp.partner_sys_id  |
+| <port_speed>            | aruba.lacp.port_speed      |
+| <system_id>             | aruba.lacp.system_id       |
+| <system_priority>       | aruba.lacp.system_priority |
 
 #### [LAG events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LAG.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.lag.error     |             |      | error.message                |
-| aruba.lag.hw_port   |             |      | server.port                  |
-| aruba.lag.interface |             |      | observer.ingress.interface.name |
-| aruba.lag.lag_id    |             |      | aruba.instance.id            |
-| aruba.lag.mode      |             |      | event.type                   |
-| aruba.lag.port      |             |      | server.port                  |
-| aruba.lag.psc       |             |      |                              |
-| aruba.lag.rc        |             |      | error.code                   |
-| aruba.lag.tid       |             |      | process.thread.id            |
-| aruba.lag.unit      |             |      | aruba.unit                   |
-| aruba.lag.vlan      |             |      | network.vlan.id              |
+| Docs Field | Schema Mapping               |
+|------------|------------------------------|
+| <error>    | event.reason                 |
+| <hw_port>  | aruba.port                   |
+| <interface>| aruba.interface.id           |
+| <lag_id>   | aruba.instance.id            |
+| <mode>     | aruba.lag.mode               |
+| <port>     | aruba.port                   |
+| <psc>      | aruba.lag.psc                |
+| <rc>       | error.code                   |
+| <tid>      | process.thread.id            |
+| <unit>     | aruba.unit                   |
+| <vlan>     | network.vlan.id              |
 
 #### [Layer 3 Interface events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3INTERFACE.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.l3.addr       |             |      | destination.address          |
-| aruba.l3.addr_status|             |      | aruba.status                 |
-| aruba.l3.egress_id  |             |      | observer.egress.interface.id |
-| aruba.l3.err        |             |      | error.message                |
-| aruba.l3.interface  |             |      | observer.ingress.interface.name |
-| aruba.l3.ipaddr     |             |      | destination.ip               |
-| aruba.l3.mtu        |             |      | aruba.mtu                    |
-| aruba.l3.nexthop    |             |      | destination.address          |
-| aruba.l3.port       |             |      | server.port                  |
-| aruba.l3.prefix     |             |      | aruba.prefix                 |
-| aruba.l3.state      |             |      | aruba.status                 |
-| aruba.l3.vlanid     |             |      | network.vlan.id              |
+| Docs Field      | Schema Mapping               |
+|----------------|-------------------------------|
+| <addr>        | server.address                 |
+| <addr_status> | aruba.status                   |
+| <egress_id>   | observer.egress.interface.id   |
+| <err>         | event.reason                   |
+| <interface>   | aruba.interface.id             |
+| <intf>        | aruba.interface.id             |
+| <ipaddr>      | host.ip                        |
+| <mtu>         | aruba.mtu                      |
+| <nexthop>     | aruba.l3.nexthop               |
+| <port>        | aruba.port                     |
+| <prefix>      | aruba.prefix                   |
+| <state>       | aruba.status                   |
+| <value>       | server.ip                      |
+| <vlanid>      | network.vlan.id                |
 
 #### [LED events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LED.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.led.count     |             |      | aruba.count                  |
-| aruba.led.subsystem |             |      | aruba.subsystem              |
+| Docs Field  | Schema Mapping         |
+|-------------|------------------------|
+| <count>     | aruba.count            |
+| <subsystem> | aruba.subsystem        |
 
 #### [LLDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LLDP.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.lldp.chassisid   |             |      | aruba.instance.id            |
-| aruba.lldp.interface   |             |      | observer.ingress.interface.name |
-| aruba.lldp.ip          |             |      | source.ip                    |
-| aruba.lldp.ninterface  |             |      |                              |
-| aruba.lldp.npvid       |             |      |                              |
-| aruba.lldp.port        |             |      | server.port                  |
-| aruba.lldp.pvid        |             |      | network.vlan.id              |
-| aruba.lldp.reinit_delay|             |      |                              |
-| aruba.lldp.tx_delay    |             |      |                              |
-| aruba.lldp.tx_hold     |             |      |                              |
-| aruba.lldp.tx_timer    |             |      |                              |
+| Docs Field   | Schema Mapping               |
+|--------------|------------------------------|
+| <chassisid>  | aruba.instance.id            |
+| <interface>  | aruba.interface.id           |
+| <ninterface> | aruba.lldp.ninterface        |
+| <npvid>      | aruba.lldp.npvid             |
+| <pvid>       | aruba.lldp.pvid              |
+| <hold>       | aruba.lldp.tx_hold           |
+| <value>      | aruba.lldp.tx_delay          |
+| <value>      | aruba.lldp.reinit_delay      |
+| <value>      | aruba.lldp.tx_timer          |
+| <value>      | server.ip                    |
 
 
 #### [Loop Protect events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOP-PROTECT.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.loop.portName    |             |      | source.port                  |
-| aruba.loop.rx_port     |             |      |                              |
-| aruba.loop.tx_port     |             |      |                              |
-| aruba.loop.vlan        |             |      | network.vlan.id              |
+| Docs Field   | Schema Mapping         |
+|--------------|------------------------|
+| <portName>   | aruba.port             |
+| <rxportName> | aruba.loop.rx_port     |
+| <txportName> | aruba.loop.tx_port     |
+| <vlan>       | network.vlan.id        |
 
 #### [Loopback events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.loopback.interface |           |      | observer.ingress.interface.name |
-| aruba.loopback.status  |             |      | aruba.status                 |
+| Docs Field  | Schema Mapping        |
+|-------------|-----------------------|
+| <interface> | aruba.interface.id    |
+| <state>     | aruba.interface.state |
 
 
 #### [MAC Address mode configuration events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_MAC_ADDRESS_CONFIGURATION.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.mac.mac       |             |      | server.mac                   |
-| aruba.mac.new_mode  |             |      |                              |
-| aruba.mac.old_mode  |             |      |                              |
-| aruba.mac.vlan      |             |      | network.vlan.id              |
+| Docs Field | Schema Mapping       |
+|------------|----------------------|
+| <mac>      | server.mac           |
+| <new_mode> | aruba.mac.new_mode   |
+| <old_mode> | aruba.mac.old_mode   |
+| <vlan>     | network.vlan.id      |
 
 #### [MAC Learning events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MAC-LEARN.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.mac.from-intf |             |      | observer.ingress.interface.name |
-| aruba.mac.mac       |             |      | server.mac                   |
-| aruba.mac.to-intf   |             |      | observer.egress.interface.name |
-| aruba.mac.vlan      |             |      | network.vlan.id              |
+| Docs Field  | Schema Mapping               |
+|-------------|------------------------------|
+| <from-intf> | aruba.interface.prev_id      |
+| <intf>      | aruba.interface.id           |
+| <mac>       | server.mac                   |
+| <to-intf>   | aruba.mac.interface.id       |
+| <vlan>      | network.vlan.id              |
 
 #### [MACsec events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MACSEC.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.mac.ckn       |             |      |                              |
-| aruba.mac.ifname    |             |      | observer.ingress.interface.name |
-| aruba.mac.latest_an |             |      |                              |
-| aruba.mac.latest_kn |             |      |                              |
-| aruba.mac.old_an    |             |      |                              |
-| aruba.mac.old_kn    |             |      |                              |
-| aruba.mac.sci       |             |      |                              |
+| Docs Field   | Schema Mapping               |
+|--------------|------------------------------|
+| <ckn>        | aruba.mac.ckn                |
+| <ifname>     | aruba.interface.name         |
+| <latest_an>  | aruba.mac.latest_an          |
+| <latest_kn>  | aruba.mac.latest_kn          |
+| <old_an>     | aruba.mac.old_an             |
+| <old_kn>     | aruba.mac.old_kn             |
+| <sci>        | aruba.mac.sci                |
 
 #### [Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMT.htm)
-| Field                                      | Description | Type | Common                       |
-|--------------------------------------------|-------------|------|------------------------------|
-| aruba.management.mgmt_intf_config_crit     |             |      | log.syslog.severity.name     |
-| aruba.management.mgmt_intf_config_err      |             |      | error.message                |
-| aruba.management.config_param              |             |      |                              |
+| Docs Field                  | Schema Mapping           |
+|-----------------------------|--------------------------|
+| <mgmt_intf_config_crit>     | aruba.mgmt.config_crit   |
+| <mgmt_intf_config_err>      | aruba.mgmt.config_err    |
+| <mgmt_intf_config_param>    | aruba.mgmt.config_param  |
 
 #### [MDNS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MDNS.htm)
-| Field                                      | Description | Type | Common                       |
-|--------------------------------------------|-------------|------|------------------------------|
+| Docs Field                  | Schema Mapping           |
+|-----------------------------|--------------------------|
 
 
 #### [MGMD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMD.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.mgmd.if_name     |             |      | observer.ingress.interface.name |
-| aruba.mgmd.ip_address  |             |      | client.ip                    |
-| aruba.mgmd.l3Port      |             |      |                              |
-| aruba.mgmd.pkt_type    |             |      |                              |
-| aruba.mgmd.port        |             |      | server.port                  |
-| aruba.mgmd.ring_id     |             |      | aruba.instance.id            |
-| aruba.mgmd.size_value  |             |      | aruba.len                    |
-| aruba.mgmd.state       |             |      | aruba.status                 |
-| aruba.mgmd.status      |             |      | aruba.status                 |
-| aruba.mgmd.sub_system  |             |      | aruba.subsystem              |
-| aruba.mgmd.vlan        |             |      | network.vlan.id              |
+| Docs Field  | Schema Mapping              |
+|-------------|-----------------------------|
+| <if_name>   | aruba.interface.name        |
+| <ip_address>| client.ip                   |
+| <l3Port>    | aruba.mgmd.l3_port          |
+| <mgmd_type> | aruba.mgmd.mgmd_type        |
+| <pkt_type>  | aruba.mgmd.pkt_type         |
+| <port>      | aruba.port                  |
+| <port0>     | aruba.port                  |
+| <port1>     | aruba.mgmd.port1            |
+| <ring_id>   | aruba.mgmd.ring_id          |
+| <size_value>| aruba.len                   |
+| <state>     | aruba.status                |
+| <status>    | aruba.status                |
+| <sub_system>| aruba.subsystem             |
+| <type>      | aruba.mgmd.type             |
+| <vlan>      | network.vlan.id             |
 
 #### [Mirroring events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MIRRORING.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.mirroring.session|             |      | aruba.session.id             |
+| Docs Field | Schema Mapping       |
+|------------|----------------------|
+| <number>   | aruba.session.id     |
 
 #### [Module events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MODULE.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.module.name      |             |      | observer.ingress.interface.name |
-| aruba.module.part_number |           |      | aruba.unit                   |
-| aruba.module.priority  |             |      | aruba.priority               |
-| aruba.module.reason    |             |      | event.reason                 |
-| aruba.module.type      |             |      |                              |
+| Docs Field    | Schema Mapping         |
+|---------------|------------------------|
+| <name>        | aruba.module.name      |
+| <part_number> | aruba.unit             |
+| <priority>    | aruba.priority         |
+| <reason>      | event.reason           |
+| <type>        | aruba.module.type      |
 
 #### [MSDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSDP.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.msdp.grp_ip      |             |      |                              |
-| aruba.msdp.if_name     |             |      | observer.ingress.interface.name |
-| aruba.msdp.peer_ip     |             |      | client.ip                    |
-| aruba.msdp.port        |             |      | server.port                  |
-| aruba.msdp.rp_ip       |             |      |                              |
-| aruba.msdp.src_ip      |             |      | source.ip                    |
-| aruba.msdp.state       |             |      | aruba.status                 |
-| aruba.msdp.status      |             |      | aruba.status                 |
-| aruba.msdp.tcp_entity  |             |      |                              |
-| aruba.msdp.vrf_name    |             |      | aruba.vrf.name               |
+| Docs Field  | Schema Mapping               |
+|-------------|------------------------------|
+| <grp_ip>    | aruba.msdp.grp_ip            |
+| <if_name>   | aruba.interface.name         |
+| <peer_ip>   | client.ip                    |
+| <port>      | aruba.port                   |
+| <rp_ip>     | aruba.msdp.rp_ip             |
+| <src_ip>    | source.ip                    |
+| <state>     | aruba.status                 |
+| <status>    | aruba.status                 |
+| <tcp_entity>| aruba.msdp.tcp_entity        |
+| <vrf_name>  | aruba.vrf.name               |
 
 #### [Multicast Traffic Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MTM.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.multicast.limit  |             |      | aruba.limit                  |
+| Docs Field | Schema Mapping |
+|------------|----------------|
+| <limit>    | aruba.limit    |
 
 #### [Multiple spanning tree protocol events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSTP.htm)
 | Field                       | Description | Type | Common                       |
