@@ -105,6 +105,26 @@ processors:
         API_VERSION: (v\d+([a-z]+)?(\d+)?)
         RESOURCE_TYPE: ([a-z]+((\.[a-z0-9]+)+)?)
       ignore_missing: true
+
+##
+# Extract origin, target, and related entity IDs
+##
+  - append:
+      field: origin.id
+      value: "{{{json.protoPayload.authenticationInfo.principalSubject}}}"
+      if: ctx.json?.protoPayload?.authenticationInfo?.principalSubject != null
+  - append:
+      field: origin.id
+      value: "{{{json.protoPayload.authenticationInfo.principalEmail}}}"
+      if: ctx.json?.protoPayload?.authenticationInfo?.principalEmail != null
+  - append:
+      field: target.id
+      value: "{{{json.protoPayload.resourceName}}}"
+      if: ctx.json?.resource?.type != 'k8s_cluster' && ctx.json?.protoPayload?.resourceName != null
+  - append:
+      field: target.id
+      value: "{{{json.resource.disk_id}}}"
+      if: ctx.json?.resouce?.disk_id != null
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
