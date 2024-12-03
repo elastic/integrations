@@ -37,18 +37,19 @@ The `nod_feed` data stream provides events from [DomainTools Newly Observed Doma
 
 **Exported fields**
 
-| Field                 | Description                                                              | Type |
-|-----------------------|--------------------------------------------------------------------------|---|
-| @timestamp            | Event timestamp.                                                         | date |
-| data_stream.dataset   | Data stream dataset name.                                                | constant_keyword |
-| data_stream.namespace | Data stream namespace.                                                   | constant_keyword |
-| data_stream.type      | Data stream type.                                                        | constant_keyword |
-| host.containerized    | If the host is a container.                                              | boolean |
-| host.os.build         | OS build information.                                                    | keyword |
-| host.os.codename      | OS codename, if any.                                                     | keyword |
-| input.type            | Type of Filebeat input.                                                  | keyword |
-| domaintools.domain    | The domain. For example "domaintools.com".                               | keyword |
-| domaintools.timestamp | The timestamp the domain was discovered. For example "2024-12-03T16:20:34Z". | keyword |
+| Field                 | Description                                                                  | Type             |
+|-----------------------|------------------------------------------------------------------------------|------------------|
+| @timestamp            | Event timestamp.                                                             | date             |
+| data_stream.dataset   | Data stream dataset name.                                                    | constant_keyword |
+| data_stream.namespace | Data stream namespace.                                                       | constant_keyword |
+| data_stream.type      | Data stream type.                                                            | constant_keyword |
+| host.containerized    | If the host is a container.                                                  | boolean          |
+| host.os.build         | OS build information.                                                        | keyword          |
+| host.os.codename      | OS codename, if any.                                                         | keyword          |
+| input.type            | Type of Filebeat input.                                                      | keyword          |
+| domaintools.domain    | The domain. For example "domaintools.com".                                   | keyword          |
+| domaintools.timestamp | The timestamp the domain was discovered. For example "2024-12-03T16:20:34Z". | date             |
+| message               | The feed raw value. For example "{\"domain\":\"fortworthvirtualrealitytherapy.info\",\"timestamp\":\"2024-12-03T16:20:34Z\"}".                      | keyword          |
 
 An example event for `nod_feed` looks as following:
 
