@@ -807,6 +807,21 @@ processors:
         3011_3012_3013_COMMON: "correctable memory error count %{NUMBER:aruba.hardware.cecount:long} exceeded threshold %{NUMBER:aruba.limit:long}(?:%{3011_3012_3013_OPTIONAL})?"
         3011_3012_3013_OPTIONAL: " and %{NUMBER:aruba.hardware.offlined:long}"
 
+    # MVRP events (310x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MVRP.htm
+  - grok:
+      field: message
+      tag: mvrp_event_3101_3102_3103_3104_3105
+      description: ""
+      if: "['3101','3102','3103','3104','3105'].contains(ctx.event?.code)"
+      patterns:
+        - "^MVRP (en|dis)abled on port %{GREEDYDATA:aruba.port}"
+        - "^MVRP failed to create VLAN %{DATA:network.vlan.id}. Maximum VLANs %{NUMBER:aruba.limit:long} already created"
+        - "^MVRP statistics have been cleared for (%{3104_PATTERN}|%{3105_PATTERN})"
+      pattern_definitions:
+        3104_PATTERN: "port %{GREEDYDATA:aruba.port}"
+        3105_PATTERN: "%{DATA:aruba.port} ports"
+
     # Module events (32xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MODULE.htm
   - grok:
