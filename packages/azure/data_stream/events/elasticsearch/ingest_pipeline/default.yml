@@ -16,8 +16,12 @@ processors:
       value: event
   
   #
-  # Set the event dataset based on the event category.
-  # --------------------------------------------------
+  # Set `event.dataset` value based on the event category.
+  # ------------------------------------------------------
+  #
+  # In the `routing_rules.yml` file, we use the
+  # `event.dataset` value to route the event to
+  # the appropriate data stream.
   #
   
   - json:
@@ -25,12 +29,13 @@ processors:
       target_field: tmp_json
       description: 'Parses the message field as JSON and stores it in a temporary field to identify the event dataset.'
   
-  # Default to azure.eventhub if the category is not recognized.
+  # Defaults to azure.events if the `category` field is not present.
   - set:
       field: event.dataset
-      value: azure.eventhub
+      value: azure.events
       description: 'Sets the default event dataset.'
   
+  # Sets the event dataset based on the `category` field.
   - set:
       field: event.dataset
       value: azure.platformlogs
@@ -80,54 +85,7 @@ processors:
       ignore_missing: true
       description: 'Removes the temporary field used to identify the event dataset.'
 
-#   #
-#   # Route the event to the appropriate ingest pipeline based on the event dataset.
-#   # ------------------------------------------------------------------------------
-#   #
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_eventhub" }}'
-#       if: ctx.event?.dataset == 'azure.eventhub'
-#       ignore_missing_pipeline: true
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_activitylogs" }}'
-#       if: ctx.event?.dataset == 'azure.activitylogs'
-#       ignore_missing_pipeline: true
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_application_gateway" }}'
-#       if: ctx.event?.dataset == 'azure.application_gateway'
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_auditlogs" }}'
-#       if: ctx.event?.dataset == 'azure.auditlogs'
-#       ignore_missing_pipeline: true
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_firewall_logs" }}'
-#       if: ctx.event?.dataset == 'azure.firewall_logs'
-#       ignore_missing_pipeline: true
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_graphactivitylogss" }}'
-#       if: ctx.event?.dataset == 'azure.graphactivitylogss'
-#       ignore_missing_pipeline: true
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_identity_protection" }}'
-#       if: ctx.event?.dataset == 'azure.identity_protection'
-#       ignore_missing_pipeline: true
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_platformlogs" }}'
-#       if: ctx.event?.dataset == 'azure.platformlogs'
-#       ignore_missing_pipeline: true
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_provisioning" }}'
-#       if: ctx.event?.dataset == 'azure.provisioning'
-#       ignore_missing_pipeline: true
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_signinlogs" }}'
-#       if: ctx.event?.dataset == 'azure.signinlogs'
-#       ignore_missing_pipeline: true
-#   - pipeline:
-#       name: '{{ IngestPipeline "pipeline_springcloudlogs" }}'
-#       if: ctx.event?.dataset == 'azure.springcloudlogs'
-#       ignore_missing_pipeline: true
-
+#
 #
 # Error handling
 #
