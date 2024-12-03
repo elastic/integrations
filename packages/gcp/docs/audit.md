@@ -77,9 +77,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| origin.id | ID or multiple IDs of the entity performing the action. | keyword |
 | related.entity | A collection of all entity identifiers associated with the document. If the document  contains multiple entities, identifiers for each will be included. Example identifiers include (but not limited to) cloud resource IDs, email addresses, and hostnames. | keyword |
-| origin.id | TODO | keyword |
-| target.id | TODO | keyword |
+| target.id | ID or multiple IDs of the entity targeted by the action. | keyword |
 
 
 An example event for `audit` looks as following:
