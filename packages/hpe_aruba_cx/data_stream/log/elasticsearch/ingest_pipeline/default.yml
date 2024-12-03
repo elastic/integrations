@@ -1403,6 +1403,97 @@ processors:
       patterns:
         - "^Failed to import dynamic ip binding entries from external storage. volume: %{DATA:aruba.dhcp.volume_name}, filename: %{DATA:file.name}.$"
 
+  # DHCPv6 snooping events (83xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPV6_SNOOPING.htm
+  #
+  # The following event ID does not need further processing:
+  # * 8309
+  #
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8301
+      description: "Log event when packet dropped while server packet received on untrusted port."
+      if: "ctx.event?.code == '8301'"
+      patterns:
+        - "^Server %{IPV6:server.ip} packet received on untrusted port %{DATA:aruba.port} dropped.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8302
+      description: "Log event when client packet dropped while packet destined to untrusted port."
+      if: "ctx.event?.code == '8302'"
+      patterns:
+        - "^Client packet destined to untrusted port %{DATA:aruba.port} dropped.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8303
+      description: "Log event when packet dropped while packet received from unauthorized server."
+      if: "ctx.event?.code == '8303'"
+      patterns:
+        - "^Packet received from unauthorized server %{IPV6:server.ip} on port %{DATA:aruba.port}.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8304
+      description: "Log event when client packet received with untrusted relay info."
+      if: "ctx.event?.code == '8304'"
+      patterns:
+        - "^Received untrusted relay info from client %{MAC:client.mac} on port %{DATA:aruba.port}.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8305
+      description: "Log event when release packet received on incorrect port."
+      if: "ctx.event?.code == '8305'"
+      patterns:
+        - "^Binding for %{IPV6:client.ip}:%{MAC:client.mac} exists on port %{DATA:aruba.port}. Dropping release request received for the binding on %{DATA:aruba.dhcp.new_port}.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8306
+      description: "Log event when dynamic binding for a port was replaced with a manual binding."
+      if: "ctx.event?.code == '8306'"
+      patterns:
+        - "^The dynamic binding for %{MAC:client.mac} on port %{DATA:aruba.port} was replaced with a manual binding.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8307
+      description: "Log event when drop client request for already assigned ip."
+      if: "ctx.event?.code == '8307'"
+      patterns:
+        - "^Drop request from %{MAC:client.mac} for already assigned address %{IPV6:client.ip}.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8308
+      description: "Log event when binding limit reached on port."
+      if: "ctx.event?.code == '8308'"
+      patterns:
+        - "^Maximum bindings limit reached on port %{DATA:aruba.port}, dropping request from %{MAC:client.mac}.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8310
+      description: "Log event when all dynamic binding entries on a port are cleared."
+      if: "ctx.event?.code == '8310'"
+      patterns:
+        - "^Dynamic binding entries on the port %{DATA:aruba.port} were cleared.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8311
+      description: "Log event when all dynamic binding entries on a vlan are cleared."
+      if: "ctx.event?.code == '8311'"
+      patterns:
+        - "^Dynamic binding entries on the VLAN %{DATA:network.vlan.id} were cleared.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8312
+      description: "Log event when a specific dynamic binding entry on a vlan is cleared."
+      if: "ctx.event?.code == '8312'"
+      patterns:
+        - "^Dynamic binding entry with ip %{IP:client.ip} on the VLAN %{DATA:network.vlan.id} was cleared.$"
+  - grok:
+      field: message
+      tag: dhcpv6_snooping_event_8313
+      description: "Log event when import of dynamic binding entries from external storage is failed."
+      if: "ctx.event?.code == '8313'"
+      patterns:
+        - "^Failed to import dynamic ip binding entries from external storage. volume: %{DATA:aruba.dhcp.volume_name}, filename: %{DATA:file.name}.$"
+
   # ERPS Events (85xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm
   - dissect:
