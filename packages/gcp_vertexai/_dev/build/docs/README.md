@@ -45,7 +45,7 @@ Vertex AI offers two primary deployment types,
 - **Provisioned Throughput:** Suitable for high-usage applications with predictable workloads and a premium on guaranteed performance.
 - **Pay-as-you-go:** Ideal for low-usage applications, batch processing, and applications with unpredictable traffic patterns.
 
-Now, you can track and monitor different deployment types (provisioned throughput and pay-as-you-go) in Vertex AI using the Model Garden Publisher resource. The dashboard adds capability to filter the monitoring data based on the deployment type (dedicated or shared).
+Now, you can track and monitor different deployment types (provisioned throughput and pay-as-you-go) in Vertex AI using the Model Garden Publisher resource.
 
 #### Configuration
 
