@@ -225,22 +225,17 @@ Note: Descriptions have not been filled out
 
 #### [DHCPv6 snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv6-SNOOPING.htm)
 
-| Doc Fields                     | Schema Mapping       |
-|--------------------------------|----------------------|
-| <event>                        | event.code           |
-| <severity>                     | log.level            |
-| <message>                      | message              |
-| <category>                     | event.category       |
-| <description>                  | event.reason         |
-| <ipv6_address>                 | client.ip            |
-| <port>                         | server.port          |
-| <mac>                          | client.mac           |
-| <existing_port>                | server.port          |
-| <new_port>                     | server.port          |
-| <ip>                           | client.ip            |
-| <vid>                          | network.vlan.id      |
-| <volume_name>                  | file.name            |
-| <file_name>                    | file.name            |
+| Doc Fields                     | Schema Mapping         |
+|--------------------------------|------------------------|
+| <ipv6_address>                 | client.ip, server.ip   |
+| <port>                         | aruba.port             |
+| <mac>                          | client.mac             |
+| <existing_port>                | aruba.port             |
+| <new_port>                     | aruba.dhcp.new_port    |
+| <ip>                           | client.ip              |
+| <vid>                          | network.vlan.id        |
+| <volume_name>                  | aruba.dhcp.volume_name |
+| <file_name>                    | file.name              |
 
 #### [Discovery and Capability Exchange (DCBx) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DCBX.htm)
 | Field                | Description | Type | Common                          |
