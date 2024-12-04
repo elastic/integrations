@@ -685,18 +685,18 @@ Note: Descriptions have not been filled out
 | <vlan_max> | aruba.limit        |
 
 #### [NAE Agents events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NAE_ALERT.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.nae.name      |             |      | agent.name                   |
+| Docs Field | Schema Mapping      |
+|------------|---------------------|
+| <name>     | aruba.nae.name      |
 
 #### [NAE events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TSDBD.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.nae.condition |             |      |                              |
-| aruba.nae.name      |             |      | agent.name                   |
-| aruba.nae.uri       |             |      | url.full                     |
-| aruba.nae.user      |             |      | user.name                    |
-| aruba.nae.monitorName |           |      |                              |
+| Docs Field   | Schema Mapping               |
+|--------------|------------------------------|
+| <condition>  | aruba.nae.condition          |
+| <monitorName>| aruba.nae.monitor_name       |
+| <name>       | aruba.nae.name               |
+| <uri>        | url.original                 |
+| <user>       | user.name                    |
 
 #### [NAE Scripts events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POLICYD.htm)
 | Field                  | Description | Type | Common                       |
@@ -1484,7 +1484,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.nae.action_type |  | keyword |
 | aruba.nae.condition |  | keyword |
 | aruba.nae.description |  | keyword |
-| aruba.nae.monitorName |  | keyword |
+| aruba.nae.monitor_name |  | keyword |
+| aruba.nae.name |  | keyword |
 | aruba.nd.type |  | keyword |
 | aruba.ndm.new_mac |  | keyword |
 | aruba.ndm.old_mac |  | keyword |
