@@ -21,7 +21,7 @@ processors:
       # Classic ELB patterns documented in https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/access-log-collection.html
       # ELB v2 Application load balancers https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html
       # ELB v2 Netwwork load balancers https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-access-logs.html
-      #
+      # ALB Connection logs https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-connection-logs.html#connection-log-entry-format
       patterns:
         # HTTP (Classic ELB)
         - >-
@@ -68,6 +68,20 @@ processors:
           (?:-|%{NOTSPACE:aws.elb.alpn_be_protocol})
           (?:-|\\?\"%{DATA:aws.elb.alpn_client_preference_list}\\?\")
           (?:%{TIMESTAMP_ISO8601:aws.elb.tls_connection_creation_time_str}|-)
+        
+        # ALB Connection Logs
+        - >-
+          %{ELBTIMESTAMP}
+          %{IP:client.ip}
+          %{NUMBER:client.port:long}
+          %{NOTSPACE:aws.elb.listener}
+          (?:-|%{NOTSPACE:aws.elb.ssl_protocol})
+          (?:-|%{NOTSPACE:aws.elb.ssl_cipher})
+          (?:-|%{NUMBER:aws.elb.tls_handshake_latency:float})
+          "%{DATA:aws.elb.leaf_client_cert_subject}"
+          (?:-|NotBefore=%{TIMESTAMP_ISO8601:aws.elb.leaf_client_cert_not_before_str};NotAfter=%{TIMESTAMP_ISO8601:aws.elb.leaf_client_cert_not_after_str})
+          (?:-|%{NOTSPACE:aws.elb.leaf_client_cert_serial_number})
+          (%{WORD:aws.elb.tls_verify_status})?(?::%{NOTSPACE:aws.elb.tls_error_code})?
 
       pattern_definitions:
         ELBTIMESTAMP: '%{TIMESTAMP_ISO8601:_tmp.timestamp}'
@@ -233,7 +247,23 @@ processors:
   - remove:
       field: aws.elb.tls_connection_creation_time_str
       ignore_missing: true
-      
+  
+  - date:
+      field: aws.elb.leaf_client_cert_not_after_str
+      target_field: aws.elb.leaf_client_cert_not_after
+      formats:  ["ISO8601"]
+      "if": "ctx.aws?.elb?.leaf_client_cert_not_after_str != null && ctx.aws?.elb?.leaf_client_cert_not_after_str != '-' && ctx.aws?.elb?.leaf_client_cert_not_after_str != ''"
+  
+  - date:
+      field: aws.elb.leaf_client_cert_not_before_str
+      target_field: aws.elb.leaf_client_cert_not_before
+      formats:  ["ISO8601"]
+      "if": "ctx.aws?.elb?.leaf_client_cert_not_before_str != null && ctx.aws?.elb?.leaf_client_cert_not_before_str != '-' && ctx.aws?.elb?.leaf_client_cert_not_before_str != ''"
+  
+  - remove:
+      field: ["aws.elb.leaf_client_cert_not_after_str", "aws.elb.leaf_client_cert_not_before_str"]
+      ignore_missing: true
+
 on_failure:
   - set:
       field: event.kind
