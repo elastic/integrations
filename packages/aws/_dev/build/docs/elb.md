@@ -43,7 +43,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 To send classic ELB access logs to an S3 bucket, see [enable access logs for classic load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html).
 
-For an application load balancer, see [enable access log for application load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html#enable-access-logging).
+For an application load balancer, see [enable access log for application load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html) and [enable connection log for application load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-connection-logging.html).
 
 For a network load balancer, see [enable access log for network load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest//network/load-balancer-access-logs.html).
 

@@ -314,11 +314,10 @@ processors:
       field: "message"
       description: "106023"
       patterns:
-        - ^Deny ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?\s*(\(%{CISCO_USER_OR_SGT_SRC}\) )?dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?%{DATA}by access-group "%{NOTSPACE:_temp_.cisco.list_id}"
+        - "^Deny ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{DATA:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?\\s*(\\(%{CISCO_USER_OR_SGT_SRC}\\) )?dst %{DATA:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[(\\s]+%{DATA}by access-group \"%{NOTSPACE:_temp_.cisco.list_id}\""
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        NOTCOLON: "[^:]*"
         USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
@@ -456,8 +455,14 @@ processors:
       description: "113023"
       pattern: "AAA Marking %{network.protocol} server %{destination.address} in aaa-server group %{}"
   - dissect:
-      if: "ctx._temp_.cisco.message_id == '113040'"
-      tag: parse_113040
+      if: "ctx._temp_.cisco.message_id == '113040' && ctx.message.startsWith('Group')"
+      tag: parse_113040_group
+      field: "message"
+      description: "113040"
+      pattern: "Group <%{source.user.group.name}> User <%{source.user.name}> IP <%{source.address}> Terminating the VPN connection attempt from <%{_temp_.cisco.tunnel_group}>. Reason: This connection is group locked to %{}."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113040' && !ctx.message.startsWith('Group')"
+      tag: parse_113040_no_group
       field: "message"
       description: "113040"
       pattern: "Terminating the VPN connection attempt from %{source.user.group.name}. Reason: This connection is group locked to %{}."

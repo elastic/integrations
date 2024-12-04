@@ -26,6 +26,8 @@
               type: long
             - name: diagramNoteIds
               type: long
+            - name: fieldId
+              type: long
             - name: linkIds
               type: long
             - name: storyId
@@ -37,8 +39,6 @@
                   type: long
                 - name: isServiceToken
                   type: boolean
-                - name: name
-                  type: keyword
                 - name: actionId
                   type: long
                 - name: actionIds
@@ -71,6 +71,10 @@
                   type: keyword
                 - name: awsSecretKey
                   type: keyword
+                - name: content
+                  type: match_only_text
+                - name: dateMode
+                  type: keyword
                 - name: delta
                   type: group
                   fields:
@@ -87,6 +91,10 @@
                 - name: editingSource
                   type: keyword
                 - name: eventName
+                  type: keyword
+                - name: graphDirection
+                  type: keyword
+                - name: graphType
                   type: keyword
                 - name: httpRequestLocationOfToken
                   type: keyword
@@ -116,6 +124,10 @@
                   type: keyword
                 - name: mtlsRootCertificate
                   type: keyword
+                - name: multiSelect
+                  type: boolean
+                - name: name
+                  type: keyword
                 - name: oauthClientId
                   type: keyword
                 - name: oauthClientSecret
@@ -131,12 +143,16 @@
                 - name: oauthUrl
                   type: keyword
                 - name: options
-                  type: group
-                  fields:
-                    - name: createFormEmptyState
-                      type: boolean
+                  type: object
+                  object_type: keyword
+                  object_type_mapping_type: "*"
+                  subobjects: false
+                - name: options.createFormEmptyState
+                  type: boolean
                 - name: readAccess
                   type: keyword
+                - name: required
+                  type: boolean
                 - name: sharedTeamSlugs
                   type: keyword
                 - name: source
@@ -144,6 +160,8 @@
                 - name: storyId
                   type: long
                 - name: standardLibVersion
+                  type: keyword
+                - name: style
                   type: keyword
                 - name: teamId
                   type: long

@@ -45,6 +45,7 @@ tags_filter: {{tags_filter}}
 {{#if proxy_url }}
 proxy_url: {{proxy_url}}
 {{/if}}
+{{#if collect_esm_metrics}}
 metrics:
 - namespace: AWS/Lambda
   resource_type: lambda
@@ -78,3 +79,45 @@ metrics:
   - DeadLetterErrors
   - DestinationDeliveryFailures
   - AsyncEventsReceived
+  - PolledEventCount
+  - FilteredOutEventCount
+  - InvokedEventCount
+  - FailedInvokeEventCount
+  - DroppedEventCount
+  - OnFailureDestinationDeliveredEventCount
+  - DeletedEventCount
+{{ else }}
+metrics:
+- namespace: AWS/Lambda
+  resource_type: lambda
+  statistic: ["Average"]
+  name:
+  - Invocations
+  - Errors
+  - DeadLetterErrors
+  - DestinationDeliveryFailures
+  - Duration
+  - Throttles
+  - IteratorAge
+  - ConcurrentExecutions
+  - UnreservedConcurrentExecutions
+  - AsyncEventAge
+- namespace: AWS/Lambda
+  resource_type: lambda
+  statistic: ["Maximum"]
+  name:
+  - ProvisionedConcurrentExecutions
+  - ProvisionedConcurrencyUtilization
+- namespace: AWS/Lambda
+  resource_type: lambda
+  statistic: ["Sum"]
+  name:
+  - ProvisionedConcurrencyInvocations
+  - ProvisionedConcurrencySpilloverInvocations
+  - Invocations
+  - Throttles
+  - Errors
+  - DeadLetterErrors
+  - DestinationDeliveryFailures
+  - AsyncEventsReceived
+{{/if}}

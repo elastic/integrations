@@ -133,6 +133,11 @@ processors:
       target_field: crowdstrike.alert.child_process_ids
       ignore_missing: true
   - rename:
+      field: json.aggregate_id
+      tag: rename_aggregate_id
+      target_field: crowdstrike.alert.aggregate_id
+      ignore_missing: true
+  - rename:
       field: json.cid
       tag: rename_cid
       target_field: crowdstrike.alert.cid
@@ -153,6 +158,16 @@ processors:
       tag: rename_cmdline
       target_field: crowdstrike.alert.cmdline
       ignore_missing: true
+  - rename:
+      field: json.command_line
+      tag: rename_command_line
+      target_field: crowdstrike.alert.command_line
+      ignore_missing: true
+  - set:
+      field: process.command_line
+      tag: set_process_command_line
+      copy_from: crowdstrike.alert.command_line
+      ignore_empty_value: true
   - rename:
       field: json.comment
       tag: rename_comment
@@ -237,6 +252,11 @@ processors:
       tag: set_message_from_alert_description
       copy_from: crowdstrike.alert.description
       ignore_empty_value: true
+  - rename:
+      field: json.detect_type
+      tag: rename_detect_type
+      target_field: crowdstrike.alert.detect_type
+      ignore_missing: true
   - convert:
       field: json.device.agent_load_flags
       tag: convert_device_agent_load_flags_to_long
@@ -370,7 +390,7 @@ processors:
       copy_from: crowdstrike.alert.device.hostname
       ignore_empty_value: true
   - append:
-      field: related.hash
+      field: related.hosts
       value: '{{{host.hostname}}}'
       allow_duplicates: false
       if: ctx.host?.hostname != null
@@ -844,6 +864,31 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.host_name
+      tag: rename_host_name
+      target_field: crowdstrike.alert.host_name
+      ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_alert_host_name
+      copy_from: crowdstrike.alert.host_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - rename:
+      field: json.host_type
+      tag: rename_host_type
+      target_field: crowdstrike.alert.host_type
+      ignore_missing: true
+  - set:
+      field: host.type
+      tag: set_host_type_from_alert_host_type
+      copy_from: crowdstrike.alert.host_type
+      ignore_empty_value: true
   - script:
       tag: reconstruct_has_script_or_module_ioc_from_ioc_context
       lang: painless
@@ -946,6 +991,16 @@ processors:
       field: rule.name
       tag: set_rule_name_from_alert_idp_policy_rule_name
       copy_from: crowdstrike.alert.idp_policy.rule_name
+      ignore_empty_value: true
+  - rename:
+      field: json.image_file_name
+      tag: rename_image_file_name
+      target_field: crowdstrike.alert.image_file_name
+      ignore_missing: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_alert_image_file_name
+      copy_from: crowdstrike.alert.image_file_name
       ignore_empty_value: true
   - date:
       field: json.incident.created
@@ -1336,6 +1391,16 @@ processors:
       tag: rename_objective
       target_field: crowdstrike.alert.objective
       ignore_missing: true
+  - rename:
+      field: json.operating_system
+      tag: rename_operating_system
+      target_field: crowdstrike.alert.operating_system
+      ignore_missing: true
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_from_alert_operating_system
+      copy_from: crowdstrike.alert.operating_system
+      ignore_empty_value: true
   - rename:
       field: json.os_name
       tag: rename_os_name
@@ -2458,6 +2523,39 @@ processors:
       value: '{{{crowdstrike.alert.user_principal}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.user_principal != null
+
+  - grok:
+      field: crowdstrike.alert.name
+      patterns:
+        - "%{NOTSPACE:_username_from_name} on %{NOTSPACE:_hostname_from_name}"
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: _username_from_name
+      if: ctx.user?.name == null || ctx.user.name == ''
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{_username_from_name}}}'
+      allow_duplicates: false
+      if: ctx._username_from_name != null && ctx._username_from_name != ''
+  - set:
+      field: host.name
+      copy_from: _hostname_from_name
+      if: ctx.host?.name == null || ctx.host.name == ''
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{_hostname_from_name}}}'
+      allow_duplicates: false
+      if: ctx._hostname_from_name != null && ctx._hostname_from_name != ''
+  - remove:
+      field:
+        - _username_from_name
+        - _hostname_from_name
+      ignore_missing: true
+
   - fingerprint:
       fields:
         - event.id
@@ -2468,6 +2566,7 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - crowdstrike.alert.command_line
         - crowdstrike.alert.description
         - crowdstrike.alert.device.device_id
         - crowdstrike.alert.device.external_ip
@@ -2483,11 +2582,15 @@ processors:
         - crowdstrike.alert.end_time
         - crowdstrike.alert.filename
         - crowdstrike.alert.filepath
+        - crowdstrike.alert.host_name
+        - crowdstrike.alert.host_type
         - crowdstrike.alert.id
         - crowdstrike.alert.idp_policy_rule.id
         - crowdstrike.alert.idp_policy_rule.name
+        - crowdstrike.alert.image_file_name
         - crowdstrike.alert.location_country_code
         - crowdstrike.alert.md5
+        - crowdstrike.alert.operating_system
         - crowdstrike.alert.os_name
         - crowdstrike.alert.parent_details.cmdline
         - crowdstrike.alert.parent_details.filename
@@ -2509,8 +2612,8 @@ processors:
         - crowdstrike.alert.source.endpoint_host_name
         - crowdstrike.alert.source.endpoint_ip_address
         - crowdstrike.alert.start_time
-        - crowdstrike.alert.tags
         - crowdstrike.alert.tactic
+        - crowdstrike.alert.tags
         - crowdstrike.alert.target.account_name
         - crowdstrike.alert.target.domain_controller_host_name
         - crowdstrike.alert.target.endpoint_host_name

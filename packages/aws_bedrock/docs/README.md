@@ -176,6 +176,7 @@ list log events from the specified log group.
 | gen_ai.compliance.response_triggered | Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks. | keyword |
 | gen_ai.compliance.violation_code | Code identifying the specific compliance rule that was violated. | keyword |
 | gen_ai.compliance.violation_detected | Indicates if any compliance violation was detected during the interaction. | boolean |
+| gen_ai.guardrail_id | Guardrail ID if a guardrail was executed. | keyword |
 | gen_ai.owasp.description | Description of the OWASP risk triggered. | text |
 | gen_ai.owasp.id | Identifier for the OWASP risk addressed. | keyword |
 | gen_ai.performance.request_size | Size of the request payload in bytes. | long |
@@ -185,6 +186,8 @@ list log events from the specified log group.
 | gen_ai.policy.action | Action taken due to a policy violation, such as blocking, alerting, or modifying the content. | keyword |
 | gen_ai.policy.confidence | Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria. | keyword |
 | gen_ai.policy.match_detail.\* |  | object |
+| gen_ai.policy.match_detail.score |  | float |
+| gen_ai.policy.match_detail.threshold |  | float |
 | gen_ai.policy.name | Name of the specific policy that was triggered. | keyword |
 | gen_ai.policy.violation | Specifies if a security policy was violated. | boolean |
 | gen_ai.prompt | The full text of the user's request to the gen_ai. | text |
