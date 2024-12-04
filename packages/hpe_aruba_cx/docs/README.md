@@ -1474,8 +1474,10 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.mstp.new_mode |  | keyword |
 | aruba.mstp.old_mac |  | keyword |
 | aruba.mstp.old_mode |  | keyword |
+| aruba.mstp.old_port |  | keyword |
 | aruba.mstp.old_priority |  | keyword |
-| aruba.mstp.pk_type |  | keyword |
+| aruba.mstp.pkt_type |  | keyword |
+| aruba.mstp.priority_mac |  | keyword |
 | aruba.mstp.proto |  | keyword |
 | aruba.mstp.reconfig_parameter |  | keyword |
 | aruba.mtu |  | keyword |
