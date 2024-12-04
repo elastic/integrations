@@ -1,6 +1,22 @@
 ---
 description: Pipeline for processing tanium.threat_response.match_details.*
 processors:
+  - script:
+      tag: script_drop_empty_maps_recursively
+      description: Drops empty map values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyMapsAndLists(Object object) {
+          if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyMapsAndLists(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyMapsAndLists(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyMapsAndLists(ctx.tanium.threat_response.match_details);
   - rename:
       tag: rename_tanium_threat_response_match_details_match_properties_file_fullpath
       field: tanium.threat_response.match_details.match.properties.file.fullpath
