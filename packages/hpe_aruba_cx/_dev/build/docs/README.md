@@ -656,25 +656,26 @@ Note: Descriptions have not been filled out
 | <limit>    | aruba.limit    |
 
 #### [Multiple spanning tree protocol events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSTP.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.mstp.config_parameter |             |      |                              |
-| aruba.mstp.config_value     |             |      |                              |
-| aruba.mstp.instance         |             |      | aruba.instance.id            |
-| aruba.mstp.mac              |             |      | source.mac                   |
-| aruba.mstp.new_mac          |             |      | source.mac                   |
-| aruba.mstp.new_mode         |             |      |                              |
-| aruba.mstp.new_priority     |             |      | aruba.priority               |
-| aruba.mstp.old_mac          |             |      |                              |
-| aruba.mstp.old_mode         |             |      |                              |
-| aruba.mstp.old_priority     |             |      |                              |
-| aruba.mstp.pk_type          |             |      |                              |
-| aruba.mstp.port             |             |      | server.port                  |
-| aruba.mstp.priority_mac     |             |      | source.mac                   |
-| aruba.mstp.proto            |             |      |                              |
-| aruba.mstp.reconfig_parameter |           |      |                              |
-| aruba.mstp.state            |             |      | aruba.status                 |
-
+| Docs Field          | Schema Mapping               |
+|---------------------|------------------------------|
+| <config_parameter>  | aruba.mstp.config_parameter  |
+| <instance>          | aruba.instance.id            |
+| <mac>               | source.mac                   |
+| <new_mac>           | source.mac                   |
+| <new_mode>          | aruba.mstp.new_mode          |
+| <new_port>          | aruba.port                   |
+| <new_priority>      | aruba.priority               |
+| <old_mac>           | aruba.mstp.old_mac           |
+| <old_mode>          | aruba.mstp.old_mode          |
+| <old_port>          | aruba.mstp.old_port          |
+| <old_priority>      | aruba.mstp.old_priority      |
+| <pkt_type>          | aruba.mstp.pkt_type          |
+| <port>              | aruba.port                   |
+| <priority_mac>      | aruba.mstp.priority_mac      |
+| <proto>             | aruba.mstp.proto             |
+| <reconfig_parameter>| aruba.mstp.reconfig_parameter|
+| <state>             | aruba.status                 |
+| <value>             | aruba.mstp.config_value      |
 
 #### [MVRP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MVRP.htm)
 | Docs Field | Schema Mapping     |

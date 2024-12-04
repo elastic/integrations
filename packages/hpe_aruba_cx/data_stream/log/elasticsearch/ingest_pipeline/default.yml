@@ -554,6 +554,51 @@ processors:
       patterns:
         - "^(DHCP|DHCPv6) Server Lease cleared on vrf %{DATA:aruba.vrf.name}\\.$"
 
+    # Multiple spanning tree protocol events (20xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSTP.htm
+  - grok:
+      field: message
+      tag: mstp_event_2003_2004
+      description: "the MSTP config parameter is bad | switch received a BPDU with a bad config"
+      if: "['2003','2004'].contains(ctx.event?.code)"
+      patterns:
+        - "^(BPDU has )?%{DATA:aruba.mstp.config_parameter} (should be|from port) %{GREEDYDATA:aruba.mstp.config_value}"
+  - dissect:
+      field: message
+      tag: mstp_event_2005
+      description: "the MSTP reconfig parameter is bad"
+      if: "['2005'].contains(ctx.event?.code)"
+      pattern: "Bad reconfiguration request: %{aruba.mstp.reconfig_parameter}"
+  - grok:
+      field: message
+      tag: mstp_event_2006_2008_2018
+      description: "MSTP root has changed | Rx queue is starved in the paticular port | root port has changed"
+      if: "['2006','2008','2018'].contains(ctx.event?.code)"
+      patterns:
+        - "^%{DATA:aruba.mstp.proto} - Root changed from %{DATA:aruba.mstp.old_priority}: %{MAC:aruba.mstp.old_mac} to %{DATA:aruba.priority}: %{MAC:source.mac}"
+        # variation between customer logs and documentation
+        - "^%{DATA:aruba.mstp.proto} starved for (a)? %{DATA:aruba.mstp.pkt_type} on port %{DATA:aruba.port} from %{GREEDYDATA:aruba.mstp.priority_mac}"
+        - "^%{DATA:aruba.mstp.proto} Root Port changed from %{DATA:aruba.mstp.old_port} to %{GREEDYDATA:aruba.port}"
+  - grok:
+      field: message
+      tag: mstp_event_2007_2009_2010_2011_2012_2013_2014_2015_2016_2017
+      description: "BPDU was received on protected port | [port|MSTP] is in inconsistent state | topology change is [received|generated] on port | BPDU received on admin edge port | port is blocked"
+      if: "['2007','2009','2010','2011','2012','2013','2014','2015','2016','2017'].contains(ctx.event?.code)"
+      patterns:
+        - "^Port %{DATA:aruba.port} disabled - BPDU received on protected port"
+        - "^(BPDU loss- p|P)ort %{DATA:aruba.port} moved (to|out of) inconsistent state for %{GREEDYDATA:aruba.mstp.proto}"
+        - "^Topology Change received on port %{DATA:aruba.port} for %{DATA:aruba.mstp.proto} from source: %{MAC:source.mac}"
+        - "^%{DATA:aruba.mstp.proto} - Topology Change generated on port %{DATA:aruba.port} going in to %{GREEDYDATA:aruba.status}"
+        - "^BPDU received on admin edge port %{GREEDYDATA:aruba.port}"
+        - "^Port %{DATA:aruba.port} (un)?blocked on CIST"
+        - "^Port %{DATA:aruba.port} (un)?blocked on MST%{GREEDYDATA:aruba.instance.id}"
+  - dissect:
+      field: message
+      tag: mstp_event_2019
+      description: "the spanning tree mode is changed"
+      if: "['2019'].contains(ctx.event?.code)"
+      pattern: "spanning tree mode changed from %{aruba.mstp.old_mode} to %{aruba.mstp.new_mode}, it will trigger the reconvergence"
+
   # AAA events (23xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm
   - grok:
@@ -2005,6 +2050,14 @@ processors:
       ignore_missing: true
   - gsub:
       field: destination.mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+  - uppercase:
+      field: aruba.mstp.old_mac
+      ignore_missing: true
+  - gsub:
+      field: aruba.mstp.old_mac
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
