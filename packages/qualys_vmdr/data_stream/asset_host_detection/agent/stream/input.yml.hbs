@@ -20,102 +20,195 @@ state:
   password: {{password}}
   batch_size: {{batch_size}}
   params: {{input_parameters}}
-  show_igs: {{show_igs}}
   keep_xml: {{preserve_original_event}}
 redact:
   fields:
     - password
 program: |
-  state.with(
-    request("GET",
-      state.?want_more.orValue(false) ?
-        state.pagination_url
-      :
-        state.url.trim_right("/") + "/api/2.0/fo/asset/host/vm/detection/?" +
-        state.?params.orValue("").parse_query().with({
-          "action": ["list"],
-          "show_igs": [(state.show_igs? "1" : "0")],
-          "truncation_limit": [string(state.batch_size)],
-        }).format_query()
-    ).with({
-        "Header":{
+  (has(state.worklist) && size(state.worklist) > 0 
+  ?
+    state
+  :
+    state.with(
+      request("GET",
+        state.?want_more.orValue(false) ?
+          state.next_page.link
+        :
+          state.url.trim_right("/") + "/api/2.0/fo/asset/host/vm/detection/?" +
+          state.?params.orValue("").parse_query().with({
+            "action": ["list"],
+            "host_metadata": ["all"],
+            "show_qds": ["1"],
+            "show_qds_factors": ["1"],
+            "truncation_limit": [string(state.batch_size)],
+          }).format_query()
+      ).with({
+          "Header":{
+              "X-Requested-With": ["curl"],
+              "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
+          }
+      }).do_request().as(resp,
+        resp.StatusCode == 200 
+        ?
+          (
+            has(resp.Body) && size(resp.Body) != 0
+            ?
+              (resp.Body.as(xml, try(xml.decode_xml('qualys_api_2_0_ahd'), "decode_xml_error_ahd").as(ahd_body, 
+                !has(ahd_body.decode_xml_error_ahd) 
+                ?
+                  (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.hasValue() 
+                  ?
+                    ({
+                      "worklist": (
+                        ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.orValue([]).map(h,
+                          h.DETECTION_LIST.DETECTION.map(v,
+                            h.with({
+                              "DETECTION_LIST": v,
+                            })
+                          )).flatten()
+                      ),
+                      "next_page": { 
+                        ?"link": ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL
+                      },
+                      "next": 0,
+                    })
+                  :
+                    {
+                      "events": {
+                        "error": {
+                          "message": "xsd and response mismatch in ahd:" + (
+                            string(resp.Body)
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "message": "decode_xml error in ahd:" + string(ahd_body.decode_xml_error) + ":" + (
+                          string(resp.Body)
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+              )))
+            :
+              // Qualys sends 200 success but with no response body. 
+              // Handling this case as okay.
+              {
+                "events": [],
+                "want_more": false,
+              }
+          )
+        :
+          ({
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET:"+(
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          })
+      )
+    )
+  ).as(state, state.with(
+    !has(state.worklist) ? state : 
+      size(state.worklist) > 0 ?
+        request("GET", state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/?" +
+          {
+            "ids": [string(state.worklist[0].DETECTION_LIST.QID)],
+            "action": ["list"],
+          }.format_query()
+        ).with({
+          "Header":{
             "X-Requested-With": ["curl"],
             "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
-        }
-    }).do_request().as(resp,
-      resp.StatusCode == 200
-      ?
-        (has(resp.Body) && size(resp.Body) != 0 
-        ?
-          (resp.Body.as(xml, try(bytes(xml).decode_xml('qualys_api_2_0'), "decode_xml_error").as(body, 
-            !has(body.decode_xml_error) 
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.as(xml, try(xml.decode_xml('qualys_api_2_0_kb'), "decode_xml_error_kb").as(kb_body, 
+            !has(kb_body.decode_xml_error_kb) 
             ?
-              (body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.hasValue() 
-              ?
-                ({
-                  "events": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.orValue([]).map(h,
-                    h.DETECTION_LIST.DETECTION.map(v, {
-                      "message": h.with({"DETECTION_LIST": v}).encode_json(),
-                    })
-                  ).flatten(),
-                  ?"pagination_url": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL,
-                  "want_more": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL.hasValue(),
-                })
-              :
-                {
-                  "events": {
-                    "error": {
-                      "message": "xsd and response mismatch:" + (
-                          string(resp.Body)
-                      ),
-                    },
-                  },
-                  "want_more": false,
-                }
+              ({
+                "events": (
+                  has(kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
+                  ?
+                    kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.with({
+                        "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
+                    })).as(kb_list, kb_list[0]).as(kb, [{
+                      "message": state.worklist[0].with({
+                        "KNOWLEDGE_BASE": kb,
+                      }).encode_json()
+                    }])
+                  :
+                    [{
+                      "message": state.worklist[0].with({
+                        "KNOWLEDGE_BASE": {
+                          "response_error": "response IDs values are missing: " + string(kb_body.?doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET.orValue([])),
+                        }
+                      }).encode_json()
+                    }]
+                ),
+                "worklist": tail(state.worklist),
+                "want_more": has(state.?next_page.link),
+              }).as(to_publish, to_publish.with({
+                "want_more": to_publish.want_more || size(to_publish.worklist) != 0,
+              })).as(state, 
+                state.want_more && size(state.events) == 0 ?
+                  state.with({"events": [{"message": "want_more"}]})
+                :
+                  state
               )
             :
               {
                 "events": {
                   "error": {
-                    "message": "decode_xml error:" + string(body.decode_xml_error) + ":" + (
+                    "message": "decode_xml error in kb:" + string(kb_body.decode_xml_error) + ":" + (
+                      size(resp.Body) != 0 ?
                         string(resp.Body)
+                      :
+                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                     ),
                   },
                 },
                 "want_more": false,
               }
-          )))
+          ))
         :
-          // Qualys sends 200 success but with no response body. 
-          // Handling this case as okay.
           {
-            "events": [],
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET:"+(
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
             "want_more": false,
           }
         )
       :
         {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GET:"+(
-                size(resp.Body) != 0 ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-              ),
-            },
-          },
+          "events": [],
           "want_more": false,
+          "next_page": {},
         }
     )
   )
-
-fields_under_root: true
-fields:
-  _conf:
-    enable_deduplication: {{enable_deduplication}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
@@ -137,7 +230,7 @@ processors:
 {{processors}}
 {{/if}}
 xsd:
-  qualys_api_2_0: |
+  qualys_api_2_0_ahd: |
     <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
 
       <xsd:element name='HOST_LIST_VM_DETECTION_OUTPUT'>
@@ -604,5 +697,638 @@ xsd:
       </xsd:element>
 
       <xsd:element name='URL' type='xsd:string'>
+      </xsd:element>
+      </xsd:schema>
+
+  qualys_api_2_0_kb: |
+    <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
+
+      <xsd:element name='KNOWLEDGE_BASE_VULN_LIST_OUTPUT'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='REQUEST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='RESPONSE'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='REQUEST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='DATETIME'/>
+          <xsd:element ref='USER_LOGIN'/>
+          <xsd:element ref='RESOURCE'/>
+          <xsd:element ref='PARAM_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='POST_DATA' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='USER_LOGIN' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='RESOURCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PARAM_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='PARAM' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='PARAM'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='KEY'/>
+          <xsd:element ref='VALUE'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='KEY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VALUE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='POST_DATA' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='RESPONSE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='DATETIME'/>
+          <xsd:choice minOccurs='0' maxOccurs='1'>
+          <xsd:element ref='VULN_LIST'/>
+          <xsd:element ref='ID_SET'/>
+          </xsd:choice>
+          <xsd:element ref='WARNING' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='VULN_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='VULN' minOccurs='0' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='VULN'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='QID'/>
+          <xsd:element ref='VULN_TYPE'/>
+          <xsd:element ref='SEVERITY_LEVEL'/>
+          <xsd:element ref='TITLE'/>
+          <xsd:element ref='CATEGORY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DETECTION_INFO' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_CUSTOMIZATION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='LAST_SERVICE_MODIFICATION_DATETIME' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PUBLISHED_DATETIME'/>
+          <xsd:element ref='BUGTRAQ_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PATCHABLE'/>
+          <xsd:element ref='SOFTWARE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='VENDOR_REFERENCE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CVE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DIAGNOSIS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DIAGNOSIS_COMMENT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CONSEQUENCE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CONSEQUENCE_COMMENT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SOLUTION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SOLUTION_COMMENT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='COMPLIANCE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CORRELATION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CVSS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CVSS_V3' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PCI_FLAG' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='AUTOMATIC_PCI_FAIL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PCI_REASONS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='THREAT_INTELLIGENCE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SUPPORTED_MODULES' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='DISCOVERY'/>
+          <xsd:element ref='IS_DISABLED' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CHANGE_LOG_LIST' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='QID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VULN_TYPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SEVERITY_LEVEL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TITLE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CATEGORY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DETECTION_INFO' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LAST_CUSTOMIZATION'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='DATETIME'/>
+          <xsd:element ref='USER_LOGIN' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='LAST_SERVICE_MODIFICATION_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PUBLISHED_DATETIME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='BUGTRAQ_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='BUGTRAQ' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='BUGTRAQ'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ID'/>
+          <xsd:element ref='URL'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='URL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PATCHABLE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SOFTWARE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='SOFTWARE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='SOFTWARE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='PRODUCT'/>
+          <xsd:element ref='VENDOR'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='PRODUCT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VENDOR' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VENDOR_REFERENCE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='VENDOR_REFERENCE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='VENDOR_REFERENCE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ID'/>
+          <xsd:element ref='URL'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CVE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CVE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CVE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='ID'/>
+          <xsd:element ref='URL'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='DIAGNOSIS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DIAGNOSIS_COMMENT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CONSEQUENCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CONSEQUENCE_COMMENT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SOLUTION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SOLUTION_COMMENT' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='COMPLIANCE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='COMPLIANCE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='COMPLIANCE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='TYPE'/>
+          <xsd:element ref='SECTION'/>
+          <xsd:element ref='DESCRIPTION'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='TYPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SECTION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DESCRIPTION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CORRELATION'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='EXPLOITS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MALWARE' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='EXPLOITS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='EXPLT_SRC' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='EXPLT_SRC'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='SRC_NAME'/>
+          <xsd:element ref='EXPLT_LIST'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='SRC_NAME' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='EXPLT_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='EXPLT' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='EXPLT'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='REF'/>
+          <xsd:element ref='DESC'/>
+          <xsd:element ref='LINK' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='REF' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DESC' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='LINK' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MALWARE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='MW_SRC' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='MW_SRC'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='SRC_NAME'/>
+          <xsd:element ref='MW_LIST'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='MW_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='MW_INFO' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='MW_INFO'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='MW_ID'/>
+          <xsd:element ref='MW_TYPE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MW_PLATFORM' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MW_ALIAS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MW_RATING' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='MW_LINK' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='MW_ID' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_TYPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_PLATFORM' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_ALIAS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_RATING' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='MW_LINK' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CVSS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='BASE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TEMPORAL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='VECTOR_STRING' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='ACCESS' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='IMPACT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='AUTHENTICATION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='EXPLOITABILITY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='REMEDIATION_LEVEL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='REPORT_CONFIDENCE' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='BASE'>
+        <xsd:complexType>
+        <xsd:simpleContent>
+        <xsd:extension base='xsd:string'>
+        <xsd:attribute name='source' type='xsd:string' use='optional'/>
+        </xsd:extension>
+        </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='TEMPORAL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='VECTOR_STRING' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CVSS3_VERSION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='ACCESS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='VECTOR' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='COMPLEXITY' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='VECTOR' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='COMPLEXITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='IMPACT'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CONFIDENTIALITY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='INTEGRITY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='AVAILABILITY' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CONFIDENTIALITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='INTEGRITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AVAILABILITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AUTHENTICATION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='EXPLOITABILITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='REMEDIATION_LEVEL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='REPORT_CONFIDENCE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CVSS_V3'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='BASE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TEMPORAL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='VECTOR_STRING' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='CVSS3_VERSION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='ATTACK' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='IMPACT' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='PRIVILEGES_REQUIRED' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='USER_INTERACTION' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='SCOPE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='EXPLOIT_CODE_MATURITY' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='REMEDIATION_LEVEL' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='REPORT_CONFIDENCE' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='ATTACK'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='VECTOR' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='COMPLEXITY' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='PRIVILEGES_REQUIRED' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='USER_INTERACTION' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='SCOPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='EXPLOIT_CODE_MATURITY' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PCI_FLAG' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AUTOMATIC_PCI_FAIL' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PCI_REASONS'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='PCI_REASON' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='PCI_REASON' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='THREAT_INTELLIGENCE'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='THREAT_INTEL' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='THREAT_INTEL'>
+        <xsd:complexType>
+        <xsd:simpleContent>
+        <xsd:extension base='xsd:string'>
+        <xsd:attribute name='id' type='xsd:string' use='required'/>
+        </xsd:extension>
+        </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='SUPPORTED_MODULES' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='DISCOVERY'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='REMOTE'/>
+          <xsd:element ref='AUTH_TYPE_LIST' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='ADDITIONAL_INFO' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='REMOTE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='AUTH_TYPE_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='AUTH_TYPE' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='AUTH_TYPE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='ADDITIONAL_INFO' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='IS_DISABLED' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='CHANGE_LOG_LIST'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CHANGE_LOG_INFO' maxOccurs='unbounded'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CHANGE_LOG_INFO'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CHANGE_DATE'/>
+          <xsd:element ref='COMMENTS'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CHANGE_DATE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='COMMENTS' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='ID_SET'>
+        <xsd:complexType>
+        <xsd:choice maxOccurs='unbounded'>
+          <xsd:element ref='ID'/>
+          <xsd:element ref='ID_RANGE'/>
+        </xsd:choice>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='ID_RANGE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='WARNING'>
+        <xsd:complexType>
+        <xsd:sequence>
+          <xsd:element ref='CODE' minOccurs='0' maxOccurs='1'/>
+          <xsd:element ref='TEXT'/>
+          <xsd:element ref='URL' minOccurs='0' maxOccurs='1'/>
+        </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name='CODE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='TEXT' type='xsd:string'>
       </xsd:element>
       </xsd:schema>
