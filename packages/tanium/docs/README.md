@@ -852,19 +852,19 @@ An example event for `threat_response` looks as following:
                             },
                             "intel_intra_ids": [
                                 {
-                                    "id": "850394582"
+                                    "id": 850394582
                                 },
                                 {
-                                    "id": "983962193"
+                                    "id": 983962193
                                 },
                                 {
-                                    "id": "2667062006"
+                                    "id": 2667062006
                                 },
                                 {
-                                    "id": "3398416878"
+                                    "id": 3398416878
                                 },
                                 {
-                                    "id": "3999014465"
+                                    "id": 3999014465
                                 }
                             ],
                             "source_name": "recorder"

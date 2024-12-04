@@ -50,19 +50,17 @@ processors:
   - convert:
       tag: convert_json_id
       field: json.id
-      target_field: tanium.threat_response.id
       type: string
       ignore_missing: true
-      if: ctx.json?.id != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
+  - set:
+      tag: set_tanium_threat_response_id
+      field: tanium.threat_response.id
+      copy_from: json.id
+      ignore_empty_value: true
   - set:
       tag: set_event_id
       field: event.id
-      copy_from: tanium.threat_response.id
+      copy_from: json.id
       ignore_empty_value: true
   - rename:
       tag: rename_json_action
