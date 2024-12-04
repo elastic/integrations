@@ -651,7 +651,7 @@ An example event for `threat_response` looks as following:
         "id": "821978e9-8609-487f-8e3f-011a710a7a13",
         "name": "elastic-agent-20104",
         "type": "filebeat",
-        "version": "8.14.3"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "tanium.threat_response",
@@ -664,7 +664,7 @@ An example event for `threat_response` looks as following:
     "elastic_agent": {
         "id": "821978e9-8609-487f-8e3f-011a710a7a13",
         "snapshot": false,
-        "version": "8.14.3"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
