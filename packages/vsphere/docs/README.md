@@ -173,47 +173,47 @@ An example event for `cluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-21T06:39:19.834Z",
+    "@timestamp": "2024-11-25T05:48:26.976Z",
     "agent": {
-        "ephemeral_id": "f41470c3-9bf0-4217-baf6-73383f35fcff",
-        "id": "6b90cdc8-92f4-486f-9b8a-02a0aca316a6",
-        "name": "elastic-agent-81320",
+        "ephemeral_id": "8dd73a28-19af-41ab-8404-a72ae8992509",
+        "id": "f92ed428-5ea0-40fb-b403-ac0dc71e46bb",
+        "name": "elastic-agent-77934",
         "type": "metricbeat",
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.cluster",
-        "namespace": "35689",
+        "namespace": "19212",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6b90cdc8-92f4-486f-9b8a-02a0aca316a6",
+        "id": "f92ed428-5ea0-40fb-b403-ac0dc71e46bb",
         "snapshot": true,
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.cluster",
-        "duration": 33840300,
-        "ingested": "2024-11-21T06:39:22Z",
+        "duration": 14793678,
+        "ingested": "2024-11-25T05:48:29Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-81320",
+        "hostname": "elastic-agent-77934",
         "ip": [
-            "192.168.242.4",
-            "192.168.243.2"
+            "192.168.241.4",
+            "192.168.242.2"
         ],
         "mac": [
-            "02-42-C0-A8-F2-04",
-            "02-42-C0-A8-F3-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F2-02"
         ],
-        "name": "elastic-agent-81320",
+        "name": "elastic-agent-77934",
         "os": {
             "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Wolfi",
@@ -311,47 +311,47 @@ An example event for `datastore` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-21T06:40:14.950Z",
+    "@timestamp": "2024-11-25T05:49:20.546Z",
     "agent": {
-        "ephemeral_id": "80421da7-699d-4ad1-96a3-56d7aa430190",
-        "id": "482796dd-401d-4568-8c52-7f9036322873",
-        "name": "elastic-agent-36929",
+        "ephemeral_id": "526f6e02-35e4-402d-b28d-29e1166195da",
+        "id": "136823ae-978c-4319-9d75-901e9ff73238",
+        "name": "elastic-agent-99749",
         "type": "metricbeat",
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.datastore",
-        "namespace": "35376",
+        "namespace": "82538",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "482796dd-401d-4568-8c52-7f9036322873",
+        "id": "136823ae-978c-4319-9d75-901e9ff73238",
         "snapshot": true,
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.datastore",
-        "duration": 48985279,
-        "ingested": "2024-11-21T06:40:17Z",
+        "duration": 97747338,
+        "ingested": "2024-11-25T05:49:23Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-36929",
+        "hostname": "elastic-agent-99749",
         "ip": [
-            "192.168.242.4",
-            "192.168.245.2"
+            "192.168.241.4",
+            "192.168.244.2"
         ],
         "mac": [
-            "02-42-C0-A8-F2-04",
-            "02-42-C0-A8-F5-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F4-02"
         ],
-        "name": "elastic-agent-36929",
+        "name": "elastic-agent-99749",
         "os": {
             "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Wolfi",
@@ -468,47 +468,47 @@ An example event for `datastorecluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-21T06:41:10.164Z",
+    "@timestamp": "2024-11-25T05:50:15.938Z",
     "agent": {
-        "ephemeral_id": "dca752ad-1ce6-40f5-8a40-c25947763083",
-        "id": "cd777970-1a7d-4e59-99bf-7201c2c21f9e",
-        "name": "elastic-agent-72401",
+        "ephemeral_id": "708961a1-cbad-4975-8eba-e1bdb8d6f6a6",
+        "id": "725a6747-ca90-4a2e-bf23-32ea7b753cf9",
+        "name": "elastic-agent-70611",
         "type": "metricbeat",
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.datastorecluster",
-        "namespace": "74413",
+        "namespace": "34029",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cd777970-1a7d-4e59-99bf-7201c2c21f9e",
+        "id": "725a6747-ca90-4a2e-bf23-32ea7b753cf9",
         "snapshot": true,
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.datastorecluster",
-        "duration": 9107809,
-        "ingested": "2024-11-21T06:41:13Z",
+        "duration": 10884609,
+        "ingested": "2024-11-25T05:50:18Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-72401",
+        "hostname": "elastic-agent-70611",
         "ip": [
-            "192.168.242.4",
-            "192.168.247.2"
+            "192.168.241.4",
+            "192.168.246.2"
         ],
         "mac": [
-            "02-42-C0-A8-F2-04",
-            "02-42-C0-A8-F7-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F6-02"
         ],
-        "name": "elastic-agent-72401",
+        "name": "elastic-agent-70611",
         "os": {
             "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Wolfi",
@@ -593,47 +593,47 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-21T06:42:10.396Z",
+    "@timestamp": "2024-11-25T05:51:10.976Z",
     "agent": {
-        "ephemeral_id": "347fdd67-dd63-4c29-a676-fa2c8a1ca1b2",
-        "id": "b307ccbf-41ad-4a93-88ee-2fb6914576bb",
-        "name": "elastic-agent-78670",
+        "ephemeral_id": "68b872ee-00e2-4c05-8dcc-7c0374dfa3c0",
+        "id": "a0006203-efd1-4e6a-9ffa-f5e3bda9e512",
+        "name": "elastic-agent-81083",
         "type": "metricbeat",
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.host",
-        "namespace": "36483",
+        "namespace": "79577",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b307ccbf-41ad-4a93-88ee-2fb6914576bb",
+        "id": "a0006203-efd1-4e6a-9ffa-f5e3bda9e512",
         "snapshot": true,
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.host",
-        "duration": 1974395500,
-        "ingested": "2024-11-21T06:42:13Z",
+        "duration": 1959540462,
+        "ingested": "2024-11-25T05:51:13Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-78670",
+        "hostname": "elastic-agent-81083",
         "ip": [
-            "192.168.242.4",
-            "192.168.249.2"
+            "192.168.241.4",
+            "192.168.248.2"
         ],
         "mac": [
-            "02-42-C0-A8-F2-04",
-            "02-42-C0-A8-F9-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F8-02"
         ],
-        "name": "elastic-agent-78670",
+        "name": "elastic-agent-81083",
         "os": {
             "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Wolfi",
@@ -673,13 +673,13 @@ An example event for `host` looks as following:
             },
             "disk": {
                 "read": {
-                    "bytes": 7168
+                    "bytes": 3072
                 },
                 "total": {
-                    "bytes": 4290560
+                    "bytes": 1694720
                 },
                 "write": {
-                    "bytes": 2251776
+                    "bytes": 1631232
                 }
             },
             "id": "host-51",
@@ -699,13 +699,13 @@ An example event for `host` looks as following:
             "network": {
                 "bandwidth": {
                     "received": {
-                        "bytes": 1014784
+                        "bytes": 586752
                     },
                     "total": {
-                        "bytes": 1775616
+                        "bytes": 716800
                     },
                     "transmitted": {
-                        "bytes": 642048
+                        "bytes": 321536
                     }
                 },
                 "count": 3,
@@ -717,20 +717,14 @@ An example event for `host` looks as following:
                 "packets": {
                     "multicast": {
                         "received": {
-                            "count": 143
-                        },
-                        "total": {
-                            "count": 148
-                        },
-                        "transmitted": {
-                            "count": 5
+                            "count": 133
                         }
                     },
                     "received": {
-                        "count": 18207
+                        "count": 9359
                     },
                     "transmitted": {
-                        "count": 8118
+                        "count": 6718
                     }
                 }
             },
@@ -826,47 +820,47 @@ An example event for `network` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-21T06:44:58.755Z",
+    "@timestamp": "2024-11-25T05:53:59.603Z",
     "agent": {
-        "ephemeral_id": "5fb45395-31b5-476b-bc9f-ff885d033b7b",
-        "id": "aafddff2-0ad6-4601-b5be-bfacb507cb11",
-        "name": "elastic-agent-31986",
+        "ephemeral_id": "a69b7846-f5b9-4f72-95f7-98a99d21806e",
+        "id": "78e2558b-aa96-4683-a08d-e4bed771fe09",
+        "name": "elastic-agent-77565",
         "type": "metricbeat",
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.network",
-        "namespace": "97009",
+        "namespace": "81261",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "aafddff2-0ad6-4601-b5be-bfacb507cb11",
+        "id": "78e2558b-aa96-4683-a08d-e4bed771fe09",
         "snapshot": true,
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.network",
-        "duration": 10166398,
-        "ingested": "2024-11-21T06:45:01Z",
+        "duration": 13659192,
+        "ingested": "2024-11-25T05:54:02Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-31986",
+        "hostname": "elastic-agent-77565",
         "ip": [
-            "192.168.240.2",
-            "192.168.242.4"
+            "192.168.241.4",
+            "192.168.255.2"
         ],
         "mac": [
-            "02-42-C0-A8-F0-02",
-            "02-42-C0-A8-F2-04"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-FF-02"
         ],
-        "name": "elastic-agent-31986",
+        "name": "elastic-agent-77565",
         "os": {
             "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Wolfi",
@@ -952,47 +946,47 @@ An example event for `resourcepool` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-21T06:45:47.037Z",
+    "@timestamp": "2024-11-25T05:54:48.595Z",
     "agent": {
-        "ephemeral_id": "cf95a7c8-48b9-4810-8b93-63fece417dcb",
-        "id": "9fa1eac1-283d-4285-80d4-cb764c577733",
-        "name": "elastic-agent-76769",
+        "ephemeral_id": "236ddb3e-35c8-4d3e-a48c-caa904ff6b04",
+        "id": "689c9051-c4ae-4f11-ba6d-27a03327c9e6",
+        "name": "elastic-agent-41690",
         "type": "metricbeat",
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.resourcepool",
-        "namespace": "29674",
+        "namespace": "42500",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9fa1eac1-283d-4285-80d4-cb764c577733",
+        "id": "689c9051-c4ae-4f11-ba6d-27a03327c9e6",
         "snapshot": true,
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.resourcepool",
-        "duration": 11393478,
-        "ingested": "2024-11-21T06:45:50Z",
+        "duration": 13597205,
+        "ingested": "2024-11-25T05:54:51Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-76769",
+        "hostname": "elastic-agent-41690",
         "ip": [
-            "192.168.242.4",
-            "192.168.243.2"
+            "192.168.241.4",
+            "192.168.242.2"
         ],
         "mac": [
-            "02-42-C0-A8-F2-04",
-            "02-42-C0-A8-F3-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F2-02"
         ],
-        "name": "elastic-agent-76769",
+        "name": "elastic-agent-41690",
         "os": {
             "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Wolfi",
@@ -1081,47 +1075,47 @@ An example event for `virtualmachine` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-21T06:46:37.132Z",
+    "@timestamp": "2024-11-25T05:55:36.940Z",
     "agent": {
-        "ephemeral_id": "b00e4654-522f-487c-b2fa-497e7e86e4a4",
-        "id": "ccc02bb5-23d2-4c33-88c5-04f806c20f18",
-        "name": "elastic-agent-81451",
+        "ephemeral_id": "c5d83ada-b469-4178-b167-02c09b1a4aba",
+        "id": "2428be84-8f03-495a-8a9f-da3c9fc1459c",
+        "name": "elastic-agent-79780",
         "type": "metricbeat",
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.virtualmachine",
-        "namespace": "25029",
+        "namespace": "53355",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ccc02bb5-23d2-4c33-88c5-04f806c20f18",
+        "id": "2428be84-8f03-495a-8a9f-da3c9fc1459c",
         "snapshot": true,
-        "version": "8.17.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.virtualmachine",
-        "duration": 46619423,
-        "ingested": "2024-11-21T06:46:40Z",
+        "duration": 71113664,
+        "ingested": "2024-11-25T05:55:39Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-81451",
+        "hostname": "elastic-agent-79780",
         "ip": [
-            "192.168.242.4",
-            "192.168.245.2"
+            "192.168.241.4",
+            "192.168.244.2"
         ],
         "mac": [
-            "02-42-C0-A8-F2-04",
-            "02-42-C0-A8-F5-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F4-02"
         ],
-        "name": "elastic-agent-81451",
+        "name": "elastic-agent-79780",
         "os": {
             "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Wolfi",
