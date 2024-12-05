@@ -43,15 +43,50 @@ program: |
     }).do_request().as(resp,
       resp.StatusCode == 200
       ?
-        resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0').as(body, {
-            "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(h,
-              h.DETECTION_LIST.DETECTION.map(v, {
-                "message": h.with({"DETECTION_LIST": v}).encode_json(),
+        resp.Body.as(xml, try(bytes(xml).decode_xml('qualys_api_2_0'), "decode_xml_error").as(body, 
+          !has(body.decode_xml_error) 
+          ?
+            (body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.hasValue() 
+            ?
+              ({
+                "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(h,
+                  h.DETECTION_LIST.DETECTION.map(v, {
+                    "message": h.with({"DETECTION_LIST": v}).encode_json(),
+                  })
+                ).flatten(),
+                ?"pagination_url": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL,
+                "want_more": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL.hasValue(),
               })
-            ).flatten(),
-            ?"pagination_url": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL,
-            "want_more": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL.hasValue(),
-        }))
+            :
+              {
+                "events": {
+                  "error": {
+                    "message": "xsd and response mismatch:" + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        "XML response missing"
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "message": "decode_xml error:" + string(body.decode_xml_error) + ":" + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      "XML response missing"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        ))
       :
         {
           "events": {
