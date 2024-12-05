@@ -40,30 +40,33 @@ An example event for `archive_search` looks as following:
 {
     "@timestamp": "2024-11-12T16:21:27.000Z",
     "agent": {
-        "ephemeral_id": "da2b14e1-fd3e-4323-8036-4409e36d8bdd",
-        "id": "2a751adb-9400-4f3d-9e1e-0dbeb991b5e7",
-        "name": "elastic-agent-58227",
+        "ephemeral_id": "d3b97519-7fb6-43c4-8b77-64243fb1a1a3",
+        "id": "c25a1c6b-6203-415b-8548-b4a1b5c845e0",
+        "name": "elastic-agent-14690",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "mimecast.archive_search_logs",
-        "namespace": "34436",
+        "namespace": "34146",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2a751adb-9400-4f3d-9e1e-0dbeb991b5e7",
+        "id": "c25a1c6b-6203-415b-8548-b4a1b5c845e0",
         "snapshot": false,
         "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "api"
+        ],
         "created": "2024-11-12T16:21:27.000Z",
         "dataset": "mimecast.archive_search_logs",
-        "ingested": "2024-11-21T02:02:20Z",
+        "ingested": "2024-12-05T00:48:50Z",
         "kind": "event",
         "original": "{\"createTime\":\"2024-11-12T16:21:27+0000\",\"description\":\"Message Tracking Search\",\"emailAddr\":\"\\u003c\\u003e\",\"searchReason\":\"\",\"searchText\":\"[User : dhamilton@mimecast.local]\",\"source\":\"archive\"}",
         "type": [
@@ -105,7 +108,6 @@ An example event for `archive_search` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -134,9 +136,9 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2024-10-17T02:06:50.000Z",
     "agent": {
-        "ephemeral_id": "2854c8e5-c4aa-42a9-b2b8-a089ded2d3cd",
-        "id": "694bec5c-fbe2-4709-8038-6fefc6d5d3a1",
-        "name": "elastic-agent-36527",
+        "ephemeral_id": "d3d233d7-62b7-40f6-8de7-d3c2937d6dae",
+        "id": "b6346117-4ee0-428a-9d74-6580e405feeb",
+        "name": "elastic-agent-20780",
         "type": "filebeat",
         "version": "8.14.0"
     },
@@ -145,24 +147,27 @@ An example event for `audit_events` looks as following:
     },
     "data_stream": {
         "dataset": "mimecast.audit_events",
-        "namespace": "69731",
+        "namespace": "54489",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "694bec5c-fbe2-4709-8038-6fefc6d5d3a1",
+        "id": "b6346117-4ee0-428a-9d74-6580e405feeb",
         "snapshot": false,
         "version": "8.14.0"
     },
     "event": {
         "action": "api-application-updated",
         "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
         "created": "2024-10-17T02:06:50.000Z",
         "dataset": "mimecast.audit_events",
         "id": "eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f",
-        "ingested": "2024-11-21T02:05:52Z",
+        "ingested": "2024-12-05T00:52:32Z",
         "original": "{\"auditType\":\"API Application Updated\",\"category\":\"account_logs\",\"eventInfo\":\"API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console\",\"eventTime\":\"2024-10-17T02:06:50+0000\",\"id\":\"eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f\",\"user\":\"user.name@company.mime-api.com\"}"
     },
     "input": {
@@ -204,7 +209,6 @@ An example event for `audit_events` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -237,22 +241,22 @@ An example event for `dlp` looks as following:
 {
     "@timestamp": "2024-11-17T19:47:39.000Z",
     "agent": {
-        "ephemeral_id": "1e25a55c-70a7-4388-8ff9-3874be7b72ea",
-        "id": "d4812660-822b-46f6-bcd9-5ef19b287b2a",
-        "name": "elastic-agent-64542",
+        "ephemeral_id": "6a8bd8fb-21cf-4c1e-a294-35bddf3ebeba",
+        "id": "890bb494-8ddc-489b-8bfe-48aea81e2d36",
+        "name": "elastic-agent-24674",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "mimecast.dlp_logs",
-        "namespace": "91516",
+        "namespace": "14088",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d4812660-822b-46f6-bcd9-5ef19b287b2a",
+        "id": "890bb494-8ddc-489b-8bfe-48aea81e2d36",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -274,9 +278,12 @@ An example event for `dlp` looks as following:
     "event": {
         "action": "hold",
         "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
         "created": "2024-11-17T19:47:39+0000",
         "dataset": "mimecast.dlp_logs",
-        "ingested": "2024-11-21T02:09:30Z",
+        "ingested": "2024-12-05T00:57:34Z",
         "original": "{\"action\":\"hold\",\"eventTime\":\"2024-11-17T19:47:39+0000\",\"messageId\":\"\\u003cae9f2f0678ed116f-152138@hapi.b41.one\\u003e\",\"policy\":\"Confidential\",\"recipientAddress\":\"vkamins@demo-int.elastic.mime-api.com\",\"route\":\"inbound\",\"senderAddress\":\"webmaster@empirepartners.b41.one\",\"subject\":\"New CERA.com Coming Soon! - CERA Alert\"}"
     },
     "input": {
@@ -302,7 +309,6 @@ An example event for `dlp` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -495,7 +501,6 @@ An example event for `message_release` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -690,32 +695,34 @@ An example event for `threat_intel_malware_customer` looks as following:
 {
     "@timestamp": "2024-11-18T16:08:27.231Z",
     "agent": {
-        "ephemeral_id": "b9dbc4db-016d-4dbc-9246-86c826d0502c",
-        "id": "721762ba-5f42-472f-8f2f-45b429aff32c",
-        "name": "elastic-agent-80973",
+        "ephemeral_id": "d1f430e4-51c4-4477-b0c8-c09935910589",
+        "id": "2f4dbe4d-f9d3-4bb4-b16e-cc670095357a",
+        "name": "elastic-agent-69346",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_customer",
-        "namespace": "61082",
+        "namespace": "60530",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "721762ba-5f42-472f-8f2f-45b429aff32c",
+        "id": "2f4dbe4d-f9d3-4bb4-b16e-cc670095357a",
         "snapshot": false,
         "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "threat"
+            "threat",
+            "email",
+            "malware"
         ],
         "dataset": "mimecast.threat_intel_malware_customer",
-        "ingested": "2024-11-21T02:17:03Z",
+        "ingested": "2024-12-05T01:02:33Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2024-11-18T16:08:27.231Z\",\"id\":\"indicator--dd9dd839-2362-4e60-9685-7d0b3b8e9497\",\"labels\":[\"malicious-activity\"],\"modified\":\"2024-11-18T16:08:27.231Z\",\"pattern\":\"[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']\",\"type\":\"indicator\",\"valid_from\":\"2024-11-18T16:08:27.231Z\"}",
         "type": [
@@ -804,32 +811,34 @@ An example event for `threat_intel_malware_grid` looks as following:
 {
     "@timestamp": "2024-11-18T23:45:40.537Z",
     "agent": {
-        "ephemeral_id": "022f5d75-496d-4d6c-a79b-43640a239978",
-        "id": "d7f9c1f9-f6a5-46bb-8ed2-5ca597bd0952",
-        "name": "elastic-agent-33734",
+        "ephemeral_id": "5324b627-0cb0-4c9c-ade5-b381ee81af8f",
+        "id": "e14a2fc5-d58b-4d98-a9ee-46df63eab758",
+        "name": "elastic-agent-94233",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_grid",
-        "namespace": "89009",
+        "namespace": "50567",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d7f9c1f9-f6a5-46bb-8ed2-5ca597bd0952",
+        "id": "e14a2fc5-d58b-4d98-a9ee-46df63eab758",
         "snapshot": false,
         "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "threat"
+            "threat",
+            "email",
+            "malware"
         ],
         "dataset": "mimecast.threat_intel_malware_grid",
-        "ingested": "2024-11-21T02:22:00Z",
+        "ingested": "2024-12-05T01:20:52Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2024-11-18T23:45:40.537Z\",\"id\":\"indicator--9633476b-0235-41cb-b9fb-6cc48b15391f\",\"labels\":[\"malicious-activity\"],\"modified\":\"2024-11-18T23:45:40.537Z\",\"pattern\":\"[file:hashes.'SHA-256' = '838c3483b20a3f81a199c49e7dc30b39d8d23a9810608f2bb7bb5ca059d42a72']\",\"type\":\"indicator\",\"valid_from\":\"2024-11-18T23:45:40.537Z\"}",
         "type": [
@@ -921,22 +930,22 @@ An example event for `ttp_ap` looks as following:
 {
     "@timestamp": "2024-11-17T00:52:30.000Z",
     "agent": {
-        "ephemeral_id": "bedff3a5-18e3-47af-916f-707b31a553c2",
-        "id": "4c9a0c2f-a987-4e7b-b838-6c59c6794915",
-        "name": "elastic-agent-53468",
+        "ephemeral_id": "10879bb9-44da-4174-a9f3-9c7a620c6a1b",
+        "id": "e12e39dc-5a8b-4aef-864e-fe617a5507e2",
+        "name": "elastic-agent-80555",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ap_logs",
-        "namespace": "54366",
+        "namespace": "21632",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4c9a0c2f-a987-4e7b-b838-6c59c6794915",
+        "id": "e12e39dc-5a8b-4aef-864e-fe617a5507e2",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -968,9 +977,12 @@ An example event for `ttp_ap` looks as following:
     "event": {
         "action": "none",
         "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
         "created": "2024-11-17T00:52:30+0000",
         "dataset": "mimecast.ttp_ap_logs",
-        "ingested": "2024-11-21T02:27:11Z",
+        "ingested": "2024-12-05T01:08:12Z",
         "original": "{\"actionTriggered\":\"none\",\"date\":\"2024-11-17T00:52:30+0000\",\"definition\":\"Default Internal Attachment Protect Definition\",\"details\":\"Malicious                                         \\r\\nTime taken: 0 hrs, 0 min, 1 sec\",\"fileHash\":\"168dde02cf41aed3bf31ad831b75d8ee0b738304baa6957c40e29b2487f15116\",\"fileName\":\"Sandbox Test.xlsx\",\"fileType\":\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\",\"messageId\":\"\\u003c675ddc8ccedda6a7-363046@hapi.b41.one\\u003e\",\"recipientAddress\":\"charles.weldon@demo-int.elastic.mime-api.com\",\"result\":\"malicious\",\"route\":\"internal\",\"senderAddress\":\"eric.boyt@demo-int.elastic.mime-api.com\",\"subject\":\"RE\"}"
     },
     "input": {
@@ -1005,7 +1017,6 @@ An example event for `ttp_ap` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1040,22 +1051,22 @@ An example event for `ttp_ip` looks as following:
 {
     "@timestamp": "2021-11-12T15:27:14.000Z",
     "agent": {
-        "ephemeral_id": "762ada62-d271-48e8-8c90-41518fbc0fda",
-        "id": "094c504a-3b94-4fe8-b5c1-9c98673b8d42",
-        "name": "elastic-agent-80059",
+        "ephemeral_id": "7b14936f-f3a2-4c0d-84ca-343382ff527a",
+        "id": "628d55fb-6e16-49d4-a0ba-b6db1b4d2281",
+        "name": "elastic-agent-89042",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ip_logs",
-        "namespace": "60450",
+        "namespace": "61588",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "094c504a-3b94-4fe8-b5c1-9c98673b8d42",
+        "id": "628d55fb-6e16-49d4-a0ba-b6db1b4d2281",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -1076,10 +1087,13 @@ An example event for `ttp_ip` looks as following:
     "event": {
         "action": "none",
         "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
         "created": "2021-11-12T15:27:14+0000",
         "dataset": "mimecast.ttp_ip_logs",
         "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzCw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGP7Ehc",
-        "ingested": "2024-11-21T02:32:22Z",
+        "ingested": "2024-12-05T01:13:21Z",
         "original": "{\"action\":\"none\",\"definition\":\"IP - 1 hit (Tag email)\",\"eventTime\":\"2021-11-12T15:27:14+0000\",\"hits\":1,\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzCw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGP7Ehc\",\"identifiers\":[\"internal_user_name\"],\"impersonationResults\":[{\"checkerResult\":\"hit\",\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe \\u003cjohndoe_nu@example.com\\u003e\",\"stringSimilarToDomain\":\"John Doe\"}],\"messageId\":\"\\u003c2-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.example.outlook.com\\u003e\",\"recipientAddress\":\"johndoejr@exampple.com\",\"senderAddress\":\"johndoe@example.com\",\"senderIpAddress\":\"8.8.8.8\",\"subject\":\"Don't read, just fill out!\",\"taggedExternal\":false,\"taggedMalicious\":true}"
     },
     "input": {
@@ -1129,7 +1143,6 @@ An example event for `ttp_ip` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1174,22 +1187,22 @@ An example event for `ttp_url` looks as following:
 {
     "@timestamp": "2024-11-13T13:03:11.000Z",
     "agent": {
-        "ephemeral_id": "99f22272-43ad-46c0-8569-a5fee90b448d",
-        "id": "44c6f663-cf1e-4af1-a495-d451107f0724",
-        "name": "elastic-agent-71344",
+        "ephemeral_id": "675bf199-2969-46bf-a9c1-8f880acc18f4",
+        "id": "d0b37a9a-11c1-4a25-898d-0ddb211b9fd2",
+        "name": "elastic-agent-71893",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_url_logs",
-        "namespace": "74302",
+        "namespace": "65054",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "44c6f663-cf1e-4af1-a495-d451107f0724",
+        "id": "d0b37a9a-11c1-4a25-898d-0ddb211b9fd2",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -1211,9 +1224,12 @@ An example event for `ttp_url` looks as following:
     "event": {
         "action": "N/A",
         "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
         "created": "2024-11-13T13:03:11+0000",
         "dataset": "mimecast.ttp_url_logs",
-        "ingested": "2024-11-21T02:37:30Z",
+        "ingested": "2024-12-05T01:17:02Z",
         "original": "{\"action\":\"warn\",\"actions\":\"Block\",\"adminOverride\":\"N/A\",\"category\":\"Dangerous file extension\",\"creationMethod\":\"Entry Scan\",\"date\":\"2024-11-13T13:03:11+0000\",\"emailPartsDescription\":[\"Attachment\"],\"fromUserEmailAddress\":\"gregoryhunt@thejunglegroup.b41.one\",\"messageId\":\"\\u003ccc11f61d32d018de-152846@hapi.b41.one\\u003e\",\"route\":\"inbound\",\"scanResult\":\"malicious\",\"sendingIp\":\"54.243.138.179\",\"subject\":\"Re\",\"tagMap\":{\"DangerousFileExt\":{\"ContentCheck:ContentScannersBlocked\":[\".exe\"],\"ContentCheck:DangerousExtsUrlFileDownload\":[\"dll\"],\"ContentCheck:DangerousMimetypesUrlFileDownload\":[\"application/x-msdownload\"],\"Inspect:FileExts\":[\"[exe]\"],\"Inspect:MimeTypes\":[\"[]\"],\"Status\":[\"CustomerSpecific\",\"VerdictBlock\"]}},\"ttpDefinition\":\"Default Inbound URL Protect Definition\",\"url\":\"https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe\",\"userAwarenessAction\":\"N/A\",\"userEmailAddress\":\"mike.a.roberts@demo-int.elastic.mime-api.com\",\"userOverride\":\"None\"}"
     },
     "input": {
@@ -1298,7 +1314,6 @@ An example event for `ttp_url` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
