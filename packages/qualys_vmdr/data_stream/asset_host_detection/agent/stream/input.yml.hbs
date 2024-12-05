@@ -43,15 +43,33 @@ program: |
     }).do_request().as(resp,
       resp.StatusCode == 200
       ?
-        resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0').as(body, {
-            "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(h,
-              h.DETECTION_LIST.DETECTION.map(v, {
-                "message": h.with({"DETECTION_LIST": v}).encode_json(),
-              })
-            ).flatten(),
-            ?"pagination_url": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL,
-            "want_more": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL.hasValue(),
-        }))
+        resp.Body.as(xml, try(bytes(xml).decode_xml('qualys_api_2_0'), "decode_xml_error").as(body, 
+          !has(body.decode_xml_error) 
+          ?
+            {
+              "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(h,
+                h.DETECTION_LIST.DETECTION.map(v, {
+                  "message": h.with({"DETECTION_LIST": v}).encode_json(),
+                })
+              ).flatten(),
+              ?"pagination_url": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL,
+              "want_more": body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL.hasValue(),
+            }
+          :
+            {
+              "events": {
+                "error": {
+                  "message": "decode_xml:"+(
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      "XML response missing"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        ))
       :
         {
           "events": {
