@@ -33,60 +33,32 @@ program: |
             "name":body.name,
             "uuid":body.id,
             "version":body.version,
-            "health_report"{
+            "health_report":{
               "status":body.status,
               "indicators":has(body.indicators)
               ? {
-                  "pipelines":has(body.indicators.pipelines)
-                  ? body.indicators.pipelines.map(pipeline, 
-                    {
-                      "pipeline_id":body. pipelines.indicators.pipeline_id,
-                      ### Pipeline id is not predicatable, need to verify this works
-                      "status":body.indicators.pipelines.pipeline_id.status,
-                      "symptom":body.indicators.pipelines.pipeline_id.symptom,
-                      "details":has(body.indicators.pipelines.pipeline_id.details)
+                  "pipelines":
+                    body.indicators.pipelines.indicators.keys().map(key, has(body.indicators.pipelines), {
+                      "pipeline_id":key,
+                      "status":body.indicators.pipelines.indicators[key].status,
+                      "symptom":body.indicators.pipelines.indicators[key].symptom,
+                      "details":has(body.indicators.pipelines.indicators[key].details)
                       ? {
-                          "state":body.indicators.pipelines.pipeline_id.details.state,
-                          "flow":has(body.indicators.pipelines.pipeline_id.details.flow)
-                          ? {
-                              "worker_utilization":has(body.indicators.pipelines.pipeline_id.details.flow.worker_utilization)
-                              ? {
-                                  "lifetime":body.indicators.pipelines.pipeline_id.details.flow.worker_utilization.lifetime,
-                                  "max":body.indicators.pipelines.pipeline_id.details.flow.worker_utilization.max,
-                                  "last_min":body.indicators.pipelines.pipeline_id.flow.worker_utilization.last_min
-                                }
-                              : {}
-                            }
-                          : {}
-                        }
-                      : {},
-                      "diagnosis":has(body.indicators.pipelines.pipeline_id.diagnosis)
-                      ? {
-                          "id":body.indicators.pipelines.pipeline_id.diagnosis.id,
-                          "cause":body.indicators.pipelines.pipeline_id.diagnosis.cause,
-                          "action":body.indicators.pipelines.pipeline_id.diagnosis.action,
-                          "help_url":body.indicators.pipelines.pipeline_id.diagnosis.help_url
-                        }
-                      : {},
-                      "impacts":has(body.indicators.pipelines.pipeline_id.impacts)
-                      ? {
-                          "id":body.indicators.pipelines.pipeline_id.impacts.id,
-                          "severity":body.indicators.pipelines.pipeline_id.impacts.severity,
-                          "description":body.indicators.pipelines.pipeline_id.impacts.description,
-                          "areas":body.indicators.pipelines.pipeline_id.impacts.areas
-                        }
-                      : []
-                    }
-                  )
-                  : []
-                }
-              : {}
-            }
-        }
-      }
+                          "state":body.indicators.pipelines.indicators[key].details.status.state,
+                          "flow": body.indicators.pipelines.indicators[key].details.flow,
+                      	  "diagnosis":has(body.indicators.pipelines.indicators[key].diagnosis)
+                          ? body.indicators.pipelines.pipelines.indicators[key].diagnosis
+                          : {},
+                      } : {},
+                    } )
+                } : {},
+            } 
+        }: {},
       }  
+    }
     )
-  )
-
+  ).as(eve, {
+    "events":[eve]
+  })
 
 
