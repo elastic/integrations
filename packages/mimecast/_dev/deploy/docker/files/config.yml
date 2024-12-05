@@ -1,4 +1,1704 @@
 rules:
+  # v2 definitions
+  - path: /oauth/token
+    methods: ["POST"]
+    query_params:
+      client_id: slightlysecretclientid
+      client_secret: totallysecretlientsecret
+      grant_type: client_credentials
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "access_token": "topsecretaccesstokenthatshouldnotbeleakedforabit",
+            "token_type": "Bearer",
+            "expires_in": 1799,
+            "scope": ""
+          }
+          `}}
+
+  - path: /api/archive/get-archive-search-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 7,
+                      "next": "nexttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "logs": [
+                          {
+                              "createTime": "2024-11-12T16:22:16+0000",
+                              "emailAddr": "dhamilton@mimecast.local",
+                              "source": "archive",
+                              "searchText": "demo-int.elastic.mime-api.com",
+                              "searchReason": "",
+                              "description": "Audit [Page 1] - Depth 100"
+                          },
+                          {
+                              "createTime": "2024-11-12T16:22:01+0000",
+                              "emailAddr": "dhamilton@mimecast.local",
+                              "source": "archive",
+                              "searchText": "demo-int.elastic.mime-api.com",
+                              "searchReason": "",
+                              "description": "Audit [Page 1] - Depth 100"
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/archive/get-archive-search-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"nexttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 7,
+                      "next": "lasttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "logs": [
+                          {
+                              "createTime": "2024-11-12T16:21:48+0000",
+                              "emailAddr": "<>",
+                              "source": "archive",
+                              "searchText": "[User : dhamilton@mimecast.local]",
+                              "searchReason": "",
+                              "description": "Message Tracking Search"
+                          },
+                          {
+                              "createTime": "2024-11-12T16:21:27+0000",
+                              "emailAddr": "<>",
+                              "source": "archive",
+                              "searchText": "[User : dhamilton@mimecast.local]",
+                              "searchReason": "",
+                              "description": "Message Tracking Search"
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/archive/get-archive-search-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"lasttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 7,
+                      "next": "String",
+                      "previous": "String"
+                  },
+                  "status": 200
+              },
+              "data": [],
+              "fail": []
+          }
+          `}}
+
+  - path: /api/audit/get-audit-events
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "next": "nexttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "id": "eNoVzk0PQzAAgOH_0vMONA2bZAdMzJjZkH3cRpuujKKKWPbfZ_c3ed4PECSXHWEYGICLGJ7v3jll8-z51uEYBzdJC5g1QVPRYhZXmZijO5UM9s5OqI6aRTpqw5F2iZzslFXhJqhxxJVgGB3S7_VUlOY6bpSTG_ojLh_Fq24nernQLViBp8Ssf3P6txHStA1UViCXoucV6XKOybJkp7GFTKijpR9IJxivgaF-f8qkPZo",
+                      "auditType": "API Application Action",
+                      "user": "user.name@company.mime-api.com",
+                      "eventTime": "2024-10-17T02:07:12+0000",
+                      "eventInfo": "User user.name@company.mime-api.com viewed client credentials for application testing.",
+                      "category": "account_logs"
+                  },
+                  {
+                      "id": "eNoVzsEKgjAAgOF32bUOzoZm0MFsFSgmlQjd0o01bU7d5sTo3av7D9__BopWZqCcgA2wc6hx0c-HSbQCjjNeLbLY1m7ZJZ1g9awKcwvtcWq4q_FeQQzLzEd9atlwM1OUc5EGSUsy6SSjxVSf_Fw14fraOedjGlvS3Otn20_scmFbsAQPQ7h-Sfa3EfK8AK6XoDJKS0GHShL6W4ry6w6Fro9-_UgHxWULNvDzBRN-Pg0",
+                      "auditType": "API Application Action",
+                      "user": "user.name@company.mime-api.com",
+                      "eventTime": "2024-10-17T02:06:53+0000",
+                      "eventInfo": "User user.name@company.mime-api.com viewed client credentials for application testing.",
+                      "category": "account_logs"
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/audit/get-audit-events
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"nexttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "next": "lasttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "id": "eNoVzrsOgjAAQNF_6cwAWEFIHHgFDQSQR0zchNZaEAqUAtH47-J-k3M_gONKjJgiYILzLuAPeknInHX7IXZD2xuIVatlH_Ytqd_8KnJr8deGqpPncsVTykSHQ7SQMRerU9A2MsIOJUwO58XD00kveGMdsl6O_ShYUHOrn92wkjQlRyCBu0B0ejHytyHUNEPRJVAJPrEWjxVDeFtyisyGlqrDrZ_xyCnrgKl8f64uPXA",
+                      "auditType": "API Application Updated",
+                      "user": "user.name@company.mime-api.com",
+                      "eventTime": "2024-10-17T02:06:51+0000",
+                      "eventInfo": "API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:51+0000, IP: 203.59.201.168, Application: Administration Console",
+                      "category": "account_logs"
+                  },
+                  {
+                      "id": "eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f",
+                      "auditType": "API Application Updated",
+                      "user": "user.name@company.mime-api.com",
+                      "eventTime": "2024-10-17T02:06:50+0000",
+                      "eventInfo": "API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console",
+                      "category": "account_logs"
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/audit/get-audit-events
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"lasttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "status": 200,
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 20,
+                      "next": "String"
+                  }
+              },
+              "data": [],
+              "fail": []
+          }
+          `}}
+
+  - path: /api/dlp/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 3,
+                      "next": "nexttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "dlpLogs": [
+                          {
+                              "senderAddress": "kay.mann@demo-int.elastic.mime-api.com",
+                              "recipientAddress": "cbrashear@demo-visionary.b41.one",
+                              "subject": "RE",
+                              "eventTime": "2024-11-18T05:11:02+0000",
+                              "route": "outbound",
+                              "policy": "Confidential",
+                              "action": "hold",
+                              "messageId": "<ee36704d0e84b012-226716@hapi.b41.one>"
+                          },
+                          {
+                              "senderAddress": "zimin.lu@demo-int.elastic.mime-api.com",
+                              "recipientAddress": "vkaminski@demo-visionary.b41.one",
+                              "subject": "Re",
+                              "eventTime": "2024-11-17T20:57:30+0000",
+                              "route": "outbound",
+                              "policy": "Confidential",
+                              "action": "hold",
+                              "messageId": "<5f9f4f4f0e0afb06-147953@hapi.b41.one>"
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/dlp/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"nexttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 4,
+                      "next": "lasttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "dlpLogs": [
+                          {
+                              "senderAddress": "thomas.bentz@empirepartners.b41.one",
+                              "recipientAddress": "thomas.bentz@demo-int.elastic.mime-api.com",
+                              "subject": "FIRE DRILL",
+                              "eventTime": "2024-11-17T20:16:02+0000",
+                              "route": "inbound",
+                              "policy": "Confidential",
+                              "action": "hold",
+                              "messageId": "<2a5df47e8f85f62a-216237@hapi.b41.one>"
+                          },
+                          {
+                              "senderAddress": "webmaster@empirepartners.b41.one",
+                              "recipientAddress": "vkamins@demo-int.elastic.mime-api.com",
+                              "subject": "New CERA.com Coming Soon! - CERA Alert",
+                              "eventTime": "2024-11-17T19:47:39+0000",
+                              "route": "inbound",
+                              "policy": "Confidential",
+                              "action": "hold",
+                              "messageId": "<ae9f2f0678ed116f-152138@hapi.b41.one>"
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/dlp/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"lasttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 3,
+                      "next": "String"
+                  },
+                  "status": 200
+              },
+              "data": [],
+              "fail": []
+          }
+          `}}
+
+  - path: /api/ttp/threat-intel/get-feed
+    methods: ["POST"]
+    request_body: /"feedType":"malware_customer","fileType":"stix","start":/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+          X-Mc-Threat-Feed-Next-Token:
+            - nexttoken
+        body: |
+          {{ minify_json `
+          {
+              "type": "bundle",
+              "id": "bundle--bd0d4c32-1f42-4a57-b666-bbfbe459abcb",
+              "spec_version": "2.0",
+              "objects": [
+                  {
+                      "type": "malware",
+                      "id": "malware--c17caeaa-f0a2-4fa6-86a3-c5a521eed720",
+                      "created": "2024-11-18T16:08:27.231Z",
+                      "modified": "2024-11-18T16:08:27.231Z",
+                      "name": "",
+                      "labels": [
+                          "virus"
+                      ]
+                  },
+                  {
+                      "type": "indicator",
+                      "id": "indicator--dd9dd839-2362-4e60-9685-7d0b3b8e9497",
+                      "created": "2024-11-18T16:08:27.231Z",
+                      "modified": "2024-11-18T16:08:27.231Z",
+                      "labels": [
+                          "malicious-activity"
+                      ],
+                      "pattern": "[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']",
+                      "valid_from": "2024-11-18T16:08:27.231Z"
+                  },
+                  {
+                      "type": "relationship",
+                      "id": "relationship--87eb2b62-b2a8-4559-a3e9-40c2fa75d65d",
+                      "created": "2024-11-18T16:08:27.231Z",
+                      "modified": "2024-11-18T16:08:27.231Z",
+                      "relationship_type": "indicates",
+                      "source_ref": "indicator--dd9dd839-2362-4e60-9685-7d0b3b8e9497",
+                      "target_ref": "malware--c17caeaa-f0a2-4fa6-86a3-c5a521eed720"
+                  },
+                  {
+                      "type": "malware",
+                      "id": "malware--354611fe-6da1-4ea1-9df5-1a96ee3ab678",
+                      "created": "2024-11-18T16:08:27.232Z",
+                      "modified": "2024-11-18T16:08:27.232Z",
+                      "name": "",
+                      "labels": [
+                          "virus"
+                      ]
+                  },
+                  {
+                      "type": "indicator",
+                      "id": "indicator--366fad17-1142-4f18-a488-802b2127b30c",
+                      "created": "2024-11-18T16:08:27.232Z",
+                      "modified": "2024-11-18T16:08:27.232Z",
+                      "labels": [
+                          "malicious-activity"
+                      ],
+                      "pattern": "[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']",
+                      "valid_from": "2024-11-18T16:08:27.232Z"
+                  },
+                  {
+                      "type": "relationship",
+                      "id": "relationship--ce0e0b8a-2044-4d51-aebd-9dfd722c204d",
+                      "created": "2024-11-18T16:08:27.232Z",
+                      "modified": "2024-11-18T16:08:27.232Z",
+                      "relationship_type": "indicates",
+                      "source_ref": "indicator--366fad17-1142-4f18-a488-802b2127b30c",
+                      "target_ref": "malware--354611fe-6da1-4ea1-9df5-1a96ee3ab678"
+                  },
+                  {
+                      "type": "malware",
+                      "id": "malware--1c264468-bec7-4118-8f43-1f69335bcbe2",
+                      "created": "2024-11-18T16:12:59.468Z",
+                      "modified": "2024-11-18T16:12:59.468Z",
+                      "name": "",
+                      "labels": [
+                          "virus"
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /api/ttp/threat-intel/get-feed
+    methods: ["POST"]
+    request_body: /"feedType":"malware_customer","fileType":"stix","token":"nexttoken"/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {{ minify_json `
+          {
+              "type": "bundle",
+              "id": "bundle--ab2e4477-6acb-46bb-99cf-cb2b1aed5df2",
+              "spec_version": "2.0",
+              "objects": [
+                  {
+                      "type": "malware",
+                      "id": "malware--f0cedd9b-d728-4b46-bf98-5c86b60ed268",
+                      "created": "2024-11-18T20:38:51.020Z",
+                      "modified": "2024-11-18T20:38:51.020Z",
+                      "name": "",
+                      "labels": [
+                          "virus"
+                      ]
+                  },
+                  {
+                      "type": "indicator",
+                      "id": "indicator--b36dd73a-3f38-4604-93fc-da7e6be9fae4",
+                      "created": "2024-11-18T20:38:51.020Z",
+                      "modified": "2024-11-18T20:38:51.020Z",
+                      "labels": [
+                          "malicious-activity"
+                      ],
+                      "pattern": "[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']",
+                      "valid_from": "2024-11-18T20:38:51.020Z"
+                  },
+                  {
+                      "type": "relationship",
+                      "id": "relationship--7f362446-d186-4514-8e79-2ca608443cfb",
+                      "created": "2024-11-18T20:38:51.020Z",
+                      "modified": "2024-11-18T20:38:51.020Z",
+                      "relationship_type": "indicates",
+                      "source_ref": "indicator--b36dd73a-3f38-4604-93fc-da7e6be9fae4",
+                      "target_ref": "malware--f0cedd9b-d728-4b46-bf98-5c86b60ed268"
+                  },
+                  {
+                      "type": "malware",
+                      "id": "malware--2480fbad-81b8-4396-900b-93aa66b2caac",
+                      "created": "2024-11-18T20:38:51.020Z",
+                      "modified": "2024-11-18T20:38:51.020Z",
+                      "name": "",
+                      "labels": [
+                          "virus"
+                      ]
+                  },
+                  {
+                      "type": "indicator",
+                      "id": "indicator--96fe013e-7d65-4654-901b-d10e86fab7c6",
+                      "created": "2024-11-18T20:38:51.020Z",
+                      "modified": "2024-11-18T20:38:51.020Z",
+                      "labels": [
+                          "malicious-activity"
+                      ],
+                      "pattern": "[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']",
+                      "valid_from": "2024-11-18T20:38:51.020Z"
+                  },
+                  {
+                      "type": "relationship",
+                      "id": "relationship--bea013ee-5be5-4b19-9aa6-622d953fbd21",
+                      "created": "2024-11-18T20:38:51.020Z",
+                      "modified": "2024-11-18T20:38:51.020Z",
+                      "relationship_type": "indicates",
+                      "source_ref": "indicator--96fe013e-7d65-4654-901b-d10e86fab7c6",
+                      "target_ref": "malware--2480fbad-81b8-4396-900b-93aa66b2caac"
+                  }
+              ]
+          }
+          `}}
+
+  - path: /api/ttp/threat-intel/get-feed
+    methods: ["POST"]
+    request_body: /"feedType":"malware_grid","fileType":"stix","start":/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+          X-Mc-Threat-Feed-Next-Token:
+            - nexttoken
+        body: |
+          {{ minify_json `
+          {
+              "type": "bundle",
+              "id": "bundle--246e24ce-7dc0-4a4f-be7e-0e2a268cf5a9",
+              "spec_version": "2.0",
+              "objects": [
+                  {
+                      "type": "malware",
+                      "id": "malware--50bed39b-d638-4b0a-a760-794a973b7d18",
+                      "created": "2024-11-18T23:45:40.537Z",
+                      "modified": "2024-11-18T23:45:40.537Z",
+                      "name": "ACH_78476.html",
+                      "labels": [
+                          "virus"
+                      ]
+                  },
+                  {
+                      "type": "indicator",
+                      "id": "indicator--9633476b-0235-41cb-b9fb-6cc48b15391f",
+                      "created": "2024-11-18T23:45:40.537Z",
+                      "modified": "2024-11-18T23:45:40.537Z",
+                      "labels": [
+                          "malicious-activity"
+                      ],
+                      "pattern": "[file:hashes.'SHA-256' = '838c3483b20a3f81a199c49e7dc30b39d8d23a9810608f2bb7bb5ca059d42a72']",
+                      "valid_from": "2024-11-18T23:45:40.537Z"
+                  },
+                  {
+                      "type": "relationship",
+                      "id": "relationship--300da70d-fc93-4cd1-b8fe-db16d907c61e",
+                      "created": "2024-11-18T23:45:40.537Z",
+                      "modified": "2024-11-18T23:45:40.537Z",
+                      "relationship_type": "indicates",
+                      "source_ref": "indicator--9633476b-0235-41cb-b9fb-6cc48b15391f",
+                      "target_ref": "malware--50bed39b-d638-4b0a-a760-794a973b7d18"
+                  },
+                  {
+                      "type": "malware",
+                      "id": "malware--b2660231-b225-401d-8944-0c7adda18146",
+                      "created": "2024-11-18T23:45:50.043Z",
+                      "modified": "2024-11-18T23:45:50.043Z",
+                      "name": "",
+                      "labels": [
+                          "virus"
+                      ]
+                  },
+                  {
+                      "type": "indicator",
+                      "id": "indicator--46e1c0cf-a90c-413d-94b2-7fa889e79fe7",
+                      "created": "2024-11-18T23:45:50.043Z",
+                      "modified": "2024-11-18T23:45:50.043Z",
+                      "labels": [
+                          "malicious-activity"
+                      ],
+                      "pattern": "[file:hashes.'SHA-256' = 'f4cbcb0b434a2376bf50ba8949dd83bc866dab481fe49595983bba1f76044670']",
+                      "valid_from": "2024-11-18T23:45:50.043Z"
+                  }
+              ]
+          }
+          `}}
+  - path: /api/ttp/threat-intel/get-feed
+    methods: ["POST"]
+    request_body: /"feedType":"malware_grid","fileType":"stix","token":"nexttoken"/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {{ minify_json `
+          {
+              "type": "bundle",
+              "id": "bundle--1f3c412f-ac56-45eb-b640-70cd0b2b5e13",
+              "spec_version": "2.0",
+              "objects": [
+                  {
+                      "type": "relationship",
+                      "id": "relationship--a9253a3d-11b7-4bf3-af88-135dedeeb237",
+                      "created": "2024-11-18T23:45:50.043Z",
+                      "modified": "2024-11-18T23:45:50.043Z",
+                      "relationship_type": "indicates",
+                      "source_ref": "indicator--46e1c0cf-a90c-413d-94b2-7fa889e79fe7",
+                      "target_ref": "malware--b2660231-b225-401d-8944-0c7adda18146"
+                  },
+                  {
+                      "type": "malware",
+                      "id": "malware--7fac3700-20bd-4218-87ab-8c9c5e2457af",
+                      "created": "2024-11-18T23:45:57.273Z",
+                      "modified": "2024-11-18T23:45:57.273Z",
+                      "name": "Voicemail +1 392 864 7XXXWeldfit.html",
+                      "labels": [
+                          "virus"
+                      ]
+                  },
+                  {
+                      "type": "indicator",
+                      "id": "indicator--0533f357-3e2c-411d-b4b1-49589b196cd6",
+                      "created": "2024-11-18T23:45:57.273Z",
+                      "modified": "2024-11-18T23:45:57.273Z",
+                      "labels": [
+                          "malicious-activity"
+                      ],
+                      "pattern": "[file:hashes.'SHA-256' = 'f96ec231e638bd5a87cf93f76deedca594094e7fd984f541ef9406c29070ada0']",
+                      "valid_from": "2024-11-18T23:45:57.273Z"
+                  },
+                  {
+                      "type": "relationship",
+                      "id": "relationship--4137398d-bfe7-41ca-9772-1df43c70c9da",
+                      "created": "2024-11-18T23:45:57.273Z",
+                      "modified": "2024-11-18T23:45:57.273Z",
+                      "relationship_type": "indicates",
+                      "source_ref": "indicator--0533f357-3e2c-411d-b4b1-49589b196cd6",
+                      "target_ref": "malware--7fac3700-20bd-4218-87ab-8c9c5e2457af"
+                  },
+                  {
+                      "type": "malware",
+                      "id": "malware--251bbe80-4dfe-4abe-948e-a02f01b49f35",
+                      "created": "2024-11-18T23:45:59.189Z",
+                      "modified": "2024-11-18T23:45:59.189Z",
+                      "name": "Voicemail +1 392 864 7XXXTheoncologyinstitute.html",
+                      "labels": [
+                          "virus"
+                      ]
+                  },
+                  {
+                      "type": "indicator",
+                      "id": "indicator--97d13191-7734-471a-985d-a311638ffded",
+                      "created": "2024-11-18T23:45:59.189Z",
+                      "modified": "2024-11-18T23:45:59.189Z",
+                      "labels": [
+                          "malicious-activity"
+                      ],
+                      "pattern": "[file:hashes.'SHA-256' = '6e406c08d3e5ae67dcff293d7d3176dded09b666b152fdff2d6d416977f086cd']",
+                      "valid_from": "2024-11-18T23:45:59.189Z"
+                  }
+              ]
+          }
+          `}}
+
+  - path: /api/ttp/attachment/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 6322,
+                      "next": "nexttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "attachmentLogs": [
+                          {
+                              "senderAddress": "thomas.bentz@empirepartners.b41.one",
+                              "recipientAddress": "thomas.bentz@demo-int.elastic.mime-api.com",
+                              "fileName": "attach-e398d4a5-38e6-4b89-b2fb-2e0aab6e4f50.pdf",
+                              "fileType": "application/pdf",
+                              "result": "safe",
+                              "actionTriggered": "none, none",
+                              "date": "2024-11-17T20:16:00+0000",
+                              "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 3 sec",
+                              "route": "inbound",
+                              "messageId": "<2a5df47e8f85f62a-216237@hapi.b41.one>",
+                              "subject": "FIRE DRILL",
+                              "fileHash": "4af462d0246bf4074730b2aaecb076dfd30977ff23556b60848ab0af68f6e636",
+                              "definition": "Default Inbound Attachment Protect Definition"
+                          },
+                          {
+                              "senderAddress": "karlr4@empirepartners.b41.one",
+                              "recipientAddress": "m.love@demo-int.elastic.mime-api.com",
+                              "fileName": "Mimecast.pdf",
+                              "fileType": "application/pdf",
+                              "result": "safe",
+                              "actionTriggered": "none, none",
+                              "date": "2024-11-17T05:12:44+0000",
+                              "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 3 sec",
+                              "route": "inbound",
+                              "messageId": "<fa8c7af5cca6d968-211453@hapi.b41.one>",
+                              "subject": "Re",
+                              "fileHash": "14ae6096f7ce68f8dfe2c298a347ebad8f53c212f458900b5867249daa267d28",
+                              "definition": "Default Inbound Attachment Protect Definition"
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/ttp/attachment/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"nexttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 6322,
+                      "next": "lasttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "attachmentLogs": [
+                          {
+                              "senderAddress": "mail@evaluation-fuzz.b41.one",
+                              "recipientAddress": "sscott5@demo-int.elastic.mime-api.com",
+                              "fileName": "War_of_Worlds_script.doc",
+                              "fileType": "text/rtf",
+                              "result": "safe",
+                              "actionTriggered": "none, none",
+                              "date": "2024-11-17T03:23:20+0000",
+                              "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 5 sec",
+                              "route": "inbound",
+                              "messageId": "<bb8178076a11d47e-294960@hapi.b41.one>",
+                              "subject": "Super sales to Las Vegas, Europe and more!",
+                              "fileHash": "7790267f9c0d2f1928330944732e5d412ca518ec54884fcf5bb744770584e902",
+                              "definition": "Default Inbound Attachment Protect Definition"
+                          },
+                          {
+                              "senderAddress": "eric.boyt@demo-int.elastic.mime-api.com",
+                              "recipientAddress": "charles.weldon@demo-int.elastic.mime-api.com",
+                              "fileName": "Sandbox Test.xlsx",
+                              "fileType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                              "result": "malicious",
+                              "actionTriggered": "none",
+                              "date": "2024-11-17T00:52:30+0000",
+                              "details": "Malicious                                         \r\nTime taken: 0 hrs, 0 min, 1 sec",
+                              "route": "internal",
+                              "messageId": "<675ddc8ccedda6a7-363046@hapi.b41.one>",
+                              "subject": "RE",
+                              "fileHash": "168dde02cf41aed3bf31ad831b75d8ee0b738304baa6957c40e29b2487f15116",
+                              "definition": "Default Internal Attachment Protect Definition"
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/ttp/attachment/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"lasttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 6322
+                  },
+                  "status": 200
+              },
+              "data": [],
+              "fail": []
+          }
+          `}}
+
+  - path: /api/ttp/impersonation/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {{ minify_json `
+          {
+              "meta": {
+                  "status": 200,
+                  "pagination": {
+                      "pageSize": 10,
+                      "totalCount": 20,
+                      "next": "nexttoken"
+                  }
+              },
+              "data": [
+                  {
+                      "impersonationLogs": [
+                          {
+                              "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzCw1FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFBGQVEhg",
+                              "senderAddress": "johndoe@example.com",
+                              "recipientAddress": "johdoejr@example.com",
+                              "subject": "Don't read, just fill out!",
+                              "definition": "IP - 1 hit (Tag email)",
+                              "hits": 1,
+                              "identifiers": [
+                                  "internal_user_name"
+                              ],
+                              "action": "none",
+                              "taggedExternal": false,
+                              "taggedMalicious": true,
+                              "senderIpAddress": "8.8.8.8",
+                              "eventTime": "2021-11-12T15:30:15+0000",
+                              "impersonationResults": [
+                                  {
+                                      "impersonationDomainSource": "internal_user_name",
+                                      "similarDomain": "John Doe <johndoe_nu@example.com>",
+                                      "stringSimilarToDomain": "John Doe",
+                                      "checkerResult": "hit"
+                                  }
+                              ],
+                              "messageId": "<0-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com>"
+                          },
+                          {
+                              "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzCw1FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFBGQVEhg",
+                              "senderAddress": "johndoe@example.com",
+                              "recipientAddress": "johdoejr@example.com",
+                              "subject": "Don't read, just fill out!",
+                              "definition": "IP - 1 hit (Tag email)",
+                              "hits": 1,
+                              "identifiers": [
+                                  "internal_user_name"
+                              ],
+                              "action": "none",
+                              "taggedExternal": false,
+                              "taggedMalicious": true,
+                              "senderIpAddress": "8.8.8.8",
+                              "eventTime": "2021-11-12T15:27:15+0000",
+                              "impersonationResults": [
+                                  {
+                                      "impersonationDomainSource": "internal_user_name",
+                                      "similarDomain": "John Doe <johndoe_nu@example.com>",
+                                      "stringSimilarToDomain": "John Doe",
+                                      "checkerResult": "hit"
+                                  }
+                              ],
+                              "messageId": "<1-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com>"
+                          }
+                      ],
+                      "resultCount": 36
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/ttp/impersonation/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"nexttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {{ minify_json `
+          {
+              "meta": {
+                  "status": 200,
+                  "pagination": {
+                      "pageSize": 10,
+                      "totalCount": 20,
+                      "next": "lasttoken"
+                  }
+              },
+              "data": [
+                  {
+                      "impersonationLogs": [
+                          {
+                              "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzCw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGP7Ehc",
+                              "senderAddress": "johndoe@example.com",
+                              "recipientAddress": "johndoejr@exampple.com",
+                              "subject": "Don't read, just fill out!",
+                              "definition": "IP - 1 hit (Tag email)",
+                              "hits": 1,
+                              "identifiers": [
+                                  "internal_user_name"
+                              ],
+                              "action": "none",
+                              "taggedExternal": false,
+                              "taggedMalicious": true,
+                              "senderIpAddress": "8.8.8.8",
+                              "eventTime": "2021-11-12T15:27:14+0000",
+                              "impersonationResults": [
+                                  {
+                                      "impersonationDomainSource": "internal_user_name",
+                                      "similarDomain": "John Doe <johndoe_nu@example.com>",
+                                      "stringSimilarToDomain": "John Doe",
+                                      "checkerResult": "hit"
+                                  }
+                              ],
+                              "messageId": "<2-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.example.outlook.com>"
+                          },
+                          {
+                              "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw11EqSy0qzszPU8Iy1FEqyQMrBIor1QIAY98SFg",
+                              "senderAddress": "johndoe@example.com",
+                              "recipientAddress": "johndoejr@example.com",
+                              "subject": "Don't read, just fill out!",
+                              "definition": "IP - 1 hit (Tag email)",
+                              "hits": 1,
+                              "identifiers": [
+                                  "internal_user_name"
+                              ],
+                              "action": "none",
+                              "taggedExternal": false,
+                              "taggedMalicious": true,
+                              "senderIpAddress": "8.8.8.8",
+                              "eventTime": "2021-11-12T15:27:14+0000",
+                              "impersonationResults": [
+                                  {
+                                      "impersonationDomainSource": "internal_user_name",
+                                      "similarDomain": "John Doe <johndoe_nu@example.com>",
+                                      "stringSimilarToDomain": "John Doe",
+                                      "checkerResult": "hit"
+                                  }
+                              ],
+                              "messageId": "<3-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.example.outlook.com>"
+                          }
+                      ],
+                      "resultCount": 36
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/ttp/impersonation/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"lasttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "status": 200,
+                  "pagination": {
+                      "pageSize": 10,
+                      "totalCount": 20,
+                      "next": "String"
+                  }
+              },
+              "data": [],
+              "fail": []
+          }
+          `}}
+
+  - path: /api/ttp/url/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 42,
+                      "next": "nexttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "clickLogs": [
+                          {
+                              "userEmailAddress": "dl-ga-all_enron_worldwide1@demo-int.elastic.mime-api.com",
+                              "fromUserEmailAddress": "coo.jeff@demo-int.elastic.mime-api.com",
+                              "url": "http://www.enron.com/corp/pressroom/releases/2002/ene/012902Release.html",
+                              "ttpDefinition": "Default Internal URL Protect Definition",
+                              "subject": "Management Changes",
+                              "action": "warn",
+                              "adminOverride": "N/A",
+                              "userOverride": "None",
+                              "scanResult": "malicious",
+                              "category": "Compromised",
+                              "sendingIp": "Internal IP",
+                              "userAwarenessAction": "N/A",
+                              "date": "2024-11-17T17:02:30+0000",
+                              "actions": "None",
+                              "route": "internal",
+                              "creationMethod": "Entry Scan",
+                              "emailPartsDescription": [
+                                  "Body"
+                              ],
+                              "messageId": "<871dda3d6bf5107e-360815@hapi.b41.one>",
+                              "tagMap": {
+                                  "UrlReputationScan": {
+                                      "Status": [
+                                          "CustomerAll",
+                                          "VerdictBlock"
+                                      ],
+                                      "Type": [
+                                          "Compromised"
+                                      ],
+                                      "UrlBlock": [
+                                          "ORIGINAL:http://www.enron.com/corp/pressroom/releases/2002/ene/012902Release.html (Blocked as COMPROMISED)"
+                                      ],
+                                      "Url": [
+                                          "http://www.enron.com/corp/pressroom/releases/2002/ene/012902Release.html"
+                                      ]
+                                  }
+                              }
+                          },
+                          {
+                              "userEmailAddress": "jhartso@demo-int.elastic.mime-api.com",
+                              "fromUserEmailAddress": "terrym@concept-variety.b41.one",
+                              "url": "https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe",
+                              "ttpDefinition": "Default Inbound URL Protect Definition",
+                              "subject": "WP-02 Data Response",
+                              "action": "warn",
+                              "adminOverride": "N/A",
+                              "userOverride": "None",
+                              "scanResult": "malicious",
+                              "category": "Dangerous file extension",
+                              "sendingIp": "34.235.45.235",
+                              "userAwarenessAction": "N/A",
+                              "date": "2024-11-14T19:44:02+0000",
+                              "actions": "Block",
+                              "route": "inbound",
+                              "creationMethod": "Entry Scan",
+                              "emailPartsDescription": [
+                                  "Attachment"
+                              ],
+                              "messageId": "<29b951d7ab596678-115297@hapi.b41.one>",
+                              "tagMap": {
+                                  "DangerousFileExt": {
+                                      "Status": [
+                                          "CustomerSpecific",
+                                          "VerdictBlock"
+                                      ],
+                                      "Inspect:FileExts": [
+                                          "[exe]"
+                                      ],
+                                      "Inspect:MimeTypes": [
+                                          "[]"
+                                      ],
+                                      "ContentCheck:DangerousMimetypesUrlFileDownload": [
+                                          "application/x-msdownload"
+                                      ],
+                                      "ContentCheck:ContentScannersBlocked": [
+                                          ".exe"
+                                      ],
+                                      "ContentCheck:DangerousExtsUrlFileDownload": [
+                                          "dll"
+                                      ]
+                                  }
+                              }
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/ttp/url/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"nexttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 42,
+                      "next": "lasttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "clickLogs": [
+                          {
+                              "userEmailAddress": "vince.j.kaminski@demo-int.elastic.mime-api.com",
+                              "fromUserEmailAddress": "gregoryhunt@thejunglegroup.b41.one",
+                              "url": "https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe",
+                              "ttpDefinition": "Default Inbound URL Protect Definition",
+                              "subject": "Re",
+                              "action": "warn",
+                              "adminOverride": "N/A",
+                              "userOverride": "None",
+                              "scanResult": "malicious",
+                              "category": "Dangerous file extension",
+                              "sendingIp": "54.243.138.179",
+                              "userAwarenessAction": "N/A",
+                              "date": "2024-11-13T13:05:03+0000",
+                              "actions": "Block",
+                              "route": "inbound",
+                              "creationMethod": "Entry Scan",
+                              "emailPartsDescription": [
+                                  "Attachment"
+                              ],
+                              "messageId": "<cc11f61d32d018de-152846@hapi.b41.one>",
+                              "tagMap": {
+                                  "DangerousFileExt": {
+                                      "Status": [
+                                          "CustomerSpecific",
+                                          "VerdictBlock"
+                                      ],
+                                      "Inspect:FileExts": [
+                                          "[exe]"
+                                      ],
+                                      "Inspect:MimeTypes": [
+                                          "[]"
+                                      ],
+                                      "ContentCheck:DangerousMimetypesUrlFileDownload": [
+                                          "application/x-msdownload"
+                                      ],
+                                      "ContentCheck:DangerousExtsUrlFileDownload": [
+                                          "dll"
+                                      ],
+                                      "ContentCheck:ContentScannersBlocked": [
+                                          ".exe"
+                                      ]
+                                  }
+                              }
+                          },
+                          {
+                              "userEmailAddress": "mike.a.roberts@demo-int.elastic.mime-api.com",
+                              "fromUserEmailAddress": "gregoryhunt@thejunglegroup.b41.one",
+                              "url": "https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe",
+                              "ttpDefinition": "Default Inbound URL Protect Definition",
+                              "subject": "Re",
+                              "action": "warn",
+                              "adminOverride": "N/A",
+                              "userOverride": "None",
+                              "scanResult": "malicious",
+                              "category": "Dangerous file extension",
+                              "sendingIp": "54.243.138.179",
+                              "userAwarenessAction": "N/A",
+                              "date": "2024-11-13T13:03:11+0000",
+                              "actions": "Block",
+                              "route": "inbound",
+                              "creationMethod": "Entry Scan",
+                              "emailPartsDescription": [
+                                  "Attachment"
+                              ],
+                              "messageId": "<cc11f61d32d018de-152846@hapi.b41.one>",
+                              "tagMap": {
+                                  "DangerousFileExt": {
+                                      "Status": [
+                                          "CustomerSpecific",
+                                          "VerdictBlock"
+                                      ],
+                                      "Inspect:FileExts": [
+                                          "[exe]"
+                                      ],
+                                      "Inspect:MimeTypes": [
+                                          "[]"
+                                      ],
+                                      "ContentCheck:DangerousMimetypesUrlFileDownload": [
+                                          "application/x-msdownload"
+                                      ],
+                                      "ContentCheck:DangerousExtsUrlFileDownload": [
+                                          "dll"
+                                      ],
+                                      "ContentCheck:ContentScannersBlocked": [
+                                          ".exe"
+                                      ]
+                                  }
+                              }
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/ttp/url/get-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"lasttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 42,
+                      "next": "String"
+                  },
+                  "status": 200
+              },
+              "data": [],
+              "fail": []
+          }
+          `}}
+
+  - path: /api/gateway/get-held-release-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 6376,
+                      "next": "nexttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "heldReleaseLogs": [
+                          {
+                              "id": "eNoNjt0KgjAYQN9l10HTDCvow...",
+                              "status": "rejected",
+                              "rejectReason": "Message goes against email policies",
+                              "heldReason": "Default Spam Scanning Definition",
+                              "messageInfo": "Graymail",
+                              "released": "2024-10-28T14:18:43+0000",
+                              "operator": {
+                                  "emailAddress": "vkamins@demo-int.elastic.mime-api.com"
+                              },
+                              "fromEnv": {
+                                  "emailAddress": "erisk@pilot-meadow.b41.one"
+                              },
+                              "fromHdr": {
+                                  "emailAddress": "erisk@pilot-meadow.b41.one"
+                              },
+                              "to": [
+                                  {
+                                      "emailAddress": "vkamins@demo-int.elastic.mime-api.com"
+                                  }
+                              ],
+                              "subject": "ERisk Essentials",
+                              "attachments": false,
+                              "route": "inbound",
+                              "size": 7473,
+                              "policy": "Default Spam Scanning Definition",
+                              "spamScore": 9,
+                              "detectionLevel": "relaxed",
+                              "spamProcessingDetail": {
+                                  "rbl": {
+                                      "allow": true,
+                                      "info": ""
+                                  },
+                                  "greyEmail": false,
+                                  "spf": {
+                                      "allow": true,
+                                      "info": "allow"
+                                  },
+                                  "dkim": {
+                                      "allow": true,
+                                      "info": "unknown"
+                                  },
+                                  "dmarc": {
+                                      "allow": true,
+                                      "info": "allow"
+                                  },
+                                  "permittedSender": {
+                                      "allow": true,
+                                      "info": "none"
+                                  },
+                                  "managedSender": {
+                                      "allow": true,
+                                      "info": "unknown"
+                                  },
+                                  "verdict": {
+                                      "decision": "spam",
+                                      "description": "",
+                                      "risk": "medium",
+                                      "categories": [
+                                          {
+                                              "name": "spam",
+                                              "risk": "medium",
+                                              "subcategories": [
+                                                  {
+                                                      "name": "technology_feed",
+                                                      "risk": "medium",
+                                                      "augmentations": []
+                                                  }
+                                              ]
+                                          },
+                                          {
+                                              "name": "graymail",
+                                              "risk": "negligible",
+                                              "subcategories": []
+                                          }
+                                      ]
+                                  }
+                              }
+                          },
+                          {
+                              "id": "eNoNzssKgkAYQOF3mbVQmqIJL...",
+                              "status": "released",
+                              "heldReason": "Default Spam Scanning Definition",
+                              "messageInfo": "Spam Policy",
+                              "released": "2024-10-28T14:18:32+0000",
+                              "operator": {
+                                  "emailAddress": "craig.dean@demo-int.elastic.mime-api.com"
+                              },
+                              "fromEnv": {
+                                  "emailAddress": "new@pilot-meadow.b41.one"
+                              },
+                              "fromHdr": {
+                                  "emailAddress": "new@pilot-meadow.b41.one"
+                              },
+                              "to": [
+                                  {
+                                      "emailAddress": "craig.dean@demo-int.elastic.mime-api.com"
+                                  }
+                              ],
+                              "subject": "Thank you for registering with Cheap Tickets",
+                              "attachments": false,
+                              "route": "inbound",
+                              "size": 5193,
+                              "policy": "Default Spam Scanning Definition",
+                              "spamScore": 9,
+                              "detectionLevel": "relaxed",
+                              "spamProcessingDetail": {
+                                  "rbl": {
+                                      "allow": true,
+                                      "info": ""
+                                  },
+                                  "greyEmail": true,
+                                  "spf": {
+                                      "allow": true,
+                                      "info": "allow"
+                                  },
+                                  "dkim": {
+                                      "allow": true,
+                                      "info": "unknown"
+                                  },
+                                  "dmarc": {
+                                      "allow": true,
+                                      "info": "allow"
+                                  },
+                                  "permittedSender": {
+                                      "allow": true,
+                                      "info": "none"
+                                  },
+                                  "managedSender": {
+                                      "allow": true,
+                                      "info": "unknown"
+                                  },
+                                  "verdict": {
+                                      "decision": "spam",
+                                      "description": "",
+                                      "risk": "medium",
+                                      "categories": [
+                                          {
+                                              "name": "spam",
+                                              "risk": "medium",
+                                              "subcategories": [
+                                                  {
+                                                      "name": "technology_feed",
+                                                      "risk": "medium",
+                                                      "augmentations": []
+                                                  }
+                                              ]
+                                          }
+                                      ]
+                                  }
+                              }
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/gateway/get-held-release-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"nexttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "meta": {
+                  "pagination": {
+                      "pageSize": 2,
+                      "totalCount": 6376,
+                      "next": "lasttoken"
+                  },
+                  "status": 200
+              },
+              "data": [
+                  {
+                      "heldReleaseLogs": [
+                          {
+                              "id": "eNoNzkkOgjAYQOG7dO0CCgYkc...",
+                              "status": "released",
+                              "heldReason": "Default Spam Scanning Definition",
+                              "messageInfo": "Spam Policy",
+                              "released": "2024-10-28T14:17:30+0000",
+                              "operator": {
+                                  "emailAddress": "william.mccoy@demo-int.elastic.mime-api.com"
+                              },
+                              "fromEnv": {
+                                  "emailAddress": "william.mccoy@concept-variety.b41.one"
+                              },
+                              "fromHdr": {
+                                  "emailAddress": "william.mccoy@concept-variety.b41.one"
+                              },
+                              "to": [
+                                  {
+                                      "emailAddress": "william.mccoy@demo-int.elastic.mime-api.com"
+                                  }
+                              ],
+                              "subject": "PLI Conference - Powerpoint",
+                              "attachments": false,
+                              "route": "inbound",
+                              "size": 2526,
+                              "policy": "Default Spam Scanning Definition",
+                              "spamScore": 11,
+                              "detectionLevel": "relaxed",
+                              "spamProcessingDetail": {
+                                  "rbl": {
+                                      "allow": true,
+                                      "info": ""
+                                  },
+                                  "greyEmail": true,
+                                  "spf": {
+                                      "allow": true,
+                                      "info": "allow"
+                                  },
+                                  "dkim": {
+                                      "allow": true,
+                                      "info": "unknown"
+                                  },
+                                  "dmarc": {
+                                      "allow": true,
+                                      "info": "allow"
+                                  },
+                                  "permittedSender": {
+                                      "allow": true,
+                                      "info": "none"
+                                  },
+                                  "managedSender": {
+                                      "allow": true,
+                                      "info": "unknown"
+                                  },
+                                  "verdict": {
+                                      "decision": "spam",
+                                      "description": "",
+                                      "risk": "medium",
+                                      "categories": [
+                                          {
+                                              "name": "spam",
+                                              "risk": "medium",
+                                              "subcategories": [
+                                                  {
+                                                      "name": "technology_feed",
+                                                      "risk": "medium",
+                                                      "augmentations": []
+                                                  }
+                                              ]
+                                          }
+                                      ]
+                                  }
+                              }
+                          },
+                          {
+                              "id": "eNoNjt0KgjAYQN9ltwlNMVZBF...",
+                              "status": "rejected",
+                              "rejectReason": "Message goes against email policies",
+                              "heldReason": "Default Spam Scanning Definition",
+                              "messageInfo": "Graymail",
+                              "released": "2024-10-28T14:16:51+0000",
+                              "operator": {
+                                  "emailAddress": "monika.causholli@demo-int.elastic.mime-api.com"
+                              },
+                              "fromEnv": {
+                                  "emailAddress": "yahoo-delivers@evaluation-fuzz.b41.one"
+                              },
+                              "fromHdr": {
+                                  "emailAddress": "yahoo-delivers@evaluation-fuzz.b41.one"
+                              },
+                              "to": [
+                                  {
+                                      "emailAddress": "monika.causholli@demo-int.elastic.mime-api.com"
+                                  }
+                              ],
+                              "subject": "Yahoo! Newsletter, November 2001",
+                              "attachments": true,
+                              "route": "inbound",
+                              "size": 3670056,
+                              "policy": "Default Spam Scanning Definition",
+                              "spamScore": 20,
+                              "detectionLevel": "relaxed",
+                              "spamProcessingDetail": {
+                                  "rbl": {
+                                      "allow": true,
+                                      "info": ""
+                                  },
+                                  "greyEmail": false,
+                                  "spf": {
+                                      "allow": true,
+                                      "info": "allow"
+                                  },
+                                  "dkim": {
+                                      "allow": true,
+                                      "info": "unknown"
+                                  },
+                                  "dmarc": {
+                                      "allow": true,
+                                      "info": "allow"
+                                  },
+                                  "permittedSender": {
+                                      "allow": true,
+                                      "info": "none"
+                                  },
+                                  "managedSender": {
+                                      "allow": true,
+                                      "info": "unknown"
+                                  },
+                                  "verdict": {
+                                      "decision": "spam",
+                                      "description": "",
+                                      "risk": "high",
+                                      "categories": [
+                                          {
+                                              "name": "spam",
+                                              "risk": "high",
+                                              "subcategories": [
+                                                  {
+                                                      "name": "technology_feed",
+                                                      "risk": "high",
+                                                      "augmentations": []
+                                                  },
+                                                  {
+                                                      "name": "content",
+                                                      "risk": "negligible",
+                                                      "augmentations": [
+                                                          {
+                                                              "name": "body",
+                                                              "risk": "negligible"
+                                                          }
+                                                      ]
+                                                  }
+                                              ]
+                                          },
+                                          {
+                                              "name": "graymail",
+                                              "risk": "negligible",
+                                              "subcategories": []
+                                          }
+                                      ]
+                                  }
+                              }
+                          }
+                      ]
+                  }
+              ],
+              "fail": []
+          }
+          `}}
+  - path: /api/gateway/get-held-release-logs
+    methods: ["POST"]
+    request_body: /"meta":\{"pagination":\{"pageSize":2,"pageToken":"lasttoken"\}\}/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "fail": [],
+              "meta": {
+                  "status": 200,
+                  "pagination": {
+                      "pageSize": 25,
+                      "next": "String",
+                      "previous": "String"
+                  }
+              },
+              "data": []
+          }
+          `}}
+
+
+  # v1 definitions
   - path: /api/archive/get-archive-search-logs
     methods: ["POST"]
     request_body: '{"meta":{"pagination":{"pageSize":"100","pageToken":"nextToken"}}}'
@@ -230,139 +1930,3 @@ rules:
             - "application/json"
         body: |-
           {"meta":{"status":200,"pagination":{"pageSize":10,"totalCount":20,"next": "nextToken"}},"data":[{"clickLogs":[{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.google.com/alerts/feeds/00259755281018227146/14369994449842858162","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - dollar","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Search Engines & Portals","sendingIp":"8.8.8.8","userAwarenessAction":"N/A","date":"2021-11-10T08:55:53+0000","actions":"Allow","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<11-0000000000004109b705d06b609c@google.com>"},{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.google.co.za/alerts?source=alertsmail&hl=en&gl=US&msgid=MTgzMTU0Mzc2MTA3OTY3MzIxNw&s=AB2Xq4g-GUg7dJreWJN14pFdqYo0nYsyiVX2dK8&ffu=","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - china","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Search Engines & Portals","sendingIp":"8.8.8.8","userAwarenessAction":"Continue","date":"2021-11-10T08:50:37+0000","actions":"Allow","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<12-00000000000079a99a05d06b4d20@google.com>"},{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.google.com/url?rct=j&sa=t&url=https://texassports.com/news/2021/11/10/no-5-5-mens-basketball-tops-houston-baptist-in-season-opener-92-48.aspx&ct=ga&cd=CAEYACoUMTEzMjI3MjkwNzM0OTE1Nzg0NDMyHGMzNzg3MjBmODY3MWM2MGY6Y29tOmVuOlVTOkw&usg=AFQjCNG4_460IiZmbwJkDzkFkQC5-htSxw","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - news","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Search Engines & Portals","sendingIp":"8.8.8.8","userAwarenessAction":"Continue","date":"2021-11-10T08:28:18+0000","actions":"Allow","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<13-0000000000005fa4e905d06afd8f@google.com>"},{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.google.co.za/alerts/feedback?ffu=https://www.ft.com/content/4d61fac4-e3f3-401b-bca2-6e94ff47e2cc&source=alertsmail&hl=en&gl=US&msgid=MTM1OTYyMDAwNTE0MzU3NjA0NjI&s=AB2Xq4g-GUg7dJreWJN14pFdqYo0nYsyiVX2dK8","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - china","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Search Engines & Portals","sendingIp":"8.8.8.8","userAwarenessAction":"Continue","date":"2021-11-10T07:50:16+0000","actions":"Allow","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<14-000000000000eb13ab05d06a76fc@google.com>"},{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.google.com/alerts/feedback?ffu=https://www.fox7austin.com/news/search-for-suspect-involved-in-aggravated-robbery-at-family-dollar&source=alertsmail&hl=en&gl=US&msgid=ODM0MDY5Nzg2NzI3NDkxMjUwNg&s=AB2Xq4i7OaFz4ss3vFU-wNb0DTELEKxhyDdFl54","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - dollar","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Search Engines & Portals","sendingIp":"8.8.8.8","userAwarenessAction":"Continue","date":"2021-11-10T06:55:34+0000","actions":"Allow","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<15-0000000000001ddf7205d069b36e@google.com>"},{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.google.co.za/alerts?source=alertsmail&hl=en&gl=US&msgid=NDgxNzM4MzYwOTM2NzY1MDg2Ng","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - china","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Search Engines & Portals","sendingIp":"8.8.8.8","userAwarenessAction":"Continue","date":"2021-11-10T06:50:16+0000","actions":"Allow","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<16-000000000000567c2105d069a0ce@google.com>"},{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.google.com/alerts/share?hl=en&gl=US&ru=https://www.ctvnews.ca/world/judge-denies-trump-s-overnight-request-for-injunction-in-executive-privilege-case-1.5658613&ss=tw&rt=Judge+denies+Trump%27s+overnight+request+for+injunction+in+executive+privilege+case+%7C+CTV+News&cd=KhM2MTQ1MDcxODY2MDQ5NTY2MDk2Mhw1MzNlMDE2OWZhYWUyMDBkOmNvbTplbjpVUzpM&ssp=AMJHsmXlnSoHb_ZABC-riiVXrxFyWhlMpQ","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - Trump","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Search Engines & Portals","sendingIp":"8.8.8.8","userAwarenessAction":"Continue","date":"2021-11-10T05:11:56+0000","actions":"Allow","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<17-000000000000e78cfa05d0683fab@google.com>"},{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.google.com/alerts?s=AB2Xq4i7OaFz4ss3vFU-wNb0DTELEKxhyDdFl54&start=1636516479&end=1636520078&source=alertsmail&hl=en&gl=US&msgid=MTMyNTI1OTY4MzI3OTI0NDc4MTU#history","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - dollar","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Search Engines & Portals","sendingIp":"8.8.8.8","userAwarenessAction":"Continue","date":"2021-11-10T04:55:34+0000","actions":"Allow","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<18-000000000000f2696405d0680583@google.com>"},{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.gstati","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - dollar","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Unknown","sendingIp":"8.8.8.8","userAwarenessAction":"N/A","date":"2021-11-10T03:55:09+0000","actions":"Browser Isolation","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<19-00000000000065020205d0672f01@google.com>"},{"userEmailAddress":"johndoe@example.com","fromUserEmailAddress":"googlealerts-noreply@google.com","url":"https://www.google.co.za/alerts/share?hl=en&gl=US&ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224&ss=tw&rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ&cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw&ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg","ttpDefinition":"Inbound URL 'Aggressive'","subject":"Google Alert - china","action":"allow","adminOverride":"N/A","userOverride":"None","scanResult":"clean","category":"Search Engines & Portals","sendingIp":"8.8.8.8","userAwarenessAction":"Continue","date":"2021-11-10T03:49:53+0000","actions":"Allow","route":"inbound","creationMethod":"User Click","emailPartsDescription":["Body"],"messageId":"<20-000000000000a02a0a05d0671c06@google.com>"}]}],"fail":[]}
-  - path: /api/gateway/get-held-release-logs
-    methods: ["POST"]
-    request_body: /"meta":\{"pagination":\{"pageSize":100\}\}/
-    request_headers:
-      authorization: ["MC .*"]
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {{ minify_json `
-          {
-              "fail": [],
-              "meta": {
-                  "status": 200,
-                  "pagination": {
-                      "pageSize": 25,
-                      "next": "String",
-                      "previous": "String"
-                  }
-              },
-              "data": [
-                  {
-                      "heldReleaseLogs": [
-                          {
-                              "spamProcessingDetail": {
-                                  "greyEmail": true,
-                                  "permittedSender": {
-                                      "allow": true,
-                                      "info": "allow"
-                                  },
-                                  "managedSender": {
-                                      "allow": true,
-                                      "info": "allow"
-                                  },
-                                  "dkim": {
-                                      "allow": true,
-                                      "info": "allow"
-                                  },
-                                  "spf": {
-                                      "allow": true,
-                                      "info": "allow"
-                                  },
-                                  "rbl": {
-                                      "allow": true,
-                                      "info": "allow"
-                                  },
-                                  "dmarc": {
-                                      "allow": true,
-                                      "info": "allow"
-                                  },
-                                  "spamVerdict": {
-                                      "decision": "spam",
-                                      "description": "",
-                                      "risk": "low",
-                                      "categories": [
-                                          {
-                                              "name": "spam",
-                                              "risk": "low",
-                                              "subcategories": [
-                                                  {
-                                                      "name": "phishing",
-                                                      "risk": "low",
-                                                      "augmentations": [
-                                                          {
-                                                              "name": "body",
-                                                              "risk": "negligible"
-                                                          }
-                                                      ]
-                                                  }
-                                              ]
-                                          }
-                                      ]
-                                  }
-                              },
-                              "attachments": true,
-                              "messageInfo": "Expired in queue - rejected by housekeeping",
-                              "subject": "Exclusive Offer - You don't want to miss this!",
-                              "detectionLevel": "moderate",
-                              "heldGroup": "IT Staff Global",
-                              "operator": "admin@domain.tld",
-                              "fromEnv": {
-                                  "emailAddress": "user@domain.tld",
-                                  "displayableName": "FirstName LastName"
-                              },
-                              "rejectReason": "Message contains undesirable content",
-                              "route": "inbound",
-                              "size": 5043,
-                              "heldReason": "High-Confidence Impersonation Protection",
-                              "spamScore": 12,
-                              "id": "eNpVj21LhEAUhf_LfN2VnRl1RpclCN...",
-                              "to": [
-                                  {
-                                      "emailAddress": "user@domain.tld",
-                                      "displayableName": "FirstName LastName"
-                                  }
-                              ],
-                              "released": "2015-11-25T14:49:18+00:00",
-                              "fromHdr": {
-                                  "emailAddress": "user@domain.tld",
-                                  "displayableName": "FirstName LastName"
-                              },
-                              "status": "released",
-                              "policy": "Moderate Spam Detection"
-                          }
-                      ]
-                  }
-              ]
-          }
-          `}}
-  - path: /api/gateway/get-held-release-logs
-    methods: ["POST"]
-    request_body: /"meta":\{"pagination":\{"pageSize":100,"pageToken":"String"\}\}/
-    request_headers:
-      authorization: ["MC .*"]
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {{ minify_json `
-          {
-              "fail": [],
-              "meta": {
-                  "status": 200,
-                  "pagination": {
-                      "pageSize": 25,
-                      "next": "String",
-                      "previous": "String"
-                  }
-              },
-              "data": []
-          }
-          `}}
