@@ -28,11 +28,20 @@ processors:
       timezone: UTC
       formats:
         - yyyy-MM-dd'T'HH:mm:ssZ
+  - set:
+      field: event.category
+      value: [email]
+
   ###
   - rename:
       field: mimecast.url
       target_field: url.original
       ignore_missing: true
+  - uri_parts:
+      field: url.original
+      keep_original: true
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: mimecast.userAwarenessAction
       target_field: event.action
@@ -56,11 +65,17 @@ processors:
   - set:
       field: email.from.address
       value: ["{{{mimecast.fromUserEmailAddress}}}"]
-      if: "ctx?.mimecast?.fromUserEmailAddress != null"
+      if: "ctx.mimecast?.fromUserEmailAddress != null"
+  - append:
+      field: related.user
+      value: "{{{mimecast.fromUserEmailAddress}}}"
+      allow_duplicates: false
+      if: 'ctx.mimecast?.fromUserEmailAddress != null'
+      ignore_failure: true
   - set:
       field: email.to.address
       value: ["{{{mimecast.userEmailAddress}}}"]
-      if: "ctx?.mimecast?.userEmailAddress != null"
+      if: "ctx.mimecast?.userEmailAddress != null"
   - set:
       field: user.email
       value: ["{{{mimecast.userEmailAddress}}}"]
@@ -69,7 +84,7 @@ processors:
       field: related.user
       value: "{{{mimecast.userEmailAddress}}}"
       allow_duplicates: false
-      if: 'ctx?.mimecast?.userEmailAddress !=null'
+      if: 'ctx.mimecast?.userEmailAddress != null'
       ignore_failure: true
   - convert:
       field: mimecast.sendingIp
@@ -100,6 +115,16 @@ processors:
       pattern: "<%{email.to.address}>"
       ignore_missing: true
       ignore_failure: true
+  - foreach:
+      field: mimecast.tagMap.DangerousFileExt
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        gsub:
+          field: _ingest._key
+          pattern: ':'
+          replacement: '_'
+          ignore_missing: true
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
