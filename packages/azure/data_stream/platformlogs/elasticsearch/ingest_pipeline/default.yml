@@ -13,6 +13,35 @@ processors:
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
+  - script:
+      if: ctx.message?.contains("'")
+      source: >-
+        def replace_single_quoted_objects(String input) {
+            // Pattern to replace single-quoted objects with double quotes.
+            def single_quoted_object_pattern = /(?<!\\)'([^']*(?:\\.[^']*)*)'(?=\s*:|\s*}|\s*,)/;
+
+            // Default replacement for single-quotes objects
+            // wrapped in a JSON string.
+            //
+            // For example, `{"key": "{'key': 'value'}"}`
+            //
+            def replacement = '\\\\"$1\\\\"'; // we need to escape the double quotes
+
+            // Check for direct single-quoted objects.
+            if (/"\w+":\s*\{'/.matcher(input).find()) {
+                // replacement for direct single-quoted objects.
+                //
+                // For example, `{"key": {'key': 'value'}}`
+                //
+                replacement = '"$1"'
+            }
+
+            return single_quoted_object_pattern.matcher(input).replaceAll(replacement)
+        }
+        ctx.message = replace_single_quoted_objects(ctx.message);
+      description: 'Handle single-quoted JSON objects in the `message` field.'
+      ignore_failure: true
+      tag: replace_single_quoted_objects
   - rename:
       field: message
       target_field: event.original
@@ -54,6 +83,13 @@ processors:
             field: tags
             value: ["preserve_original_event"]
             ignore_failure: true
+  
+  - json:
+      field: azure.platformlogs.properties
+      description: 'Parse the `properties` field as a JSON object.'
+      if: "ctx.azure?.platformlogs?.properties instanceof String"
+      ignore_failure: true
+      tag: "parse_properties_as_json"
   - rename:
       field: azure.platformlogs.properties
       if: "ctx.azure?.platformlogs?.properties instanceof String"
