@@ -1011,6 +1011,33 @@ processors:
         5604_PATTERN: "changed the HTTPS Server max user sessions amount to %{NUMBER:aruba.server.sessions:long}"
         5605_PATTERN: "changed the HTTPS Server idle timeout to %{NUMBER:aruba.timeout:long}"
 
+  # NAE events (60xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TSDBD.htm
+  - grok:
+      if: "['6001','6002','6003','6008','6009','6010'].contains(ctx.event?.code)"
+      tag: nae_event_6001_6002_6003_6008_6009_6010
+      field: "message"
+      description: "[started|stopped] to collect samples | error and cannot collect samples | Temporarily disabling processing updates | resuming to monitor data points | user clears the NAE time series database"
+      patterns:
+        - "^NAE agent %{DATA:aruba.nae.name} with URI %{DATA:url.original} has error and cannot collect samples"
+        - "^NAE agent %{DATA:aruba.nae.name} %{GREEDYDATA} from %{GREEDYDATA:url.original}."
+        - "NAE monitor %{DATA:aruba.nae.monitor_name}. "
+        - "from NAE monitor %{GREEDYDATA:aruba.nae.monitor_name}"
+        - "^User %{DATA:user.name} "
+  - grok:
+      if: "['6004','6005','6007'].contains(ctx.event?.code)"
+      tag: nae_event_6004_6005_6007
+      field: "message"
+      description: "watching (stopped)? for condition | error and is not watched"
+      patterns:
+        - "^NAE agent %{DATA:aruba.nae.name} (is watching for|stopped to watch for|generated an alert based on) condition %{GREEDYDATA:aruba.nae.condition}."
+  - dissect:
+      if: "['6006'].contains(ctx.event?.code)"
+      tag: nae_event_6006
+      field: "message"
+      description: "NAE agent with condition has error and is not watched."
+      pattern: "NAE agent %{aruba.nae.name} with condition %{aruba.nae.condition} has error and is not watched."
+
   # Credential Manager events (65xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
   #
@@ -1081,6 +1108,15 @@ processors:
       field: "message"
       description: "Logs a message when copying config has some information"
       pattern: "Information while copying configs. Info: %{event.reason}"
+
+  # NAE Agents events (690x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NAE_ALERT.htm
+  - dissect:
+      if: "ctx.event.code == '6901'"
+      tag: config_event_6801
+      field: "message"
+      description: "Action has been triggered by an NAE agent"
+      pattern: "An action has been triggered by the NAE agent %{aruba.nae.name}"
 
   # In-System Programming events (72xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ISP.htm
