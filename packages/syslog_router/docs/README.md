@@ -170,3 +170,38 @@ processor needs to be added with the following fields:
 - `_conf.use_decode_cef`: If set to `true`, the `decode_cef` processor will be used. If the desired value is `false`, this field can be omitted. This field will be automatically removed if set to `true`.
 - `_conf.use_syslog`: If set to `true`, the `syslog` processor will be used. If the desired value is `false`, this field can be omitted. This field will be automatically removed if set to `true`.
 - If an integration requires additional configuration, it may be provided in the `add_fields` processor.
+
+## Compatability
+
+Out of the box, the Syslog Router integration supports matching events from a
+number of integrations. Assets from these integrations must still be installed
+for events to be properly indexed (see **Setup** above).
+
+**DISCLAIMER**: Due to subtle differences in how devices can emit syslog events,
+the patterns provided by default with the Syslog Router integration may not work
+in all cases. Some integrations may not be listed here, even though they support
+syslog events. In these cases, patterns would either prove too complex or could
+overlap with patterns from other integrations, resulting in negative impacts on
+performance or accuracy in matching events to integrations.
+
+- Arista NG Firewall
+- Check Point
+- Cisco ASA
+- Cisco FTD
+- Cisco ISE
+- Cisco Secure Email Gateway
+- Citrix WAF
+- Fortinet FortiEDR
+- Fortinet FortiGate
+- Fortinet FortiMail
+- Fortinet FortiManager
+- Fortinet FortiProxy
+- Imperva SecureSphere
+- Iptables
+- Juniper SRX
+- Palo Alto Next-Gen Firewall
+- QNAP NAS
+- Snort
+- Sonicwall Firewall
+- Sophos XG
+- Stormshield
