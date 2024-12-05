@@ -62,7 +62,8 @@ require (
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/elastic/elastic-integration-corpus-generator-tool v0.10.0 // indirect
-	github.com/elastic/go-elasticsearch/v7 v7.17.10 // indirect
+	github.com/elastic/elastic-transport-go/v8 v8.6.0 // indirect
+	github.com/elastic/go-elasticsearch/v8 v8.16.0 // indirect
 	github.com/elastic/go-resource v0.2.0 // indirect
 	github.com/elastic/go-sysinfo v1.9.0 // indirect
 	github.com/elastic/go-ucfg v0.8.8 // indirect
@@ -232,3 +233,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+replace github.com/elastic/elastic-package => github.com/jsoriano/elastic-package v0.66.1-0.20241122121412-dc741acbeab1
