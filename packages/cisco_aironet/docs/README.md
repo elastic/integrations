@@ -16,13 +16,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-20T11:25:50.157Z",
+    "@timestamp": "2024-08-20T11:25:50.157Z",
     "agent": {
-        "ephemeral_id": "94e446a1-23f6-4982-887b-d3d087059aaa",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "c47efe0f-c0e2-444b-b292-a9ec40271d4b",
+        "id": "0335de7e-b2c1-4352-bf23-c023d21c1252",
+        "name": "elastic-agent-54493",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.15.3"
     },
     "cisco": {
         "interface": {
@@ -34,25 +34,25 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_aironet.log",
-        "namespace": "ep",
+        "namespace": "59495",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "0335de7e-b2c1-4352-bf23-c023d21c1252",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.15.3"
     },
     "event": {
         "action": "ENTRY_DELETED",
         "agent_id_status": "verified",
         "dataset": "cisco_aironet.log",
-        "ingested": "2023-09-25T17:34:47Z",
+        "ingested": "2024-11-04T21:04:12Z",
         "original": "<134>WLC001: *SISF BT Process: Aug 20 11:25:50.157: %SISF-6-ENTRY_DELETED: sisf_shim_utils.c:482 Entry deleted A=fe80::aee2:d3ff:feba:56a4 V=0 I=wired:1 P=0000 M=",
         "provider": "SISF",
-        "severity": "6",
+        "severity": 6,
         "timezone": "+00:00"
     },
     "host": {
@@ -64,7 +64,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.80.7:42857"
+            "address": "172.29.0.3:33867"
         },
         "syslog": {
             "facility": {
@@ -122,6 +122,7 @@ An example event for `log` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | input.type | Input type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
