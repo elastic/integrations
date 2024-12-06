@@ -784,7 +784,7 @@ An example event for `threat_response` looks as following:
                                                             "instance_hash": "13187766456007072019",
                                                             "path": "/lib/systemd/systemd"
                                                         },
-                                                        "pid": "1",
+                                                        "pid": 1,
                                                         "start_time": "2023-01-11T08:44:02.000Z",
                                                         "tanium_unique_id": "11529256642826731521",
                                                         "user": {
@@ -794,7 +794,7 @@ An example event for `threat_response` looks as following:
                                                         }
                                                     }
                                                 },
-                                                "pid": "2058",
+                                                "pid": 2058,
                                                 "start_time": "2023-01-11T08:46:24.000Z",
                                                 "tanium_unique_id": "11529864329159510026",
                                                 "user": {
@@ -804,7 +804,7 @@ An example event for `threat_response` looks as following:
                                                 }
                                             }
                                         },
-                                        "pid": "43181",
+                                        "pid": 43181,
                                         "start_time": "2023-01-18T10:37:18.000Z",
                                         "tanium_unique_id": "14156042576993495213",
                                         "user": {
@@ -906,19 +906,19 @@ An example event for `threat_response` looks as following:
                                     "md5": "ac8b27ce6641cba4ed2c5e762f041986"
                                 },
                                 "name": "/lib/systemd/systemd",
-                                "pid": "1",
+                                "pid": 1,
                                 "recorder_unique_id": "11529256642826731521",
                                 "start_time": "2023-01-11T08:44:02.000Z",
                                 "user": "root\\root"
                             },
-                            "pid": "2058",
-                            "ppid": "1",
+                            "pid": 2058,
+                            "ppid": 1,
                             "recorder_unique_id": "11529864329159510026",
                             "start_time": "2023-01-11T08:46:24.000Z",
                             "user": "root\\root"
                         },
-                        "pid": "43181",
-                        "ppid": "2058",
+                        "pid": 43181,
+                        "ppid": 2058,
                         "recorder_unique_id": "14156042576993495213",
                         "start_time": "2023-01-18T10:37:18.000Z",
                         "user": "root\\root"
@@ -1005,20 +1005,20 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.path | Path of file. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.handles | Process handles. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.md5 | MD5 keyword. | keyword |
-| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.pid | Process id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.pid | Process id. | long |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.start_time | Start time. | date |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.tanium_unique_id | Tanium unique id. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.domain | User domain. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.id | User id. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.name | User name. | keyword |
-| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.pid | Process id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.pid | Process id. | long |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.start_time | Start time. | date |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.tanium_unique_id | Tanium unique id. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.domain | User domain. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.group_id | User group id. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.id | User id. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.name | User name. | keyword |
-| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.pid | Parent id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.pid | Parent id. | long |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.start_time | Start time. | date |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.tanium_unique_id | Tanium unique id. | keyword |
 | tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.user.domain | User domain. | keyword |
@@ -1137,17 +1137,17 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.match_details.match.properties.parent.parent.file.full_path | Full path of file. | keyword |
 | tanium.threat_response.match_details.match.properties.parent.parent.file.md5 | MD5. | keyword |
 | tanium.threat_response.match_details.match.properties.parent.parent.name | Parent name. | keyword |
-| tanium.threat_response.match_details.match.properties.parent.parent.pid | Parent id. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.parent.pid | Parent id. | long |
 | tanium.threat_response.match_details.match.properties.parent.parent.recorder_unique_id | Recorder unique id. | keyword |
 | tanium.threat_response.match_details.match.properties.parent.parent.start_time | Start time. | date |
 | tanium.threat_response.match_details.match.properties.parent.parent.user | User. | keyword |
-| tanium.threat_response.match_details.match.properties.parent.pid | Process id. | keyword |
-| tanium.threat_response.match_details.match.properties.parent.ppid | Parent process id. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.pid | Process id. | long |
+| tanium.threat_response.match_details.match.properties.parent.ppid | Parent process id. | long |
 | tanium.threat_response.match_details.match.properties.parent.recorder_unique_id | Recorder unique id. | keyword |
 | tanium.threat_response.match_details.match.properties.parent.start_time | Start time. | date |
 | tanium.threat_response.match_details.match.properties.parent.user | User. | keyword |
-| tanium.threat_response.match_details.match.properties.pid | Process id. | keyword |
-| tanium.threat_response.match_details.match.properties.ppid | Parent process id. | keyword |
+| tanium.threat_response.match_details.match.properties.pid | Process id. | long |
+| tanium.threat_response.match_details.match.properties.ppid | Parent process id. | long |
 | tanium.threat_response.match_details.match.properties.process.args | Process arguments. | keyword |
 | tanium.threat_response.match_details.match.properties.process.file.fullpath | Full path. | keyword |
 | tanium.threat_response.match_details.match.properties.process.name | Name. | keyword |
