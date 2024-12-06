@@ -301,6 +301,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.risk_object |  | keyword |
 | okta.debug_context.debug_data.risk_reasons | The reasons for the risk. | keyword |
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |
+| okta.debug_context.debug_data.tunnels |  | object |
 | okta.debug_context.debug_data.url | The URL. | keyword |
 | okta.device.device_integrator |  | flattened |
 | okta.device.disk_encryption_type | The value of the device profile’s disk encryption type. One of "NONE", "FULL", "USER", "ALL_INTERNAL_VOLUMES" or "SYSTEM_VOLUME". | keyword |

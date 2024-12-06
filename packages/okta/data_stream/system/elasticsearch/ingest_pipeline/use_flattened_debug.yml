@@ -144,6 +144,14 @@ processors:
       target_field: okta.debug_context.debug_data.risk_reasons
       separator: ',\s*'
       if: 'ctx.okta?.debug_context?.debug_data?.risk_reasons == null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.reasons != ""'
+  - json:
+      tag: json_okta_debug_context_debug_data_flattened_tunnels
+      field: okta.debug_context.debug_data.flattened.tunnels
+      if: ctx.okta?.debug_context?.debug_data?.flattened?.tunnels != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       source: |
