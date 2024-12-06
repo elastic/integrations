@@ -110,7 +110,7 @@ The Elastic Agent automatically creates one container for each enabled integrati
 
 For example, if you enable one integration to fetch data from an event hub with four partitions, the Agent will create the following:
 
-* One storage account container.
+* One Storage Account container.
 * Four blobs in that container.
 
 The information stored in the blobs is small (usually < 300 bytes per blob) and accessed relatively frequently. Elastic recommends using the Hot storage tier.
