@@ -41,6 +41,24 @@ processors:
         if (obj.containsKey(ctx._conf.timestamp_field)) {
             ctx.servicenow.event.timestamp_field = obj.get(ctx._conf.timestamp_field);
         }
+  - script:
+      tag: script_promote_to_object
+      description: Convert servicenow.event.* scalar values to a .value field in an object if necessary.
+      lang: painless
+      if: ctx.servicenow?.event instanceof Map
+      source: |
+        for (def entry: ctx.servicenow.event.entrySet()) {
+          if (entry.getKey() == 'table_name') {
+            continue;
+          }
+          def v = entry.getValue();
+          if (v instanceof Map) {
+            continue;
+          }
+          Map n = [:];
+          n.value = v;
+          entry.setValue(n);
+        }
   - rename:
       field: _conf.table_name
       tag: rename_table_name
