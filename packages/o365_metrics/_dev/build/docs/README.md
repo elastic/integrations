@@ -1,6 +1,6 @@
 # Microsoft Office 365 Metrics Integration
 
-This integration is to collect metrics for [Microsoft Office 365](https://learn.microsoft.com/en-us/graph/overview).
+This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
 
 ## Setup
 

@@ -16,7 +16,7 @@ auth.oauth2:
     azure.tenant_id: {{azure_tenant_id}}
 {{/if}}
 
-resource.url: https://graph.microsoft.com/v1.0/reports/getEmailActivityCounts(period='D7')
+resource.url: {{url}}
 
 {{#if resource_ssl}}
 resource.ssl: 
@@ -87,7 +87,7 @@ program: |
     state.with(
       request(
         "GET",
-        state.url
+        state.url + "/reports/getEmailActivityCounts(period='D7')"
       ).do_request().as(resp,
         resp.StatusCode == 200
         ?

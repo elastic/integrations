@@ -1,6 +1,6 @@
 # Microsoft Office 365 Metrics Integration
 
-This integration is to collect metrics for [Microsoft Office 365](https://learn.microsoft.com/en-us/graph/overview).
+This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
 
 ## Setup
 
@@ -58,7 +58,7 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | o365metrics.outlookactivity.meeting_interacted | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | integer |
 | o365metrics.outlookactivity.read | The count of email messages read by users during the reporting period. | integer |
 | o365metrics.outlookactivity.receive | The count of email messages received by users during the reporting period. | integer |
-| o365metrics.outlookactivity.report_date | The specific date for which the report data applies.. | date |
+| o365metrics.outlookactivity.report_date | The specific date for which the report data applies. | date |
 | o365metrics.outlookactivity.report_period | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer |
 | o365metrics.outlookactivity.report_refresh_date | The date when the report data was last updated. | date |
 | o365metrics.outlookactivity.send | The count of email messages sent by users during the reporting period. | integer |
