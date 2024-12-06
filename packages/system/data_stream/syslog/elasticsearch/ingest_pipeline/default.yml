@@ -1,7 +1,8 @@
 ---
-description: Pipeline for parsing Syslog messages.
+description: Entrypoint pipeline for system integration syslog data stream
 processors:
   - grok:
+      if: ctx.input?.type == "log"
       field: message
       patterns:
         - '%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}'
@@ -17,53 +18,22 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
-  - remove:
-      if: 'ctx.event?.original != null' 
-      field: message
-      ignore_missing: true
-      description: 'The `message` field is no longer required if the document has an `event.original` field.'
-  - rename:
-      field: system.syslog.message
-      target_field: message
-      ignore_missing: true
-  - date:
-      if: ctx.event.timezone == null
-      field: system.syslog.timestamp
-      target_field: '@timestamp'
-      formats:
-        - MMM  d HH:mm:ss
-        - MMM dd HH:mm:ss
-        - MMM d HH:mm:ss
-        - ISO8601
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{ _ingest.on_failure_message }}'
-  - date:
-      if: ctx.event.timezone != null
-      field: system.syslog.timestamp
-      target_field: '@timestamp'
-      formats:
-        - MMM  d HH:mm:ss
-        - MMM dd HH:mm:ss
-        - MMM d HH:mm:ss
-        - ISO8601
-      timezone: '{{ event.timezone }}'
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{ _ingest.on_failure_message }}'
-  - remove:
-      field: system.syslog.timestamp
-  - set:
-      field: ecs.version
-      value: 8.11.0
+  - pipeline:
+      if: ctx.input?.type == "journald"
+      name: '{{ IngestPipeline "journald" }}'
+  - pipeline:
+      if: ctx.input?.type == "log"
+      name: '{{ IngestPipeline "log" }}'
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+
