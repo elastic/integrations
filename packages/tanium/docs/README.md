@@ -726,8 +726,8 @@ An example event for `threat_response` looks as following:
                 "name": "detect.unmatch"
             },
             "match_details": {
-                "config_id": "3",
-                "config_rev_id": "1",
+                "config_id": 3,
+                "config_rev_id": 1,
                 "finding": {
                     "domain": "threatresponse",
                     "first_seen": "2023-01-18T10:37:36.000Z",
@@ -871,7 +871,7 @@ An example event for `threat_response` looks as following:
                         }
                     ]
                 },
-                "intel_id": "135",
+                "intel_id": 135,
                 "match": {
                     "contexts": [
                         {
