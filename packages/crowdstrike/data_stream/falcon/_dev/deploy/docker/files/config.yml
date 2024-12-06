@@ -1,0 +1,74 @@
+rules:
+  - path: /oauth2/token
+    methods: ["POST"]
+    query_params:
+      client_id: slightlysecretclientid
+      client_secret: totallysecretlientsecret
+      grant_type: client_credentials
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "access_token": "topsecretaccesstokenthatshouldnotbeleakedforabit",
+            "token_type": "Bearer"
+          }
+          `}}
+
+  - path: /sensors/entities/datafeed/v2
+    methods: ["GET"]
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    query_params:
+      appId: nonsecretappid
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "resources": [
+                  {
+                      "dataFeedURL": "http://svc-crowdstrike-streaming:8080/events",
+                      "sessionToken": {
+                          "token": "secretsessiontoken"
+                      },
+                      "refreshActiveSessionURL": "http://svc-crowdstrike-streaming:8080/refresh",
+                      "refreshActiveSessionInterval": 1800
+                  }
+              ]
+          }
+          `}}
+
+  - path: /events
+    methods: ["GET"]
+    request_headers:
+      authorization: ["Token secretsessiontoken"]
+    query_params:
+      offset: null
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"metadata":{"customerIDString":"abcabcabc22221","offset":1,"eventType":"RemoteResponseSessionStartEvent","eventCreationTime":1698932494000,"version":"1.0"},"event":{"SessionId":"1111-fffff-4bb4-99c1-74c13cfc3e5a","HostnameField":"UKCHUDL00206","UserName":"admin.rose@example.com","StartTimestamp":1698932494,"AgentIdString":"fffffffff33333"}}
+          {"metadata":{"customerIDString":"abcabcabc22222","offset":2,"eventType":"RemoteResponseSessionStartEvent","eventCreationTime":1698932494000,"version":"1.0"},"event":{"SessionId":"1111-fffff-4bb4-99c1-74c13cfc3e5a","HostnameField":"UKCHUDL00206","UserName":"admin.rose@example.com","StartTimestamp":1698932494,"AgentIdString":"fffffffff33333"}}
+          {"metadata":{"customerIDString":"abcabcabc22223","offset":3,"eventType":"RemoteResponseSessionStartEvent","eventCreationTime":1698932494000,"version":"1.0"},"event":{"SessionId":"1111-fffff-4bb4-99c1-74c13cfc3e5a","HostnameField":"UKCHUDL00206","UserName":"admin.rose@example.com","StartTimestamp":1698932494,"AgentIdString":"fffffffff33333"}}
+
+  - path: /refresh
+    methods: ["POST"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: ''
