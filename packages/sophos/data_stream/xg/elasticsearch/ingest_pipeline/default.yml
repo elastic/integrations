@@ -93,9 +93,23 @@ processors:
     copy_from: sophos.xg.timestamp
     ignore_empty_value: true
     if: ctx._temp_?.time == null
+# date processor, and the backing DateTimeFormatter, doesn't support short timezones. Attempt to map short time zone to zone id.
+# This is potentially incorrect (i.e IST could be India Standard Time or Irish Standard Time), but it's the best we can do with the source data
+- script:
+    lang: painless
+    tag: convert_tz
+    if: 'ctx._temp_?.tz != null'
+    source: >-
+      /* CEST isn't in ZoneId.SHORT_IDS */
+      if (ctx._temp_.tz == "CEST") {
+        ctx._temp_.tz = "+01:00";
+      }
+      if (ZoneId.SHORT_IDS.containsKey(ctx._temp_.tz)) {
+        ctx._temp_.tz = ZoneId.SHORT_IDS.get(ctx._temp_.tz);
+      }
 - date:
     field: _temp_.time
-    timezone: "{{{ event.timezone }}}"
+    timezone: "{{{ _temp_.tz }}}"
     formats:
       - yyyy-MM-dd HH:mm:ss
       - yyyy-MM-dd HH:mm:ss Z
@@ -468,7 +482,7 @@ processors:
           field: sophos.xg.eventtime
 - date:
     if: ctx.sophos?.xg?.eventtime != null && ctx.event?.timezone != null
-    timezone: "{{{ event.timezone }}}"
+    timezone: "{{{ _temp_.tz }}}"
     field: sophos.xg.eventtime
     target_field: sophos.xg.eventtime
     formats:
