@@ -1,0 +1,99 @@
+{
+  "attributes": {
+    "name": "System CPU Usage",
+    "description": "",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset : \"system.cpu\" ",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": {
+                "filters": [
+                  {
+                    "meta": {
+                      "disabled": false,
+                      "negate": false,
+                      "alias": null,
+                      "index": "metrics-*-id",
+                      "key": "host.cpu.usage",
+                      "field": "host.cpu.usage",
+                      "params": {
+                        "lt": "0.80"
+                      },
+                      "type": "range"
+                    },
+                    "$state": {
+                      "store": "appState"
+                    },
+                    "query": {
+                      "range": {
+                        "host.cpu.usage": {
+                          "lt": "0.80"
+                        }
+                      }
+                    }
+                  }
+                ],
+                "kqlQuery": ""
+              }
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": {
+                "filters": [
+                  {
+                    "meta": {
+                      "disabled": false,
+                      "negate": false,
+                      "alias": null,
+                      "index": "metrics-*-id",
+                      "key": "host.cpu.usage",
+                      "field": "host.cpu.usage",
+                      "value": "exists",
+                      "type": "exists"
+                    },
+                    "$state": {
+                      "store": "appState"
+                    },
+                    "query": {
+                      "exists": {
+                        "field": "host.cpu.usage"
+                      }
+                    }
+                  }
+                ],
+                "kqlQuery": ""
+              }
+            }
+          ],
+          "equation": "A"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "7d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99
+    },
+    "tags": [],
+    "groupBy": "*"
+  },
+  "id": "system-0348c4a0-52c6-457c-b84a-af76c3e6b034",
+  "references": [],
+  "type": "slo"
+}

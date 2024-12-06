@@ -1705,3 +1705,22 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | system.uptime.duration.ms | The OS uptime in milliseconds. | long | ms | counter |
 
+
+## SLO
+
+SLO allows to set clear, measurable targets for service performance, based on factors like availability, response times, error rates, and other key metrics. 
+Once you’ve defined your SLOs, you can monitor them in real time, with detailed dashboards that help you quickly identify and troubleshoot any issues that may arise.
+>Note: To create and manage SLOs you need an appropriate [license](https://www.elastic.co/subscriptions).
+### System CPU Usage
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : system.cpu` |
+| Good Query  | `host.cpu.usage < 80` |
+| Total Query | `host.cpu.usage : *`   |
+
+### System Memory Usage
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : system.memory` |
+| Good Query  | `system.memory.actual.used.pct < 80` |
+| Total Query | `system.memory.actual.used.pct : *`   |
