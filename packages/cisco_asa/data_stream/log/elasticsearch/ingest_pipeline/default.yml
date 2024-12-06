@@ -455,8 +455,14 @@ processors:
       description: "113023"
       pattern: "AAA Marking %{network.protocol} server %{destination.address} in aaa-server group %{}"
   - dissect:
-      if: "ctx._temp_.cisco.message_id == '113040'"
-      tag: parse_113040
+      if: "ctx._temp_.cisco.message_id == '113040' && ctx.message.startsWith('Group')"
+      tag: parse_113040_group
+      field: "message"
+      description: "113040"
+      pattern: "Group <%{source.user.group.name}> User <%{source.user.name}> IP <%{source.address}> Terminating the VPN connection attempt from <%{_temp_.cisco.tunnel_group}>. Reason: This connection is group locked to %{}."
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113040' && !ctx.message.startsWith('Group')"
+      tag: parse_113040_no_group
       field: "message"
       description: "113040"
       pattern: "Terminating the VPN connection attempt from %{source.user.group.name}. Reason: This connection is group locked to %{}."
