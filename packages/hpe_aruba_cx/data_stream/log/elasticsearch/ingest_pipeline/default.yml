@@ -635,6 +635,47 @@ processors:
       description: "Logs changes in TACACS server reachability status"
       pattern: "TACACS server host %{server.address} port %{aruba.port} vrf %{aruba.vrf.id} %{aruba.status}"
 
+    # OSPFv2 events (2401)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv2.htm
+  - grok:
+      field: message
+      tag: ospfv2_event_2401_2402_2404
+      description: "Logs the changes in OSPFv2 neighbour state machine | changes in the interface FSM state."
+      if: "['2401','2402','2404'].contains(ctx.event?.code)"
+      patterns:
+        - "%{ADJCHG}%{AREA}: %{STATE_CHANGE}"
+        - "%{ADJCHG}: %{STATE_CHANGE} \\(%{DATA:aruba.ospf.event}\\)"
+        - "^Interface %{DATA:aruba.interface.id}%{AREA} changed from %{STATE_CHANGE}, input: %{GREEDYDATA:aruba.ospf.input}"
+      pattern_definitions:
+        ADJCHG: "^AdjChg: Nbr %{DATA:aruba.ospf.router_id} on %{DATA:aruba.interface.id}"
+        AREA: "\\(%{DATA:aruba.ospf.area}\\)"
+        STATE_CHANGE: "%{DATA:aruba.ospf.old_state} (->|to) %{GREEDYDATA:aruba.status}"
+  - dissect:
+      field: message
+      tag: ospfv2_event_2403
+      description: "Logs OSPFv2 route add and delete."
+      if: "['2403'].contains(ctx.event?.code)"
+      pattern: "%{aruba.ospf.event} with %{destination.address} %{aruba.ospf.nexthops}"
+  - dissect:
+      field: message
+      tag: ospfv2_event_2405
+      description: "Logs the changes in the router-id."
+      if: "['2405'].contains(ctx.event?.code)"
+      pattern: "Router-id updated from %{aruba.ospf.old_router_id} to %{aruba.ospf.router_id}"
+  - dissect:
+      field: message
+      tag: ospfv2_event_2406
+      description: "Logs failed action with rule error"
+      if: "['2406'].contains(ctx.event?.code)"
+      pattern: "Failed to %{event.action} %{rule.name} error: %{event.reason}"
+  - grok:
+      field: message
+      tag: ospfv2_event_2407_2408
+      description: "Logs for OSPFv2 [FP|DR FP] creation/installation."
+      if: "['2407','2408'].contains(ctx.event?.code)"
+      patterns:
+        - "^OSPF (all|designated) routers field entry added: group_id=%{DATA:group.id} fp_id=%{DATA:aruba.ospf.fp_id} stat_id=%{GREEDYDATA:aruba.ospf.stats_id}"
+
     # MGMD events (26xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOP-PROTECT.htm
   - grok:
@@ -994,6 +1035,27 @@ processors:
         - "^MAC %{MAC:server.mac} moved from port %{DATA:aruba.interface.prev_id} to port %{DATA:aruba.interface.id} on VLAN %{GREEDYDATA:network.vlan.id}"
         - "^All dynamic MAC addresses on VLAN %{DATA:network.vlan.id} were flushed"
         - "^All dynamic MAC addresses on port %{DATA:aruba.interface.id} were flushed"
+
+    # OSPFv3 events (490x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv3.htm
+  - dissect:
+      field: message
+      tag: ospfv3_event_4901
+      description: "Logs errors for OSPFv3 FP creation/installation."
+      if: "['4901'].contains(ctx.event?.code)"
+      pattern: "Failed to %{event.action} %{rule.name} error: %{event.reason}"
+  - grok:
+      field: message
+      tag: ospfv3_event_4902
+      description: "[DR FP|FP] creation/installation | changes to neighbour state machine | changes in the interface FSM state"
+      if: "['4902','4903','4904','4905'].contains(ctx.event?.code)"
+      patterns:
+        - "^OSPF3 (all|designated) routers field entry added: group_id=%{DATA:group.id} fp_id=%{DATA:aruba.ospf.fp_id} stat_id=%{GREEDYDATA:aruba.ospf.stats_id}"
+        - "^AdjChg: Nbr%{DATA:aruba.ospf.router_id} on %{INTERFACE_AREA}: %{STATE_CHANGE}"
+        - "^%{INTERFACE_AREA} changed from %{STATE_CHANGE}, input: %{GREEDYDATA:aruba.ospf.input}"
+      pattern_definitions:
+        INTERFACE_AREA: "(I|i)nterface %{DATA:aruba.ospf.link_local} on %{DATA:aruba.interface.id}\\(%{DATA:aruba.ospf.area}\\)"
+        STATE_CHANGE: "%{DATA:aruba.ospf.old_state} (->|to) %{GREEDYDATA:aruba.status}"
 
   # HTTPS Server events (560x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm

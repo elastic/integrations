@@ -747,41 +747,45 @@ Note: Descriptions have not been filled out
 | aruba.ntp.untrusted_keys |           |      |                              |
 
 #### [OSPFv2 events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv2.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.ospf.action         |             |      | event.action                 |
-| aruba.ospf.area           |             |      |                              |
-| aruba.ospf.destination    |             |      | destination.address          |
-| aruba.ospf.err            |             |      | error.message                |
-| aruba.ospf.event          |             |      | event.code                   |
-| aruba.ospf.fp_id          |             |      |                              |
-| aruba.ospf.group_id       |             |      | group.id                     |
-| aruba.ospf.input          |             |      |                              |
-| aruba.ospf.nexthops       |             |      |                              |
-| aruba.ospf.old_router_id  |             |      |                              |
-| aruba.ospf.old_state      |             |      | aruba.status                 |
-| aruba.ospf.ospf_interface |             |      | observer.ingress.interface.name |
-| aruba.ospf.router_id      |             |      |                              |
-| aruba.ospf.rule           |             |      | rule.name                    |
-| aruba.ospf.state          |             |      | aruba.status                 |
-| aruba.ospf.stats_id       |             |      |                              |
+| Docs Field       | Schema Mapping                      |
+|------------------|-------------------------------------|
+| <action>         | event.action                        |
+| <area>           | aruba.ospf.area                     |
+| <destination>    | destination.address                 |
+| <err>            | event.reason                        |
+| <event>          | aruba.ospf.event                    |
+| <fp_id>          | aruba.ospf.fp_id                    |
+| <group_id>       | group.id                            |
+| <input>          | aruba.ospf.input                    |
+| <interface>      | aruba.interface.id                  |
+| <new>            | aruba.ospf.router_id                |
+| <new_state>      | aruba.status                        |
+| <next_state>     | aruba.status                        |
+| <nexthops>       | aruba.ospf.nexthops                 |
+| <old>            | aruba.ospf.old_router_id            |
+| <old_state>      | aruba.ospf.old_state                |
+| <ospf-interface> | aruba.interface.id                  |
+| <router-id>      | aruba.ospf.router_id                |
+| <rule>           | rule.name                           |
+| <state>          | aruba.status / aruba.ospf.old_state |
+| <stats_id>       | aruba.ospf.stats_id                 |
 
 #### [OSPFv3 events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv3.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.ospf.action         |             |      | event.action                 |
-| aruba.ospf.area           |             |      |                              |
-| aruba.ospf.err            |             |      | error.message                |
-| aruba.ospf.fp_id          |             |      |                              |
-| aruba.ospf.group_id       |             |      | group.id                     |
-| aruba.ospf.input          |             |      |                              |
-| aruba.ospf.interface      |             |      | observer.ingress.interface.name |
-| aruba.ospf.link_local     |             |      |                              |
-| aruba.ospf.old_state      |             |      |                              |
-| aruba.ospf.router_id      |             |      |                              |
-| aruba.ospf.rule           |             |      | rule.name                    |
-| aruba.ospf.state          |             |      | aruba.status                 |
-| aruba.ospf.stats_id       |             |      |                              |
+| Docs Field       | Schema Mapping                      |
+|------------------|-------------------------------------|
+| <action>         | event.action                        |
+| <area>           | aruba.ospf.area                     |
+| <err>            | event.reason                        |
+| <fp_id>          | aruba.ospf.fp_id                    |
+| <group_id>       | group.id                            |
+| <input>          | aruba.ospf.input                    |
+| <interface>      | aruba.interface.id                  |
+| <link-local>     | aruba.ospf.link_local               |
+| <new_state>      | aruba.status                        |
+| <old_state>      | aruba.ospf.old_state                |
+| <router-id>      | aruba.ospf.router_id                |
+| <rule>           | rule.name                           |
+| <stats_id>       | aruba.ospf.stats_id                 |
 
 #### [Password Reset events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PASSWD_RESET.htm)
 | Field                     | Description | Type | Common                       |
@@ -1491,6 +1495,16 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.ndm.old_mac |  | keyword |
 | aruba.ndm.role1 |  | keyword |
 | aruba.ndm.role2 |  | keyword |
+| aruba.ospf.area |  | keyword |
+| aruba.ospf.event |  | keyword |
+| aruba.ospf.fp_id |  | keyword |
+| aruba.ospf.input |  | keyword |
+| aruba.ospf.link_local |  | ip |
+| aruba.ospf.nexthops |  | keyword |
+| aruba.ospf.old_router_id |  | keyword |
+| aruba.ospf.old_state |  | keyword |
+| aruba.ospf.router_id |  | keyword |
+| aruba.ospf.stats_id |  | keyword |
 | aruba.port |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.priority |  | keyword |
