@@ -729,7 +729,7 @@ Note: Descriptions have not been filled out
 | <old_mac>        | aruba.ndm.old_mac      |
 | <port>           | aruba.port             |
 | <role>           | aruba.role             |
-| <role1>          | aruba.ndm.role1        |
+| <role1>          | aruba.ndm.old_role     |
 | <role2>          | aruba.role             |
 | <time>           | aruba.time.seconds     |
 | <throttle_count> | aruba.throttle_count   |
@@ -1489,8 +1489,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.nd.type |  | keyword |
 | aruba.ndm.new_mac |  | keyword |
 | aruba.ndm.old_mac |  | keyword |
-| aruba.ndm.role1 |  | keyword |
-| aruba.ndm.role2 |  | keyword |
+| aruba.ndm.old_role |  | keyword |
 | aruba.port |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.priority |  | keyword |

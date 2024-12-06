@@ -729,7 +729,7 @@ Note: Descriptions have not been filled out
 | <old_mac>        | aruba.ndm.old_mac      |
 | <port>           | aruba.port             |
 | <role>           | aruba.role             |
-| <role1>          | aruba.ndm.role1        |
+| <role1>          | aruba.ndm.old_role     |
 | <role2>          | aruba.role             |
 | <time>           | aruba.time.seconds     |
 | <throttle_count> | aruba.throttle_count   |
