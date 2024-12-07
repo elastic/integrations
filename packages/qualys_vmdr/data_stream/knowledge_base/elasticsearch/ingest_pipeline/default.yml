@@ -62,6 +62,7 @@ processors:
       tag: rename_DETECTION_INFO
       target_field: qualys_vmdr.knowledge_base.detection_info
       ignore_missing: true
+  # Handle case when COMPLIANCE_LIST.COMPLIANCE is an object
   - rename:
       field: json.COMPLIANCE_LIST.COMPLIANCE.TYPE
       tag: rename_COMPLIANCE_LIST_COMPLIANCE_TYPE
@@ -76,6 +77,43 @@ processors:
       field: json.COMPLIANCE_LIST.COMPLIANCE.DESCRIPTION
       tag: rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION
       target_field: qualys_vmdr.knowledge_base.compliance_list.description
+      ignore_missing: true
+# Handle case when COMPLIANCE_LIST.COMPLIANCE is an array
+  - foreach:
+      field: json.COMPLIANCE_LIST.COMPLIANCE
+      if: ctx.json?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
+      tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_TYPE
+      processor:
+        rename:
+          field: _ingest._value.TYPE
+          tag: rename_COMPLIANCE_LIST_COMPLIANCE_TYPE_1
+          target_field: _ingest._value.type
+          ignore_missing: true
+  - foreach:
+      field: json.COMPLIANCE_LIST.COMPLIANCE
+      if: ctx.json?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
+      tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_SECTION
+      processor:
+        rename:
+          field: _ingest._value.SECTION
+          tag: rename_COMPLIANCE_LIST_COMPLIANCE_SECTION_1
+          target_field: _ingest._value.section
+          ignore_missing: true
+  - foreach:
+      field: json.COMPLIANCE_LIST.COMPLIANCE
+      if: ctx.json?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
+      tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION
+      processor:
+        rename:
+          field: _ingest._value.DESCRIPTION
+          tag: rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION_1
+          target_field: _ingest._value.description
+          ignore_missing: true
+  - rename:
+      field: json.COMPLIANCE_LIST.COMPLIANCE
+      if: ctx.json?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
+      tag: rename_COMPLIANCE_LIST_COMPLIANCE
+      target_field: qualys_vmdr.knowledge_base.compliance_list
       ignore_missing: true
   - rename:
       field: json.CATEGORY
@@ -133,6 +171,7 @@ processors:
       tag: rename_TITLE
       target_field: qualys_vmdr.knowledge_base.title
       ignore_missing: true
+# Handle case when BUGTRAQ_LIST.BUGTRAQ is an object
   - rename:
       field: json.BUGTRAQ_LIST.BUGTRAQ.ID
       tag: rename_BUGTRAQ_LIST_BUGTRAQ_ID
@@ -142,6 +181,33 @@ processors:
       field: json.BUGTRAQ_LIST.BUGTRAQ.URL
       tag: rename_BUGTRAQ_LIST_BUGTRAQ_URL
       target_field: qualys_vmdr.knowledge_base.bugtraq_list.url
+      ignore_missing: true
+# Handle case when BUGTRAQ_LIST.BUGTRAQ is an array
+  - foreach:
+      field: json.BUGTRAQ_LIST.BUGTRAQ
+      if: ctx.json?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
+      tag: foreach_rename_BUGTRAQ_LIST_BUGTRAQ_ID
+      processor:
+        rename:
+          field: _ingest._value.ID
+          tag: rename_BUGTRAQ_LIST_BUGTRAQ_ID_1
+          target_field: _ingest._value.id
+          ignore_missing: true
+  - foreach:
+      field: json.BUGTRAQ_LIST.BUGTRAQ
+      if: ctx.json?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
+      tag: foreach_rename_BUGTRAQ_LIST_BUGTRAQ_URL
+      processor:
+        rename:
+          field: _ingest._value.URL
+          tag: rename_BUGTRAQ_LIST_BUGTRAQ_URL_1
+          target_field: _ingest._value.url
+          ignore_missing: true
+  - rename:
+      field: json.BUGTRAQ_LIST.BUGTRAQ
+      if: ctx.json?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
+      tag: rename_BUGTRAQ_LIST_BUGTRAQ
+      target_field: qualys_vmdr.knowledge_base.bugtraq_list
       ignore_missing: true
   - rename:
       field: json.VULN_TYPE
@@ -394,6 +460,7 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Handle case when SOFTWARE_LIST.SOFTWARE is an object
   - rename:
       field: json.SOFTWARE_LIST.SOFTWARE.PRODUCT
       tag: rename_SOFTWARE_LIST_SOFTWARE_PRODUCT
@@ -404,6 +471,34 @@ processors:
       tag: rename_SOFTWARE_LIST_SOFTWARE_VENDOR
       target_field: qualys_vmdr.knowledge_base.software_list.vendor
       ignore_missing: true
+  # Handle case when SOFTWARE_LIST.SOFTWARE is an array
+  - foreach:
+      field: json.SOFTWARE_LIST.SOFTWARE
+      if: ctx.json?.SOFTWARE_LIST?.SOFTWARE instanceof List
+      tag: foreach_rename_SOFTWARE_LIST_SOFTWARE_PRODUCT
+      processor:
+        rename:
+          field: _ingest._value.PRODUCT
+          tag: rename_SOFTWARE_LIST_SOFTWARE_PRODUCT_1
+          target_field: _ingest._value.product
+          ignore_missing: true
+  - foreach:
+      field: json.SOFTWARE_LIST.SOFTWARE
+      if: ctx.json?.SOFTWARE_LIST?.SOFTWARE instanceof List
+      tag: foreach_rename_SOFTWARE_LIST_SOFTWARE_VENDOR
+      processor:
+        rename:
+          field: _ingest._value.VENDOR
+          tag: rename_SOFTWARE_LIST_SOFTWARE_VENDOR_1
+          target_field: _ingest._value.vendor
+          ignore_missing: true
+  - rename:
+      field: json.SOFTWARE_LIST.SOFTWARE
+      if: ctx.json?.SOFTWARE_LIST?.SOFTWARE instanceof List
+      tag: rename_SOFTWARE_LIST_SOFTWARE
+      target_field: qualys_vmdr.knowledge_base.software_list
+      ignore_missing: true
+  # Handle case when VENDOR_REFERENCE_LIST.VENDOR_REFERENCE is an object
   - rename:
       field: json.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE.ID
       tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID
@@ -413,6 +508,33 @@ processors:
       field: json.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE.URL
       tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL
       target_field: qualys_vmdr.knowledge_base.vendor_reference_list.url
+      ignore_missing: true
+  # Handle case when VENDOR_REFERENCE_LIST.VENDOR_REFERENCE is an array
+  - foreach:
+      field: json.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE
+      if: ctx.json?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
+      tag: foreach_rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID
+      processor:
+        rename:
+          field: _ingest._value.ID
+          tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID_1
+          target_field: _ingest._value.id
+          ignore_missing: true
+  - foreach:
+      field: json.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE
+      if: ctx.json?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
+      tag: foreach_rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL
+      processor:
+        rename:
+          field: _ingest._value.URL
+          tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL_1
+          target_field: _ingest._value.url
+          ignore_missing: true
+  - rename:
+      field: json.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE
+      if: ctx.json?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
+      tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE
+      target_field: qualys_vmdr.knowledge_base.vendor_reference_list
       ignore_missing: true
   - date:
       field: json.LAST_SERVICE_MODIFICATION_DATETIME
@@ -462,6 +584,7 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Handle case when CHANGE_LOG_LIST.CHANGE_LOG_INFO is an object
   - rename:
       field: json.CHANGE_LOG_LIST.CHANGE_LOG_INFO
       tag: rename_CHANGE_LOG_LIST_CHANGE_LOG_INFO
@@ -483,6 +606,7 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Handle case when CHANGE_LOG_LIST.CHANGE_LOG_INFO is an array
   - foreach:
       field: qualys_vmdr.knowledge_base.changelog_list.info
       if: ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info instanceof List
@@ -693,6 +817,28 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_to_truncate_long_fields
+      lang: painless
+      description: Truncate fields that are over length.
+      source: |-
+        def filterMassive(def src) {
+          if (src instanceof Map) {
+            for (def entry: src.entrySet()) {
+              entry.setValue(filterMassive(entry.getValue()));
+            }
+            return src;
+          } else if (src instanceof List) {
+            for (int i = 0; i < src.length; i++) {
+              src[i] = filterMassive(src[i]);
+            }
+            return src;
+          } else if (src instanceof String && src.length() > 32766) {
+            return src.substring(0, 32700)+' (truncated)';
+          }
+          return src;
+        }
+        filterMassive(ctx);
   - set:
       field: event.kind
       tag: set_event_kind_2

@@ -288,7 +288,11 @@ An example event for `log` looks as following:
 | cisco_ise.log.calling_station_id |  | keyword |
 | cisco_ise.log.category.name |  | keyword |
 | cisco_ise.log.cause |  | keyword |
-| cisco_ise.log.cisco_av_pair |  | object |
+| cisco_ise.log.cisco_av_pair.coa-push |  | boolean |
+| cisco_ise.log.cisco_av_pair.cts-device-capability |  | keyword |
+| cisco_ise.log.cisco_av_pair.cts-environment-data |  | keyword |
+| cisco_ise.log.cisco_av_pair.cts-environment-version |  | keyword |
+| cisco_ise.log.cisco_av_pair.cts-pac-opaque |  | keyword |
 | cisco_ise.log.class |  | keyword |
 | cisco_ise.log.client.latency |  | long |
 | cisco_ise.log.cmdset |  | keyword |
