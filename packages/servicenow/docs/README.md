@@ -101,7 +101,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
 ### Time Zone Selection:
-- In the Data Collection section, use the `Timezone of ServiceNow Instance` dropdown to select your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
+- In the Data Collection section, use the `Time Zone Offset` field to set your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
 - Steps to See/Update the timezone in ServiceNow Instance:
   1. Click the user icon in the top-right corner of the ServiceNow interface.
   2. Select Profile from the dropdown menu.
@@ -120,7 +120,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - password
    - table name
    - timestamp field
-   - timezone
+   - timezone offset
 
    or if you want to collect logs via AWS S3, then you have to put the following details:
    - collect logs via S3 Bucket toggled on
@@ -129,7 +129,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - bucket arn
    - table name
    - timestamp field
-   - timezone
+   - timezone offset
 
    or if you want to collect logs via AWS SQS, then you have to put the following details:
    - collect logs via S3 Bucket toggled off
@@ -138,7 +138,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - queue url
    - table name
    - timestamp field
-   - timezone
+   - timezone offset
 6. Click on "Save and Continue" to save the integration.
 
 **Note**: To fetch parquet file data, enable the toggle, `Parquet Codec`
@@ -157,22 +157,22 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-09-24T05:39:40.000Z",
     "agent": {
-        "ephemeral_id": "46c20579-a05b-4d10-9050-910b0357621f",
-        "id": "7415adc4-fbf0-4c7e-9a6c-1d225d2f823b",
+        "ephemeral_id": "121d1e8c-0c94-4812-a446-4e8c339cbf5e",
+        "id": "744b1c23-395c-4123-9b8a-7e975ed7b1f8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "servicenow.event",
-        "namespace": "14470",
+        "namespace": "28538",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7415adc4-fbf0-4c7e-9a6c-1d225d2f823b",
+        "id": "744b1c23-395c-4123-9b8a-7e975ed7b1f8",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -185,7 +185,7 @@ An example event for `event` looks as following:
         "created": "2016-12-12T15:19:57.000Z",
         "dataset": "servicenow.event",
         "id": "1c741bd70b2322007518478d83673af3",
-        "ingested": "2024-11-13T11:04:01Z",
+        "ingested": "2024-12-02T12:33:55Z",
         "kind": "event",
         "severity": 3,
         "timezone": "America/Los_Angeles",
@@ -261,7 +261,8 @@ An example event for `event` looks as following:
             "sys_updated_on": {
                 "display_value": "2024-09-23T22:39:40.000-07:00",
                 "value": "2024-09-24T05:39:40.000Z"
-            }
+            },
+            "table_name": "incident"
         }
     },
     "tags": [
@@ -1156,6 +1157,7 @@ An example event for `event` looks as following:
 | servicenow.event.sys_updated_on.value |  | date |
 | servicenow.event.sys_view_count.display_value |  | keyword |
 | servicenow.event.sys_view_count.value |  | long |
+| servicenow.event.table_name |  | keyword |
 | servicenow.event.task.display_value |  | keyword |
 | servicenow.event.task.value |  | keyword |
 | servicenow.event.task_effective_number.display_value |  | keyword |
