@@ -336,3 +336,4 @@ An example event for `system` looks as following:
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |
 | okta.version | The version of the LogEvent. | keyword |
+| related.entity | A collection of all entity identifiers associated with the document.  If the document  contains multiple entities, identifiers for each will be included. Example identifiers include(but not limited to) cloud resource IDs, ARNs,  email addresses, and hostnames. | keyword |
