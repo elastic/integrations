@@ -8,10 +8,10 @@ Carbon Black Cloud `Alerts API (v6)` [will be deactivated on July 31, 2024](http
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
 data stream. The default values of file selector regexes have been commented out for this reason. The only reason the global queue now exists is to avoid
-a breaking change while upgrading to version 1.21 and above. A separate SQS queue per data stream should help fix the data loss that's been occurring in the 
+a breaking change while upgrading to version 1.21 and above. A separate SQS queue per data stream should help fix the data loss that's been occurring in the
 older versions.
 
-## HTTPJSON vs CEL 
+## HTTPJSON vs CEL
 Version 2.0.0 introduces the use of the CEL input. This input method is currently marked as [Beta] while the older HTTPJSON input method has been
 marked as [Legacy]. The HTTPJSON input method will not receive enhancement changes and will not support the new `alert_v7` data stream.
 
@@ -40,7 +40,7 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
   | Endpoint Event    | endpoint_event_logs    |
   | Watchlist Hit     | watchlist_hit_logs     |
 
-### To collect data from AWS SQS, follow the below steps:
+### To collect data from AWS SQS, follow the steps below:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
 2. Follow the steps below for each data stream that has been enabled:
      1. Create an SQS queue
@@ -61,10 +61,10 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
 1. In Carbon Black Cloud, On the left navigation pane, click **Settings > API Access**.
 2. Click Add API Key.
 3. Give the API key a unique name and description.
-    - Select the appropriate access level type. Please check the required Access Levels & Permissions for integration in the table below.  
+    - Select the appropriate access level type. Please check the required Access Levels & Permissions for integration in the table below.
      **Note:** To use a custom access level, select Custom from the Access Level type drop-down menu and specify the Custom Access Level.
     - Optional: Add authorized IP addresses.
-    - You can restrict the use of an API key to a specific set of IP addresses for security reasons.  
+    - You can restrict the use of an API key to a specific set of IP addresses for security reasons.
      **Note:** Authorized IP addresses are not available with Custom keys.
 4. To apply the changes, click Save.
 
@@ -830,15 +830,6 @@ An example event for `endpoint_event` looks as following:
 | @timestamp | Event timestamp. | date |
 | carbon_black_cloud.endpoint_event.alert_id | The ID of the Alert this event is associated with. | keyword |
 | carbon_black_cloud.endpoint_event.backend.timestamp | Time when the backend received the batch of events. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.guid | Unique ID of the child process. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.hash.md5 | Cryptographic MD5 hashes of the executable file backing the child process. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.hash.sha256 | Cryptographic SHA256 hashes of the executable file backing the child process. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.name | Full path to the target of the crossproc event on the device's local file system. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.pid | OS-reported Process ID of the child process. | long |
-| carbon_black_cloud.endpoint_event.childproc.publisher.name | The name of the publisher. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.publisher.state | The state of the publisher. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.reputation | Carbon Black Cloud Reputation string for the childproc. | keyword |
-| carbon_black_cloud.endpoint_event.childproc.username | The username associated with the user context that the child process was started under. | keyword |
 | carbon_black_cloud.endpoint_event.create_time | The time at which the event was ingested in carbon black cloud. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.action | The action taken on cross-process. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.api | Name of the operating system API called by the actor process. | keyword |
@@ -868,12 +859,28 @@ An example event for `endpoint_event` looks as following:
 | carbon_black_cloud.endpoint_event.netconn.proxy.port | UDP/TCP port number associated with the "proxy" end of this network connection. | keyword |
 | carbon_black_cloud.endpoint_event.organization_key | The organization key associated with the console instance. | keyword |
 | carbon_black_cloud.endpoint_event.process.duration | The time difference in seconds between the process start and process terminate event. | long |
-| carbon_black_cloud.endpoint_event.process.parent.reputation | Reputation of the parent process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
+| carbon_black_cloud.endpoint_event.process.guid | Unique ID of the process. | keyword |
+| carbon_black_cloud.endpoint_event.process.hash.md5 | Cryptographic MD5 hashes of the executable file backing the process. | keyword |
+| carbon_black_cloud.endpoint_event.process.hash.sha256 | Cryptographic SHA256 hashes of the executable file backing the process. | keyword |
+| carbon_black_cloud.endpoint_event.process.name | Full path to the target of the crossproc event on the device's local file system. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.parent.command_line | Full command line that started the grandparent process, including the absolute path to the executable, and all arguments. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.parent.entity_id | Unique identifier for the grandparent process. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.parent.executable | Absolute path to the grandparent process executable. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.parent.hash.md5 | MD5 hash of the grandparent process. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.parent.hash.sha256 | SHA256 hash of the grandparent process. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.parent.pid | OS-reported Process ID of the grandparent process. | long |
+| carbon_black_cloud.endpoint_event.process.parent.parent.reputation | Reputation of the grandparent process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.publisher.name | The name of the publisher. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.publisher.state | The state of the publisher. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.reputation | Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
+| carbon_black_cloud.endpoint_event.process.parent.terminated | Whether the process terminated. | boolean |
+| carbon_black_cloud.endpoint_event.process.parent.username | The username associated with the user context that this process was started under. | keyword |
+| carbon_black_cloud.endpoint_event.process.pid | OS-reported Process ID of the process. | long |
 | carbon_black_cloud.endpoint_event.process.publisher.name | The name of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.process.publisher.state | The state of the publisher. | keyword |
-| carbon_black_cloud.endpoint_event.process.reputation | Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
-| carbon_black_cloud.endpoint_event.process.terminated | True if process was terminated elase false. | boolean |
-| carbon_black_cloud.endpoint_event.process.username | The username associated with the user context that this process was started under. | keyword |
+| carbon_black_cloud.endpoint_event.process.reputation | Carbon Black Cloud Reputation string for the childproc. | keyword |
+| carbon_black_cloud.endpoint_event.process.terminated | Whether the process terminated. | boolean |
+| carbon_black_cloud.endpoint_event.process.username | The username associated with the user context that the process was started under. | keyword |
 | carbon_black_cloud.endpoint_event.schema | The schema version. The current schema version is "1". This schema version will only be incremented if the field definitions are changed in a backwards-incompatible way. | long |
 | carbon_black_cloud.endpoint_event.scriptload.count | Count of scriptload events across all processes reported by the sensor since last initialization. | long |
 | carbon_black_cloud.endpoint_event.scriptload.effective_reputation | Effective reputation(s) of the script file(s) loaded at process launch; applied by the sensor when the event occurred. | keyword |
