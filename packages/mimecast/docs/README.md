@@ -560,63 +560,87 @@ An example event for `siem` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-12T12:15:46.000Z",
+    "@timestamp": "2024-11-12T18:52:07.130Z",
     "agent": {
-        "ephemeral_id": "9e414d8d-fe0d-4db1-a95f-aed984c0eef9",
-        "id": "a26821e0-e36a-4513-a137-0df112893aba",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "3d21ae78-86cd-4666-84a7-c6309a29e2e5",
+        "id": "260b2d28-beb4-4e1e-83aa-9fd450347db8",
+        "name": "elastic-agent-64770",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.15.0"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
-        "namespace": "ep",
+        "namespace": "18433",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a26821e0-e36a-4513-a137-0df112893aba",
+        "id": "260b2d28-beb4-4e1e-83aa-9fd450347db8",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.15.0"
     },
     "email": {
-        "direction": "internal",
+        "direction": "outbound",
         "from": {
             "address": [
-                "johndoe@example.com"
+                "chris.germany@demo-int.elastic.mime-api.com"
             ]
         },
-        "local_id": "fjihpfEgM_iRwemxhe3t_w",
+        "message_id": "<23b9843f48f8d349-99325@hapi.b41.one>",
+        "subject": "Out of office",
         "to": {
             "address": [
-                "o365_service_account@example.com"
+                "dkinney@pacific-concept.b41.one"
             ]
         }
     },
     "event": {
+        "action": "Acc",
         "agent_id_status": "verified",
-        "created": "2021-11-12T12:15:46+0000",
+        "category": [
+            "email"
+        ],
+        "created": "2024-11-12T18:52:07.130Z",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2024-04-07T21:50:35Z",
-        "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
+        "ingested": "2024-12-08T21:06:17Z",
+        "original": "{\"_offset\":70595,\"_partition\":60,\"accountId\":\"CUSB4A274\",\"action\":\"Acc\",\"aggregateId\":\"q1h3LjgrN46b12GlX0By9Q_1731437523\",\"direction\":\"Outbound\",\"messageId\":\"\\u003c23b9843f48f8d349-99325@hapi.b41.one\\u003e\",\"numberAttachments\":\"0\",\"processingId\":\"X7OQopo8177ryv7KXWXxytbksk3qv0Ct8NSYWcQkhJM_1731437523\",\"receiptErrors\":null,\"recipients\":\"dkinney@pacific-concept.b41.one\",\"rejectionCode\":null,\"rejectionInfo\":null,\"rejectionType\":null,\"senderEnvelope\":\"chris.germany@demo-int.elastic.mime-api.com\",\"senderHeader\":\"chris.germany@demo-int.elastic.mime-api.com\",\"senderIp\":\"54.236.186.184\",\"spamDetectionLevel\":\"28\",\"spamInfo\":\"[]\",\"spamProcessingDetail\":null,\"spamScore\":\"0\",\"subject\":\"Out of office\",\"subtype\":\"Acc\",\"timestamp\":1731437527130,\"tlsCipher\":\"TLS_AES_256_GCM_SHA384\",\"tlsVersion\":\"TLSv1.3\",\"type\":\"receipt\",\"virusFound\":null}",
         "outcome": "unknown"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
-        "RcptActType": "Jnl",
-        "RcptHdrType": "Unknown",
-        "acc": "ABC123",
-        "log_type": "jrnl"
+        "accountId": "CUSB4A274",
+        "aggregateId": "q1h3LjgrN46b12GlX0By9Q_1731437523",
+        "log_type": "receipt",
+        "numberAttachments": "0",
+        "processingId": "X7OQopo8177ryv7KXWXxytbksk3qv0Ct8NSYWcQkhJM_1731437523",
+        "senderHeader": "chris.germany@demo-int.elastic.mime-api.com",
+        "spamDetectionLevel": "28",
+        "spamInfo": "[]",
+        "spamScore": "0",
+        "subtype": "Acc",
+        "tlsVersion": "TLSv1.3"
+    },
+    "related": {
+        "user": [
+            "chris.germany@demo-int.elastic.mime-api.com",
+            "dkinney@pacific-concept.b41.one"
+        ]
+    },
+    "source": {
+        "ip": "54.236.186.184"
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "mimecast-siem-logs"
-    ]
+    ],
+    "tls": {
+        "cipher": "TLS_AES_256_GCM_SHA384"
+    }
 }
 ```
 
@@ -640,9 +664,10 @@ An example event for `siem` looks as following:
 | mimecast.AttNames | The filenames of all attachments on the email. | keyword |
 | mimecast.Attempt | The count of attempts that the Mimecast MTA has made to deliver the email. | long |
 | mimecast.CustomName | The message has matched a custom name. | keyword |
-| mimecast.CustomThreatDictionary | The content of the email was detected to contain words in a custom threat dictionary. | keyword |
+| mimecast.CustomThreatDictionary | The content of the email was detected to contain words in a custom threat dictionary. | keyword |
 | mimecast.CustomerIP | The source IP is one of the accounts authorised IPs or one of the authorised IPs belonging to an Umbrella Account, if the Account uses an Umbrella Account. | keyword |
 | mimecast.Hits | Number of items flagged for the message. | keyword |
+| mimecast.Hostname |  | keyword |
 | mimecast.IPInternalName | For emails subject to Targeted Threat Protection - Impersonation Protect, if the email was detected to be from an internal user name. | keyword |
 | mimecast.IPNewDomain | For emails subject to Targeted Threat Protection - Impersonation Protect, if the email was detected to be from a new domain. | keyword |
 | mimecast.IPReplyMismatch | For emails subject to Targeted Threat Protection - Impersonation Protect, if the email was detetced to have a mismatch in the reply to address. | keyword |
@@ -672,14 +697,86 @@ An example event for `siem` looks as following:
 | mimecast.Subject | The subject of the email, limited to 150 characters. | keyword |
 | mimecast.TaggedExternal | The message has been tagged as originating from a external source. | keyword |
 | mimecast.TaggedMalicious | The message has been tagged as malicious. | keyword |
-| mimecast.ThreatDictionary | The content of the email was detected to contain words in the Mimecast threat dictionary. | keyword |
+| mimecast.ThreatDictionary | The content of the email was detected to contain words in the Mimecast threat dictionary. | keyword |
 | mimecast.UrlCategory | The category of the URL that was clicked. | keyword |
 | mimecast.Virus | The name of the virus found on the email, if applicable. | keyword |
 | mimecast.acc | The Mimecast account code for your account. | keyword |
+| mimecast.accountId | The Mimecast account code for your account | keyword |
+| mimecast.action | The action taken at the receipt stage. Receipt logs:(Rej; Acc; Ign; Bnc), Process logs:(Acc; Hld; Bnc; Sdbx; Rty), Impersonation Protect logs:(None; Hold), URL Protect logs:(Block). | keyword |
+| mimecast.aggregateId | Unique identifier that allows you to correlate/group related events. | keyword |
+| mimecast.analysis | The senders domain is similar to a custom external domain list. | keyword |
+| mimecast.attachments | The filenames of all attachments on the email | keyword |
+| mimecast.blockReason | The reason click was blocked. (Unknown; File Detected; Clean; Malicious; Suspicious) | keyword |
 | mimecast.credentialTheft | The info about credential theft. | keyword |
+| mimecast.customNameMatch | The message has matched a custom name.  True; False | keyword |
+| mimecast.customThreatDictionary | The content of the email was detected to contain words in the client custom threat dictionary. (True; False) | keyword |
+| mimecast.customerIp | The source IP is one of the accounts authorised IPs or one of the authorised IPs belonging to an Umbrella Account, if the Account uses an Umbrella Account. | keyword |
+| mimecast.delivered | \* If the email was delivered successfully or not. False; True | keyword |
+| mimecast.delivery | Attempts  The count of attempts that the Mimecast MTA has made to deliver the email. | keyword |
+| mimecast.deliveryAttempts |  | keyword |
+| mimecast.deliveryErrors | Information about any errors that occurred on the delivery attempt. | keyword |
+| mimecast.deliveryTime | The time in milliseconds that the delivery attempt took. | keyword |
+| mimecast.destinationIp | The destination IP address for the delivery attempt. | keyword |
+| mimecast.direction | The direction of the email based on the sending and receiving domains. (Inbound; Outbound; Internal; External) | keyword |
+| mimecast.emailSize | The amount of data in bytes that were delivered. | keyword |
+| mimecast.fileExtension | The file extension. | keyword |
+| mimecast.fileName | The name of file. | keyword |
+| mimecast.holdReason | The reason the email was held for review (quarantined), if applicable. (Spm; Att; RcptLimit; Exp; Imp; Sbx; Oth; Url; Ctnt; Dpp; RBL; (absent)) | keyword |
+| mimecast.internalUserName | The email was detected to be from an internal user name. (Hit; No Hit) | keyword |
+| mimecast.ipNewDomain | For emails subject to Targeted Threat Protection: Impersonation Protect, if the email was detected to be from a new domain. | keyword |
+| mimecast.ipReplyMismatch | For emails subject to Targeted Threat Protection: Impersonation Protect, if the email was detetced to have a mismatch in the reply to address. | keyword |
+| mimecast.ipSimilarDomain | For emails subject to Targeted Threat Protection: Impersonation Protect, if the email was detetced to be from a similar domain to any domain you have registered as an Internal Domain. | keyword |
+| mimecast.ipThreatDictionary | For emails subject to Targeted Threat Protection: Impersonation Protect, if the content of the email was detected to contain words in the Mimecast threat dictionary. | keyword |
+| mimecast.ipUserName | For emails subject to Targeted Threat Protection: Impersonation Protect, if the email was detected to be from an internal user name. | keyword |
+| mimecast.itemsDetected | Number of items flagged for the message. | keyword |
 | mimecast.log_type | String to get type of SIEM log. | keyword |
+| mimecast.md5 | MD5 Hash. | keyword |
+| mimecast.messageId | The internet message id of the email. | keyword |
+| mimecast.mimecastThreatDictionary | The content of the email was detected to contain words in the Mimecast threat dictionary. (True; False) | keyword |
+| mimecast.monitoredDomainSource | the source of the URL match based on Mimecast's heuristic scanning techniques | keyword |
 | mimecast.msgid | The internet message id of the email. | keyword |
+| mimecast.newDomain | The email was detected to be from a new domain (True; False) | keyword |
+| mimecast.numberAttachments | The number of attachments on the email. | keyword |
+| mimecast.policyDefinition | The definition of policy triggered. | keyword |
+| mimecast.processingId | Unique identifier that allows you to correlate/group related events. | keyword |
+| mimecast.receiptErrors | Information about any errors that occurred during receipt. | keyword |
+| mimecast.recipients | The recipient of the email. | keyword |
+| mimecast.rejectionCode | The rejection code, for messages rejected by the receiving mail server. | keyword |
+| mimecast.rejectionInfo | The rejection information if the email was rejected at the receipt stage. | keyword |
+| mimecast.rejectionType | The rejection type, for messages rejected by the receiving mail server. | keyword |
+| mimecast.replyMismatch | The reply address does not correspond to the senders address. (True; False) | keyword |
+| mimecast.route | The route of the message. (Inbound; Outbound; Internal; External) | keyword |
+| mimecast.scanResults | The reason that the click was blocked. | keyword |
+| mimecast.senderDomain | The sender domain. | keyword |
+| mimecast.senderDomainInternal | The sender domain is a registered internal domain. | keyword |
+| mimecast.senderEnvelope | The sender of the email. | keyword |
+| mimecast.senderHeader | Sender address found in the from header of the email. | keyword |
+| mimecast.senderIp | The source IP of the original message or sending mail server. | keyword |
+| mimecast.sha1 | SHA1 hash. | keyword |
+| mimecast.sha256 | SHA256 hash. | keyword |
+| mimecast.similarCustomExternalDomain | The senders domain is similar to a custom external domain list. (True; False) | keyword |
+| mimecast.similarDomain | The domain is similar to a registered domain. | keyword |
+| mimecast.similarInternalDomain | The senders domain is similar to a registered internal domain. (True; False) | keyword |
+| mimecast.similarMimecastExternalDomain | The senders domain is similar to a Mimecast managed list of domains. (True; False) | keyword |
+| mimecast.similarMimecastExternalDomainResults | Advanced phishing detection results from scanners | keyword |
+| mimecast.sizeAttachment | The size (in bytes) of the malicious file. | keyword |
+| mimecast.sourceIp | The source IP of the original message. | keyword |
+| mimecast.spamDetectionLevel | The detection level defined for the given sender and recipient. | keyword |
+| mimecast.spamInfo | Information from Mimecast Spam scanners for messages found to be Spam. | keyword |
+| mimecast.spamProcessingDetail | The Spam processing details for DKIM, SPF, DMARC | keyword |
+| mimecast.spamScore | The metric that measures the likelihood of the event being considered spam. | keyword |
+| mimecast.subject | The subject of the email. | keyword |
+| mimecast.subtype |  | keyword |
+| mimecast.taggedExternal | The message has been tagged as originating from a external source. (True; False) | keyword |
+| mimecast.taggedMalicious | The message has been tagged as malicious. (True; False) | keyword |
+| mimecast.timestamp | The date and time of event. | keyword |
+| mimecast.tlsCipher | The TLS Cipher used if the email was delivered or received using TLS. | keyword |
+| mimecast.tlsUsed | If the message was delivered using TLS or not. (Yes; No) | keyword |
+| mimecast.tlsVersion | The TLS version used if the email was delivered or received using TLS. | keyword |
+| mimecast.totalSizeAttachments | The total size of all attachments on the email. | keyword |
+| mimecast.url | URL Clicked | keyword |
 | mimecast.urlCategory | The category of the URL that was clicked. | keyword |
+| mimecast.virusFound | The name or signature of the virus found on the email, if applicable. | keyword |
 
 
 ### Threat Intel Feed Malware: Customer
