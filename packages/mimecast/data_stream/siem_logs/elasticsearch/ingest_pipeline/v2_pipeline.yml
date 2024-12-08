@@ -293,6 +293,81 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  # Handle users.
+  - foreach:
+      tag: collect_related_users_from
+      if: ctx.email?.from?.address instanceof List
+      field: email.from.address
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: collect_related_users_to
+      if: ctx.email?.to?.address instanceof List
+      field: email.to.address
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
+  # Handle hosts.
+  - append:
+      tag: collect_related_hosts
+      if: ctx.mimecast?.Hostname != null
+      field: related.hosts
+      value: '{{{mimecast.Hostname}}}'
+      allow_duplicates: false
+
+  # Handle attachment details.
+  - foreach:
+      tag: collect_attachment_file_hashes
+      if: ctx.email?.attachments?.file?.hash instanceof Map
+      field: email.attachments.file.hash
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - script:
+      tag: promote_email_attachments_to_array
+      if: ctx.email?.attachments != null
+      lang: painless
+      source: |
+        def attachments = [];
+        attachments.add(ctx.email.attachments);
+        ctx.email.attachments = attachments;
+
+  - remove:
+      tag: remove_duplicate_custom_fields
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - mimecast.recipients
+        - mimecast.senderEnvelope
+      ignore_missing: true
 
   # Cleanup
   - rename:
