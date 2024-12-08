@@ -844,6 +844,8 @@ An example event for `index` looks as following:
         "index": {
             "hidden": true,
             "name": ".ml-state-000001",
+            "tier_preference": "data_content",
+            "creation_date": 1731657995821,
             "primaries": {
                 "docs": {
                     "count": 0
@@ -1009,6 +1011,8 @@ An example event for `index` looks as following:
 | elasticsearch.index.shards.primaries |  | long |  |
 | elasticsearch.index.shards.total |  | long |  |
 | elasticsearch.index.status |  | keyword |  |
+| elasticsearch.index.tier_preference |  | keyword |  |
+| elasticsearch.index.creation_date |  | date |  |
 | elasticsearch.index.total.bulk.avg_size_in_bytes |  | long | gauge |
 | elasticsearch.index.total.bulk.avg_time_in_millis |  | long | gauge |
 | elasticsearch.index.total.bulk.total_operations |  | long | counter |
