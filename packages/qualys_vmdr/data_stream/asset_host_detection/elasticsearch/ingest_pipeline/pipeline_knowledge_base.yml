@@ -1,12 +1,8 @@
 ---
 description: Pipeline for processing Knowledge Base data.
 processors:
-  - fail:
-      tag: cel_failure
-      if: ctx.json?.KNOWLEDGE_BASE == null
-      message: error message set in Knowledge Base and no data to process
   - rename:
-      field: ctx.json?.KNOWLEDGE_BASE
+      field: json.KNOWLEDGE_BASE
       tag: rename_json_KNOWLEDGE_BASE
       target_field: qualys_vmdr.asset_host_detection.knowledge_base
       ignore_missing: true
@@ -54,7 +50,7 @@ processors:
 # Handle case when COMPLIANCE_LIST.COMPLIANCE is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE
-      if: ctx.json?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
       tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_TYPE
       processor:
         rename:
@@ -64,7 +60,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE
-      if: ctx.json?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
       tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_SECTION
       processor:
         rename:
@@ -74,7 +70,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE
-      if: ctx.json?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
       tag: foreach_rename_COMPLIANCE_LIST_COMPLIANCE_DESCRIPTION
       processor:
         rename:
@@ -84,7 +80,7 @@ processors:
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.COMPLIANCE_LIST.COMPLIANCE
-      if: ctx.json?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.COMPLIANCE_LIST?.COMPLIANCE instanceof List
       tag: rename_COMPLIANCE_LIST_COMPLIANCE
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.compliance_list
       ignore_missing: true
@@ -98,7 +94,7 @@ processors:
       tag: append_vulnerability_category
       value: '{{{qualys_vmdr.asset_host_detection.knowledge_base.category}}}'
       allow_duplicates: false
-      if: ctx.qualys_vmdr?.knowledge_base?.category != null
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.category != null
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.DIAGNOSIS
       tag: rename_DIAGNOSIS
@@ -163,7 +159,7 @@ processors:
 # Handle case when BUGTRAQ_LIST.BUGTRAQ is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.BUGTRAQ_LIST.BUGTRAQ
-      if: ctx.json?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
       tag: foreach_rename_BUGTRAQ_LIST_BUGTRAQ_ID
       processor:
         rename:
@@ -173,7 +169,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.BUGTRAQ_LIST.BUGTRAQ
-      if: ctx.json?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
       tag: foreach_rename_BUGTRAQ_LIST_BUGTRAQ_URL
       processor:
         rename:
@@ -183,7 +179,7 @@ processors:
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.BUGTRAQ_LIST.BUGTRAQ
-      if: ctx.json?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.BUGTRAQ_LIST?.BUGTRAQ instanceof List
       tag: rename_BUGTRAQ_LIST_BUGTRAQ
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.bugtraq_list
       ignore_missing: true
@@ -202,13 +198,13 @@ processors:
       tag: rename_CVSS_BASE
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.base
       ignore_missing: true
-      if: ctx.json?.CVSS?.BASE instanceof String
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CVSS?.BASE instanceof String
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.BASE
       tag: rename_CVSS_BASE
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.cvss.base_obj
       ignore_missing: true
-      if: ctx.json?.CVSS?.BASE instanceof Object
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CVSS?.BASE instanceof Object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CVSS.TEMPORAL
       tag: rename_CVSS_TEMPORAL
@@ -373,7 +369,7 @@ processors:
   - uri_parts:
       field: vulnerability.reference
       tag: 'uri_parts_to_split_vulnerability_reference'
-      if: ctx.vulnerability?.reference != null
+      if: ctx.vulnerability?.reference != null && !(ctx.vulnerability.reference instanceof List)
       on_failure:
         - append:
             field: error.message
@@ -449,7 +445,7 @@ processors:
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.discovery.remote
       type: long
       ignore_missing: true
-      if: ctx.json?.DISCOVERY?.REMOTE != ''
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.DISCOVERY?.REMOTE != ''
       on_failure:
         - append:
             field: error.message
@@ -468,7 +464,7 @@ processors:
   # Handle case when SOFTWARE_LIST.SOFTWARE is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOFTWARE_LIST.SOFTWARE
-      if: ctx.json?.SOFTWARE_LIST?.SOFTWARE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.SOFTWARE_LIST?.SOFTWARE instanceof List
       tag: foreach_rename_SOFTWARE_LIST_SOFTWARE_PRODUCT
       processor:
         rename:
@@ -478,7 +474,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOFTWARE_LIST.SOFTWARE
-      if: ctx.json?.SOFTWARE_LIST?.SOFTWARE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.SOFTWARE_LIST?.SOFTWARE instanceof List
       tag: foreach_rename_SOFTWARE_LIST_SOFTWARE_VENDOR
       processor:
         rename:
@@ -488,7 +484,7 @@ processors:
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.SOFTWARE_LIST.SOFTWARE
-      if: ctx.json?.SOFTWARE_LIST?.SOFTWARE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.SOFTWARE_LIST?.SOFTWARE instanceof List
       tag: rename_SOFTWARE_LIST_SOFTWARE
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.software_list
       ignore_missing: true
@@ -506,7 +502,7 @@ processors:
   # Handle case when VENDOR_REFERENCE_LIST.VENDOR_REFERENCE is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE
-      if: ctx.json?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
       tag: foreach_rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_ID
       processor:
         rename:
@@ -516,7 +512,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE
-      if: ctx.json?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
       tag: foreach_rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE_URL
       processor:
         rename:
@@ -526,7 +522,7 @@ processors:
           ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.VENDOR_REFERENCE_LIST.VENDOR_REFERENCE
-      if: ctx.json?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.VENDOR_REFERENCE_LIST?.VENDOR_REFERENCE instanceof List
       tag: rename_VENDOR_REFERENCE_LIST_VENDOR_REFERENCE
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.vendor_reference_list
       ignore_missing: true
@@ -536,7 +532,7 @@ processors:
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.last.service_modification_datetime
       formats:
         - ISO8601
-      if: ctx.json?.LAST_SERVICE_MODIFICATION_DATETIME != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.LAST_SERVICE_MODIFICATION_DATETIME != ''
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.LAST_SERVICE_MODIFICATION_DATETIME != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.LAST_SERVICE_MODIFICATION_DATETIME != ''
       on_failure:
         - append:
             field: error.message
@@ -547,7 +543,7 @@ processors:
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.last.customization.datetime
       formats:
         - ISO8601
-      if: ctx.json?.LAST_CUSTOMIZATION?.DATETIME != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.LAST_CUSTOMIZATION.DATETIME != ''
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.LAST_CUSTOMIZATION?.DATETIME != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.LAST_CUSTOMIZATION.DATETIME != ''
       on_failure:
         - append:
             field: error.message
@@ -563,7 +559,7 @@ processors:
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.published_datetime
       formats:
         - ISO8601
-      if: ctx.json?.PUBLISHED_DATETIME != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.PUBLISHED_DATETIME != ''
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PUBLISHED_DATETIME != null && ctx.qualys_vmdr.asset_host_detection.knowledge_base.PUBLISHED_DATETIME != ''
       on_failure:
         - append:
             field: error.message
@@ -582,7 +578,7 @@ processors:
   - date:
       field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.CHANGE_DATE
       tag: date_qualys_vmdr_knowledge_base_changelog_list_info_CHANGE_DATE_1
-      if: (!(ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info instanceof List)) && ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info?.CHANGE_DATE != null && ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info?.CHANGE_DATE != ''
+      if: (!(ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info instanceof List)) && ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info?.CHANGE_DATE != null && ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info?.CHANGE_DATE != ''
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.change_date
       formats:
       - ISO8601
@@ -593,7 +589,7 @@ processors:
   # Handle case when CHANGE_LOG_LIST.CHANGE_LOG_INFO is an array
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info
-      if: ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info instanceof List
       tag: foreach_rename_COMMENTS
       processor:
         rename:
@@ -603,7 +599,7 @@ processors:
           ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info
-      if: ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info instanceof List
       tag: foreach_date_CHANGE_DATE
       processor:
         date:
@@ -620,7 +616,7 @@ processors:
       ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.threat_intelligence.intel
-      if: ctx.qualys_vmdr?.knowledge_base?.threat_intelligence?.intel instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.threat_intelligence?.intel instanceof List
       tag: foreach_rename_#text
       processor:
         rename:
@@ -635,7 +631,7 @@ processors:
       ignore_missing: true
   - foreach:
       field: qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info
-      if: ctx.qualys_vmdr?.knowledge_base?.changelog_list?.info instanceof List
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.changelog_list?.info instanceof List
       tag: foreach_remove_CHANGE_DATE
       processor:
         remove:
@@ -646,19 +642,19 @@ processors:
       field: qualys_vmdr.asset_host_detection.knowledge_base.IS_DISABLED
       tag: set_IS_DISABLED_true
       value: true
-      if: ctx.json?.IS_DISABLED == '1'
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.IS_DISABLED == '1'
   - set:
       field: qualys_vmdr.asset_host_detection.knowledge_base.IS_DISABLED
       tag: set_IS_DISABLED_false
       value: false
-      if: ctx.json?.IS_DISABLED == '0'
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.IS_DISABLED == '0'
   - convert:
       field: qualys_vmdr.asset_host_detection.knowledge_base.IS_DISABLED
       tag: convert_IS_DISABLED_to_boolean
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.is_disabled
       type: boolean
       ignore_missing: true
-      if: ctx.json?.IS_DISABLED != ''
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.IS_DISABLED != ''
       on_failure:
         - append:
             field: error.message
@@ -667,19 +663,19 @@ processors:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PATCHABLE
       tag: set_PATCHABLE_true
       value: true
-      if: ctx.json?.PATCHABLE == '1'
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PATCHABLE == '1'
   - set:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PATCHABLE
       tag: set_PATCHABLE_false
       value: false
-      if: ctx.json?.PATCHABLE == '0'
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PATCHABLE == '0'
   - convert:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PATCHABLE
       tag: convert_PATCHABLE_to_boolean
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.patchable
       type: boolean
       ignore_missing: true
-      if: ctx.json?.PATCHABLE != ''
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PATCHABLE != ''
       on_failure:
         - append:
             field: error.message
@@ -688,37 +684,32 @@ processors:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PCI_FLAG
       tag: set_PCI_FLAG_true
       value: true
-      if: ctx.json?.PCI_FLAG == '1'
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PCI_FLAG == '1'
   - set:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PCI_FLAG
       tag: set_PCI_FLAG_false
       value: false
-      if: ctx.json?.PCI_FLAG == '0'
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PCI_FLAG == '0'
   - convert:
       field: qualys_vmdr.asset_host_detection.knowledge_base.PCI_FLAG
       tag: convert_PCI_FLAG_to_boolean
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.pci_flag
       type: boolean
       ignore_missing: true
-      if: ctx.json?.PCI_FLAG != ''
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.PCI_FLAG != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: qualys_vmdr.asset_host_detection.knowledge_base.severity_level
-      tag: set_qualys_vmdr_knowledge_base_severity_level
-      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL
-      ignore_empty_value: true
   - script:
       lang: painless
       tag: script_to_set_SEVERITY_LEVEL
       description: Script to set SEVERITY_LEVEL for different ranges.
       source: >-
-        if (!(ctx.json?.SEVERITY_LEVEL instanceof String)) {
+        if (!(ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.SEVERITY_LEVEL instanceof String)) {
           return;
         }
-        def vuln_type = ctx.qualys_vmdr?.knowledge_base?.vuln_type;
+        def vuln_type = ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.vuln_type;
         if (!(vuln_type instanceof String)) {
           return;
         }
@@ -748,10 +739,20 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL
+      tag: set_qualys_vmdr_knowledge_base_SEVERITY_LEVEL
+      target_field: qualys_vmdr.asset_host_detection.knowledge_base.severity_level
+      ignore_missing: true
   - remove:
       tag: remove_json
       field:
         - qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.CHANGE_DATE
+        - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
+        - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
+        - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
+        - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
+        - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
         - ID_RANGE
         - ID
       ignore_missing: true
