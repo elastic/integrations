@@ -104,6 +104,11 @@ processors:
       tag: rename_DIAGNOSIS
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.diagnosis.value
       ignore_missing: true
+  - set:
+      field: vulnerability.description
+      tag: set_vulnerability_description
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.diagnosis.value
+      ignore_empty_value: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.DIAGNOSIS_COMMENT
       tag: rename_DIAGNOSIS_COMMENT
@@ -139,6 +144,11 @@ processors:
       tag: rename_TITLE
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.title
       ignore_missing: true
+  - set:
+      field: vulnerability.title
+      tag: set_vulnerability_title
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.title
+      ignore_empty_value: true
 # Handle case when BUGTRAQ_LIST.BUGTRAQ is an object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.BUGTRAQ_LIST.BUGTRAQ.ID
@@ -339,6 +349,27 @@ processors:
       tag: set_vulnerability_id
       copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cve_list
       ignore_empty_value: true
+  - set:
+      field: vulnerability.reference
+      tag: set_vulnerability_id
+      if: ctx.vulnerability?.id != null && !(ctx.vulnerability.id instanceof List)
+      value: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name={{{ vulnerability.id }}}'
+      ignore_empty_value: true
+  - foreach:
+      field: vulnerability.id
+      if: ctx.vulnerability?.id instanceof List
+      tag: foreach_vulnerability_id_if_list
+      processor:
+        append:
+          field: vulnerability.reference
+          tag: append_vulnerability_reference
+          value: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name={{{ _ingest._value }}}'
+          allow_duplicates: false
+  - set:
+      field: vulnerability.enumeration
+      tag: set_vulnerability_enumeration
+      value: CVE
+      ignore_empty_value: true
   - uri_parts:
       field: vulnerability.reference
       tag: 'uri_parts_to_split_vulnerability_reference'
@@ -352,11 +383,6 @@ processors:
       tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.list.explt.desc
       ignore_missing: true
-  - set:
-      field: vulnerability.description
-      tag: set_vulnerability_description
-      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.list.explt.desc
-      ignore_empty_value: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC.EXPLT_LIST.EXPLT.LINK
       tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK

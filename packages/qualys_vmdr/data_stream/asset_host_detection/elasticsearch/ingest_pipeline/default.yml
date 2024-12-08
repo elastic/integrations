@@ -47,6 +47,10 @@ processors:
       tag: set_event_type
       value: [info]
   - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: 'Qualys VMDR'
+  - set:
       field: vulnerability.scanner.vendor
       tag: set_vulnerability_scanner_vendor
       value: Qualys
@@ -83,6 +87,22 @@ processors:
       tag: rename_DNS_DATA.FQDN
       target_field: qualys_vmdr.asset_host_detection.dns_data.fqdn
       ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_host_name
+      value: '{{{qualys_vmdr.asset_host_detection.dns_data.fqdn}}}'
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_if_null
+      value: '{{{qualys_vmdr.asset_host_detection.dns_data.hostname}}}'
+      if: ctx.host?.name == null
+      ignore_empty_value: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      value: '{{{qualys_vmdr.asset_host_detection.dns_data.hostname}}}'
+      ignore_empty_value: true
   - append:
       field: related.hosts
       tag: append_fqdn_into_related_hosts
@@ -105,6 +125,16 @@ processors:
       tag: rename_ID
       target_field: qualys_vmdr.asset_host_detection.id
       ignore_missing: true
+  - set:
+      field: resource.id
+      tag: set_resource_id
+      copy_from: qualys_vmdr.asset_host_detection.id
+      ignore_empty_value: true
+  - set:
+      field: resource.name
+      tag: set_resource_name
+      copy_from: host.name
+      ignore_empty_value: true
   - set:
       field: host.id
       tag: set_host_id
@@ -206,6 +236,35 @@ processors:
       field: host.os.full
       tag: set_host_os_full
       copy_from: qualys_vmdr.asset_host_detection.os
+      ignore_empty_value: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_linux
+      value: linux
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('linux')
+      ignore_empty_value: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_windows
+      value: windows
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('windows')
+      ignore_empty_value: true
+  - set:
+      field: host.os.type
+      tag: set_host_os_type
+      copy_from: host.os.platform
+      ignore_empty_value: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_darwin
+      value: darwin
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('macos')
+      ignore_empty_value: true
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_macos
+      value: macos
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('macos')
       ignore_empty_value: true
   - rename:
       field: json.TRACKING_METHOD
@@ -915,6 +974,12 @@ processors:
             ctx.cloud.project = new HashMap();
           }
           ctx.cloud.project.id = projIDs;
+          if (ctx.cloud?.account?.id == null) {
+            if (ctx.cloud.account == null) {
+              ctx.cloud.account = new HashMap();
+            }
+            ctx.cloud.account.id = projIDs;
+          }
         }
         if (names.length != 0) {
           if (ctx.cloud == null) {
@@ -924,6 +989,12 @@ processors:
             ctx.cloud.project = new HashMap();
           }
           ctx.cloud.project.name = names;
+          if (ctx.cloud?.account?.name == null) {
+            if (ctx.cloud.account == null) {
+              ctx.cloud.account = new HashMap();
+            }
+            ctx.cloud.account.name = names;
+          }
         }
         if (regions.length != 0) {
           if (ctx.cloud == null) {
@@ -992,6 +1063,11 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_UNIQUE_VULN_ID
       target_field: qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id
       ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id
+      ignore_empty_value: true
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.PROTOCOL != null
       field: qualys_vmdr.asset_host_detection.vulnerability.PROTOCOL
@@ -1387,10 +1463,10 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Handle KNOWLEDGE_BASE json
   - pipeline:
-    name: '{{ IngestPipeline "pipeline_knowledge_base" }}'
-    if: ctx.json?.KNOWLEDGE_BASE instanceof Map
-    tag: pipeline_knowledge_base
-    ignore_missing_pipeline: true
+      name: '{{ IngestPipeline "pipeline_knowledge_base" }}'
+      if: ctx.json?.KNOWLEDGE_BASE instanceof Map
+      tag: pipeline_knowledge_base
+      ignore_missing_pipeline: true
   - rename:
       field: message
       target_field: event.original
