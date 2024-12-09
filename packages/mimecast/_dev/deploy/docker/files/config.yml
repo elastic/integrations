@@ -377,6 +377,139 @@ rules:
           }
           `}}
 
+  - path: /siem/v1/batch/events/cg
+    methods: ["GET"]
+    query_params:
+      type: "internal email protect"
+      nextPage: null
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/octet-stream"
+        body: |
+          {
+              "value": [
+                  {
+                      "url": "http://svc-mimecast:8080/siemblob/iep",
+                      "expiry": "2024-11-19T02:14:04.839Z",
+                      "size": 424
+                  }
+              ],
+              "@nextPage": "nexttoken",
+              "isCaughtUp": false
+          }
+  - path: /siemblob/iep
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/octet-stream"
+        body: '{{file "/files/iep.gz"}}'
+  - path: /siem/v1/batch/events/cg
+    methods: ["GET"]
+    query_params:
+      type: "internal email protect"
+      nextPage: "nexttoken"
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/octet-stream"
+        body: |
+          {
+              "value": [],
+              "@nextPage": "String",
+              "isCaughtUp": true
+          }
+  - path: /siem/v1/batch/events/cg
+    methods: ["GET"]
+    query_params:
+      type: "receipt"
+      nextPage: null
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/octet-stream"
+        body: |
+          {
+              "value": [
+                  {
+                      "url": "http://svc-mimecast:8080/siemblob/rec0",
+                      "expiry": "2024-11-19T02:14:04.839Z",
+                      "size": 511
+                  }
+              ],
+              "@nextPage": "nexttoken",
+              "isCaughtUp": false
+          }
+  - path: /siemblob/rec0
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/octet-stream"
+        body: '{{file "/files/rec0.gz"}}'
+  - path: /siem/v1/batch/events/cg
+    methods: ["GET"]
+    query_params:
+      type: "receipt"
+      nextPage: "nexttoken"
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/octet-stream"
+        body: |
+          {
+              "value": [
+                  {
+                      "url": "http://svc-mimecast:8080/siemblob/rec1",
+                      "expiry": "2024-11-19T02:14:04.839Z",
+                      "size": 572
+                  }
+              ],
+              "@nextPage": "lasttoken",
+              "isCaughtUp": false
+          }
+  - path: /siemblob/rec1
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/octet-stream"
+        body: '{{file "/files/rec1.gz"}}'
+  - path: /siem/v1/batch/events/cg
+    methods: ["GET"]
+    query_params:
+      type: "receipt"
+      nextPage: "lasttoken"
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/octet-stream"
+        body: |
+          {
+              "value": [],
+              "@nextPage": "String",
+              "isCaughtUp": true
+          }
+
   - path: /api/ttp/threat-intel/get-feed
     methods: ["POST"]
     request_body: /"feedType":"malware_customer","fileType":"stix","start":/
