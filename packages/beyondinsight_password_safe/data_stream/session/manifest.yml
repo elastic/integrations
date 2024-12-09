@@ -1,0 +1,45 @@
+title: "Session"
+type: logs
+streams:
+  - input: cel
+    title: Session Logs
+    description: Collect session logs
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Go Duration syntax (e.g., `10s`) for how often to fetch sign-in attempts
+        show_user: false
+        required: true
+        default: "60s"
+      - name: limit
+        type: integer
+        title: Limit
+        description: Number of events to fetch per request
+        show_user: true
+        required: true
+        default: 1000
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: true
+        description: Tags to be applied to the events, such as 'forwarded', 'BeyondTrust signin_attempts'
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve Original Event
+        description: Preserves a raw copy of the original event in the `event.original` field
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors can be used to reduce the number of fields in the exported event or to enhance the event with additional metadata. This executes in the agent before the logs are parsed.

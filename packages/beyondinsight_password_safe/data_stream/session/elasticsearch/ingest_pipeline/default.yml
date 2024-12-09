@@ -1,0 +1,212 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  - rename:
+      field: message
+      target_field: beyondinsight_password_safe.session
+
+  - fingerprint:
+      fields:
+        - beyondinsight_password_safe.session.SessionID
+      target_field: "_id"
+
+####################
+# Scripts for processing input #
+####################
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+  - script:
+      description: Convert Additional Info keys to snake case.
+      tag: additional-info-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+
+        if (ctx.beyondinsight_password_safe.session != null) {
+          ctx.beyondinsight_password_safe.session = keysToSnakeCase(ctx.beyondinsight_password_safe.session);
+        }
+
+
+####################
+# ECS Fields #
+####################
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+
+  - set:
+      field: event.kind
+      value: event
+
+  - append:
+      field: event.category
+      value: session
+
+  - append:
+      field: event.type
+      value: info
+
+  - set:
+      field: event.dataset
+      value: beyondinsight_password_safe.session
+
+  - set:
+      field: event.module
+      value: beyondinsight_password_safe
+
+  - set:
+      field: event.id
+      value: "{{{beyondinsight_password_safe.session.session_id}}}"
+      ignore_empty_value: true
+
+  - set:
+      field: event.duration
+      copy_from: beyondinsight_password_safe.session.duration
+      ignore_empty_value: true
+
+  - date:
+      if: "ctx.beyondinsight_password_safe.session?.start_time != null"
+      field: "beyondinsight_password_safe.session.start_time"
+      target_field: event.start
+      formats: ["ISO8601"]
+      ignore_failure: false
+
+  - date:
+      if: "ctx.beyondinsight_password_safe.session?.end_time != null"
+      field: "beyondinsight_password_safe.session.end_time"
+      target_field: event.end
+      formats: ["ISO8601"]
+      ignore_failure: false
+
+
+####################
+# Session Specific Fields #
+####################
+  - script:
+      description: Convert status to their text meaning
+      lang: painless
+      source: |
+        if (ctx.beyondinsight_password_safe?.session?.status != null) {
+          int status = ctx.beyondinsight_password_safe.session.status;
+          if (status == 0) {
+            ctx.beyondinsight_password_safe.session.status = "not_started";
+          } else if (status == 1) {
+            ctx.beyondinsight_password_safe.session.status = "in_progress";
+          } else if (status == 2) {
+            ctx.beyondinsight_password_safe.session.status = "completed";
+          } else if (status == 5) {
+            ctx.beyondinsight_password_safe.session.status = "locked";
+          } else if (status == 7) {
+            ctx.beyondinsight_password_safe.session.status = "terminated";
+          } else if (status == 8) {
+            ctx.beyondinsight_password_safe.session.status = "logged_off";
+          } else if (status == 9) {
+            ctx.beyondinsight_password_safe.session.status = "disconnected";
+          } else {
+            ctx.beyondinsight_password_safe.session.status = "unknown";
+          }
+        }
+
+  - script:
+      description: Convert archive_status to text values
+      lang: "painless"
+      source: |
+        if (ctx.beyondinsight_password_safe.session?.archive_status != null) {
+          int archive_status = ctx.beyondinsight_password_safe.session.archive_status;
+          if (archive_status == 0) {
+            ctx.beyondinsight_password_safe.session.archive_status = "not_archived";
+          } else if (archive_status == 1) {
+            ctx.beyondinsight_password_safe.session.archive_status = "archived";
+          } else if (archive_status == 2) {
+            ctx.beyondinsight_password_safe.session.archive_status = "restoring";
+          } else if (archive_status == 3) {
+            ctx.beyondinsight_password_safe.session.archive_status = "archiving";
+          } else if (archive_status == 4) {
+            ctx.beyondinsight_password_safe.session.archive_status = "session_not_found";
+          } else if (archive_status == 5) {
+            ctx.beyondinsight_password_safe.session.archive_status = "repository_offline";
+          } else if (archive_status == 6) {
+            ctx.beyondinsight_password_safe.session.archive_status = "unknown_archive_status";
+          } else {
+            ctx.beyondinsight_password_safe.session.archive_status = "undefined_archive_status";
+          }
+        }
+
+  - script:
+      description: Convert protocol to text values
+      lang: "painless"
+      source: |
+        if (ctx.beyondinsight_password_safe.session?.protocol != null) {
+          int protocol = ctx.beyondinsight_password_safe.session.protocol;
+          if (protocol == 0) {
+            ctx.beyondinsight_password_safe.session.protocol = "rdp";
+          } else if (protocol == 1) {
+            ctx.beyondinsight_password_safe.session.protocol = "ssh";
+          } else {
+            ctx.beyondinsight_password_safe.session.protocol = "unknown_protocol";
+          }
+        }
+
+  - script:
+      description: "Converts session_id and user_id to string"
+      lang: painless
+      source: >
+        if (ctx.beyondinsight_password_safe?.session != null) {
+          if (ctx.beyondinsight_password_safe.session.session_id != null) {
+            ctx.beyondinsight_password_safe.session.session_id = ctx.beyondinsight_password_safe.session.session_id.toString();
+          }
+          if (ctx.beyondinsight_password_safe.session.user_id != null) {
+            ctx.beyondinsight_password_safe.session.user_id = ctx.beyondinsight_password_safe.session.user_id.toString();
+          }
+        }
+
+  - remove:
+      field:
+        - beyondinsight_password_safe.session.token
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
