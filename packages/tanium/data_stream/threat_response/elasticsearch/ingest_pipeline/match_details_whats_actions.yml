@@ -1,0 +1,106 @@
+---
+description: Pipeline for processing tanium.threat_response.match_details.finding.whats[].artifact_activity.relevant_actions[]
+processors:
+
+  - rename:
+      tag: rename_ingest_value
+      field: _ingest._value
+      target_field: _action
+
+  - convert:
+      tag: convert_action_verb
+      field: _action.verb
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      tag: date_action_tanium_recorder_context_event_timestamp_ms
+      field: _action.tanium_recorder_context.event.timestamp_ms
+      target_field: _action.tanium_recorder_context.event.timestamp_ms
+      if: ctx._action.tanium_recorder_context?.event?.timestamp_ms != null
+      formats:
+        - UNIX_MS
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      tag: date_action_target_file_modification_time
+      field: _action.target.file.modification_time
+      target_field: _action.target.file.modification_time
+      if: ctx._action.target?.file?.modification_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      tag: date_action_timestamp
+      field: _action.timestamp
+      target_field: _action.timestamp
+      if: ctx._action.timestamp != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - append:
+      tag: append_related_hash
+      field: related.hash
+      value: '{{{_action.target.file.hash.md5}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      tag: append_related_hash_2
+      field: related.hash
+      value: '{{{_action.target.file.hash.sha1}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      tag: append_related_hash_3
+      field: related.hash
+      value: '{{{_action.target.file.hash.sha256}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      tag: convert_action_target_file_size_bytes
+      field: _action.target.file.size_bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+            ignore_failure: true
+
+  - set:
+      tag: set_back__action
+      field: _ingest._value
+      copy_from: _action
+  - remove:
+      tag: remove__action
+      field: _action
+
+on_failure:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
