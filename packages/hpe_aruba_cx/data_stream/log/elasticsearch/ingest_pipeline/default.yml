@@ -438,7 +438,7 @@ processors:
       tag: l3_event_1703
       description: "logs for admin state of L3 interface"
       if: "['1703'].contains(ctx.event?.code)"
-      pattern: "Interface %{aruba.interface.id}, configured administratively %{aruba.status}"
+      pattern: "Interface %{aruba.interface.id}, configured administratively %{aruba.state}"
   - dissect:
       field: message
       tag: l3_event_1704
@@ -463,7 +463,7 @@ processors:
         - "^L3 interface %{ERROR}"
         # Note: sequence matters here, putting greedy data at the end
         - "^(Delete|Added|Add) route (%{DATA:aruba.prefix}, %{ERROR}|%{GREEDYDATA:aruba.prefix})"
-        - "^Update: route state: %{GREEDYDATA:aruba.status}"
+        - "^Update: route state: %{GREEDYDATA:aruba.state}"
         - "^Error (deleting|creating) egress object for port %{DATA:aruba.port}, %{ERROR}"
       pattern_definitions:
         HOST_IP: "L3 host (entry|hit) for ip %{IP:host.ip}"
@@ -588,7 +588,7 @@ processors:
         - "^Port %{DATA:aruba.port} disabled - BPDU received on protected port"
         - "^(BPDU loss- p|P)ort %{DATA:aruba.port} moved (to|out of) inconsistent state for %{GREEDYDATA:aruba.mstp.proto}"
         - "^Topology Change received on port %{DATA:aruba.port} for %{DATA:aruba.mstp.proto} from source: %{MAC:source.mac}"
-        - "^%{DATA:aruba.mstp.proto} - Topology Change generated on port %{DATA:aruba.port} going in to %{GREEDYDATA:aruba.status}"
+        - "^%{DATA:aruba.mstp.proto} - Topology Change generated on port %{DATA:aruba.port} going in to %{GREEDYDATA:aruba.state}"
         - "^BPDU received on admin edge port %{GREEDYDATA:aruba.port}"
         - "^Port %{DATA:aruba.port} (un)?blocked on CIST"
         - "^Port %{DATA:aruba.port} (un)?blocked on MST%{GREEDYDATA:aruba.instance.id}"
@@ -635,8 +635,49 @@ processors:
       description: "Logs changes in TACACS server reachability status"
       pattern: "TACACS server host %{server.address} port %{aruba.port} vrf %{aruba.vrf.id} %{aruba.status}"
 
+    # OSPFv2 events (2401)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv2.htm
+  - grok:
+      field: message
+      tag: ospfv2_event_2401_2402_2404
+      description: "Logs the changes in OSPFv2 neighbour state machine | changes in the interface FSM state."
+      if: "['2401','2402','2404'].contains(ctx.event?.code)"
+      patterns:
+        - "%{ADJCHG}%{AREA}: %{STATE_CHANGE}"
+        - "%{ADJCHG}: %{STATE_CHANGE} \\(%{DATA:aruba.ospf.event}\\)"
+        - "^Interface %{DATA:aruba.interface.id}%{AREA} changed from %{STATE_CHANGE}, input: %{GREEDYDATA:aruba.ospf.input}"
+      pattern_definitions:
+        ADJCHG: "^AdjChg: Nbr %{DATA:aruba.ospf.router_id} on %{DATA:aruba.interface.id}"
+        AREA: "\\(%{DATA:aruba.ospf.area}\\)"
+        STATE_CHANGE: "%{DATA:aruba.ospf.old_state} (->|to) %{GREEDYDATA:aruba.state}"
+  - dissect:
+      field: message
+      tag: ospfv2_event_2403
+      description: "Logs OSPFv2 route add and delete."
+      if: "ctx.event?.code == '2403'"
+      pattern: "%{aruba.ospf.event} with %{destination.address} %{aruba.ospf.nexthops}"
+  - dissect:
+      field: message
+      tag: ospfv2_event_2405
+      description: "Logs the changes in the router-id."
+      if: "['2405'].contains(ctx.event?.code)"
+      pattern: "Router-id updated from %{aruba.ospf.old_router_id} to %{aruba.ospf.router_id}"
+  - dissect:
+      field: message
+      tag: ospfv2_event_2406
+      description: "Logs failed action with rule error"
+      if: "['2406'].contains(ctx.event?.code)"
+      pattern: "Failed to %{event.action} %{rule.name} error: %{event.reason}"
+  - grok:
+      field: message
+      tag: ospfv2_event_2407_2408
+      description: "Logs for OSPFv2 [FP|DR FP] creation/installation."
+      if: "['2407','2408'].contains(ctx.event?.code)"
+      patterns:
+        - "^OSPF (all|designated) routers field entry added: group_id=%{DATA:group.id} fp_id=%{DATA:aruba.ospf.fp_id} stat_id=%{GREEDYDATA:aruba.ospf.stats_id}"
+
     # MGMD events (26xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOP-PROTECT.htm
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMD.htm
   - grok:
       field: message
       tag: mgmd_event_2601_through_2622
@@ -656,7 +697,7 @@ processors:
         - "^Port %{DATA:aruba.port} on %{VLAN} is set to %{DATA:aruba.status} mode for %{DATA:aruba.mgmd.mgmd_type}."
         - "^%{DATA:aruba.mgmd.mgmd_type} is not operational on VLAN %{DATA:network.vlan.id} due to resource unavailability"
         - "^Received IGMPv3 query from %{IP:client.ip} when the device is configured for IGMPv2"
-        - "^Flood mode is temporarily activated on ERPS ports %{DATA:aruba.port} and %{DATA:aruba.mgmd.port1} as ring state for ring id %{DATA:aruba.mgmd.ring_id} changed to %{GREEDYDATA:aruba.status}."
+        - "^Flood mode is temporarily activated on ERPS ports %{DATA:aruba.port} and %{DATA:aruba.mgmd.port1} as ring state for ring id %{DATA:aruba.mgmd.ring_id} changed to %{GREEDYDATA:aruba.state}."
       pattern_definitions:
         VLAN: "(vlan|VLAN|interface) %{DATA:network.vlan.id}"
         VLAN_GREEDY: "(vlan|VLAN|interface) %{GREEDYDATA:network.vlan.id}"
@@ -995,6 +1036,27 @@ processors:
         - "^All dynamic MAC addresses on VLAN %{DATA:network.vlan.id} were flushed"
         - "^All dynamic MAC addresses on port %{DATA:aruba.interface.id} were flushed"
 
+    # OSPFv3 events (490x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv3.htm
+  - dissect:
+      field: message
+      tag: ospfv3_event_4901
+      description: "Logs errors for OSPFv3 FP creation/installation."
+      if: "['4901'].contains(ctx.event?.code)"
+      pattern: "Failed to %{event.action} %{rule.name} error: %{event.reason}"
+  - grok:
+      field: message
+      tag: ospfv3_event_4902
+      description: "[DR FP|FP] creation/installation | changes to neighbour state machine | changes in the interface FSM state"
+      if: "['4902','4903','4904','4905'].contains(ctx.event?.code)"
+      patterns:
+        - "^OSPF3 (all|designated) routers field entry added: group_id=%{DATA:group.id} fp_id=%{DATA:aruba.ospf.fp_id} stat_id=%{GREEDYDATA:aruba.ospf.stats_id}"
+        - "^AdjChg: Nbr%{DATA:aruba.ospf.router_id} on %{INTERFACE_AREA}: %{STATE_CHANGE}"
+        - "^%{INTERFACE_AREA} changed from %{STATE_CHANGE}, input: %{GREEDYDATA:aruba.ospf.input}"
+      pattern_definitions:
+        INTERFACE_AREA: "(I|i)nterface %{DATA:aruba.ospf.link_local} on %{DATA:aruba.interface.id}\\(%{DATA:aruba.ospf.area}\\)"
+        STATE_CHANGE: "%{DATA:aruba.ospf.old_state} (->|to) %{GREEDYDATA:aruba.state}"
+
   # HTTPS Server events (560x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm
   - grok:
@@ -1305,7 +1367,7 @@ processors:
       field: "message"
       description: "Event raised for IP-SLA events"
       patterns:
-        - "^%{IP_SLA_SESSION_NAME} state changed to( failed)? %{DATA:aruba.status} due to reason %{GREEDYDATA:event.reason}"
+        - "^%{IP_SLA_SESSION_NAME} state changed to( failed)? %{DATA:aruba.state} due to reason %{GREEDYDATA:event.reason}"
         - "^%{IP_SLA_SESSION_NAME} failed to (bind source|initialize socket), reason:%{GREEDYDATA:event.reason}"
         - "^%{IP_SLA_SESSION_NAME}: %{GREEDYDATA:event.action}"
         - "^%{IP_SLA_SESSION_NAME} is incomplete to schedule"
@@ -1677,7 +1739,7 @@ processors:
       tag: erps_event_8503
       description: "Log state transition of ring instance"
       if: "ctx.event?.code == '8503'"
-      pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to %{aruba.status}"
+      pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to %{aruba.state}"
   - dissect:
       field: message
       tag: erps_event_8504
@@ -1748,8 +1810,8 @@ processors:
       if: "['8601','8602','8603','8604','8605','8606','8607','8608','8609'].contains(ctx.event?.code)"
       patterns:
         - "^Router MSDP is %{DATA:aruba.status} on VRF %{GREEDYDATA:aruba.vrf.name}"
-        - "^Forwarding state of interface %{DATA:aruba.interface.name} has been changed to %{GREEDYDATA:aruba.status}"
-        - "^MSDP Peer %{IP:client.ip}\\(%{DATA:aruba.msdp.tcp_entity}\\) with connection source %{DATA:aruba.interface.name} has entered %{DATA:aruba.status} state"
+        - "^Forwarding state of interface %{DATA:aruba.interface.name} has been changed to %{GREEDYDATA:aruba.state}"
+        - "^MSDP Peer %{IP:client.ip}\\(%{DATA:aruba.msdp.tcp_entity}\\) with connection source %{DATA:aruba.interface.name} has entered %{DATA:aruba.state} state"
         - "^Port %{DATA:aruba.port} is %{DATA:aruba.status} to MSDP Peer %{IP:client.ip}"
         - "^MSDP Peer %{IP:client.ip} is %{DATA:aruba.status} on VRF %{DATA:aruba.vrf.name}. Interface %{DATA:aruba.interface.name} is added to the Peer"
         - "^Start %{DATA:aruba.msdp.tcp_entity} role for MSDP peer %{IP:client.ip}"

@@ -445,7 +445,7 @@ Note: Descriptions have not been filled out
 | <name>      | aruba.ip_sla.name     |
 | <operation> | event.action          |
 | <reason>    | event.reason          |
-| <state>     | aruba.status          |
+| <state>     | aruba.state           |
 
 #### [IPv6 Router Advertisement events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPV6-RA.htm)
 | Doc Fields  | Schema Mapping       |
@@ -523,7 +523,7 @@ Note: Descriptions have not been filled out
 | <nexthop>     | aruba.l3.nexthop               |
 | <port>        | aruba.port                     |
 | <prefix>      | aruba.prefix                   |
-| <state>       | aruba.status                   |
+| <state>       | aruba.state                    |
 | <value>       | server.ip                      |
 | <vlanid>      | network.vlan.id                |
 
@@ -616,7 +616,7 @@ Note: Descriptions have not been filled out
 | <port1>     | aruba.mgmd.port1            |
 | <ring_id>   | aruba.mgmd.ring_id          |
 | <size_value>| aruba.len                   |
-| <state>     | aruba.status                |
+| <state>     | aruba.state                 |
 | <status>    | aruba.status                |
 | <sub_system>| aruba.subsystem             |
 | <type>      | aruba.mgmd.type             |
@@ -645,7 +645,7 @@ Note: Descriptions have not been filled out
 | <port>      | aruba.port                   |
 | <rp_ip>     | aruba.msdp.rp_ip             |
 | <src_ip>    | source.ip                    |
-| <state>     | aruba.status                 |
+| <state>     | aruba.state                  |
 | <status>    | aruba.status                 |
 | <tcp_entity>| aruba.msdp.tcp_entity        |
 | <vrf_name>  | aruba.vrf.name               |
@@ -674,7 +674,7 @@ Note: Descriptions have not been filled out
 | <priority_mac>      | aruba.mstp.priority_mac      |
 | <proto>             | aruba.mstp.proto             |
 | <reconfig_parameter>| aruba.mstp.reconfig_parameter|
-| <state>             | aruba.status                 |
+| <state>             | aruba.state                  |
 | <value>             | aruba.mstp.config_value      |
 
 #### [MVRP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MVRP.htm)
@@ -747,41 +747,45 @@ Note: Descriptions have not been filled out
 | aruba.ntp.untrusted_keys |           |      |                              |
 
 #### [OSPFv2 events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv2.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.ospf.action         |             |      | event.action                 |
-| aruba.ospf.area           |             |      |                              |
-| aruba.ospf.destination    |             |      | destination.address          |
-| aruba.ospf.err            |             |      | error.message                |
-| aruba.ospf.event          |             |      | event.code                   |
-| aruba.ospf.fp_id          |             |      |                              |
-| aruba.ospf.group_id       |             |      | group.id                     |
-| aruba.ospf.input          |             |      |                              |
-| aruba.ospf.nexthops       |             |      |                              |
-| aruba.ospf.old_router_id  |             |      |                              |
-| aruba.ospf.old_state      |             |      | aruba.status                 |
-| aruba.ospf.ospf_interface |             |      | observer.ingress.interface.name |
-| aruba.ospf.router_id      |             |      |                              |
-| aruba.ospf.rule           |             |      | rule.name                    |
-| aruba.ospf.state          |             |      | aruba.status                 |
-| aruba.ospf.stats_id       |             |      |                              |
+| Docs Field       | Schema Mapping                      |
+|------------------|-------------------------------------|
+| <action>         | event.action                        |
+| <area>           | aruba.ospf.area                     |
+| <destination>    | destination.address                 |
+| <err>            | event.reason                        |
+| <event>          | aruba.ospf.event                    |
+| <fp_id>          | aruba.ospf.fp_id                    |
+| <group_id>       | group.id                            |
+| <input>          | aruba.ospf.input                    |
+| <interface>      | aruba.interface.id                  |
+| <new>            | aruba.ospf.router_id                |
+| <new_state>      | aruba.state                         |
+| <next_state>     | aruba.state                         |
+| <nexthops>       | aruba.ospf.nexthops                 |
+| <old>            | aruba.ospf.old_router_id            |
+| <old_state>      | aruba.ospf.old_state                |
+| <ospf-interface> | aruba.interface.id                  |
+| <router-id>      | aruba.ospf.router_id                |
+| <rule>           | rule.name                           |
+| <state>          | aruba.state / aruba.ospf.old_state  |
+| <stats_id>       | aruba.ospf.stats_id                 |
 
 #### [OSPFv3 events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv3.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.ospf.action         |             |      | event.action                 |
-| aruba.ospf.area           |             |      |                              |
-| aruba.ospf.err            |             |      | error.message                |
-| aruba.ospf.fp_id          |             |      |                              |
-| aruba.ospf.group_id       |             |      | group.id                     |
-| aruba.ospf.input          |             |      |                              |
-| aruba.ospf.interface      |             |      | observer.ingress.interface.name |
-| aruba.ospf.link_local     |             |      |                              |
-| aruba.ospf.old_state      |             |      |                              |
-| aruba.ospf.router_id      |             |      |                              |
-| aruba.ospf.rule           |             |      | rule.name                    |
-| aruba.ospf.state          |             |      | aruba.status                 |
-| aruba.ospf.stats_id       |             |      |                              |
+| Docs Field       | Schema Mapping                      |
+|------------------|-------------------------------------|
+| <action>         | event.action                        |
+| <area>           | aruba.ospf.area                     |
+| <err>            | event.reason                        |
+| <fp_id>          | aruba.ospf.fp_id                    |
+| <group_id>       | group.id                            |
+| <input>          | aruba.ospf.input                    |
+| <interface>      | aruba.interface.id                  |
+| <link-local>     | aruba.ospf.link_local               |
+| <new_state>      | aruba.state                         |
+| <old_state>      | aruba.ospf.old_state                |
+| <router-id>      | aruba.ospf.router_id                |
+| <rule>           | rule.name                           |
+| <stats_id>       | aruba.ospf.stats_id                 |
 
 #### [Password Reset events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PASSWD_RESET.htm)
 | Field                     | Description | Type | Common                       |
