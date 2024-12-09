@@ -1142,6 +1142,70 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_RESULTS_1
       target_field: qualys_vmdr.asset_host_detection.vulnerability.results
       ignore_missing: true
+  # The below 2 gsub processors facilitate `splitOnToken` in subsequent script processor which otherwise cannot split \n or \t.
+  - gsub:
+      field: qualys_vmdr.asset_host_detection.vulnerability.results
+      pattern: '\n'
+      replacement: ';'
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null && ctx.qualys_vmdr.asset_host_detection.vulnerability.results.startsWith("Package")
+      tag: gsub_qualys_vmdr_asset_host_detection_vulnerability_results_line
+      ignore_missing: true
+  - gsub:
+      field: qualys_vmdr.asset_host_detection.vulnerability.results
+      pattern: '\t'
+      replacement: '|'
+      tag: gsub_qualys_vmdr_asset_host_detection_vulnerability_results_tab
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null && ctx.qualys_vmdr.asset_host_detection.vulnerability.results.startsWith("Package")
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_to_extract_package_fields
+      if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null
+      description: Extract package fields
+      source: |-
+        String results = ctx.qualys_vmdr.asset_host_detection.vulnerability.results;
+        if (results.startsWith("Package|")) {
+          if (ctx.package == null) {
+            ctx.package = new HashMap();
+          }
+          if (ctx.package.name == null) {
+            ctx.package.name = new ArrayList();
+          }
+          if (ctx.package.version == null) {
+            ctx.package.version = new ArrayList();
+          }
+          if (ctx.package.fixed_version == null) {
+            ctx.package.fixed_version = new ArrayList();
+          }
+          def res = results.splitOnToken(";");
+          for (int i=1; i < res.length; i++) {
+            def pkg = res[i].splitOnToken("|");
+            ctx.package.name.add(pkg[0]);
+            ctx.package.version.add(pkg[1]);
+            if (pkg.length == 3) {
+              ctx.package.fixed_version.add(pkg[2]);
+            }
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.package.name
+      tag: set_vulnerability_package_name
+      copy_from: package.name
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.package.version
+      tag: set_vulnerability_package_version
+      copy_from: package.version
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.package.fixed_version
+      tag: set_vulnerability_package_fixed_version
+      copy_from: package.fixed_version
+      ignore_empty_value: true
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.STATUS != null
       field: qualys_vmdr.asset_host_detection.vulnerability.STATUS
