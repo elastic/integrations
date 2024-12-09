@@ -69,6 +69,89 @@ For MySQL, MariaDB and Percona the query to check replica status varies dependin
 
 The `error` dataset collects the MySQL error logs.
 
+An example event for `error` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-09T06:18:16.552Z",
+    "agent": {
+        "ephemeral_id": "c74f8326-f9c7-4c1f-9dd6-5cd5efe550eb",
+        "id": "4c979ea6-18d4-4c0b-92ed-d363d23d90b1",
+        "name": "elastic-agent-73203",
+        "type": "filebeat",
+        "version": "8.17.0"
+    },
+    "data_stream": {
+        "dataset": "mysql.error",
+        "namespace": "79664",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "4c979ea6-18d4-4c0b-92ed-d363d23d90b1",
+        "snapshot": true,
+        "version": "8.17.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "code": "MY-011068",
+        "created": "2024-12-09T06:18:37.565Z",
+        "dataset": "mysql.error",
+        "ingested": "2024-12-09T06:18:40Z",
+        "kind": "event",
+        "provider": "Server",
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-73203",
+        "ip": [
+            "192.168.255.2",
+            "192.168.247.4"
+        ],
+        "mac": [
+            "02-42-C0-A8-F7-04",
+            "02-42-C0-A8-FF-02"
+        ],
+        "name": "elastic-agent-73203",
+        "os": {
+            "family": "",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/mysql/05cec82c0c63-error.log"
+        },
+        "level": "Warning",
+        "offset": 0
+    },
+    "message": "[MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.",
+    "mysql": {
+        "thread_id": 0
+    },
+    "tags": [
+        "mysql-error"
+    ]
+}
+```
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
@@ -96,6 +179,108 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ### Slow Log
 
 The `slowlog` dataset collects the MySQL slow logs.
+
+An example event for `slowlog` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-09T08:24:26.000Z",
+    "agent": {
+        "ephemeral_id": "fe3b9527-f8f9-4748-b550-bf9cb7154f2e",
+        "id": "21e163da-3324-4f31-be38-fb745d92b8c7",
+        "name": "elastic-agent-23600",
+        "type": "filebeat",
+        "version": "8.17.0"
+    },
+    "data_stream": {
+        "dataset": "mysql.slowlog",
+        "namespace": "41434",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.1"
+    },
+    "elastic_agent": {
+        "id": "21e163da-3324-4f31-be38-fb745d92b8c7",
+        "snapshot": true,
+        "version": "8.17.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "mysql.slowlog",
+        "duration": 259000,
+        "ingested": "2024-12-09T08:24:47Z",
+        "kind": "event",
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-23600",
+        "ip": [
+            "192.168.253.2",
+            "192.168.241.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-F1-07",
+            "02-42-C0-A8-FD-02"
+        ],
+        "name": "elastic-agent-23600",
+        "os": {
+            "family": "",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/mysql/8019a2ba561a-slow.log"
+        },
+        "flags": [
+            "multiline"
+        ],
+        "offset": 510
+    },
+    "mysql": {
+        "slowlog": {
+            "bytes_sent": 115,
+            "current_user": "root",
+            "killed": "0",
+            "last_errno": "0",
+            "lock_time": {
+                "sec": 0
+            },
+            "query": "select @@version_comment limit 1;",
+            "rows_affected": 0,
+            "rows_examined": 1,
+            "rows_sent": 1
+        },
+        "thread_id": 8
+    },
+    "source": {
+        "domain": "localhost"
+    },
+    "tags": [
+        "mysql-slowlog"
+    ],
+    "temp": {},
+    "user": {
+        "name": "root"
+    }
+}
+```
 
 **ECS Field Reference**
 
