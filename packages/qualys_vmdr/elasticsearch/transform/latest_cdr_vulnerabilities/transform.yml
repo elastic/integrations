@@ -1,0 +1,32 @@
+source:
+  index:
+    - "logs-qualys_vmdr.vulnerability-*"
+dest:
+  index: "security_solution-qualys_vmdr.vulnerability_latest-v1"
+  aliases:
+    - alias: "security_solution-qualys_vmdr.vulnerability_latest"
+      move_on_creation: true
+latest:
+  unique_key:
+    - vulnerability.id
+    - resource.id
+    - vulnerability.package.name
+    - vulnerability.package.version
+    - data_stream.namespace
+  sort: "@timestamp"
+description: Latest Cloud Vulnerabilities Findings from Qualys VMDR
+settings:
+  unattended: true
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 4h # This should be >= `Interval` as API pulls full data every `Interval`.
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.1.0
