@@ -159,6 +159,21 @@ processors:
         - remove:
             field: tines.audit_log.inputs.inputs.required
             ignore_failure: true
+  - script:
+      tag: promote_scalar_to_object
+      description: Tines stores both scalar and object values in tines.audit_log.inputs.inputs.options, so make all values fit.
+      lang: painless
+      if: ctx.tines?.audit_log?.inputs?.inputs?.options instanceof List
+      source: |
+        for (int i = 0; i < ctx.tines.audit_log.inputs.inputs.options.length; i++) {
+          def v = ctx.tines.audit_log.inputs.inputs.options[i];
+          if (v instanceof Map) {
+            continue;
+          }
+          Map m = [:];
+          m.value = v;
+          ctx.tines.audit_log.inputs.inputs.options[i] = m;
+        }
   ### cleanup
   - script:
       description: Drops null/empty values recursively.
