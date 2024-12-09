@@ -374,6 +374,7 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Handle case when EXPLT_SRC and EXPLT_LIST.EXPLT is an object
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC.EXPLT_LIST.EXPLT.DESC
       tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
@@ -393,6 +394,78 @@ processors:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC.SRC_NAME
       tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.name
+      ignore_missing: true
+    # Handle case when EXPLT_SRC and EXPLT_LIST.EXPLT is an array
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
+      tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME
+      processor:
+        rename:
+          field: _ingest._value.SRC_NAME
+          tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_SRC_NAME
+          target_field: _ingest._value.name
+          ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
+      tag: foreach_foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
+      processor:
+        foreach:
+          field: _ingest._value.EXPLT_LIST.EXPLT
+          tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
+          ignore_failure: true
+          processor:
+            rename:
+              field: _ingest._value.DESC
+              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_DESC
+              target_field: _ingest._value.desc
+              ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
+      tag: foreach_foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK
+      processor:
+        foreach:
+          field: _ingest._value.EXPLT_LIST.EXPLT
+          tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK
+          ignore_failure: true
+          processor:
+            rename:
+              field: _ingest._value.LINK
+              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_LINK
+              target_field: _ingest._value.link
+              ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
+      tag: foreach_foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF
+      processor:
+        foreach:
+          field: _ingest._value.EXPLT_LIST.EXPLT
+          tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF
+          ignore_failure: true
+          processor:
+            rename:
+              field: _ingest._value.REF
+              tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT_REF
+              target_field: _ingest._value.ref
+              ignore_missing: true
+  - foreach:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
+      tag: foreach_rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT
+      processor:
+        rename:
+          field: _ingest._value.EXPLT_LIST.EXPLT
+          tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC_EXPLT_LIST_EXPLT
+          target_field: _ingest._value.list.explt
+          ignore_missing: true
+  - rename:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.EXPLOITS.EXPLT_SRC
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.CORRELATION?.EXPLOITS?.EXPLT_SRC instanceof List
+      tag: rename_CORRELATION_EXPLOITS_EXPLT_SRC
+      target_field: qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src
       ignore_missing: true
   - rename:
       field: qualys_vmdr.asset_host_detection.knowledge_base.CORRELATION.MALWARE.MW_SRC.MW_LIST.MW_INFO.MW_ID
@@ -749,10 +822,11 @@ processors:
       field:
         - qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.CHANGE_DATE
         - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
-        - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
-        - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
-        - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
-        - qualys_vmdr.asset_host_detection.knowledge_base.CODE_MODIFIED_DATETIME
+        - qualys_vmdr.asset_host_detection.knowledge_base.PCI_FLAG
+        - qualys_vmdr.asset_host_detection.knowledge_base.PATCHABLE
+        - qualys_vmdr.asset_host_detection.knowledge_base.LAST_SERVICE_MODIFICATION_DATETIME
+        - qualys_vmdr.asset_host_detection.knowledge_base.DISCOVERY.REMOTE
+        - qualys_vmdr.asset_host_detection.knowledge_base.PUBLISHED_DATETIME
         - ID_RANGE
         - ID
       ignore_missing: true
