@@ -445,7 +445,7 @@ Note: Descriptions have not been filled out
 | <name>      | aruba.ip_sla.name     |
 | <operation> | event.action          |
 | <reason>    | event.reason          |
-| <state>     | aruba.status          |
+| <state>     | aruba.state           |
 
 #### [IPv6 Router Advertisement events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPV6-RA.htm)
 | Doc Fields  | Schema Mapping       |
@@ -523,7 +523,7 @@ Note: Descriptions have not been filled out
 | <nexthop>     | aruba.l3.nexthop               |
 | <port>        | aruba.port                     |
 | <prefix>      | aruba.prefix                   |
-| <state>       | aruba.status                   |
+| <state>       | aruba.state                    |
 | <value>       | server.ip                      |
 | <vlanid>      | network.vlan.id                |
 
@@ -616,7 +616,7 @@ Note: Descriptions have not been filled out
 | <port1>     | aruba.mgmd.port1            |
 | <ring_id>   | aruba.mgmd.ring_id          |
 | <size_value>| aruba.len                   |
-| <state>     | aruba.status                |
+| <state>     | aruba.state                 |
 | <status>    | aruba.status                |
 | <sub_system>| aruba.subsystem             |
 | <type>      | aruba.mgmd.type             |
@@ -645,7 +645,7 @@ Note: Descriptions have not been filled out
 | <port>      | aruba.port                   |
 | <rp_ip>     | aruba.msdp.rp_ip             |
 | <src_ip>    | source.ip                    |
-| <state>     | aruba.status                 |
+| <state>     | aruba.state                  |
 | <status>    | aruba.status                 |
 | <tcp_entity>| aruba.msdp.tcp_entity        |
 | <vrf_name>  | aruba.vrf.name               |
@@ -674,7 +674,7 @@ Note: Descriptions have not been filled out
 | <priority_mac>      | aruba.mstp.priority_mac      |
 | <proto>             | aruba.mstp.proto             |
 | <reconfig_parameter>| aruba.mstp.reconfig_parameter|
-| <state>             | aruba.status                 |
+| <state>             | aruba.state                  |
 | <value>             | aruba.mstp.config_value      |
 
 #### [MVRP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MVRP.htm)
@@ -759,15 +759,15 @@ Note: Descriptions have not been filled out
 | <input>          | aruba.ospf.input                    |
 | <interface>      | aruba.interface.id                  |
 | <new>            | aruba.ospf.router_id                |
-| <new_state>      | aruba.status                        |
-| <next_state>     | aruba.status                        |
+| <new_state>      | aruba.state                         |
+| <next_state>     | aruba.state                         |
 | <nexthops>       | aruba.ospf.nexthops                 |
 | <old>            | aruba.ospf.old_router_id            |
 | <old_state>      | aruba.ospf.old_state                |
 | <ospf-interface> | aruba.interface.id                  |
 | <router-id>      | aruba.ospf.router_id                |
 | <rule>           | rule.name                           |
-| <state>          | aruba.status / aruba.ospf.old_state |
+| <state>          | aruba.state / aruba.ospf.old_state  |
 | <stats_id>       | aruba.ospf.stats_id                 |
 
 #### [OSPFv3 events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv3.htm)
@@ -781,7 +781,7 @@ Note: Descriptions have not been filled out
 | <input>          | aruba.ospf.input                    |
 | <interface>      | aruba.interface.id                  |
 | <link-local>     | aruba.ospf.link_local               |
-| <new_state>      | aruba.status                        |
+| <new_state>      | aruba.state                         |
 | <old_state>      | aruba.ospf.old_state                |
 | <router-id>      | aruba.ospf.router_id                |
 | <rule>           | rule.name                           |
@@ -1514,6 +1514,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.session.id |  | keyword |
 | aruba.session.name |  | keyword |
 | aruba.slot |  | long |
+| aruba.state |  | keyword |
 | aruba.status |  | keyword |
 | aruba.storage.name |  | keyword |
 | aruba.storage.usage |  | long |
