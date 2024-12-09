@@ -1,6 +1,6 @@
 # Tenable.sc
 
-The Tenable.sc integration collects and parses data from the [Tenable.sc](https://docs.tenable.com/tenablesc/Content/Welcome.htm) APIs.
+The Tenable Security Center integration collects and parses data from the [Tenable Security Center](https://docs.tenable.com/tenablesc/Content/Welcome.htm) APIs.
 
 ## Compatibility
 
