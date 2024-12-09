@@ -46,9 +46,9 @@ program: |
             }
         }).do_request().as(resp, resp.StatusCode == 200 ?
             resp.Body.as(xml, try(bytes(xml).decode_xml('qualys_api_2_0_ahd'), "decode_xml_error_ahd").as(ahd_body, 
-              !has(body.decode_xml_error_ahd) 
+              !has(ahd_body.decode_xml_error_ahd) 
               ?
-                (body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.hasValue() 
+                (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.hasValue() 
                 ?
                   ({
                     "worklist": (
@@ -83,7 +83,7 @@ program: |
                 {
                   "events": {
                     "error": {
-                      "message": "decode_xml error in ahd:" + string(body.decode_xml_error) + ":" + (
+                      "message": "decode_xml error in ahd:" + string(ahd_body.decode_xml_error) + ":" + (
                         size(resp.Body) != 0 ?
                           string(resp.Body)
                         :
@@ -127,7 +127,7 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
           resp.Body.as(xml, try(bytes(xml).decode_xml('qualys_api_2_0_kb'), "decode_xml_error_kb").as(kb_body, 
-            !has(body.decode_xml_error_kb) 
+            !has(kb_body.decode_xml_error_kb) 
             ?
               ({
                 "events": (
@@ -157,7 +157,7 @@ program: |
               {
                 "events": {
                   "error": {
-                    "message": "decode_xml error in kb:" + string(body.decode_xml_error) + ":" + (
+                    "message": "decode_xml error in kb:" + string(kb_body.decode_xml_error) + ":" + (
                       size(resp.Body) != 0 ?
                         string(resp.Body)
                       :
