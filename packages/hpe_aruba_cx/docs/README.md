@@ -709,31 +709,31 @@ Note: Descriptions have not been filled out
 | aruba.nae.name         |             |      | agent.name                   |
 
 #### [ND snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ND-SNOOPING.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.nd.count      |             |      | aruba.count                  |
-| aruba.nd.ip         |             |      | client.ip                    |
-| aruba.nd.src_mac    |             |      | source.mac                   |
-| aruba.nd.port       |             |      | server.port                  |
-| aruba.nd.status     |             |      | aruba.status                 |
-| aruba.nd.type       |             |      |                              |
-| aruba.nd.vid        |             |      | network.vlan.id              |
-| aruba.nd.vlan       |             |      | network.vlan.id              |
+| Docs Field | Schema Mapping         |
+|------------|------------------------|
+| <count>    | aruba.count            |
+| <ip>       | server.ip              |
+| <src_mac>  | source.mac             |
+| <port>     | aruba.port             |
+| <status>   | aruba.status           |
+| <type>     | aruba.nd.type          |
+| <vid>      | network.vlan.id        |
+| <vlan>     | network.vlan.id        |
 
 #### [NDM events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NDM.htm)
-| Field               | Description | Type | Common                       |
-|---------------------|-------------|------|------------------------------|
-| aruba.ndm.ip        |             |      | client.ip                    |
-| aruba.ndm.mac       |             |      | client.mac                   |
-| aruba.ndm.new_mac   |             |      |                              |
-| aruba.ndm.old_mac   |             |      |                              |
-| aruba.ndm.port      |             |      | client.port                  |
-| aruba.ndm.prev_mac  |             |      | client.mac                   |
-| aruba.ndm.role      |             |      | aruba.role                   |
-| aruba.ndm.role1     |             |      |                              |
-| aruba.ndm.role2     |             |      |                              |
-| aruba.ndm.time      |             |      | aruba.time.local             |
-| aruba.ndm.vrf       |             |      | aruba.vrf.id                 |
+| Docs Field       | Schema Mapping         |
+|------------------|------------------------|
+| <ip>             | client.ip              |
+| <mac>            | client.mac             |
+| <new_mac>        | client.mac             |
+| <old_mac>        | aruba.ndm.old_mac      |
+| <port>           | aruba.port             |
+| <role>           | aruba.role             |
+| <role1>          | aruba.ndm.old_role     |
+| <role2>          | aruba.role             |
+| <time>           | aruba.time.seconds     |
+| <throttle_count> | aruba.throttle_count   |
+| <vrf>            | aruba.vrf.id           |
 
 #### [NTP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NTP.htm)
 | Field                  | Description | Type | Common                       |
@@ -1489,11 +1489,11 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.nd.type |  | keyword |
 | aruba.ndm.new_mac |  | keyword |
 | aruba.ndm.old_mac |  | keyword |
-| aruba.ndm.role1 |  | keyword |
-| aruba.ndm.role2 |  | keyword |
+| aruba.ndm.old_role |  | keyword |
 | aruba.port |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.priority |  | keyword |
+| aruba.role |  | keyword |
 | aruba.sequence |  | keyword |
 | aruba.server.mode |  | keyword |
 | aruba.server.sessions |  | long |
@@ -1510,6 +1510,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.system.numdevs |  | long |
 | aruba.system.pass |  | keyword |
 | aruba.system.time |  | long |
+| aruba.throttle_count |  | long |
 | aruba.time.seconds |  | long |
 | aruba.timeout |  | long |
 | aruba.tunnel.name |  | keyword |

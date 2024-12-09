@@ -1038,6 +1038,76 @@ processors:
       description: "NAE agent with condition has error and is not watched."
       pattern: "NAE agent %{aruba.nae.name} with condition %{aruba.nae.condition} has error and is not watched."
 
+  # NDM events (61xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NDM.htm
+  - grok:
+      if: "['6101','6102','6104','6113'].contains(ctx.event?.code)"
+      tag: server_event_6101_6102_6104_6113
+      field: "message"
+      description: "Logs a message when a user changes REST mode | enable/disable VFR config | closes HTTPS session | changes max user sessions | changes idle timeout"
+      patterns:
+        - "^Static Neighbor %{IP:client.ip} (created|deleted) on Port %{DATA:aruba.port}, VRF %{DATA:aruba.vrf.id}( and)? mac %{MAC:client.mac}"
+        - "^EVPN Virtual Tunnel EndPoint Neighbor %{IP:client.ip} updated on Port%{DATA:aruba.port} and VRF %{DATA:aruba.vrf.id} with mac %{MAC:client.mac}"
+        - "^IPDB neighbor %{IP:client.ip} added in port %{DATA:aruba.port}, VRF %{GREEDYDATA:aruba.vrf.id}"
+  - grok:
+      if: "['6105','6121','6122','6123'].contains(ctx.event?.code)"
+      tag: ndm_event_6105_6121_6122_6123
+      field: "message"
+      description: "IPDB neighbor deleted from the neighbor Table | Static Neighbor add failed, subnet not matched | Static Neighbor add failed, it is own ip | Static Neighbor add failed, port is down"
+      patterns:
+        - "^(IPDB Neighbor|static neighbor) %{IP:client.ip} "
+  - grok:
+      if: "['6106','6107','6108','6109'].contains(ctx.event?.code)"
+      tag: ndm_event_6106_6107_6108_6109
+      field: "message"
+      description: "Clear all [ARP|VSX Peer ARP] entries requested on Specific Port | Clear all [ARP|VSX Peer Arp] entries requested on Specific VRF"
+      patterns:
+        - "^Clear all (Arp|VSX Peer ARP) entries requested on Port %{DATA:aruba.port} and (VRF|vrf) %{GREEDYDATA:aruba.vrf.id}"
+        - "^Clear all( VSX Peer)? Arp entries requested on VRF %{GREEDYDATA:aruba.vrf.id}"
+  - dissect:
+      if: "ctx.event.code == '6115'"
+      tag: ndm_event_6115
+      field: "message"
+      description: "Processing Redundancy management"
+      pattern: "Management Role set to %{aruba.role}"
+  - dissect:
+      if: "ctx.event.code == '6116'"
+      tag: ndm_event_6116
+      field: "message"
+      description: "Management role changed to new role"
+      pattern: "Management role changed from old %{aruba.ndm.old_role} to new role %{aruba.role}"
+  - grok:
+      if: "['6112','6114','6126','6127'].contains(ctx.event?.code)"
+      tag: ndm_event_6112_6114_6126_6127
+      field: "message"
+      description: "EVPN Virtual Tunnel EndPoint Neighbor [deleted|added] to the neighbor table | VSX Peer IP [added|deleted] in port vsxPeerIpCache"
+      patterns:
+        - "^EVPN (Virtual Tunnel EndPoint|VTEP) Neighbor %{IP:client.ip} (added to|deleted from) Port%{DATA:aruba.port} (on|and) VRF %{GREEDYDATA:aruba.vrf.id}"
+        - "^VSX Peer IP %{IP:client.ip} (added|deleted from) the port %{DATA:aruba.port} and VRF %{GREEDYDATA:aruba.vrf.id}"
+  - grok:
+      if: "['6117','6118','6128','6129'].contains(ctx.event?.code)"
+      tag: ndm_event_6117_6118_6128_6129
+      field: "message"
+      description: "Proxy arp [disabled|enabled] for the given interface | [IPv4|IPv6] neighbor ageout time changed to new value"
+      patterns:
+        - "^Proxy arp (en|dis)abled for the port %{GREEDYDATA:aruba.port}"
+        - "^(IPv4|IPv6) neighbor ageout time changed to %{NUMBER:aruba.time.seconds:long} seconds on port %{GREEDYDATA:aruba.port}"
+  - grok:
+      if: "['6103','6130'].contains(ctx.event?.code)"
+      tag: ndm_event_6101_6130
+      field: "message"
+      description: "Neighbor or Static Neighbor modified"
+      patterns:
+        - "^(Static )?Neighbor %{IP:client.ip} modified on Port %{DATA:aruba.port} and VRF %{DATA:aruba.vrf.id} from mac %{MAC:aruba.ndm.old_mac} to new mac %{MAC:client.mac}"
+  - grok:
+      if: "['6132','6133','6134'].contains(ctx.event?.code)"
+      tag: ndm_event_6132_6133_6134
+      field: "message"
+      description: "Duplicate IP detected from ARP reply | Duplicate IPv6 address detected from Neighbour advertisement | Duplicate IP detected from ARP request"
+      patterns:
+        - "^Duplicate (IPv4|IPv6) address %{IP:client.ip} is detected on port %{DATA:aruba.port} with a MAC address of %{MAC:client.mac}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages" 
+  
   # Credential Manager events (65xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
   #
@@ -1575,6 +1645,18 @@ processors:
       patterns:
         - "^Failed to import dynamic ip binding entries from external storage. volume: %{DATA:aruba.dhcp.volume_name}, filename: %{DATA:file.name}.$"
 
+  # ND snooping events (840x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ND-SNOOPING.htm
+  - grok:
+      field: message
+      tag: ND_snooping_event_8402_8403_8404_8405
+      description: ""
+      if: "['8402','8403','8404','8405'].contains(ctx.event?.code)"
+      patterns:
+        - "^Dynamic binding entries on the (port %{DATA:aruba.port}|VLAN %{DATA:network.vlan.id}) were cleared."
+        - "^Dynamic binding entry with ip %{IP:server.ip} on the VLAN %{DATA:network.vlan.id} was cleared."
+        - "^ND packet of type=%{DATA:aruba.nd.type} received on port:%{DATA:aruba.port} vlan:%{DATA:network.vlan.id} with src_mac:%{MAC:source.mac} is %{DATA:aruba.status}. count=%{NUMBER:aruba.count:long}"
+
   # ERPS Events (85xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm
   - dissect:
@@ -2097,7 +2179,15 @@ processors:
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
-
+  - uppercase:
+      field: aruba.ndm.old_mac
+      ignore_missing: true
+  - gsub:
+      field: aruba.ndm.old_mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+  
   # Make sure that host.ip and host.mac are arrays
   - set:
       field: host.ip
