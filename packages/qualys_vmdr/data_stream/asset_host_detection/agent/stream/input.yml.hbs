@@ -45,20 +45,55 @@ program: |
                 "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
             }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-            resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0_ahd').as(ahd_body, {
-              "worklist": (
-                ahd_body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(h,
-                  h.DETECTION_LIST.DETECTION.map(v,
-                    h.with({
-                      "DETECTION_LIST": v,
-                    })
-                  )).flatten()
-              ),
-              "next_page": { 
-                ?"link": ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL
-              },
-              "next": 0,
-            }))
+            resp.Body.as(xml, try(bytes(xml).decode_xml('qualys_api_2_0_ahd'), "decode_xml_error_ahd").as(ahd_body, 
+              !has(body.decode_xml_error_ahd) 
+              ?
+                (body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.hasValue() 
+                ?
+                  ({
+                    "worklist": (
+                      ahd_body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(h,
+                        h.DETECTION_LIST.DETECTION.map(v,
+                          h.with({
+                            "DETECTION_LIST": v,
+                          })
+                        )).flatten()
+                    ),
+                    "next_page": { 
+                      ?"link": ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL
+                    },
+                    "next": 0,
+                  })
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "message": "xsd and response mismatch in ahd:" + (
+                          size(resp.Body) != 0 ?
+                            string(resp.Body)
+                          :
+                            "XML response missing"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "message": "decode_xml error in ahd:" + string(body.decode_xml_error) + ":" + (
+                        size(resp.Body) != 0 ?
+                          string(resp.Body)
+                        :
+                          "XML response missing"
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+            ))
           :
             {
               "events": {
@@ -91,30 +126,48 @@ program: |
             "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-          resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0_kb').as(kb_body, {
-            "events": (
-              has(kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
-              ?
-                kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.with({
-                    "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
-                })).as(kb_list, kb_list[0]).as(kb, {
-                  "message": state.worklist[state.next].with({
-                    "KNOWLEDGE_BASE": kb,
-                  }).encode_json()
-                })
-              :
-                {
-                  "message": state.worklist[state.next].with({
-                    "KNOWLEDGE_BASE": {
-                      "response_error": "response IDs values are missing: " + string(kb_body.?doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET.orValue([])),
+          resp.Body.as(xml, try(bytes(xml).decode_xml('qualys_api_2_0_kb'), "decode_xml_error_kb").as(kb_body, 
+            !has(body.decode_xml_error_kb) 
+            ?
+              ({
+                "events": (
+                  has(kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
+                  ?
+                    kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.with({
+                        "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
+                    })).as(kb_list, kb_list[0]).as(kb, {
+                      "message": state.worklist[state.next].with({
+                        "KNOWLEDGE_BASE": kb,
+                      }).encode_json()
+                    })
+                  :
+                    {
+                      "message": state.worklist[state.next].with({
+                        "KNOWLEDGE_BASE": {
+                          "response_error": "response IDs values are missing: " + string(kb_body.?doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET.orValue([])),
+                        }
+                      }).encode_json()
                     }
-                  }).encode_json()
-                }
-            ),
-            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
-            "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
-            "want_more": int(state.next) + 1 < size(state.worklist) || has(state.?next_page.link),
-          }))
+                ),
+                "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
+                "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
+                "want_more": int(state.next) + 1 < size(state.worklist) || has(state.?next_page.link),
+              })
+            :
+              {
+                "events": {
+                  "error": {
+                    "message": "decode_xml error in kb:" + string(body.decode_xml_error) + ":" + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        "XML response missing"
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+          ))
         :
           {
             "events": {

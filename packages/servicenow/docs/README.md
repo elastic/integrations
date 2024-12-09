@@ -101,7 +101,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
 ### Time Zone Selection:
-- In the Data Collection section, use the `Timezone of ServiceNow Instance` dropdown to select your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
+- In the Data Collection section, use the `Time Zone Offset` field to set your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
 - Steps to See/Update the timezone in ServiceNow Instance:
   1. Click the user icon in the top-right corner of the ServiceNow interface.
   2. Select Profile from the dropdown menu.
@@ -120,7 +120,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - password
    - table name
    - timestamp field
-   - timezone
+   - timezone offset
 
    or if you want to collect logs via AWS S3, then you have to put the following details:
    - collect logs via S3 Bucket toggled on
@@ -129,7 +129,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - bucket arn
    - table name
    - timestamp field
-   - timezone
+   - timezone offset
 
    or if you want to collect logs via AWS SQS, then you have to put the following details:
    - collect logs via S3 Bucket toggled off
@@ -138,7 +138,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - queue url
    - table name
    - timestamp field
-   - timezone
+   - timezone offset
 6. Click on "Save and Continue" to save the integration.
 
 **Note**: To fetch parquet file data, enable the toggle, `Parquet Codec`
@@ -157,22 +157,22 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2024-09-24T05:39:40.000Z",
     "agent": {
-        "ephemeral_id": "dbb2059a-3aaa-4bcb-abd4-7685e8b9f7e5",
-        "id": "9fef3fff-5365-4b70-a28a-260b4fdeffac",
-        "name": "elastic-agent-99156",
+        "ephemeral_id": "121d1e8c-0c94-4812-a446-4e8c339cbf5e",
+        "id": "744b1c23-395c-4123-9b8a-7e975ed7b1f8",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "servicenow.event",
-        "namespace": "62419",
+        "namespace": "28538",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9fef3fff-5365-4b70-a28a-260b4fdeffac",
+        "id": "744b1c23-395c-4123-9b8a-7e975ed7b1f8",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -185,7 +185,7 @@ An example event for `event` looks as following:
         "created": "2016-12-12T15:19:57.000Z",
         "dataset": "servicenow.event",
         "id": "1c741bd70b2322007518478d83673af3",
-        "ingested": "2024-11-27T06:15:07Z",
+        "ingested": "2024-12-02T12:33:55Z",
         "kind": "event",
         "severity": 3,
         "timezone": "America/Los_Angeles",
