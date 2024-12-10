@@ -2,6 +2,10 @@ type: logs
 title: GitHub Audit Logs
 streams:
   - input: httpjson
+    template_path: httpjson.yml.hbs
+    title: GitHub Audit Logs
+    enabled: false
+    description: Collect GitHub audit logs via the API
     vars:
       - name: access_token
         type: password
@@ -14,9 +18,16 @@ streams:
       - name: organization
         type: text
         title: Organization Name
-        description: The GitHub organization name/ID
+        description: The GitHub organization name/ID. Either `Organization Name` or `Enterprise Name` must be set.
         multi: false
-        required: true
+        required: false
+        show_user: true
+      - name: enterprise
+        type: text
+        title: Enterprise Name
+        description: The GitHub enterprise name/ID. Either `Organization Name` or `Enterprise Name` must be set.
+        multi: false
+        required: false
         show_user: true
       - name: http_client_timeout
         type: text
@@ -87,7 +98,3 @@ streams:
         required: false
         show_user: false
         description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
-    template_path: httpjson.yml.hbs
-    title: GitHub audit logs
-    enabled: false
-    description: Collect GitHub audit logs via the API

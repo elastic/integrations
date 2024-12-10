@@ -3,7 +3,7 @@ type: logs
 streams:
   - input: cel
     title: ServiceNow tables
-    description: Collect table logs from ServiceNow instance via API.
+    description: Collect tables from ServiceNow.
     template_path: cel.yml.hbs
     enabled: false
     vars:
@@ -59,6 +59,14 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: timestamp_field
+        type: text
+        title: Timestamp Field
+        multi: false
+        required: true
+        show_user: true
+        description: Name of the timestamp field from the table to store inside cursor to retrieve tables after intervals.
+        default: sys_updated_on
       - name: hide_sensitive
         type: bool
         title: Hide Sensitive Details
@@ -67,66 +75,15 @@ streams:
         required: false
         show_user: false
         default: true
-      - name: timezone
-        type: select
-        title: Timezone of ServiceNow Instance
+      - name: tz_offset
+        type: text
+        title: Time Zone Offset
         multi: false
         required: true
         show_user: true
         default: America/Los_Angeles
         description: >-
-          The timezone of the ServiceNow instance, used for interpreting timestamps in the logs.
-        options:
-          - value: America/Los_Angeles
-            text: America/Los_Angeles
-          - value: Canada/Atlantic
-            text: Canada/Atlantic
-          - value: Canada/Central
-            text: Canada/Central
-          - value: Canada/Eastern
-            text: Canada/Eastern
-          - value: Canada/Mountain
-            text: Canada/Mountain
-          - value: Canada/Pacific
-            text: Canada/Pacific
-          - value: Europe/Amsterdam
-            text: Europe/Amsterdam
-          - value: Europe/Berlin
-            text: Europe/Berlin
-          - value: Europe/Brussels
-            text: Europe/Brussels
-          - value: Europe/Copenhagen
-            text: Europe/Copenhagen
-          - value: Europe/Dublin
-            text: Europe/Dublin
-          - value: Europe/London
-            text: Europe/London
-          - value: Europe/Madrid
-            text: Europe/Madrid
-          - value: Europe/Paris
-            text: Europe/Paris
-          - value: Europe/Rome
-            text: Europe/Rome
-          - value: Europe/Stockholm
-            text: Europe/Stockholm
-          - value: Europe/Zurich
-            text: Europe/Zurich
-          - value: GMT
-            text: GMT
-          - value: Hongkong
-            text: Hongkong
-          - value: US/Arizona
-            text: US/Arizona
-          - value: US/Central
-            text: US/Central
-          - value: US/Eastern
-            text: US/Eastern
-          - value: US/Hawaii
-            text: US/Hawaii
-          - value: US/Mountain
-            text: US/Mountain
-          - value: US/Pacific
-            text: US/Pacific
+          By default, datetimes in the logs without a time zone will be interpreted as relative to the time zone configured in the host where the agent is running. If ingesting logs from a different time zone, use this field to set the time zone offset so that datetimes are correctly parsed. Acceptable time zone formats are: a canonical ID (e.g. "Europe/Amsterdam"), or an HH:mm differential (e.g. "-05:00") from UTC.
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -214,7 +171,7 @@ streams:
   - input: aws-s3
     template_path: aws-s3.yml.hbs
     title: ServiceNow tables
-    description: Collect table logs from ServiceNow instance via AWS S3 or SQS.
+    description: Collect tables from ServiceNow.
     enabled: false
     vars:
       - name: collect_s3_logs
@@ -225,20 +182,6 @@ streams:
         type: bool
         multi: false
         default: false
-      - name: bucket_arn
-        type: text
-        title: '[S3] Bucket ARN'
-        multi: false
-        required: false
-        show_user: true
-        description: It is a required parameter for collecting logs via the AWS S3 Bucket.
-      - name: queue_url
-        type: text
-        title: '[SQS] Queue URL'
-        multi: false
-        required: false
-        show_user: true
-        description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
       - name: access_key_id
         type: password
         title: Access Key ID
@@ -263,20 +206,27 @@ streams:
         show_user: true
         description: Required when using temporary security credentials.
         secret: true
+      - name: bucket_arn
+        type: text
+        title: '[S3] Bucket ARN'
+        multi: false
+        required: false
+        show_user: true
+        description: It is a required parameter for collecting logs via the AWS S3 Bucket.
       - name: bucket_list_prefix
         type: text
         title: "Bucket Prefix"
         multi: false
-        required: true
+        required: false
         show_user: true
-        description: Prefix to fetch data from AWS S3 bucket or AWS SQS queue.
-      - name: table_name
+        description: Prefix to apply for the list request to the S3 bucket.
+      - name: queue_url
         type: text
-        title: Table Name
-        description: Name of the table from which to retrieve the records.
+        title: '[SQS] Queue URL'
         multi: false
-        required: true
+        required: false
         show_user: true
+        description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
       - name: interval
         type: text
         title: '[S3] Interval'
@@ -285,74 +235,6 @@ streams:
         show_user: true
         default: 1m
         description: 'Time interval for polling listing of the S3 bucket. Supported units for this parameter are h/m/s.'
-      - name: hide_sensitive
-        type: bool
-        title: Hide Sensitive Details
-        description: Hide sensitive user details such as phone number, street address etc.
-        multi: false
-        required: false
-        show_user: false
-        default: true
-      - name: timezone
-        type: select
-        title: Timezone of ServiceNow Instance
-        multi: false
-        required: true
-        show_user: true
-        default: America/Los_Angeles
-        description: >-
-          The timezone of the ServiceNow instance, used for interpreting timestamps in the logs.
-        options:
-          - value: America/Los_Angeles
-            text: America/Los_Angeles
-          - value: Canada/Atlantic
-            text: Canada/Atlantic
-          - value: Canada/Central
-            text: Canada/Central
-          - value: Canada/Eastern
-            text: Canada/Eastern
-          - value: Canada/Mountain
-            text: Canada/Mountain
-          - value: Canada/Pacific
-            text: Canada/Pacific
-          - value: Europe/Amsterdam
-            text: Europe/Amsterdam
-          - value: Europe/Berlin
-            text: Europe/Berlin
-          - value: Europe/Brussels
-            text: Europe/Brussels
-          - value: Europe/Copenhagen
-            text: Europe/Copenhagen
-          - value: Europe/Dublin
-            text: Europe/Dublin
-          - value: Europe/London
-            text: Europe/London
-          - value: Europe/Madrid
-            text: Europe/Madrid
-          - value: Europe/Paris
-            text: Europe/Paris
-          - value: Europe/Rome
-            text: Europe/Rome
-          - value: Europe/Stockholm
-            text: Europe/Stockholm
-          - value: Europe/Zurich
-            text: Europe/Zurich
-          - value: GMT
-            text: GMT
-          - value: Hongkong
-            text: Hongkong
-          - value: US/Arizona
-            text: US/Arizona
-          - value: US/Central
-            text: US/Central
-          - value: US/Eastern
-            text: US/Eastern
-          - value: US/Hawaii
-            text: US/Hawaii
-          - value: US/Mountain
-            text: US/Mountain
-          - value: US/Pacific
-            text: US/Pacific
       - name: number_of_workers
         type: integer
         title: '[S3] Number of Workers'
@@ -361,6 +243,92 @@ streams:
         show_user: true
         default: 5
         description: Number of workers that will process the S3 objects listed.
+      - name: visibility_timeout
+        type: text
+        title: '[SQS] Visibility Timeout'
+        multi: false
+        required: false
+        show_user: true
+        default: 300s
+        description: 'The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request. The maximum is 12 hours. NOTE: Supported units for this parameter are h/m/s.'
+      - name: api_timeout
+        type: text
+        title: '[SQS] API Timeout'
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+        description: 'The maximum duration of AWS API can take. The maximum is half of the visibility timeout value. Supported units for this parameter are h/m/s.'
+      - name: region
+        type: text
+        title: "[SQS] Region"
+        multi: false
+        required: false
+        show_user: true
+        description: The name of the AWS region of the end point. If this option is given it takes precedence over the region name obtained from the queue_url value. It is a required parameter for collecting logs via the AWS SQS.
+      - name: max_number_of_messages
+        type: integer
+        title: '[SQS] Maximum Concurrent SQS Messages'
+        required: false
+        show_user: true
+        default: 5
+        description: The maximum number of SQS messages that can be inflight at any time.
+      - name: decode_parquet_enabled
+        type: bool
+        title: Parquet Codec
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: The parquet codec is used to decode parquet compressed data streams.
+      - name: decoding_parquet_batch_size
+        type: integer
+        title: Batch Size of Parquet Decoding
+        multi: false
+        required: false
+        show_user: false
+        default: 1
+        description: Number of records to read from the parquet stream at a time.
+      - name: decoding_parquet_process_parallel
+        required: false
+        show_user: false
+        title: Process Parellel of Parquet Decoding
+        type: bool
+        multi: false
+        default: false
+        description: If set to true, functions which read multiple columns will read those columns in parallel from the parquet stream with a number of readers equal to the number of columns. See [Parquet Codec](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#attrib-decoding-parquet) for details.
+      - name: table_name
+        type: text
+        title: Table Name
+        description: Name of the table from which to retrieve the records.
+        multi: false
+        required: true
+        show_user: true
+      - name: timestamp_field
+        type: text
+        title: Timestamp Field
+        multi: false
+        required: true
+        show_user: true
+        description: Name of the timestamp field from the table to store inside cursor to retrieve tables after intervals.
+        default: sys_updated_on
+      - name: hide_sensitive
+        type: bool
+        title: Hide Sensitive Details
+        description: Hide sensitive user details such as phone number, street address etc.
+        multi: false
+        required: false
+        show_user: false
+        default: true
+      - name: tz_offset
+        type: text
+        title: Time Zone Offset
+        multi: false
+        required: true
+        show_user: true
+        default: America/Los_Angeles
+        description: >-
+          By default, datetimes in the logs without a time zone will be interpreted as relative to the time zone configured in the host where the agent is running. If ingesting logs from a different time zone, use this field to set the time zone offset so that datetimes are correctly parsed. Acceptable time zone formats are: a canonical ID (e.g. "Europe/Amsterdam"), or an HH:mm differential (e.g. "-05:00") from UTC.
       - name: shared_credential_file
         type: text
         title: Shared Credential File
@@ -404,36 +372,13 @@ streams:
         required: false
         show_user: false
         description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
-      - name: visibility_timeout
-        type: text
-        title: '[SQS] Visibility Timeout'
+      - name: file_selectors
+        type: yaml
+        title: "[SQS] File Selectors"
         multi: false
         required: false
-        show_user: true
-        default: 300s
-        description: 'The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request. The maximum is 12 hours. NOTE: Supported units for this parameter are h/m/s.'
-      - name: api_timeout
-        type: text
-        title: '[SQS] API Timeout'
-        multi: false
-        required: false
-        show_user: true
-        default: 120s
-        description: 'The maximum duration of AWS API can take. The maximum is half of the visibility timeout value. Supported units for this parameter are h/m/s.'
-      - name: region
-        type: text
-        title: "[SQS] Region"
-        multi: false
-        required: false
-        show_user: true
-        description: The name of the AWS region of the end point. If this option is given it takes precedence over the region name obtained from the queue_url value. It is a required parameter for collecting logs via the AWS SQS.
-      - name: max_number_of_messages
-        type: integer
-        title: '[SQS] Maximum Concurrent SQS Messages'
-        required: false
-        show_user: true
-        default: 5
-        description: The maximum number of SQS messages that can be inflight at any time.
+        show_user: false
+        description: If the SQS queue will have events that correspond to files that this integration shouldn't process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed.
       - name: tags
         type: text
         title: Tags

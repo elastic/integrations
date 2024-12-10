@@ -300,6 +300,206 @@ rules:
                   </VULN_LIST>
               </RESPONSE>
           </KNOWLEDGE_BASE_VULN_LIST_OUTPUT>
+  # Two objects with:
+  #  1. Containing BUGTRAQ_LIST, SOFTWARE_LIST, VENDOR_REFERENCE_LIST, and CHANGE_LOG_LIST containing multiple elements.
+  #  2. Containing BUGTRAQ_LIST, SOFTWARE_LIST, VENDOR_REFERENCE_LIST, and CHANGE_LOG_LIST containing single elements.
+  - path: /api/2.0/fo/knowledge_base/vuln/
+    methods: ['GET']
+    query_params:
+      ids: 1,2
+      last_modified_after: '{last_modified_after:\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}}Z'
+    responses:
+      - status_code: 200
+        body: |-
+          <?xml version="1.0" encoding="UTF-8" ?>
+          <!DOCTYPE KNOWLEDGE_BASE_VULN_LIST_OUTPUT SYSTEM "https://qualysapi.qg2.apps.qualys.com/api/2.0/fo/knowledge_base/vuln/knowledge_base_vuln_list_output.dtd">
+          <KNOWLEDGE_BASE_VULN_LIST_OUTPUT>
+            <RESPONSE>
+              <DATETIME>2024-11-26T08:40:21Z</DATETIME>
+              <VULN_LIST>
+                <VULN>
+                  <QID>1</QID>
+                  <VULN_TYPE>Potential Vulnerability</VULN_TYPE>
+                  <SEVERITY_LEVEL>5</SEVERITY_LEVEL>
+                  <TITLE><![CDATA[VMware Workstation and VMware Fusion Denial of Service (DoS) Vulnerability (VMSA-2024-0010)]]></TITLE>
+                  <CATEGORY>Local</CATEGORY>
+                  <LAST_SERVICE_MODIFICATION_DATETIME>2024-05-16T10:00:05Z</LAST_SERVICE_MODIFICATION_DATETIME>
+                  <PUBLISHED_DATETIME>2024-05-15T13:51:37Z</PUBLISHED_DATETIME>
+                  <CODE_MODIFIED_DATETIME>2024-05-15T13:51:37Z</CODE_MODIFIED_DATETIME>
+                  <BUGTRAQ_LIST>
+                    <BUGTRAQ>
+                      <ID><![CDATA[9821]]></ID>
+                      <URL><![CDATA[https://url.com/bid/9821]]></URL>
+                    </BUGTRAQ>
+                    <BUGTRAQ>
+                      <ID><![CDATA[59773]]></ID>
+                      <URL><![CDATA[https://url.com]]></URL>
+                    </BUGTRAQ>
+                  </BUGTRAQ_LIST>
+                  <PATCHABLE>1</PATCHABLE>
+                  <SOFTWARE_LIST>
+                    <SOFTWARE>
+                      <PRODUCT><![CDATA[fusion]]></PRODUCT>
+                      <VENDOR><![CDATA[vmware]]></VENDOR>
+                    </SOFTWARE>
+                    <SOFTWARE>
+                      <PRODUCT><![CDATA[workstation_player]]></PRODUCT>
+                      <VENDOR><![CDATA[vmware]]></VENDOR>
+                    </SOFTWARE>
+                    <SOFTWARE>
+                      <PRODUCT><![CDATA[workstation_pro]]></PRODUCT>
+                      <VENDOR><![CDATA[vmware]]></VENDOR>
+                    </SOFTWARE>
+                  </SOFTWARE_LIST>
+                  <VENDOR_REFERENCE_LIST>
+                    <VENDOR_REFERENCE>
+                      <ID><![CDATA[VMSA-2024-0010]]></ID>
+                      <URL><![CDATA[https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24280]]></URL>
+                    </VENDOR_REFERENCE>
+                    <VENDOR_REFERENCE>
+                      <ID><![CDATA[APSB13-13]]></ID>
+                      <URL><![CDATA[https://url.com]]></URL>
+                    </VENDOR_REFERENCE>
+                  </VENDOR_REFERENCE_LIST>
+                  <CVE_LIST>
+                    <CVE>
+                      <ID><![CDATA[CVE-2024-22267]]></ID>
+                      <URL><![CDATA[http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-22267]]></URL>
+                    </CVE>
+                    <CVE>
+                      <ID><![CDATA[CVE-2024-22268]]></ID>
+                      <URL><![CDATA[http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-22268]]></URL>
+                    </CVE>
+                    <CVE>
+                      <ID><![CDATA[CVE-2024-22269]]></ID>
+                      <URL><![CDATA[http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-22269]]></URL>
+                    </CVE>
+                    <CVE>
+                      <ID><![CDATA[CVE-2024-22270]]></ID>
+                      <URL><![CDATA[http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-22270]]></URL>
+                    </CVE>
+                  </CVE_LIST>
+                  <DIAGNOSIS><![CDATA[VMware Workstation, Fusion is a hosted hypervisor that runs on x64 versions of Windows and Linux operating systems.<P>
+
+                        Affected Versions:<BR>VMware Workstation Pro 17.x prior to 17.5.2<BR>VMware Workstation Player 17.x prior to 17.5.2<BR>VMware Fusion 13.x prior to 13.5.2<P>
+
+                        QID Detection Logic (Authenticated) - Windows: <BR>This QID checks for registry key &quot;HKLM\SOFTWARE\VMware, Inc.\VMware Workstation&quot; and value &quot;InstallPath&quot; to scan the/ check for file &quot;vmware.exe&quot;. Then checks the version for this exe file on Windows Operating Systems<BR>
+                        QID Detection Logic: (Authenticated) - Linux:<BR>This QID executes the command &quot;vmware-installer -l|grep vmware-workstation|awk '{print }'&quot; and checks for the VMware Workstation version on Linux Operating Systems<BR>
+                        QID Detection Logic: (Authenticated) - MacOS:<BR>This QID checks installed apps on MacOs for the app &quot;VMware Fusion.app&quot;. If the app is found, the QID checks for the VMware Fusion version on MacOS<BR>
+
+                        Note: We cannot check the workaround mentioned which is hardware change. So QID set as practice.<BR>]]></DIAGNOSIS>
+                  <CONSEQUENCE><![CDATA[A malicious actor with non-administrative access to a virtual machine with 3D graphics enabled may be able to exploit this vulnerability to create a denial of service condition.]]></CONSEQUENCE>
+                  <SOLUTION><![CDATA[Vmware has released patch for VMware Workstation and VMware Fusion.<BR>
+                        <P>Refer to VMware advisory <A HREF="https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24280" TARGET="_blank">VMSA-2024-0010</A> for more information.<P>Workaround:<BR><P><B>Workaround:</B> The following <A HREF="https://knowledge.broadcom.com/external/article?legacyId=59146" TARGET="_blank">steps</A> should be followed to disable 3D acceleration feature on VMware Workstation and VMware Fusion:<BR>
+
+                        For Fusion:<BR>
+                        1. Shutdown the Virtual Machine. <BR>
+                        2. From the VMware Fusion menu bar, select Window &gt; Virtual Machine Library<BR>.
+                        3. Select a virtual machine and click Settings.<BR>
+                        4. In the Settings Window, in the System Settings section, select Display.<BR>
+                        5. Uncheck Accelerate 3D graphics.<BR>
+
+                        For Workstation:<BR>
+                        1. Shutdown the virtual machine. <BR>
+                        2. Select the virtual machine and select VM &gt; Settings.<BR>
+                        3. On the Hardware tab, select Display.<BR>
+                        4. Uncheck Accelerate 3D graphics.<BR>
+                        5. Click OK.<BR>
+
+                        <P>Patch:<BR>
+                        Following are links for downloading patches to fix the vulnerabilities:
+                        <P> <A HREF="https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24280" TARGET="_blank">VMSA-2024-0010</A>]]></SOLUTION>
+                  <CVSS>
+                    <BASE source="service">4.9</BASE>
+                    <TEMPORAL>3.6</TEMPORAL>
+                    <VECTOR_STRING>CVSS:2.0/AV:L/AC:L/Au:N/C:N/I:N/A:C/E:U/RL:OF/RC:C</VECTOR_STRING>
+                  </CVSS>
+                  <CVSS_V3>
+                    <BASE>9.3</BASE>
+                    <TEMPORAL>8.1</TEMPORAL>
+                    <VECTOR_STRING>CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H/E:U/RL:O/RC:C</VECTOR_STRING>
+                    <CVSS3_VERSION>3.1</CVSS3_VERSION>
+                  </CVSS_V3>
+                  <PCI_FLAG>1</PCI_FLAG>
+                  <THREAT_INTELLIGENCE>
+                    <THREAT_INTEL id="5"><![CDATA[Easy_Exploit]]></THREAT_INTEL>
+                    <THREAT_INTEL id="7"><![CDATA[Denial_of_Service]]></THREAT_INTEL>
+                    <THREAT_INTEL id="13"><![CDATA[Privilege_Escalation]]></THREAT_INTEL>
+                  </THREAT_INTELLIGENCE>
+                  <DISCOVERY>
+                    <REMOTE>0</REMOTE>
+                    <AUTH_TYPE_LIST>
+                      <AUTH_TYPE>Unix</AUTH_TYPE>
+                      <AUTH_TYPE>Windows</AUTH_TYPE>
+                    </AUTH_TYPE_LIST>
+                    <ADDITIONAL_INFO>Patch Available</ADDITIONAL_INFO>
+                  </DISCOVERY>
+                  <CHANGE_LOG_LIST>
+                    <CHANGE_LOG_INFO>
+                      <CHANGE_DATE><![CDATA[2024-05-15T18:07:27Z]]></CHANGE_DATE>
+                      <COMMENTS><![CDATA[Real-time threat indicator "Easy_Exploit" added.]]></COMMENTS>
+                    </CHANGE_LOG_INFO>
+                    <CHANGE_LOG_INFO>
+                      <CHANGE_DATE><![CDATA[2024-05-15T18:09:54Z]]></CHANGE_DATE>
+                      <COMMENTS><![CDATA[Real-time threat indicator "Denial_of_Service" added.]]></COMMENTS>
+                    </CHANGE_LOG_INFO>
+                    <CHANGE_LOG_INFO>
+                      <CHANGE_DATE><![CDATA[2024-05-16T10:00:05Z]]></CHANGE_DATE>
+                      <COMMENTS><![CDATA[Real-time threat indicator "Privilege_Escalation" added.]]></COMMENTS>
+                    </CHANGE_LOG_INFO>
+                  </CHANGE_LOG_LIST>
+                </VULN>
+                <VULN>
+                  <QID>2</QID>
+                  <VULN_TYPE>Vulnerability</VULN_TYPE>
+                  <SEVERITY_LEVEL>2</SEVERITY_LEVEL>
+                  <TITLE><![CDATA[HTTP Security Header Not Detected]]></TITLE>
+                  <CVE_LIST>
+                    <CVE>
+                      <ID><![CDATA[CVE-2022-31629]]></ID>
+                      <URL><![CDATA[http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31629]]></URL>
+                    </CVE>
+                    <CVE>
+                      <ID><![CDATA[CVE-2022-31628]]></ID>
+                      <URL><![CDATA[http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31628]]></URL>
+                    </CVE>
+                  </CVE_LIST>
+                  <CATEGORY>CGI</CATEGORY>
+                  <LAST_SERVICE_MODIFICATION_DATETIME>2023-06-29T12:20:46Z</LAST_SERVICE_MODIFICATION_DATETIME>
+                  <PUBLISHED_DATETIME>2017-06-05T21:34:49Z</PUBLISHED_DATETIME>
+                  <BUGTRAQ_LIST>
+                    <BUGTRAQ>
+                      <ID><![CDATA[9821]]></ID>
+                      <URL><![CDATA[https://url.com/bid/9821]]></URL>
+                    </BUGTRAQ>
+                  </BUGTRAQ_LIST>
+                  <PATCHABLE>0</PATCHABLE>
+                  <SOFTWARE_LIST>
+                    <SOFTWARE>
+                      <PRODUCT><![CDATA[fusion]]></PRODUCT>
+                      <VENDOR><![CDATA[vmware]]></VENDOR>
+                    </SOFTWARE>
+                  </SOFTWARE_LIST>
+                  <VENDOR_REFERENCE_LIST>
+                    <VENDOR_REFERENCE>
+                      <ID><![CDATA[VMSA-2024-0010]]></ID>
+                      <URL><![CDATA[https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24280]]></URL>
+                    </VENDOR_REFERENCE>
+                  </VENDOR_REFERENCE_LIST>
+                  <DIAGNOSIS><![CDATA[This QID reports the absence of the following]]></DIAGNOSIS>
+                  <CONSEQUENCE><![CDATA[Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.]]></CONSEQUENCE>
+                  <SOLUTION><![CDATA[<B>Note:</B> To better debug the results of this QID]]></SOLUTION>
+                  <PCI_FLAG>1</PCI_FLAG>
+                  <THREAT_INTELLIGENCE>
+                    <THREAT_INTEL id="8"><![CDATA[No_Patch]]></THREAT_INTEL>
+                  </THREAT_INTELLIGENCE>
+                  <DISCOVERY>
+                    <REMOTE>1</REMOTE>
+                  </DISCOVERY>
+                </VULN>
+              </VULN_LIST>
+            </RESPONSE>
+          </KNOWLEDGE_BASE_VULN_LIST_OUTPUT>
   - path: /api/2.0/fo/knowledge_base/vuln/
     methods: ['GET']
     query_params:
@@ -354,4 +554,3 @@ rules:
           "CODE","TEXT","URL"
           "1980","1000 record limit exceeded. Use URL to get next batch of results.","http://{{ env "SERVER_ADDRESS" }}/api/2.0/fo/activity_log/?action=list&since_datetime=2024-06-16T22%3a00%3a00Z&truncation_limit=1000&id_max=1425858279"
           ----END_RESPONSE_FOOTER_CSV
-
