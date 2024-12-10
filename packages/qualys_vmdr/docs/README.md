@@ -118,24 +118,29 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-04T14:04:19.254Z",
+    "@timestamp": "2024-12-10T07:06:53.228Z",
     "agent": {
-        "ephemeral_id": "afc89f47-6c71-42e6-89eb-37d52b5002ba",
-        "id": "d3b0f6ea-040d-4707-b26d-5460e584dd3b",
-        "name": "elastic-agent-29579",
+        "ephemeral_id": "7f075414-f3ac-4700-a6ea-4617f1aeb76e",
+        "id": "fe428e85-d26e-4618-84c0-bd1e2e02d7ba",
+        "name": "elastic-agent-59344",
         "type": "filebeat",
         "version": "8.16.0"
     },
+    "cloud": {
+        "instance": {
+            "name": "adfssrvr"
+        }
+    },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
-        "namespace": "34601",
+        "namespace": "78840",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d3b0f6ea-040d-4707-b26d-5460e584dd3b",
+        "id": "fe428e85-d26e-4618-84c0-bd1e2e02d7ba",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -145,30 +150,115 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2024-12-04T14:04:22Z",
+        "id": "11111111",
+        "ingested": "2024-12-10T07:06:56Z",
         "kind": "alert",
-        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package Installed Version Required Version\\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"5555555555\"},\"DNS\":\"\",\"DNS_DATA\":{\"DOMAIN\":\"\",\"FQDN\":\"\",\"HOSTNAME\":\"\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"\",\"OS\":\"\",\"TRACKING_METHOD\":\"IP\",\"knowledge_base\":[{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"\",\"VENDOR\":\"\"}]},\"SOLUTION\":\"\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"\",\"VULN_TYPE\":\"Vulnerability\"}]}",
+        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package\\tInstalled Version\\tRequired Version\\nlinux-cloud-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\\nlinux-aws-headers-4.4.0\\t1074_4.15.0-1126.135\\t1092\\nlinux-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-cloud-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"11111111\"},\"DNS\":\"adfssrvr.adfs.local\",\"DNS_DATA\":{\"DOMAIN\":\"adfs.local\",\"FQDN\":\"adfssrvr.adfs.local\",\"HOSTNAME\":\"adfssrvr\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"KNOWLEDGE_BASE\":{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"None\",\"VENDOR\":\"multi-vendor\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VULN_TYPE\":\"Vulnerability\"},\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"ADFSSRVR\",\"OS\":\"Windows 2016/2019/10\",\"TRACKING_METHOD\":\"IP\"}",
         "type": [
             "info"
         ]
     },
     "host": {
+        "domain": "ADFSSRVR",
+        "hostname": "adfssrvr",
         "id": "1",
         "ip": [
             "10.50.2.111"
-        ]
+        ],
+        "name": "adfssrvr.adfs.local",
+        "os": {
+            "full": "Windows 2016/2019/10",
+            "platform": "windows",
+            "type": "windows"
+        }
     },
     "input": {
         "type": "cel"
     },
+    "observer": {
+        "vendor": "Qualys VMDR"
+    },
+    "package": {
+        "fixed_version": [
+            "1092",
+            "1092",
+            "1092",
+            "1092",
+            "1092"
+        ],
+        "name": [
+            "linux-cloud-tools-4.4.0",
+            "linux-aws-tools-4.4.0",
+            "linux-aws-headers-4.4.0",
+            "linux-tools-4.4.0",
+            "linux-aws-cloud-tools-4.4.0"
+        ],
+        "version": [
+            "1074-aws_4.4.0-1074.84",
+            "1074_4.4.0-1074.84",
+            "1074_4.15.0-1126.135",
+            "1074-aws_4.4.0-1074.84",
+            "1074_4.4.0-1074.84"
+        ]
+    },
     "qualys_vmdr": {
         "asset_host_detection": {
+            "dns": "adfssrvr.adfs.local",
+            "dns_data": {
+                "domain": "adfs.local",
+                "fqdn": "adfssrvr.adfs.local",
+                "hostname": "adfssrvr"
+            },
             "id": "1",
             "ip": "10.50.2.111",
+            "knowledge_base": {
+                "category": "CGI",
+                "consequence": {
+                    "value": "Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks."
+                },
+                "cve_list": [
+                    "CVE-2022-31629",
+                    "CVE-2022-31628"
+                ],
+                "diagnosis": {
+                    "value": "This QID reports the absence of the following"
+                },
+                "discovery": {
+                    "remote": 1
+                },
+                "last": {
+                    "service_modification_datetime": "2023-06-29T12:20:46.000Z"
+                },
+                "patchable": false,
+                "pci_flag": true,
+                "published_datetime": "2017-06-05T21:34:49.000Z",
+                "qid": "101",
+                "severity_level": "Medium",
+                "software_list": [
+                    {
+                        "product": "None",
+                        "vendor": "multi-vendor"
+                    }
+                ],
+                "solution": {
+                    "value": "<B>Note:</B> To better debug the results of this QID"
+                },
+                "threat_intelligence": {
+                    "intel": [
+                        {
+                            "id": "8"
+                        }
+                    ]
+                },
+                "title": "HTTP Security Header Not Detected",
+                "vuln_type": "Vulnerability"
+            },
             "last_pc_scanned_date": "2023-06-28T09:58:12.000Z",
             "last_scan_datetime": "2023-07-03T06:25:17.000Z",
             "last_vm_scanned_date": "2023-07-03T06:23:47.000Z",
             "last_vm_scanned_duration": 1113,
+            "netbios": "ADFSSRVR",
+            "os": "Windows 2016/2019/10",
             "tracking_method": "IP",
             "vulnerability": {
                 "affect_running_kernel": "0",
@@ -203,23 +293,30 @@ An example event for `asset_host_detection` looks as following:
                     }
                 ],
                 "qid": 101,
-                "results": "Package Installed Version Required Version\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092",
+                "results": "Package|Installed Version|Required Version;linux-cloud-tools-4.4.0|1074-aws_4.4.0-1074.84|1092;linux-aws-tools-4.4.0|1074_4.4.0-1074.84|1092;linux-aws-headers-4.4.0|1074_4.15.0-1126.135|1092;linux-tools-4.4.0|1074-aws_4.4.0-1074.84|1092;linux-aws-cloud-tools-4.4.0|1074_4.4.0-1074.84|1092",
                 "severity": 3,
                 "ssl": "0",
                 "status": "Active",
                 "times_found": 5393,
                 "type": "Confirmed",
-                "unique_vuln_id": "5555555555"
+                "unique_vuln_id": "11111111"
             }
         }
     },
     "related": {
         "hosts": [
-            "1"
+            "adfssrvr",
+            "adfssrvr.adfs.local",
+            "1",
+            "ADFSSRVR"
         ],
         "ip": [
             "10.50.2.111"
         ]
+    },
+    "resource": {
+        "id": "1",
+        "name": "adfssrvr.adfs.local"
     },
     "tags": [
         "preserve_original_event",
@@ -229,14 +326,51 @@ An example event for `asset_host_detection` looks as following:
         "provider_cloud_data"
     ],
     "vulnerability": {
+        "category": [
+            "CGI"
+        ],
         "classification": "CVSS",
+        "description": "This QID reports the absence of the following",
+        "enumeration": "CVE",
+        "id": [
+            "CVE-2022-31629",
+            "CVE-2022-31628"
+        ],
+        "package": {
+            "fixed_version": [
+                "1092",
+                "1092",
+                "1092",
+                "1092",
+                "1092"
+            ],
+            "name": [
+                "linux-cloud-tools-4.4.0",
+                "linux-aws-tools-4.4.0",
+                "linux-aws-headers-4.4.0",
+                "linux-tools-4.4.0",
+                "linux-aws-cloud-tools-4.4.0"
+            ],
+            "version": [
+                "1074-aws_4.4.0-1074.84",
+                "1074_4.4.0-1074.84",
+                "1074_4.15.0-1126.135",
+                "1074-aws_4.4.0-1074.84",
+                "1074_4.4.0-1074.84"
+            ]
+        },
+        "reference": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31629",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31628"
+        ],
         "scanner": {
             "vendor": "Qualys"
         },
         "score": {
             "base": 7.7
         },
-        "severity": "high"
+        "severity": "high",
+        "title": "HTTP Security Header Not Detected"
     }
 }
 ```
@@ -250,9 +384,11 @@ An example event for `asset_host_detection` looks as following:
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind |  | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| observer.vendor |  | constant_keyword |
 | package.fixed_version |  | keyword |
 | package.name |  | keyword |
 | package.version |  | keyword |
@@ -423,6 +559,7 @@ An example event for `asset_host_detection` looks as following:
 | vulnerability.package.fixed_version |  | keyword |
 | vulnerability.package.name |  | keyword |
 | vulnerability.package.version |  | keyword |
+| vulnerability.scanner.vendor |  | constant_keyword |
 | vulnerability.title |  | keyword |
 
 

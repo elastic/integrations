@@ -87,6 +87,17 @@ processors:
       tag: rename_DNS_DATA.FQDN
       target_field: qualys_vmdr.asset_host_detection.dns_data.fqdn
       ignore_missing: true
+  - rename:
+      field: json.DNS_DATA.HOSTNAME
+      tag: rename_DNS_DATA.HOSTNAME
+      target_field: qualys_vmdr.asset_host_detection.dns_data.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_hostname_into_related_hosts
+      value: '{{{qualys_vmdr.asset_host_detection.dns_data.hostname}}}'
+      allow_duplicates: false
+      if: ctx.qualys_vmdr?.asset_host_detection?.dns_data?.hostname != null
   - set:
       field: host.name
       tag: set_host_name
@@ -109,17 +120,6 @@ processors:
       value: '{{{qualys_vmdr.asset_host_detection.dns_data.fqdn}}}'
       allow_duplicates: false
       if: ctx.qualys_vmdr?.asset_host_detection?.dns_data?.fqdn != null
-  - rename:
-      field: json.DNS_DATA.HOSTNAME
-      tag: rename_DNS_DATA.HOSTNAME
-      target_field: qualys_vmdr.asset_host_detection.dns_data.hostname
-      ignore_missing: true
-  - append:
-      field: related.hosts
-      tag: append_hostname_into_related_hosts
-      value: '{{{qualys_vmdr.asset_host_detection.dns_data.hostname}}}'
-      allow_duplicates: false
-      if: ctx.qualys_vmdr?.asset_host_detection?.dns_data?.hostname != null
   - rename:
       field: json.ID
       tag: rename_ID

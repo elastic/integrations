@@ -135,19 +135,19 @@ program: |
                   ?
                     kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.with({
                         "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
-                    })).as(kb_list, kb_list[0]).as(kb, {
+                    })).as(kb_list, kb_list[0]).as(kb, [{
                       "message": state.worklist[state.next].with({
                         "KNOWLEDGE_BASE": kb,
                       }).encode_json()
-                    })
+                    }])
                   :
-                    {
+                    [{
                       "message": state.worklist[state.next].with({
                         "KNOWLEDGE_BASE": {
                           "response_error": "response IDs values are missing: " + string(kb_body.?doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET.orValue([])),
                         }
                       }).encode_json()
-                    }
+                    }]
                 ),
                 "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
                 "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
