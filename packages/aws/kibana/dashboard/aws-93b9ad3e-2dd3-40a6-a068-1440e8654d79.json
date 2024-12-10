@@ -86,6 +86,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "9d022713-4158-4406-b748-b6219d9e8adb": {
                                             "columnOrder": [
@@ -100,7 +101,7 @@
                                                         "query": "aws.elb.listener : \"443\" "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Connection Requests (443)",
+                                                    "label": "Connection Requests (Listener 443)",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -111,6 +112,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -256,9 +258,32 @@
                                         "8bafee1c-43b3-4913-9c40-e3d75b0843a1": {
                                             "columnOrder": [
                                                 "a0eca9ec-708c-4688-9459-98f040b8c440",
-                                                "fcf0a630-9edb-4a7c-a5ed-fc9222e2d620"
+                                                "fcf0a630-9edb-4a7c-a5ed-fc9222e2d620",
+                                                "75a21d29-2aea-4a64-b90a-6e02d95c3ea4"
                                             ],
                                             "columns": {
+                                                "75a21d29-2aea-4a64-b90a-6e02d95c3ea4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.elb.tls_verify_status : \"Failed\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Failed",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.elb.tls_verify_status"
+                                                },
                                                 "a0eca9ec-708c-4688-9459-98f040b8c440": {
                                                     "customLabel": true,
                                                     "dataType": "string",
@@ -288,11 +313,21 @@
                                                 "fcf0a630-9edb-4a7c-a5ed-fc9222e2d620": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.elb.tls_verify_status : \"Success\" "
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Count",
+                                                    "label": "Success",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -319,10 +354,16 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "fcf0a630-9edb-4a7c-a5ed-fc9222e2d620"
+                                            "fcf0a630-9edb-4a7c-a5ed-fc9222e2d620",
+                                            "75a21d29-2aea-4a64-b90a-6e02d95c3ea4"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -347,7 +388,17 @@
                                         "position": "top",
                                         "seriesType": "bar_stacked",
                                         "showGridlines": false,
-                                        "xAccessor": "a0eca9ec-708c-4688-9459-98f040b8c440"
+                                        "xAccessor": "a0eca9ec-708c-4688-9459-98f040b8c440",
+                                        "yConfig": [
+                                            {
+                                                "color": "#54b399",
+                                                "forAccessor": "fcf0a630-9edb-4a7c-a5ed-fc9222e2d620"
+                                            },
+                                            {
+                                                "color": "#e7664c",
+                                                "forAccessor": "75a21d29-2aea-4a64-b90a-6e02d95c3ea4"
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
@@ -356,7 +407,8 @@
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "yTitle": "Count"
                             }
                         },
                         "title": "",
@@ -573,7 +625,7 @@
                                                         "query": "aws.elb.listener :\"80\" "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Connection Requests (80)",
+                                                    "label": "Connection Requests (Listener 80)",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -699,7 +751,7 @@
                     "y": 16
                 },
                 "panelIndex": "eb1de5e9-621d-4a7c-a96f-e4bc2ba6c78c",
-                "title": "Certificate Expired and Expiring in 30 days",
+                "title": "Certificate Expired or Expiring in 30 days",
                 "type": "search"
             },
             {
@@ -843,8 +895,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-12-05T04:59:48.758Z",
-    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "created_at": "2024-12-10T07:18:40.790Z",
     "id": "aws-93b9ad3e-2dd3-40a6-a068-1440e8654d79",
     "managed": false,
     "references": [
