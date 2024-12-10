@@ -1,0 +1,92 @@
+format_version: 3.3.0
+name: beyondinsight_password_safe
+title: "BeyondInsight and Password Safe"
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "It enables real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse."
+type: integration
+categories:
+  - custom
+conditions:
+  kibana:
+    version: "^8.15.3"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sample-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: beyondinsight
+    title: beyondinsight Events
+    description: Collect events from beyondinsight Events Reporting
+    inputs:
+      - type: cel
+        title: Collect events from beyondinsight Events API
+        description: Collect sign-in attempt, item usages, and audit events from beyondinsight via the beyondinsight Events API
+        vars:
+          - name: url
+            type: text
+            title: URL of beyondinsight Events API Server
+            description: |
+              options: https://xxxxxxxxxxxx.com/beyondinsight/api/public/v3. path is automatic
+            show_user: true
+            required: true
+          - name: apikeytoken
+            type: text
+            title: API Key token of beyondinsight Events API Server
+            description: "This is the API key token you have created on beyondinsight password safe  i.e it will be set asPS-Auth key=********************."
+            show_user: true
+            required: true
+            secret: true
+          - name: username
+            type: text
+            title: Username of beyondinsight Events API Server
+            description: "This is the username you have i.e it will be set as runas=****"
+            show_user: true
+            required: true
+          - name: password
+            type: text
+            title: User password of beyondinsight Events API Server
+            description: "This is the password of user you have"
+            show_user: true
+            required: true
+            secret: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local filesystem for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/integrations
+  type: elastic
