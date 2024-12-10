@@ -113,11 +113,11 @@ program: |
         )
       )
   ).as(state, state.with(
-    !has(state.worklist) ? state : // Exit early due to GET failure.
-      state.next < size(state.worklist) ?
+    !has(state.worklist) ? state : 
+      size(state.worklist) > 0 ?
         request("GET", state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/?" +
           {
-            "ids": [string(state.worklist[state.next].DETECTION_LIST.QID)],
+            "ids": [string(state.worklist[0].DETECTION_LIST.QID)],
             "action": ["list"],
           }.format_query()
         ).with({
@@ -136,23 +136,29 @@ program: |
                     kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.with({
                         "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
                     })).as(kb_list, kb_list[0]).as(kb, [{
-                      "message": state.worklist[state.next].with({
+                      "message": state.worklist[0].with({
                         "KNOWLEDGE_BASE": kb,
                       }).encode_json()
                     }])
                   :
                     [{
-                      "message": state.worklist[state.next].with({
+                      "message": state.worklist[0].with({
                         "KNOWLEDGE_BASE": {
                           "response_error": "response IDs values are missing: " + string(kb_body.?doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET.orValue([])),
                         }
                       }).encode_json()
                     }]
                 ),
-                "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
-                "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
-                "want_more": int(state.next) + 1 < size(state.worklist) || has(state.?next_page.link),
-              })
+                "worklist": tail(state.worklist),
+                "want_more": has(state.?next_page.link),
+              }).as(to_publish, to_publish.with({
+                "want_more": to_publish.want_more || size(to_publish.worklist) != 0,
+              })).as(state, 
+                state.want_more && size(state.events) == 0 ?
+                  state.with({"events": [{"message": "want_more"}]})
+                :
+                  state
+              )
             :
               {
                 "events": {
