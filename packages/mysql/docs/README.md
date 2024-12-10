@@ -184,26 +184,26 @@ An example event for `slowlog` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-09T08:24:26.000Z",
+    "@timestamp": "2024-12-10T05:35:20.000Z",
     "agent": {
-        "ephemeral_id": "fe3b9527-f8f9-4748-b550-bf9cb7154f2e",
-        "id": "21e163da-3324-4f31-be38-fb745d92b8c7",
-        "name": "elastic-agent-23600",
+        "ephemeral_id": "b970821e-9579-4a3b-96db-0a751cb724de",
+        "id": "15b0faf9-c42a-4f8b-81f3-827a45988d1c",
+        "name": "elastic-agent-31305",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.15.0"
     },
     "data_stream": {
         "dataset": "mysql.slowlog",
-        "namespace": "41434",
+        "namespace": "17576",
         "type": "logs"
     },
     "ecs": {
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "21e163da-3324-4f31-be38-fb745d92b8c7",
-        "snapshot": true,
-        "version": "8.17.0"
+        "id": "15b0faf9-c42a-4f8b-81f3-827a45988d1c",
+        "snapshot": false,
+        "version": "8.15.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -211,8 +211,8 @@ An example event for `slowlog` looks as following:
             "database"
         ],
         "dataset": "mysql.slowlog",
-        "duration": 259000,
-        "ingested": "2024-12-09T08:24:47Z",
+        "duration": 232000,
+        "ingested": "2024-12-10T05:35:37Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -222,23 +222,25 @@ An example event for `slowlog` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-23600",
+        "hostname": "elastic-agent-31305",
+        "id": "5c3f9f83eeec4f92817d995fce90f92f",
         "ip": [
-            "192.168.253.2",
-            "192.168.241.7"
+            "192.168.242.2",
+            "192.168.255.6"
         ],
         "mac": [
-            "02-42-C0-A8-F1-07",
-            "02-42-C0-A8-FD-02"
+            "02-42-C0-A8-F2-02",
+            "02-42-C0-A8-FF-06"
         ],
-        "name": "elastic-agent-23600",
+        "name": "elastic-agent-31305",
         "os": {
-            "family": "",
+            "codename": "focal",
+            "family": "debian",
             "kernel": "3.10.0-1160.92.1.el7.x86_64",
-            "name": "Wolfi",
-            "platform": "wolfi",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "20230201"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -246,7 +248,7 @@ An example event for `slowlog` looks as following:
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/mysql/8019a2ba561a-slow.log"
+            "path": "/tmp/service_logs/mysql/51910f9b766e-slow.log"
         },
         "flags": [
             "multiline"
@@ -275,7 +277,6 @@ An example event for `slowlog` looks as following:
     "tags": [
         "mysql-slowlog"
     ],
-    "temp": {},
     "user": {
         "name": "root"
     }
