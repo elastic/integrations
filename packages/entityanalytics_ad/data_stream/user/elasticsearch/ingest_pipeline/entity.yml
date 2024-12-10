@@ -66,6 +66,56 @@ processors:
         "whenCreated": "when_created"
       tag: painless_to_rename_fields_under_activedirectory_groups
       source: |
+        String hexByte(Byte b) {
+            String x = Integer.toHexString(Byte.toUnsignedInt(b));
+            if (x.length() < 2) {
+                x = "0" + x;
+            }
+            return x;
+        }
+        String guid(String text) {
+            def bytes = Base64.getDecoder().decode(text);
+            def uid = "";
+            for (int i = 3; i >= 0; i--) {
+                uid += hexByte(bytes[i]);
+            }
+            uid += "-";
+            for (int i = 5; i > 3; i--) {
+                uid += hexByte(bytes[i]);
+            }
+            uid += "-";
+            for (int i = 7; i > 5; i--) {
+                uid += hexByte(bytes[i]);
+            }
+            uid += "-";
+            for (int i = 8; i < bytes.length; i++) {
+                if (i == 10) {
+                    uid += "-";
+                }
+                uid += hexByte(bytes[i]);
+            }
+            return uid;
+        }
+        String sid(String text) {
+            def bytes = Base64.getDecoder().decode(text);
+            int subauths = Byte.toUnsignedInt(bytes[1]);
+            def uid = "S-"+Byte.toString(bytes[0])+"-"+Integer.toString(subauths)+"-";
+            int auth = 0;
+            for (int i = 2; i < 8; i++) {
+                auth |= Byte.toUnsignedInt(bytes[i])<<(8*(5-(i-2)));
+            }
+            uid += Integer.toString(auth);
+            int off = 8;
+            for (int i = 0; i < subauths; i++) {
+                int subauth = 0;
+                for (int k = 0; k < 4; k++) {
+                    subauth |= (Byte.toUnsignedInt(bytes[off+k])&0xff)<<(8*k);
+                }
+                uid += "-"+Integer.toUnsignedString(subauth);
+                off += 4;
+            }
+            return uid;
+        }
         def renameKeys(Map src, Map keyMap) {
           def dst = new HashMap();
           for (def entry: src.entrySet()) {
@@ -92,6 +142,13 @@ processors:
                 dst[key] = value;
               }
             } else {
+              if (value instanceof String) {
+                if (key == "objectGUID") {
+                  value = guid(value);
+                } else if (key == "objectSid") {
+                  value = sid(value);
+                }
+              }
               if (keyMap.containsKey(key)) {
                 dst[keyMap[key]] = value;
               } else {

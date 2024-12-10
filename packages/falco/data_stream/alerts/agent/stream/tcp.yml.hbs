@@ -1,0 +1,21 @@
+host: {{listen_address}}:{{listen_port}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_falco_fields}}
+  - preserve_falco_fields
+{{/if}}
+processors:
+  - add_locale: ~
+{{#if preserve_original_event}}
+  - copy_fields:
+      fields:
+        - from: message
+          to: event.original
+{{/if}}
+  - syslog:
+      field: message
+{{#if processors}}
+{{processors}}
+{{/if}}

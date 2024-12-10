@@ -13,16 +13,6 @@ processors:
         target_field: jamf_protect.alerts
         if: ctx.json != null
 
-##########################
-## ECS Observer Mapping ##
-##########################
-    - set:
-        field: observer.product
-        value: Jamf Protect
-    - set:
-        field: observer.vendor
-        value: Jamf
-
 #######################
 ## ECS Event Mapping ##
 #######################
@@ -57,45 +47,57 @@ processors:
         field: event.category
         value: file
         if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPDownloadEvent'
-    - rename:
-        field: ctx.jamf_protect.alerts.input.match.facts[0].name
-        target_field: rule.name
-        if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].name != null
-        ignore_missing: true
-    - rename:
-        field: ctx.jamf_protect?.alerts.input.match.facts[0].name
-        target_field: rule.description 
-        if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].human != null
-        ignore_missing: true
+    - script:
+        if: >
+          ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List && 
+          ctx.jamf_protect.alerts.input.match.facts.length != 0 && 
+          ctx.jamf_protect.alerts.input.match.facts[0].name != null
+        lang: painless
+        source: |
+          if (ctx.rule == null) {
+            ctx.rule = new HashMap();
+          }
+          ctx.rule.name = ctx.jamf_protect.alerts.input.match.facts[0].name
+    - script:
+        if: >
+          ctx.jamf_protect?.alerts?.input?.match?.facts instanceof List && 
+          ctx.jamf_protect.alerts.input.match.facts.length != 0 && 
+          ctx.jamf_protect.alerts.input.match.facts[0].human != null
+        lang: painless
+        source: |
+          if (ctx.rule == null) {
+            ctx.rule = new HashMap();
+          }
+          ctx.rule.description = ctx.jamf_protect.alerts.input.match.facts[0].human
     - script:
         description: Populates event.action with the name of the event
         lang: painless
         source: >
-            if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-                if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('name')) {
-                ctx.event.action = ctx.jamf_protect.alerts.input.match.facts[0].name;
-                }
+          if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
+            if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('name')) {
+              ctx.event.action = ctx.jamf_protect.alerts.input.match.facts[0].name;
             }
+          }
         ignore_failure: true
     - script:
         description: Populates event.reason with the name of the event
         lang: painless
         source: >
-            if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-                if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('human')) {
-                ctx.event.reason = ctx.jamf_protect.alerts.input.match.facts[0].human;
-                }
+          if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
+            if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('human')) {
+              ctx.event.reason = ctx.jamf_protect.alerts.input.match.facts[0].human;
             }
+          }
         ignore_failure: true
     - script:
         description: Populates event.tags with tags from the event
         lang: painless
         source: >
-            if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
-                if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('tags')) {
-                ctx.tags = ctx.jamf_protect.alerts.input.match.facts[0].tags;
-                }
+          if (ctx.jamf_protect?.alerts?.input?.match?.facts != null && ctx.jamf_protect.alerts.input.match.facts.size() > 0) {
+            if (ctx.jamf_protect.alerts.input.match.facts[0].containsKey('tags')) {
+              ctx.tags = ctx.jamf_protect.alerts.input.match.facts[0].tags;
             }
+          }
         ignore_failure: true
     - rename:
         field: jamf_protect.alerts.input.match.uuid
@@ -400,17 +402,17 @@ processors:
 ########################
     - append:
         field: related.hosts
-        value: "{{ host.name }}"
+        value: "{{{ host.name }}}"
         if: ctx.host?.name != null
         allow_duplicates: false
     - append:
         field: related.user
-        value: "{{ user.name }}"
+        value: "{{{ user.name }}}"
         if: ctx.user?.name != null
         allow_duplicates: false
     # - append:
     #     field: related.ip
-    #     value: "{{ host.ip }}"
+    #     value: "{{{ host.ip }}}"
     #     if: ctx.host?.ip != null
     #     allow_duplicates: false
     - foreach:
@@ -423,22 +425,22 @@ processors:
                 allow_duplicates: false
     - append:
         field: related.hash
-        value: "{{ file.hash.sha1 }}"
+        value: "{{{ file.hash.sha1 }}}"
         if: ctx.file?.hash?.sha1 != null
         allow_duplicates: false
     - append:
         field: related.hash
-        value: "{{ file.hash.sha256 }}"
+        value: "{{{ file.hash.sha256 }}}"
         if: ctx.file?.hash?.sha256 != null
         allow_duplicates: false
     - append:
         field: related.hash
-        value: "{{ process.hash.sha1 }}"
+        value: "{{{ process.hash.sha1 }}}"
         if: ctx.process?.hash?.sha1 != null
         allow_duplicates: false
     - append:
         field: related.hash
-        value: "{{ process.hash.sha256 }}"
+        value: "{{{ process.hash.sha256 }}}"
         if: ctx.process?.hash?.sha256 != null
         allow_duplicates: false
 

@@ -98,16 +98,6 @@ processors:
       field: event.kind
       value: event
       tag: set_event_kind
-  - rename:
-      field: json.sourceRule.controlDescription
-      tag: rename_control_description
-      target_field: wiz.issue.source_rule.control_description
-      ignore_missing: true
-  - set:
-      field: message
-      tag: set_message
-      copy_from: wiz.issue.source_rule.control_description
-      ignore_empty_value: true
   - date:
       field: json.dueAt
       tag: set_dueAt
@@ -327,6 +317,28 @@ processors:
       tag: rename_source_rule_id
       target_field: wiz.issue.source_rule.id
       ignore_missing: true
+  - rename:
+      field: json.sourceRule.controlDescription
+      tag: rename_control_description
+      target_field: wiz.issue.source_rule.control_description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: wiz.issue.source_rule.control_description
+      ignore_empty_value: true
+      if: ctx.message == null
+  - rename:
+      field: json.sourceRule.cloudConfigurationRuleDescription
+      tag: rename_source_rule_cloud_configuration_rule_description
+      target_field: wiz.issue.source_rule.cloud_configuration_rule_description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: wiz.issue.source_rule.cloud_configuration_rule_description
+      ignore_empty_value: true
+      if: ctx.message == null
   - rename:
       field: json.sourceRule.name
       tag: rename_source_rule_name

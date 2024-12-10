@@ -1,6 +1,7 @@
 - name: mimecast
   type: group
   fields:
+    # v1 API https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/
     ### Receipt logs
     - name: acc
       type: keyword
@@ -51,7 +52,8 @@
     - name: AttNames
       type: keyword
       description: The filenames of all attachments on the email.
-      ### Delivery logs
+
+    ### Delivery logs
     - name: Attempt
       type: long
       description: The count of attempts that the Mimecast MTA has made to deliver the email.
@@ -67,7 +69,8 @@
     - name: Snt
       type: long
       description: The amount of data in bytes that were delivered.
-      ### AV Logs
+
+    ### AV Logs
     - name: CustomerIP
       type: keyword
       description: The source IP is one of the accounts authorised IPs or one of the authorised IPs belonging to an Umbrella Account, if the Account uses an Umbrella Account.
@@ -80,21 +83,24 @@
     - name: Recipient
       type: keyword
       description: The recipient of the original message.
-      ### Spam Event Thread Logs
+
+    ### Spam Event Thread Logs
     - name: ScanResultInfo
       type: keyword
       description: The reason that the click was blocked.
-      ### Siem Email Protect Logs
+
+    ### Siem Email Protect Logs
     - name: UrlCategory
       type: keyword
       description: The category of the URL that was clicked.
-      ### Siem Impersonation Logs
+
+    ### Siem Impersonation Logs
     - name: CustomName
       type: keyword
       description: The message has matched a custom name.
     - name: CustomThreatDictionary
       type: keyword
-      description: The content of the email was detected to contain words in a custom threat dictionary.
+      description: The content of the email was detected to contain words in a custom threat dictionary.
     - name: Hits
       type: keyword
       description: Number of items flagged for the message.
@@ -121,15 +127,17 @@
       description: The message has been tagged as malicious.
     - name: ThreatDictionary
       type: keyword
-      description: The content of the email was detected to contain words in the Mimecast threat dictionary.
-      ### SIEM TTP Url Protect Logs
+      description: The content of the email was detected to contain words in the Mimecast threat dictionary.
+
+    ### SIEM TTP Url Protect Logs
     - name: urlCategory
       type: keyword
       description: The category of the URL that was clicked.
     - name: credentialTheft
       type: keyword
       description: The info about credential theft.
-      ### SIEM Journal Logs
+
+    ### SIEM Journal Logs
     - name: RcptHdrType
       type: keyword
       description: Type of the receipt header.
@@ -142,3 +150,320 @@
     - name: msgid
       type: keyword
       description: The internet message id of the email.
+
+    # v2 API https://developer.services.mimecast.com/siem-tutorial-cg
+    ### Undocumented
+    - name: deliveryAttempts
+      type: keyword
+    - name: subtype
+      type: keyword
+    - name: Hostname
+      type: keyword
+
+    ### Common fields
+    - name: processingId
+      type: keyword
+      description: >-
+        Unique identifier that allows you to correlate/group related events.
+    - name: aggregateId
+      type: keyword
+      description: >-
+        Unique identifier that allows you to correlate/group related events.
+    - name: messageId
+      type: keyword
+      description: >-
+        The internet message id of the email.
+    - name: timestamp
+      type: keyword
+      description: >-
+        The date and time of event.
+    - name: accountId
+      type: keyword
+      description: >-
+        The Mimecast account code for your account
+    - name: action
+      type: keyword
+      description: >-
+        The action taken at the receipt stage. Receipt logs:(Rej; Acc; Ign; Bnc), Process logs:(Acc; Hld; Bnc; Sdbx; Rty), Impersonation Protect logs:(None; Hold), URL Protect logs:(Block).
+
+    ### Email fields
+    - name: subject
+      type: keyword
+      description: >-
+        The subject of the email.
+    - name: senderEnvelope
+      type: keyword
+      description: >-
+        The sender of the email.
+    - name: senderDomain
+      type: keyword
+      description: >-
+        The sender domain.
+    - name: senderIp
+      type: keyword
+      description: >-
+        The source IP of the original message or sending mail server.
+    - name: senderHeader
+      type: keyword
+      description: >-
+        Sender address found in the from header of the email.
+    - name: recipients
+      type: keyword
+      description: >-
+        The recipient of the email.
+    - name: emailSize
+      type: keyword
+      description: >-
+        The amount of data in bytes that were delivered.
+    - name: direction
+      type: keyword
+      description: >-
+        The direction of the email based on the sending and receiving domains. (Inbound; Outbound; Internal; External)
+    - name: numberAttachments
+      type: keyword
+      description: >-
+        The number of attachments on the email.
+    - name: totalSizeAttachments
+      type: keyword
+      description: >-
+        The total size of all attachments on the email.
+    - name: rejectionCode
+      type: keyword
+      description: >-
+        The rejection code, for messages rejected by the receiving mail server.
+    - name: rejectionType
+      type: keyword
+      description: >-
+        The rejection type, for messages rejected by the receiving mail server.
+    - name: route
+      type: keyword
+      description: >-
+        The route of the message. (Inbound; Outbound; Internal; External)
+
+    ### TLS fields
+    - name: tlsVersion
+      type: keyword
+      description: >-
+        The TLS version used if the email was delivered or received using TLS.
+    - name: tlsCipher
+      type: keyword
+      description: >-
+        The TLS Cipher used if the email was delivered or received using TLS.
+
+    ### File fields
+    - name: fileName
+      type: keyword
+      description: >-
+        The name of file.
+    - name: fileExtension
+      type: keyword
+      description: >-
+        The file extension.
+
+    ### Hash fields
+    - name: md5
+      type: keyword
+      description: >-
+        MD5 Hash.
+    - name: sha1
+      type: keyword
+      description: >-
+        SHA1 hash.
+    - name: sha256
+      type: keyword
+      description: >-
+        SHA256 hash.
+
+    ### Virus fields
+    - name: virusFound
+      type: keyword
+      description: >-
+        The name or signature of the virus found on the email, if applicable.
+
+    ### Receipt logs
+    - name: rejectionInfo
+      type: keyword
+      description: >-
+        The rejection information if the email was rejected at the receipt stage.
+    - name: spamInfo
+      type: keyword
+      description: >-
+        Information from Mimecast Spam scanners for messages found to be Spam.
+    - name: spamProcessingDetail
+      type: keyword
+      description: >-
+        The Spam processing details for DKIM, SPF, DMARC
+    - name: spamScore
+      type: keyword
+      description: >-
+        The metric that measures the likelihood of the event being considered spam.
+    - name: spamDetectionLevel
+      type: keyword
+      description: >-
+        The detection level defined for the given sender and recipient.
+    - name: receiptErrors
+      type: keyword
+      description: >-
+        Information about any errors that occurred during receipt.
+
+    ### Process logs
+    - name: attachments
+      type: keyword
+      description: >-
+        The filenames of all attachments on the email
+    - name: holdReason
+      type: keyword
+      description: >-
+        The reason the email was held for review (quarantined), if applicable. (Spm; Att; RcptLimit; Exp; Imp; Sbx; Oth; Url; Ctnt; Dpp; RBL; (absent))
+    - name: ipUserName
+      type: keyword
+      description: >-
+        For emails subject to Targeted Threat Protection: Impersonation Protect, if the email was detected to be from an internal user name.
+    - name: ipNewDomain
+      type: keyword
+      description: >-
+        For emails subject to Targeted Threat Protection: Impersonation Protect, if the email was detected to be from a new domain.
+    - name: ipReplyMismatch
+      type: keyword
+      description: >-
+        For emails subject to Targeted Threat Protection: Impersonation Protect, if the email was detetced to have a mismatch in the reply to address.
+    - name: ipSimilarDomain
+      type: keyword
+      description: >-
+        For emails subject to Targeted Threat Protection: Impersonation Protect, if the email was detetced to be from a similar domain to any domain you have registered as an Internal Domain.
+    - name: ipThreatDictionary
+      type: keyword
+      description: >-
+        For emails subject to Targeted Threat Protection: Impersonation Protect, if the content of the email was detected to contain words in the Mimecast threat dictionary.
+
+    ### Delivery logs
+    - name: delivery
+      type: keyword
+      description: >-
+        Attempts  The count of attempts that the Mimecast MTA has made to deliver the email.
+    - name: delivered
+      type: keyword
+      description: >-
+        * If the email was delivered successfully or not. False; True
+    - name: deliveryErrors
+      type: keyword
+      description: >-
+        Information about any errors that occurred on the delivery attempt.
+    - name: destinationIp
+      type: keyword
+      description: >-
+        The destination IP address for the delivery attempt.
+    - name: deliveryTime
+      type: keyword
+      description: >-
+        The time in milliseconds that the delivery attempt took.
+    - name: tlsUsed
+      type: keyword
+      description: >-
+        If the message was delivered using TLS or not. (Yes; No)
+
+    ### AV logs
+    - name: senderDomainInternal
+      type: keyword
+      description: >-
+        The sender domain is a registered internal domain.
+    - name: customerIp
+      type: keyword
+      description: >-
+        The source IP is one of the accounts authorised IPs or one of the authorised IPs belonging to an Umbrella Account, if the Account uses an Umbrella Account.
+
+    ### Internal Email Protect logs
+    - name: scanResults
+      type: keyword
+      description: >-
+        The reason that the click was blocked.
+    - name: similarDomain
+      type: keyword
+      description: >-
+        The domain is similar to a registered domain.
+    - name: monitoredDomainSource
+      type: keyword
+      description: >-
+        the source of the URL match based on Mimecast's heuristic scanning techniques
+
+    ### Impersonation Protect logs
+    - name: policyDefinition
+      type: keyword
+      description: >-
+        The definition of policy triggered.
+    - name: itemsDetected
+      type: keyword
+      description: >-
+        Number of items flagged for the message.
+    - name: internalUserName
+      type: keyword
+      description: >-
+        The email was detected to be from an internal user name. (Hit; No Hit)
+    - name: customNameMatch
+      type: keyword
+      description: >-
+        The message has matched a custom name.  True; False
+    - name: similarInternalDomain
+      type: keyword
+      description: >-
+        The senders domain is similar to a registered internal domain. (True; False)
+    - name: similarCustomExternalDomain
+      type: keyword
+      description: >-
+        The senders domain is similar to a custom external domain list. (True; False)
+    - name: similarMimecastExternalDomain
+      type: keyword
+      description: >-
+        The senders domain is similar to a Mimecast managed list of domains. (True; False)
+    - name: newDomain
+      type: keyword
+      description: >-
+        The email was detected to be from a new domain (True; False)
+    - name: replyMismatch
+      type: keyword
+      description: >-
+        The reply address does not correspond to the senders address. (True; False)
+    - name: mimecastThreatDictionary
+      type: keyword
+      description: >-
+        The content of the email was detected to contain words in the Mimecast threat dictionary. (True; False)
+    - name: customThreatDictionary
+      type: keyword
+      description: >-
+        The content of the email was detected to contain words in the client custom threat dictionary. (True; False)
+    - name: taggedMalicious
+      type: keyword
+      description: >-
+        The message has been tagged as malicious. (True; False)
+    - name: taggedExternal
+      type: keyword
+      description: >-
+        The message has been tagged as originating from a external source. (True; False)
+
+    ### URL Protect logs (Blocked events only)
+    - name: url
+      type: keyword
+      description: >-
+        URL Clicked
+    - name: sourceIp
+      type: keyword
+      description: >-
+        The source IP of the original message.
+    - name: blockReason
+      type: keyword
+      description: >-
+        The reason click was blocked. (Unknown; File Detected; Clean; Malicious; Suspicious)
+    - name: analysis
+      type: keyword
+      description: >-
+        The senders domain is similar to a custom external domain list.
+    - name: similarMimecastExternalDomainResults
+      type: keyword
+      description: >-
+        Advanced phishing detection results from scanners
+
+    ### Attachment Protect logs
+    - name: sizeAttachment
+      type: keyword
+      description: >-
+        The size (in bytes) of the malicious file.

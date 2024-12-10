@@ -107,7 +107,6 @@ An example event for `log` looks as following:
         "name": "admin.user"
     }
 }
-
 ```
 
 **Exported fields**

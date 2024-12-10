@@ -1,0 +1,51 @@
+---
+name: Update package list in Github bug issue template
+pipelineid: sync-packages-to-bug-issue-template
+
+scms:
+  default:
+    kind: github
+    spec:
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      commitusingapi: true
+      branch: main
+
+targets:
+  integration_bug_yml:
+    name: update pkgs in .github/ISSUE_TEMPLATE/integration_bug.yml
+    kind: shell
+    scmid: default
+    spec:
+      environments:
+        - name: PATH
+        - name: HOME
+      # This script collects titles and package names (as determined by their
+      # directory name) from source. Then updates the issue template. It uses
+      # 'git diff' to satisfy the conditions needed by updatecli to determine
+      # if any changes occurred.
+      command: |
+        #!/usr/bin/env bash
+        set -eu
+
+        pkgs=$(for i in $(LC_ALL=C ls packages); do
+          title=$(yq .title packages/$i/manifest.yml)
+          pkg=$i
+          echo "- $title [$pkg]"
+        done | yq -o json .)
+        
+        yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_bug.yml'
+        
+        git diff --name-only HEAD
+
+actions:
+  openPullRequest:
+    title: '[automation] Update packages in .github/ISSUE_TEMPLATE/integration_bug.yml'
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      labels:
+        - automation

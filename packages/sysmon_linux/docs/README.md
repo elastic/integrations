@@ -93,7 +93,6 @@ An example event for `log` looks as following:
         "pid": 3041
     }
 }
-
 ```
 
 **Exported fields**

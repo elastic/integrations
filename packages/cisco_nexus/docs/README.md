@@ -125,7 +125,6 @@ An example event for `log` looks as following:
         "cisco_nexus-log"
     ]
 }
-
 ```
 
 **Exported fields**

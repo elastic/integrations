@@ -73,7 +73,7 @@ processors:
       value: azure
   - set:
       field: '@timestamp'
-      value: '{{json.alertUpdateTime}}'
+      value: '{{{json.alertUpdateTime}}}'
       if: ctx.json?.alertUpdateTime != null
   - rename:
       field: json.aadTenantId
@@ -100,14 +100,14 @@ processors:
       value: UTC
   - set:
       field: event.action
-      value: '{{json.category}}'
+      value: '{{{json.category}}}'
       if: ctx.json?.category != null
   - set:
       field: event.provider
       value: defender_endpoint
   - set:
       field: event.created
-      value: '{{json.alertCreationTime}}'
+      value: '{{{json.alertCreationTime}}}'
       if: ctx.json?.alertCreationTime != null
   - append:
       field: event.category
@@ -294,23 +294,23 @@ processors:
 #########################
   - append:
       field: related.ip
-      value: '{{json.evidence.ipAddress}}'
+      value: '{{{json.evidence.ipAddress}}}'
       if: ctx.json?.evidence?.ipAddress != null
   - append:
       field: related.user
-      value: '{{user.name}}'
+      value: '{{{user.name}}}'
       if: ctx.user?.name != null
   - append:
       field: related.hash
-      value: '{{file.hash.sha1}}'
+      value: '{{{file.hash.sha1}}}'
       if: ctx.file?.hash?.sha1 != null
   - append:
       field: related.hash
-      value: '{{file.hash.sha256}}'
+      value: '{{{file.hash.sha256}}}'
       if: ctx.file?.hash?.sha256 != null
   - append:
       field: related.hosts
-      value: '{{host.name}}'
+      value: '{{{host.name}}}'
       if: ctx.host?.name != null && ctx.host.name != ''
       allow_duplicates: false
 

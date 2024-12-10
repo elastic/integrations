@@ -9,7 +9,7 @@ Use the Barracuda WAF data stream to ingest log data. Then visualize that data i
 
 ## Upgrade
 
-The Technical preview `spamfirewall` data stream has been deprecated and removed, as of v1.0 of this integration. As we work on a replacement for the Spam Firewall integration, you can continue to use the [Spam Firewall filebeat module](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-barracuda.html).
+The Technical preview `spamfirewall` data stream has been deprecated and removed, as of v1.0 of this integration. As we work on a replacement for the Spam Firewall integration, you can continue to use the [Spam Firewall filebeat module](https://www.elastic.co/guide/en/beats/filebeat/8.13/filebeat-module-barracuda.html).
 
 ## WAF
 
@@ -24,7 +24,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ### Setup
 
-For step-by-step instructions on how to set up an integration, see the
+For step-by-step instructions on how to set up an integration, check the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 ### WAF Events

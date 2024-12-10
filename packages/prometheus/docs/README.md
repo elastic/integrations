@@ -21,7 +21,7 @@ to retrieve the metrics from (`/metrics` by default) can be configured with Metr
 `Use Types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
 types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html).
 
-`Rate Counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`Rate Counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Elastic Agent stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `Use Types`.
 
@@ -101,6 +101,10 @@ When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
 }
 ```
 
+#### Metrics count
+
+The Prometheus integration's `collector` dataset provides a `Metrics Count` parameter, which is disabled by default. When enabled, it counts the total number of Prometheus metrics within each Elasticsearch document. This count is stored in a field called `metrics_count` and its value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines.
+
 #### Scraping all metrics from a Prometheus server
 
 We recommend using the Remote Write dataset for this, and make Prometheus push metrics to Agent.
@@ -131,45 +135,84 @@ An example event for `collector` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-21T13:53:53.737Z",
+    "@timestamp": "2024-08-20T08:38:11.185Z",
+    "agent": {
+        "ephemeral_id": "b9fad797-a22c-47be-b2f4-44c0a89b6c25",
+        "id": "9822f27e-ae7c-4cee-98af-094356f8bf91",
+        "name": "elastic-agent-35087",
+        "type": "metricbeat",
+        "version": "8.14.0"
+    },
     "data_stream": {
         "dataset": "prometheus.collector",
-        "namespace": "default",
+        "namespace": "52976",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
-        "snapshot": true,
-        "version": "8.4.0"
+        "id": "9822f27e-ae7c-4cee-98af-094356f8bf91",
+        "snapshot": false,
+        "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "prometheus.collector",
-        "duration": 10509824,
-        "ingested": "2022-09-21T13:53:54Z",
+        "duration": 1958134070,
+        "ingested": "2024-08-20T08:38:13Z",
         "module": "prometheus"
     },
-    "host": {},
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-35087",
+        "id": "345c85cf1fe945e2b19719b370c09a48",
+        "ip": [
+            "192.168.241.8",
+            "192.168.242.2"
+        ],
+        "mac": [
+            "02-42-C0-A8-F1-08",
+            "02-42-C0-A8-F2-02"
+        ],
+        "name": "elastic-agent-35087",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-189-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
     "metricset": {
         "name": "collector",
         "period": 10000
     },
     "prometheus": {
         "labels": {
-            "instance": "prometheus-server-server:80",
-            "job": "prometheus",
-            "quantile": "0.5",
-            "scrape_job": "kubernetes-services"
+            "dialer_name": "alertmanager",
+            "instance": "svc-prometheus:9090",
+            "job": "prometheus"
         },
-        "prometheus_target_sync_length_seconds": {
-            "value": 0.000103602
+        "labels_fingerprint": "jn10I8M3W8CSQq1v0nbhVyegvgQ=",
+        "net_conntrack_dialer_conn_attempted_total": {
+            "counter": 0,
+            "rate": 0
+        },
+        "net_conntrack_dialer_conn_closed_total": {
+            "counter": 0,
+            "rate": 0
+        },
+        "net_conntrack_dialer_conn_established_total": {
+            "counter": 0,
+            "rate": 0
         }
     },
     "service": {
-        "address": "http://prometheus-server-server:80/metrics",
+        "address": "http://svc-prometheus:9090/metrics",
         "type": "prometheus"
     }
 }
@@ -202,11 +245,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
+| metrics_count | Total count of Prometheus metrics within the Elasticsearch document. This value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines. | long |  |
 | prometheus.\*.counter | Prometheus counter metric | object | counter |
 | prometheus.\*.histogram | Prometheus histogram metric | object |  |
 | prometheus.\*.rate | Prometheus rated counter metric | object | gauge |
 | prometheus.\*.value | Prometheus gauge metric | object | gauge |
-| prometheus.labels.\* | Prometheus metric labels | keyword |  |
+| prometheus.labels.\* | Prometheus metric labels. | keyword |  |
+| prometheus.labels_fingerprint | Autogenerated ID representing the fingerprint of labels object and includes query name. | keyword |  |
 | prometheus.metrics.\* | Prometheus metric | object | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
@@ -251,14 +296,14 @@ remote_write:
 > TIP: In order to assure the health of the whole queue, the following configuration
  [parameters](https://prometheus.io/docs/practices/remote_write/#parameters) should be considered:
 
-- `max_shards`: Sets the maximum number of parallelism with which Prometheus will try to send samples to Metricbeat.
-It is recommended that this setting should be equal to the number of cores of the machine where Metricbeat runs.
-Metricbeat can handle connections in parallel and hence setting `max_shards` to the number of parallelism that
-Metricbeat can actually achieve is the optimal queue configuration.
+- `max_shards`: Sets the maximum number of parallelism with which Prometheus will try to send samples to Elastic Agent.
+It is recommended that this setting should be equal to the number of cores of the machine where Elastic Agent runs.
+Elastic Agent can handle connections in parallel and hence setting `max_shards` to the number of parallelism that
+Elastic Agent can actually achieve is the optimal queue configuration.
 - `max_samples_per_send`: Sets the number of samples to batch together for each send. Recommended values are
 between 100 (default) and 1000. Having a bigger batch can lead to improved throughput and in more efficient
-storage since Metricbeat groups metrics with the same labels into same event documents.
-However this will increase the memory usage of Metricbeat.
+storage since Elastic Agent groups metrics with the same labels into same event documents.
+However this will increase the memory usage of Elastic Agent.
 - `capacity`: It is recommended to set capacity to 3-5 times `max_samples_per_send`.
 Capacity sets the number of samples that are queued in memory per shard, and hence capacity should be high enough so as to
 be able to cover `max_samples_per_send`.
@@ -397,11 +442,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
+| metrics_count | Total count of Prometheus metrics within the Elasticsearch document. This value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines. | long |  |
 | prometheus.\*.counter | Prometheus counter metric | object | counter |
 | prometheus.\*.histogram | Prometheus histogram metric | object |  |
 | prometheus.\*.rate | Prometheus rated counter metric | object | gauge |
 | prometheus.\*.value | Prometheus gauge metric | object | gauge |
-| prometheus.labels.\* | Prometheus metric labels | keyword |  |
+| prometheus.labels.\* | Prometheus metric labels. | keyword |  |
+| prometheus.labels_fingerprint | Autogenerated ID representing the fingerprint of labels object and includes query name. | keyword |  |
 | prometheus.metrics.\* | Prometheus metric | object | gauge |
 | prometheus.metrics_names_fingerprint | Autogenerated ID representing the fingerprint of the list of metrics names | keyword |  |
 
@@ -411,7 +458,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 `use_types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
 types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html).
 
-`rate_counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`rate_counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Elastic Agent stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `use_types`.
 
@@ -487,6 +534,10 @@ Note that when using `types_patterns`, the provided patterns have higher priorit
 For instance if `_histogram_total` is a defined histogram pattern, then a metric like `network_bytes_histogram_total`
 will be handled as a histogram, even if it has the suffix `_total` which is a default pattern for counters.
 
+#### Metrics count
+
+The Prometheus integration's `remote_write` dataset provides a `Metrics Count` parameter, which is disabled by default. When enabled, it counts the total number of Prometheus metrics within each Elasticsearch document. This count is stored in a field called `metrics_count` and its value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines.
+
 ### Prometheus Queries (PromQL)
 
 The Prometheus `query` dataset executes specific Prometheus queries against [Promethes Query API](https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries).
@@ -532,47 +583,73 @@ An example event for `query` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-21T14:06:49.000Z",
+    "@timestamp": "2024-08-20T08:39:07.000Z",
     "agent": {
-        "ephemeral_id": "63ab98c3-c4ae-4a30-84f9-9a2d7f459728",
-        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
-        "name": "kind-control-plane",
+        "ephemeral_id": "cc18c40d-dcb8-4192-aede-e988d68c376c",
+        "id": "842b000b-c1bd-4608-bbd8-2a1849afc2f5",
+        "name": "elastic-agent-31805",
         "type": "metricbeat",
-        "version": "8.4.0"
+        "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "prometheus.query",
-        "namespace": "default",
+        "namespace": "54564",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
-        "snapshot": true,
-        "version": "8.4.0"
+        "id": "842b000b-c1bd-4608-bbd8-2a1849afc2f5",
+        "snapshot": false,
+        "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "prometheus.query",
-        "duration": 1153570,
-        "ingested": "2022-09-21T14:06:50Z",
+        "duration": 6078736,
+        "ingested": "2024-08-20T08:39:10Z",
         "module": "prometheus"
     },
-    "host": {},
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-31805",
+        "id": "345c85cf1fe945e2b19719b370c09a48",
+        "ip": [
+            "192.168.241.8",
+            "192.168.242.2"
+        ],
+        "mac": [
+            "02-42-C0-A8-F1-08",
+            "02-42-C0-A8-F2-02"
+        ],
+        "name": "elastic-agent-31805",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-189-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
     "metricset": {
         "name": "query",
         "period": 10000
     },
     "prometheus": {
-        "labels": {},
+        "labels": {
+            "query_name": "scalar"
+        },
+        "labels_fingerprint": "uE8iX47vrW1H38mLYMD73p8/CcA=",
         "query": {
-            "instant_vector": 0.7838951248394681
+            "scalar": 100
         }
     },
     "service": {
-        "address": "http://prometheus-server-server:80",
+        "address": "http://svc-prometheus:9090",
         "type": "prometheus"
     }
 }
@@ -605,7 +682,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| prometheus.labels.\* | Prometheus metric labels | keyword |  |
+| prometheus.labels.\* | Prometheus metric labels. | keyword |  |
+| prometheus.labels_fingerprint | Autogenerated ID representing the fingerprint of labels object and includes query name. | keyword |  |
 | prometheus.query.\* | Prometheus value resulted from PromQL | object | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 

@@ -1,0 +1,45 @@
+title: "Threat Extraction"
+type: logs
+streams:
+  - input: cel
+    title: Threat extraction logs
+    description: Collect threat extraction logs
+    template_path: cel.yml.hbs
+    vars:
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: filter
+        type: text
+        title: Filter
+        default: "product:\"Threat Extraction\""
+        required: true
+        description: Request filter. Do not modify.
+        show_user: false
+      - name: resource_rate_limit_limit
+        type: text
+        title: Resource Rate Limit
+        description: The value of the response that specifies the total limit.
+        show_user: false
+        multi: false
+        required: false
+      - name: resource_rate_limit_burst
+        type: text
+        title: Resource Rate Limit Burst
+        description: The maximum burst size. Burst is the maximum number of resource requests that can be made above the overall rate limit.
+        show_user: false
+        multi: false
+        required: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original indicator data, added to the field `event.original`.
+        default: false
+        multi: false
+        required: true
+        show_user: false

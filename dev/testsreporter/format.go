@@ -39,6 +39,7 @@ func (r ResultsFormatter) Summary() string {
 		"stackVersion":      r.result.StackVersion,
 		"serverless":        r.result.Serverless,
 		"serverlessProject": r.result.ServerlessProject,
+		"logsDB":            r.result.LogsDB,
 		"packageName":       r.result.PackageName,
 		"testName":          r.result.Name,
 		"dataStream":        r.result.DataStream,

@@ -97,8 +97,7 @@ func TestErrorsFromTest(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			errors, err := errorsFromTests(checkOptions{
-				ResultsPath:    c.xmlFolder,
+			errors, err := errorsFromTests(c.xmlFolder, CheckOptions{
 				Serverless:     false,
 				StackVersion:   "",
 				BuildURL:       "",
@@ -134,8 +133,7 @@ func TestErrorDataStream(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			errors, err := errorsFromTests(checkOptions{
-				ResultsPath:    c.xmlFolder,
+			errors, err := errorsFromTests(c.xmlFolder, CheckOptions{
 				Serverless:     false,
 				StackVersion:   "",
 				BuildURL:       "",
@@ -175,8 +173,7 @@ func TestErrorPackageName(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			errors, err := errorsFromTests(checkOptions{
-				ResultsPath:    c.xmlFolder,
+			errors, err := errorsFromTests(c.xmlFolder, CheckOptions{
 				Serverless:     false,
 				StackVersion:   "",
 				BuildURL:       "",

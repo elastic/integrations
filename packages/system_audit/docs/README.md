@@ -200,7 +200,6 @@ An example event for `package` looks as following:
         "audit-system-package"
     ]
 }
-
 ```
 
 ### Example dashboard

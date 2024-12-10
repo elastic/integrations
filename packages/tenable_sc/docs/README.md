@@ -1,10 +1,10 @@
 # Tenable.sc
 
-The Tenable.sc integration collects and parses data from the [Tenable.sc](https://docs.tenable.com/tenablesc/Content/Welcome.htm) APIs.
+The Tenable Security Center integration collects and parses data from the [Tenable Security Center](https://docs.tenable.com/tenablesc/Content/Welcome.htm) APIs.
 
 ## Compatibility
 
-This module has been tested against `Tenable.sc version 5.23`.
+This module has been tested against `Tenable.sc version 5.23` and `Tenable.sc version 6.4.0`.
 
 ## Requirements
 
@@ -135,7 +135,6 @@ An example event for `asset` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -346,7 +345,6 @@ An example event for `plugin` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -640,7 +638,6 @@ An example event for `vulnerability` looks as following:
         "severity": "Info"
     }
 }
-
 ```
 
 **Exported fields**

@@ -138,10 +138,6 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
-      field: event.original
-      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_missing: true
-  - remove:
       field:
         - _tmp
         - _conf
@@ -157,4 +153,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"

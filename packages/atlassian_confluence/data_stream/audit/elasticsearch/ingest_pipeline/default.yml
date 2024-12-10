@@ -376,22 +376,22 @@ processors:
         }
   - append:
       field: related.user
-      value: '{{user.name}}'
+      value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      value: '{{user.target.name}}'
+      value: '{{{user.target.name}}}'
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
       field: related.user
-      value: '{{user.changes.name}}'
+      value: '{{{user.changes.name}}}'
       allow_duplicates: false
       if: ctx.user?.changes?.name != null
   - append:
       field: related.ip
-      value: '{{source.ip}}'
+      value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - remove:
@@ -399,11 +399,6 @@ processors:
         - json
         - _tmp
         - _config
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
       ignore_missing: true
   - script:
       lang: painless

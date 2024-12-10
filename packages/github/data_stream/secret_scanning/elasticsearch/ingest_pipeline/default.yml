@@ -4,9 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  - set:
-      field: event.action
-      value: "secret_scanning"
   - rename:
       field: message
       target_field: event.original
@@ -18,6 +15,19 @@ processors:
   - fail:
       if: "!(ctx.github.secret_scanning instanceof Map)"
       message: Missing JSON object
+  - remove:
+      field: 
+        - event.kind
+      ignore_missing: true
+      description: Fields defined as constant_keyword are removed from _source for storage efficiency.
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.github?.secret_scanning?.resolved_at == null
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.github?.secret_scanning?.resolved_at != null
   - fingerprint:
       fields:
         - github.secret_scanning.number
@@ -156,11 +166,11 @@ processors:
       ignore_missing: true
   - set:
       field: github.repository.html_url
-      value: "https://github.com/{{_temp.owner}}/{{_temp.repository}}"
+      value: "https://github.com/{{{_temp.owner}}}/{{{_temp.repository}}}"
       if: "ctx.github.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
   - set:
       field: github.repository.url
-      value: "https://api.github.com/repos/{{_temp.owner}}/{{_temp.repository}}"
+      value: "https://api.github.com/repos/{{{_temp.owner}}}/{{{_temp.repository}}}"
       if: "ctx.github.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
   - rename:
       field: _temp.repository
@@ -180,14 +190,6 @@ processors:
   - lowercase:
       field: github.secret_scanning.state
       ignore_missing: true
-  - set:
-      field: github.state
-      value: "{{github.secret_scanning.state}}"
-      if: ctx.github.secret_scanning.state != null
-  - set:
-      field: github.severity
-      value: "undefined"
-      if: ctx.github.severity == null
   - rename:
       target_field: _temp.push_protection_bypassed_by
       field: github.secret_scanning.push_protection_bypassed_by

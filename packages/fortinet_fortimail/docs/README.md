@@ -180,7 +180,6 @@ An example event for `log` looks as following:
         "fortinet_fortimail-log"
     ]
 }
-
 ```
 
 **Exported fields**

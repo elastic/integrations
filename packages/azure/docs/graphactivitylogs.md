@@ -257,17 +257,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.provider | Resource type/namespace. | keyword |
 | azure.subscription_id | Azure subscription ID. | keyword |
 | azure.tenant_id | tenant ID. | keyword |
-| client.geo.location.lat | Longitude and latitude. | geo_point |
-| client.geo.location.lon | Longitude and latitude. | geo_point |
+| client.geo.location | Longitude and latitude. | geo_point |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.geo.region_name | Region name. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.location | Longitude and latitude. | geo_point |
 

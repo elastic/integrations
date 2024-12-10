@@ -6,10 +6,17 @@ processors:
       value: '8.11.0'
   - set:
       field: event.kind
-      value: event
-  - set:
+      value: state
+  - append:
       field: event.type
-      value: [info]
+      value: info
+      tag: set_event_tiype
+      allow_duplicates: false
+  - append:
+      field: event.category
+      value: configuration
+      tag: append_event_category
+      allow_duplicates: false
   - rename:
       field: message
       target_field: event.original
@@ -26,6 +33,14 @@ processors:
         - json.CreatedAt
       target_field: _id
       ignore_missing: true
+  - set:
+      field: observer.vendor
+      value: AWS Security Hub
+      tag: set_observer_vendor
+  - set:
+      field: cloud.provider
+      value: aws
+      tag: set_cloud_provider
   - rename:
       field: json.Action.ActionType
       target_field: aws.securityhub_findings.action.type
@@ -463,10 +478,55 @@ processors:
       field: json.Compliance.RelatedRequirements
       target_field: aws.securityhub_findings.compliance.related_requirements
       ignore_missing: true
+  - foreach:
+      field: aws.securityhub_findings.compliance.related_requirements
+      if: ctx.aws?.securityhub_findings?.compliance?.related_requirements instanceof List
+      tag: foreach_compliance_related_requirements
+      processor:
+        append:
+          field: rule.ruleset
+          value: '{{{_ingest._value}}}'
+          tag: append_related_requirements_rule_ruleset
+          allow_duplicates: false
   - rename:
       field: json.Compliance.Status
       target_field: aws.securityhub_findings.compliance.status
       ignore_missing: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_passed
+      value: passed
+      if: ctx.aws?.securityhub_findings?.compliance?.status == 'PASSED'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_failed
+      value: failed
+      if: ctx.aws?.securityhub_findings?.compliance?.status == 'FAILED'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_unknown
+      value: unknown
+      if: ctx.result?.evaluation == null
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.aws?.securityhub_findings?.compliance?.status == 'PASSED'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.aws?.securityhub_findings?.compliance?.status == 'FAILED'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_unknown
+      value: unknown
+      if: ctx.event?.outcome == null
   - foreach:
       field: json.Compliance.StatusReasons
       processor:
@@ -510,10 +570,23 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.UpdatedAt
+      if: ctx.json?.UpdatedAt != null && ctx.json.UpdatedAt != ''
+      target_field: aws.securityhub_findings.updated_at
+      tag: date_updated_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      copy_from : aws.securityhub_findings.created_at
-      ignore_failure: true
+      copy_from: aws.securityhub_findings.updated_at
+      tag: set_timestamp
+      ignore_empty_value: true
   - convert:
       field: json.Criticality
       target_field: aws.securityhub_findings.criticality
@@ -528,6 +601,11 @@ processors:
       field: json.Description
       target_field: aws.securityhub_findings.description
       ignore_missing: true
+  - set:
+      field: rule.description
+      tag: set_rule_description
+      copy_from: aws.securityhub_findings.description
+      ignore_empty_value: true
   - convert:
       field: json.FindingProviderFields.Confidence
       target_field: aws.securityhub_findings.provider_fields.confidence
@@ -617,6 +695,21 @@ processors:
       field: json.GeneratorId
       target_field: aws.securityhub_findings.generator.id
       ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_generator_id
+      copy_from: aws.securityhub_findings.generator.id
+      ignore_empty_value: true
+  - rename:
+      field: json.Compliance.SecurityControlId
+      target_field: aws.securityhub_findings.compliance.security_control_id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_security_control_id
+      copy_from: aws.securityhub_findings.compliance.security_control_id
+      if: ctx.rule?.id == null
+      ignore_empty_value: true
   - rename:
       field: json.Id
       target_field: aws.securityhub_findings.id
@@ -636,6 +729,23 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.ProcessedAt
+      if: ctx.json?.ProcessedAt != null && ctx.json.ProcessedAt != ''
+      target_field: aws.securityhub_findings.processed_at
+      tag: date_processed_at
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: aws.securityhub_findings.processed_at
+      ignore_empty_value: true
   - foreach:
       field: json.Malware
       processor:
@@ -1375,6 +1485,11 @@ processors:
       field: json.Region
       target_field: aws.securityhub_findings.region
       ignore_missing: true
+  - set:
+      field: cloud.region
+      tag: set_cloud_region
+      copy_from: aws.securityhub_findings.region
+      ignore_empty_value: true
   - foreach:
       field: json.RelatedFindings
       processor:
@@ -1405,10 +1520,378 @@ processors:
       field: json.Remediation.Recommendation.Url
       target_field: aws.securityhub_findings.remediation.recommendation.url
       ignore_missing: true
+  - set:
+      field: rule.reference
+      tag: set_rule_reference
+      copy_from: aws.securityhub_findings.remediation.recommendation.url
+      ignore_empty_value: true
+  - set:
+      field: rule.remediation
+      tag: set_rule_remediation
+      value: "{{{aws.securityhub_findings.remediation.recommendation.text}}}\r\n{{{aws.securityhub_findings.remediation.recommendation.url}}}"
+      if: ctx.aws?.securityhub_findings?.remediation?.recommendation?.url != null && ctx.aws.securityhub_findings.remediation.recommendation.text != null
+      ignore_empty_value: true
   - rename:
       field: json.Resources
       target_field: aws.securityhub_findings.resources
       ignore_missing: true
+  - script:
+      description: Extract fields from aws.securityhub_findings.resources with single resource.
+      tag: script_extract_fields_from_single_resource
+      lang: painless
+      if: ctx.aws?.securityhub_findings?.resources instanceof List && ctx.aws.securityhub_findings.resources.size() > 0
+      source: |-
+        // Arrays won't work in general in current UI of Cloud Security Posture workflow. In AWS SecurityHub, a finding may contain multiple resources, but rarely.
+        // When a finding has single-resource, we extract fields as single-value so that the Findings UI behaves as expected for almost all cases.
+        // But in the rare multi-resource case, we extract fields into an array to not miss any affected resources for a finding. 
+        // This trade-off is okay as not many findings will be affected. When our UI natively supports multi-resources, the single-value resource extraction must be removed.
+        
+        def resources = ctx.aws.securityhub_findings.resources;
+
+        // Define fields to be extracted. 
+        if (ctx.resource == null) {
+          ctx.resource = new HashMap();
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        if (ctx.host == null) {
+          ctx.host = new HashMap();
+        }
+        if (ctx.host.ip == null) {
+          ctx.host.ip = new ArrayList();
+        }
+        if (ctx.orchestrator == null) {
+          ctx.orchestrator = new HashMap();
+        }
+        if (ctx.orchestrator.cluster == null) {
+          ctx.orchestrator.cluster = new HashMap();
+        }
+        if (ctx.orchestrator.resource == null) {
+          ctx.orchestrator.resource = new HashMap();
+        }
+        if (ctx.cloud == null) {
+          ctx.cloud = new HashMap();
+        }
+        if (ctx.cloud.instance == null) {
+          ctx.cloud.instance = new HashMap();
+        }
+        if (ctx.cloud.service == null) {
+          ctx.cloud.service = new HashMap();
+        }
+
+        // This extraction logic is only for single resource case. Multiple resources are extracted inside script - script_extract_fields_from_multiple_resources.
+        if (resources.size() == 1){
+          def res = resources[0];
+
+          // Extract resource field
+          ctx.resource.type = res.Type;
+          ctx.resource.id = res.Id;
+          def res_name;
+          String[] tokenList = res.Id.splitOnToken(":");
+          if (res.Details != null && res.Details[res.Type]?.Name != null) {
+            res_name = res.Details[res.Type].Name;
+          } else {
+            res_name = tokenList[tokenList.length - 1];
+          }
+          ctx.resource.name = res_name;
+
+          // Extract ECS fields from res.Details
+          if (res.Details != null) {
+            // Extract ECS user field from res.Details
+            if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserName != null) {
+              ctx.user.name = res.Details.AwsIamUser.UserName;
+            }
+            if (res.Type == 'AwsIamAccessKey' && res.Details.AwsIamAccessKey?.UserName != null) {
+              ctx.user.name = res.Details.AwsIamAccessKey.UserName;
+            }
+            if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerName != null) {
+              ctx.user.name = res.Details.AwsS3Bucket.OwnerName;
+            } 
+            if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserId != null) {
+              ctx.user.id = res.Details.AwsIamUser.UserId;
+            } 
+            if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerId != null) {
+              ctx.user.id = res.Details.AwsS3Bucket.OwnerId;
+            }
+
+            // Extract ECS host field from res.Details
+            if (res.Type == 'AwsEcsContainer' && res.Details.AwsEcsContainer?.Name != null) {
+              ctx.host.name = res.Details.AwsEcsContainer.Name;
+            }
+            if (res.Type == 'AwsEc2Instance' && (res.Details.AwsEc2Instance?.IpV4Addresses != null || res.Details.AwsEc2Instance?.IpV6Addresses != null)) {
+              for (def ipv4 : res.Details.AwsEc2Instance.IpV4Addresses) {
+                if (ipv4 instanceof String) {
+                  ctx.host.ip.add(ipv4);
+                }
+              }
+              for (def ipv6 : res.Details.AwsEc2Instance.IpV6Addresses) {
+                if (ipv6 instanceof String) {
+                  ctx.host.ip.add(ipv6);
+                }
+              }
+            }
+
+            // Extract ECS orchestrator field from res.Details
+            if (['AwsEcsCluster', 'AwsEcsTask'].contains(res.Type) && res.Details.AwsEcsCluster?.ClusterArn != null) {
+              ctx.orchestrator.cluster.id = res.Details.AwsEcsCluster.ClusterArn;
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Arn != null) {
+              ctx.orchestrator.cluster.id = res.Details.AwsEksCluster.Arn;
+            }
+            if (res.Type == 'AwsEcsCluster' && res.Details.AwsEcsCluster?.ClusterName != null) {
+              ctx.orchestrator.cluster.name = res.Details.AwsEcsCluster.ClusterName;
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Name != null) {
+              ctx.orchestrator.cluster.name = res.Details.AwsEksCluster.Name;
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Version != null) {
+              ctx.orchestrator.cluster.version = res.Details.AwsEksCluster.Version;
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Endpoint != null) {
+              ctx.orchestrator.cluster.url = res.Details.AwsEksCluster.Endpoint;
+            }
+
+            // Extract ECS cloud field from res.Details
+            if (['AwsEc2Subnet', 'AwsRedshiftCluster', 'AwsDmsReplicationInstance'].contains(res.Type) && res.Details[res.Type]?.AvailabilityZone != null) {
+              ctx.cloud.availability_zone = res.Details[res.Type].AvailabilityZone;
+            }
+            if ((['AwsEc2VpcEndpointService', 'AwsElbLoadBalancer', 'AwsRdsDbCluster'].contains(res.Type)) && res.Details[res.Type]?.AvailabilityZones != null) {
+              for (def az: res.Details[res.Type].AvailabilityZones){
+                ctx.cloud.availability_zone = az;
+              }
+            }
+            if (res.Type == 'AwsAutoScalingAutoScalingGroup' && res.Details.AwsAutoScalingAutoScalingGroup?.AvailabilityZones != null) {
+              for (def az: res.Details.AwsAutoScalingAutoScalingGroup.AvailabilityZones){
+                ctx.cloud.availability_zone = az.Value;
+              }
+            }
+            if (res.Type == 'AwsEc2LaunchTemplate' && res.Details.AwsEc2LaunchTemplate?.LaunchTemplateData?.Placement?.AvailabilityZone != null) {
+              ctx.cloud.availability_zone = res.Details.AwsEc2LaunchTemplate.LaunchTemplateData.Placement.AvailabilityZone;
+            }
+            if (res.Type == 'AwsElbv2LoadBalancer' && res.Details.AwsElbv2LoadBalancer?.AvailabilityZones != null) {
+              for (def az: res.Details.AwsElbv2LoadBalancer.AvailabilityZones){
+                ctx.cloud.availability_zone = az.ZoneName;
+              }
+            }
+          }
+
+          // Extract ECS host field not in res.Details
+          if (res.Type == 'AwsEc2Instance' && res.Id != null) {
+            ctx.host.id = res.Id;
+          }
+
+          // Extract ECS orchestrator field not in res.Details
+          if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
+            ctx.orchestrator.resource.id = res.Id;
+            ctx.orchestrator.resource.name = res_name;
+            ctx.orchestrator.resource.type = res.Type;
+            if (res.Type.startsWith('AwsEks')) {
+              ctx.orchestrator.type = 'kubernetes';
+            } else {
+              ctx.orchestrator.type = 'ecs';
+            }
+          }
+          
+          // Extract ECS cloud field not in res.Details
+          if (res.Type == 'AwsEc2Instance') {
+            ctx.cloud.instance.id = res.Id;
+            ctx.cloud.instance.name = res_name;
+          }
+          if (tokenList.length > 2) {
+            ctx.cloud.service.name = tokenList[2];
+          }
+        }
+  - script:
+      description: Extract fields from aws.securityhub_findings.resources.
+      tag: script_extract_fields_from_multiple_resources
+      lang: painless
+      if: ctx.aws?.securityhub_findings?.resources instanceof List && ctx.aws.securityhub_findings.resources.size() > 1
+      source: |-
+        def resources = ctx.aws.securityhub_findings.resources;
+
+        // Define fields to be extracted. 
+        if (ctx.resource.type == null) {
+          ctx.resource.type = new ArrayList();
+        }
+        if (ctx.resource.id == null) {
+          ctx.resource.id = new ArrayList();
+        }
+        if (ctx.resource.name == null) {
+          ctx.resource.name = new ArrayList();
+        }
+        
+        if (ctx.user.name == null) {
+          ctx.user.name = new ArrayList();
+        }
+        if (ctx.user.id == null) {
+          ctx.user.id = new ArrayList();
+        }
+        
+        if (ctx.host.id == null) {
+          ctx.host.id = new ArrayList();
+        }
+        if (ctx.host.ip == null) {
+          ctx.host.ip = new ArrayList();
+        }
+        if (ctx.host.name == null) {
+          ctx.host.name = new ArrayList();
+        }
+        
+        if (ctx.orchestrator.type == null) {
+          ctx.orchestrator.type = new ArrayList();
+        }
+        if (ctx.orchestrator.cluster.id == null) {
+          ctx.orchestrator.cluster.id = new ArrayList();
+        }
+        if (ctx.orchestrator.cluster.name == null) {
+          ctx.orchestrator.cluster.name = new ArrayList();
+        }
+        if (ctx.orchestrator.cluster.version == null) {
+          ctx.orchestrator.cluster.version = new ArrayList();
+        }
+        if (ctx.orchestrator.resource.id == null) {
+          ctx.orchestrator.resource.id = new ArrayList();
+        }
+        if (ctx.orchestrator.resource.name == null) {
+          ctx.orchestrator.resource.name = new ArrayList();
+        }
+        if (ctx.orchestrator.resource.type == null) {
+          ctx.orchestrator.resource.type = new ArrayList();
+        }
+        
+        if (ctx.cloud.instance.id == null) {
+          ctx.cloud.instance.id = new ArrayList();
+        }
+        if (ctx.cloud.instance.name == null) {
+          ctx.cloud.instance.name = new ArrayList();
+        }
+        if (ctx.cloud.service.name == null) {
+          ctx.cloud.service.name = new ArrayList();
+        }
+        if (ctx.cloud.availability_zone == null) {
+          ctx.cloud.availability_zone = new ArrayList();
+        }
+
+        for (res in resources) {
+          // Extract resource field
+          ctx.resource.type.add(res.Type);
+          ctx.resource.id.add(res.Id);
+          def res_name;
+          String[] tokenList = res.Id.splitOnToken(":");
+          if (res.Details != null && res.Details[res.Type]?.Name != null) {
+            res_name = res.Details[res.Type].Name;
+          } else {
+            res_name = tokenList[tokenList.length - 1];
+          }
+          ctx.resource.name.add(res_name);
+
+          // Extract ECS fields from res.Details
+          if (res.Details != null) {
+            // Extract ECS user field from res.Details
+            if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserName != null) {
+              ctx.user.name.add(res.Details.AwsIamUser.UserName);
+            }
+            if (res.Type == 'AwsIamAccessKey' && res.Details.AwsIamAccessKey?.UserName != null) {
+              ctx.user.name.add(res.Details.AwsIamAccessKey.UserName);
+            }
+            if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerName != null) {
+              ctx.user.name.add(res.Details.AwsS3Bucket.OwnerName);
+            } 
+            if (res.Type == 'AwsIamUser' && res.Details.AwsIamUser?.UserId != null) {
+              ctx.user.id.add(res.Details.AwsIamUser.UserId);
+            } 
+            if (res.Type == 'AwsS3Bucket' && res.Details.AwsS3Bucket?.OwnerId != null) {
+              ctx.user.id.add(res.Details.AwsS3Bucket.OwnerId);
+            }
+
+            // Extract ECS host field from res.Details
+            if (res.Type == 'AwsEcsContainer' && res.Details.AwsEcsContainer?.Name != null) {
+              ctx.host.name.add(res.Details.AwsEcsContainer.Name);
+            }
+            if (res.Type == 'AwsEc2Instance' && (res.Details.AwsEc2Instance?.IpV4Addresses != null || res.Details.AwsEc2Instance?.IpV6Addresses != null)) {
+              for (def ipv4 : res.Details.AwsEc2Instance.IpV4Addresses) {
+                if (ipv4 instanceof String) {
+                  ctx.host.ip.add(ipv4);
+                }
+              }
+              for (def ipv6 : res.Details.AwsEc2Instance.IpV6Addresses) {
+                if (ipv6 instanceof String) {
+                  ctx.host.ip.add(ipv6);
+                }
+              }
+            }
+
+            // Extract ECS orchestrator field from res.Details
+            if (['AwsEcsCluster', 'AwsEcsTask'].contains(res.Type) && res.Details.AwsEcsCluster?.ClusterArn != null) {
+              ctx.orchestrator.cluster.id.add(res.Details.AwsEcsCluster.ClusterArn);
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Arn != null) {
+              ctx.orchestrator.cluster.id.add(res.Details.AwsEksCluster.Arn);
+            }
+            if (res.Type == 'AwsEcsCluster' && res.Details.AwsEcsCluster?.ClusterName != null) {
+              ctx.orchestrator.cluster.name.add(res.Details.AwsEcsCluster.ClusterName);
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Name != null) {
+              ctx.orchestrator.cluster.name.add(res.Details.AwsEksCluster.Name);
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Version != null) {
+              ctx.orchestrator.cluster.version.add(res.Details.AwsEksCluster.Version);
+            }
+            if (res.Type == 'AwsEksCluster' && res.Details.AwsEksCluster?.Endpoint != null) {
+              ctx.orchestrator.cluster.url.add(res.Details.AwsEksCluster.Endpoint);
+            }
+
+            // Extract ECS cloud field from res.Details
+            if (['AwsEc2Subnet', 'AwsRedshiftCluster', 'AwsDmsReplicationInstance'].contains(res.Type) && res.Details[res.Type]?.AvailabilityZone != null) {
+              ctx.cloud.availability_zone.add(res.Details[res.Type].AvailabilityZone);
+            }
+            if ((['AwsEc2VpcEndpointService', 'AwsElbLoadBalancer', 'AwsRdsDbCluster'].contains(res.Type)) && res.Details[res.Type]?.AvailabilityZones != null) {
+              for (def az: res.Details[res.Type].AvailabilityZones){
+                ctx.cloud.availability_zone.add(az);
+              }
+            }
+            if (res.Type == 'AwsAutoScalingAutoScalingGroup' && res.Details.AwsAutoScalingAutoScalingGroup?.AvailabilityZones != null) {
+              for (def az: res.Details.AwsAutoScalingAutoScalingGroup.AvailabilityZones){
+                ctx.cloud.availability_zone.add(az.Value);
+              }
+            }
+            if (res.Type == 'AwsEc2LaunchTemplate' && res.Details.AwsEc2LaunchTemplate?.LaunchTemplateData?.Placement?.AvailabilityZone != null) {
+              ctx.cloud.availability_zone.add(res.Details.AwsEc2LaunchTemplate.LaunchTemplateData.Placement.AvailabilityZone);
+            }
+            if (res.Type == 'AwsElbv2LoadBalancer' && res.Details.AwsElbv2LoadBalancer?.AvailabilityZones != null) {
+              for (def az: res.Details.AwsElbv2LoadBalancer.AvailabilityZones){
+                ctx.cloud.availability_zone.add(az.ZoneName);
+              }
+            }
+          }
+
+          // Extract ECS host field not in res.Details
+          if (res.Type == 'AwsEc2Instance' && res.Id != null) {
+            ctx.host.id.add(res.Id);
+          }
+
+          // Extract ECS orchestrator field not in res.Details
+          if (res.Type.startsWith('AwsEks') || res.Type.startsWith('AwsEcs')) {
+            ctx.orchestrator.resource.id.add(res.Id);
+            ctx.orchestrator.resource.name.add(res_name);
+            ctx.orchestrator.resource.type.add(res.Type);
+            if (res.Type.startsWith('AwsEks')) {
+              ctx.orchestrator.type.add('kubernetes');
+            } else {
+              ctx.orchestrator.type.add('ecs');
+            }
+          }
+          
+          // Extract ECS cloud field not in res.Details
+          if (res.Type == 'AwsEc2Instance') {
+            ctx.cloud.instance.id.add(res.Id);
+            ctx.cloud.instance.name.add(res_name);
+          }
+          if (tokenList.length > 2) {
+            ctx.cloud.service.name.add(tokenList[2]);
+          }
+        }
   - convert:
       field: json.Sample
       target_field: aws.securityhub_findings.sample
@@ -1437,6 +1920,16 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: aws.securityhub_findings.severity.normalized
+      tag: convert_severity_normalized
+      target_field: event.severity
+      if: ctx.aws?.securityhub_findings?.severity?.normalized != null
+      type: long
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Severity.Original
       target_field: aws.securityhub_findings.severity.original
@@ -1592,21 +2085,15 @@ processors:
       field: json.Title
       target_field: aws.securityhub_findings.title
       ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: aws.securityhub_findings.title
+      ignore_empty_value: true
   - rename:
       field: json.Types
       target_field: aws.securityhub_findings.types
       ignore_missing: true
-  - date:
-      field: json.UpdatedAt
-      if: ctx.json?.UpdatedAt != null && ctx.json?.UpdatedAt != ''
-      target_field: aws.securityhub_findings.updated_at
-      formats:
-        - ISO8601
-        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.UserDefinedFields
       target_field: aws.securityhub_findings.user_defined_fields
@@ -2137,15 +2624,10 @@ processors:
           ignore_failure: true
           ignore_missing: true
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == "") {
             return true;
@@ -2160,6 +2642,12 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-- append:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

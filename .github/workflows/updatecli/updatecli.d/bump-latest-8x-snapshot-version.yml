@@ -1,0 +1,84 @@
+---
+name: Bump latest 8.x-SNAPSHOT elastic-stack test version
+pipelineid: 'bump-latest-8x-elastic-stack-version'
+
+actions:
+  default:
+    title: '[updatecli] Update latest snapshot to {{ source "latestSnapshot" }}'
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      labels:
+        - automation
+        - dependency
+
+scms:
+  default:
+    kind: github
+    spec:
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      commitusingapi: true
+      branch: main
+
+sources:
+  latestSnapshot:
+    name: Get latest snapshot
+    kind: json
+    spec:
+      file: https://storage.googleapis.com/artifacts-api/snapshots/8.x.json
+      key: .version
+  latestSnapshotMajorMinor:
+    name: Get latest snapshort major and minor
+    kind: json
+    spec:
+      file: https://storage.googleapis.com/artifacts-api/snapshots/8.x.json
+      key: .version
+    transformers:
+      - findsubmatch:
+          pattern: '(^\d+\.\d+)\.[^\s]+$'
+          captureindex: 1
+
+targets:
+  update-snapshot-daily:
+    name: '[updatecli] [daily] Update latest snapshot to {{ source "latestSnapshot" }}'
+    kind: file
+    sourceid: latestSnapshot
+    scmid: default
+    spec:
+      file: '.buildkite/pipeline.schedule-daily.yml'
+      matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
+      replacepattern: '$1 {{ source "latestSnapshot" }}'
+
+  update-snapshot-label-daily:
+    name: '[updatecli] [daily] Update latest snapshot label step to {{ source "latestSnapshotMajorMinor" }}'
+    kind: file
+    sourceid: latestSnapshotMajorMinor
+    scmid: default
+    spec:
+      file: '.buildkite/pipeline.schedule-daily.yml'
+      matchpattern: '(Stack Version) v8\.\d+("| - LogsDB")'
+      replacepattern: '$1 v{{ source "latestSnapshotMajorMinor" }}$2'
+
+  update-snapshot-weekly:
+    name: '[updatecli] [weekly] Update latest snapshot to {{ source "latestSnapshot" }}'
+    kind: file
+    sourceid: latestSnapshot
+    scmid: default
+    spec:
+      file: '.buildkite/pipeline.schedule-weekly.yml'
+      matchpattern: '(STACK_VERSION:) 8\.[^\s]*\.[^\s]*'
+      replacepattern: '$1 {{ source "latestSnapshot" }}'
+
+  update-snapshot-label-weekly:
+    name: '[updatecli] [weekly] Update latest snapshot label step to {{ source "latestSnapshotMajorMinor" }}'
+    kind: file
+    sourceid: latestSnapshotMajorMinor
+    scmid: default
+    spec:
+      file: '.buildkite/pipeline.schedule-weekly.yml'
+      matchpattern: '(Stack Version) v8\.\d+"'
+      replacepattern: 'Stack Version v{{ source "latestSnapshotMajorMinor" }}"'

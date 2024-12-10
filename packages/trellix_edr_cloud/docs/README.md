@@ -339,7 +339,6 @@ An example event for `event` looks as following:
         "name": "example user"
     }
 }
-
 ```
 
 **Exported fields**
@@ -362,6 +361,7 @@ An example event for `event` looks as following:
 | trellix_edr_cloud.event.arguments |  | keyword |
 | trellix_edr_cloud.event.author_name |  | keyword |
 | trellix_edr_cloud.event.bytes_received |  | long |
+| trellix_edr_cloud.event.certs |  | nested |
 | trellix_edr_cloud.event.certs.issuer_name |  | keyword |
 | trellix_edr_cloud.event.certs.public_key_hash |  | keyword |
 | trellix_edr_cloud.event.certs.type |  | keyword |

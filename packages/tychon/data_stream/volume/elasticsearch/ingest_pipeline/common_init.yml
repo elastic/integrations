@@ -1,0 +1,74 @@
+---
+description: Pipeline for common initial processing
+processors:
+
+  # message decoding
+
+  - json:
+      tag: json_message
+      field: message
+      target_field: tychon
+  - script:
+      tag: script_drop_blanks_before_dot_expansion
+      description: Drop blanks before dot expansion
+      lang: painless
+      source: |
+        def keys = new ArrayList(ctx.tychon.keySet());
+        for (key in keys) {
+          if (ctx.tychon[key] == "" || ctx.tychon[key] == null) {
+            ctx.tychon.remove(key);
+          }
+        }
+  - dot_expander:
+      tag: dot_expander
+      field: '*'
+      path: tychon
+
+  - rename:
+      tag: rename_message
+      field: message
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_missing: true
+  - remove:
+      tag: remove_message
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+
+  # tychon.script.*
+
+  - script:
+      tag: script_convert_to_long_truncating_fractional_part
+      description: Convert to long, truncating fractional part
+      lang: painless
+      source: |
+        if (ctx.tychon?.script?.current_duration != null)
+        {
+          ctx.tychon.script.current_duration =
+            (long) Double.parseDouble(ctx.tychon.script.current_duration.toString());
+        }
+
+  # ECS fields
+
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 8.11.0
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: tychon
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: state
+
+  # event.category values vary
+
+  - append:
+      tag: append_event_type
+      field: event.type
+      value: info
