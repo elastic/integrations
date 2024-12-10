@@ -41,4 +41,4 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
 
 
-{{fields "activeusers"}}
+{{fields "active_users"}}

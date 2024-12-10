@@ -5,27 +5,26 @@ processors:
       field: ecs.version
       value: "8.11.0"
   - json:
-      field: activeusers
-      target_field: o365metrics.activeusers   
+      field: active_users
+      target_field: o365metrics.active_users   
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365metrics.activeusers.
+      description: Replace spaces and dashes in field names under o365metrics.active_users.
       tag: painless_purge_spaces_and_dashes
-      if: ctx.o365metrics?.activeusers instanceof Map
+      if: ctx.o365metrics?.active_users instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('');
+          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
         }
         
         def out = [:];
-        for (def item : ctx.o365metrics.activeusers.entrySet()) {
+        for (def item : ctx.o365metrics.active_users.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365metrics.activeusers = out;
-
+        ctx.o365metrics.active_users = out;
   - remove:
-      if: ctx.activeusers != null
-      field: activeusers
+      if: ctx.active_users != null
+      field: active_users
       ignore_missing: true                               
 
 on_failure:
