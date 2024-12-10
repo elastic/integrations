@@ -118,26 +118,26 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-05T11:02:04.225Z",
+    "@timestamp": "2024-12-04T14:04:19.254Z",
     "agent": {
-        "ephemeral_id": "9c04104d-1da0-4c98-b133-0aedefdc2680",
-        "id": "dccf1148-df50-4c35-a3d7-633418e936ff",
-        "name": "elastic-agent-88337",
+        "ephemeral_id": "afc89f47-6c71-42e6-89eb-37d52b5002ba",
+        "id": "d3b0f6ea-040d-4707-b26d-5460e584dd3b",
+        "name": "elastic-agent-29579",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
-        "namespace": "85068",
+        "namespace": "34601",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dccf1148-df50-4c35-a3d7-633418e936ff",
+        "id": "d3b0f6ea-040d-4707-b26d-5460e584dd3b",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -145,15 +145,15 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2024-12-05T11:02:07Z",
+        "ingested": "2024-12-04T14:04:22Z",
         "kind": "alert",
-        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"197595\",\"RESULTS\":\"Package Installed Version Required Version\\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"5555555555\"},\"DNS\":\"\",\"DNS_DATA\":{\"DOMAIN\":\"\",\"FQDN\":\"\",\"HOSTNAME\":\"\"},\"ID\":\"12048633\",\"IP\":\"10.50.2.111\",\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"\",\"OS\":\"\",\"TRACKING_METHOD\":\"IP\"}",
+        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package Installed Version Required Version\\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"5555555555\"},\"DNS\":\"\",\"DNS_DATA\":{\"DOMAIN\":\"\",\"FQDN\":\"\",\"HOSTNAME\":\"\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"\",\"OS\":\"\",\"TRACKING_METHOD\":\"IP\",\"knowledge_base\":[{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"\",\"VENDOR\":\"\"}]},\"SOLUTION\":\"\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"\",\"VULN_TYPE\":\"Vulnerability\"}]}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "id": "12048633",
+        "id": "1",
         "ip": [
             "10.50.2.111"
         ]
@@ -163,7 +163,7 @@ An example event for `asset_host_detection` looks as following:
     },
     "qualys_vmdr": {
         "asset_host_detection": {
-            "id": "12048633",
+            "id": "1",
             "ip": "10.50.2.111",
             "last_pc_scanned_date": "2023-06-28T09:58:12.000Z",
             "last_scan_datetime": "2023-07-03T06:25:17.000Z",
@@ -202,7 +202,7 @@ An example event for `asset_host_detection` looks as following:
                         "text": "AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H"
                     }
                 ],
-                "qid": 197595,
+                "qid": 101,
                 "results": "Package Installed Version Required Version\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092",
                 "severity": 3,
                 "ssl": "0",
@@ -215,7 +215,7 @@ An example event for `asset_host_detection` looks as following:
     },
     "related": {
         "hosts": [
-            "12048633"
+            "1"
         ],
         "ip": [
             "10.50.2.111"
@@ -245,14 +245,17 @@ An example event for `asset_host_detection` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| package.fixed_version |  | keyword |
+| package.name |  | keyword |
+| package.version |  | keyword |
 | qualys_vmdr.asset_host_detection.asset_id |  | long |
 | qualys_vmdr.asset_host_detection.cloud_provider |  | keyword |
 | qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.last_success_date |  | date |
@@ -268,6 +271,87 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.id |  | keyword |
 | qualys_vmdr.asset_host_detection.ip |  | ip |
 | qualys_vmdr.asset_host_detection.ipv6 |  | ip |
+| qualys_vmdr.asset_host_detection.knowledge_base.automatic_pci_fail |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.bugtraq_list.id |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.bugtraq_list.url |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.category |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.change_date |  | date |
+| qualys_vmdr.asset_host_detection.knowledge_base.changelog_list.info.comments |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.compliance_list.description |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.compliance_list.section |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.compliance_list.type |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.consequence.comment |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.consequence.value |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.list.explt.desc |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.list.explt.link |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.list.explt.ref |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.exploits.explt_src.name |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.alias |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.id |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.link |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.platform |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.rating |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.list.info.type |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.correlation.malware.src.name |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cve_list |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.access.complexity |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.access.vector |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.authentication |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.base |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.base_obj |  | flattened |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.exploitability |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.impact.availability |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.impact.confidentiality |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.impact.integrity |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.remediation_level |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.report_confidence |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.temporal |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss.vector_string |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.attack.complexity |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.attack.vector |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.base |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.exploit_code_maturity |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.impact.availability |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.impact.confidentiality |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.impact.integrity |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.privileges_required |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.remediation_level |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.report_confidence |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.scope |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.temporal |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.user_interaction |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.vector_string |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.cvss_v3.version |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.detection_info |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.diagnosis.comment |  | match_only_text |
+| qualys_vmdr.asset_host_detection.knowledge_base.diagnosis.value |  | match_only_text |
+| qualys_vmdr.asset_host_detection.knowledge_base.discovery.additional_info |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.discovery.auth_type_list.value |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.discovery.remote |  | long |
+| qualys_vmdr.asset_host_detection.knowledge_base.error |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.id_range |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.ids |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.is_disabled |  | boolean |
+| qualys_vmdr.asset_host_detection.knowledge_base.last.customization.datetime |  | date |
+| qualys_vmdr.asset_host_detection.knowledge_base.last.customization.user_login |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.last.service_modification_datetime |  | date |
+| qualys_vmdr.asset_host_detection.knowledge_base.patchable |  | boolean |
+| qualys_vmdr.asset_host_detection.knowledge_base.pci_flag |  | boolean |
+| qualys_vmdr.asset_host_detection.knowledge_base.pci_reasons.value |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.published_datetime |  | date |
+| qualys_vmdr.asset_host_detection.knowledge_base.qid |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.severity_level |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.software_list.product |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.software_list.vendor |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.solution.comment |  | match_only_text |
+| qualys_vmdr.asset_host_detection.knowledge_base.solution.value |  | match_only_text |
+| qualys_vmdr.asset_host_detection.knowledge_base.supported_modules |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.threat_intelligence.intel.id |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.threat_intelligence.intel.text |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.title |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.vendor_reference_list.id |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.vendor_reference_list.url |  | keyword |
+| qualys_vmdr.asset_host_detection.knowledge_base.vuln_type |  | keyword |
 | qualys_vmdr.asset_host_detection.last_pc_scanned_date |  | date |
 | qualys_vmdr.asset_host_detection.last_scan_datetime |  | date |
 | qualys_vmdr.asset_host_detection.last_vm_auth_scanned_date |  | date |
@@ -334,6 +418,12 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.times_reopened |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.type |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id |  | keyword |
+| resource.id |  | keyword |
+| resource.name |  | keyword |
+| vulnerability.package.fixed_version |  | keyword |
+| vulnerability.package.name |  | keyword |
+| vulnerability.package.version |  | keyword |
+| vulnerability.title |  | keyword |
 
 
 ### Knowledge Base
