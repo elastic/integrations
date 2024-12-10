@@ -1,0 +1,50 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: auditd_manager
+      name: test-session-viewer-auditd_manager
+      streams:
+        - audit_rules: |
+            # Session data audit rules
+            -a always,exit -F arch=b64 -S execve,execveat -k exec
+            -a always,exit -F arch=b64 -S exit_group
+            -a always,exit -F arch=b64 -S setsid
+          backlog_limit: 8192
+          backpressure_strategy: auto
+          condition: ${host.platform} == 'linux'
+          data_stream:
+            dataset: auditd_manager.auditd
+            type: logs
+          failure_mode: silent
+          immutable: false
+          include_raw_message: true
+          include_warnings: false
+          processors:
+            - add_session_metadata:
+                backend: auto
+          rate_limit: 0
+          resolve_ids: true
+          socket_type: ""
+          tags:
+            - auditd_manager-auditd
+          type: audit/auditd
+      type: audit/auditd
+      use_output: default
+namespaces: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-auditd_manager.auditd-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

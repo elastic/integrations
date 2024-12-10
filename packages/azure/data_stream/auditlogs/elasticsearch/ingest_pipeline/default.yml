@@ -229,13 +229,37 @@ processors:
   - set:
       field: event.kind
       value: event
+  - append:
+      field: related.entity
+      value: '{{{ azure.auditlogs.properties.initiated_by.user.id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.auditlogs?.properties?.initiated_by?.user?.id != null && ctx.azure.auditlogs.properties.initiated_by.user.id != ''
+  - append:
+      field: related.entity
+      value: '{{{ azure.auditlogs.properties.initiated_by.app.servicePrincipalId }}}'
+      allow_duplicates: false
+      if: ctx.azure?.auditlogs?.properties?.initiated_by?.app?.servicePrincipalId != null && ctx.azure.auditlogs.properties.initiated_by.app.servicePrincipalId != ''
+  - script:
+      description: Appends target resources identifiers to `related.entity`
+      lang: painless
+      source: |
+        ctx.related = ctx.related ?: [:];
+        ctx.related.entity = ctx.related.entity ?: [];
+        if (ctx.azure.auditlogs.properties.target_resources != null) {
+            for (String k : ctx.azure.auditlogs.properties.target_resources.keySet()) {
+                def resource = ctx.azure.auditlogs.properties.target_resources[k];
+                if (resource?.id != null && resource.id != '' && !ctx.related.entity.contains(resource.id)) {
+                        ctx.related.entity.add(resource.id);
+                }
+            }
+        }
+      on_failure: 
+        - set:
+            description: Add error reason
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
       field: error.message

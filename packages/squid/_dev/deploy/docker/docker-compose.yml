@@ -1,6 +1,6 @@
 version: '2.3'
 services:
-  squid-log-logfile:
+  squid-log-filestream:
     image: alpine
     volumes:
       - ./sample_logs:/sample_logs:ro
@@ -16,3 +16,8 @@ services:
     volumes:
       - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9537 -p=tcp /sample_logs/squid-log-*.log
+  squid-log-tls:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9538 -p=tls --insecure /sample_logs/squid-log-*.log

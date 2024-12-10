@@ -52,16 +52,19 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | input.type | Type of Filebeat input. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| slack.audit.actor.type | The type of entity performing the action. | keyword |
+| slack.audit.actor.user.team | The the team of the actor if they are a user. | keyword |
 | slack.audit.context.domain | The domain of the Workspace or Enterprise | keyword |
 | slack.audit.context.id | The ID of the workspace or enterprise | keyword |
 | slack.audit.context.name | The name of the workspace or enterprise | keyword |
 | slack.audit.context.session_id | The identifier that is unique to each authenticated session. | keyword |
-| slack.audit.context.type | The type of account.  Either `Workspace` or `Enterprise` | keyword |
+| slack.audit.context.type | The type of account. Either `Workspace` or `Enterprise` | keyword |
 | slack.audit.details.location | The location the activity occured in when event.action is anomaly | keyword |
 | slack.audit.details.md5 | The md5 hash of a file associated with a `file_malicious_content_detected` event. | keyword |
 | slack.audit.details.previous_ip_address | The IP address previously observed for the entity in the event when event.action is anomaly | ip |
 | slack.audit.details.previous_user_agent | The User-Agent string previously observed for the entity in the event when event.action is anomaly | keyword |
 | slack.audit.details.reason | The anomaly rule triggered to generate the event when event.action is anomaly: asn, excessive_downloads, ip_address, session_fingerprint, tor, user_agent | keyword |
+| slack.audit.details.url_private | URL associated with the action. | keyword |
 | slack.audit.entity.barriered_from_usergroup | The user group barrier when entity_type is barrier | keyword |
 | slack.audit.entity.channel | The channel the entity is within when entity_type is message | keyword |
 | slack.audit.entity.domain | Domain of the entity when entity_type is Workspace or Enterprise | keyword |
@@ -91,34 +94,34 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2023-01-13T17:40:21.862Z",
     "agent": {
-        "ephemeral_id": "a3daca3b-553f-45eb-8bfb-8a95e6e5631e",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b9bee162-6839-48bf-a046-8e4a02f2fb67",
+        "id": "a92f13a9-12c9-43a1-9997-166906490b28",
+        "name": "elastic-agent-31844",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "slack.audit",
-        "namespace": "ep",
+        "namespace": "55128",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "a92f13a9-12c9-43a1-9997-166906490b28",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "anomaly",
         "agent_id_status": "verified",
-        "created": "2023-09-22T17:50:16.870Z",
+        "created": "2024-10-17T03:44:21.387Z",
         "dataset": "slack.audit",
-        "id": "1665fc41-c67c-4cf5-a5c4-d90cb58dd5f9",
-        "ingested": "2023-09-22T17:50:17Z",
+        "id": "2125fb41-c67c-4cf5-a5c4-d90cb58dd5f9",
+        "ingested": "2024-10-17T03:44:22Z",
         "kind": "event",
-        "original": "{\"action\":\"anomaly\",\"actor\":{\"type\":\"user\",\"user\":{\"email\":\"aaron@demo.com\",\"id\":\"e65b0f5c\",\"name\":\"roy\"}},\"context\":{\"ip_address\":\"81.2.69.143\",\"location\":{\"domain\":\"Docker\",\"id\":\"e65b11aa\",\"name\":\"Docker\",\"type\":\"workspace\"},\"ua\":\"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:23.0) Gecko/20131011 Firefox/23.0\"},\"date_create\":1683836291,\"details\":{\"action_timestamp\":1673631621862,\"location\":\"England, GB\",\"previous_ip_address\":\"175.16.199.64\",\"previous_ua\":\"\",\"reason\":[\"asn\",\"ip_address\"]},\"entity\":{\"type\":\"user\",\"user\":{\"email\":\"jbob@example.com\",\"id\":\"asdfasdf\",\"name\":\"Joe Bob\",\"team\":\"T234SAH2\"}},\"id\":\"1665fc41-c67c-4cf5-a5c4-d90cb58dd5f9\"}",
+        "original": "{\"action\":\"anomaly\",\"actor\":{\"type\":\"user\",\"user\":{\"email\":\"aaron@demo.com\",\"id\":\"e65b0f5c\",\"name\":\"roy\"}},\"context\":{\"ip_address\":\"81.2.69.143\",\"location\":{\"domain\":\"Docker\",\"id\":\"e65b11aa\",\"name\":\"Docker\",\"type\":\"workspace\"},\"ua\":\"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:23.0) Gecko/20131011 Firefox/23.0\"},\"date_create\":1683836273,\"details\":{\"action_timestamp\":1673631621862,\"location\":\"England, GB\",\"previous_ip_address\":\"175.16.199.64\",\"previous_ua\":\"\",\"reason\":[\"asn\",\"ip_address\"]},\"entity\":{\"type\":\"user\",\"user\":{\"email\":\"jbob@example.com\",\"id\":\"asdfasdf\",\"name\":\"Joe Bob\",\"team\":\"T234SAH2\"}},\"id\":\"2125fb41-c67c-4cf5-a5c4-d90cb58dd5f9\"}",
         "type": [
             "info"
         ]
@@ -137,6 +140,9 @@ An example event for `audit` looks as following:
     },
     "slack": {
         "audit": {
+            "actor": {
+                "type": "user"
+            },
             "context": {
                 "domain": "Docker",
                 "id": "e65b11aa",
@@ -200,5 +206,4 @@ An example event for `audit` looks as following:
         "version": "23.0."
     }
 }
-
 ```

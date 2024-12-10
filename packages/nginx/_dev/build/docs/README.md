@@ -112,7 +112,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "stubstatus"}}
 
-## ML Modules
+## Anomaly Detection Configurations
 
 These anomaly detection jobs are available in the Machine Learning app in Kibana
 when you have data that matches the query specified in the

@@ -1,0 +1,110 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+state:
+  table_name: {{table_name}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+  timestamp_field: {{timestamp_field}}
+regexp:
+  next_link: '<([^,]*)>;rel="next"'
+  content: 'text/html'
+redact:
+  fields: ~
+program: |
+  state.with(
+    state.?cursor.last_event.orValue((now - duration(state.initial_interval)).format("2006-01-02 15:04:05")).as(start, get(
+      state.?cursor.?next_page.orValue(
+        state.url.trim_right("/")+"/api/now/table/"+state.table_name+"?"+{
+          "sysparm_display_value": ["all"],
+          "sysparm_exclude_reference_link": ["true"],
+          "sysparm_limit": [string(state.batch_size)],
+          "sysparm_query": ["ORDERBY"+state.timestamp_field+"^"+state.timestamp_field+">"+start],
+        }.format_query()
+      )
+    )).as(resp, resp.StatusCode == 200 && (resp.Header["Content-Type"][0].re_find_submatch("content") == []) ?
+      (
+        (has(resp.?Header.Link) && size(resp.Header.Link) != 0) ?
+          resp.Header.Link[0].re_find_submatch("next_link")[?1]
+        :
+          optional.none()
+      ).as(next_page,
+        bytes(resp.Body).decode_json().as(body, {
+          "events": body.?result.orValue([]).map(evt, evt.with({
+            "table_name": state.table_name
+          }).as(modEvt, {
+            "message": modEvt.encode_json()
+          })),
+          "cursor": {
+            "last_event": (body.?result.orValue([]).map(r,
+              state.timestamp_field in r && has(r[state.timestamp_field].value),
+              r[state.timestamp_field].value
+            )+[state.?cursor.last_event.orValue(now)]).max(),
+            ?"next_page": next_page,
+          },
+          "want_more": next_page.hasValue() && body.?result.orValue([]).size() != 0,
+          "timestamp_field": state.timestamp_field,
+        })
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+        "timestamp_field": state.timestamp_field,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#if table_name}}
+  - {{table_name}}
+{{/if}}
+{{#if hide_sensitive}}
+  - hide_sensitive
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+fields_under_root: true
+fields:
+  _conf:
+    timestamp_field: {{timestamp_field}}
+    tz_offset: {{tz_offset}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

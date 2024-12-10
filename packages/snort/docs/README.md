@@ -112,7 +112,6 @@ An example event for `log` looks as following:
         "snort.log"
     ]
 }
-
 ```
 
 **Exported fields**

@@ -55,6 +55,17 @@ processors:
             value: ["preserve_original_event"]
             ignore_failure: true
   - rename:
+      field: azure.platformlogs.properties
+      if: "ctx.azure?.platformlogs?.properties instanceof String"
+      target_field: azure.platformlogs.properties.raw
+      ignore_missing: true
+      description: 'Rename the field to `properties.raw` to avoid parse errors with the `properties` containing a string.'
+  - rename:
+      field: azure.platformlogs.Identity
+      target_field: azure.platformlogs.identity
+      ignore_missing: true
+      description: 'Standardize the `Identity` field name to `identity` for consistency.'
+  - rename:
       field: azure.platformlogs.identity
       if: "ctx.azure?.platformlogs?.identity instanceof String"
       target_field: azure.platformlogs.identity_name
@@ -275,11 +286,6 @@ processors:
       value: event
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
   - pipeline:
       if: "ctx?.azure_log_forwarder?.resource_type != null && (ctx?.azure_log_forwarder?.resource_type == 'Microsoft.AppPlatform/Spring'|| ctx?.azure_log_forwarder?.resource_type == 'MICROSOFT.APPPLATFORM/SPRING')"
       name: '{{ IngestPipeline "springcloudlogs-inner-pipeline" }}'

@@ -1,0 +1,224 @@
+---
+description: Pipeline for processing case logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.firstObserved
+        - json.customerVisibleTime
+        - json.caseId
+      tag: fingerprint_case
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Abnormal
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Inbound Email Security
+  - rename:
+      field: json.affectedEmployee
+      tag: rename_affectedEmployee
+      target_field: abnormal_security.case.affected_employee
+      ignore_missing: true
+  - grok:
+      field: abnormal_security.case.affected_employee
+      tag: grok_abnormal_security_case_affected_employee
+      patterns:
+        - '^%{EMAILADDRESS:user.email}$'
+        - '^%{DATA:user.name}$'
+      ignore_failure: true
+  - append:
+      field: related.user
+      tag: append_affected_employee_to_users
+      value: '{{{abnormal_security.case.affected_employee}}}'
+      allow_duplicates: false
+      if: ctx.abnormal_security?.case?.affected_employee != null
+  - rename:
+      field: json.analysis
+      tag: rename_analysis
+      target_field: abnormal_security.case.analysis
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_to_analysis
+      copy_from: abnormal_security.case.analysis
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - date:
+      field: json.customerVisibleTime
+      tag: date_customerVisibleTime
+      target_field: abnormal_security.case.customer_visible_time
+      formats:
+        - ISO8601
+      if: ctx.json?.customerVisibleTime != null && ctx.json.customerVisibleTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: abnormal_security.case.description
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_case_description
+      copy_from: abnormal_security.case.description
+      ignore_empty_value: true
+  - date:
+      field: json.firstObserved
+      tag: date_firstObserved
+      target_field: abnormal_security.case.first_observed
+      formats:
+        - ISO8601
+      if: ctx.json?.firstObserved != null && ctx.json.firstObserved != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_case_first_observed
+      copy_from: abnormal_security.case.first_observed
+      ignore_empty_value: true
+  - convert:
+      field: json.caseId
+      tag: convert_caseId
+      target_field: abnormal_security.case.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_case_id
+      copy_from: abnormal_security.case.id
+      ignore_empty_value: true
+  - rename:
+      field: json.remediation_status
+      tag: rename_remediation_status
+      target_field: abnormal_security.case.remediation_status
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      tag: rename_severity
+      target_field: abnormal_security.case.severity
+      ignore_missing: true
+  - rename:
+      field: json.severity_level
+      tag: rename_severity_level
+      target_field: abnormal_security.case.severity_level
+      ignore_missing: true
+  - script:
+      description: Set event severity based on severity level
+      if: ctx.abnormal_security?.case?.severity_level != null
+      tag: set_event_severity_from_case_severity_level
+      lang: painless
+      params:
+        NONE: 0
+        LOW: 1
+        MEDIUM: 2
+        HIGH: 3
+      source: |-
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.severity = params.get(ctx.abnormal_security.case.severity_level);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.case_status
+      tag: rename_case_status
+      target_field: abnormal_security.case.status
+      ignore_missing: true
+  - rename:
+      field: json.threatIds
+      tag: rename_threatIds
+      target_field: abnormal_security.case.threat_ids
+      ignore_missing: true
+  - remove:
+      field:
+        - abnormal_security.case.description
+        - abnormal_security.case.first_observed
+        - abnormal_security.case.id
+        - abnormal_security.case.analysis
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

@@ -1,0 +1,522 @@
+---
+description: Pipeline for processing event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: authentik.event
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_event
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - script:
+      description: Set ECS categorization fields
+      tag: set_ecs_categorization_fields
+      lang: painless
+      ignore_failure: true
+      params:
+        login:
+          category:
+            - authentication
+          type:
+            - start
+          outcome: success
+        login_failed:
+          category:
+            - authentication
+          type:
+            - start
+          outcome: failure
+        logout:
+          category:
+            - authentication
+          type:
+            - end
+          outcome: success
+        user_write:
+          category:
+            - iam
+          type:
+            - change
+        suspicious_request:
+          category:
+            - intrusion_detection
+          type:
+            - info
+        password_set:
+          category:
+            - iam
+          type:
+            - change
+            - user
+        secret_view:
+          category:
+            - iam
+          type:
+            - info
+        secret_rotate:
+          category:
+            - iam
+          type:
+            - change
+        invitation_used:
+          category:
+            - iam
+          type:
+            - info
+        authorize_application:
+          category:
+            - authentication
+          type:
+            - info
+        configuration_error:
+          category:
+            - configuration
+          type:
+            - info
+        model_created:
+          category:
+            - configuration
+          type:
+            - info
+            - creation
+        model_updated:
+          category:
+            - configuration
+          type:
+            - info
+            - change
+        model_deleted:
+          category:
+            - configuration
+          type:
+            - info
+            - deletion
+        email_sent:
+          category:
+            - email
+          type:
+            - info
+      source: |-
+        if (ctx.authentik?.event?.action == null || params.get(ctx.authentik.event.action) == null) {
+          return;
+        }
+        params.get(ctx.authentik.event.action).forEach((k, v) -> {
+          ctx.event[k] = v
+        });
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: authentik
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: authentik
+  - set:
+      field: event.action
+      tag: set_event_action_from_action
+      copy_from: authentik.event.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: '_'
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.client_ip
+      tag: convert_client_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.authentik?.event?.client_ip != ''
+      on_failure:
+        - remove:
+            field: authentik.event.client_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_client_ip
+      copy_from: authentik.event.client_ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_client_ip_into_related_ip
+      value: '{{{authentik.event.client_ip}}}'
+      allow_duplicates: false
+      if: ctx.authentik?.event?.client_ip != null
+  - convert:
+      field: authentik.event.context.model.pk
+      tag: convert_context_model_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.model.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.request.user.pk
+      tag: convert_context_request_user_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.request.user.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.authorized_application.pk
+      tag: convert_context_authorized_application_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.authorized_application.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.binding.pk
+      tag: convert_context_binding_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.binding.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.request.context.event.pk
+      tag: convert_context_request_context_event_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.request.context.event.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.request.obj.pk
+      tag: convert_context_request_obj_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.request.obj.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.secret.pk
+      tag: convert_context_secret_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.secret.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.stage.pk
+      tag: convert_context_stage_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.stage.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.token.pk
+      tag: convert_context_token_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.token.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.result.passing
+      tag: convert_context_result_passing_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.result.passing
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: authentik.event.context.created
+      tag: convert_context_created_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.context.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_context_http_request_method
+      copy_from: authentik.event.context.http_request.method
+      ignore_empty_value: true
+  - set:
+      field: url.path
+      tag: set_url_path_from_context_http_request_path
+      copy_from: authentik.event.context.http_request.path
+      ignore_empty_value: true
+  - user_agent:
+      field: authentik.event.context.http_request.user_agent
+      ignore_missing: true
+  - date:
+      field: authentik.event.created
+      tag: date_created
+      target_field: authentik.event.created
+      formats:
+        - ISO8601
+      if: ctx.authentik?.event?.created != null && ctx.authentik.event.created != ''
+      on_failure:
+        - remove:
+            field: authentik.event.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_created
+      copy_from: authentik.event.created
+      ignore_empty_value: true
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_created
+      copy_from: authentik.event.created
+      ignore_empty_value: true
+  - date:
+      field: authentik.event.expires
+      tag: date_expires
+      target_field: authentik.event.expires
+      formats:
+        - ISO8601
+      if: ctx.authentik?.event?.expires != null && ctx.authentik.event.expires != ''
+      on_failure:
+        - remove:
+            field: authentik.event.expires
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.id
+      tag: set_event_id_from_pk
+      copy_from: authentik.event.pk
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_user_email
+      copy_from: authentik.event.user.email
+      ignore_empty_value: true
+  - dissect:
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+      tag: dissect_user_email
+      field: user.email
+      pattern: '%{_temp}@%{user.domain}'
+  - append:
+      field: related.user
+      tag: append_user_email_into_related_user
+      value: '{{{authentik.event.user.email}}}'
+      allow_duplicates: false
+      if: ctx.authentik?.event?.user?.email != null
+  - convert:
+      field: authentik.event.user.is_anonymous
+      tag: convert_user_is_anonymous_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.user.is_anonymous
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_user_on_behalf_of_email_into_related_user
+      value: '{{{authentik.event.user.on_behalf_of.email}}}'
+      allow_duplicates: false
+      if: ctx.authentik?.event?.user?.on_behalf_of?.email != null
+  - convert:
+      field: authentik.event.user.on_behalf_of.pk
+      tag: convert_user_on_behalf_of_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.user.on_behalf_of.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_user_on_behalf_of_pk_into_related_user
+      value: '{{{authentik.event.user.on_behalf_of.pk}}}'
+      allow_duplicates: false
+      if: ctx.authentik?.event?.user?.on_behalf_of?.pk != null
+  - append:
+      field: related.user
+      tag: append_user_on_behalf_of_username_into_related_user
+      value: '{{{authentik.event.user.on_behalf_of.username}}}'
+      allow_duplicates: false
+      if: ctx.authentik?.event?.user?.on_behalf_of?.username != null
+  - convert:
+      field: authentik.event.user.pk
+      tag: convert_user_pk_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: authentik.event.user.pk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.id
+      tag: set_user_id_from_user_pk
+      copy_from: authentik.event.user.pk
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_pk_into_related_user
+      value: '{{{authentik.event.user.pk}}}'
+      allow_duplicates: false
+      if: ctx.authentik?.event?.user?.pk != null
+  - set:
+      field: user.name
+      tag: set_user_name_from_user_username
+      copy_from: authentik.event.user.username
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_username_into_related_user
+      value: '{{{authentik.event.user.username}}}'
+      allow_duplicates: false
+      if: ctx.authentik?.event?.user?.username != null
+  - remove:
+      field:
+        - authentik.event.client_ip
+        - authentik.event.created
+        - authentik.event.pk
+        - authentik.event.user.email
+        - authentik.event.user.pk
+        - authentik.event.user.username
+        - authentik.event.context.http_request.method
+        - authentik.event.context.http_request.path
+        - authentik.event.context.http_request.user_agent
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: _temp
+      tag: remove_temp
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

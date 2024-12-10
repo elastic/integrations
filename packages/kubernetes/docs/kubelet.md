@@ -164,7 +164,6 @@ An example event for `container` looks as following:
         "dataset": "kubernetes.container"
     }
 }
-
 ```
 
 **Exported fields**
@@ -374,7 +373,6 @@ An example event for `node` looks as following:
         "version": "1.5.0"
     }
 }
-
 ```
 
 **Exported fields**
@@ -589,7 +587,6 @@ An example event for `pod` looks as following:
         "dataset": "kubernetes.pod"
     }
 }
-
 ```
 
 **Exported fields**
@@ -744,7 +741,6 @@ An example event for `system` looks as following:
         "period": 10000
     }
 }
-
 ```
 
 **Exported fields**
@@ -879,7 +875,6 @@ An example event for `volume` looks as following:
         "duration": 12481688
     }
 }
-
 ```
 
 **Exported fields**

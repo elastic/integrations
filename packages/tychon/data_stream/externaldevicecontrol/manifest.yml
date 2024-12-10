@@ -1,0 +1,66 @@
+title: Endpoint External Device Control
+type: logs
+streams:
+  - input: filestream
+    title: Endpoint External Device Control
+    description: TYCHON will ensure external devices like usb hard drives and cdrom drives cannot be used except for the whitelist hardware Identifiers within the policy.
+    template_path: filestream.yml.hbs
+    vars:
+      - name: disable_cdrom
+        required: true
+        show_user: true
+        title: Disable External CD-ROMS
+        description: When switch is enabled TYCHON will enforce policy on the endpoint disabling the ability for users to use CD-ROM drives on endpoints.
+        type: bool
+        multi: false
+        default: false
+      - name: disable_drive
+        required: true
+        show_user: true
+        title: Disable USB Drives
+        description: When swtich is enabled TYCHON will enforce policy on the endpoint disabling the ability for users to add new USB drives to a device that isn't in the hardware whitelist.
+        type: bool
+        multi: false
+        default: false
+      - name: paths
+        type: text
+        title: TYCHON Device Protection Results Location (Policy changes and events)
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - C:\ProgramData\TYCHONCLOUD\eventlogs\tychon_dcm_event_info.json
+          - C:\ProgramData\TYCHONCLOUD\eventlogs\tychon_dcm_policy_info.json
+          - /var/log/tychoncloud/eventlogs/tychon_dcm_event_info.json
+          - /var/log/tychoncloud/eventlogs/tychon_dcm_policy_info.json
+      - name: idlist
+        type: text
+        title: USB Drive ID Whitelist
+        description: Put each external USB Drive ID that is allowed to connect to endpoints.
+        multi: true
+        required: false
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - tychon-externaldevicecontrol
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

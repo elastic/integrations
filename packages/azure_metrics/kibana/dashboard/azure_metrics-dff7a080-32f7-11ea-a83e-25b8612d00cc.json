@@ -30,6 +30,28 @@
                                 "azure.namespace": "Microsoft.Storage/storageAccounts/fileServices"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "storage_account",
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "azure.storage_account"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "azure.storage_account"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -64,10 +86,10 @@
                         "description": "",
                         "params": {
                             "fontSize": 10,
-                            "markdown": "### Azure Storage\n\n[Overview](#/dashboard/azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc) | [Blob](#/dashboard/azure_metrics-b165ef60-32f7-11ea-a83e-25b8612d00cc) | [**File**](#/dashboard/azure_metrics-dff7a080-32f7-11ea-a83e-25b8612d00cc) | [Table](#/dashboard/azure_metrics-ff2fe020-32f7-11ea-a83e-25b8612d00cc) | [Queue](#/dashboard/azure_metrics-10efa340-32f8-11ea-a83e-25b8612d00cc) ",
+                            "markdown": "[Overview](#/dashboard/azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc) | [Blob](#/dashboard/azure_metrics-b165ef60-32f7-11ea-a83e-25b8612d00cc) | [**File**](#/dashboard/azure_metrics-dff7a080-32f7-11ea-a83e-25b8612d00cc) | [Table](#/dashboard/azure_metrics-ff2fe020-32f7-11ea-a83e-25b8612d00cc) | [Queue](#/dashboard/azure_metrics-10efa340-32f8-11ea-a83e-25b8612d00cc) ",
                             "openLinksInNewTab": false
                         },
-                        "title": "Navigation File Storage Overview",
+                        "title": "Azure Storage — File Storage Overview",
                         "type": "markdown",
                         "uiState": {}
                     }
@@ -80,7 +102,7 @@
                     "y": 0
                 },
                 "panelIndex": "ee131d2d-7ab5-4434-9e3b-230759c3e5ff",
-                "title": "Navigation File Storage Overview",
+                "title": "Azure Storage — File Storage Overview",
                 "type": "visualization",
                 "version": "8.7.0"
             },
@@ -159,7 +181,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.file_capacity.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "File Capacity",
@@ -255,7 +277,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.file_count.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "File Count",
@@ -433,7 +455,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.file_share_count.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "File Share Count",
@@ -923,7 +945,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.file_share_snapshot_count.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "File Share Snapshot Count",
@@ -1411,7 +1433,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.file_share_snapshot_size.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "File Share Snapshot Size",
@@ -1921,6 +1943,11 @@
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },        
         {
             "id": "metrics-*",
             "name": "controlGroup_c7829894-f20c-4b19-ad2d-3a612701abc9:optionsListDataView",

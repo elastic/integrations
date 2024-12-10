@@ -51,13 +51,13 @@ request.transforms:
     target: body.request_data.filters
     value: |-
       {
-        "field": "creation_time",
+        "field": "server_creation_time",
         "operator": "gte",
         "value": [[ .cursor.next_ts ]]
       }
     default: |-
       {
-        "field": "creation_time",
+        "field": "server_creation_time",
         "operator": "gte",
         "value": [[ mul (add (now (parseDuration "-{{initial_interval}}")).Unix) 1000 ]]
       }
@@ -81,7 +81,7 @@ response.pagination:
       fail_on_template_error: true
 cursor:
   next_ts:
-    value: "[[.last_event.detection_timestamp]]"
+    value: "[[.last_event.local_insert_ts]]"
 
 tags:
 {{#if preserve_original_event}}

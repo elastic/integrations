@@ -1,0 +1,129 @@
+- name: tychon
+  type: group
+  fields:
+    - name: host.architecture
+      type: keyword
+      description: Operating system architecture.
+    - name: host.domain
+      type: keyword
+      description: |-
+        Name of the domain of which the host is a member.
+        For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider.
+    - name: host.hostname
+      type: keyword
+      description: |-
+        Hostname of the host.
+        It normally contains what the `hostname` command returns on the host machine.
+    - name: host.id
+      type: keyword
+      description: |-
+        Unique host id.
+        As hostname is not always unique, use values that are meaningful in your environment.
+        Example: The current usage of `beat.name`.
+    - name: host.ip
+      type: ip
+      description: Host ip addresses.
+    - name: host.mac
+      type: keyword
+      description: |-
+        Host MAC addresses.
+        The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen.
+    - name: host.name
+      type: keyword
+      description: |-
+        Name of the host.
+        It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host.
+    - name: host.os.family
+      type: keyword
+      description: OS family (such as redhat, debian, freebsd, windows).
+    - name: host.os.kernel
+      type: keyword
+      description: Operating system kernel version as a raw string.
+    - name: host.os.name
+      type: keyword
+      description: Operating system name, without the version.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: host.os.platform
+      type: keyword
+      description: Operating system platform (such centos, ubuntu, windows).
+    - name: host.os.type
+      type: keyword
+      description: |-
+        Use the `os.type` field to categorize the operating system into one of the broad commercial families.
+        If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition.
+    - name: host.os.version
+      type: keyword
+      description: Operating system version as a raw string.
+    - name: host.type
+      type: keyword
+      description: |-
+        Type of host.
+        For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment.
+    - name: host.uptime
+      type: long
+      description: Seconds the host has been up.
+    - name: network.transport
+      type: keyword
+      description: |-
+        Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.)
+        The field value is normalized to lowercase for querying.
+    - name: process.command_line
+      type: wildcard
+      description: |-
+        Full command line that started the process, including the absolute path to the executable, and all arguments.
+        Some arguments may be filtered to protect sensitive information.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: process.executable
+      type: keyword
+      description: Absolute path to the process executable.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: process.hash.sha1
+      type: keyword
+      description: SHA1 hash.
+    - name: process.name
+      type: keyword
+      description: |-
+        Process name.
+        Sometimes called program name or similar.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: process.pid
+      type: long
+      description: Process id.
+    - name: process.start
+      type: date
+      description: The time the process started.
+    - name: process.user.name
+      type: keyword
+      description: Short name or login of the user.
+      multi_fields:
+        - name: text
+          type: match_only_text
+    - name: service.name
+      type: keyword
+      description: |-
+        Name of the service data is collected from.
+        The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name.
+        In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified.
+    - name: service.state
+      type: keyword
+      description: Current state of the service.
+    - name: source.ip
+      type: ip
+      description: IP address of the source (IPv4 or IPv6).
+    - name: source.port
+      type: long
+      description: Port of the source.
+    - name: user.name
+      type: keyword
+      description: Short name or login of the user.
+      multi_fields:
+        - name: text
+          type: match_only_text

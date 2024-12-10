@@ -15,6 +15,7 @@ type PackageError struct {
 	testCase
 	Serverless        bool
 	ServerlessProject string
+	LogsDB            bool
 	StackVersion      string
 	BuildURL          string
 	Teams             []string
@@ -27,6 +28,7 @@ type PackageError struct {
 type PackageErrorOptions struct {
 	Serverless        bool
 	ServerlessProject string
+	LogsDB            bool
 	StackVersion      string
 	BuildURL          string
 	TestCase          testCase
@@ -37,6 +39,7 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 	p := PackageError{
 		Serverless:        options.Serverless,
 		ServerlessProject: options.ServerlessProject,
+		LogsDB:            options.LogsDB,
 		StackVersion:      options.StackVersion,
 		BuildURL:          options.BuildURL,
 		testCase:          options.TestCase,
@@ -48,13 +51,7 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 		p.DataStream = values[1]
 	}
 
-	var owners []string
-	var err error
-	if options.CodeownersPath != "" {
-		owners, err = codeowners.PackageOwnersCustomCodeowners(p.PackageName, p.DataStream, options.CodeownersPath)
-	} else {
-		owners, err = codeowners.PackageOwners(p.PackageName, p.DataStream)
-	}
+	owners, err := codeowners.PackageOwners(p.PackageName, p.DataStream, options.CodeownersPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find owners for package %s: %w", p.PackageName, err)
 	}
@@ -66,6 +63,9 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 func (p PackageError) String() string {
 	var sb strings.Builder
 
+	if p.LogsDB {
+		sb.WriteString("[LogsDB] ")
+	}
 	if p.Serverless {
 		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.ServerlessProject))
 	}

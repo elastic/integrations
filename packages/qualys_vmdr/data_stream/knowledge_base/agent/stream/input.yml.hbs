@@ -26,14 +26,11 @@ redact:
     - password
 program: |
   state.with(
-    request("GET", state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/?action=list&last_modified_after=" +
-      string(
-        state.?cursor.last_modified.orValue(null) != null
-        ?
-          timestamp(state.cursor.last_modified)
-        :
-          now - duration(state.initial_interval)
-      ) + (state.params != "" ? "&" + state.params : "")
+    request("GET", state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/?" +
+      state.?params.orValue("").parse_query().with({
+        "action": ["list"],
+        "last_modified_after": [state.?cursor.last_modified.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))],
+      }).format_query()
     ).with({
       "Header":{
         "X-Requested-With": ["curl"],
@@ -47,7 +44,6 @@ program: |
             has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
             ?
               body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, {
-                ?"xml":    state.keep_xml ? optional.of(string(xml)) : optional.none(),
                 "message": e.with({
                   "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
                 }).encode_json()
@@ -62,12 +58,12 @@ program: |
               }])
           ),
           "cursor": {
-            "last_modified": (
+            ?"last_modified": (
               has(body.?doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN) && body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.size() > 0
               ?
-                body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.LAST_SERVICE_MODIFICATION_DATETIME).max()
+                optional.of(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.LAST_SERVICE_MODIFICATION_DATETIME).max())
               :
-                state.?cursor.last_modified.orValue(null)
+                state.?cursor.last_modified
             )
           },
         }))

@@ -176,7 +176,6 @@ An example event for `logs` looks as following:
         "name": "U.Admin"
     }
 }
-
 ```
 
 The following fields may be used by the package:

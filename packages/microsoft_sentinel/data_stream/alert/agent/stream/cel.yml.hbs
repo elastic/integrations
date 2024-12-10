@@ -1,0 +1,143 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group_name}}/providers/Microsoft.OperationalInsights/workspaces/{{workspace_name}}/providers/Microsoft.SecurityInsights
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url:  {{login_url}}/{{tenant_id}}/oauth2/token
+  endpoint_params:
+    resource: https://management.azure.com/
+state:
+  want_more: false
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+redact:
+  fields: ~
+program: |
+  (
+    has(state.worklist) && size(state.worklist) > 0 ?
+      state
+    :
+      state.with(
+        state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval))).as(last_modified_time, 
+          request(
+            "GET",
+            has(state.?next_page.link) ?
+              // The nextLink URL is unescaped, so we need to parse
+              // and reformat the query, otherwise the request fails.
+              state.url.trim_right("/") + "/incidents?" + state.next_page.link.parse_url().RawQuery.parse_query().format_query()
+            :
+              state.url.trim_right("/") + "/incidents?" + {
+                "api-version": ["2024-03-01"],
+                "$top": [string(state.batch_size)], 
+                "$orderby": ["properties/lastModifiedTimeUtc asc"],
+                "$filter": ["properties/lastModifiedTimeUtc ge " + string(last_modified_time)]
+              }.format_query()
+          )).do_request().as(resp, resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body, {
+              "worklist": body.value,
+              "next": 0,
+              "next_page": {
+                ?"link": body.?nextLink,
+              },
+            })
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET /incidents:"+ (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        ))
+  ).as(state, state.with(
+    !has(state.worklist) ? state : // Exit early due to GET failure.
+      state.worklist[?state.?next.orValue(-1)].hasValue() ?
+        request(
+          "POST",
+          state.url.trim_right("/") + "/incidents/" + state.worklist[state.next].name + "/alerts" + "?api-version=2024-03-01"
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body,{
+            "events": (
+              has(body.value) && size(body.value) > 0 ?
+                body.value.map(e, {
+                  "message": e.encode_json(),
+                })
+              :
+                [{"message":"retry"}]
+            ),
+            "cursor": {
+              ?"last_timestamp": int(state.next) + 1 < size(state.worklist) || has(state.?next_page.link) ?
+                state.?cursor.last_timestamp
+              :
+                optional.of(
+                  state.worklist.map(e, timestamp(e.properties.lastModifiedTimeUtc)).max()
+                )
+            },
+            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
+            "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
+            "want_more": int(state.next) + 1 < size(state.worklist) || has(state.?next_page.link),
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /incidents/"+state.worklist[state.next].name+"/alerts:"+(
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      :
+        {
+          "events": [],
+          "want_more": false,
+          "next_page": {},
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

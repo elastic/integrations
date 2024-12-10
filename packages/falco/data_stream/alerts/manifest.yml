@@ -1,0 +1,80 @@
+title: "Falco Alerts"
+type: logs
+streams:
+  - input: tcp
+    enabled: false
+    template_path: tcp.yml.hbs
+    title: Syslog TCP input
+    description: Collect Falco alerts using syslog input over TCP
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: |
+          Bind address for the syslog listener. Use 0.0.0.0 to listen on all interfaces.
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: text
+        title: Listen port
+        description: |
+          Bind port for the syslog listener.
+        required: true
+        show_user: true
+        default: 9030
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_falco_fields
+        required: true
+        show_user: true
+        title: Preserve Falco fields
+        description: Preserve Falco fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+  # TODO we need to consider if this will work with a logfile set up for rotation
+  - input: logfile
+    template_path: logfile.yml.hbs
+    title: Logfile Input
+    description: Collect Falco Alerts using logfile input
+    enabled: false
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/falco.log
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_falco_fields
+        required: true
+        show_user: true
+        title: Preserve Falco fields
+        description: Preserve Falco fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

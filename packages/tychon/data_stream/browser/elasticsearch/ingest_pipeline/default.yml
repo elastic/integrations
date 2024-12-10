@@ -1,0 +1,31 @@
+---
+description: Pipeline for TYCHON Browser Tables
+processors:
+
+  - pipeline:
+      tag: pipeline_common_init
+      name: '{{ IngestPipeline "common_init" }}'
+  - pipeline:
+      tag: pipeline_common_host
+      name: '{{ IngestPipeline "common_host" }}'
+  - pipeline:
+      tag: pipeline_rest
+      name: '{{ IngestPipeline "rest" }}'
+
+###################
+# Failure handler #
+###################
+
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: pipeline_error

@@ -1,0 +1,87 @@
+---
+description: Pipeline for parsing cisco_duo telephony v2 logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - set:
+            field: event.kind
+            value: pipeline_error
+        - append:
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - drop:
+      description: Drop if no timestamp (invalid json)
+      if: ctx.json?.ts == null
+  - fingerprint:
+      fields:
+        - json.ts
+        - json.phone
+        - json.telephony_id
+        - json.txid
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.ts
+      if: ctx.json?.ts != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - rename:
+      field: json.context
+      target_field: cisco_duo.telephony_v2.event_type
+      ignore_missing: true
+  - rename:
+      field: json.credits
+      target_field: cisco_duo.telephony_v2.credits
+      ignore_missing: true
+  - rename:
+      field: json.phone
+      target_field: cisco_duo.telephony_v2.phone_number
+      ignore_missing: true
+  - rename:
+      field: json.type
+      target_field: cisco_duo.telephony_v2.type
+      ignore_missing: true
+  - rename:
+      field: json.telephony_id
+      target_field: cisco_duo.telephony_v2.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: cisco_duo.telephony_v2.id
+      ignore_failure: true
+  - rename:
+      field: json.txid
+      target_field: cisco_duo.telephony_v2.txid
+      ignore_missing: true
+
+  ## Clean up
+  - remove:
+      field: json
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

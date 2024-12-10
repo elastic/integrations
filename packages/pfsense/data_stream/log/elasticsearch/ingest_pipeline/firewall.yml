@@ -12,7 +12,7 @@ processors:
             PF_IP_DATA: "%{NONNEGINT:network.bytes:long},%{IP:source.address},%{IP:destination.address},"
             PF_IP_SPECIFIC_DATA: "%{PF_IPv4_SPECIFIC_DATA}|%{PF_IPv6_SPECIFIC_DATA}"
             PF_IPv4_SPECIFIC_DATA: "(?<network.type>(4)),%{BASE16NUM:pfsense.ip.tos},%{WORD:pfsense.ip.ecn}?,%{NONNEGINT:pfsense.ip.ttl:long},%{NONNEGINT:pfsense.ip.id:long},%{NONNEGINT:pfsense.ip.offset:long},(?:%{WORD:pfsense.ip.flags}|%{PF_SPEC:pfsense.ip.flags}),%{INT:network.iana_number},%{WORD:network.transport},"
-            PF_IPv6_SPECIFIC_DATA: "(?<network.type>(6)),%{BASE16NUM:pfsense.ip.tos},%{WORD:pfsense.ip.flow_label},%{WORD:pfsense.ip.flags},%{WORD:network.transport},%{INT:network.iana_number},"
+            PF_IPv6_SPECIFIC_DATA: "(?<network.type>(6)),%{BASE16NUM:pfsense.ip.tos},%{WORD:pfsense.ip.flow_label},%{WORD:pfsense.ip.flags},%{PF_TRANSPORT:network.transport},%{INT:network.iana_number},"
             PF_PROTOCOL_DATA: "%{PF_TCP_DATA}|%{PF_UDP_DATA}|%{PF_ICMP_DATA}|%{PF_IGMP_DATA}|%{PF_IPv6_VAR}|%{PF_IPv6_ICMP}"
             PF_IPv6_VAR: "%{GREEDYDATA}"
             PF_IPv6_ICMP: ''
@@ -30,6 +30,7 @@ processors:
             PF_ICMP_TSTAMP: "%{INT:pfsense.icmp.id},%{INT:pfsense.icmp.seq}"
             PF_ICMP_TSTAMP_REPLY: "%{INT:pfsense.icmp.id},%{INT:pfsense.icmp.seq},%{INT:pfsense.icmp.otime},%{INT:pfsense.icmp.rtime},%{INT:pfsense.icmp.ttime}"
             PF_SPEC: "[+]"
+            PF_TRANSPORT: "[0-9a-zA-Z-]+"
     - set:
         field: event.kind
         value: event

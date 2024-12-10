@@ -1,0 +1,63 @@
+title: Gigamon Application Metadata Intelligence (AMI) Logs
+type: logs
+streams:
+  - input: http_endpoint
+    template_path: http_endpoint.yml.hbs
+    title: Gigamon Application Metadata Intelligence (AMI) Logs
+    description: Collect the Gigamon Application Metadata Attributes which is in json format via HTTP endpoint.
+    vars:
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9559
+      - name: secret_header
+        type: text
+        title: Secret Header
+        description: The header to check for a specific value specified by `secret.value`.
+        required: false
+        show_user: false
+        secret: false
+      - name: secret_value
+        type: password
+        title: Secret Value
+        description: The secret stored in the header name specified by `secret.header`.
+        required: false
+        show_user: false
+        secret: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - gigamon-ami
+      - name: preserve_original_event
+        type: bool
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original.
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

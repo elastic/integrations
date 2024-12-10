@@ -250,6 +250,19 @@ processors:
         - fortinet.firewall.filesize
         - fortinet.firewall.sess_duration
       ignore_missing: true
+  # For vpn subtype, remip(the client), is source, and locip(the firewall) is destination
+  # https://docs.fortinet.com/document/fortigate/7.6.0/administration-guide/834425/understanding-vpn-related-logs
+  - script:
+      lang: painless
+      if: ctx.fortinet?.firewall?.subtype == 'vpn'
+      source: |
+        def tmp = ctx.source;
+        ctx.source = ctx.destination;
+        if ( tmp?.user != null ) {
+            ctx.source.user = tmp.user;
+            tmp.remove("user");
+        }
+        ctx.destination = tmp;
 on_failure:
   - set:
       field: event.kind

@@ -1985,7 +1985,31 @@ processors:
             - remove:
                 field: _ingest._value.lastUsed
                 ignore_missing: true
-# Some tags are Attack Patterns, rename the techniqueId to technique.id
+  # Some tags are Attack Patterns, map technique name to ECS field if technique ID exists
+  - script:
+      lang: painless
+      description: "Extract Technique Name from tags"
+      if: ctx.json?.tags?.data != null
+      tag: script_technique_names
+      source: |-
+        def t_names = new ArrayList();
+        for (def obj : ctx.json.tags.data) {
+          if (obj.get('techniqueId') != null) {
+            t_names.add(obj.get('name'));
+          }
+        }
+        if (t_names.size() > 0){
+          if (ctx.threat.technique == null) {
+            ctx.threat.technique = new HashMap();
+          }
+          ctx.threat.technique.name = t_names;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+# Some tags are Attack Patterns, rename the technique id field for ES standardization
   - foreach:
       field: json.tags.data
       if: ctx.json?.tags?.data != null
@@ -1996,7 +2020,7 @@ processors:
           tag: rename_tags_data_techniqueId
           target_field: _ingest._value.technique.id
           ignore_missing: true
-# Append the current attack pattern technique id to the threat.technique.id field to capture the full list
+# Some tags are Attack Patterns, map technique id to ECS field
   - foreach:
       field: json.tags.data
       if: ctx.json?.tags?.data != null
@@ -2007,6 +2031,7 @@ processors:
           tag: append_tags_data_techniqueId
           value: '{{{_ingest._value.technique.id}}}'
           allow_duplicates: false
+
 # For Attack pattern tags, capture the platform data and append to os.family
   - foreach:
       field: json.tags.data

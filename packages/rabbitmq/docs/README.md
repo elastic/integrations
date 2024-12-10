@@ -97,7 +97,6 @@ An example event for `connection` looks as following:
         "type": "rabbitmq"
     }
 }
-
 ```
 
 **ECS Field Reference**
@@ -183,7 +182,6 @@ An example event for `exchange` looks as following:
         "name": "rmq-internal"
     }
 }
-
 ```
 
 **ECS Field Reference**
@@ -505,7 +503,6 @@ An example event for `queue` looks as following:
         "type": "rabbitmq"
     }
 }
-
 ```
 
 **ECS Field Reference**
