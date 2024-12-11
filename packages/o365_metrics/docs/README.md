@@ -53,7 +53,6 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| input.type | Type of Filebeat input. | keyword |
 | o365metrics.outlookactivity.meeting_created | The count of calendar meetings created by users during the reporting period. | integer |
 | o365metrics.outlookactivity.meeting_interacted | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | integer |
 | o365metrics.outlookactivity.read | The count of email messages read by users during the reporting period. | integer |

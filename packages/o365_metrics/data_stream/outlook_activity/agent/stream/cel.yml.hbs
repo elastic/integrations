@@ -77,17 +77,19 @@ state:
   want_more: false
   base:
     tenant_id: "{{azure_tenant_id}}"
+    period: "{{period}}"
 
 redact:
   fields:
     - base.tenant_id
 
 
+
 program: |
     state.with(
       request(
         "GET",
-        state.url + "/reports/getEmailActivityCounts(period='D7')"
+        state.url + "/reports/getEmailActivityCounts(period='" + state.base.period + "')"
       ).do_request().as(resp,
         resp.StatusCode == 200
         ?
