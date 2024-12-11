@@ -108,17 +108,17 @@ This module has been tested against **Cloudflare version v4**.
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
-### To collect data from Cloudflare R2 Buckets, follow the below steps:
+### To collect data from S3-Compatible Cloudflare R2 Buckets, follow the below steps:
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/r2/) to push logs to Cloudflare R2.
 
 **Note**:
 - When creating the API token, make sure it has [Admin permissions](https://developers.cloudflare.com/r2/api/s3/tokens/#permissions). This is needed to list buckets and view bucket configuration.
 
-When configuring the integration to read from R2 Buckets, the following steps are required:
+When configuring the integration to read from S3-Compatible Buckets such as Cloudflare R2, the following steps are required:
 - Enable the toggle `Collect logs via S3 Bucket`.
 - Make sure that the Bucket Name is set.
 - Although you have to create an API token, that token should not be used for authentication with the S3 API. You just have to set the Access Key ID and Secret Access Key.
-- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI, typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`, that will be used as the API endpoint of the service.
+- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI that will be used as the API endpoint of the service. For Cloudflare R2 buckets, the URI is typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`.
 - Bucket Prefix is optional for each data stream.
 
 **Note**:
