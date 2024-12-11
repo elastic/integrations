@@ -79,7 +79,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | log.offset | Log offset | long |
 | actor.entity.id | ID or multiple IDs of the entity performing the action described by the event. | keyword |
 | related.entity | A collection of all entity identifiers associated with the document. If the document  contains multiple entities, identifiers for each will be included. Example identifiers include (but not limited to) cloud resource IDs, email addresses, and hostnames. | keyword |
-| target.id | ID or multiple IDs of the entity targeted by the action described by the event. |  |
+| target.entity.id | ID or multiple IDs of the entity targeted by the action described by the event. |  |
 
 
 An example event for `audit` looks as following:
