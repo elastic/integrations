@@ -17,6 +17,8 @@ processors:
     tag: move_falco_fields
     lang: painless
     if: ctx?.output_fields != null
+    description: >
+      For events forwarded directly from Falco Sidekick, we need to adjust the event to the expected format by the pipeline.
     params:
         fields:
             - uuid
@@ -36,7 +38,14 @@ processors:
                 ctx.remove(v);
             }
         }
-        ctx['falco'] = m
+        ctx['falco'] = m;
+        def original = Json.dump(ctx.falco);
+        if (original != null) {
+            if (ctx.event == null) {
+                ctx.event = new HashMap();
+            }
+            ctx.event.original = original;
+        }
 - dot_expander:
     field: 'container.image'
     path: falco.output_fields
