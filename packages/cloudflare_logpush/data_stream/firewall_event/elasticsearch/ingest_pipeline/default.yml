@@ -198,7 +198,7 @@ processors:
   - script:
         description: Trim leading '?' in query if it exists.
         lang: painless
-        source:
+        source: |
           ctx.url.query = ctx.url.query.substring(1);
         if: ctx.url?.query instanceof String && ctx.url.query.startsWith('?')
   - rename:
@@ -306,7 +306,7 @@ processors:
   - script:
         description: Drops null/empty values recursively.
         lang: painless
-        source:
+        source: |
           boolean dropEmptyFields(Object object) {
             if (object == null || object == "") {
               return true;
@@ -328,3 +328,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

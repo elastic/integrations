@@ -75,6 +75,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.id | A unique ID for the audit log event | long |
 | tines.audit_log.inputs.actionIds |  | long |
 | tines.audit_log.inputs.diagramNoteIds |  | long |
+| tines.audit_log.inputs.fieldId |  | long |
 | tines.audit_log.inputs.inputs.actionId |  | long |
 | tines.audit_log.inputs.inputs.actionIds |  | long |
 | tines.audit_log.inputs.inputs.actions.actionId |  | long |
@@ -89,6 +90,8 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.awsAssumedRoleExternalId |  | keyword |
 | tines.audit_log.inputs.inputs.awsAuthenticationType |  | keyword |
 | tines.audit_log.inputs.inputs.awsSecretKey |  | keyword |
+| tines.audit_log.inputs.inputs.content |  | match_only_text |
+| tines.audit_log.inputs.inputs.dateMode |  | keyword |
 | tines.audit_log.inputs.inputs.delta.x |  | long |
 | tines.audit_log.inputs.inputs.delta.y |  | long |
 | tines.audit_log.inputs.inputs.description |  | keyword |
@@ -96,6 +99,8 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.diagramNotes |  | flattened |
 | tines.audit_log.inputs.inputs.editingSource |  | keyword |
 | tines.audit_log.inputs.inputs.eventName |  | keyword |
+| tines.audit_log.inputs.inputs.graphDirection |  | keyword |
+| tines.audit_log.inputs.inputs.graphType |  | keyword |
 | tines.audit_log.inputs.inputs.httpRequestLocationOfToken |  | keyword |
 | tines.audit_log.inputs.inputs.httpRequestOptions |  | keyword |
 | tines.audit_log.inputs.inputs.icon |  | keyword |
@@ -111,6 +116,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.mtlsClientCertificate |  | keyword |
 | tines.audit_log.inputs.inputs.mtlsClientPrivateKey |  | keyword |
 | tines.audit_log.inputs.inputs.mtlsRootCertificate |  | keyword |
+| tines.audit_log.inputs.inputs.multiSelect |  | boolean |
 | tines.audit_log.inputs.inputs.name |  | keyword |
 | tines.audit_log.inputs.inputs.oauthClientId |  | keyword |
 | tines.audit_log.inputs.inputs.oauthClientSecret |  | keyword |
@@ -119,12 +125,15 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.oauthScope |  | keyword |
 | tines.audit_log.inputs.inputs.oauthTokenUrl |  | keyword |
 | tines.audit_log.inputs.inputs.oauthUrl |  | keyword |
+| tines.audit_log.inputs.inputs.options |  | object |
 | tines.audit_log.inputs.inputs.options.createFormEmptyState |  | boolean |
 | tines.audit_log.inputs.inputs.readAccess |  | keyword |
+| tines.audit_log.inputs.inputs.required |  | boolean |
 | tines.audit_log.inputs.inputs.sharedTeamSlugs |  | keyword |
 | tines.audit_log.inputs.inputs.source |  | keyword |
 | tines.audit_log.inputs.inputs.standardLibVersion |  | keyword |
 | tines.audit_log.inputs.inputs.storyId |  | long |
+| tines.audit_log.inputs.inputs.style |  | keyword |
 | tines.audit_log.inputs.inputs.teamId |  | long |
 | tines.audit_log.inputs.inputs.value |  | keyword |
 | tines.audit_log.inputs.linkIds |  | long |
@@ -146,24 +155,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2023-01-22T11:33:22.000Z",
     "agent": {
-        "ephemeral_id": "da7a5bbc-6809-4d23-8733-e47afd05ca88",
-        "id": "681e4da0-a57a-4818-b61e-2bb4a9557356",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "57ba8d15-e40b-414f-96f1-0888b4338376",
+        "id": "60148b00-b65c-4b4d-be3f-bcd7a22079ad",
+        "name": "elastic-agent-30900",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "tines.audit_logs",
-        "namespace": "ep",
+        "namespace": "97861",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "681e4da0-a57a-4818-b61e-2bb4a9557356",
+        "id": "60148b00-b65c-4b4d-be3f-bcd7a22079ad",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.14.0"
     },
     "event": {
         "action": "StoryItemsCreation",
@@ -171,11 +180,11 @@ An example event for `audit` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2023-01-27T15:49:17.946Z",
+        "created": "2024-12-11T07:58:27.819Z",
         "dataset": "tines.audit_logs",
         "id": "3706009",
-        "ingested": "2023-01-27T15:49:18Z",
-        "original": "{\"created_at\":\"2023-01-22T11:33:22Z\",\"id\":3706009,\"inputs\":{\"inputs\":{\"agents\":[{\"form\":null,\"name\":\"HTTP Request Action\",\"position\":{\"x\":786,\"y\":331},\"timeSavedUnit\":\"minutes\",\"timeSavedValue\":0,\"type\":\"httpRequest\"}],\"diagramNotes\":[],\"links\":[],\"options\":{\"createFormEmptyState\":true},\"storyId\":146411},\"liveEvents\":null},\"operation_name\":\"StoryItemsCreation\",\"request_ip\":\"216.160.83.56\",\"request_user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36\",\"tenant_id\":1234,\"updated_at\":\"2023-01-22T11:33:22Z\",\"user_email\":\"example.user@your.domain.tld\",\"user_id\":1234,\"user_name\":\"Example User\"}",
+        "ingested": "2024-12-11T07:58:28Z",
+        "original": "{\"created_at\":\"2023-01-22T11:33:22Z\",\"id\":3706009,\"inputs\":{\"inputs\":{\"agents\":[{\"form\":null,\"name\":\"HTTP Request Action\",\"position\":{\"x\":786,\"y\":331},\"timeSavedUnit\":\"minutes\",\"timeSavedValue\":0,\"type\":\"httpRequest\"}],\"diagramNotes\":[],\"links\":[],\"options\":[\"Option 1\",\"Option 2\"],\"storyId\":146411},\"liveEvents\":null},\"operation_name\":\"StoryItemsCreation\",\"request_ip\":\"216.160.83.56\",\"request_user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36\",\"tenant_id\":1234,\"updated_at\":\"2023-01-22T11:33:22Z\",\"user_email\":\"example.user@your.domain.tld\",\"user_id\":1234,\"user_name\":\"Example User\"}",
         "type": [
             "info"
         ]
@@ -232,9 +241,10 @@ An example event for `audit` looks as following:
                             "type": "httpRequest"
                         }
                     ],
-                    "options": {
-                        "createFormEmptyState": true
-                    },
+                    "options": [
+                        "Option 1",
+                        "Option 2"
+                    ],
                     "storyId": 146411
                 }
             },
@@ -247,7 +257,7 @@ An example event for `audit` looks as following:
             "user_id": 1234,
             "user_name": "Example User"
         },
-        "tenant_url": "http://elastic-package-service-tines_api_mock-1:8080"
+        "tenant_url": "http://svc-tines_api_mock:8080"
     },
     "user": {
         "email": "example.user@your.domain.tld",

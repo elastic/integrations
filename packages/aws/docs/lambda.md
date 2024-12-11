@@ -13,7 +13,24 @@ For example, you could use this integration to track throttled lambda functions,
 The AWS Lambda integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of AWS Lambda.
-Metrics collected by the AWS Lambda integration include the number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error, and more. See more details in the [Metrics reference](#metrics-reference).
+Metrics collected by the AWS Lambda integration include the number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error, and more.
+
+See more details in the [Metrics reference](#metrics-reference).
+
+## Event Source Mapping Metrics
+
+This integration can also collect Event Source Mapping (ESM) metrics, which track how your Lambda function processes records from event sources like Amazon SQS, DynamoDB, or Kinesis. 
+
+To collect these metrics, you must:  
+1. Enable Event Source Mapping for your Lambda function by following the steps outlined in the [AWS documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.html#event-source-mapping-metrics).  
+2. Enable the configuration flag `Collect Event Source Mapping metrics`.  
+
+Important notes:
+- Enabling this feature may incur additional costs
+- Not all metrics are available for every event source type
+- Metric collection may be affected by CloudWatch or Lambda service availability
+
+See more details about [Event Source Mapping Metrics](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.html#event-source-mapping-metrics).
 
 ## Requirements
 
@@ -127,6 +144,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
+| aws.dimensions.EventSourceMappingUUID | The identifier of the event source mapping. | keyword |  |  |
 | aws.dimensions.ExecutedVersion | Use the ExecutedVersion dimension to compare error rates for two versions of a function that are both targets of a weighted alias. | keyword |  |  |
 | aws.dimensions.FunctionName | Lambda function name. | keyword |  |  |
 | aws.dimensions.Resource | Resource name. | keyword |  |  |
@@ -135,14 +153,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.lambda.metrics.ConcurrentExecutions.avg | The average number of function instances that are processing events. | double |  | gauge |
 | aws.lambda.metrics.DeadLetterErrors.avg | For asynchronous invocation, the average number of times Lambda attempts to send an event to a dead-letter queue but fails. | double |  | gauge |
 | aws.lambda.metrics.DeadLetterErrors.sum | For asynchronous invocation, the total number of times Lambda attempts to send an event to a dead-letter queue but fails. | double |  | gauge |
+| aws.lambda.metrics.DeletedEventCount.sum | The number of events that Lambda successfully deletes after processing. | double |  | gauge |
 | aws.lambda.metrics.DestinationDeliveryFailures.avg | For asynchronous invocation, the average number of times Lambda attempts to send an event to a destination but fails. | double |  | gauge |
 | aws.lambda.metrics.DestinationDeliveryFailures.sum | For asynchronous invocation, the total number of times Lambda attempts to send an event to a destination but fails. | double |  | gauge |
+| aws.lambda.metrics.DroppedEventCount.sum | The number of events that Lambda dropped due to expiry or retry exhaustion. | double |  | gauge |
 | aws.lambda.metrics.Duration.avg | The average amount of time that your function code spends processing an event. | double |  | gauge |
 | aws.lambda.metrics.Errors.avg | The average number of invocations that result in a function error. | double |  | gauge |
 | aws.lambda.metrics.Errors.sum | The total number of invocations that result in a function error. | double |  | gauge |
+| aws.lambda.metrics.FailedInvokeEventCount.sum | The number of events that Lambda tried to invoke your function with, but failed. | double |  | gauge |
+| aws.lambda.metrics.FilteredOutEventCount.sum | For event source mapping with a filter criteria, the number of events excluded based on the specified criteria. | double |  | gauge |
 | aws.lambda.metrics.Invocations.avg | The average number of times your function code is executed, including successful executions and executions that result in a function error. | double |  | gauge |
 | aws.lambda.metrics.Invocations.sum | The total number of times your function code is executed, including successful executions and executions that result in a function error. | double |  | gauge |
+| aws.lambda.metrics.InvokedEventCount.sum | The number of events that invoked your Lambda function. Use this metric to verify that events are properly invoking your function. | double |  | gauge |
 | aws.lambda.metrics.IteratorAge.avg | For event source mappings that read from streams, the average age of the last record in the event. | double |  | gauge |
+| aws.lambda.metrics.OnFailureDestinationDeliveredEventCount.sum | For event source mappings with an on-failure destination configured, the number of events sent to that destination. | double |  | gauge |
+| aws.lambda.metrics.PolledEventCount.sum | The number of events that Lambda reads successfully from the event source. | double |  | gauge |
 | aws.lambda.metrics.ProvisionedConcurrencyInvocations.sum | The total number of times your function code is executed on provisioned concurrency. | long |  | gauge |
 | aws.lambda.metrics.ProvisionedConcurrencySpilloverInvocations.sum | The total number of times your function code is executed on standard concurrency when all provisioned concurrency is in use. | long |  | gauge |
 | aws.lambda.metrics.ProvisionedConcurrencyUtilization.max | For a version or alias, the maximum value of ProvisionedConcurrentExecutions divided by the total amount of provisioned concurrency allocated. | long |  | gauge |
