@@ -67,6 +67,12 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 
 This is the `arc` dataset.
 
+The `@timestamp` field will be assigned one of several values, in the following order of precedence:
+1. `digital_guardian.arc.dg_time`
+2. `digital_guardian.arc.dg_processed_time`
+3. `digital_guardian.arc.inc_mtime`
+4. The time received by the pipeline (if none of the above are available).
+
 #### Example
 
 An example event for `arc` looks as following:
@@ -151,11 +157,25 @@ An example event for `arc` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| digital_guardian.arc.dg_alert.alert_did | Alert DID | keyword |
+| digital_guardian.arc.dg_alert.alert_wb | Alert WB | integer |
+| digital_guardian.arc.dg_alert.dg_category_name | Alert Category Name | keyword |
+| digital_guardian.arc.dg_alert.dg_policy.dg_name | Alert Policy Name | keyword |
 | digital_guardian.arc.dg_comment | Comment | keyword |
 | digital_guardian.arc.dg_description | Description | keyword |
+| digital_guardian.arc.dg_display | Event Display Name | keyword |
+| digital_guardian.arc.dg_file_path | File Path | keyword |
+| digital_guardian.arc.dg_file_size | File Size | long |
 | digital_guardian.arc.dg_guid | Unique ID | keyword |
+| digital_guardian.arc.dg_mac_address | MAC Address | keyword |
+| digital_guardian.arc.dg_machine_name | Computer Name | keyword |
+| digital_guardian.arc.dg_machine_type | Machine Type | integer |
 | digital_guardian.arc.dg_name | Name. | keyword |
+| digital_guardian.arc.dg_processed_time | Server Process Time | date |
+| digital_guardian.arc.dg_src_file_ext | Source File Extension | keyword |
+| digital_guardian.arc.dg_src_file_name | Source File Name | keyword |
 | digital_guardian.arc.dg_tenant | Tenant ID | keyword |
+| digital_guardian.arc.dg_time | Event Time | date |
 | digital_guardian.arc.dg_utype | Operation Type | keyword |
 | digital_guardian.arc.inc_assign | Incident Assignee | keyword |
 | digital_guardian.arc.inc_creator | Incident Creator | keyword |
@@ -163,6 +183,10 @@ An example event for `arc` looks as following:
 | digital_guardian.arc.inc_mtime | Incident Modified Time | date |
 | digital_guardian.arc.inc_sev | Incident Severity | keyword |
 | digital_guardian.arc.inc_state | Incident State | keyword |
+| digital_guardian.arc.ua_sci | Scan Instance | integer |
+| digital_guardian.arc.ua_scn | Appliance Scan Name | keyword |
+| digital_guardian.arc.ua_sn | Scan Server Name | keyword |
+| digital_guardian.arc.uad_sp | Source File Path | keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
