@@ -48,7 +48,7 @@ processors:
       pattern: "%{}%2F%{event.provider}"
       ignore_missing: true
       # NOTE test data fails the spec
-      ignore_failure: true 
+      ignore_failure: true
 
   - set:
       field: event.kind
@@ -105,6 +105,94 @@ processors:
         API_VERSION: (v\d+([a-z]+)?(\d+)?)
         RESOURCE_TYPE: ([a-z]+((\.[a-z0-9]+)+)?)
       ignore_missing: true
+  - script:
+      description: Appends any relevant entity to `related.entity` for all events
+      lang: painless
+      on_failure:
+        - set:
+            description: Adds error reason to the document
+            field: error.message
+            value: "{{{ _ingest.on_failure_message }}}"
+      source: |
+        void addValue(Set entities, def value) {
+          if (value != null && value != "") {
+            entities.add(value);
+          }
+        }
+
+        boolean isKubernetes = false;
+        if (ctx.json?.resource?.type != null) {
+          String typ = ctx.json.resource.type;
+          isKubernetes = (typ == "k8s_cluster" || typ == "gke_cluster" || typ == "kubernetes");
+        }
+
+        // Using tree set to ensure a sorting is kept (testing purposes)
+        TreeSet entities = new TreeSet();
+
+        addValue(entities, ctx.json?.protoPayload?.request?.parent);
+        if (!isKubernetes) {
+          addValue(entities, ctx.json?.protoPayload?.resourceName);
+          addValue(entities, ctx.json?.protoPayload?.response?.user);
+        }
+
+        HashMap authInfo = ctx.json?.protoPayload?.authenticationInfo ?: new HashMap();
+        if (!isKubernetes) {
+          addValue(entities, authInfo.principalEmail);
+        }
+        addValue(entities, authInfo.principalSubject);
+        addValue(entities, authInfo.serviceAccountKeyName);
+        if (authInfo.serviceAccountDelegationInfo instanceof List) {
+          for (def i: authInfo.serviceAccountDelegationInfo) {
+            addValue(entities, i.principalSubject);
+            addValue(entities, i.firstPartyPrincipal?.principalEmail);
+            addValue(entities, i.thirdPartyPrincipal?.principalEmail);
+          }
+        }
+
+        String serviceName = ctx.json?.protoPayload?.serviceName ?: '';
+        if (serviceName == "compute.googleapis.com") {
+          if (ctx.json?.protoPayload?.request?.networkInterfaces instanceof List) {
+            for (def e: ctx.json.protoPayload.request.networkInterfaces) {
+              addValue(entities, e.network);
+            }
+          }
+          if (ctx.json?.protoPayload?.request?.serviceAccounts instanceof List) {
+            for (def e: ctx.json.protoPayload.request.serviceAccounts) {
+              addValue(entities, e.email);
+            }
+          }
+          if (ctx.json?.protoPayload?.request?.disks instanceof List) {
+            for (def e: ctx.json.protoPayload.request.disks) {
+              addValue(entities, e.source);
+            }
+          }
+        } else if (serviceName == "cloudresourcemanager.googleapis.com") {
+          if (ctx.json?.protoPayload?.request?.policy?.bindings instanceof List) {
+            for (def e: ctx.json.protoPayload.request.policy.bindings) {
+              addValue(entities, e.role);
+              for (def m: e.members) {
+                addValue(entities, m);
+              }
+            }
+          }
+          if (ctx.json?.protoPayload?.response?.bindings instanceof List) {
+            for (def e: ctx.json.protoPayload.response.bindings) {
+              addValue(entities, e.role);
+              for (def m: e.members) {
+                addValue(entities, m);
+              }
+            }
+          }
+        } else if (serviceName == "iamcredentials.googleapis.com") {
+          if (ctx.json?.protoPayload?.metadata?.identityDelegationChain instanceof List) {
+            for (def e: ctx.json.protoPayload.metadata.identityDelegationChain) {
+              addValue(entities, e);
+            }
+          }
+        }
+
+        ctx.related = ctx.related ?: [:];
+        ctx.related.entity = entities;
 
 ##
 # AuthenticationInfo
@@ -370,9 +458,9 @@ processors:
 
 ##
 # if gcp.audit.authorization_info.[0].granted is true then
-# set event.category [network, configuration] and event.type to [access, allowed]; 
+# set event.category [network, configuration] and event.type to [access, allowed];
 # Caveat
-# 1. protoPayload.resourceName is a single value while authorization_info[].resource 
+# 1. protoPayload.resourceName is a single value while authorization_info[].resource
 # is a list.
 # 2. as per test data authorization_info may not be as per spec.
 ##
