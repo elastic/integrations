@@ -119,7 +119,7 @@ Note: Descriptions have not been filled out
 | <remote-addr>     | destination.address       |
 | <remote_as>       | destination.as.number     |
 | <src_ipaddr>      | source.ip                 |
-| <threshold_limit> | aruba.bgp.threshold_limit |
+| <threshold_limit> | aruba.limit.threshold     |
 | <vrf-name>        | aruba.vrf.name            |
 
 #### [Bluetooth Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BLUETOOTH_MGMT.htm)
@@ -306,7 +306,7 @@ Note: Descriptions have not been filled out
 | <num_of_failure>         | aruba.error.count            |
 | <failure_type>           | error.type                   |
 | <compare_mode>           | aruba.fan.compare_mode       |
-| <num_of_failure_limit>   | aruba.limit                  |
+| <num_of_failure_limit>   | aruba.limit.threshold        |
 | <seconds>                | aruba.time.seconds           |
 | <reason>                 | event.reason                 |
 | <function>               | aruba.fan.function           |
@@ -371,7 +371,7 @@ Note: Descriptions have not been filled out
 | <socket>     | aruba.hardware.socket    |
 | <status>     | aruba.status             |
 | <test_name>  | aruba.hardware.test_name |
-| <threshold>  | aruba.limit              |
+| <threshold>  | aruba.limit.threshold    |
 | <type>       | aruba.hardware.type      |
 
 #### [Hardware Switch controller sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm)
@@ -425,7 +425,7 @@ Note: Descriptions have not been filled out
 | Field                              | Description | Type | Common                       |
 |------------------------------------|-------------|------|------------------------------|
 | aruba.lockdown.interface           |             |      | observer.ingress.interface.name |
-| aruba.lockdown.max_supported_limit |             |      | aruba.limit                  |
+| aruba.lockdown.max_supported_limit |             |      | aruba.limit.threshold           |
 
 #### [IP tunnels events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_TUNNEL.htm)
 | Doc Fields   | Schema Mapping            |
@@ -653,7 +653,7 @@ Note: Descriptions have not been filled out
 #### [Multicast Traffic Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MTM.htm)
 | Docs Field | Schema Mapping |
 |------------|----------------|
-| <limit>    | aruba.limit    |
+| <limit>    | aruba.limit.threshold    |
 
 #### [Multiple spanning tree protocol events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSTP.htm)
 | Docs Field          | Schema Mapping               |
@@ -682,7 +682,7 @@ Note: Descriptions have not been filled out
 |------------|--------------------|
 | <port>     | aruba.port         |
 | <vlan>     | network.vlan.id    |
-| <vlan_max> | aruba.limit        |
+| <vlan_max> | aruba.limit.threshold |
 
 #### [NAE Agents events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NAE_ALERT.htm)
 | Docs Field | Schema Mapping      |
@@ -788,42 +788,54 @@ Note: Descriptions have not been filled out
 | <stats_id>       | aruba.ospf.stats_id                 |
 
 #### [Password Reset events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PASSWD_RESET.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
+| Docs Field               | Schema Mapping               |
+|--------------------------|------------------------------|
 
 #### [PIM events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PIM.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.pim.callerid        |             |      |                              |
-| aruba.pim.dip             |             |      |                              |
-| aruba.pim.ebsr_ip         |             |      | server.ip                    |
-| aruba.pim.err             |             |      | error.message                |
-| aruba.pim.error           |             |      | error.message                |
-| aruba.pim.error_value     |             |      | error.code                   |
-| aruba.pim.event           |             |      | event.code                   |
-| aruba.pim.fd              |             |      |                              |
-| aruba.pim.flowtype        |             |      |                              |
-| aruba.pim.group           |             |      |                              |
-| aruba.pim.ifname          |             |      | observer.ingress.interface.name |
-| aruba.pim.interfaceName   |             |      | observer.ingress.interface.name |
-| aruba.pim.ip_address      |             |      | server.ip                    |
-| aruba.pim.ip_version      |             |      |                              |
-| aruba.pim.isl_status      |             |      | aruba.status                 |
-| aruba.pim.neighbor_ip     |             |      | client.ip                    |
-| aruba.pim.pkt             |             |      | network.packets              |
-| aruba.pim.pkt_type        |             |      |                              |
-| aruba.pim.port            |             |      | server.port                  |
-| aruba.pim.priority        |             |      | aruba.priority               |
-| aruba.pim.reason          |             |      | event.reason                 |
-| aruba.pim.sip             |             |      | source.ip                    |
-| aruba.pim.source          |             |      |                              |
-| aruba.pim.srcport         |             |      | source.port                  |
-| aruba.pim.srcvid          |             |      | network.vlan.id              |
-| aruba.pim.state           |             |      | aruba.status                 |
-| aruba.pim.status          |             |      | aruba.status                 |
-| aruba.pim.totalvid        |             |      |                              |
-| aruba.pim.type            |             |      |                              |
-| aruba.pim.vrf_name        |             |      | aruba.vrf.name               |
+| Docs Field        | Schema Mapping               |
+|-------------------|------------------------------|
+| <callerid>        | aruba.pim.callerid           |
+| <dip0>            | aruba.pim.dip0               |
+| <dip1>            | aruba.pim.dip1               |
+| <dip2>            | aruba.pim.dip2               |
+| <dip3>            | aruba.pim.dip3               |
+| <ebsr_ip>         | aruba.pim.ebsr_ip            |
+| <err>             | aruba.error.description      |
+| <error>           | event.reason                 |
+| <error_value>     | aruba.pim.error_value        |
+| <event>           | aruba.pim.event              |
+| <fd>              | aruba.pim.fd                 |
+| <flowtype>        | aruba.pim.flowtype           |
+| <group>           | group.name                   |
+| <ifname>          | aruba.interface.name         |
+| <InterfaceName>   | aruba.interface.name         |
+| <ip_address>      | server.ip                    |
+| <ip_version>      | aruba.pim.ip_version         |
+| <isl_status>      | aruba.status                 |
+| <limit>           | aruba.limit.threshold        |
+| <mode>            | aruba.limit.mode             |
+| <neighbor_ip>     | client.ip                    |
+| <pim_version>     | package.version              |
+| <pkt>             | network.packets              |
+| <pkt_type>        | aruba.pim.pkt_type           |
+| <port>            | aruba.port                   |
+| <priority>        | aruba.priority               |
+| <qsize>           | aruba.pim.qsize              |
+| <reason>          | event.reason                 |
+| <sip0>            | aruba.pim.sip0               |
+| <sip1>            | aruba.pim.sip1               |
+| <sip2>            | aruba.pim.sip2               |
+| <sip3>            | aruba.pim.sip3               |
+| <source>          | source.ip                    |
+| <srcport>         | aruba.port                   |
+| <srcvid>          | network.vlan.id              |
+| <state>           | aruba.state                  |
+| <status>          | aruba.status                 |
+| <totalvid>        | aruba.pim.totalvid           |
+| <type>            | aruba.pim.type               |
+| <val>             | aruba.limit.read_value       |
+| <value>           | aruba.pim.error_value        |
+| <vrf_name> / <vrfname> | aruba.vrf.name          |
 
 #### [Policies events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POLICY.htm)
 | Field                     | Description | Type | Common                       |
@@ -863,7 +875,7 @@ Note: Descriptions have not been filled out
 #### [PORT_ACCESS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT_ACCESS.htm)
 | Field                   | Description | Type | Common                       |
 |-------------------------|-------------|------|------------------------------|
-| aruba.port.limit        |             |      | aruba.limit                  |
+| aruba.port.limit        |             |      | aruba.limit.threshold                  |
 | aruba.port.mac_address  |             |      | client.mac                   |
 | aruba.port.mode         |             |      |                              |
 | aruba.port.name         |             |      | server.port                  |
@@ -897,7 +909,7 @@ Note: Descriptions have not been filled out
 | aruba.power.drawn           |             |      |                              |
 | aruba.power.fault_type      |             |      | error.type                   |
 | aruba.power.interface_name  |             |      |                              |
-| aruba.power.limit           |             |      | aruba.limit                  |
+| aruba.power.limit           |             |      | aruba.limit.threshold                  |
 | aruba.power.pair            |             |      |                              |
 | aruba.power.paira_class     |             |      |                              |
 | aruba.power.pairb_class     |             |      |                              |
@@ -1076,7 +1088,7 @@ Note: Descriptions have not been filled out
 | aruba.supportability.signal          |             |      | process.exit_code            |
 | aruba.supportability.state           |             |      | service.state                |
 | aruba.supportability.supported_files_name |        |      |                              |
-| aruba.supportability.threshold       |             |      | aruba.limit                  |
+| aruba.supportability.threshold       |             |      | aruba.limit.threshold                  |
 | aruba.supportability.timestamp       |             |      | process.end                  |
 | aruba.supportability.type            |             |      | file.type                    |
 | aruba.supportability.vrf             |             |      | aruba.vrf.id                 |
