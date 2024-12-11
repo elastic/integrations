@@ -6,7 +6,7 @@ Wiz continuously prioritizes critical risks based on a deep cloud analysis acros
 
 The Wiz integration collects four types of data: Audit, Cloud Configuration Finding, Issue and Vulnerability.
 
-Reference for [Graph APIs](https://integrate.wiz.io/reference/prerequisites) of Wiz.
+Reference for [Graph APIs](https://wiz.readthedocs.io/en/latest/api_reference/graph.html) of Wiz.
 
 ## Requirements
 
@@ -73,7 +73,7 @@ This module has been tested against the **Wiz API Version v1**.
 6. Save the integration.
 
 **Note:**
-  - Vulnerability data_stream pulls vulnerabilities from the previous day. For more information, refer to the link [here](https://integrate.wiz.io/reference/vulnerability-finding)
+  - Vulnerability data_stream pulls vulnerabilities from the previous day. For more information, refer to the link [here](https://www.wiz.io/integrations?category=vulnerability_response_management#explore-catalog)
 
 ## Logs Reference
 
