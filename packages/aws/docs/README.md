@@ -46,6 +46,7 @@ Each of these APIs may generate extra charges on your AWS Account. Refer to [AWS
 | SQS ReceiveMessage | 1 | Every 20s minimum (more frequent if messages are waiting) | logs related only (S3 notifications) |
 | SQS DeleteMessage | 1 | Once per received message | logs related only (S3 notifications) |
 | SQS ChangeMessageVisibility | 1 | When message processing exceeds 150s | logs related only (S3 notifications) |
+| SQS GetQueueAttributes | 1 | Every minute to capture queue depth metric | logs related only (S3 notifications) |
 
 ### Metrics collection and cost considerations
 
@@ -180,12 +181,13 @@ make sure these permissions are given:
 * `organizations:ListAccounts`
 * `rds:DescribeDBInstances`
 * `rds:ListTagsForResource`
+* `s3:GetBucketLocation`
 * `s3:GetObject`
 * `s3:ListBucket`
-* `s3:GetBucketLocation`
 * `sns:ListTopics`
 * `sqs:ChangeMessageVisibility`
 * `sqs:DeleteMessage`
+* `sqs:GetQueueAttributes`
 * `sqs:ListQueues`
 * `sqs:ReceiveMessage`
 * `sts:AssumeRole`
