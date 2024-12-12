@@ -868,9 +868,9 @@ Note: Descriptions have not been filled out
 | <port>       | aruba.port           |
 
 #### [Port Statistics events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COUNTERS.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| <name>      |             |      | server.port                  |
+| Docs Field | Schema Mapping       |
+|------------|----------------------|
+| <name>     | aruba.port           |
 
 #### [PORT_ACCESS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT_ACCESS.htm)
 | Docs Field    | Schema Mapping               |
