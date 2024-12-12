@@ -6,8 +6,6 @@ Wiz continuously prioritizes critical risks based on a deep cloud analysis acros
 
 The Wiz integration collects four types of data: Audit, Cloud Configuration Finding, Issue and Vulnerability.
 
-Reference for [Graph APIs](https://wiz.readthedocs.io/en/latest/api_reference/graph.html) of Wiz.
-
 ## Requirements
 
 Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
