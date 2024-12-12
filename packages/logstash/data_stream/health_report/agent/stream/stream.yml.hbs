@@ -20,45 +20,34 @@ redact:
   fields: ~
 
 program: |
-  get(state.url)
+  get("http://localhost:9600/_health_report")
   .as(resp, bytes(resp.Body)
   .decode_json().as(body,
-    {
-      "logstash":{
-        "node": has(body.host)
-        ? {
-            "host":body.host,
-            "ephemeral_id":body.ephemeral_id,
-            "http_address":body.http_address,
+    {   
+        "node": {
             "name":body.name,
+            "address":body.http_address,
             "uuid":body.id,
             "version":body.version,
-            "health_report":{
-              "status":body.status,
-              "indicators":has(body.indicators)
-              ? {
-                  "pipelines":
-                    body.indicators.pipelines.indicators.keys().map(key, has(body.indicators.pipelines), {
-                      "pipeline_id":key,
-                      "status":body.indicators.pipelines.indicators[key].status,
-                      "symptom":body.indicators.pipelines.indicators[key].symptom,
-                      "details":has(body.indicators.pipelines.indicators[key].details)
-                      ? {
-                          "state":body.indicators.pipelines.indicators[key].details.status.state,
-                          "flow": body.indicators.pipelines.indicators[key].details.flow,
-                      	  "diagnosis":has(body.indicators.pipelines.indicators[key].diagnosis)
-                          ? body.indicators.pipelines.pipelines.indicators[key].diagnosis
-                          : {},
-                      } : {},
-                    } )
-                } : {},
-            } 
-        }: {},
-      }  
+            "status":body.status,
+            "description":body.symptom,
+            "timestamp":now()
+            },
+        "pipelines": 
+            body.indicators.pipelines.indicators.keys().map(key, has(body.indicators.pipelines), {
+                "pipeline_id":key,
+                "status":body.indicators.pipelines.indicators[key].status,
+                "symptom":body.indicators.pipelines.indicators[key].symptom,
+                "state":body.indicators.pipelines.indicators[key].details.status.state,
+                "flow": body.indicators.pipelines.indicators[key].details.flow,
+                "diagnosis": has(body.indicators.pipelines.indicators[key].diagnosis) 
+                ? body.indicators.pipelines.pipelines.indicators[key].diagnosis: {},
+                "impacts": has(body.indicators.pipelines.indicators[key].impacts) 
+                ? body.indicators.pipelines.pipelines.indicators[key].impacts: {},
+            })
+    }).as(entries, {
+        "events": entries.map(entry, {"logstash":
+        {entry:entries[entry]}})
     }
-    )
-  ).as(eve, {
-    "events":[eve]
-  })
-
-
+  )
+  )
