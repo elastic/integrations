@@ -76,6 +76,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.actionIds |  | long |
 | tines.audit_log.inputs.diagramNoteIds |  | long |
 | tines.audit_log.inputs.fieldId |  | long |
+| tines.audit_log.inputs.inputs.\* |  | keyword |
 | tines.audit_log.inputs.inputs.actionId |  | long |
 | tines.audit_log.inputs.inputs.actionIds |  | long |
 | tines.audit_log.inputs.inputs.actions.actionId |  | long |
@@ -125,7 +126,6 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.oauthScope |  | keyword |
 | tines.audit_log.inputs.inputs.oauthTokenUrl |  | keyword |
 | tines.audit_log.inputs.inputs.oauthUrl |  | keyword |
-| tines.audit_log.inputs.inputs.options |  | object |
 | tines.audit_log.inputs.inputs.options.createFormEmptyState |  | boolean |
 | tines.audit_log.inputs.inputs.readAccess |  | keyword |
 | tines.audit_log.inputs.inputs.required |  | boolean |
