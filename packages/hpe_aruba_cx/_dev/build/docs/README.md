@@ -838,27 +838,27 @@ Note: Descriptions have not been filled out
 | <vrf_name> / <vrfname> | aruba.vrf.name          |
 
 #### [Policies events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POLICY.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.policy.application  |             |      | network.application          |
-| aruba.policy.name         |             |      |                              |
+| Docs Field     | Schema Mapping               |
+|----------------|------------------------------|
+| <application>  | aruba.policy.application     |
+| <policy_name>  | aruba.policy.name            |
 
 #### [Port access roles events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ROLE.htm)
-| Field                         | Description | Type | Common                       |
-|-------------------------------|-------------|------|------------------------------|
-| aruba.port.cprole_error_string|             |      | error.message                |
-| aruba.port.role_name          |             |      | aruba.role                   |
+| Docs Field            | Schema Mapping               |
+|-----------------------|------------------------------|
+| <cprole_error_string> | event.reason                 |
+| <role_name>           | aruba.role                   |
 
 #### [Port events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.port.error     |             |      | error.message                |
-| aruba.port.interface |             |      | observer.ingress.interface.name |
-| aruba.port.ip_address|             |      | destination.ip               |
-| aruba.port.mtu       |             |      | aruba.mtu                    |
-| aruba.port.policy    |             |      |                              |
-| aruba.port.status    |             |      | aruba.status                 |
-| aruba.port.vlan      |             |      | network.vlan.id              |
+| Docs Field   | Schema Mapping               |
+|--------------|------------------------------|
+| <error>      | event.reason                 |
+| <interface>  | aruba.interface.id           |
+| <ip_address> | client.ip                    |
+| <mtu>        | aruba.mtu                    |
+| <policy>     | aruba.policy.name            |
+| <status>     | aruba.status                 |
+| <vlan>       | network.vlan.id              |
 
 #### [Port security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT-SECURITY.htm)
 | Field                | Description | Type | Common                       |

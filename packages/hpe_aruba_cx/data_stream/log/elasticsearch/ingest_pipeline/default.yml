@@ -265,6 +265,41 @@ processors:
       patterns:
         - "^There are %{NUMBER:aruba.count:long} LED (types|configs) in subsystem %{GREEDYDATA:aruba.subsystem}"
 
+    # Port events (60x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LED.htm
+  - grok:
+      field: message
+      tag: port_event_601_602
+      description: "Log when netlink socket [creation|bind] failed"
+      if: "['601','602'].contains(ctx.event?.code)"
+      patterns:
+        - "^Netlink socket (creation|bind) failed %{GREEDYDATA:event.reason}"
+  - grok:
+      field: message
+      tag: port_event_603_604
+      description: "Log when netlink failed to set mtu for interface | failed to change the interface status"
+      if: "['603','604'].contains(ctx.event?.code)"
+      patterns:
+        - "^Netlink failed to (set mtu %{DATA:aruba.mtu} for|bring %{DATA:aruba.status} the) interface %{GREEDYDATA:aruba.interface.id}"
+  - dissect:
+      field: message
+      tag: port_event_605
+      description: "Unknown internal vlan policy"
+      if: "ctx.event?.code == '605'"
+      pattern: "Unknown internal vlan policy %{aruba.policy.name}"
+  - dissect:
+      field: message
+      tag: port_event_606
+      description: "Log when allocation failed for internal vlan for port"
+      if: "ctx.event?.code == '606'"
+      pattern: "Error allocating internal vlan for port %{network.vlan.id}"
+  - dissect:
+      field: message
+      tag: port_event_607
+      description: "Log when a duplicate address is received on a port"
+      if: "ctx.event?.code == '607'"
+      pattern: "Overlapping networks observed for %{client.ip}"
+
     # Loopback events (90x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm
   - grok:
@@ -2076,6 +2111,19 @@ processors:
       patterns:
         - "^PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
 
+  # Port access roles events (930x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ROLE.htm
+  - grok:
+      field: message
+      tag: port_access_event_9301_9302
+      if: "['9301','9302'].contains(ctx.event?.code)"
+      description: "Logs an event if there are errors when applying a ClearPass role | maximum limit is reached while creating a Port Access Role"
+      patterns:
+        - "^Failed to apply ClearPass role - %{GREEDYDATA:event.reason}"
+        # There is a spelling error in the documentation removing the matching for "Failed"
+        - "to create the role - %{DATA:aruba.role}, maximum limit reached"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+
   # EVPN Events (95xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EVPN.htm
   - grok:
@@ -2200,6 +2248,15 @@ processors:
       field: "message"
       description: "ACL application failure"
       pattern: "ACL %{aruba.acl.type} %{aruba.acl.name} failed to apply on %{aruba.acl.application}"
+
+  # Policies events (1010x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POLICY.htm
+  - dissect:
+      if: "ctx.event?.code == '10101'"
+      tag: policies_event_10101
+      field: "message"
+      description: "Policy application failure"
+      pattern: "Policy %{aruba.policy.name} failed to apply on %{aruba.policy.application}"
 
   # ARP security events (104xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm
