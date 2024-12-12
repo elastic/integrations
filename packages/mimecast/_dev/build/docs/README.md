@@ -49,6 +49,17 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 
 {{fields "audit_events"}}
 
+### Cloud Integrated Logs
+
+This is the `mimecast.cloud_integrated_logs` dataset. These logs contain Mimecast
+threats and security events with the following details: entities, mail flows and URL
+protected events. More information about [these logs](
+https://developer.services.mimecast.com/docs/threatssecurityeventsanddataforci/1/routes/siem/v1/batch/events/ci/get).
+
+{{event "cloud_integrated_logs"}}
+
+{{fields "cloud_integrated_logs"}}
+
 ### DLP Logs
 
 This is the `mimecast.dlp_logs` dataset. These logs contain information about
