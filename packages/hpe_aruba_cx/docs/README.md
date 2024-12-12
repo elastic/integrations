@@ -1549,7 +1549,6 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.port_access.old_limit |  | keyword |
 | aruba.port_access.old_mode |  | keyword |
 | aruba.port_access.old_name |  | keyword |
-| aruba.port_access.policy_name |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.priority |  | keyword |
 | aruba.role |  | keyword |
