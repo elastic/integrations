@@ -884,7 +884,7 @@ Note: Descriptions have not been filled out
 | <old_limit>   | aruba.port_access.old_limit  |
 | <old_mode>    | aruba.port_access.old_mode   |
 | <old_name>    | aruba.port_access.old_name   |
-| <policy_name> | aruba.port_access.policy_name|
+| <policy_name> | aruba.policy.name            |
 | <port>        | aruba.port                   |
 | <vlan_id>     | network.vlan.id              |
 
