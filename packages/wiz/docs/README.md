@@ -71,7 +71,7 @@ This module has been tested against the **Wiz API Version v1**.
 6. Save the integration.
 
 **Note:**
-  - Vulnerability data_stream pulls vulnerabilities from the previous day. For more information, refer to the link [here](https://www.wiz.io/integrations?category=vulnerability_response_management#explore-catalog)
+  - Vulnerability data_stream pulls vulnerabilities from the previous day.
 
 ## Logs Reference
 
