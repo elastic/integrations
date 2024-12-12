@@ -856,7 +856,7 @@ Note: Descriptions have not been filled out
 | <interface>  | aruba.interface.id           |
 | <ip_address> | client.ip                    |
 | <mtu>        | aruba.mtu                    |
-| <policy>     | aruba.policy.port            |
+| <policy>     | aruba.policy.name            |
 | <status>     | aruba.status                 |
 | <vlan>       | network.vlan.id              |
 

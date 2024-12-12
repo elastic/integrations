@@ -856,7 +856,7 @@ Note: Descriptions have not been filled out
 | <interface>  | aruba.interface.id           |
 | <ip_address> | client.ip                    |
 | <mtu>        | aruba.mtu                    |
-| <policy>     | aruba.policy.port            |
+| <policy>     | aruba.policy.name            |
 | <status>     | aruba.status                 |
 | <vlan>       | network.vlan.id              |
 
@@ -1539,7 +1539,6 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.pim.type |  | keyword |
 | aruba.policy.application |  | keyword |
 | aruba.policy.name |  | keyword |
-| aruba.policy.port |  | keyword |
 | aruba.port |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.priority |  | keyword |
