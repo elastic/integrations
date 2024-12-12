@@ -37,7 +37,9 @@ resource.tracer.maxsize: 5
 {{#if enable_taxii}}
 state:
   url: {{url}}
+{{#if initial_interval}}
   initial_interval: {{initial_interval}}
+{{/if}}
   want_more: false
 {{#if api_key}}
   api_key: {{api_key}}
@@ -47,6 +49,9 @@ state:
   username: {{username}}
   password: {{password}}
 {{/if}}
+{{/if}}
+{{#if limit}}
+  limit: {{limit}}
 {{/if}}
 redact:
   fields:
@@ -64,7 +69,16 @@ program: |
             : (has(state.initial_interval) && state.initial_interval != "") ?
                 (
                     state.url.trim_right("/") + "/?" + {
-                        "added_after": [(now() - duration(state.initial_interval)).format(time_layout.RFC3339)],
+                        ?"added_after": has(state.?cursor.last_timestamp) ?
+                                optional.of([state.cursor.last_timestamp])
+                            : has(state.initial_interval) ?
+                                optional.of([(now() - duration(state.initial_interval)).format(time_layout.RFC3339)])
+                            :
+                                optional.none(),
+                        ?"limit": has(state.limit) ?
+                                optional.of([string(int(state.limit))])
+                            :
+                                optional.none(),
                     }.format_query()
                 )
                 :
@@ -99,10 +113,20 @@ program: |
                         (
                             state.url.trim_right("/") + "/?" + {
                                 "next": [string(body.next)],
+                                ?"limit": has(state.limit) ?
+                                        optional.of([string(int(state.limit))])
+                                    :
+                                        optional.none(),
                             }.format_query()
                         )
                     :
                         state.url,
+                    "cursor": {
+                        ?"last_timestamp": "X-Taxii-Date-Added-Last" in resp.Header ?
+                            optional.of(resp.Header["X-Taxii-Date-Added-Last"][0])
+                        :
+                            optional.none(),
+                    },
                 }
             )
         :
