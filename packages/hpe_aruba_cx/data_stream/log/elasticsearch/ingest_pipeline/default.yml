@@ -118,14 +118,14 @@ processors:
       description: "Log error when system shutdown is initiated due to critical fan faults"
       if: "ctx.event?.code == '209'"
       patterns:
-        - "^Shutting down system now because %{NUMBER:aruba.error.count:long} %{DATA:error.type} %{DATA:aruba.fan.compare_mode} limit of %{NUMBER:aruba.limit:long}"
+        - "^Shutting down system now because %{NUMBER:aruba.error.count:long} %{DATA:error.type} %{DATA:aruba.fan.compare_mode} limit of %{NUMBER:aruba.limit.threshold}"
   - grok:
       field: message
       tag: fan_event_211
       description: "Log error when the number of failures exceed the allowable limit"
       if: "ctx.event?.code == '211'"
       patterns:
-        - "^Shutting down system in %{NUMBER:aruba.time.seconds:long} seconds because %{NUMBER:aruba.error.count:long} %{DATA:error.type} %{DATA:aruba.fan.compare_mode} limit of %{NUMBER:aruba.limit:long}"
+        - "^Shutting down system in %{NUMBER:aruba.time.seconds:long} seconds because %{NUMBER:aruba.error.count:long} %{DATA:error.type} %{DATA:aruba.fan.compare_mode} limit of %{GREEDYDATA:aruba.limit.threshold}"
   - grok:
       field: message
       tag: fan_event_213
@@ -206,7 +206,7 @@ processors:
       description: "Log error when number of faulty/supported fans does not meet the allowable limit"
       if: "ctx.event?.code == '222'"
       patterns:
-        - "^%{NUMBER:aruba.error.count:long} %{DATA:error.type} %{DATA:aruba.fan.compare_mode} limit of %{NUMBER:aruba.limit:long}"
+        - "^%{NUMBER:aruba.error.count:long} %{DATA:error.type} %{DATA:aruba.fan.compare_mode} limit of %{GREEDYDATA:aruba.limit.threshold}"
   - dissect:
       field: message
       tag: fan_event_223
@@ -832,7 +832,7 @@ processors:
       field: "message"
       description: "Trap when the rib size reaches the threshold value."
       patterns:
-        - "^The BGP RIB has reached the threshold limit of %{DATA:aruba.bgp.threshold_limit:long} for VRF %{DATA:aruba.vrf.name}': yes"
+        - "^The BGP RIB has reached the threshold limit of %{DATA:aruba.limit.threshold} for VRF %{DATA:aruba.vrf.name}': yes"
   - grok:
       if: "ctx.event.code == '2920'"
       tag: bgp_event_2920
@@ -890,7 +890,7 @@ processors:
         - "^Module %{DATA:aruba.hardware.channel} %{3011_3012_3013_COMMON}"
         - "^Page %{DATA:aruba.hardware.page} %{3011_3012_3013_COMMON}"
       pattern_definitions:
-        3011_3012_3013_COMMON: "correctable memory error count %{NUMBER:aruba.hardware.cecount:long} exceeded threshold %{NUMBER:aruba.limit:long}(?:%{3011_3012_3013_OPTIONAL})?"
+        3011_3012_3013_COMMON: "correctable memory error count %{NUMBER:aruba.hardware.cecount:long} exceeded threshold %{NUMBER:aruba.limit.threshold}(?:%{3011_3012_3013_OPTIONAL})?"
         3011_3012_3013_OPTIONAL: " and %{NUMBER:aruba.hardware.offlined:long}"
 
     # MVRP events (310x)
@@ -902,7 +902,7 @@ processors:
       if: "['3101','3102','3103','3104','3105'].contains(ctx.event?.code)"
       patterns:
         - "^MVRP (en|dis)abled on port %{GREEDYDATA:aruba.port}"
-        - "^MVRP failed to create VLAN %{DATA:network.vlan.id}. Maximum VLANs %{NUMBER:aruba.limit:long} already created"
+        - "^MVRP failed to create VLAN %{DATA:network.vlan.id}. Maximum VLANs %{DATA:aruba.limit.threshold} already created"
         - "^MVRP statistics have been cleared for (%{3104_PATTERN}|%{3105_PATTERN})"
       pattern_definitions:
         3104_PATTERN: "port %{GREEDYDATA:aruba.port}"
@@ -965,7 +965,7 @@ processors:
       tag: multicast_traffic_mgr_event_4001
       description: "Event raised when the maximum number of multicast L3 Bridge Control Forwarding entries is reached"
       if: "ctx.event?.code == '4001'"
-      pattern: "The Multicast L3 Bridge Control Forwarding entries limit was reached: %{aruba.limit}"
+      pattern: "The Multicast L3 Bridge Control Forwarding entries limit was reached: %{aruba.limit.threshold}"
 
     # Management events (430x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMT.htm
@@ -1056,6 +1056,178 @@ processors:
       pattern_definitions:
         INTERFACE_AREA: "(I|i)nterface %{DATA:aruba.ospf.link_local} on %{DATA:aruba.interface.id}\\(%{DATA:aruba.ospf.area}\\)"
         STATE_CHANGE: "%{DATA:aruba.ospf.old_state} (->|to) %{GREEDYDATA:aruba.state}"
+
+  # PIM events (51xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PIM.htm
+
+  - grok:
+      if: "ctx.event?.code == '5101'"
+      field: message
+      tag: pim_event_5101
+      description: "Send error packet"
+      patterns:
+        - "^Failed to send %{DATA:aruba.pim.pkt_type} packet on Interface %{GREEDYDATA:aruba.interface.name}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - dissect:
+      if: "ctx.event?.code == '5102'"
+      field: message
+      tag: pim_event_5102
+      description: "Pim IP config"
+      pattern: "PIM interface %{aruba.interface.name} is configured with IP %{server.ip}"
+  - grok:
+      if: "ctx.event?.code == '5103'"
+      field: message
+      tag: pim_event_5103
+      description: "Packet dropped"
+      patterns: 
+        - "^Packet dropped from %{IP:server.ip} on interface %{DATA:aruba.interface.name} %{DATA:event.reason} %{GREEDYDATA:aruba.pim.error_value}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - grok:
+      if: "ctx.event?.code == '5104'"
+      field: message
+      tag: pim_event_5104
+      description: "Received packet from router"
+      patterns: 
+        - "^Received packet from router %{IP:server.ip}, unkwn pkt type %{GREEDYDATA:aruba.pim.pkt_type}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - grok:
+      if: "ctx.event?.code == '5105'"
+      field: message
+      tag: pim_event_5105
+      description: "Failed to add flow"
+      patterns: 
+        - "^Failed to add flow %{IP_BIT:aruba.pim.dip0}.%{IP_BIT:aruba.pim.dip1}.%{IP_BIT:aruba.pim.dip2}.%{IP_BIT:aruba.pim.dip3}, %{IP_BIT:aruba.pim.sip0}.%{IP_BIT:aruba.pim.sip1}.%{IP_BIT:aruba.pim.sip2}.%{IP_BIT:aruba.pim.sip3} \\(%{DATA:aruba.status} %{DATA:aruba.port} %{DATA:network.vlan.id} %{NUMBER:aruba.pim.totalvid:long} %{DATA:aruba.pim.flowtype} %{DATA:aruba.pim.callerid}\\)"
+      pattern_definitions:
+        IP_BIT: "(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])"
+  - grok:
+      if: "ctx.event?.code == '5106'"
+      field: message
+      tag: pim_event_5106
+      description: "Failed to remove flow for Hardware"
+      patterns:
+        - "^Failed to remove flow g %{IP_BIT:aruba.pim.dip0}.%{IP_BIT:aruba.pim.dip1}.%{IP_BIT:aruba.pim.dip2}.%{IP_BIT:aruba.pim.dip3}, s %{IP_BIT:aruba.pim.sip0}, %{IP_BIT:aruba.pim.sip1}.%{IP_BIT:aruba.pim.sip2}.%{DATA:aruba.pim.sip3} \\(%{DATA:aruba.status} %{DATA:aruba.port} %{DATA:network.vlan.id} %{DATA:aruba.pim.flowtype} %{DATA:aruba.pim.callerid}\\)"
+        # Added another pattern in case the documentation is incorrect, aligned this pattern with the 5105 pattern
+        - "^Failed to remove flow %{IP_BIT:aruba.pim.dip0}.%{IP_BIT:aruba.pim.dip1}.%{IP_BIT:aruba.pim.dip2}.%{IP_BIT:aruba.pim.dip3}, %{IP_BIT:aruba.pim.sip0}.%{IP_BIT:aruba.pim.sip1}.%{IP_BIT:aruba.pim.sip2}.%{IP_BIT:aruba.pim.sip3} \\(%{DATA:aruba.status} %{DATA:aruba.port} %{DATA:network.vlan.id} %{DATA:aruba.pim.flowtype} %{DATA:aruba.pim.callerid}\\)"
+      pattern_definitions:
+        IP_BIT: "(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])"
+  - grok:
+      if: "['5107', '5108'].contains(ctx.event?.code)"
+      field: message
+      tag: pim_event_5107_5108
+      description: "Failed to program mroute as the limits are reached | sources per group limit is reached"
+      patterns: 
+        - "^Failed to add a mroute for s=%{IP:source.ip}, g=%{DATA:group.name} on interface %{DATA:aruba.interface.name} "
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - dissect:
+      if: "ctx.event?.code == '5109'"
+      field: message
+      tag: pim_event_5109
+      description: "PIM DR election log"
+      pattern: "This router is elected as the %{aruba.pim.ip_version} %{aruba.state} for interface %{aruba.interface.name}"
+  - dissect:
+      if: "ctx.event?.code == '5110'"
+      field: message
+      tag: pim_event_5110
+      description: "Multicast socket creation error"
+      pattern: "%{aruba.pim.type} %{event.reason} failed with Fd: %{aruba.pim.fd} on Port: %{aruba.port}. Error description: %{aruba.error.description}"
+  - grok:
+      if: "ctx.event?.code == '5111'"
+      field: message
+      tag: pim_event_5111
+      description: "DB Operation failed"
+      patterns: 
+        - "OVSDB operation failed with %{GREEDYDATA:event.reason}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - dissect:
+      if: "ctx.event?.code == '5112'"
+      field: message
+      tag: pim_event_5112
+      description: "Elected BSR"
+      pattern: "New Elected BSR for VRF %{aruba.vrf.name} is %{aruba.pim.ebsr_ip} with priority %{aruba.priority}"
+  - dissect:
+      if: "ctx.event?.code == '5113'"
+      field: message
+      tag: pim_event_5113
+      description: "Elected BSR removed"
+      pattern: "Elected BSR removed on VRF %{aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event?.code == '5114'"
+      field: message
+      tag: pim_event_5114
+      description: "Configured candidate BSR"
+      pattern: "Candidate BSR %{server.ip} with priority %{aruba.priority} is %{aruba.status} on interface %{aruba.interface.name}"
+  - dissect:
+      if: "ctx.event?.code == '5115'"
+      field: message
+      tag: pim_event_5115
+      description: "Neighbor status"
+      pattern: "PIM Neighbor %{client.ip} is %{aruba.pim.event} on interface %{aruba.interface.name}"
+  - grok:
+      if: "ctx.event?.code == '5116'"
+      field: message
+      tag: pim_event_5116
+      description: "Packet drop"
+      patterns: 
+        - "^%{NUMBER:network.packets:long} packet is discarded on interface %{DATA:aruba.interface.name}. Reason: %{GREEDYDATA:event.reason}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - dissect:
+      if: "ctx.event?.code == '5117'"
+      field: message
+      tag: pim_event_5117
+      description: "Interface operational status"
+      pattern: "Forwarding state has changed to %{aruba.state} on %{aruba.pim.ip_version} enabled interface %{aruba.interface.name}"
+  - dissect:
+      if: "ctx.event?.code == '5118'"
+      field: message
+      tag: pim_event_5118
+      description: "Interface PIM mode"
+      pattern: "%{package.version} %{aruba.pim.mode} mode is %{aruba.status} on interface %{aruba.interface.name}"
+  - dissect:
+      if: "ctx.event?.code == '5119'"
+      field: message
+      tag: pim_event_5119
+      description: "Router pim configuration status"
+      pattern: "Router %{package.version} is %{aruba.pim.mode} on VRF %{aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event?.code == '5120'"
+      field: message
+      tag: pim_event_5120
+      description: "Learnt or removed candidate RP"
+      pattern: "Candidate RP %{server.ip} is %{aruba.pim.event} on VRF %{aruba.vrf.name}"
+  - grok:
+      if: "ctx.event?.code == '5121'"
+      field: message
+      tag: pim_event_5121
+      description: "Software Packet Queue reaches threshold"
+      patterns: 
+        - "^Software Packet Queue %{DATA:aruba.limit.threshold} threshold value %{NUMBER:aruba.limit.read_value:long} reached. Queue size: %{NUMBER:aruba.pim.qsize:long}"
+  - dissect:
+      if: "ctx.event?.code == '5122'"
+      field: message
+      tag: pim_event_5122
+      description: "PIM VSX DR Election log"
+      pattern: "This router is elected as the %{aruba.pim.ip_version} VSX %{aruba.state} for interface %{aruba.interface.name}"
+  - dissect:
+      if: "ctx.event?.code == '5123'"
+      field: message
+      tag: pim_event_5123
+      description: "VSX ISL Status update log"
+      pattern: "VSX ISL Status changed to %{aruba.status}"
+  - grok:
+      if: "ctx.event?.code == '5124'"
+      field: message
+      tag: pim_event_5124
+      description: "Configured candidate RP"
+      patterns: 
+        - "^Candidate RP %{IP:server.ip} is configured on interface %{GREEDYDATA:aruba.interface.name}"
+  - grok:
+      field: message
+      tag: pim_event_5125_5126
+      if: "['5125','5126'].contains(ctx.event?.code)"
+      description: "BFD Session created or deleted"
+      patterns:
+        - "^BFD Session (created|deleted) for neighbor %{IP:server.ip} on interface %{GREEDYDATA:aruba.interface.name}"
+
 
   # HTTPS Server events (560x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm
@@ -1168,7 +1340,7 @@ processors:
       description: "Duplicate IP detected from ARP reply | Duplicate IPv6 address detected from Neighbour advertisement | Duplicate IP detected from ARP request"
       patterns:
         - "^Duplicate (IPv4|IPv6) address %{IP:client.ip} is detected on port %{DATA:aruba.port} with a MAC address of %{MAC:client.mac}"
-        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages" 
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
   
   # Credential Manager events (65xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
@@ -2009,8 +2181,8 @@ processors:
       field: "message"
       description: "This log event informs the user that IP_SOURCE_LOCKDOWN resource utilization has reached 80 percent of the supported limits"
       patterns:
-        - "^IP_SOURCE_LOCKDOWN resource utilization has (reached|reduced)( below)? 80 percent of the supported limit of %{NUMBER:aruba.limit:long} on the system"
-        - "^IP_SOURCE_LOCKDOWN resource utilization has exceeded maximum supported limit of %{NUMBER:aruba.limit:long} on the system. IP source-lockdown functionality will not work for new entries"
+        - "^IP_SOURCE_LOCKDOWN resource utilization has (reached|reduced)( below)? 80 percent of the supported limit of %{DATA:aruba.limit.threshold} on the system"
+        - "^IP_SOURCE_LOCKDOWN resource utilization has exceeded maximum supported limit of %{DATA:aruba.limit.threshold} on the system. IP source-lockdown functionality will not work for new entries"
         - "^(IPV4_SOURCE_LOCKDOWN|IPV6_SOURCE_LOCKDOWN) is (enabled|disabled) on interface %{GREEDYDATA:aruba.interface.id}"
 
   # ACLs events (100xx)
@@ -2262,13 +2434,8 @@ processors:
 
   # Convert due to dissect processing
   # - aruba.slot
-  # - aruba.limit
   - convert:
       field: aruba.slot
-      type: long
-      ignore_missing: true
-  - convert:
-      field: aruba.limit
       type: long
       ignore_missing: true
 
