@@ -5,11 +5,10 @@ processors:
       tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
-  - append:
-      tag: append_event_kind
+  - set:
+      tag: set_event_kind_default
       field: event.kind
       value: event
-      allow_duplicates: false
   - set:
       tag: set_event_category
       field: event.category
@@ -33,6 +32,46 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
+  - rename:
+      tag: rename_json_alert_id
+      field: json.Alert Id
+      target_field: tanium.threat_response.alert_id
+      ignore_missing: true
+  - set:
+      tag: set_event_kind_alert
+      field: event.kind
+      value: alert
+      if: ctx.tanium?.threat_response?.alert_id != null && ctx.tanium.threat_response.alert_id != ''
+  - rename:
+      tag: rename_json_intel_id
+      field: json.Intel Id
+      target_field: tanium.threat_response.intel_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_intel_type
+      field: json.Intel Type
+      target_field: tanium.threat_response.intel_type
+      ignore_missing: true
+  - rename:
+      tag: rename_json_intel_name
+      field: json.Intel Name
+      target_field: tanium.threat_response.intel_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_intel_labels
+      field: json.Intel Labels
+      target_field: tanium.threat_response.intel_labels
+      ignore_missing: true
+  - rename:
+      tag: rename_json_impact_score
+      field: json.Impact Score
+      target_field: tanium.threat_response.impact_score
+      ignore_missing: true
+  - rename:
+      tag: rename_json_link
+      field: json.Link
+      target_field: tanium.threat_response.link
+      ignore_missing: true
   - date:
       tag: date_json_updatedat
       field: json.updatedAt
