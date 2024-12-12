@@ -864,7 +864,7 @@ Note: Descriptions have not been filled out
 | Docs Field   | Schema Mapping       |
 |--------------|----------------------|
 | <if_name>    | aruba.interface.name |
-| <mac_addr>   | server.mac           |
+| <mac_addr>   | client.mac           |
 | <port>       | aruba.port           |
 
 #### [Port Statistics events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COUNTERS.htm)
