@@ -21,6 +21,9 @@ processors:
         - mimecast.id
       target_field: "_id"
       ignore_missing: true
+  - set:
+      field: event.category
+      value: [email]
 
   - date:
       description: Use 'mimecast.eventTime' as the '@timestamp'
@@ -360,6 +363,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: >-
