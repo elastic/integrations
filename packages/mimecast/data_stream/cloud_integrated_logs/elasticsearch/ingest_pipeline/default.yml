@@ -68,7 +68,7 @@ processors:
       processor:
         append:
           field: email.to.address
-          value: '{{{_ingest._value.value}}}'
+          value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
       field: email.to.address
@@ -173,6 +173,16 @@ processors:
           tag: append_email_from_address_list_to_related_user
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+  - foreach:
+      field: email.to.address
+      if: ctx.email?.to?.address instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_email_from_address_list_to_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       if: ctx.email?.from?.address != null && !(ctx.email.from.address instanceof List) && ctx.email.from.address != ''
       field: related.user
@@ -256,6 +266,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: >-
