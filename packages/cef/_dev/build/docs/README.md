@@ -128,8 +128,8 @@ There are cases where incoming CEF messages do not follow the CEF specification 
 message decoding. To work around this, there is an option for pre-processors, which are run before the CEF message is decoded.
 These can be used modify the message to follow the CEF specification correctly, which will allow proper decoding.
 
-The pre-processors will modify the message before CEF decoding is done on the agent, but the original, non-preprocessed,
-message will still be preserved in the `event.original` field.
+The pre-processors will modify the `message` field before CEF decoding is done on the agent, but the original, non-preprocessed,
+message will still be preserved in the `event.original` field when the agent sends the event.
 
 ## Logs
 
