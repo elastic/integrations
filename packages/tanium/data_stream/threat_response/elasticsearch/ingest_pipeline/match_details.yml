@@ -1,0 +1,243 @@
+---
+description: Pipeline for processing tanium.threat_response.match_details.*
+processors:
+  - script:
+      tag: script_drop_empty_maps_recursively
+      description: Drops empty map values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyMapsAndLists(Object object) {
+          if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyMapsAndLists(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyMapsAndLists(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyMapsAndLists(ctx.tanium.threat_response.match_details);
+  - rename:
+      tag: rename_tanium_threat_response_match_details_match_properties_file_fullpath
+      field: tanium.threat_response.match_details.match.properties.file.fullpath
+      target_field: tanium.threat_response.match_details.match.properties.file.full_path
+      ignore_missing: true
+  - rename:
+      tag: rename_tanium_threat_response_match_details_match_properties_parent_file_fullpath
+      field: tanium.threat_response.match_details.match.properties.parent.file.fullpath
+      target_field: tanium.threat_response.match_details.match.properties.parent.file.full_path
+      ignore_missing: true
+  - rename:
+      tag: rename_tanium_threat_response_match_details_finding_finding_id
+      field: tanium.threat_response.match_details.finding.finding_id
+      target_field: tanium.threat_response.match_details.finding.id
+      ignore_missing: true
+  - rename:
+      tag: rename_tanium_threat_response_match_details_match_properties_parent_parent_file_fullpath
+      field: tanium.threat_response.match_details.match.properties.parent.parent.file.fullpath
+      target_field: tanium.threat_response.match_details.match.properties.parent.parent.file.full_path
+      ignore_missing: true
+  - grok:
+      tag: grok_tanium_threat_response_match_details_finding_system_info_os
+      field: tanium.threat_response.match_details.finding.system_info.os
+      patterns:
+        - "^%{DATA:tanium.threat_response.match_details.finding.system_info.os_platform} %{GREEDYDATA:tanium.threat_response.match_details.finding.system_info.os_version}$"
+        - "^%{GREEDYDATA:tanium.threat_response.match_details.system_info.os}$"
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+      ignore_missing: true
+  - rename:
+      tag: rename_tanium_threat_response_match_details_finding_system_info_os
+      field: tanium.threat_response.match_details.finding.system_info.os
+      target_field: tanium.threat_response.match_details.finding.system_info.os.value
+      ignore_missing: true
+  - rename:
+      tag: rename_tanium_threat_response_match_details_finding_system_info_os_platform
+      field: tanium.threat_response.match_details.finding.system_info.os_platform
+      target_field: tanium.threat_response.match_details.finding.system_info.os.platform
+      ignore_missing: true
+  - set:
+      tag: set_os_platform
+      field: os.platform
+      copy_from: tanium.threat_response.match_details.finding.system_info.os.platform
+      ignore_empty_value: true
+  - rename:
+      tag: rename_tanium_threat_response_match_details_finding_system_info_os_version
+      field: tanium.threat_response.match_details.finding.system_info.os_version
+      target_field: tanium.threat_response.match_details.finding.system_info.os.version
+      ignore_missing: true
+  - set:
+      tag: set_os_version
+      field: os.version
+      copy_from: tanium.threat_response.match_details.finding.system_info.os.version
+      ignore_empty_value: true
+  - lowercase:
+      tag: lowercase_tanium_threat_response_match_details_finding_system_info_platform
+      field: tanium.threat_response.match_details.finding.system_info.platform
+      ignore_missing: true
+  - set:
+      tag: set_os_type
+      field: os.type
+      copy_from: tanium.threat_response.match_details.finding.system_info.platform
+      ignore_empty_value: true
+  - convert:
+      tag: convert_tanium_threat_response_match_details_finding_system_info_bits
+      field: tanium.threat_response.match_details.finding.system_info.bits
+      type: long
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.match_details?.finding?.system_info.bits != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+
+  - foreach:
+      tag: foreach_tanium_threat_response_match_details_match_contexts
+      field: tanium.threat_response.match_details.match.contexts
+      if: ctx.tanium?.threat_response?.match_details?.match?.contexts instanceof List
+      processor:
+        rename:
+          tag: rename_ingest_value_file_uniqueeventid
+          field: _ingest._value.file.uniqueEventId
+          target_field: _ingest._value.file.unique_event_id
+          ignore_missing: true
+  - foreach:
+      tag: foreach_tanium_threat_response_match_details_match_contexts_2
+      field: tanium.threat_response.match_details.match.contexts
+      if: ctx.tanium?.threat_response?.match_details?.match?.contexts instanceof List
+      processor:
+        rename:
+          tag: rename_ingest_value_event_filecreate_path
+          field: _ingest._value.event.fileCreate.path
+          target_field: _ingest._value.event.file_create.path
+          ignore_missing: true
+  - date:
+      tag: date_tanium_threat_response_match_details_finding_first_seen
+      field: tanium.threat_response.match_details.finding.first_seen
+      target_field: tanium.threat_response.match_details.finding.first_seen
+      if: ctx.tanium?.threat_response?.match_details?.finding?.first_seen != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      tag: date_tanium_threat_response_match_details_finding_last_seen
+      field: tanium.threat_response.match_details.finding.last_seen
+      target_field: tanium.threat_response.match_details.finding.last_seen
+      if: ctx.tanium?.threat_response?.match_details?.finding?.last_seen != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - foreach:
+      tag: foreach_tanium_threat_response_match_details_match_contexts_3
+      field: tanium.threat_response.match_details.match.contexts
+      if: ctx.tanium?.threat_response?.match_details?.match?.contexts instanceof List
+      processor:
+        date:
+          tag: date_ingest_value_event_timestampms
+          field: _ingest._value.event.timestampMs
+          target_field: _ingest._value.event.timestampMs
+          formats:
+            - UNIX_MS
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - date:
+      tag: date_tanium_threat_response_match_details_match_properties_parent_parent_start_time
+      field: tanium.threat_response.match_details.match.properties.parent.parent.start_time
+      target_field: tanium.threat_response.match_details.match.properties.parent.parent.start_time
+      if: ctx.tanium?.threat_response?.match_details?.match?.properties?.parent?.parent?.start_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      tag: date_tanium_threat_response_match_details_match_properties_parent_start_time
+      field: tanium.threat_response.match_details.match.properties.parent.start_time
+      target_field: tanium.threat_response.match_details.match.properties.parent.start_time
+      if: ctx.tanium?.threat_response?.match_details?.match?.properties?.parent?.start_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      tag: date_tanium_threat_response_match_details_match_properties_start_time
+      field: tanium.threat_response.match_details.match.properties.start_time
+      target_field: tanium.threat_response.match_details.match.properties.start_time
+      if: ctx.tanium?.threat_response?.match_details?.match?.properties?.start_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+
+  - foreach:
+      field: tanium.threat_response.match_details.finding.whats
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "match_details_whats" }}'
+
+  - set:
+      tag: set_file_size
+      field: file.size
+      copy_from: tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.size_bytes
+      ignore_empty_value: true
+  - set:
+      tag: set_process_pid
+      field: process.pid
+      copy_from: tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.pid
+      ignore_empty_value: true
+
+  - append:
+      tag: append_event_kind
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null && ctx.error.message != ''
+      allow_duplicates: false
+  - remove:
+      tag: remove_duplicate_custom_fields
+      if: ctx.tags == null || !(ctx.tags.contains("preserve_duplicate_custom_fields"))
+      field:
+        - tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.md5
+        - tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha1
+        - tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha256
+        - tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.pid
+        - tanium.threat_response.match_details.finding.system_info.platform
+        - tanium.threat_response.match_details.finding.system_info.os.platform
+        - tanium.threat_response.match_details.finding.system_info.os.version
+      ignore_missing: true
+on_failure:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"

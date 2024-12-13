@@ -1,0 +1,278 @@
+---
+description: Pipeline for processing Mimecast cloud_integrated_logs.
+processors:
+  - drop:
+      description: Ignore want_more placeholder message.
+      if: ctx.message == "want_more"
+
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      description: Parse 'message' JSON contents into a 'mimecast' object.
+      field: event.original
+      target_field: mimecast
+  - drop:
+      if: ctx?.mimecast?.datetime == null && ctx?.mimecast?.timestamp == null
+  - set:
+      field: event.category
+      value: [email]
+
+  - date:
+      description: Use 'mimecast.timestamp' as the '@timestamp'
+      field: mimecast.timestamp
+      if: ctx.mimecast?.timestamp != null
+      timezone: UTC
+      formats:
+        - UNIX_MS
+  - set:
+      field: event.created
+      copy_from: '@timestamp'
+      if: ctx['@timestamp'] != null
+
+  ### NOTE LOG TYPE
+  - rename:
+      field: mimecast.type
+      target_field: mimecast.log_type
+      ignore_missing: true
+
+  - set:
+      field: original
+      copy_from: mimecast
+      tag: preserve_custom_duplicate_fields
+      ignore_empty_value: true
+      if: ctx.tags?.contains('preserve_duplicate_custom_fields') == true
+
+  - fingerprint:
+      fields:
+        - mimecast.messageId
+        - mimecast.processingId
+        - mimecast.aggregateId
+        - mimecast.accountId
+        - mimecast.timestamp
+        - mimecast.action
+        - mimecast.log_type
+        - mimecast.subtype
+      target_field: "_id"
+      ignore_missing: true
+
+  ### Common
+  - foreach:
+      if: ctx.mimecast?.recipients instanceof List
+      field: mimecast.recipients
+      processor:
+        append:
+          field: email.to.address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: email.to.address
+      value: '{{{mimecast.recipients}}}'
+      allow_duplicates: false
+      if: 'ctx.mimecast?.recipients != null && !(ctx.mimecast.recipients instanceof List)'
+
+  ### ENTITIES
+  - rename:
+      field: mimecast.senderIp
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: mimecast.messageId
+      target_field: email.message_id
+      ignore_missing: true
+  - append:
+      field: email.from.address
+      value: '{{{mimecast.senderHeader}}}'
+      allow_duplicates: false
+      if: ctx.mimecast?.senderHeader != null
+  - append:
+      field: email.from.address
+      value: '{{{mimecast.senderEnvelope}}}'
+      allow_duplicates: false
+      if: ctx.mimecast?.senderEnvelope != null
+  - rename:
+      field: mimecast.subject
+      target_field: email.subject
+      ignore_missing: true
+  - rename:
+      field: mimecast.direction
+      target_field: email.direction
+      ignore_missing: true
+  - lowercase:
+      field: email.direction
+      ignore_missing: true
+  - rename:
+      field: mimecast.attachments
+      target_field: email.attachments.file.name
+      ignore_missing: true
+  - rename:
+      field: mimecast.action
+      target_field: mimecast.threatState
+      ignore_missing: true
+
+  ### MAIL FLOW LOGS
+  # none
+
+  ### URL LOGS
+  - rename:
+      field: mimecast.action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: mimecast.sourceIp
+      target_field: source.ip
+      ignore_missing: true
+
+  - convert:
+      field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: source.ip
+            ignore_failure: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  - foreach:
+      field: email.from.address
+      if: ctx.email?.from?.address instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_email_from_address_list_to_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: email.to.address
+      if: ctx.email?.to?.address instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_email_from_address_list_to_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      if: ctx.email?.from?.address != null && !(ctx.email.from.address instanceof List) && ctx.email.from.address != ''
+      field: related.user
+      tag: append_email_from_address_to_related_user
+      value: '{{{email.from.address}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.source?.ip != null
+      field: related.ip
+      tag: append_source_ip_to_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+
+  # Handle attachment details.
+  - foreach:
+      tag: collect_attachment_file_hashes
+      if: ctx.email?.attachments?.file?.hash instanceof Map
+      field: email.attachments.file.hash
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - script:
+      tag: promote_email_attachments_to_array
+      if: ctx.email?.attachments != null
+      lang: painless
+      source: |
+        def attachments = [];
+        attachments.add(ctx.email.attachments);
+        ctx.email.attachments = attachments;
+
+  - remove:
+      tag: remove_duplicate_custom_fields
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - mimecast.recipients
+        - mimecast.senderEnvelope
+      ignore_missing: true
+
+  # Cleanup
+  - rename:
+      field: original
+      target_field: mimecast
+      override: true
+      ignore_missing: true
+  - remove:
+      description: Cleanup of repeated/unwanted/temporary fields.
+      field:
+        - mimecast._offset
+        - mimecast._partition
+        - mimecast.timestamp
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
