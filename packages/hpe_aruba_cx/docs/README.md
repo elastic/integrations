@@ -909,7 +909,6 @@ Note: Descriptions have not been filled out
 | <assigned_class>   | aruba.poe.assigned_class     |
 | <assigned_class_A> | aruba.poe.assigned_class_a   |
 | <assigned_class_B> | aruba.poe.assigned_class_b   |
-| <available>        | aruba.poe.available          |
 | <cntrl_name>       | aruba.poe.cntrl_name         |
 | <duration>         | aruba.poe.cntrl_name         |
 | <fault_type>       | aruba.poe.fault_type         |
