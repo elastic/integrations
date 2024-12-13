@@ -229,6 +229,64 @@ processors:
       pattern_definitions:
         FAN_STATUS: "[-_0-9a-zA-Z]+"
 
+    # Power events (3xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POWER.htm
+  - dissect:
+      field: message
+      tag: power_event_301
+      description: ""
+      if: "ctx.event?.code == '301'"
+      pattern: "PSU %{aruba.power.name} changed state to %{aruba.state}"
+  - dissect:
+      field: message
+      tag: power_event_302
+      description: ""
+      if: "ctx.event?.code == '302'"
+      pattern: "PSUs inserted in the system are of %{aruba.power.type} types. This is %{aruba.power.support} configuration."
+  - grok:
+      field: message
+      tag: power_event_303_304
+      description: ""
+      if: "['303','304'].contains(ctx.event?.code)"
+      patterns: 
+        - "^PSU %{DATA:aruba.power.name} (encountered a warning|faulted). Total (warning|fault) count: %{NUMBER:aruba.count:long}"
+  - grok:
+      field: message
+      tag: power_event_305_309
+      description: ""
+      if: "['305','309'].contains(ctx.event?.code)"
+      patterns: 
+        - "^PSU %{DATA:aruba.power.name}: (Internal communication|Output current) %{GREEDYDATA:aruba.status}( threshold limit)?"
+  - grok:
+      field: message
+      tag: power_event__307_308
+      description: ""
+      if: "['306','307','308'].contains(ctx.event?.code)"
+      patterns:
+        - "^PSU %{DATA:aruba.power.name}: Fan-%{INT:aruba.power.fanidx:long} %{GREEDYDATA:aruba.status}"
+        - "^PSU %{DATA:aruba.power.name}: %{DATA:aruba.power.sensorid} sensor %{DATA:aruba.status} threshold limit"
+        - "^PSU %{DATA:aruba.power.name} has shutdown due to over temperature in %{DATA:aruba.power.sensorid} sensor"
+  - grok:
+      field: message
+      tag: power_event_310_311_314_315_317
+      description: ""
+      if: "['310','311','314','315','317'].contains(ctx.event?.code)"
+      patterns:
+        - "^PSU %{DATA:aruba.power.name} "
+  - grok:
+      field: message
+      tag: power_event_312_313
+      description: ""
+      if: "['312','313'].contains(ctx.event?.code)"
+      patterns:
+        - "^PSU Redundancy (set to|operating at) %{GREEDYDATA:aruba.power.redund}"
+  - dissect:
+      field: message
+      tag: power_event_316
+      description: "There is insufficient power to power a card. Power can be removed from configured PoE PDs to be able to power the card."
+      if: "ctx.event?.code == '316'"
+      pattern: "%{aruba.power.type} module %{aruba.power.name} denied power due to insufficient power. Configured PoE power can be deconfigured to allow card to be granted power."
+
     # Interface events (40x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/INTERFACE.htm
   - grok:

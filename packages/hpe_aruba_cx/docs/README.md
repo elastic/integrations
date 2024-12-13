@@ -890,18 +890,18 @@ Note: Descriptions have not been filled out
 
 
 #### [Power events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POWER.htm)
-| Field                   | Description | Type | Common                       |
-|-------------------------|-------------|------|------------------------------|
-| aruba.power.failures    |             |      | aruba.count                  |
-| aruba.power.fanidx      |             |      |                              |
-| aruba.power.psu         |             |      |                              |
-| aruba.power.redund      |             |      |                              |
-| aruba.power.sensorid    |             |      |                              |
-| aruba.power.state       |             |      | aruba.status                 |
-| aruba.power.status      |             |      | aruba.status                 |
-| aruba.power.support     |             |      |                              |
-| aruba.power.type        |             |      |                              |
-| aruba.power.warning     |             |      |                              |
+| Docs Field  | Schema Mapping         |
+|-------------|------------------------|
+| <failures>  | aruba.count            |
+| <fanidx>    | aruba.power.fanidx     |
+| <name>      | aruba.power.name       |
+| <redund>    | aruba.power.redund     |
+| <sensorid>  | aruba.power.sensorid   |
+| <state>     | aruba.state            |
+| <status>    | aruba.status           |
+| <Support>   | aruba.power.support    |
+| <Type>      | aruba.power.type       |
+| <warnings>  | aruba.count            |
 
 #### [Power over Ethernet events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POE.htm)
 | Field                       | Description | Type | Common                       |
@@ -1549,6 +1549,12 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.port_access.old_limit |  | keyword |
 | aruba.port_access.old_mode |  | keyword |
 | aruba.port_access.old_name |  | keyword |
+| aruba.power.fanidx |  | long |
+| aruba.power.name |  | keyword |
+| aruba.power.redund |  | keyword |
+| aruba.power.sensorid |  | keyword |
+| aruba.power.support |  | keyword |
+| aruba.power.type |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.priority |  | keyword |
 | aruba.role |  | keyword |
