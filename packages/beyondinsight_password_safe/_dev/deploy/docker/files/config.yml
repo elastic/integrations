@@ -1,0 +1,52 @@
+rules:
+  #### UserAudits ####
+  - path: /Auth/SignAppin
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "PS-Auth key=abcd1234byiapitoken;runas=testuser;pwd=[password];"
+      Content-Type:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+          Set-Cookie:
+            - "ASP.NET_SessionId=iijfdzn51fdh01axylh1nnd1"
+        body: |
+          {
+            "UserId": 1,
+            "SID": null,
+            "EmailAddress": "test.user@example.com",
+            "UserName": "testuser",
+            "Name": "Test User"
+          }
+      - status_code: 401
+  - path: /UserAudits
+    methods: ["GET"]
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Cookie:
+        - "ASP.NET_SessionId=iijfdzn51fdh01axylh1nnd1"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {
+            "TotalCount": 1,
+            "Data": [
+              {
+                "AuditID": 1,
+                "ActionType": "Login",
+                "Section": "PMM API SignAppIn",
+                "UserID": 6,
+                "UserName": "test.user@example.com",
+                "IPAddress": "216.160.83.56",
+                "CreateDate": "2024-12-12T10:24:26.323Z"
+              }
+            ]
+          }
