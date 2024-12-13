@@ -71,9 +71,32 @@ processors:
     field: _temp_.tz
     value: UTC
     override: false
+- script:
+      lang: painless
+      tag: script_timezone
+      if: ctx._temp_?.tz != null && ctx._temp_?.tz != ''
+      description: >
+        Map timezone abbreviations that are not supported by Java.
+        If there exists a match in _conf.tz_map, _temp_.tz is replaced with
+        the map value, else it is unchanged.
+      source: >-
+          def conf = ctx['_conf'];
+          if (conf == null) return;
+
+          def mappings = conf.tz_map;
+          if (mappings == null) return;
+
+          def tz_log = ctx._temp_.tz;
+          for (def item : mappings) {
+            if (item.tz_short == tz_log) {
+              ctx._temp_.tz = item.tz_long;
+              break;
+            }
+          }
 - set:
     field: event.timezone
     copy_from: _temp_.tz
+    if: ctx.event?.timezone == null
 - gsub:
     field: event.timezone
     pattern: '([+-][0-9]{2})([0-9]{2})'
@@ -93,23 +116,9 @@ processors:
     copy_from: sophos.xg.timestamp
     ignore_empty_value: true
     if: ctx._temp_?.time == null
-# date processor, and the backing DateTimeFormatter, doesn't support short timezones. Attempt to map short time zone to zone id.
-# This is potentially incorrect (i.e IST could be India Standard Time or Irish Standard Time), but it's the best we can do with the source data
-- script:
-    lang: painless
-    tag: convert_tz
-    if: 'ctx._temp_?.tz != null'
-    source: >-
-      /* CEST isn't in ZoneId.SHORT_IDS */
-      if (ctx._temp_.tz == "CEST") {
-        ctx._temp_.tz = "+01:00";
-      }
-      if (ZoneId.SHORT_IDS.containsKey(ctx._temp_.tz)) {
-        ctx._temp_.tz = ZoneId.SHORT_IDS.get(ctx._temp_.tz);
-      }
 - date:
     field: _temp_.time
-    timezone: "{{{ _temp_.tz }}}"
+    timezone: "{{{ event.timezone }}}"
     formats:
       - yyyy-MM-dd HH:mm:ss
       - yyyy-MM-dd HH:mm:ss Z
@@ -482,7 +491,7 @@ processors:
           field: sophos.xg.eventtime
 - date:
     if: ctx.sophos?.xg?.eventtime != null && ctx.event?.timezone != null
-    timezone: "{{{ _temp_.tz }}}"
+    timezone: "{{{ event.timezone }}}"
     field: sophos.xg.eventtime
     target_field: sophos.xg.eventtime
     formats:
