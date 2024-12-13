@@ -1,6 +1,6 @@
 # Azure Application Insights Integration
 
-The [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) Integration allows users to retrieve application insights metrics from specified applications.  
+The Application Insights Integration allows users to retrieve application insights metrics from specified applications.  
 
 ### Integration level configuration options
 
