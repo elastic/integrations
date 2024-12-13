@@ -861,29 +861,33 @@ Note: Descriptions have not been filled out
 | <vlan>       | network.vlan.id              |
 
 #### [Port security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT-SECURITY.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.port.if_name   |             |      | observer.ingress.interface.name |
-| aruba.port.mac_addr  |             |      | server.mac                   |
-| aruba.port.port      |             |      | server.port                  |
+| Docs Field   | Schema Mapping       |
+|--------------|----------------------|
+| <if_name>    | aruba.interface.name |
+| <mac_addr>   | client.mac           |
+| <port>       | aruba.port           |
 
 #### [Port Statistics events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COUNTERS.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.port.name      |             |      | server.port                  |
+| Docs Field | Schema Mapping       |
+|------------|----------------------|
+| <name>     | aruba.port           |
 
 #### [PORT_ACCESS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT_ACCESS.htm)
-| Field                   | Description | Type | Common                       |
-|-------------------------|-------------|------|------------------------------|
-| aruba.port.limit        |             |      | aruba.limit.threshold                  |
-| aruba.port.mac_address  |             |      | client.mac                   |
-| aruba.port.mode         |             |      |                              |
-| aruba.port.name         |             |      | server.port                  |
-| aruba.port.old_limit    |             |      |                              |
-| aruba.port.old_mode     |             |      |                              |
-| aruba.port.old_name     |             |      |                              |
-| aruba.port.policy_name  |             |      |                              |
-| aruba.port.port         |             |      | server.port                  |
+| Docs Field    | Schema Mapping               |
+|---------------|------------------------------|
+| <limit>       | aruba.limit.threshold        |
+| <mac_address> | client.mac                   |
+| <mode>        | aruba.port_access.mode       |
+| <new_limit>   | aruba.limit.threshold        |
+| <new_name>    | aruba.port_access.name       |
+| <new_mode>    | aruba.port_access.mode       |
+| <old_limit>   | aruba.port_access.old_limit  |
+| <old_mode>    | aruba.port_access.old_mode   |
+| <old_name>    | aruba.port_access.old_name   |
+| <policy_name> | aruba.policy.name            |
+| <port>        | aruba.port                   |
+| <vlan_id>     | network.vlan.id              |
+
 
 #### [Power events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POWER.htm)
 | Docs Field  | Schema Mapping         |
@@ -1540,6 +1544,11 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.policy.application |  | keyword |
 | aruba.policy.name |  | keyword |
 | aruba.port |  | keyword |
+| aruba.port_access.mode |  | keyword |
+| aruba.port_access.name |  | keyword |
+| aruba.port_access.old_limit |  | keyword |
+| aruba.port_access.old_mode |  | keyword |
+| aruba.port_access.old_name |  | keyword |
 | aruba.power.fanidx |  | long |
 | aruba.power.name |  | keyword |
 | aruba.power.redund |  | keyword |

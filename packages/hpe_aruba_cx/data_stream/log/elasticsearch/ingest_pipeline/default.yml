@@ -1468,6 +1468,16 @@ processors:
       description: "Logs a message when SSH authorized key fails validation check"
       pattern: "User %{user.name} has configured an invalid SSH authorized key with key identifier %{user.id}"
 
+    # Port Statistics events (660x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COUNTERS.htm
+  - grok:
+      field: message
+      tag: port_stats_event_6601_6602_6603_6604
+      description: "Logs a message when the creation of a Layer 3 IPv4/IPv6 RX/TX counter fails"
+      if: "['6601','6602','6603','6604'].contains(ctx.event?.code)"
+      patterns:
+        - "^Failed to create layer 3 (IPv4|IPv6) (RX|TX) statistic for port:%{GREEDYDATA:aruba.port}"
+
     # Mirroring events (670x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MIRRORING.htm
   - grok:
@@ -2182,6 +2192,17 @@ processors:
         - "to create the role - %{DATA:aruba.role}, maximum limit reached"
         - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
 
+  # Port security events (940x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT-SECURITY.htm
+  - grok:
+      field: message
+      tag: port_security_event_9401_9402
+      if: "['9401','9402'].contains(ctx.event?.code)"
+      description: "Log event when an intruder is detected on the port | sticky mac is moved to other port"
+      patterns:
+        - "^Client limit exceeded on port %{DATA:aruba.interface.name}, caused by an unauthorized client %{MAC:client.mac}"
+        - "^Port security sticky client move violation triggered on port %{DATA:aruba.port} for client with MAC address %{MAC:client.mac}"
+
   # EVPN Events (95xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EVPN.htm
   - grok:
@@ -2326,6 +2347,45 @@ processors:
       patterns:
         - "^ARP inspection %{DATA:aruba.status} on vlan %{GREEDYDATA:network.vlan.id}."
         - "^ARP inspection %{DATA:aruba.status} on port %{GREEDYDATA:aruba.port}."
+
+  # PORT_ACCESS events (1050x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT_ACCESS.htm
+  - grok:
+      if: "['10501','10502','10503'].contains(ctx.event?.code)"
+      tag: port_access_event_10501_10502_10503
+      field: "message"
+      description: "Client was logged-off administratively through command-line interface | port is [unblocked|blocked] by port-access daemon"
+      patterns:
+        - "^Client %{MAC:client.mac} was logged-off administratively through command-line interface"
+        - "^Port %{DATA:aruba.port} is (blocked|unblocked) by port-access"
+  - grok:
+      if: "['10504','10505'].contains(ctx.event?.code)"
+      tag: port_access_event_10504_10505
+      field: "message"
+      description: "The authentication mode associated with the port is changed | The client limit associated with the port is changed"
+      patterns:
+        - "^Clients were logged-off on the port %{DATA:aruba.port} due to a change in (%{AUTH_MODE_CHANGE}|%{LIMIT_CHANGE})"
+      pattern_definitions:
+        AUTH_MODE_CHANGE: "authentication mode from %{DATA:aruba.port_access.old_mode} to %{GREEDYDATA:aruba.port_access.mode}"
+        LIMIT_CHANGE: "client limit from %{DATA:aruba.port_access.old_limit} to %{GREEDYDATA:aruba.limit.threshold}"
+  - dissect:
+      if: "ctx.event?.code == '10506'"
+      tag: port_access_event_10506
+      field: "message"
+      description: "The name associated with a VLAN in use by port-access daemon changed"
+      pattern: "The name associated with VLAN %{network.vlan.id} changed from %{aruba.port_access.old_name} to %{aruba.port_access.name}"
+  - dissect:
+      if: "ctx.event?.code == '10507'"
+      tag: port_access_event_10507
+      field: "message"
+      description: "The policy configuration is updated by the user"
+      pattern: "Clients using policy %{aruba.policy.name} were logged-off due to a configuration change in the policy"
+  - dissect:
+      if: "ctx.event?.code == '10508'"
+      tag: port_access_event_10508
+      field: "message"
+      description: "VLAN is configured as Trunk for some clients and access for others. This could potentially result in traffic loss"
+      pattern: "VLAN conflict detected on port %{aruba.port}"
 
   # L3 Encap capacity events (1060x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm
