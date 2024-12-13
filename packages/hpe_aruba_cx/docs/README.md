@@ -912,7 +912,7 @@ Note: Descriptions have not been filled out
 | <available>        | aruba.poe.available          |
 | <cntrl_name>       | aruba.poe.cntrl_name         |
 | <duration>         | aruba.poe.cntrl_name         |
-| <fault_type>       | error.type                   |
+| <fault_type>       | aruba.poe.fault_type         |
 | <interface_name>   | aruba.interface.name         |
 | <threshold_limit>  | aruba.limit.threshold        |
 | <pair>             | aruba.poe.pair               |
