@@ -846,6 +846,7 @@ An example event for `index` looks as following:
             "name": ".ml-state-000001",
             "tier_preference": "data_content",
             "creation_date": 1731657995821,
+            "version": "8503000",
             "primaries": {
                 "docs": {
                     "count": 0
@@ -1013,6 +1014,7 @@ An example event for `index` looks as following:
 | elasticsearch.index.status |  | keyword |  |
 | elasticsearch.index.tier_preference |  | keyword |  |
 | elasticsearch.index.creation_date |  | date |  |
+| elasticsearch.index.version |  | keyword |  |
 | elasticsearch.index.total.bulk.avg_size_in_bytes |  | long | gauge |
 | elasticsearch.index.total.bulk.avg_time_in_millis |  | long | gauge |
 | elasticsearch.index.total.bulk.total_operations |  | long | counter |
