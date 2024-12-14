@@ -482,6 +482,15 @@ processors:
     name: '{{ IngestPipeline "wifi" }}'
     if: "ctx.sophos?.xg?.log_type == 'Wireless Protection'"
 
+- gsub:
+    field: sophos.xg.eventtime
+    pattern: "\\s[A-Z]{2,4}$"
+    replacement: ""
+    if: ctx.sophos?.xg?.eventtime != null
+    description: >
+      Remove timezone from eventtime (converting time with both timezone and with
+      the previously parsed event.timezone results in incorrect time)
+
 - date:
     if: ctx.sophos?.xg?.eventtime != null && ctx.event?.timezone == null
     field: sophos.xg.eventtime
