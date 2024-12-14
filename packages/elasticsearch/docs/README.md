@@ -977,6 +977,7 @@ An example event for `index` looks as following:
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |  |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |  |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |  |
+| elasticsearch.index.creation_date |  | date |  |
 | elasticsearch.index.hidden |  | boolean |  |
 | elasticsearch.index.name | Index name. | keyword |  |
 | elasticsearch.index.primaries.docs.count |  | long | gauge |
@@ -1013,8 +1014,6 @@ An example event for `index` looks as following:
 | elasticsearch.index.shards.total |  | long |  |
 | elasticsearch.index.status |  | keyword |  |
 | elasticsearch.index.tier_preference |  | keyword |  |
-| elasticsearch.index.creation_date |  | date |  |
-| elasticsearch.index.version |  | keyword |  |
 | elasticsearch.index.total.bulk.avg_size_in_bytes |  | long | gauge |
 | elasticsearch.index.total.bulk.avg_time_in_millis |  | long | gauge |
 | elasticsearch.index.total.bulk.total_operations |  | long | counter |
@@ -1055,6 +1054,7 @@ An example event for `index` looks as following:
 | elasticsearch.index.total.store.size.bytes |  | long | gauge |
 | elasticsearch.index.total.store.size_in_bytes | Total size of the index in bytes. | long | gauge |
 | elasticsearch.index.uuid |  | keyword |  |
+| elasticsearch.index.version |  | keyword |  |
 | elasticsearch.node.id | Node ID | keyword |  |
 | elasticsearch.node.master | Is the node the master node? | boolean |  |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |  |
