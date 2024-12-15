@@ -3,8 +3,51 @@
         "controlGroupInput": {
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
-            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"93a8183f-ab74-4636-9f63-9e30c35bfa6b\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.repository.owner.login\",\"title\":\"Owner/Organization\",\"id\":\"93a8183f-ab74-4636-9f63-9e30c35bfa6b\",\"enhancements\":{}}},\"965171e3-e02b-49ff-a2f7-6ddfa5159eee\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.repository.name\",\"title\":\"Repository\",\"id\":\"965171e3-e02b-49ff-a2f7-6ddfa5159eee\",\"enhancements\":{}}},\"8fb8d319-c120-4bcb-849d-6d45f3f5406a\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.state\",\"title\":\"State\",\"id\":\"8fb8d319-c120-4bcb-849d-6d45f3f5406a\",\"enhancements\":{},\"selectedOptions\":[]}}}"
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "8fb8d319-c120-4bcb-849d-6d45f3f5406a": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.issues.state",
+                        "id": "8fb8d319-c120-4bcb-849d-6d45f3f5406a",
+                        "searchTechnique": "prefix",
+                        "title": "State"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "93a8183f-ab74-4636-9f63-9e30c35bfa6b": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.repository.owner.login",
+                        "id": "93a8183f-ab74-4636-9f63-9e30c35bfa6b",
+                        "title": "Owner/Organization"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "965171e3-e02b-49ff-a2f7-6ddfa5159eee": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.repository.name",
+                        "id": "965171e3-e02b-49ff-a2f7-6ddfa5159eee",
+                        "title": "Repository"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
         },
         "description": "",
         "kibanaSavedObjectMeta": {
@@ -18,18 +61,50 @@
                             "alias": "Github Issues",
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
                             "negate": false,
-                            "params": {
-                                "query": "github.issues"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "logs-*",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "github.issues"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "github.issues"
+                                        }
+                                    }
+                                },
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "logs-*",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "AND",
+                            "type": "combined"
                         },
-                        "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "github.issues"
-                            }
-                        }
+                        "query": {}
                     }
                 ],
                 "query": {
@@ -48,6 +123,43 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n**Github**  \n\n- **Audit**\n  - [Audit Log Activity](#/dashboard/github-dcee84c0-2059-11ec-8b10-11a4c5e322a0)\n  - [User Change Audit](#/dashboard/github-8bfd8310-205c-11ec-8b10-11a4c5e322a0)\n- **Github Advanced Security**\n  - [Advanced Security Overview](#/dashboard/github-6a6d7c40-17ab-11ed-809a-7b4be950fe9c)\n  - [Code Scanning](#/dashboard/github-4da91aa0-12fc-11ed-af77-016e1a977d80)\n  - [Secret Scanning](#/dashboard/github-591d69e0-17b6-11ed-809a-7b4be950fe9c)\n  - [Dependabot](#/dashboard/github-6197be80-220c-11ed-88c4-e3caca48250a)\n- [**Issues (This Page)**](#/dashboard/github-f0104680-ae18-11ed-83fa-df5d96a45724)\n\n**Overview**\nThis dashboard provides an overview of the issues ingested from Github.\n\nThe dashboard provides details on issues that are open and resolved. It provides a view of the top 10 repositories with issues. It also calculates the mean-time to fix (or close) an issue. The dashboard presents a view of top labels that are assigned to the issues. Finally, it gives a layout of top users creating and fixing the issues.\n\n[**Integrations Page**](/app/integrations/detail/github/overview)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 29,
+                    "i": "1115b58c-79fe-4725-9cb1-fca7284c1f17",
+                    "w": 10,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1115b58c-79fe-4725-9cb1-fca7284c1f17",
+                "title": "Table of Contents",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
@@ -58,11 +170,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "5c48f008-d4c0-4386-a853-a83f49efe49f",
+                                "name": "2249b84f-29d6-47a7-aa24-c87c6d45bfa5",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "43eab0b2-e0f5-463e-8c7b-44f4afbb1a72",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -97,13 +215,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "5c48f008-d4c0-4386-a853-a83f49efe49f",
+                                        "index": "2249b84f-29d6-47a7-aa24-c87c6d45bfa5",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.issues"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.issues"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -117,38 +238,59 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "43eab0b2-e0f5-463e-8c7b-44f4afbb1a72",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "ccdc8558-1d3f-4c8b-a31e-d59ac78d0212",
+                                "color": "#6092C0",
                                 "layerId": "3f8b858f-a1ee-4d69-a100-d59282acd94d",
                                 "layerType": "data",
-                                "textAlign": "center",
-                                "titlePosition": "top"
+                                "metricAccessor": "ccdc8558-1d3f-4c8b-a31e-d59ac78d0212"
                             }
                         },
                         "title": "Total Alerts Created [GitHub Code Scanning]",
                         "type": "lens",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 5,
+                    "h": 4,
                     "i": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac",
-                    "w": 14,
-                    "x": 0,
+                    "w": 11,
+                    "x": 10,
                     "y": 0
                 },
                 "panelIndex": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac",
                 "title": "Total Issues Created [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -162,11 +304,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "583b3dcc-776c-48a8-90a8-14a1cdf69d5e",
+                                "name": "5717ec62-4078-4491-a384-c7aac1188613",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5afd4bdd-7354-447e-9325-c28f7fe52341",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -191,7 +339,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "count()/count(kql='github.state:closed')",
+                                                        "formula": "count()/count(kql='NOT github.issues.state:open')",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -203,7 +351,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Alerts Found/Fixed Ratio",
+                                                    "label": "Part of Issues Created/Closed Ratio",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -216,10 +364,10 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "github.state:closed"
+                                                        "query": "NOT github.issues.state:open"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Alerts Found/Fixed Ratio",
+                                                    "label": "Part of Issues Created/Closed Ratio",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -231,7 +379,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Alerts Found/Fixed Ratio",
+                                                    "label": "Part of Issues Created/Closed Ratio",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -240,11 +388,11 @@
                                                                 "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX1"
                                                             ],
                                                             "location": {
-                                                                "max": 40,
+                                                                "max": 49,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "count()/count(kql='github.state:closed')",
+                                                            "text": "count()/count(kql='NOT github.issues.state:open')",
                                                             "type": "function"
                                                         }
                                                     },
@@ -268,13 +416,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "583b3dcc-776c-48a8-90a8-14a1cdf69d5e",
+                                        "index": "5717ec62-4078-4491-a384-c7aac1188613",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.issues"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.issues"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -288,23 +439,45 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "5afd4bdd-7354-447e-9325-c28f7fe52341",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "None",
+                                "color": "#6092C0",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Alerts Found/Fixed Ratio [GitHub Code Scanning]",
                         "type": "lens",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -312,14 +485,13 @@
                 "gridData": {
                     "h": 7,
                     "i": "85cbbb74-4d3c-44e0-98f6-be076e31aea3",
-                    "w": 14,
-                    "x": 14,
+                    "w": 11,
+                    "x": 21,
                     "y": 0
                 },
                 "panelIndex": "85cbbb74-4d3c-44e0-98f6-be076e31aea3",
                 "title": "Issues Created/Closed Ratio [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -333,11 +505,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "acb267f3-3c77-47f8-bf79-98920679368c",
+                                "name": "f75f6ef6-859b-4da9-ad5a-5abc9e84babe",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "6bc155da-3a45-466e-be5f-7bc75225e92e",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -367,7 +545,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.state"
+                                                    "sourceField": "github.issues.state"
                                                 },
                                                 "4525c4ae-5f82-4b4d-9867-48e4aba462fd": {
                                                     "dataType": "number",
@@ -394,7 +572,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "acb267f3-3c77-47f8-bf79-98920679368c",
+                                        "index": "f75f6ef6-859b-4da9-ad5a-5abc9e84babe",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -407,8 +585,31 @@
                                             "data_stream.dataset": "github.issues"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "6bc155da-3a45-466e-be5f-7bc75225e92e",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -448,16 +649,15 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 15,
+                    "h": 14,
                     "i": "1b501988-f932-4d80-8625-d2a1c8cd7321",
-                    "w": 20,
-                    "x": 28,
+                    "w": 16,
+                    "x": 32,
                     "y": 0
                 },
                 "panelIndex": "1b501988-f932-4d80-8625-d2a1c8cd7321",
                 "title": "Open vs Closed [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -471,16 +671,22 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "c9577613-d758-45ed-be30-d9d3bfe47f77",
+                                "name": "ae91cb52-95a6-47c1-a724-2a5e2656c16e",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "c58d5e58-16ac-44f6-9fae-35770b969600",
+                                "name": "056dce8e-a9a5-4a60-b379-b3505a8b45eb",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "86c08808-9939-4279-ac33-87497b01eb7c",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -521,13 +727,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "c9577613-d758-45ed-be30-d9d3bfe47f77",
+                                        "index": "ae91cb52-95a6-47c1-a724-2a5e2656c16e",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.issues"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.issues"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -549,8 +758,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "c58d5e58-16ac-44f6-9fae-35770b969600",
-                                        "key": "github.state",
+                                        "field": "github.issues.state",
+                                        "index": "056dce8e-a9a5-4a60-b379-b3505a8b45eb",
+                                        "key": "github.issues.state",
                                         "negate": false,
                                         "params": {
                                             "query": "open"
@@ -559,69 +769,48 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "github.state": "open"
+                                            "github.issues.state": "open"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "86c08808-9939-4279-ac33-87497b01eb7c",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "Labels",
+                                "color": "#E7664C",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "palette": {
-                                    "name": "custom",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 1000
-                                            }
-                                        ],
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 1000
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 1001
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Open Alerts Count [GitHub Code Scanning]",
                         "type": "lens",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -629,14 +818,13 @@
                 "gridData": {
                     "h": 5,
                     "i": "12c18b92-9f7b-4832-b85f-aad64720ea87",
-                    "w": 14,
-                    "x": 0,
-                    "y": 5
+                    "w": 11,
+                    "x": 10,
+                    "y": 4
                 },
                 "panelIndex": "12c18b92-9f7b-4832-b85f-aad64720ea87",
                 "title": "Open Issues Count [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -650,16 +838,22 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "cd19d7a9-cf26-43bf-9c56-e5cc7b6bb638",
+                                "name": "2dc468a5-6525-4d7d-a1cf-f26d8458646f",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "f3c66899-a26d-4da8-89b4-8dfe417dc588",
+                                "name": "1f3775d0-79c8-4b84-9ef5-72cd64d9a543",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "c6a3b8f3-1e1f-4b7d-a084-f5149c2a0636",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -755,7 +949,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "cd19d7a9-cf26-43bf-9c56-e5cc7b6bb638",
+                                        "index": "2dc468a5-6525-4d7d-a1cf-f26d8458646f",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -776,7 +970,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "f3c66899-a26d-4da8-89b4-8dfe417dc588",
+                                        "index": "1f3775d0-79c8-4b84-9ef5-72cd64d9a543",
                                         "key": "github.issues.time_to_close.sec",
                                         "negate": false,
                                         "type": "exists",
@@ -787,38 +981,59 @@
                                             "field": "github.issues.time_to_close.sec"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "c6a3b8f3-1e1f-4b7d-a084-f5149c2a0636",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "e33d2853-5b3d-4be9-9312-2d8da64d9523",
-                                "colorMode": "None",
+                                "color": "#6092C0",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "textAlign": "center"
+                                "metricAccessor": "e33d2853-5b3d-4be9-9312-2d8da64d9523"
                             }
                         },
                         "title": "Mean Time to Resolution [GitHub Code Scanning]",
                         "type": "lens",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 8,
+                    "h": 7,
                     "i": "7131e4d3-c168-480d-9496-1463ceaaa97a",
-                    "w": 14,
-                    "x": 14,
+                    "w": 11,
+                    "x": 21,
                     "y": 7
                 },
                 "panelIndex": "7131e4d3-c168-480d-9496-1463ceaaa97a",
                 "title": "Mean Time To Close Issues [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -829,21 +1044,13 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "658f3ec5-1f8c-4cca-a794-7d1fedb00bd0",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "5620f741-77e6-4967-a417-ebc51bd0e047",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "df5f2c10-bc9b-4a7e-be41-d13240c21d95": {
                                             "columnOrder": [
@@ -876,7 +1083,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Resolved/Dismissed Alerts",
+                                                    "label": "Part of Closed Issues",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -885,7 +1092,8 @@
                                                     "sourceField": "___records___"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -898,13 +1106,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "658f3ec5-1f8c-4cca-a794-7d1fedb00bd0",
+                                        "index": "e93c03d1-8cfa-4cf5-9d3c-4a3af8bc7c4d",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.issues"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.issues"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -926,72 +1137,59 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "5620f741-77e6-4967-a417-ebc51bd0e047",
-                                        "key": "github.state",
-                                        "negate": false,
-                                        "params": [
-                                            "closed"
-                                        ],
-                                        "type": "phrases"
+                                        "field": "github.issues.state",
+                                        "index": "741f660e-e5f4-48c6-904c-811cd8bb3a2b",
+                                        "key": "github.issues.state",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "open"
+                                        },
+                                        "type": "phrase"
                                     },
                                     "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "closed"
-                                                    }
-                                                }
-                                            ]
+                                        "match_phrase": {
+                                            "github.issues.state": "open"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "270092c7-1512-492b-9ef1-02a443e98ba2",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "Labels",
+                                "color": "#54B399",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "palette": {
-                                    "name": "positive",
-                                    "params": {
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "positive",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#bbdad3",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#77b6a8",
-                                                "stop": 8
-                                            },
-                                            {
-                                                "color": "#209280",
-                                                "stop": 16
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Resolved/Dismissed Alerts Count [GitHub Code Scanning]",
                         "type": "lens",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -999,14 +1197,13 @@
                 "gridData": {
                     "h": 5,
                     "i": "c3e8ea64-b6f9-470c-9004-02f8909672eb",
-                    "w": 14,
-                    "x": 0,
-                    "y": 10
+                    "w": 11,
+                    "x": 10,
+                    "y": 9
                 },
                 "panelIndex": "c3e8ea64-b6f9-470c-9004-02f8909672eb",
                 "title": "Closed Issues Count [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1020,11 +1217,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "d5e367bd-d27a-4e61-9878-93e20c4489bf",
+                                "name": "6bdbbca5-6ff6-4737-b807-cb69ea80f9e7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "53c48ff4-a8b1-4b7e-8674-c0279a6e8617",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1082,7 +1285,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "d5e367bd-d27a-4e61-9878-93e20c4489bf",
+                                        "index": "6bdbbca5-6ff6-4737-b807-cb69ea80f9e7",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1095,8 +1298,31 @@
                                             "data_stream.dataset": "github.issues"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "53c48ff4-a8b1-4b7e-8674-c0279a6e8617",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1156,16 +1382,15 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 11,
+                    "h": 15,
                     "i": "4e77167a-4642-4cbb-8430-2197e2f31666",
-                    "w": 19,
-                    "x": 0,
-                    "y": 15
+                    "w": 11,
+                    "x": 10,
+                    "y": 14
                 },
                 "panelIndex": "4e77167a-4642-4cbb-8430-2197e2f31666",
                 "title": "Top Issues by labels [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1179,11 +1404,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "d1569ab7-96b8-4e3d-b843-ee21f8f657c7",
+                                "name": "1eae3343-5c3e-420d-8da8-5b8521980495",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b6d270fc-062a-4630-8a25-6f147493ece2",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1239,7 +1470,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "d1569ab7-96b8-4e3d-b843-ee21f8f657c7",
+                                        "index": "1eae3343-5c3e-420d-8da8-5b8521980495",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1252,8 +1483,31 @@
                                             "data_stream.dataset": "github.issues"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "b6d270fc-062a-4630-8a25-6f147493ece2",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1290,16 +1544,15 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 11,
+                    "h": 15,
                     "i": "5135da2a-0093-4b71-a35a-c2b8877d22dd",
-                    "w": 14,
-                    "x": 19,
-                    "y": 15
+                    "w": 11,
+                    "x": 21,
+                    "y": 14
                 },
                 "panelIndex": "5135da2a-0093-4b71-a35a-c2b8877d22dd",
                 "title": "Top Issues % by labels [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1313,11 +1566,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "2b9bd05e-fb45-43ed-9698-8698c33e3c34",
+                                "name": "199c4e2f-84cc-4d24-ac94-b3446c0a05a2",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b04f6df8-56de-41ab-9633-e3b26856b88f",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1375,7 +1634,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "2b9bd05e-fb45-43ed-9698-8698c33e3c34",
+                                        "index": "199c4e2f-84cc-4d24-ac94-b3446c0a05a2",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1388,8 +1647,31 @@
                                             "data_stream.dataset": "github.issues"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "b04f6df8-56de-41ab-9633-e3b26856b88f",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1415,16 +1697,15 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 11,
+                    "h": 15,
                     "i": "342298f7-3cf9-4d79-9654-901a769ac7c7",
-                    "w": 15,
-                    "x": 33,
-                    "y": 15
+                    "w": 16,
+                    "x": 32,
+                    "y": 14
                 },
                 "panelIndex": "342298f7-3cf9-4d79-9654-901a769ac7c7",
                 "title": "Issues Count by labels [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1438,334 +1719,22 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "6a68e03e-88f2-4710-b493-4364dd0bd102",
+                                "name": "2855cc31-487e-4aa8-aa2d-cd221deb2867",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5eedc8c5-6bfc-4cc7-a807-38185c7d73ae",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3c006c9f-a83c-41fb-b83d-ed0a56320a23",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "631035e6-8678-47ee-9a8c-c6a87f6c1757": {
-                                            "columnOrder": [
-                                                "6adc9b2a-664a-4740-8d59-d6677dd36e24",
-                                                "e1d8072b-7268-444a-864e-ef1117b17b65"
-                                            ],
-                                            "columns": {
-                                                "6adc9b2a-664a-4740-8d59-d6677dd36e24": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "User",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "e1d8072b-7268-444a-864e-ef1117b17b65",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "github.issues.user.login"
-                                                },
-                                                "e1d8072b-7268-444a-864e-ef1117b17b65": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Issues count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "6a68e03e-88f2-4710-b493-4364dd0bd102",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "github.issues"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "github.issues"
-                                        }
-                                    }
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "e1d8072b-7268-444a-864e-ef1117b17b65"
-                                        ],
-                                        "layerId": "631035e6-8678-47ee-9a8c-c6a87f6c1757",
-                                        "layerType": "data",
-                                        "seriesType": "bar_horizontal",
-                                        "xAccessor": "6adc9b2a-664a-4740-8d59-d6677dd36e24",
-                                        "yConfig": [
-                                            {
-                                                "color": "#6dc9cd",
-                                                "forAccessor": "e1d8072b-7268-444a-864e-ef1117b17b65"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_horizontal",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Tool Contribution Count [GitHub Code Scanning]",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 11,
-                    "i": "ca116a6a-6146-40d8-b9d3-83c775d22456",
-                    "w": 17,
-                    "x": 0,
-                    "y": 26
-                },
-                "panelIndex": "ca116a6a-6146-40d8-b9d3-83c775d22456",
-                "title": "Top Users Creating Issues [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "ecc24cb3-c482-43c4-a46d-3932fa8da9a7",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "631035e6-8678-47ee-9a8c-c6a87f6c1757": {
-                                            "columnOrder": [
-                                                "f913a108-01c0-4764-9743-61a69b3ded42",
-                                                "e1d8072b-7268-444a-864e-ef1117b17b65"
-                                            ],
-                                            "columns": {
-                                                "e1d8072b-7268-444a-864e-ef1117b17b65": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Issues count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "f913a108-01c0-4764-9743-61a69b3ded42": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "User",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "e1d8072b-7268-444a-864e-ef1117b17b65",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "github.issues.assignees.login"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "ecc24cb3-c482-43c4-a46d-3932fa8da9a7",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "github.issues"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "github.issues"
-                                        }
-                                    }
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "e1d8072b-7268-444a-864e-ef1117b17b65"
-                                        ],
-                                        "layerId": "631035e6-8678-47ee-9a8c-c6a87f6c1757",
-                                        "layerType": "data",
-                                        "seriesType": "bar_horizontal",
-                                        "xAccessor": "f913a108-01c0-4764-9743-61a69b3ded42",
-                                        "yConfig": [
-                                            {
-                                                "color": "#6dc9cd",
-                                                "forAccessor": "e1d8072b-7268-444a-864e-ef1117b17b65"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_horizontal",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Tool Contribution Count [GitHub Code Scanning]",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 11,
-                    "i": "4f987036-b757-47ce-967c-c417b7c95f3a",
-                    "w": 17,
-                    "x": 17,
-                    "y": 26
-                },
-                "panelIndex": "4f987036-b757-47ce-967c-c417b7c95f3a",
-                "title": "Top users with assigned issues [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "11d97294-f73e-42d5-9dbb-ae041743ba96",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "22540369-91b3-442d-be46-f9813f4fd273",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1823,7 +1792,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "11d97294-f73e-42d5-9dbb-ae041743ba96",
+                                        "index": "2855cc31-487e-4aa8-aa2d-cd221deb2867",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1844,7 +1813,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "22540369-91b3-442d-be46-f9813f4fd273",
+                                        "index": "5eedc8c5-6bfc-4cc7-a807-38185c7d73ae",
                                         "key": "github.issues.closed_at",
                                         "negate": false,
                                         "type": "exists",
@@ -1855,8 +1824,31 @@
                                             "field": "github.issues.closed_at"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "3c006c9f-a83c-41fb-b83d-ed0a56320a23",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1920,12 +1912,385 @@
                     "i": "0cc3c355-192b-4fc8-be0e-0a899c6ffcff",
                     "w": 14,
                     "x": 34,
-                    "y": 26
+                    "y": 29
                 },
                 "panelIndex": "0cc3c355-192b-4fc8-be0e-0a899c6ffcff",
                 "title": "Top users closing the issues [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "571230b6-3a65-49db-a726-372d30b9e6de",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "82a0cc72-9aa5-4c9b-81fc-d6756d3bea0c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "631035e6-8678-47ee-9a8c-c6a87f6c1757": {
+                                            "columnOrder": [
+                                                "6adc9b2a-664a-4740-8d59-d6677dd36e24",
+                                                "e1d8072b-7268-444a-864e-ef1117b17b65"
+                                            ],
+                                            "columns": {
+                                                "6adc9b2a-664a-4740-8d59-d6677dd36e24": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "User",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "e1d8072b-7268-444a-864e-ef1117b17b65",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "github.issues.user.login"
+                                                },
+                                                "e1d8072b-7268-444a-864e-ef1117b17b65": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Issues count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "571230b6-3a65-49db-a726-372d30b9e6de",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "github.issues"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "github.issues"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "82a0cc72-9aa5-4c9b-81fc-d6756d3bea0c",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e1d8072b-7268-444a-864e-ef1117b17b65"
+                                        ],
+                                        "layerId": "631035e6-8678-47ee-9a8c-c6a87f6c1757",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "6adc9b2a-664a-4740-8d59-d6677dd36e24",
+                                        "yConfig": [
+                                            {
+                                                "color": "#6dc9cd",
+                                                "forAccessor": "e1d8072b-7268-444a-864e-ef1117b17b65"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Tool Contribution Count [GitHub Code Scanning]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "ca116a6a-6146-40d8-b9d3-83c775d22456",
+                    "w": 17,
+                    "x": 0,
+                    "y": 29
+                },
+                "panelIndex": "ca116a6a-6146-40d8-b9d3-83c775d22456",
+                "title": "Top Users Creating Issues [GitHub Issues]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "7e29695b-b813-4541-afc6-c946f5cbeee4",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ae179b13-4452-4e11-916c-45953b19e730",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "631035e6-8678-47ee-9a8c-c6a87f6c1757": {
+                                            "columnOrder": [
+                                                "f913a108-01c0-4764-9743-61a69b3ded42",
+                                                "e1d8072b-7268-444a-864e-ef1117b17b65"
+                                            ],
+                                            "columns": {
+                                                "e1d8072b-7268-444a-864e-ef1117b17b65": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Issues count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "f913a108-01c0-4764-9743-61a69b3ded42": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "User",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "e1d8072b-7268-444a-864e-ef1117b17b65",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "github.issues.assignees.login"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "7e29695b-b813-4541-afc6-c946f5cbeee4",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "github.issues"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "github.issues"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "ae179b13-4452-4e11-916c-45953b19e730",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e1d8072b-7268-444a-864e-ef1117b17b65"
+                                        ],
+                                        "layerId": "631035e6-8678-47ee-9a8c-c6a87f6c1757",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "f913a108-01c0-4764-9743-61a69b3ded42",
+                                        "yConfig": [
+                                            {
+                                                "color": "#6dc9cd",
+                                                "forAccessor": "e1d8072b-7268-444a-864e-ef1117b17b65"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Tool Contribution Count [GitHub Code Scanning]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "4f987036-b757-47ce-967c-c417b7c95f3a",
+                    "w": 17,
+                    "x": 17,
+                    "y": 29
+                },
+                "panelIndex": "4f987036-b757-47ce-967c-c417b7c95f3a",
+                "title": "Top users with assigned issues [GitHub Issues]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1939,11 +2304,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "2f34a072-a5f1-4b91-afdc-77fa1ddf168a",
+                                "name": "97720c2d-2912-4fb7-92ca-c9f3c67494b4",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "a599ad3b-c743-4c96-a2c7-412241c428cd",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1991,7 +2362,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "2f34a072-a5f1-4b91-afdc-77fa1ddf168a",
+                                        "index": "97720c2d-2912-4fb7-92ca-c9f3c67494b4",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2004,8 +2375,31 @@
                                             "data_stream.dataset": "github.issues"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "a599ad3b-c743-4c96-a2c7-412241c428cd",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2065,24 +2459,21 @@
                     "i": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32",
                     "w": 48,
                     "x": 0,
-                    "y": 37
+                    "y": 40
                 },
                 "panelIndex": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32",
                 "title": "Events Timeline [GitHub Issues]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[GitHub] Issues",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-07-10T01:37:27.152Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-10-28T12:13:56.773Z",
     "id": "github-f0104680-ae18-11ed-83fa-df5d96a45724",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -2096,7 +2487,12 @@
         },
         {
             "id": "logs-*",
-            "name": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac:5c48f008-d4c0-4386-a853-a83f49efe49f",
+            "name": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac:2249b84f-29d6-47a7-aa24-c87c6d45bfa5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "dc15f49d-29b1-4e2e-8787-51ffbab5b4ac:43eab0b2-e0f5-463e-8c7b-44f4afbb1a72",
             "type": "index-pattern"
         },
         {
@@ -2106,7 +2502,12 @@
         },
         {
             "id": "logs-*",
-            "name": "85cbbb74-4d3c-44e0-98f6-be076e31aea3:583b3dcc-776c-48a8-90a8-14a1cdf69d5e",
+            "name": "85cbbb74-4d3c-44e0-98f6-be076e31aea3:5717ec62-4078-4491-a384-c7aac1188613",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "85cbbb74-4d3c-44e0-98f6-be076e31aea3:5afd4bdd-7354-447e-9325-c28f7fe52341",
             "type": "index-pattern"
         },
         {
@@ -2116,7 +2517,12 @@
         },
         {
             "id": "logs-*",
-            "name": "1b501988-f932-4d80-8625-d2a1c8cd7321:acb267f3-3c77-47f8-bf79-98920679368c",
+            "name": "1b501988-f932-4d80-8625-d2a1c8cd7321:f75f6ef6-859b-4da9-ad5a-5abc9e84babe",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1b501988-f932-4d80-8625-d2a1c8cd7321:6bc155da-3a45-466e-be5f-7bc75225e92e",
             "type": "index-pattern"
         },
         {
@@ -2126,12 +2532,17 @@
         },
         {
             "id": "logs-*",
-            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:c9577613-d758-45ed-be30-d9d3bfe47f77",
+            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:ae91cb52-95a6-47c1-a724-2a5e2656c16e",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:c58d5e58-16ac-44f6-9fae-35770b969600",
+            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:056dce8e-a9a5-4a60-b379-b3505a8b45eb",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:86c08808-9939-4279-ac33-87497b01eb7c",
             "type": "index-pattern"
         },
         {
@@ -2141,12 +2552,17 @@
         },
         {
             "id": "logs-*",
-            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:cd19d7a9-cf26-43bf-9c56-e5cc7b6bb638",
+            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:2dc468a5-6525-4d7d-a1cf-f26d8458646f",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:f3c66899-a26d-4da8-89b4-8dfe417dc588",
+            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:1f3775d0-79c8-4b84-9ef5-72cd64d9a543",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:c6a3b8f3-1e1f-4b7d-a084-f5149c2a0636",
             "type": "index-pattern"
         },
         {
@@ -2156,22 +2572,17 @@
         },
         {
             "id": "logs-*",
-            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:658f3ec5-1f8c-4cca-a794-7d1fedb00bd0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:5620f741-77e6-4967-a417-ebc51bd0e047",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "4e77167a-4642-4cbb-8430-2197e2f31666:indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "4e77167a-4642-4cbb-8430-2197e2f31666:d5e367bd-d27a-4e61-9878-93e20c4489bf",
+            "name": "4e77167a-4642-4cbb-8430-2197e2f31666:6bdbbca5-6ff6-4737-b807-cb69ea80f9e7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4e77167a-4642-4cbb-8430-2197e2f31666:53c48ff4-a8b1-4b7e-8674-c0279a6e8617",
             "type": "index-pattern"
         },
         {
@@ -2181,7 +2592,12 @@
         },
         {
             "id": "logs-*",
-            "name": "5135da2a-0093-4b71-a35a-c2b8877d22dd:d1569ab7-96b8-4e3d-b843-ee21f8f657c7",
+            "name": "5135da2a-0093-4b71-a35a-c2b8877d22dd:1eae3343-5c3e-420d-8da8-5b8521980495",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5135da2a-0093-4b71-a35a-c2b8877d22dd:b6d270fc-062a-4630-8a25-6f147493ece2",
             "type": "index-pattern"
         },
         {
@@ -2191,27 +2607,12 @@
         },
         {
             "id": "logs-*",
-            "name": "342298f7-3cf9-4d79-9654-901a769ac7c7:2b9bd05e-fb45-43ed-9698-8698c33e3c34",
+            "name": "342298f7-3cf9-4d79-9654-901a769ac7c7:199c4e2f-84cc-4d24-ac94-b3446c0a05a2",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "ca116a6a-6146-40d8-b9d3-83c775d22456:indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "ca116a6a-6146-40d8-b9d3-83c775d22456:6a68e03e-88f2-4710-b493-4364dd0bd102",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "4f987036-b757-47ce-967c-c417b7c95f3a:indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "4f987036-b757-47ce-967c-c417b7c95f3a:ecc24cb3-c482-43c4-a46d-3932fa8da9a7",
+            "name": "342298f7-3cf9-4d79-9654-901a769ac7c7:b04f6df8-56de-41ab-9633-e3b26856b88f",
             "type": "index-pattern"
         },
         {
@@ -2221,12 +2622,47 @@
         },
         {
             "id": "logs-*",
-            "name": "0cc3c355-192b-4fc8-be0e-0a899c6ffcff:11d97294-f73e-42d5-9dbb-ae041743ba96",
+            "name": "0cc3c355-192b-4fc8-be0e-0a899c6ffcff:2855cc31-487e-4aa8-aa2d-cd221deb2867",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "0cc3c355-192b-4fc8-be0e-0a899c6ffcff:22540369-91b3-442d-be46-f9813f4fd273",
+            "name": "0cc3c355-192b-4fc8-be0e-0a899c6ffcff:5eedc8c5-6bfc-4cc7-a807-38185c7d73ae",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0cc3c355-192b-4fc8-be0e-0a899c6ffcff:3c006c9f-a83c-41fb-b83d-ed0a56320a23",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ca116a6a-6146-40d8-b9d3-83c775d22456:indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ca116a6a-6146-40d8-b9d3-83c775d22456:571230b6-3a65-49db-a726-372d30b9e6de",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ca116a6a-6146-40d8-b9d3-83c775d22456:82a0cc72-9aa5-4c9b-81fc-d6756d3bea0c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4f987036-b757-47ce-967c-c417b7c95f3a:indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4f987036-b757-47ce-967c-c417b7c95f3a:7e29695b-b813-4541-afc6-c946f5cbeee4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4f987036-b757-47ce-967c-c417b7c95f3a:ae179b13-4452-4e11-916c-45953b19e730",
             "type": "index-pattern"
         },
         {
@@ -2236,7 +2672,17 @@
         },
         {
             "id": "logs-*",
-            "name": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32:2f34a072-a5f1-4b91-afdc-77fa1ddf168a",
+            "name": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32:97720c2d-2912-4fb7-92ca-c9f3c67494b4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "234754b7-9ffa-44b0-b7f7-7ed6ec6a6d32:a599ad3b-c743-4c96-a2c7-412241c428cd",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_8fb8d319-c120-4bcb-849d-6d45f3f5406a:optionsListDataView",
             "type": "index-pattern"
         },
         {
@@ -2250,10 +2696,16 @@
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "controlGroup_8fb8d319-c120-4bcb-849d-6d45f3f5406a:optionsListDataView",
-            "type": "index-pattern"
+            "id": "github-security-solution-default",
+            "name": "tag-ref-github-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "github-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

@@ -1,6 +1,6 @@
 # Google Workspace Integration
 
-The Google Workspace integration collects and parses data from the different [Google Workspace audit reports APIs](https://developers.google.com/admin-sdk/reports).
+The Google Workspace integration collects and parses data from the different [Google Workspace audit reports APIs](https://developers.google.com/admin-sdk/reports/reference/rest).
 
 These blogs from our Security Labs will help you know more about the Google Workspace and how to it setup:
 

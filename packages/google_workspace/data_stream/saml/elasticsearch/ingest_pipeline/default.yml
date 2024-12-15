@@ -124,12 +124,12 @@ processors:
         ctx.source.user.domain = splitmail[1];
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.user
-      value: "{{source.user.name}}"
+      value: "{{{source.user.name}}}"
       if: ctx?.source?.user?.name != null
       allow_duplicates: false
   - set:
@@ -183,11 +183,6 @@ processors:
       ignore_missing: true
   - remove:
       field: json
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:

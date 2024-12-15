@@ -29,7 +29,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "'{{ _ingest.on_failure_processor_tag }}' rename failed with message {{ _ingest.on_failure_message }}"
+            value: "'{{{ _ingest.on_failure_processor_tag }}}' rename failed with message {{{ _ingest.on_failure_message }}}"
   - date:
       tag: date-timestamp-utc
       description: Parse timestamp from event.
@@ -2145,7 +2145,7 @@ processors:
   ## URL fields.
   - set:
       field: url.path
-      value: "/{{url.path}}"
+      value: "/{{{url.path}}}"
       if: ctx.url?.path != null && !ctx.url.path.startsWith("/")
   - registered_domain:
       field: server.address
@@ -2587,5 +2587,9 @@ on_failure:
       field: event.kind
       value: pipeline_error
   - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
       field: error.message
-      value: "Processor '{{ _ingest.on_failure_processor_type }}' with tag '{{ _ingest.on_failure_processor_tag }}' failed with message {{ _ingest.on_failure_message }}"
+      value: "Processor '{{{ _ingest.on_failure_processor_type }}}' with tag '{{{ _ingest.on_failure_processor_tag }}}' failed with message {{{ _ingest.on_failure_message }}}"

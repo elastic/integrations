@@ -162,7 +162,7 @@ processors:
       if: ctx.client?.ip != null
   - append:
       field: related.ip
-      value: '{{client.ip}}'
+      value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
   - append:
@@ -200,6 +200,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

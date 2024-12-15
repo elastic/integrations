@@ -71,12 +71,12 @@ processors:
       if: 'ctx.json?.details != null'
   - append:
       field: related.user
-      value: '{{user.id}}'
+      value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
       field: related.user
-      value: '{{user.full_name}}'
+      value: '{{{user.full_name}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - fingerprint:
@@ -1109,11 +1109,6 @@ processors:
       field:
         - json
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
@@ -1143,6 +1138,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

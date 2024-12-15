@@ -744,17 +744,17 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.user
-      value: "{{source.user.name}}"
+      value: "{{{source.user.name}}}"
       if: ctx?.source?.user?.name != null
       allow_duplicates: false
   - append:
       field: related.user
-      value: "{{user.target.name}}"
+      value: "{{{user.target.name}}}"
       if: ctx?.user?.target?.name != null
       allow_duplicates: false
   - geoip:
@@ -801,11 +801,24 @@ processors:
         - google_workspace.admin.END_DATE_TIME
         - google_workspace.admin.WHITELISTED_GROUPS
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
 on_failure:
   - set:
       field: event.kind

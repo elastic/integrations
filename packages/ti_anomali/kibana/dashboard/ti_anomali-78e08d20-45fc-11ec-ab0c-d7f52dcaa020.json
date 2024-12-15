@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "Dashboard providing statistics about other types of indicators from the Anomali integration like email and IP",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -12,12 +11,13 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": [
-                                "ti_anomali.limo",
-                                "ti_anomali.threatstream"
+                                "ti_anomali.threatstream",
+                                "ti_anomali.intelligence"
                             ],
                             "type": "phrases"
                         },
@@ -27,12 +27,12 @@
                                 "should": [
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.limo"
+                                            "data_stream.dataset": "ti_anomali.threatstream"
                                         }
                                     },
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.threatstream"
+                                            "data_stream.dataset": "ti_anomali.intelligence"
                                         }
                                     }
                                 ]
@@ -72,6 +72,28 @@
                                 ]
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "labels.is_ioc_transform_source",
+                            "negate": true,
+                            "params": {
+                                "query": "true"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_ioc_transform_source": "true"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -83,6 +105,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -110,8 +134,7 @@
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    },
-                    "type": "visualization"
+                    }
                 },
                 "gridData": {
                     "h": 43,
@@ -121,8 +144,7 @@
                     "y": 0
                 },
                 "panelIndex": "7c3b21d7-cfe8-41c2-89c8-bdb5a78fe47a",
-                "type": "visualization",
-                "version": "8.7.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -182,8 +204,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 7,
@@ -194,8 +215,7 @@
                 },
                 "panelIndex": "4cd050c7-caea-4c60-a581-955f0f5f9c49",
                 "title": "Unique IPs [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -255,8 +275,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 7,
@@ -267,8 +286,7 @@
                 },
                 "panelIndex": "f3d04a3a-0bfa-4460-af54-08fea317756c",
                 "title": "Unique Emails [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -328,8 +346,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 7,
@@ -340,8 +357,7 @@
                 },
                 "panelIndex": "054ec96d-8e77-425c-9d79-adbfd3f7e28b",
                 "title": "Unique Domains [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -432,8 +448,7 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 28,
@@ -444,8 +459,7 @@
                 },
                 "panelIndex": "ef8f1c25-a119-45e8-84d1-0968bb60a9b6",
                 "title": "TLP Categorization [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -533,8 +547,7 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 21,
@@ -545,8 +558,7 @@
                 },
                 "panelIndex": "80ea5d9f-04de-4c10-a120-32318c3088c1",
                 "title": "Most Popular Domains [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -634,8 +646,7 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -646,8 +657,7 @@
                 },
                 "panelIndex": "d6840366-ab4f-4029-8e25-c887353b566f",
                 "title": "Most Popular IPs [Logs Anomali",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -735,8 +745,7 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -747,29 +756,31 @@
                 },
                 "panelIndex": "6811183d-2ca1-4f18-8dc7-225ff757f9bf",
                 "title": "Unique Email Addresses [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Anomali] Other Indicators",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-04-20T13:27:57.912Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-10-02T18:35:13.086Z",
     "id": "ti_anomali-78e08d20-45fc-11ec-ab0c-d7f52dcaa020",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
-            "id": "metrics-*",
+            "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         },
         {
@@ -841,22 +852,8 @@
             "id": "logs-*",
             "name": "6811183d-2ca1-4f18-8dc7-225ff757f9bf:indexpattern-datasource-layer-75accf45-7e81-45d7-b901-f488f7634041",
             "type": "index-pattern"
-        },
-        {
-            "id": "ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
-            "name": "tag-ref-ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
-            "type": "tag"
-        },
-        {
-            "id": "ti_anomali-fleet-managed-default",
-            "name": "tag-ref-fleet-managed-default",
-            "type": "tag"
-        },
-        {
-            "id": "ti_anomali-fleet-pkg-ti_anomali-default",
-            "name": "tag-ref-fleet-pkg-ti_anomali-default",
-            "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

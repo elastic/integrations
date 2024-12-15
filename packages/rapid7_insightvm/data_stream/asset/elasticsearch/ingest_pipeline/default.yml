@@ -698,10 +698,6 @@ processors:
           field:
             - _ingest._value.vulnerability_id
           ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_missing: true
   - script:
       lang: painless
       description: Drops null/empty values recursively.
@@ -730,3 +726,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,52 @@
+type: journald
+
+# Filter by syslog facilities, replicating the traditional log files
+# /var/log/syslog*, /var/log/messages*
+facilities:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 11
+  - 12
+  - 15
+
+{{#if condition }}
+condition: {{condition}}
+{{/if}}
+
+{{#if paths}}
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+{{/if}}
+
+{{#if include_matches}}
+include_matches:
+{{#each include_matches as |include_match i|}}
+  - '{{include_match}}'
+{{/each}}
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

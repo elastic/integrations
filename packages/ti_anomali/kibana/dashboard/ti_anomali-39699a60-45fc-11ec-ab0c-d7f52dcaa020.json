@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "Dashboard providing statistics about URL type indicators from the Anomali integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -16,8 +15,8 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": [
-                                "ti_anomali.limo",
-                                "ti_anomali.threatstream"
+                                "ti_anomali.threatstream",
+                                "ti_anomali.intelligence"
                             ],
                             "type": "phrases"
                         },
@@ -27,12 +26,12 @@
                                 "should": [
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.limo"
+                                            "data_stream.dataset": "ti_anomali.threatstream"
                                         }
                                     },
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.threatstream"
+                                            "data_stream.dataset": "ti_anomali.intelligence"
                                         }
                                     }
                                 ]
@@ -59,6 +58,28 @@
                                 "threat.indicator.type": "url"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "labels.is_ioc_transform_source",
+                            "negate": true,
+                            "params": {
+                                "query": "true"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_ioc_transform_source": "true"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -70,6 +91,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -97,8 +120,7 @@
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    },
-                    "type": "visualization"
+                    }
                 },
                 "gridData": {
                     "h": 37,
@@ -108,8 +130,7 @@
                     "y": 0
                 },
                 "panelIndex": "b7e43e7b-9f77-4c99-a68c-a2e0588a1746",
-                "type": "visualization",
-                "version": "8.7.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -169,8 +190,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -181,8 +201,7 @@
                 },
                 "panelIndex": "88ee89f5-502e-44aa-93ef-fc1af8684fe0",
                 "title": "Unique Domains [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -246,8 +265,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -258,8 +276,7 @@
                 },
                 "panelIndex": "e928abaa-186a-4917-bc20-a749527acb18",
                 "title": "URLs Active [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -323,8 +340,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -335,8 +351,7 @@
                 },
                 "panelIndex": "a8d31131-9e82-46c9-99e4-c9f9c050ee9c",
                 "title": "URLs Inactive [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -396,8 +411,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -408,8 +422,7 @@
                 },
                 "panelIndex": "49b4bbf6-4445-495e-aa36-35ff50877eae",
                 "title": "Provider Count [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -499,8 +512,7 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 23,
@@ -511,8 +523,7 @@
                 },
                 "panelIndex": "ba4f9967-a4e1-4f85-9fea-0a383cc9ac4f",
                 "title": "Top Countries [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -600,8 +611,7 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 29,
@@ -612,8 +622,7 @@
                 },
                 "panelIndex": "a3f75519-9e37-4548-b60c-e340d1c5f8f7",
                 "title": "Most Popular Domains [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -703,8 +712,7 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 14,
@@ -715,20 +723,17 @@
                 },
                 "panelIndex": "92c66617-cd3f-4a06-8534-52fe3c968559",
                 "title": "URL Schemes [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Anomali] URL",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-04-20T13:27:57.912Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-10-02T18:35:41.842Z",
     "id": "ti_anomali-39699a60-45fc-11ec-ab0c-d7f52dcaa020",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -738,6 +743,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         },
         {
@@ -809,22 +819,8 @@
             "id": "logs-*",
             "name": "92c66617-cd3f-4a06-8534-52fe3c968559:indexpattern-datasource-layer-4bfa54f0-5fae-41ff-a5e6-d10e2f9ed564",
             "type": "index-pattern"
-        },
-        {
-            "id": "ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
-            "name": "tag-ref-ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
-            "type": "tag"
-        },
-        {
-            "id": "ti_anomali-fleet-managed-default",
-            "name": "tag-ref-fleet-managed-default",
-            "type": "tag"
-        },
-        {
-            "id": "ti_anomali-fleet-pkg-ti_anomali-default",
-            "name": "tag-ref-fleet-pkg-ti_anomali-default",
-            "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

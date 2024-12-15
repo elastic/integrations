@@ -14,10 +14,11 @@ expensive in terms of performance and costs and should be preferably used only
 when no SQS notification can be attached to the S3 buckets. This input 
 integration also supports S3 notification from SNS to SQS.
 
-SQS notification method is enabled setting `queue_url` configuration value. S3 
-bucket list polling method is enabled setting `bucket_arn` configuration value
+You can enable SQS notification method by setting `queue_url` configuration value. You can enable S3 bucket list polling method by setting `bucket_arn` configuration value
 and `number_of_workers` value. Both `queue_url` and `bucket_arn` cannot be set 
 at the same time and at least one of the two value must be set.
+
+NOTE: To access SQS and S3, these [specific AWS permissions](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2) are required.
 
 ## Collecting logs from CloudWatch
 
@@ -26,3 +27,5 @@ all log streams in a specific log group. `filterLogEvents` AWS API is used to
 list log events from the specified log group. Amazon CloudWatch Logs can be used
 to store log files from Amazon Elastic Compute Cloud(EC2), AWS CloudTrail, 
 Route53, and other sources.
+
+NOTE: To access aws-cloudwatch, these [specific AWS permissions](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-cloudwatch.html#_aws_permissions) are required.

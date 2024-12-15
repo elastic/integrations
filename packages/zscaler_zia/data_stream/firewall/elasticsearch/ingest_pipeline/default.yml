@@ -164,12 +164,22 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: destination.ip
-      tag: append_zscaler_zia_firewall_client_destination_ip_into_destination_ip
-      value: '{{{zscaler_zia.firewall.client.destination.ip}}}'
+      tag: set_destination_ip_from_zscaler_zia_firewall_client_destination_ip
+      copy_from: zscaler_zia.firewall.client.destination.ip
+      ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      tag: append_related_ip_from_destination_ip
+      if: ctx.destination?.ip != null
       allow_duplicates: false
-      if: ctx.zscaler_zia?.firewall?.client?.destination?.ip != null
   - convert:
       field: json.cdport
       tag: convert_cdport_to_long
@@ -208,12 +218,22 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: source.ip
-      tag: append_zscaler_zia_firewall_client_source_ip_into_source_ip
-      value: '{{{zscaler_zia.firewall.client.source.ip}}}'
+      tag: set_source_ip_from_zscaler_zia_firewall_client_source_ip
+      copy_from: zscaler_zia.firewall.client.source.ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      tag: append_related_ip_from_source_ip
+      if: ctx.source?.ip != null
       allow_duplicates: false
-      if: ctx.zscaler_zia?.firewall?.client?.source?.ip != null
   - convert:
       field: json.csport
       tag: convert_csport_to_long
@@ -283,6 +303,7 @@ processors:
       field: destination.geo.country_iso_code
       tag: set_destination_geo_country_iso_code_from_firewall_destination_country
       copy_from: zscaler_zia.firewall.destination.country
+      if: ctx.destination?.geo?.country_iso_code == null
       ignore_empty_value: true
   - rename:
       field: json.deviceappversion
@@ -763,21 +784,11 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
-      field: destination.ip
-      tag: append_zscaler_zia_firewall_server_destination_ip_into_destination_ip
+      field: related.ip
       value: '{{{zscaler_zia.firewall.server.destination.ip}}}'
-      allow_duplicates: false
+      tag: append_related_ip_from_zscaler_zia_firewall_server_destination_ip
       if: ctx.zscaler_zia?.firewall?.server?.destination?.ip != null
-  - foreach:
-      field: destination.ip
-      tag: foreach_destination_ip_to_append_related_ip_from_destination_ip
-      if: ctx.destination?.ip instanceof List
-      processor:
-        append:
-          field: related.ip
-          tag: append_related_ip_from_destination_ip
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
+      allow_duplicates: false
   - convert:
       field: json.sdport
       tag: convert_sdport_to_long
@@ -821,21 +832,11 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
-      field: source.ip
-      tag: append_zscaler_zia_firewall_server_source_ip_into_source_ip
+      field: related.ip
       value: '{{{zscaler_zia.firewall.server.source.ip}}}'
-      allow_duplicates: false
+      tag: append_related_ip_from_zscaler_zia_firewall_server_source_ip
       if: ctx.zscaler_zia?.firewall?.server?.source?.ip != null
-  - foreach:
-      field: source.ip
-      tag: foreach_source_ip_to_append_related_ip_from_source_ip
-      if: ctx.source?.ip instanceof List
-      processor:
-        append:
-          field: related.ip
-          tag: append_related_ip_from_source_ip
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
+      allow_duplicates: false
   - convert:
       field: json.ssport
       tag: convert_ssport_to_long
@@ -887,6 +888,7 @@ processors:
       field: source.geo.country_name
       tag: set_source_geo_country_name_from_firewall_source_ip_country
       copy_from: zscaler_zia.firewall.source_ip_country
+      if: ctx.source?.geo?.country_name == null
       ignore_empty_value: true
   - rename:
       field: json.stateful
@@ -969,6 +971,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.nat.ip
+      tag: set_source_nat_ip_from_zscaler_zia_firewall_tunnel_ip
+      copy_from: zscaler_zia.firewall.tunnel.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       value: '{{{zscaler_zia.firewall.tunnel.ip}}}'
@@ -1105,3 +1112,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

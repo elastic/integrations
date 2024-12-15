@@ -3,8 +3,65 @@
         "controlGroupInput": {
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
-            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"2132f9ab-9cce-423a-beed-e02e6d4d5ed9\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.state\",\"title\":\"State\",\"id\":\"2132f9ab-9cce-423a-beed-e02e6d4d5ed9\",\"enhancements\":{},\"selectedOptions\":[]}},\"2f1b6c0b-96fc-479a-b7ef-145c84df585e\":{\"order\":3,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.severity\",\"title\":\"Severity\",\"id\":\"2f1b6c0b-96fc-479a-b7ef-145c84df585e\",\"enhancements\":{},\"selectedOptions\":[]}},\"91415c25-696a-4928-92e3-2c578e14c7a3\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.repository.owner.login\",\"title\":\"Owner/Organization\",\"id\":\"91415c25-696a-4928-92e3-2c578e14c7a3\",\"enhancements\":{}}},\"a1e7b5ed-b636-4db8-87e1-779863061f45\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.repository.name\",\"title\":\"Repository\",\"id\":\"a1e7b5ed-b636-4db8-87e1-779863061f45\",\"enhancements\":{},\"selectedOptions\":[]}}}"
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "2132f9ab-9cce-423a-beed-e02e6d4d5ed9": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.dependabot.state",
+                        "id": "2132f9ab-9cce-423a-beed-e02e6d4d5ed9",
+                        "searchTechnique": "prefix",
+                        "title": "State"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "2f1b6c0b-96fc-479a-b7ef-145c84df585e": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "vulnerability.severity",
+                        "id": "2f1b6c0b-96fc-479a-b7ef-145c84df585e",
+                        "searchTechnique": "prefix",
+                        "title": "Severity"
+                    },
+                    "grow": true,
+                    "order": 3,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "91415c25-696a-4928-92e3-2c578e14c7a3": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.repository.owner.login",
+                        "id": "91415c25-696a-4928-92e3-2c578e14c7a3",
+                        "title": "Owner/Organization"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "a1e7b5ed-b636-4db8-87e1-779863061f45": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.repository.name",
+                        "id": "a1e7b5ed-b636-4db8-87e1-779863061f45",
+                        "selectedOptions": [],
+                        "title": "Repository"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
         },
         "description": "",
         "kibanaSavedObjectMeta": {
@@ -18,25 +75,51 @@
                             "alias": "Dependabot",
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.action",
                             "negate": false,
                             "params": [
-                                "dependabot"
-                            ],
-                            "type": "phrases"
-                        },
-                        "query": {
-                            "bool": {
-                                "minimum_should_match": 1,
-                                "should": [
-                                    {
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "logs-*",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "github.dependabot"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
                                         "match_phrase": {
-                                            "event.action": "dependabot"
+                                            "data_stream.dataset": "github.dependabot"
                                         }
                                     }
-                                ]
-                            }
-                        }
+                                },
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "logs-*",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "AND",
+                            "type": "combined"
+                        },
+                        "query": {}
                     }
                 ],
                 "query": {
@@ -55,6 +138,43 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n**Github**  \n\n- **Audit**\n  - [Audit Log Activity](#/dashboard/github-dcee84c0-2059-11ec-8b10-11a4c5e322a0)\n  - [User Change Audit](#/dashboard/github-8bfd8310-205c-11ec-8b10-11a4c5e322a0)\n- **Github Advanced Security**\n  - [Advanced Security Overview](#/dashboard/github-6a6d7c40-17ab-11ed-809a-7b4be950fe9c)\n  - [Code Scanning](#/dashboard/github-4da91aa0-12fc-11ed-af77-016e1a977d80)\n  - [Secret Scanning](#/dashboard/github-591d69e0-17b6-11ed-809a-7b4be950fe9c)\n  - [**Dependabot (This Page)**](#/dashboard/github-6197be80-220c-11ed-88c4-e3caca48250a)\n- [Issues](#/dashboard/github-f0104680-ae18-11ed-83fa-df5d96a45724)\n\n**Overview**\nThis dashboard provides an overview of the alerts ingested from Github Code Scanning.\n\nThe dashboard provides details on code scanning alerts that are open and resolved. It deep-dives into the top 10 repositories where code scanning alerts are found. It also calculates the mean-time to resolve (or dismiss) an open code scanning alert. The dashboard presents a view of alerts by severity and code scanning rules defining the alerts. Finally, it gives a layout of top users resolving the code scanning alerts.\n\n[**Integrations Page**](/app/integrations/detail/github/overview)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 29,
+                    "i": "1071c906-b782-4bc2-a984-242659dd27a5",
+                    "w": 10,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1071c906-b782-4bc2-a984-242659dd27a5",
+                "title": "Table of Contents",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
                     "attributes": {
                         "description": "",
                         "references": [
@@ -65,11 +185,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "85aacdea-d37b-4e6a-ae32-81077ddccb60",
+                                "name": "3e659cd4-b937-4355-8c5b-8432bb409130",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "545cf931-5e16-4676-b420-6f2ff87509a5",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -104,13 +230,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "85aacdea-d37b-4e6a-ae32-81077ddccb60",
+                                        "index": "3e659cd4-b937-4355-8c5b-8432bb409130",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.dependabot"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.dependabot"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -124,35 +253,57 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "545cf931-5e16-4676-b420-6f2ff87509a5",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "ccdc8558-1d3f-4c8b-a31e-d59ac78d0212",
+                                "color": "#6092C0",
                                 "layerId": "3f8b858f-a1ee-4d69-a100-d59282acd94d",
                                 "layerType": "data",
-                                "textAlign": "center",
-                                "titlePosition": "top"
+                                "metricAccessor": "ccdc8558-1d3f-4c8b-a31e-d59ac78d0212"
                             }
                         },
                         "title": "Total Alerts Created [GitHub Dependabot]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 5,
                     "i": "a7d99fc1-400a-4e55-8bbb-76d9aad7eedc",
-                    "w": 14,
-                    "x": 0,
+                    "w": 11,
+                    "x": 10,
                     "y": 0
                 },
                 "panelIndex": "a7d99fc1-400a-4e55-8bbb-76d9aad7eedc",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -166,11 +317,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "a849fd8c-6f48-4f51-9f6f-ab6e7862171c",
+                                "name": "831d0cdc-6df9-48ce-be06-92e1fecddfe7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "96282068-4ea5-481c-8641-ad0b79c42e38",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -195,7 +352,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "count()/count(kql='github.state:dismissed')",
+                                                        "formula": "count()/count(kql='NOT github.dependabot.state:open')",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -207,7 +364,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Resolved/Dismissed Alerts",
+                                                    "label": "Part of Alerts Found/Fixed Ratio",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -220,10 +377,10 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "github.state:dismissed"
+                                                        "query": "NOT github.dependabot.state:open"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Part of Resolved/Dismissed Alerts",
+                                                    "label": "Part of Alerts Found/Fixed Ratio",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -235,7 +392,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Resolved/Dismissed Alerts",
+                                                    "label": "Part of Alerts Found/Fixed Ratio",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -244,11 +401,11 @@
                                                                 "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX1"
                                                             ],
                                                             "location": {
-                                                                "max": 43,
+                                                                "max": 53,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "count()/count(kql='github.state:dismissed')",
+                                                            "text": "count()/count(kql='NOT github.dependabot.state:open')",
                                                             "type": "function"
                                                         }
                                                     },
@@ -272,13 +429,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "a849fd8c-6f48-4f51-9f6f-ab6e7862171c",
+                                        "index": "831d0cdc-6df9-48ce-be06-92e1fecddfe7",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.dependabot"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.dependabot"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -292,22 +452,45 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "96282068-4ea5-481c-8641-ad0b79c42e38",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "None",
+                                "color": "#6092C0",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Alerts Found/Fixed Ratio [GitHub Dependabot]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -315,13 +498,12 @@
                 "gridData": {
                     "h": 8,
                     "i": "85cbbb74-4d3c-44e0-98f6-be076e31aea3",
-                    "w": 14,
-                    "x": 14,
+                    "w": 11,
+                    "x": 21,
                     "y": 0
                 },
                 "panelIndex": "85cbbb74-4d3c-44e0-98f6-be076e31aea3",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -335,11 +517,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "ee0d69d7-f2ce-4a24-aaae-9d8934f3368e",
+                                "name": "a3c8212e-008b-4776-8e77-67c85e706583",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b78bb6b2-ff55-4127-9550-aca97f5ea305",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -370,7 +558,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.state"
+                                                    "sourceField": "github.dependabot.state"
                                                 },
                                                 "4525c4ae-5f82-4b4d-9867-48e4aba462fd": {
                                                     "dataType": "number",
@@ -397,7 +585,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "ee0d69d7-f2ce-4a24-aaae-9d8934f3368e",
+                                        "index": "a3c8212e-008b-4776-8e77-67c85e706583",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -410,8 +598,31 @@
                                             "data_stream.dataset": "github.dependabot"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "b78bb6b2-ff55-4127-9550-aca97f5ea305",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -444,20 +655,20 @@
                             }
                         },
                         "title": "Open vs Resolved/Dismissed [GitHub Dependabot]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 15,
+                    "h": 16,
                     "i": "1b501988-f932-4d80-8625-d2a1c8cd7321",
-                    "w": 20,
-                    "x": 28,
+                    "w": 16,
+                    "x": 32,
                     "y": 0
                 },
                 "panelIndex": "1b501988-f932-4d80-8625-d2a1c8cd7321",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -471,16 +682,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "9e8fb4bd-1d35-4c80-80cc-d52bef7f7771",
+                                "name": "6568da5b-d430-4440-baed-7f16226e190b",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "bbb4d277-741b-49c1-bc79-77a6ee15e94d",
+                                "name": "acc71999-52b6-4799-a900-f1bd3d50a0df",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -521,7 +733,51 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "9e8fb4bd-1d35-4c80-80cc-d52bef7f7771",
+                                        "field": "github.dependabot.state",
+                                        "index": "6568da5b-d430-4440-baed-7f16226e190b",
+                                        "key": "github.dependabot.state",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "open"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "github.dependabot.state": "open"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "acc71999-52b6-4799-a900-f1bd3d50a0df",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "5340db60-b785-4794-8e92-9807eb63e84f",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
@@ -541,106 +797,35 @@
                                             ]
                                         }
                                     }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "bbb4d277-741b-49c1-bc79-77a6ee15e94d",
-                                        "key": "github.state",
-                                        "negate": false,
-                                        "params": [
-                                            "open"
-                                        ],
-                                        "type": "phrases"
-                                    },
-                                    "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "open"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "Labels",
+                                "color": "#E7664C",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "palette": {
-                                    "name": "custom",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 1000
-                                            }
-                                        ],
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 1000
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 1001
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Open Alerts Count [GitHub Dependabot]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 5,
+                    "h": 6,
                     "i": "12c18b92-9f7b-4832-b85f-aad64720ea87",
-                    "w": 14,
-                    "x": 0,
+                    "w": 11,
+                    "x": 10,
                     "y": 5
                 },
                 "panelIndex": "12c18b92-9f7b-4832-b85f-aad64720ea87",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -654,16 +839,161 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "7196f033-fe4d-41cb-b3c7-4c45300d6a68",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "8977fa6e-37e6-4a2b-a032-d181646ef8cf",
+                                "name": "ba3b2182-40be-49a0-b334-ed6ee28c0fdc",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "df5f2c10-bc9b-4a7e-be41-d13240c21d95": {
+                                            "columnOrder": [
+                                                "e33d2853-5b3d-4be9-9312-2d8da64d9523"
+                                            ],
+                                            "columns": {
+                                                "e33d2853-5b3d-4be9-9312-2d8da64d9523": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Mean time to resolve an alert",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "fromUnit": "nanoseconds"
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.duration"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "ba3b2182-40be-49a0-b334-ed6ee28c0fdc",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "362b16a4-1e55-419c-b507-aaec968d1598",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "github.dependabot"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "github.dependabot"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "473949e3-40f8-4d9c-88b5-faf5a3ddbcdd",
+                                        "key": "event.duration",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "event.duration"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
+                                "layerType": "data",
+                                "metricAccessor": "e33d2853-5b3d-4be9-9312-2d8da64d9523"
+                            }
+                        },
+                        "title": "Mean Time to Resolution [GitHub Dependabot]",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "7131e4d3-c168-480d-9496-1463ceaaa97a",
+                    "w": 11,
+                    "x": 21,
+                    "y": 8
+                },
+                "panelIndex": "7131e4d3-c168-480d-9496-1463ceaaa97a",
+                "title": "Mean Time To Resolution [GitHub Dependabot]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "aa75b36e-4cb3-44e0-87a2-facf1b53b686",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "e9c2e4d3-e49d-42a9-b968-73c1125c765c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -698,7 +1028,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Dismissed Alerts",
+                                                    "label": "Part of Resolved/Dismissed Alerts",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -713,6 +1043,50 @@
                                 }
                             },
                             "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "github.dependabot.state",
+                                        "index": "aa75b36e-4cb3-44e0-87a2-facf1b53b686",
+                                        "key": "github.dependabot.state",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "open"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "github.dependabot.state": "open"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "e9c2e4d3-e49d-42a9-b968-73c1125c765c",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                },
                                 {
                                     "$state": {
                                         "store": "appState"
@@ -740,85 +1114,23 @@
                                             ]
                                         }
                                     }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "8977fa6e-37e6-4a2b-a032-d181646ef8cf",
-                                        "key": "github.state",
-                                        "negate": false,
-                                        "params": [
-                                            "dismissed",
-                                            "resolved"
-                                        ],
-                                        "type": "phrases"
-                                    },
-                                    "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "dismissed"
-                                                    }
-                                                },
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "resolved"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "Labels",
+                                "color": "#54B399",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "palette": {
-                                    "name": "positive",
-                                    "params": {
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "positive",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#bbdad3",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#77b6a8",
-                                                "stop": 8
-                                            },
-                                            {
-                                                "color": "#209280",
-                                                "stop": 16
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Resolved/Dismissed Alerts Count [GitHub Dependabot]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -826,133 +1138,12 @@
                 "gridData": {
                     "h": 5,
                     "i": "c3e8ea64-b6f9-470c-9004-02f8909672eb",
-                    "w": 14,
-                    "x": 0,
-                    "y": 10
+                    "w": 11,
+                    "x": 10,
+                    "y": 11
                 },
                 "panelIndex": "c3e8ea64-b6f9-470c-9004-02f8909672eb",
-                "type": "lens",
-                "version": "8.7.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "03a792fe-87d1-4d81-8a7c-0c9d22b41a1b",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "006ef10a-8064-4e48-8ff1-413c550d6204",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "df5f2c10-bc9b-4a7e-be41-d13240c21d95": {
-                                            "columnOrder": [
-                                                "e33d2853-5b3d-4be9-9312-2d8da64d9523"
-                                            ],
-                                            "columns": {
-                                                "e33d2853-5b3d-4be9-9312-2d8da64d9523": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Mean time to resolve an alert",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "event.duration"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "03a792fe-87d1-4d81-8a7c-0c9d22b41a1b",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "github.dependabot"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "github.dependabot"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "006ef10a-8064-4e48-8ff1-413c550d6204",
-                                        "key": "event.duration",
-                                        "negate": false,
-                                        "type": "exists",
-                                        "value": "exists"
-                                    },
-                                    "query": {
-                                        "exists": {
-                                            "field": "event.duration"
-                                        }
-                                    }
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "accessor": "e33d2853-5b3d-4be9-9312-2d8da64d9523",
-                                "colorMode": "None",
-                                "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
-                                "layerType": "data",
-                                "textAlign": "center"
-                            }
-                        },
-                        "title": "Mean Time to Resolution [GitHub Dependabot]",
-                        "visualizationType": "lnsLegacyMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "7131e4d3-c168-480d-9496-1463ceaaa97a",
-                    "w": 14,
-                    "x": 14,
-                    "y": 8
-                },
-                "panelIndex": "7131e4d3-c168-480d-9496-1463ceaaa97a",
-                "title": "Mean Time To Resolution [GitHub Dependabot]",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -966,11 +1157,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "d3e8e716-b6e8-4db6-8948-87e49827aebb",
+                                "name": "aaa9b39a-6a8f-4a6b-b816-574c85664042",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f81b9908-5e3d-4888-9b6a-cd769692eedf",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1069,13 +1266,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "d3e8e716-b6e8-4db6-8948-87e49827aebb",
+                                        "index": "aaa9b39a-6a8f-4a6b-b816-574c85664042",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.dependabot"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.dependabot"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -1089,8 +1289,31 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "f81b9908-5e3d-4888-9b6a-cd769692eedf",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1145,20 +1368,20 @@
                             }
                         },
                         "title": "Alerts count by owner and by repository [GitHub Dependabot]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 13,
                     "i": "9a3577e8-d452-46cc-b2dd-9424ec80c871",
-                    "w": 25,
-                    "x": 0,
-                    "y": 15
+                    "w": 19,
+                    "x": 10,
+                    "y": 16
                 },
                 "panelIndex": "9a3577e8-d452-46cc-b2dd-9424ec80c871",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1172,11 +1395,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "badbb3b4-d90f-44b5-bf22-2e47716a3e09",
+                                "name": "09402439-6a6f-40e2-a771-c8d8b21c2055",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "9f8424f3-a5fa-49a0-865c-044c81396a9b",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1255,13 +1484,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "badbb3b4-d90f-44b5-bf22-2e47716a3e09",
+                                        "index": "09402439-6a6f-40e2-a771-c8d8b21c2055",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.dependabot"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.dependabot"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -1275,8 +1507,31 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "9f8424f3-a5fa-49a0-865c-044c81396a9b",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1303,21 +1558,21 @@
                             }
                         },
                         "title": "Aerts % by owner and by repository [GitHub Dependabot]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 13,
                     "i": "ae814e70-2e8e-43df-b62e-e32d1c26f676",
-                    "w": 23,
-                    "x": 25,
-                    "y": 15
+                    "w": 19,
+                    "x": 29,
+                    "y": 16
                 },
                 "panelIndex": "ae814e70-2e8e-43df-b62e-e32d1c26f676",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1331,11 +1586,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "fc66a292-57a3-4510-b6f8-681eeb768e10",
+                                "name": "a91d9706-bd6c-4a0d-ac4a-328fe104f1e2",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "218ae079-502d-4aff-b571-9496ae8a1fd8",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1378,7 +1639,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.severity"
+                                                    "sourceField": "vulnerability.severity"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -1394,7 +1655,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "fc66a292-57a3-4510-b6f8-681eeb768e10",
+                                        "index": "a91d9706-bd6c-4a0d-ac4a-328fe104f1e2",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1407,8 +1668,31 @@
                                             "data_stream.dataset": "github.dependabot"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "218ae079-502d-4aff-b571-9496ae8a1fd8",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1463,6 +1747,7 @@
                             }
                         },
                         "title": "Alert Severity Count [GitHub Dependabot]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -1473,11 +1758,10 @@
                     "i": "9653b170-7606-461f-9ac4-bf58547f30db",
                     "w": 14,
                     "x": 0,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "9653b170-7606-461f-9ac4-bf58547f30db",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1491,11 +1775,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "d7218e2e-18ae-4710-8364-1a4cbfee519c",
+                                "name": "7a551ce1-a513-4b7d-9b05-c6f5759520bd",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "d35fd96c-09e5-4437-927b-3eb00114f6bf",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1538,7 +1828,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.severity"
+                                                    "sourceField": "vulnerability.severity"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -1554,7 +1844,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "d7218e2e-18ae-4710-8364-1a4cbfee519c",
+                                        "index": "7a551ce1-a513-4b7d-9b05-c6f5759520bd",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1567,8 +1857,31 @@
                                             "data_stream.dataset": "github.dependabot"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "d35fd96c-09e5-4437-927b-3eb00114f6bf",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1600,6 +1913,7 @@
                             }
                         },
                         "title": "Alert Severity % [GitHub Dependabot]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
@@ -1610,11 +1924,10 @@
                     "i": "563a073c-7de0-4095-b0ac-127caed562f2",
                     "w": 11,
                     "x": 14,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "563a073c-7de0-4095-b0ac-127caed562f2",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1628,11 +1941,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "1f3f8544-c39b-4384-985e-d45107d279fb",
+                                "name": "e62929c8-108c-4049-99bf-dada47a2f0d4",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "81a476e1-7947-4c03-af9b-8913988b2f22",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1646,7 +1965,7 @@
                                                 "00866684-5176-499e-9517-eff9e9102155": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of github.severity",
+                                                    "label": "Top 10 values of vulnerability.severity",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -1663,7 +1982,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.severity"
+                                                    "sourceField": "vulnerability.severity"
                                                 },
                                                 "257a7d8d-1315-4775-97d9-e679c0f3aa79": {
                                                     "dataType": "date",
@@ -1704,7 +2023,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "1f3f8544-c39b-4384-985e-d45107d279fb",
+                                        "index": "e62929c8-108c-4049-99bf-dada47a2f0d4",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1717,8 +2036,31 @@
                                             "data_stream.dataset": "github.dependabot"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "81a476e1-7947-4c03-af9b-8913988b2f22",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1773,6 +2115,7 @@
                             }
                         },
                         "title": "Daily Alerts Count by Severity [GitHub Dependabot]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -1783,11 +2126,10 @@
                     "i": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5",
                     "w": 23,
                     "x": 25,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1801,11 +2143,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "09303186-e13c-4afb-b6f1-bf3eeb7d1423",
+                                "name": "de154474-03fd-496a-a6a4-c73003a22f17",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3dfa2299-bde5-4c7e-ac0d-41f14400e796",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1864,7 +2212,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "09303186-e13c-4afb-b6f1-bf3eeb7d1423",
+                                        "index": "de154474-03fd-496a-a6a4-c73003a22f17",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1877,8 +2225,31 @@
                                             "data_stream.dataset": "github.dependabot"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "3dfa2299-bde5-4c7e-ac0d-41f14400e796",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1929,6 +2300,7 @@
                             }
                         },
                         "title": "Top files [GitHub Dependabot]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -1938,11 +2310,10 @@
                     "i": "41578b87-d820-42df-92d5-69af2643d793",
                     "w": 36,
                     "x": 0,
-                    "y": 40
+                    "y": 42
                 },
                 "panelIndex": "41578b87-d820-42df-92d5-69af2643d793",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1956,11 +2327,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "2074f8e1-7a11-4232-9ac4-09bfe773beb8",
+                                "name": "245fc98b-9152-40d9-ba26-2b8de94ecc25",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "fe7d52e1-c9ef-4b7d-b51d-226eb271ba08",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -2019,7 +2396,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "2074f8e1-7a11-4232-9ac4-09bfe773beb8",
+                                        "index": "245fc98b-9152-40d9-ba26-2b8de94ecc25",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2032,8 +2409,31 @@
                                             "data_stream.dataset": "github.dependabot"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "fe7d52e1-c9ef-4b7d-b51d-226eb271ba08",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2080,6 +2480,7 @@
                             }
                         },
                         "title": "Top users dismissing alerts [GitHub Dependabot]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -2089,11 +2490,10 @@
                     "i": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b",
                     "w": 12,
                     "x": 36,
-                    "y": 40
+                    "y": 42
                 },
                 "panelIndex": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2107,11 +2507,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "349014a7-1097-4c4b-9805-13b39d46d0bd",
+                                "name": "ddb3d3fe-dcd6-4570-877c-8deff8952d6e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "657d81ad-336b-43c2-ab28-1c55eceaba84",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -2159,7 +2565,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "349014a7-1097-4c4b-9805-13b39d46d0bd",
+                                        "index": "ddb3d3fe-dcd6-4570-877c-8deff8952d6e",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -2172,8 +2578,31 @@
                                             "data_stream.dataset": "github.dependabot"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "657d81ad-336b-43c2-ab28-1c55eceaba84",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2222,6 +2651,7 @@
                             }
                         },
                         "title": "Events Timeline [GitHub Dependabot]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -2231,23 +2661,20 @@
                     "i": "12673c47-9148-47a4-a8ab-07a7f06304c7",
                     "w": 48,
                     "x": 0,
-                    "y": 55
+                    "y": 57
                 },
                 "panelIndex": "12673c47-9148-47a4-a8ab-07a7f06304c7",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[GitHub] Dependabot Alerts",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-07-10T01:36:35.072Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-10-28T13:02:13.548Z",
     "id": "github-6197be80-220c-11ed-88c4-e3caca48250a",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -2261,7 +2688,12 @@
         },
         {
             "id": "logs-*",
-            "name": "a7d99fc1-400a-4e55-8bbb-76d9aad7eedc:85aacdea-d37b-4e6a-ae32-81077ddccb60",
+            "name": "a7d99fc1-400a-4e55-8bbb-76d9aad7eedc:3e659cd4-b937-4355-8c5b-8432bb409130",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a7d99fc1-400a-4e55-8bbb-76d9aad7eedc:545cf931-5e16-4676-b420-6f2ff87509a5",
             "type": "index-pattern"
         },
         {
@@ -2271,7 +2703,12 @@
         },
         {
             "id": "logs-*",
-            "name": "85cbbb74-4d3c-44e0-98f6-be076e31aea3:a849fd8c-6f48-4f51-9f6f-ab6e7862171c",
+            "name": "85cbbb74-4d3c-44e0-98f6-be076e31aea3:831d0cdc-6df9-48ce-be06-92e1fecddfe7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "85cbbb74-4d3c-44e0-98f6-be076e31aea3:96282068-4ea5-481c-8641-ad0b79c42e38",
             "type": "index-pattern"
         },
         {
@@ -2281,7 +2718,12 @@
         },
         {
             "id": "logs-*",
-            "name": "1b501988-f932-4d80-8625-d2a1c8cd7321:ee0d69d7-f2ce-4a24-aaae-9d8934f3368e",
+            "name": "1b501988-f932-4d80-8625-d2a1c8cd7321:a3c8212e-008b-4776-8e77-67c85e706583",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1b501988-f932-4d80-8625-d2a1c8cd7321:b78bb6b2-ff55-4127-9550-aca97f5ea305",
             "type": "index-pattern"
         },
         {
@@ -2291,27 +2733,12 @@
         },
         {
             "id": "logs-*",
-            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:9e8fb4bd-1d35-4c80-80cc-d52bef7f7771",
+            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:6568da5b-d430-4440-baed-7f16226e190b",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:bbb4d277-741b-49c1-bc79-77a6ee15e94d",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:7196f033-fe4d-41cb-b3c7-4c45300d6a68",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:8977fa6e-37e6-4a2b-a032-d181646ef8cf",
+            "name": "12c18b92-9f7b-4832-b85f-aad64720ea87:acc71999-52b6-4799-a900-f1bd3d50a0df",
             "type": "index-pattern"
         },
         {
@@ -2321,12 +2748,22 @@
         },
         {
             "id": "logs-*",
-            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:03a792fe-87d1-4d81-8a7c-0c9d22b41a1b",
+            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:ba3b2182-40be-49a0-b334-ed6ee28c0fdc",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "7131e4d3-c168-480d-9496-1463ceaaa97a:006ef10a-8064-4e48-8ff1-413c550d6204",
+            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:aa75b36e-4cb3-44e0-87a2-facf1b53b686",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c3e8ea64-b6f9-470c-9004-02f8909672eb:e9c2e4d3-e49d-42a9-b968-73c1125c765c",
             "type": "index-pattern"
         },
         {
@@ -2336,7 +2773,12 @@
         },
         {
             "id": "logs-*",
-            "name": "9a3577e8-d452-46cc-b2dd-9424ec80c871:d3e8e716-b6e8-4db6-8948-87e49827aebb",
+            "name": "9a3577e8-d452-46cc-b2dd-9424ec80c871:aaa9b39a-6a8f-4a6b-b816-574c85664042",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9a3577e8-d452-46cc-b2dd-9424ec80c871:f81b9908-5e3d-4888-9b6a-cd769692eedf",
             "type": "index-pattern"
         },
         {
@@ -2346,7 +2788,12 @@
         },
         {
             "id": "logs-*",
-            "name": "ae814e70-2e8e-43df-b62e-e32d1c26f676:badbb3b4-d90f-44b5-bf22-2e47716a3e09",
+            "name": "ae814e70-2e8e-43df-b62e-e32d1c26f676:09402439-6a6f-40e2-a771-c8d8b21c2055",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ae814e70-2e8e-43df-b62e-e32d1c26f676:9f8424f3-a5fa-49a0-865c-044c81396a9b",
             "type": "index-pattern"
         },
         {
@@ -2356,7 +2803,12 @@
         },
         {
             "id": "logs-*",
-            "name": "9653b170-7606-461f-9ac4-bf58547f30db:fc66a292-57a3-4510-b6f8-681eeb768e10",
+            "name": "9653b170-7606-461f-9ac4-bf58547f30db:a91d9706-bd6c-4a0d-ac4a-328fe104f1e2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9653b170-7606-461f-9ac4-bf58547f30db:218ae079-502d-4aff-b571-9496ae8a1fd8",
             "type": "index-pattern"
         },
         {
@@ -2366,7 +2818,12 @@
         },
         {
             "id": "logs-*",
-            "name": "563a073c-7de0-4095-b0ac-127caed562f2:d7218e2e-18ae-4710-8364-1a4cbfee519c",
+            "name": "563a073c-7de0-4095-b0ac-127caed562f2:7a551ce1-a513-4b7d-9b05-c6f5759520bd",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "563a073c-7de0-4095-b0ac-127caed562f2:d35fd96c-09e5-4437-927b-3eb00114f6bf",
             "type": "index-pattern"
         },
         {
@@ -2376,7 +2833,12 @@
         },
         {
             "id": "logs-*",
-            "name": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5:1f3f8544-c39b-4384-985e-d45107d279fb",
+            "name": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5:e62929c8-108c-4049-99bf-dada47a2f0d4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d5326dec-bbfa-4a0c-b820-f6d915d5a9c5:81a476e1-7947-4c03-af9b-8913988b2f22",
             "type": "index-pattern"
         },
         {
@@ -2386,7 +2848,12 @@
         },
         {
             "id": "logs-*",
-            "name": "41578b87-d820-42df-92d5-69af2643d793:09303186-e13c-4afb-b6f1-bf3eeb7d1423",
+            "name": "41578b87-d820-42df-92d5-69af2643d793:de154474-03fd-496a-a6a4-c73003a22f17",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "41578b87-d820-42df-92d5-69af2643d793:3dfa2299-bde5-4c7e-ac0d-41f14400e796",
             "type": "index-pattern"
         },
         {
@@ -2396,7 +2863,12 @@
         },
         {
             "id": "logs-*",
-            "name": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b:2074f8e1-7a11-4232-9ac4-09bfe773beb8",
+            "name": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b:245fc98b-9152-40d9-ba26-2b8de94ecc25",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4f4ecefc-738e-4b86-8013-4b78bcb6d79b:fe7d52e1-c9ef-4b7d-b51d-226eb271ba08",
             "type": "index-pattern"
         },
         {
@@ -2406,7 +2878,12 @@
         },
         {
             "id": "logs-*",
-            "name": "12673c47-9148-47a4-a8ab-07a7f06304c7:349014a7-1097-4c4b-9805-13b39d46d0bd",
+            "name": "12673c47-9148-47a4-a8ab-07a7f06304c7:ddb3d3fe-dcd6-4570-877c-8deff8952d6e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "12673c47-9148-47a4-a8ab-07a7f06304c7:657d81ad-336b-43c2-ab28-1c55eceaba84",
             "type": "index-pattern"
         },
         {
@@ -2428,7 +2905,18 @@
             "id": "logs-*",
             "name": "controlGroup_a1e7b5ed-b636-4db8-87e1-779863061f45:optionsListDataView",
             "type": "index-pattern"
+        },
+        {
+            "id": "github-security-solution-default",
+            "name": "tag-ref-github-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "github-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

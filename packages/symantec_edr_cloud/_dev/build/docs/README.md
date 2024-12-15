@@ -1,4 +1,6 @@
-# Symantec EDR Cloud
+# Symantec EDR Cloud (deprecated)
+
+This integration has been deprecated. We recommend using the [Symantec Endpoint Security integration](https://www.elastic.co/docs/current/integrations/symantec_endpoint_security) instead.
 
 Symantec Endpoint Security is the fully cloud-managed version of the on-premises Symantec Endpoint Protection (SEP), which delivers multilayer protection to stop threats regardless of how they attack your endpoints. You manage Symantec Endpoint Security through a unified cloud console that provides threat visibility across your endpoints and uses multiple technologies to manage the security of your organization.
 
