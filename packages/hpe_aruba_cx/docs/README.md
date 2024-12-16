@@ -910,7 +910,7 @@ Note: Descriptions have not been filled out
 | <assigned_class_A> | aruba.poe.assigned_class_a   |
 | <assigned_class_B> | aruba.poe.assigned_class_b   |
 | <cntrl_name>       | aruba.poe.cntrl_name         |
-| <duration>         | aruba.poe.cntrl_name         |
+| <duration>         | aruba.poe.duration           |
 | <fault_type>       | aruba.poe.fault_type         |
 | <interface_name>   | aruba.interface.name         |
 | <threshold_limit>  | aruba.limit.threshold        |
