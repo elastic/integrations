@@ -6,22 +6,22 @@ processors:
       value: "8.11.0"
   - json:
       field: outlookactivity
-      target_field: o365metrics.outlookactivity   
+      target_field: o365.metrics.outlook.activity
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365metrics.outlookactivity.
+      description: Replace spaces and dashes in field names under o365.metrics.outlook.activity.
       tag: painless_purge_spaces_and_dashes
-      if: ctx.o365metrics?.outlookactivity instanceof Map
+      if: ctx.o365.metrics?.outlook.activity instanceof Map
       source: |
         String underscore(String s) {
           return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
         }
         
         def out = [:];
-        for (def item : ctx.o365metrics.outlookactivity.entrySet()) {
+        for (def item : ctx.o365.metrics.outlook.activity.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365metrics.outlookactivity = out;
+        ctx.o365.metrics.outlook.activity = out;
 
   - remove:
       if: ctx.outlookactivity != null
@@ -29,24 +29,24 @@ processors:
       ignore_missing: true
 
   - rename:
-      field: o365metrics.outlookactivity.read
-      target_field: o365metrics.outlookactivity.emails_read.count
+      field: o365.metrics.outlook.activity.read
+      target_field: o365.metrics.outlook.activity.emails_read.count
       ignore_missing: true
   - rename:
-      field: o365metrics.outlookactivity.receive
-      target_field: o365metrics.outlookactivity.emails_received.count
+      field: o365.metrics.outlook.activity.receive
+      target_field: o365.metrics.outlook.activity.emails_received.count
       ignore_missing: true
   - rename:
-      field: o365metrics.outlookactivity.send
-      target_field: o365metrics.outlookactivity.emails_sent.count
+      field: o365.metrics.outlook.activity.send
+      target_field: o365.metrics.outlook.activity.emails_sent.count
       ignore_missing: true
   - rename:
-      field: o365metrics.outlookactivity.meeting_created
-      target_field: o365metrics.outlookactivity.meeting_created.count
+      field: o365.metrics.outlook.activity.meeting_created
+      target_field: o365.metrics.outlook.activity.meeting_created.count
       ignore_missing: true
   - rename:
-      field: o365metrics.outlookactivity.meeting_interacted
-      target_field: o365metrics.outlookactivity.meeting_interacted.count
+      field: o365.metrics.outlook.activity.meeting_interacted
+      target_field: o365.metrics.outlook.activity.meeting_interacted.count
       ignore_missing: true
 
 on_failure:
