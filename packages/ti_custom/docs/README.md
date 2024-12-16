@@ -60,7 +60,7 @@ To configure the integration to pull threat intelligence from an ISAC feed, foll
     - Authentication Credentials: Username, password, API Key, or client certificate, as required by the ISAC.
 
 3. Set up the integration:
-    - The server URL and collection name should be used to build the URL as follows: `https://{server_url}/{api-root}/collections/{name}/objects/`
+    - The server URL and collection name should be used to build the URL as follows: `https://{base_url}/{api-root}/collections/{name}/objects/`
     - Provide the username/password, API Key or upload a client certificate, depending on the ISAC’s requirements.
     - Set how often the integration should pull updates (e.g. every hour). You can also set the time range to search for indicators when the agent runs for the first time with the Initial Interval.
 
