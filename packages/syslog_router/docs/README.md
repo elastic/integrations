@@ -140,11 +140,11 @@ At its core, the Syslog Router integration utilizes the [built-in conditionals a
 provided within Beats. While there are certain requirements that need to be
 maintained, additional conditions and processors may be added, if required.
 
-The top level of each configuration contains an `if`/`else` condition. Descending
-into the `if` statement, an `and` combines two conditions. The first ensures that
-another match has not already occurred, while the second conditio  is a `regex`,
-or regular expression, which performs the actual match. If the regular expression
-matches the `message` field, then the processors in the `then` statement of this
+The top level of each configuration contains an `if`/`else` condition. In the
+`if` statement, an `and` combines two conditions. The first ensures that another
+match has not already occurred, while the second condition is a `regex`, or regular
+expression, which performs the actual match. If the regular expression
+matches the `message` field, then the processors in the `then` statement of the
 configuration will run.
 
 If multiple patterns are required, they may be combined with an `or` condition:
@@ -158,9 +158,8 @@ If multiple patterns are required, they may be combined with an `or` condition:
         - regexp.message: <PATTERN_2>
 ```
 
-In the `then` statement, a list of processors can be given. If the `if` statement
-evaluated true, then this list of processors will run. At minimum, an `add_fields`
-processor needs to be added with the following fields:
+In the `then` statement, a list of processors can be given. At minimum, an 
+`add_fields` processor needs to be added with the following fields:
 
 **Required fields:**
 
@@ -180,9 +179,10 @@ for events to be properly indexed (see **Setup** above).
 **DISCLAIMER**: Due to subtle differences in how devices can emit syslog events,
 the patterns provided by default with the Syslog Router integration may not work
 in all cases. Some integrations may not be listed here, even though they support
-syslog events. In these cases, patterns would either prove too complex or could
+syslog events. In these cases, patterns would either be too complex or could
 overlap with patterns from other integrations, resulting in negative impacts on
-performance or accuracy in matching events to integrations.
+performance or accuracy in matching events to integrations. Custom patterns will
+need to be created for these cases.
 
 - Arista NG Firewall
 - Check Point
