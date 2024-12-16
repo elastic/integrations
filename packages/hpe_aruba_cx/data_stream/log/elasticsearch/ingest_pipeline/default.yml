@@ -1060,6 +1060,17 @@ processors:
       if: "ctx.event?.code == '4001'"
       pattern: "The Multicast L3 Bridge Control Forwarding entries limit was reached: %{aruba.limit.threshold}"
 
+    # Proxy ARP events (420x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PROXY-ARP.htm
+  - grok:
+      field: message
+      tag: proxy_arp_event_4205_4206_4207_4208
+      description: "Logs a message when the feature is [enabled|disable] for a port inside a VRF | Logs a message when the feature [enable|disable] fails for a port inside a VRF"
+      if: "['4205','4206','4207','4208'].contains(ctx.event?.code)"
+      patterns: 
+        - "^Local proxy ARP (enabled|disabled) for port %{DATA:aruba.port} on vrf %{GREEDYDATA:aruba.vrf.id}"
+        - "^Failed to (enable|disable) local proxy ARP for port %{DATA:aruba.port} on vrf %{GREEDYDATA:aruba.vrf.id}"
+
     # Management events (430x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMT.htm
   - grok:
@@ -1337,6 +1348,46 @@ processors:
         5603_PATTERN: "closed all HTTPS sessions"
         5604_PATTERN: "changed the HTTPS Server max user sessions amount to %{NUMBER:aruba.server.sessions:long}"
         5605_PATTERN: "changed the HTTPS Server idle timeout to %{NUMBER:aruba.timeout:long}"
+
+  # QoS ASIC Provider events (580x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS_ASIC.htm
+  - dissect:
+      if: "ctx.event?.code == '5801'"
+      tag: qos_asic_event_5801
+      field: "message"
+      description: "QoS initial initialization failed"
+      pattern: "QoS failed initial initialization for slot %{aruba.slot}. Error: %{event.reason}"
+  - dissect:
+      if: "ctx.event?.code == '5802'"
+      tag: qos_asic_event_5802
+      field: "message"
+      description: "QoS final initialization failed for new slot"
+      pattern: "QoS failed final initialization on new slot %{aruba.qos.new_slot} for peer slot %{aruba.slot}"
+  - dissect:
+      if: "ctx.event?.code == '5803'"
+      tag: qos_asic_event_5803
+      field: "message"
+      description: "QoS error after card removal"
+      pattern: "QoS error after card removal from slot %{aruba.slot}"
+  - dissect:
+      if: "ctx.event?.code == '5804'"
+      tag: qos_asic_event_5804
+      field: "message"
+      description: "Error while attempting QoS feature configuration"
+      pattern: "Error during QoS feature configuration: %{event.reason}"
+  - dissect:
+      if: "ctx.event?.code == '5805'"
+      tag: qos_asic_event_5805
+      field: "message"
+      description: "Error while attempting QoS HW configuration"
+      pattern: "Error during QoS HW configuration: %{event.reason} error %{error.code}"
+  - dissect:
+      if: "ctx.event?.code == '5806'"
+      tag: qos_asic_event_5806
+      field: "message"
+      description: "Warning PFC priority sharing a queue"
+      pattern: "Port: %{aruba.port} PFC priority %{aruba.priority} using queue %{aruba.qos.queue} should not be sharing the queue with other local-priorities"
+
 
   # NAE events (60xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TSDBD.htm
