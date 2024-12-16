@@ -1161,9 +1161,71 @@ processors:
         INTERFACE_AREA: "(I|i)nterface %{DATA:aruba.ospf.link_local} on %{DATA:aruba.interface.id}\\(%{DATA:aruba.ospf.area}\\)"
         STATE_CHANGE: "%{DATA:aruba.ospf.old_state} (->|to) %{GREEDYDATA:aruba.state}"
 
+  # Rapid per VLAN Spanning Tree Protocol events (500x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RPVST.htm
+  - dissect:
+      if: "ctx.event?.code == '5003'"
+      tag: rpvst_event_5003
+      field: "message"
+      description: "This log event indicates that RPVST root on a VLAN has changed"
+      pattern: "RPVST - Root changed from %{aruba.rpvst.old_priority}: %{aruba.rpvst.old_mac} to %{aruba.priority}: %{client.mac} on VLAN %{network.vlan.id}."
+  - dissect:
+      if: "ctx.event?.code == '5004'"
+      tag: rpvst_event_5004
+      field: "message"
+      description: "This log event informs the user BPDU received on protected port"
+      pattern: "Port %{aruba.port} disabled - BPDU received on protected port on VLAN %{network.vlan.id}."
+  - dissect:
+      if: "ctx.event?.code == '5005'"
+      tag: rpvst_event_5005
+      field: "message"
+      description: "This log event informs the user that the Rx is starved in paticular port"
+      pattern: "%{aruba.rpvst.proto} starved for %{aruba.rpvst.pkt_type} on port %{aruba.port} from %{client.mac} on VLAN %{network.vlan.id}."
+  - grok:
+      if: "['5006','5007'].contains(ctx.event?.code)"
+      tag: rpvst_event_5006_5007
+      field: "message"
+      description: "This log event informs the user that the RPVST topology change is [received|generated]"
+      patterns:
+        - "^Topology change (received|generated) on port %{DATA:aruba.port}( from source: %{MAC:client.mac})? on VLAN %{DATA:network.vlan.id}."
+  - grok:
+      if: "['5008','5009'].contains(ctx.event?.code)"
+      tag: rpvst_event_5008_5009
+      field: "message"
+      description: "This log event informs the user that the port is [unblocked|blocked] on the instance"
+      patterns:
+        - "^Port %{DATA:aruba.port} (unblocked|blocked) on RPVST %{GREEDYDATA:aruba.instance.id}"
+  - dissect:
+      if: "ctx.event?.code == '5010'"
+      tag: rpvst_event_5010
+      field: "message"
+      description: "This log event informs the user that the root port is changed"
+      pattern: "Root port changed from %{aruba.rpvst.old_port} to %{aruba.port} on VLAN %{network.vlan.id}."
+  - grok:
+      if: "ctx.event?.code == '5011'"
+      tag: rpvst_event_5011
+      field: "message"
+      description: "Log event when the PVID mismatches between the switch and neighbor over an interface"
+      patterns:
+        - "^PVID mismatch detected on %{DATA:aruba.interface.id} with pvid = %{DATA:aruba.rpvst.pvid}, Neighbor pvid = %{GREEDYDATA:aruba.rpvst.npvid}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - dissect:
+      if: "ctx.event?.code == '5012'"
+      tag: rpvst_event_5012
+      field: "message"
+      description: "This log event informs the user that the spanning tree mode is changed."
+      pattern: "spanning tree mode changed from %{aruba.rpvst.old_mode} to %{aruba.rpvst.new_mode}, it will trigger the reconvergence."
+  - grok:
+      if: "ctx.event?.code == '5013'"
+      tag: rpvst_event_5013
+      field: "message"
+      description: "Log event when the current virtual port count crosses the maximum allowed value"
+      patterns: 
+        - "^Current Virtual Ports %{NUMBER:aruba.limit.read_value:long} exceeds the max supported limit %{GREEDYDATA:aruba.limit.threshold}"
+
+
   # PIM events (51xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PIM.htm
-
   - grok:
       if: "ctx.event?.code == '5101'"
       field: message
@@ -1348,6 +1410,16 @@ processors:
         5603_PATTERN: "closed all HTTPS sessions"
         5604_PATTERN: "changed the HTTPS Server max user sessions amount to %{NUMBER:aruba.server.sessions:long}"
         5605_PATTERN: "changed the HTTPS Server idle timeout to %{NUMBER:aruba.timeout:long}"
+
+  # Quality of Service events (570x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS.htm
+  - grok:
+      if: "['5701','5702'].contains(ctx.event?.code)"
+      tag: qos_event_5701_5702
+      field: "message"
+      description: "QoS failed to retrieve default configuration | QoS error occurred"
+      patterns:
+        - "(E|e)rror: %{GREEDYDATA:event.reason}"
 
   # QoS ASIC Provider events (580x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS_ASIC.htm
@@ -2761,7 +2833,15 @@ processors:
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
-  
+  - uppercase:
+      field: aruba.rpvst.old_mac
+      ignore_missing: true
+  - gsub:
+      field: aruba.rpvst.old_mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+
   # Make sure that host.ip and host.mac are arrays
   - set:
       field: host.ip
