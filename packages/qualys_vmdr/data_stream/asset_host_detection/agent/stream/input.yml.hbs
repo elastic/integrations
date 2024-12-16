@@ -45,7 +45,7 @@ program: |
                 "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
             }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-            resp.Body.as(xml, try(bytes(xml).decode_xml('qualys_api_2_0_ahd'), "decode_xml_error_ahd").as(ahd_body, 
+            resp.Body.as(xml, try(xml.decode_xml('qualys_api_2_0_ahd'), "decode_xml_error_ahd").as(ahd_body, 
               !has(ahd_body.decode_xml_error_ahd) 
               ?
                 (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.hasValue() 
@@ -126,7 +126,7 @@ program: |
             "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-          resp.Body.as(xml, try(bytes(xml).decode_xml('qualys_api_2_0_kb'), "decode_xml_error_kb").as(kb_body, 
+          resp.Body.as(xml, try(xml.decode_xml('qualys_api_2_0_kb'), "decode_xml_error_kb").as(kb_body, 
             !has(kb_body.decode_xml_error_kb) 
             ?
               ({

@@ -778,6 +778,19 @@ processors:
       lang: painless
       tag: script_to_set_SEVERITY_LEVEL
       description: Script to set SEVERITY_LEVEL for different ranges.
+      params:
+        vuln_level:
+          "0": None
+          "1": Minimal
+          "2": Medium
+          "3": Serious
+          "4": Critical
+          "5": Urgent
+        vuln_types:
+          - Potential Vulnerability
+          - Vulnerability
+          - Vulnerability or Potential Vulnerability
+          - Information Gathered
       source: >-
         if (!(ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.SEVERITY_LEVEL instanceof String)) {
           return;
@@ -786,27 +799,9 @@ processors:
         if (!(vuln_type instanceof String)) {
           return;
         }
-        def level = Long.parseLong(ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL);
-        if (['Potential Vulnerability', 'Vulnerability', 'Vulnerability or Potential Vulnerability'].contains(vuln_type)) {
-          if (level == 1){
-              ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL = "Minimal";
-          } else if (level == 2) {
-              ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL = "Medium";
-          } else if (level == 3) {
-              ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL = "Serious";
-          } else if (level == 4) {
-              ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL = "Critical";
-          } else if (level == 5) {
-              ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL = "Urgent";
-          }
-        } else if (vuln_type == "Information Gathered") {
-          if (level == 1) {
-              ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL = "Minimal";
-          } else if (level == 2) {
-              ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL = "Medium";
-          } else if (level == 3) {
-              ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL = "Serious";
-          }
+        String level = ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL;
+        if (params.vuln_types.contains(vuln_type)) {
+          ctx.qualys_vmdr.asset_host_detection.knowledge_base.SEVERITY_LEVEL = params.vuln_level.getOrDefault(level, params.vuln_level["0"]);
         }
       on_failure:
         - append:
@@ -865,6 +860,10 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

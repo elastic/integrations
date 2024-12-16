@@ -1142,18 +1142,18 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_RESULTS_1
       target_field: qualys_vmdr.asset_host_detection.vulnerability.results
       ignore_missing: true
-  # The below 2 gsub processors facilitate `splitOnToken` in subsequent script processor which otherwise cannot split \n or \t.
+  # The next two gsub processors facilitate `splitOnToken` in the subsequent script processor, which otherwise cannot split \n or \t.
   - gsub:
       field: qualys_vmdr.asset_host_detection.vulnerability.results
       pattern: '\n'
-      replacement: ';'
+      replacement: ';;'
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null && ctx.qualys_vmdr.asset_host_detection.vulnerability.results.startsWith("Package")
       tag: gsub_qualys_vmdr_asset_host_detection_vulnerability_results_line
       ignore_missing: true
   - gsub:
       field: qualys_vmdr.asset_host_detection.vulnerability.results
       pattern: '\t'
-      replacement: '|'
+      replacement: '||'
       tag: gsub_qualys_vmdr_asset_host_detection_vulnerability_results_tab
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null && ctx.qualys_vmdr.asset_host_detection.vulnerability.results.startsWith("Package")
       ignore_missing: true
@@ -1164,7 +1164,7 @@ processors:
       description: Extract package fields
       source: |-
         String results = ctx.qualys_vmdr.asset_host_detection.vulnerability.results;
-        if (results.startsWith("Package|")) {
+        if (results.startsWith("Package||")) {
           if (ctx.package == null) {
             ctx.package = new HashMap();
           }
@@ -1177,9 +1177,9 @@ processors:
           if (ctx.package.fixed_version == null) {
             ctx.package.fixed_version = new ArrayList();
           }
-          def res = results.splitOnToken(";");
+          def res = results.splitOnToken(";;");
           for (int i=1; i < res.length; i++) {
-            def pkg = res[i].splitOnToken("|");
+            def pkg = res[i].splitOnToken("||");
             ctx.package.name.add(pkg[0]);
             ctx.package.version.add(pkg[1]);
             if (pkg.length == 3) {
