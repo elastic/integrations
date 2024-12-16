@@ -628,7 +628,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | iis.application_pool.name | application pool name | keyword |  |  |
-| iis.application_pool.net_clr.exceptions_thrown_per_sec | Number of Exceps Thrown / sec. | float |  |  |
+| iis.application_pool.net_clr.exceptions_thrown_per_sec | Number of Exceptions Thrown / sec. | float |  |  |
 | iis.application_pool.net_clr.filters_per_sec | Number of filters per sec. | float |  | gauge |
 | iis.application_pool.net_clr.finallys_per_sec | The number of finallys per sec. | float |  | gauge |
 | iis.application_pool.net_clr.locks_and_threads.contention_rate_per_sec | Contention Rate / sec. | float |  |  |
