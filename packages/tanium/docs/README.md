@@ -956,12 +956,18 @@ An example event for `threat_response` looks as following:
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | tanium.threat_response.action | Action for the threat response. | keyword |
+| tanium.threat_response.alert_id | Alert ID | keyword |
 | tanium.threat_response.computer.ip | Computer ip of the threat response. | ip |
 | tanium.threat_response.computer.name | Computer name of the threat response. | keyword |
 | tanium.threat_response.created_at | Create time for the threat response. | date |
 | tanium.threat_response.event.id | Event id of the threat response.. | keyword |
 | tanium.threat_response.event.name | Event name of the threat response. | keyword |
 | tanium.threat_response.id | Threat response id. | keyword |
+| tanium.threat_response.impact_score | Impact score | integer |
+| tanium.threat_response.intel_id | Intelligence ID | keyword |
+| tanium.threat_response.intel_name | Intelligence name | keyword |
+| tanium.threat_response.intel_type | Intelligence type | keyword |
+| tanium.threat_response.link | Link | keyword |
 | tanium.threat_response.match_details.config_id | Config id. | keyword |
 | tanium.threat_response.match_details.config_rev_id | Config rev.iD. | keyword |
 | tanium.threat_response.match_details.finding.domain | Finding domain. | keyword |
