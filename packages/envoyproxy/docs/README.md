@@ -184,45 +184,49 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-02T13:39:34.540Z",
+    "@timestamp": "2024-12-03T22:18:52.507Z",
     "agent": {
-        "ephemeral_id": "1076a4ee-a067-4a6d-8b03-1c1d2f559873",
-        "id": "3d2a68b1-45d8-418b-bdcd-63a1bc7f6458",
-        "name": "elastic-agent-79840",
+        "ephemeral_id": "1aff9b9a-ad64-464e-ad78-7f4155a3b307",
+        "id": "030b4965-b64c-4213-a2ef-933fae9376eb",
+        "name": "elastic-agent-70658",
         "type": "metricbeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "envoyproxy.stats",
-        "namespace": "10169",
+        "namespace": "50029",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3d2a68b1-45d8-418b-bdcd-63a1bc7f6458",
+        "id": "030b4965-b64c-4213-a2ef-933fae9376eb",
         "snapshot": false,
         "version": "8.16.0"
     },
     "envoy": {
-        "envoy_http_downstream_rq_xx": {
-            "count": 1
-        },
-        "http_conn_manager_prefix": "ingress_http",
-        "response_code_class": "2"
+        "listener": {
+            "address": "0.0.0.0_443",
+            "ssl": {
+                "curve": "P-256"
+            },
+            "ssl_curves": {
+                "count": 1
+            }
+        }
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "envoyproxy.stats",
-        "ingested": "2024-12-02T13:39:34Z",
+        "ingested": "2024-12-03T22:18:52Z",
         "kind": "metric",
         "module": "statsd"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-79840",
+        "hostname": "elastic-agent-70658",
         "ip": [
             "172.18.0.4",
             "172.19.0.2"
@@ -231,7 +235,7 @@ An example event for `stats` looks as following:
             "02-42-AC-12-00-04",
             "02-42-AC-13-00-02"
         ],
-        "name": "elastic-agent-79840",
+        "name": "elastic-agent-70658",
         "os": {
             "kernel": "6.10.11-linuxkit",
             "name": "Wolfi",
@@ -262,58 +266,210 @@ An example event for `stats` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| envoy.\*.count | Envoyproxy counters | object | counter |
-| envoy.\*.max | Envoyproxy max timers metric | object |  |
-| envoy.\*.mean | Envoyproxy mean timers metric | object |  |
-| envoy.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
-| envoy.\*.median | Envoyproxy median timers metric | object |  |
-| envoy.\*.min | Envoyproxy min timers metric | object |  |
-| envoy.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
-| envoy.\*.value | Envoyproxy gauges | object | gauge |
-| envoy.cipher_suite | SSL cipher suite | keyword |  |
-| envoy.clientssl_prefix | Stats prefix for the Client SSL Auth network filter | keyword |  |
-| envoy.cluster_name | Cluster name tag | keyword |  |
-| envoy.connection_limit_prefix | Stats prefix for the Connection limit filter | keyword |  |
-| envoy.dns_filter_prefix | Stats prefix for the dns filter | keyword |  |
-| envoy.dynamo_operation | Operation name for the Dynamo http filter | keyword |  |
-| envoy.dynamo_partition_id | Partition ID for the Dynamo http filter | keyword |  |
-| envoy.dynamo_table | Table name for the Dynamo http filter | keyword |  |
-| envoy.ext_authz_prefix | Stats prefix for the ext_authz HTTP filter | keyword |  |
-| envoy.fault_downstream_cluster | Downstream cluster for the Fault http filter | keyword |  |
-| envoy.grpc_bridge_method | Request method name for the GRPC Bridge http filter | keyword |  |
-| envoy.grpc_bridge_service | Request service name GRPC Bridge http filter | keyword |  |
-| envoy.http_conn_manager_prefix | Stats prefix for HttpConnectionManager | keyword |  |
-| envoy.http_user_agent | User agent for a connection | keyword |  |
-| envoy.listener_address | Listener port tag | keyword |  |
-| envoy.local_http_ratelimit_prefix | Stats prefix for the Local Ratelimit network filter | keyword |  |
-| envoy.local_listener_ratelimit_prefix | Stats prefix for the Local Ratelimit listener filter | keyword |  |
-| envoy.local_network_ratelimit_prefix | Stats prefix for the Local Ratelimit network filter | keyword |  |
-| envoy.mongo_callsite | Request callsite for the Mongo Proxy network filter | keyword |  |
-| envoy.mongo_cmd | Request command for the Mongo Proxy network filter | keyword |  |
-| envoy.mongo_collection | Request collection for the Mongo Proxy network filter | keyword |  |
-| envoy.mongo_prefix | Stats prefix for the Mongo Proxy network filter | keyword |  |
-| envoy.proxy_protocol_prefix | Stats prefix for the proxy protocol listener filter. | keyword |  |
-| envoy.proxy_protocol_version | Proxy Protocol version for a connection (Proxy Protocol listener filter). | keyword |  |
-| envoy.ratelimit_prefix | Stats prefix for the Ratelimit network filter | keyword |  |
-| envoy.rbac_http_prefix | Stats prefix for the RBAC http filter | keyword |  |
-| envoy.rbac_policy_name | Policy name for the RBAC http filter | keyword |  |
-| envoy.rbac_prefix | Stats prefix for the RBAC network filter | keyword |  |
-| envoy.rds_route_config | Route config name for RDS updates | keyword |  |
-| envoy.redis_prefix | Stats prefix for the Redis Proxy network filter | keyword |  |
-| envoy.response_code | Request response code | keyword |  |
-| envoy.response_code_class | Request response code class | keyword |  |
-| envoy.route | Request route given by the Router http filter | keyword |  |
-| envoy.scoped_rds_config | Scoped route config name for RDS updates | keyword |  |
-| envoy.ssl_cipher | SSL cipher for a connection | keyword |  |
-| envoy.ssl_curve | SSL curve for a connection | keyword |  |
-| envoy.ssl_sigalg | SSL signature algorithm for a connection | keyword |  |
-| envoy.ssl_version | SSL version for a connection | keyword |  |
-| envoy.tcp_prefix | Stats prefix for the TCP Proxy network filter | keyword |  |
-| envoy.thrift_prefix | Stats prefix for the Thrift Proxy network filter | keyword |  |
-| envoy.udp_prefix | Stats prefix for the UDP Proxy network filter | keyword |  |
-| envoy.virtual_cluster | Request virtual cluster given by the Router http filter | keyword |  |
-| envoy.virtual_host | Request virtual host given by the Router http filter | keyword |  |
-| envoy.worker_id | Listener manager worker id | keyword |  |
+| envoy.cluster.\*.count | Envoyproxy counters | object | counter |
+| envoy.cluster.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.cluster.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.cluster.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.cluster.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.cluster.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.cluster.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.cluster.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.cluster.ext_authz.prefix | Stats prefix for the ext_authz HTTP filter | keyword |  |
+| envoy.cluster.grpc.bridge_method | Request method name for the GRPC Bridge http filter | keyword |  |
+| envoy.cluster.grpc.bridge_service | Request service name GRPC Bridge http filter | keyword |  |
+| envoy.cluster.name | Cluster name tag | keyword |  |
+| envoy.cluster.ratelimit.prefix | Stats prefix for the Ratelimit network filter | keyword |  |
+| envoy.cluster.response_code | Request response code | keyword |  |
+| envoy.cluster_manager.\*.count | Envoyproxy counters | object | counter |
+| envoy.cluster_manager.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.cluster_manager.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.cluster_manager.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.cluster_manager.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.cluster_manager.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.cluster_manager.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.cluster_manager.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.connection_limit.\*.count | Envoyproxy counters | object | counter |
+| envoy.connection_limit.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.connection_limit.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.connection_limit.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.connection_limit.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.connection_limit.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.connection_limit.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.connection_limit.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.connection_limit.prefix | Stats prefix for the Connection limit filter | keyword |  |
+| envoy.dns_filter.\*.count | Envoyproxy counters | object | counter |
+| envoy.dns_filter.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.dns_filter.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.dns_filter.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.dns_filter.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.dns_filter.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.dns_filter.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.dns_filter.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.dns_filter.prefix | Stats prefix for the dns filter | keyword |  |
+| envoy.filesystem.\*.count | Envoyproxy counters | object | counter |
+| envoy.filesystem.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.filesystem.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.filesystem.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.filesystem.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.filesystem.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.filesystem.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.filesystem.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.http.\*.count | Envoyproxy counters | object | counter |
+| envoy.http.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.http.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.http.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.http.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.http.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.http.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.http.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.http.conn_manager_prefix | Stats prefix for HttpConnectionManager | keyword |  |
+| envoy.http.dynamodb.operation | Operation name for the Dynamo http filter | keyword |  |
+| envoy.http.dynamodb.partition_id | Partition ID for the Dynamo http filter | keyword |  |
+| envoy.http.dynamodb.table | Table name for the Dynamo http filter | keyword |  |
+| envoy.http.fault_downstream_cluster | Downstream cluster for the Fault http filter | keyword |  |
+| envoy.http.rbac.http_prefix | Stats prefix for the RBAC http filter | keyword |  |
+| envoy.http.rbac.policy_name | Policy name for the RBAC http filter | keyword |  |
+| envoy.http.rbac.prefix | Stats prefix for the RBAC network filter | keyword |  |
+| envoy.http.rds.route_config | Route config name for RDS updates | keyword |  |
+| envoy.http.rds.scoped_config | Scoped route config name for RDS updates | keyword |  |
+| envoy.http.response_code_class | Request response code class | keyword |  |
+| envoy.http.route | Request route given by the Router http filter | keyword |  |
+| envoy.http.user_agent | User agent for a connection | keyword |  |
+| envoy.listener.\*.count | Envoyproxy counters | object | counter |
+| envoy.listener.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.listener.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.listener.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.listener.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.listener.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.listener.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.listener.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.listener.address | Listener port tag | keyword |  |
+| envoy.listener.ssl.cipher | SSL cipher for a connection | keyword |  |
+| envoy.listener.ssl.cipher_suite | SSL cipher suite | keyword |  |
+| envoy.listener.ssl.clientssl_prefix | Stats prefix for the Client SSL Auth network filter | keyword |  |
+| envoy.listener.ssl.curve | SSL curve for a connection | keyword |  |
+| envoy.listener.ssl.sigalg | SSL signature algorithm for a connection | keyword |  |
+| envoy.listener.ssl.version | SSL version for a connection | keyword |  |
+| envoy.listener.worker_id | Listener manager worker id | keyword |  |
+| envoy.local_http_ratelimit.\*.count | Envoyproxy counters | object | counter |
+| envoy.local_http_ratelimit.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.local_http_ratelimit.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.local_http_ratelimit.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.local_http_ratelimit.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.local_http_ratelimit.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.local_http_ratelimit.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.local_http_ratelimit.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.local_http_ratelimit.prefix | Stats prefix for the Local Ratelimit network filter | keyword |  |
+| envoy.local_listener_ratelimit.\*.count | Envoyproxy counters | object | counter |
+| envoy.local_listener_ratelimit.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.local_listener_ratelimit.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.local_listener_ratelimit.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.local_listener_ratelimit.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.local_listener_ratelimit.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.local_listener_ratelimit.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.local_listener_ratelimit.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.local_listener_ratelimit.prefix | Stats prefix for the Local Ratelimit listener filter | keyword |  |
+| envoy.local_network_ratelimit.\*.count | Envoyproxy counters | object | counter |
+| envoy.local_network_ratelimit.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.local_network_ratelimit.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.local_network_ratelimit.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.local_network_ratelimit.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.local_network_ratelimit.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.local_network_ratelimit.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.local_network_ratelimit.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.local_network_ratelimit.prefix | Stats prefix for the Local Ratelimit network filter | keyword |  |
+| envoy.mongo.\*.count | Envoyproxy counters | object | counter |
+| envoy.mongo.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.mongo.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.mongo.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.mongo.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.mongo.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.mongo.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.mongo.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.mongo.callsite | Request callsite for the Mongo Proxy network filter | keyword |  |
+| envoy.mongo.cmd | Request command for the Mongo Proxy network filter | keyword |  |
+| envoy.mongo.collection | Request collection for the Mongo Proxy network filter | keyword |  |
+| envoy.mongo.prefix | Stats prefix for the Mongo Proxy network filter | keyword |  |
+| envoy.proxy_proto.\*.count | Envoyproxy counters | object | counter |
+| envoy.proxy_proto.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.proxy_proto.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.proxy_proto.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.proxy_proto.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.proxy_proto.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.proxy_proto.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.proxy_proto.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.proxy_proto.prefix | Stats prefix for the proxy protocol listener filter. | keyword |  |
+| envoy.proxy_proto.version | Proxy Protocol version for a connection (Proxy Protocol listener filter). | keyword |  |
+| envoy.redis.\*.count | Envoyproxy counters | object | counter |
+| envoy.redis.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.redis.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.redis.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.redis.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.redis.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.redis.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.redis.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.redis.prefix | Stats prefix for the Redis Proxy network filter | keyword |  |
+| envoy.runtime.\*.count | Envoyproxy counters | object | counter |
+| envoy.runtime.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.runtime.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.runtime.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.runtime.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.runtime.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.runtime.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.runtime.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.server.\*.count | Envoyproxy counters | object | counter |
+| envoy.server.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.server.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.server.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.server.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.server.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.server.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.server.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.tcp.\*.count | Envoyproxy counters | object | counter |
+| envoy.tcp.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.tcp.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.tcp.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.tcp.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.tcp.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.tcp.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.tcp.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.tcp.prefix | Stats prefix for the TCP Proxy network filter | keyword |  |
+| envoy.thrift.\*.count | Envoyproxy counters | object | counter |
+| envoy.thrift.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.thrift.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.thrift.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.thrift.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.thrift.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.thrift.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.thrift.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.thrift.prefix | Stats prefix for the Thrift Proxy network filter | keyword |  |
+| envoy.tls_inspector.\*.count | Envoyproxy counters | object | counter |
+| envoy.tls_inspector.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.tls_inspector.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.tls_inspector.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.tls_inspector.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.tls_inspector.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.tls_inspector.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.tls_inspector.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.udp.\*.count | Envoyproxy counters | object | counter |
+| envoy.udp.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.udp.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.udp.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.udp.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.udp.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.udp.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.udp.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.udp.prefix | Stats prefix for the UDP Proxy network filter | keyword |  |
+| envoy.vhost.\*.count | Envoyproxy counters | object | counter |
+| envoy.vhost.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.vhost.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.vhost.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.vhost.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.vhost.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.vhost.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.vhost.\*.value | Envoyproxy gauges | object | gauge |
+| envoy.vhost.cluster | Request virtual cluster given by the Router http filter | keyword |  |
+| envoy.vhost.host | Request virtual host given by the Router http filter | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
