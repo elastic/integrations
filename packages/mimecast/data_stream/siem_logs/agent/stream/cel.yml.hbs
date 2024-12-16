@@ -27,6 +27,10 @@ redact:
     - client_secret
     - token.access_token
 program: |
+  // This program is shared between cloud_integrated_logs and siem_logs
+  // If it is changed here changes should be reflected in the other data
+  // streams. Do not differentiate the logic between these data streams
+  // lightly; use the state variable for this unless absolutely required.
   state.with(
     (
       (has(state.?token.expires) && now() < timestamp(state.token.expires)) ?

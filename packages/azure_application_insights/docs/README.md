@@ -1,12 +1,12 @@
 # Azure Application Insights Integration
 
-The [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) Integration allows users to retrieve application insights metrics from specified applications.  
+The Application Insights Integration allows users to retrieve application insights metrics from specified applications.  
 
 ### Integration level configuration options
 
 `Application ID`:: (_[]string_) ID of the application. This is Application ID from the API Access settings blade in the Azure portal.
 
-`Api Key`:: (_[]string_) The API key which will be generated. See [Azure Monitor Log Analytics API Overview](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID) for more information.
+`Api Key`:: (_[]string_) The API key which will be generated. See [Azure Monitor Log Analytics API Overview](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/api/overview) for more information.
 
 
 The integration contains the following data streams:
