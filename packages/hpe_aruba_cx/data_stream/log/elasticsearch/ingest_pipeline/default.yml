@@ -1762,6 +1762,120 @@ processors:
       if: "ctx.event?.code == '7806'"
       pattern: "USB device %{aruba.status}."
 
+  # Power over Ethernet events (79xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POE.htm
+  - dissect:
+      if: "ctx.event?.code == '7901'"
+      tag: poe_event_7901
+      field: "message"
+      description: "Detected powered device on interface. Type, Class."
+      pattern: "Detected powered device on interface %{aruba.interface.name}. Type:%{aruba.poe.pd_type}, Class:%{aruba.poe.pd_class}"
+  - grok:
+      if: "['7902','7903','7905','7906','7907','7909','7911','7912','7913','7916','7924'].contains(ctx.event?.code)"
+      tag: poe_event_7902_7903_7905_7906_7907_7909_7911_7912_7913_7916_7924
+      field: "message"
+      patterns:
+        - "interface %{GREEDYDATA:aruba.interface.name}"
+  - dissect:
+      if: "ctx.event?.code == '7904'"
+      tag: poe_event_7904
+      field: "message"
+      description: "Powered device fault on interface. Fault type."
+      pattern: "Powered device fault on interface %{aruba.interface.name}. Fault type %{aruba.poe.fault_type}"
+  - dissect:
+      if: "ctx.event?.code == '7908'"
+      tag: poe_event_7908
+      field: "message"
+      description: "Detected dual signature powered device on interface. Type, ClassA, ClassB"
+      pattern: "Detected dual signature powered device on interface %{aruba.interface.name}. Type:%{aruba.poe.pd_type}, ClassA:%{aruba.poe.paira_class}, ClassB:%{aruba.poe.pairb_class}"
+  - dissect:
+      if: "ctx.event?.code == '7910'"
+      tag: poe_event_7910
+      field: "message"
+      description: "Dual signature powered device fault on interface. Fault type."
+      pattern: "Dual signature powered device fault on interface %{aruba.interface.name} pair %{aruba.poe.pair}. Fault type %{aruba.poe.fault_type}"
+  - dissect:
+      if: "ctx.event?.code == '7914'"
+      tag: poe_event_7914
+      field: "message"
+      description: "Powered device got class demoted on interface"
+      pattern: "Powered device got class demoted on interface %{aruba.interface.name}. Requested_class %{aruba.poe.req_class} Assigned_class %{aruba.poe.assigned_class}"
+  - dissect:
+      if: "ctx.event?.code == '7915'"
+      tag: poe_event_7915
+      field: "message"
+      description: "Dual signature powered device got class demoted on interface"
+      pattern: "Dual signature powered device got class demoted on interface %{aruba.interface.name}. Requested_classA %{aruba.poe.req_class_a} Requested_classB %{aruba.poe.req_class_b} Assigned_classA %{aruba.poe.assigned_class_a} Assigned_classB %{aruba.poe.assigned_class_b}"
+  - grok:
+      if: "['7917', '7926'].contains(ctx.event?.code)"
+      tag: poe_event_7917_7926
+      field: "message"
+      description: "PoE usage exceeded threshold limit | PoE usage is below threshold"
+      patterns: 
+        - "^PoE usage (exceeded|is below) threshold( limit)? of %{GREEDYDATA:aruba.limit.threshold}"
+  - grok:
+      if: "['7918', '7919'].contains(ctx.event?.code)"
+      tag: poe_event_7918_7919
+      field: "message"
+      description: "PoE controller got into fault | reset"
+      patterns:
+        - "^PoE controller %{DATA:aruba.poe.cntrl_name} got"
+  - dissect:
+      if: "ctx.event?.code == '7920'"
+      tag: poe_event_7920
+      field: "message"
+      description: "Powered device got class promoted"
+      pattern: "Powered device got class promoted on interface %{aruba.interface.name}.Requested_class %{aruba.poe.req_class} Assigned_class %{aruba.poe.assigned_class}"
+  - dissect:
+      if: "ctx.event?.code == '7921'"
+      tag: poe_event_7921
+      field: "message"
+      description: "Dual signature powered device got class promoted"
+      pattern: "Dual signature powered device got class promoted on interface %{aruba.interface.name}.Requested_classA %{aruba.poe.req_class_a} Requested_classB %{aruba.poe.req_class_b} Assigned_classA %{aruba.poe.assigned_class_a} Assigned_classB %{aruba.poe.assigned_class_b}"
+  - dissect:
+      if: "ctx.event?.code == '7922'"
+      tag: poe_event_7922
+      field: "message"
+      description: "Powered device is drawing power more than its class"
+      pattern: "Powered device is drawing power more than its class on interface %{aruba.interface.name}, type:%{aruba.poe.pd_type} class:%{aruba.poe.pd_class} power:%{aruba.power.value} is exceeding the max average power of the PD class. Check the PD max power draw, cabling type and length to improve interoperability"
+  - grok:
+      if: "['7923','7931','7932','7934','7935','7936','7937','7938','7940'].contains(ctx.event?.code)"
+      tag: poe_event_7923_7931_7932_7934_7935_7936_7937_7938_7940
+      field: "message"
+      patterns:
+        - "interface %{DATA:aruba.interface.name} "
+  - dissect:
+      if: "ctx.event?.code == '7925'"
+      tag: poe_event_7925
+      field: "message"
+      description: "Dual signature powered device is drawing power more than its class"
+      pattern: "Dual signature powered device is drawing power more than its class on interface %{aruba.interface.name}, type:%{aruba.poe.pd_type} classA:%{aruba.poe.paira_class} classB:%{aruba.poe.pairb_class} power:%{aruba.power.value}"
+  - dissect:
+      if: "ctx.event?.code == '7927'"
+      tag: poe_event_7927
+      field: "message"
+      description: "PoE drawn power is more than available PoE power"
+      pattern: "Total power drawn: %{aruba.power.value}W by powered device is exceeding the total available PoE power:%{aruba.power.available}W. Check the PD max power draw, cabling type and length to avoid system crowbar."
+  - dissect:
+      if: "ctx.event?.code == '7928'"
+      tag: poe_event_7928
+      field: "message"
+      description: "Powered device invalid signature indication"
+      pattern: "Powered device invalid signature indication on interface %{aruba.interface.name}."
+  - dissect:
+      if: "ctx.event?.code == '7933'"
+      tag: poe_event_7933
+      field: "message"
+      description: "Subsystem came up with quick PoE"
+      pattern: "Subsystem %{aruba.poe.subsys_name} came up with quick PoE"
+  - dissect:
+      if: "ctx.event?.code == '7939'"
+      tag: poe_event_7939
+      field: "message"
+      description: "Powered device requested power down on interface."
+      pattern: "Powered device requested power down on interface %{aruba.interface.name} %{aruba.poe.duration}"
+        
+
   # Bluetooth Management events (80xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BLUETOOTH_MGMT.htm
   - grok:

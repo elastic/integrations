@@ -904,24 +904,28 @@ Note: Descriptions have not been filled out
 | <warnings>  | aruba.count            |
 
 #### [Power over Ethernet events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POE.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.power.assign_class    |             |      |                              |
-| aruba.power.assign_class_a  |             |      |                              |
-| aruba.power.assign_class_b  |             |      |                              |
-| aruba.power.available       |             |      |                              |
-| aruba.power.drawn           |             |      |                              |
-| aruba.power.fault_type      |             |      | error.type                   |
-| aruba.power.interface_name  |             |      |                              |
-| aruba.power.limit           |             |      | aruba.limit.threshold                  |
-| aruba.power.pair            |             |      |                              |
-| aruba.power.paira_class     |             |      |                              |
-| aruba.power.pairb_class     |             |      |                              |
-| aruba.power.pd_class        |             |      |                              |
-| aruba.power.pd_type         |             |      |                              |
-| aruba.power.req_class       |             |      |                              |
-| aruba.power.req_class_a     |             |      |                              |
-| aruba.power.req_class_b     |             |      |                              |
+| Docs Field         | Schema Mapping               |
+|--------------------|------------------------------|
+| <assigned_class>   | aruba.poe.assigned_class     |
+| <assigned_class_A> | aruba.poe.assigned_class_a   |
+| <assigned_class_B> | aruba.poe.assigned_class_b   |
+| <cntrl_name>       | aruba.poe.cntrl_name         |
+| <duration>         | aruba.poe.duration           |
+| <fault_type>       | aruba.poe.fault_type         |
+| <interface_name>   | aruba.interface.name         |
+| <threshold_limit>  | aruba.limit.threshold        |
+| <pair>             | aruba.poe.pair               |
+| <paira_class>      | aruba.poe.paira_class        |
+| <pairb_class>      | aruba.poe.pairb_class        |
+| <pd_class>         | aruba.poe.pd_class           |
+| <pd_type>          | aruba.poe.pd_type            |
+| <power>            | aruba.power.value            |
+| <power_available>  | aruba.power.available        |
+| <power_drawn>      | aruba.power.value            |
+| <req_class>        | aruba.poe.req_class          |
+| <req_class_a>      | aruba.poe.req_class_a        |
+| <req_class_b>      | aruba.poe.req_class_b        |
+| <subsys_name>      | aruba.poe.subsys_name        |
 
 #### [Proxy ARP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PROXY-ARP.htm)
 | Field                | Description | Type | Common                       |
@@ -1541,6 +1545,22 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.pim.sip3 |  | keyword |
 | aruba.pim.totalvid |  | long |
 | aruba.pim.type |  | keyword |
+| aruba.poe.assigned_class |  | keyword |
+| aruba.poe.assigned_class_a |  | keyword |
+| aruba.poe.assigned_class_b |  | keyword |
+| aruba.poe.available |  | keyword |
+| aruba.poe.cntrl_name |  | keyword |
+| aruba.poe.duration |  | keyword |
+| aruba.poe.fault_type |  | keyword |
+| aruba.poe.pair |  | keyword |
+| aruba.poe.paira_class |  | keyword |
+| aruba.poe.pairb_class |  | keyword |
+| aruba.poe.pd_class |  | keyword |
+| aruba.poe.pd_type |  | keyword |
+| aruba.poe.req_class |  | keyword |
+| aruba.poe.req_class_a |  | keyword |
+| aruba.poe.req_class_b |  | keyword |
+| aruba.poe.subsys_name |  | keyword |
 | aruba.policy.application |  | keyword |
 | aruba.policy.name |  | keyword |
 | aruba.port |  | keyword |
@@ -1549,12 +1569,14 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.port_access.old_limit |  | keyword |
 | aruba.port_access.old_mode |  | keyword |
 | aruba.port_access.old_name |  | keyword |
+| aruba.power.available |  | keyword |
 | aruba.power.fanidx |  | long |
 | aruba.power.name |  | keyword |
 | aruba.power.redund |  | keyword |
 | aruba.power.sensorid |  | keyword |
 | aruba.power.support |  | keyword |
 | aruba.power.type |  | keyword |
+| aruba.power.value |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.priority |  | keyword |
 | aruba.role |  | keyword |
