@@ -928,22 +928,22 @@ Note: Descriptions have not been filled out
 | <subsys_name>      | aruba.poe.subsys_name        |
 
 #### [Proxy ARP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PROXY-ARP.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.proxy_arp.port |             |      | server.port                  |
-| aruba.proxy_arp.vrf  |             |      | aruba.vrf.id                 |
+| Docs Field  | Schema Mapping |
+|-------------|----------------|
+| <port>      | aruba.port     |
+| <vrf>       | aruba.vrf.id   |
 
 #### [QoS ASIC Provider events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS_ASIC.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.qos.error_string      |             |      | error.message                |
-| aruba.qos.error_val         |             |      | error.code                   |
-| aruba.qos.existing_slot     |             |      | aruba.slot                   |
-| aruba.qos.local_slot        |             |      | aruba.slot                   |
-| aruba.qos.new_slot          |             |      |                              |
-| aruba.qos.port_name         |             |      | server.port                  |
-| aruba.qos.pri               |             |      | aruba.priority               |
-| aruba.qos.queue             |             |      |                              |
+| Docs Field         | Schema Mapping       |
+|--------------------|----------------------|
+| <error_string>     | event.reason         |
+| <existing_slot>    | aruba.slot           |
+| <local_slot>       | aruba.slot           |
+| <new_slot>         | aruba.qos.new_slot   |
+| <port_name>        | aruba.port           |
+| <pri>              | aruba.priority       |
+| <queue>            | aruba.qos.queue      |
+| <val>              | error.code           |
 
 #### [Quality of Service events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS.htm)
 | Field                       | Description | Type | Common                       |
@@ -1579,6 +1579,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.power.value |  | keyword |
 | aruba.prefix |  | keyword |
 | aruba.priority |  | keyword |
+| aruba.qos.new_slot |  | keyword |
+| aruba.qos.queue |  | keyword |
 | aruba.role |  | keyword |
 | aruba.sequence |  | keyword |
 | aruba.server.mode |  | keyword |
