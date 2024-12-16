@@ -946,34 +946,34 @@ Note: Descriptions have not been filled out
 | <val>              | error.code           |
 
 #### [Quality of Service events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.qos.error             |             |      | error.message                |
-| aruba.qos.error_string      |             |      | error.message                |
+| Docs Field       | Schema Mapping       |
+|------------------|----------------------|
+| <error>          | event.reason         |
+| <error_string>   | event.reason         |
 
 #### [Rapid per VLAN Spanning Tree Protocol events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RPVST.htm)
-| Field                            | Description | Type | Common                       |
-|----------------------------------|-------------|------|------------------------------|
-| aruba.vlan.current_virtual_ports |             |      |                              |
-| aruba.vlan.interface             |             |      | observer.ingress.interface.name |
-| aruba.vlan.mac                   |             |      | client.mac                   |
-| aruba.vlan.Maximum_Virtual_Ports |             |      |                              |
-| aruba.vlan.new_mac               |             |      | client.mac                   |
-| aruba.vlan.new_mode              |             |      |                              |
-| aruba.vlan.new_port              |             |      | server.port                  |
-| aruba.vlan.new_priority          |             |      | aruba.priority               |
-| aruba.vlan.npvid                 |             |      |                              |
-| aruba.vlan.old_mac               |             |      |                              |
-| aruba.vlan.old_mode              |             |      |                              |
-| aruba.vlan.old_port              |             |      |                              |
-| aruba.vlan.old_priority          |             |      |                              |
-| aruba.vlan.port                  |             |      | server.port                  |
-| aruba.vlan.pkt_type              |             |      | event.type                   |
-| aruba.vlan.priority_mac          |             |      | client.mac                   |
-| aruba.vlan.proto                 |             |      |                              |
-| aruba.vlan.pvid                  |             |      |                              |
-| aruba.vlan.rpvst_instance        |             |      |                              |
-| aruba.vlan.vlan                  |             |      | network.vlan.id              |
+| Docs Field              | Schema Mapping               |
+|-------------------------|------------------------------|
+| <Current_Virtual_Ports> | aruba.limit.read_value       |
+| <interface>             | aruba.interface.id           |
+| <mac>                   | client.mac                   |
+| <Maximum_Virtual_Ports> | aruba.limit.threshold        |
+| <new_mac>               | client.mac                   |
+| <new_mode>              | aruba.rpvst.new_mode         |
+| <new_port>              | aruba.port                   |
+| <new_priority>          | aruba.priority               |
+| <npvid>                 | aruba.rpvst.npvid            |
+| <old_mac>               | aruba.rpvst.old_mac          |
+| <old_mode>              | aruba.rpvst.old_mode         |
+| <old_port>              | aruba.rpvst.old_port         |
+| <old_priority>          | aruba.rpvst.old_priority     |
+| <port>                  | aruba.port                   |
+| <pkt_type>              | aruba.rpvst.pkt_type         |
+| <priority_mac>          | client.mac                   |
+| <proto>                 | aruba.rpvst.proto            |
+| <pvid>                  | aruba.rpvst.pvid             |
+| <instance>              | aruba.instance.id            |
+| <vlan>                  | network.vlan.id              |
 
 #### [RBAC events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RBACD.htm)
 | Field                 | Description | Type | Common            |
