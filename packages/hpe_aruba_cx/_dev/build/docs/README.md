@@ -976,21 +976,21 @@ Note: Descriptions have not been filled out
 | <vlan>                  | network.vlan.id              |
 
 #### [RBAC events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RBACD.htm)
-| Field                 | Description | Type | Common            |
-|-----------------------|-------------|------|-------------------|
-| aruba.rbac.tac_status |             |      | aruba.status      |
+| Docs Field  | Schema Mapping |
+|-------------|----------------|
+| <tac_status> | aruba.status  |
 
 
 #### [Redundant Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REDUNDANT_MANAGEMENT.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.redund.mgmt_module  |             |      |                              |
-| aruba.redund.reason       |             |      | event.reason                 |
+| Docs Field    | Schema Mapping               |
+|---------------|------------------------------|
+| <mgmt_module> | aruba.redundant.mgmt_module  |
+| <reason>      | event.reason                 |
 
 #### [Replication Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REPLD.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.replication.uuid_str|             |      | aruba.instance.id            |
+| Docs Field | Schema Mapping               |
+|------------|------------------------------|
+| <uuid_str> | aruba.instance.id            |
 
 #### [REST events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RESTD.htm)
 | Field                     | Description | Type | Common                       |

@@ -692,6 +692,36 @@ processors:
       if: "['2019'].contains(ctx.event?.code)"
       pattern: "spanning tree mode changed from %{aruba.mstp.old_mode} to %{aruba.mstp.new_mode}, it will trigger the reconvergence"
 
+  # Redundant Management events (220x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REDUNDANT_MANAGEMENT.htm
+  - dissect:
+      if: "ctx.event.code == '2201'"
+      tag: redundant_mgmt_event_2201
+      field: "message"
+      description: "This log event informs that failover event is detected"
+      pattern: "Failover detected: Reason %{event.reason}"
+  - grok:
+      if: "['2204','2205'].contains(ctx.event?.code)"
+      tag: redundant_mgmt_event_2204_2205
+      field: "message"
+      description: "This log event informs about the status of [Active|Standby] mgmt module"
+      patterns:
+        - "^%{DATA:aruba.redundant.mgmt_module} is (Active|Standby)"
+  - grok:
+      if: "['2202','2206'].contains(ctx.event?.code)"
+      tag: redundant_mgmt_event_2204_2205
+      field: "message"
+      description: "This log event informs that standby mgmt module has been removed | added to the system"
+      patterns:
+        - "^(Lost|Detected) %{DATA:aruba.redundant.mgmt_module} as Standby Management Module, redundancy (disabled|enabled)"
+  - grok:
+      if: "['2208','2209'].contains(ctx.event?.code)"
+      tag: redundant_mgmt_event_2208_2209
+      field: "message"
+      description: "This log event informs the user that filesync is in progress | an ISSU operation has begun"
+      patterns:
+        - "^%{DATA:aruba.redundant.mgmt_module} is (waiting for filesync|starting ISSU operation)"
+
   # AAA events (23xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm
   - grok:
@@ -804,6 +834,15 @@ processors:
       patterns:
         - "^%{DATA:aruba.mgmd.mgmd_type} is not operational on interface %{DATA:aruba.mgmd.l3_port} due to resource unavailability"
         - "^%{DATA:aruba.mgmd.mgmd_type} snooping is %{DATA:aruba.status} on VLAN %{GREEDYDATA:network.vlan.id}."
+
+    # Replication Manager events (270x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REPLD.htm
+  - dissect:
+      field: message
+      tag: replication_mgr_event_2705
+      description: "Log indicates Mutlicast L3 Bridge Control Forwarding entry with uuid has no reference to a VLAN"
+      if: "ctx.event?.code == '2705'"
+      pattern: "Multicast L3 Bridge Control Forwarding entry with uuid %{aruba.instance.id} has no reference to a VLAN"
 
     # Loop Protect events (280x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOP-PROTECT.htm
@@ -2573,6 +2612,18 @@ processors:
       field: "message"
       description: "Policy application failure"
       pattern: "Policy %{aruba.policy.name} failed to apply on %{aruba.policy.application}"
+
+  # RBAC events (1030x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RBACD.htm
+  - grok:
+      if: "['10301', '10302'].contains(ctx.event?.code)"
+      tag: policies_event_10301_10302
+      field: "message"
+      description: "Log event when local tac_plus server has been started | server failed to start"
+      patterns: 
+        # Note: Adding more tolerances as the documentation might be wrong ('d' at the end)
+        - "^Local authorization has been %{GREEDYDATA:aruba.status}"
+        - "^Failed to %{DATA:aruba.status} local authorization"
 
   # ARP security events (104xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm
