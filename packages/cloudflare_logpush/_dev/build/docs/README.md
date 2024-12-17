@@ -71,21 +71,21 @@ This module has been tested against **Cloudflare version v4**.
 
   | Data Stream Name           | Bucket List Prefix     |
   | -------------------------- | ---------------------- |
-  | Access Request             | access_request         |
+  | Access Request             | access_request         |
   | Audit Logs                 | audit_logs             |
-  | CASB findings              | casb                   |
-  | Device Posture Results     | device_posture         |
+  | CASB findings              | casb                   |
+  | Device Posture Results     | device_posture         |
   | DNS                        | dns                    |
   | DNS Firewall               | dns_firewall           |
   | Firewall Event             | firewall_event         |
-  | Gateway DNS                | gateway_dns            |
-  | Gateway HTTP               | gateway_http           |
+  | Gateway DNS                | gateway_dns            |
+  | Gateway HTTP               | gateway_http           |
   | Gateway Network            | gateway_network        |
   | HTTP Request               | http_request           |
   | Magic IDS                  | magic_ids              |
   | NEL Report                 | nel_report             |
   | Network Analytics          | network_analytics_logs |
-  | Zero Trust Network Session | network_session        |
+  | Zero Trust Network Session | network_session        |
   | Sinkhole HTTP              | sinkhole_http          |
   | Spectrum Event             | spectrum_event         |
   | Workers Trace Events       | workers_trace          |
@@ -156,6 +156,7 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 - The destination_conf parameter inside the request data should set the Content-Type header to `application/json`. This is the content type that the HTTP endpoint expects for incoming events.
 - Default port for the HTTP Endpoint is _9560_.
 - When using the same port for more than one dataset, be sure to specify different dataset paths.
+- To enable request ACKing, add a `wait_for_completion_timeout` request query with the timeout for an ACK. See the [HTTP Endpoint documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html) for details.
 
 ### Enabling the integration in Elastic
 1. In Kibana, go to Management > Integrations
