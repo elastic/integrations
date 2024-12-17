@@ -5,10 +5,14 @@ processors:
       field: message
       target_field: beyondinsight_password_safe.managedaccount
 
+  - drop:
+      if: ctx.beyondinsight_password_safe.managedaccount?.code == '401'
+
   - fingerprint:
       fields:
         - beyondinsight_password_safe.managedaccount.AccountId
       target_field: "_id"
+
 
 ####################
 # Scripts for processing input #
@@ -93,44 +97,24 @@ processors:
       field: event.module
       value: beyondinsight_password_safe
 
-  - drop:
-      if: ctx.beyondinsight_password_safe.managedaccount?.code == '401'
 ####################
 # Managed Account Fields #
 ####################
   - date:
-      if: "ctx.beyondinsight_password_safe?.managedaccount?.last_change_date != null"
-      field: "beyondinsight_password_safe.managedaccount.last_change_date"
-      target_field: "beyondinsight_password_safe.managedaccount.last_change_date"
-      formats: ["yyyy-MM-dd'T'HH:mm:ss.SS", "ISO8601"]
-      ignore_failure: false
+      if: ctx.beyondinsight_password_safe?.managedaccount?.last_change_date != null
+      field: beyondinsight_password_safe.managedaccount.last_change_date
+      target_field: beyondinsight_password_safe.managedaccount.last_change_date
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SS
+        - ISO8601
 
   - date:
-      if: "ctx.beyondinsight_password_safe?.managedaccount?.next_change_date != null"
-      field: "beyondinsight_password_safe.managedaccount.next_change_date"
-      target_field: "beyondinsight_password_safe.managedaccount.next_change_date"
-      formats: [ "yyyy-MM-dd'T'HH:mm:ss.SS", "ISO8601" ]
-      ignore_failure: false
-
-  - script:
-      description: "Converts platform_id and system_id to string"
-      lang: painless
-      source: >
-        if (ctx.beyondinsight_password_safe?.managedaccount != null) {
-          if (ctx.beyondinsight_password_safe.managedaccount.platform_id != null) {
-            ctx.beyondinsight_password_safe.managedaccount.platform_id = ctx.beyondinsight_password_safe.managedaccount.platform_id.toString();
-          }
-          if (ctx.beyondinsight_password_safe.managedaccount.system_id != null) {
-            ctx.beyondinsight_password_safe.managedaccount.system_id = ctx.beyondinsight_password_safe.managedaccount.system_id.toString();
-          }
-          if (ctx.beyondinsight_password_safe.managedaccount.account_id != null) {
-            ctx.beyondinsight_password_safe.managedaccount.account_id = ctx.beyondinsight_password_safe.managedaccount.account_id.toString();
-          }
-          if (ctx.beyondinsight_password_safe.managedaccount.application_id != null) {
-            ctx.beyondinsight_password_safe.managedaccount.application_id = ctx.beyondinsight_password_safe.managedaccount.application_id.toString();
-          }
-        }
-
+      if: ctx.beyondinsight_password_safe?.managedaccount?.next_change_date != null
+      field: beyondinsight_password_safe.managedaccount.next_change_date
+      target_field: beyondinsight_password_safe.managedaccount.next_change_date
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SS
+        - ISO8601
 
 on_failure:
   - append:
