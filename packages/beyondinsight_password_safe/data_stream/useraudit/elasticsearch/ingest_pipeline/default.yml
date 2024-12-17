@@ -10,6 +10,8 @@ processors:
         - beyondinsight_password_safe.useraudit.AuditID
       target_field: "_id"
 
+  - drop:
+      if: ctx.beyondinsight_password_safe.useraudit?.code == '401' 
 ##################### Scripts for processing input #####################
   - script:
       description: Drops null/empty values recursively.
@@ -100,9 +102,7 @@ processors:
   - set:
       field: user.name
       value: "{{{beyondinsight_password_safe.useraudit.user_name}}}"
-      ignore_empty_value: true           
-  - drop:
-      if: ctx.beyondinsight_password_safe.useraudit?.code == '401'  
+      ignore_empty_value: true            
  ###################### Override host.ip ######################
   - script:
       lang: painless
