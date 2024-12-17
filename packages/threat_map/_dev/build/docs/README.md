@@ -40,7 +40,7 @@ To use the Threat Map dashboard, ensure the following:
 
 ## Data Format
 
-Data is retrieved from Elasticsearch using the `_all` index search endpoint. Ensure the following fields exist in each document:
+Data is retrieved from Elasticsearch using the `_all,*:_all` index search endpoint. Ensure the following fields exist in each document:
 
 | Field                         | Description                                                        | Required/Optional | Default Value |
 |-------------------------------|--------------------------------------------------------------------|-------------------|---------------|
