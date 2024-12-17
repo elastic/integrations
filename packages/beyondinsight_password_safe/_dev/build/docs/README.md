@@ -12,16 +12,14 @@ This data stream utilizes the BeyondInsight API's `/v3/UserAudits` endpoint.
 This data stream utilizes the BeyondInsight API's `/v3/Sessions` endpoint.
 
 - **`managedsystem`** Provides a list of managed systems.  
-This data stream utilizes the BeyondInsight API's `/v3//ManagedSystems` endpoint.
+This data stream utilizes the BeyondInsight API's `/v3/ManagedSystems` endpoint.
 
 - **`managedaccount`** Provides a list of managed accounts.  
-This data stream utilizes the BeyondInsight API's `/v3//ManagedAccounts` endpoint.
+This data stream utilizes the BeyondInsight API's `/v3/ManagedAccounts` endpoint.
 
 - **`asset`** Provides a list of assets.  
-This data stream utilizes the BeyondInsight API's `/v3//assets` endpoint.
+This data stream utilizes the BeyondInsight API's `/v3/assets` endpoint.
 
-- **`request`** Provides a list of managed accounts.  
-This data stream utilizes the BeyondInsight API's `/v3//requests` endpoint.
 
 ## Requirements
 
@@ -138,14 +136,8 @@ Asset documents can be found using the API model by setting the filter `event.da
 
 Here is an example asset document:
 
-An example event for `asset` looks as following:
+{{event "asset"}}
 
-```json
-{
-       
-      }
- 
-```
 
 **ECS Field Reference**
 
@@ -155,22 +147,4 @@ The following non-ECS fields are used in asset documents:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset |  | constant_keyword |
-| event.module |  | constant_keyword |
-| input.type | Input type | keyword |
-|beyondinsight_password_safe.asset.workgroup_id | Workgroup id | keyword |
-|beyondinsight_password_safe.asset.asset_id | Asset id | keyword |
-|beyondinsight_password_safe.asset.asset_name | Asset name | keyword |
-|beyondinsight_password_safe.asset.dns_name | DNS name | keyword |
-|beyondinsight_password_safe.asset.domain_name | Domain name | keyword |
-|beyondinsight_password_safe.asset. host.ip | Next change date | ip |
-|beyondinsight_password_safe.asset.host.mac | Is changing | keyword |
-|beyondinsight_password_safe.asset.asset_type | Change state | keyword |
-|beyondinsight_password_safe.asset.os.name | Is is access | keyword |
-|beyondinsight_password_safe.asset.create_date | Create date | date |
+{{fields "asset"}}
