@@ -26,13 +26,13 @@ redact:
 program: |-
   
   (
-  	(!has(state.cursor) || has(state.cursor) && has(state.cursor.auth_cookie) && state.cursor.auth_cookie == null) ?
+  	(!has(state.cursor) || has(state.cursor) && has(state.cursor.auth_cookie) && state.?cursor.auth_cookie.orValue(null) == null) ?
   		// Authenticating using API to retrieve auth Cookie
   		request("POST", state.url + "/Auth/SignAppin").with(
   			{
   				"Header": {
   					"Authorization": [
-  						string("PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];"),
+  						"PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];",
   					],
   					"Content-Type": ["application/json"],
   				},
