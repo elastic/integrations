@@ -23,6 +23,9 @@ processors:
         - mimecast.eventTime
       target_field: "_id"
       ignore_missing: true
+  - set:
+      field: event.category
+      value: [email]
 
   - date:
       description: Use 'mimecast.eventTime' as the '@timestamp'
@@ -88,17 +91,16 @@ processors:
       field: 
         - mimecast
       ignore_missing: true
-  - remove:
-      description: Remove 'event.original' if 'preserve_original_event' is not set.
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
       
 # Error handling
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

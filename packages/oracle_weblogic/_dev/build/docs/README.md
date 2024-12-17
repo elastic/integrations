@@ -22,7 +22,7 @@ In order to ingest data from Oracle WebLogic:
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost
     ```
 
-    (Optional) User can run Jolokia on https by configuring following [parameters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
+    (Optional) User can run Jolokia on https by configuring the following [parameters](https://jolokia.org/reference/html/manual/agents.html#agent-jvm-config).
 
     ```
      -javaagent:<path-to-jolokia-agent>=port=<port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>

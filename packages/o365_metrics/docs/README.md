@@ -1,6 +1,6 @@
 # Microsoft Office 365 Metrics Integration
 
-This integration is to collect metrics for [Microsoft Office 365](https://learn.microsoft.com/en-us/graph/overview).
+This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
 
 ## Setup
 
@@ -36,9 +36,9 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
-### Active Users
+### OutlookActivity
 
-Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
+Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
 
 **Exported fields**
@@ -53,21 +53,11 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| o365metrics.active_users.exchange_active | Number of Exchange active users. | integer |
-| o365metrics.active_users.exchange_inactive | Number of Exchange inactive users. | integer |
-| o365metrics.active_users.office_365_active | Number of Office 365 active users. | integer |
-| o365metrics.active_users.office_365_inactive | Number of Office 365 inactive users. | integer |
-| o365metrics.active_users.onedrive_active | Number of OneDrive active users. | integer |
-| o365metrics.active_users.onedrive_inactive | Number of OneDrive inactive users. | integer |
-| o365metrics.active_users.report_period | Report period in days. | integer |
-| o365metrics.active_users.report_refresh_date | Date when the report was refreshed. | date |
-| o365metrics.active_users.sharepoint_active | Number of SharePoint active users. | integer |
-| o365metrics.active_users.sharepoint_inactive | Number of SharePoint inactive users. | integer |
-| o365metrics.active_users.skype_for_business_active | Number of Skype for Business active users. | integer |
-| o365metrics.active_users.skype_for_business_inactive | Number of Skype for Business inactive users. | integer |
-| o365metrics.active_users.teams_active | Number of Teams active users. | integer |
-| o365metrics.active_users.teams_inactive | Number of Teams inactive users. | integer |
-| o365metrics.active_users.yammer_active | Number of Yammer active users. | integer |
-| o365metrics.active_users.yammer_inactive | Number of Yammer inactive users. | integer |
-
+| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | integer |
+| o365.metrics.outlook.activity.report_date | The specific date for which the report data applies. | date |
+| o365.metrics.outlook.activity.report_period | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer |
+| o365.metrics.outlook.activity.report_refresh_date | The date when the report data was last updated. | date |

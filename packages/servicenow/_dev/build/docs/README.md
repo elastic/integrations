@@ -101,7 +101,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
 ### Time Zone Selection:
-- In the Data Collection section, use the `Timezone of ServiceNow Instance` dropdown to select your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
+- In the Data Collection section, use the `Time Zone Offset` field to set your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
 - Steps to See/Update the timezone in ServiceNow Instance:
   1. Click the user icon in the top-right corner of the ServiceNow interface.
   2. Select Profile from the dropdown menu.
@@ -120,7 +120,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - password
    - table name
    - timestamp field
-   - timezone
+   - timezone offset
 
    or if you want to collect logs via AWS S3, then you have to put the following details:
    - collect logs via S3 Bucket toggled on
@@ -129,7 +129,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - bucket arn
    - table name
    - timestamp field
-   - timezone
+   - timezone offset
 
    or if you want to collect logs via AWS SQS, then you have to put the following details:
    - collect logs via S3 Bucket toggled off
@@ -138,7 +138,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - queue url
    - table name
    - timestamp field
-   - timezone
+   - timezone offset
 6. Click on "Save and Continue" to save the integration.
 
 **Note**: To fetch parquet file data, enable the toggle, `Parquet Codec`

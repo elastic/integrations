@@ -15,8 +15,8 @@ scms:
       branch: main
 
 targets:
-  integration_bug_yml:
-    name: update pkgs in .github/ISSUE_TEMPLATE/integration_bug.yml
+  integration_issue_templates_yml:
+    name: update pkgs in .github/ISSUE_TEMPLATE/integration_*.yml
     kind: shell
     scmid: default
     spec:
@@ -38,12 +38,13 @@ targets:
         done | yq -o json .)
         
         yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_bug.yml'
+        #yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_feature_request.yml'
         
         git diff --name-only HEAD
 
 actions:
   openPullRequest:
-    title: '[automation] Update packages in .github/ISSUE_TEMPLATE/integration_bug.yml'
+    title: '[automation] Update packages in .github/ISSUE_TEMPLATE/integration_*.yml'
     kind: github/pullrequest
     scmid: default
     spec:

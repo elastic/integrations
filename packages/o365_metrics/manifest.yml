@@ -1,7 +1,7 @@
 name: o365_metrics
 title: Microsoft Office 365 Metrics
-version: "0.0.1"
-description: Collect metrics from Microsoft Office 365 with Elastic Agent.
+version: "0.1.0"
+description: Collect metrics from Microsoft Office 365 with Elastic Agent.(This integration is currently in development and not yet ready for general use)
 type: integration
 format_version: "3.0.2"
 categories: [observability]
@@ -22,6 +22,12 @@ policy_templates:
         title: "Collect Office 365 metrics via Microsoft Graph API using CEL Input"
         description: "Collect Office 365 metrics via Microsoft Graph API using CEL Input"
         vars:
+          - name: url
+            type: text
+            title: Base URL of Office Graph API
+            show_user: true
+            required: false
+            default: https://graph.microsoft.com/v1.0
           - name: azure_tenant_id
             type: text
             title: Directory (tenant) ID
@@ -60,6 +66,22 @@ policy_templates:
             required: true
             show_user: false
             secret: false
+          - name: resource_ssl
+            type: yaml
+            title: Resource SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc, more examples found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config)
+            multi: false
+            required: false
+            show_user: false  
+          - name: resource_timeout
+            type: text
+            title: Resource Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+            show_user: false
+            multi: false
+            required: false
+            default: 60s
+
 owner:
-  github: elastic/obs-infraobs-integrations
+  github:  elastic/obs-infraobs-integrations
   type: elastic
