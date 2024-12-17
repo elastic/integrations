@@ -26,16 +26,16 @@ redact:
 program: |-
   
   (
-  	(!has(state.cursor) || has(state.cursor) && has(state.cursor.auth_cookie) && state.cursor.auth_cookie == null) ?
+    (state.?cursor.auth_cooke.orValue(null) == null) ?
   		// Authenticating using API to retrieve auth Cookie
   		request("POST", state.url + "/Auth/SignAppin").with(
   			{
   				"Header": {
   					"Authorization": [
-  						string("PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];"),
+  						"PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];"
   					],
-  					"Content-Type": ["application/json"],
-  				},
+  					"Content-Type": ["application/json"]
+  				}
   			}
   		).do_request().as(resp,
   			resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
@@ -52,18 +52,18 @@ program: |-
   		{
   			"Header": {
   				"Content-Type": ["application/json"],
-  				"Cookie": [auth_cookie],
-  			},
+  				"Cookie": [auth_cookie]
+  			}
   		}
   	).do_request().as(resp,
   		(resp.StatusCode == 401) ?
   			state.with(
   				{
-  					"events": {"message": {"reason": "User not authenticated", "code": string(resp.StatusCode)}.encode_json()},
+  					"events": {"error": {"message": "User not authenticated", "code": string(resp.StatusCode)}},
   					"want_more": true,
   					"cursor": {
-  						"auth_cookie": null,
-  					},
+  						"auth_cookie": null
+  					}
   				}
   			)
   		:
@@ -73,13 +73,13 @@ program: |-
   						"events": body.map(e,
   							{
   								"message": e,
-  								?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  								?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none()
   							}
   						),
   						"want_more": false,
   						"cursor": {
-  							"auth_cookie": auth_cookie,
-  						},
+  							"auth_cookie": auth_cookie
+  						}
   					}
   				)
   			)
