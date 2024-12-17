@@ -3,64 +3,55 @@ description: Pipeline for renaming object
 processors:
   - set:
       field: ecs.version
-      value: "8.11.0"        
+      value: "8.16.0"        
 
 # Pipeline for Usage Account Counts 
   - json:
       field: onedrive_usageaccountcounts
-      target_field: o365metrics.onedrive_usageaccountcounts
+      target_field: o365.metrics.onedrive.usage_account_counts
       ignore_failure: true
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365metrics.onedrive_usageaccountcounts.
+      description: Replace spaces and dashes in field names under o365.metrics.onedrive.usage_account_counts.
       tag: painless_purge_spaces_and_dashes
       ignore_failure: true
-      if: ctx.o365metrics?.onedrive_usageaccountcounts instanceof Map
+      if: ctx.o365?.metrics?.onedrive?.usage_account_counts instanceof Map
       source: |
         String underscore(String s) {
           return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
         }
         
         def out = [:];
-        for (def item : ctx.o365metrics.onedrive_usageaccountcounts.entrySet()) {
+        for (def item : ctx.o365.metrics.onedrive.usage_account_counts.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365metrics.onedrive_usageaccountcounts = out;
+        ctx.o365.metrics.onedrive.usage_account_counts = out;
   - remove:
       if: ctx.onedrive_usageaccountcounts != null
       field: onedrive_usageaccountcounts
       ignore_missing: true      
-  - remove:
-      if: ctx.onedrive_usageaccountcounts != null
-      field: onedrive_usageaccountcounts
-      ignore_missing: true
 
 # Pipeline for Usage File Counts
   - json:
       field: onedrive_usagefilecounts
-      target_field: o365metrics.onedrive_usagefilecounts
+      target_field: o365.metrics.onedrive.usage_file_counts
       ignore_failure: true
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365metrics.onedrive_usagefilecounts.
+      description: Replace spaces and dashes in field names under o365.metrics.onedrive.usage_file_counts.
       tag: painless_purge_spaces_and_dashes
       ignore_failure: true
-      if: ctx.o365metrics?.onedrive_usagefilecounts instanceof Map
+      if: ctx.o365?.metrics?.onedrive?.usage_file_counts instanceof Map
       source: |
         String underscore(String s) {
           return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
         }
         
         def out = [:];
-        for (def item : ctx.o365metrics.onedrive_usagefilecounts.entrySet()) {
+        for (def item : ctx.o365.metrics.onedrive.usage_file_counts.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365metrics.onedrive_usagefilecounts = out;
-
-  - remove:
-      if: ctx.onedrive_usagefilecounts != null
-      field: onedrive_usagefilecounts
-      ignore_missing: true      
+        ctx.o365.metrics.onedrive.usage_file_counts = out;
   - remove:
       if: ctx.onedrive_usagefilecounts != null
       field: onedrive_usagefilecounts
@@ -69,36 +60,31 @@ processors:
 # Pipeline for Usage Storage
   - json:
       field: onedrive_usagestorage
-      target_field: o365metrics.onedrive_usagestorage  
+      target_field: o365.metrics.onedrive.usage_storage  
       ignore_failure: true 
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365metrics.onedrive_usagestorage.
+      description: Replace spaces and dashes in field names under o365.metrics.onedrive.usage_storage.
       tag: painless_purge_spaces_and_dashes
-      if: ctx.o365metrics?.onedrive_usagestorage instanceof Map
+      if: ctx.o365?.metrics?.onedrive?.usage_storage instanceof Map
       source: |
         String underscore(String s) {
           return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
         }
         
         def out = [:];
-        for (def item : ctx.o365metrics.onedrive_usagestorage.entrySet()) {
+        for (def item : ctx.o365.metrics.onedrive.usage_storage.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365metrics.onedrive_usagestorage = out;
-
+        ctx.o365.metrics.onedrive.usage_storage = out;
   - remove:
       if: ctx.onedrive_usagestorage != null
       field: onedrive_usagestorage
       ignore_missing: true      
   - rename:
-      field: o365metrics.onedrive_usagestorage.storage_used_(byte)
-      target_field: o365metrics.onedrive_usagestorage.storage_used_byte
-      ignore_missing: true
-  - remove:
-      if: ctx.onedrive_usagestorage != null
-      field: onedrive_usagestorage
-      ignore_missing: true                        
+      field: o365.metrics.onedrive.usage_storage.storage_used_(byte)
+      target_field: o365.metrics.onedrive.usage_storage.storage_used_byte
+      ignore_missing: true                
 
 on_failure:
   - append:

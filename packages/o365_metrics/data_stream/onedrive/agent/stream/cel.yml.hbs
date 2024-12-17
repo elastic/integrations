@@ -45,6 +45,7 @@ state:
   want_more: false
   base:
     tenant_id: "{{azure_tenant_id}}"
+    period: "{{period}}"
 
 redact:
   fields:
@@ -55,21 +56,21 @@ program: |
   state.with(
     request(
       "GET",
-      "https://graph.microsoft.com/v1.0/reports/getOneDriveUsageAccountCounts(period='D7')"
+      "https://graph.microsoft.com/v1.0/reports/getOneDriveUsageAccountCounts(period='" + state.base.period + "')"
     ).do_request().as(resp1,
       resp1.StatusCode == 200
       ?
         bytes(resp1.Body).mime("text/csv; header=present").as(events1, 
           request(
             "GET",
-            "https://graph.microsoft.com/v1.0/reports/getOneDriveUsageFileCounts(period='D7')"
+            "https://graph.microsoft.com/v1.0/reports/getOneDriveUsageFileCounts(period='" + state.base.period + "')"
           ).do_request().as(resp2,
             resp2.StatusCode == 200
             ?
               bytes(resp2.Body).mime("text/csv; header=present").as(events2,
                 request(
                   "GET",
-                  "https://graph.microsoft.com/v1.0/reports/getOneDriveUsageStorage(period='D7')"
+                  "https://graph.microsoft.com/v1.0/reports/getOneDriveUsageStorage(period='" + state.base.period + "')"
                 ).do_request().as(resp3,
                   resp3.StatusCode == 200
                   ?
