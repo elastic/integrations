@@ -112,3 +112,23 @@ The `statement` dataset periodically fetches metrics from PostgreSQL servers.
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "statement"}}
+
+## SLO
+
+SLOs allows to set clear, measurable targets for service performance, based on factors like availability, response times, error rates, and other key metrics. 
+Once you’ve defined your SLOs, you can monitor them in real time, with detailed dashboards that help you quickly identify and troubleshoot any issues that may arise.
+>Note: To create and manage SLOs you need an appropriate [license](https://www.elastic.co/subscriptions).
+
+### PostgreSQL transaction errors
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : postgresql.activity` |
+| Good Query  | `NOT postgresql.activity.state : idle in transaction (aborted)` |
+| Total Query | `postgresql.activity.state : *`   |
+
+### PostgreSQL query cancellation rate
+| Events      | Query                             |
+|-------------|-----------------------------------|
+| Query Filter | `data_stream.dataset : postgresql.database` |
+| Good Query  | `postgresql.database.conflicts :  0` |
+| Total Query | `postgresql.database.conflicts : *`   |
