@@ -36,11 +36,9 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
-### OutlookActivity
-
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
-
+### OutlookActivity
 **Exported fields**
 
 | Field | Description | Type |
@@ -61,3 +59,34 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | o365.metrics.outlook.activity.report_date | The specific date for which the report data applies. | date |
 | o365.metrics.outlook.activity.report_period | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer |
 | o365.metrics.outlook.activity.report_refresh_date | The date when the report data was last updated. | date |
+
+
+### Active Users
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365.metrics.active_users.exchange_active | Number of Exchange active users. | integer |
+| o365.metrics.active_users.exchange_inactive | Number of Exchange inactive users. | integer |
+| o365.metrics.active_users.office_365_active | Number of Office 365 active users. | integer |
+| o365.metrics.active_users.office_365_inactive | Number of Office 365 inactive users. | integer |
+| o365.metrics.active_users.onedrive_active | Number of OneDrive active users. | integer |
+| o365.metrics.active_users.onedrive_inactive | Number of OneDrive inactive users. | integer |
+| o365.metrics.active_users.report_period | Report period in days. | integer |
+| o365.metrics.active_users.report_refresh_date | Date when the report was refreshed. | date |
+| o365.metrics.active_users.sharepoint_active | Number of SharePoint active users. | integer |
+| o365.metrics.active_users.sharepoint_inactive | Number of SharePoint inactive users. | integer |
+| o365.metrics.active_users.skype_for_business_active | Number of Skype for Business active users. | integer |
+| o365.metrics.active_users.skype_for_business_inactive | Number of Skype for Business inactive users. | integer |
+| o365.metrics.active_users.teams_active | Number of Teams active users. | integer |
+| o365.metrics.active_users.teams_inactive | Number of Teams inactive users. | integer |
+| o365.metrics.active_users.yammer_active | Number of Yammer active users. | integer |
+| o365.metrics.active_users.yammer_inactive | Number of Yammer inactive users. | integer |
