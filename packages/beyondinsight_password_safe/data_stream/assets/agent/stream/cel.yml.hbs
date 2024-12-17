@@ -27,73 +27,69 @@ redact:
 program: |-
 
   (
-    (!has(state.cursor) || has(state.cursor) && has(state.cursor.auth_cookie) && state.cursor.auth_cookie == null) ?
-        // Authenticating using API to retrieve auth Cookie
-        request("POST", state.url + "/Auth/SignAppin").with(
-            {
-                "Header": {
-                    "Authorization": [
-                        string("PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];"),
-                    ],
-                    "Content-Type": ["application/json"],
-                },
-            }
-        ).do_request().as(resp,
-            resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
-                auth_cookie[0]
-            )
-        )
-    :
-        state.cursor.auth_cookie
+  	(!has(state.cursor) || has(state.cursor) && has(state.cursor.auth_cookie) && state.cursor.auth_cookie == null) ?
+  		// Authenticating using API to retrieve auth Cookie
+  		request("POST", state.url + "/Auth/SignAppin").with(
+  			{
+  				"Header": {
+  					"Authorization": [
+  						string("PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];"),
+  					],
+  					"Content-Type": ["application/json"],
+  				},
+  			}
+  		).do_request().as(resp,
+  			resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
+  				auth_cookie[0]
+  			)
+  		)
+  	:
+  		state.cursor.auth_cookie
   ).as(auth_cookie,
-    request(
-        "GET",
-        state.url + "/Workgroups"
-    ).with(
-        {
-            "Header": {
-                "Content-Type": ["application/json"],
-                "Cookie": [auth_cookie],
-            },
-        }
-    ).do_request().as(workgroupResp,
-        bytes(workgroupResp.Body).decode_json().as(workgroups,
-            workgroups.map(workgroup,
-                request(
-                    "GET",
-                    state.url + "/Workgroups/" + string(workgroup.ID) + "/Assets?" + {
-                        "limit": [string(state.limit)],
-                        "offset": [string(state.?cursor.offset.orValue(0))],
-                    }.format_query()
-                ).with(
-                    {
-                        "Header": {
-                            "Content-Type": ["application/json"],
-                            "Cookie": [auth_cookie],
-                        },
-                    }
-                ).do_request().as(assetsResp,
-                    bytes(assetsResp.Body).decode_json().as(body,
-                        state.with(
-                            {
-                                "events": body.Data.map(e,
-                                    {
-                                        "message": e,
-  							            ?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
-                                    }
-                                ),
-  					            "want_more": state.?cursor.offset.orValue(0) != body.TotalCount ? true : false,
-                                "cursor": {
-                                    "auth_cookie": auth_cookie,
-  						            "offset": int(state.?cursor.offset.orValue(0)) + size(body.Data)
-                                }
-                            }
-                        )
-                    )
-                )
-            )
-        )
-    )
+  	request(
+  		"GET",
+  		state.url + "/Workgroups/1/Assets?" + {
+  			"limit": [string(state.limit)],
+  			"offset": [string(state.?cursor.offset.orValue(0))],
+  		}.format_query()
+  	).with(
+  		{
+  			"Header": {
+  				"Content-Type": ["application/json"],
+  				"Cookie": [auth_cookie],
+  			},
+  		}
+  	).do_request().as(resp,
+  		(resp.StatusCode == 401) ?
+  			state.with(
+  				{
+  					"events": {"message": {"reason": "User not authenticated", "code": string(resp.StatusCode)}.encode_json()},
+  					"want_more": true,
+  					"cursor": {
+  						"auth_cookie": null,
+  						"offset": int(state.?cursor.offset.orValue(0)),
+  					},
+  				}
+  			)
+  		:
+  			bytes(resp.Body).decode_json().as(body,
+  				state.with(
+  					{
+  						"events": body.Data.map(e,
+  							{
+  								"message": e,
+  								?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  							}
+  						),
+  						"want_more": (state.?cursor.offset.orValue(0) != body.TotalCount) ? true : false,
+  						"cursor": {
+  							"auth_cookie": auth_cookie,
+  							"offset": int(state.?cursor.offset.orValue(0)) + size(body.Data),
+  						},
+  					}
+  				)
+  			)
+  	)
   )
 tags:
 {{#if preserve_original_event}}
