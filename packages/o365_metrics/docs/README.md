@@ -1,6 +1,6 @@
 # Microsoft Office 365 Metrics Integration
 
-This integration is to collect metrics for [Microsoft Office 365](https://learn.microsoft.com/en-us/graph/overview).
+This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
 
 ## Setup
 
@@ -36,9 +36,10 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
-### Microsoft One Drive
+### OutlookActivity
 
-Uses the Office 365 Management Graph API to retrieve One Drive metrics from Office 365. 
+Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
+
 
 **Exported fields**
 
@@ -52,22 +53,11 @@ Uses the Office 365 Management Graph API to retrieve One Drive metrics from Offi
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| o365metrics.onedrive_usageaccountcounts.active | The number of OneDrive accounts that were active during the reporting period. | integer |
-| o365metrics.onedrive_usageaccountcounts.report_date | The date the OneDrive account usage report was generated. | date |
-| o365metrics.onedrive_usageaccountcounts.report_period | The duration of the reporting period for OneDrive account activity, in days. | integer |
-| o365metrics.onedrive_usageaccountcounts.report_refresh_date | The date when the OneDrive account usage data was last refreshed. | date |
-| o365metrics.onedrive_usageaccountcounts.site_type | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
-| o365metrics.onedrive_usageaccountcounts.total | The total number of OneDrive accounts evaluated in the report. | integer |
-| o365metrics.onedrive_usagefilecounts.active | The number of OneDrive accounts with active file usage during the reporting period. | integer |
-| o365metrics.onedrive_usagefilecounts.report_date | The date the report was generated. | date |
-| o365metrics.onedrive_usagefilecounts.report_period | The duration of the reporting period, in days. | integer |
-| o365metrics.onedrive_usagefilecounts.report_refresh_date | The date when the data in the report was last refreshed. | date |
-| o365metrics.onedrive_usagefilecounts.site_type | The type of sites included in the OneDrive usage report (e.g., All). | keyword |
-| o365metrics.onedrive_usagefilecounts.total | The total number of OneDrive accounts included in the report. | integer |
-| o365metrics.onedrive_usagestorage.report_date | The date the OneDrive storage usage report was generated. | date |
-| o365metrics.onedrive_usagestorage.report_period | The duration of the reporting period for OneDrive storage usage, in days. | integer |
-| o365metrics.onedrive_usagestorage.report_refresh_date | The date when the OneDrive storage usage data was last refreshed. | date |
-| o365metrics.onedrive_usagestorage.site_type | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
-| o365metrics.onedrive_usagestorage.storage_used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
-
+| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | integer |
+| o365.metrics.outlook.activity.report_date | The specific date for which the report data applies. | date |
+| o365.metrics.outlook.activity.report_period | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer |
+| o365.metrics.outlook.activity.report_refresh_date | The date when the report data was last updated. | date |

@@ -173,56 +173,53 @@ An example event for `cluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-19T05:44:00.800Z",
+    "@timestamp": "2024-11-25T05:48:26.976Z",
     "agent": {
-        "ephemeral_id": "676a770b-a207-4fec-99d4-e82377578711",
-        "id": "6b430ae3-0bdb-4d5c-b60d-a02f54e770e5",
-        "name": "elastic-agent-47605",
+        "ephemeral_id": "8dd73a28-19af-41ab-8404-a72ae8992509",
+        "id": "f92ed428-5ea0-40fb-b403-ac0dc71e46bb",
+        "name": "elastic-agent-77934",
         "type": "metricbeat",
-        "version": "8.15.2"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.cluster",
-        "namespace": "93141",
+        "namespace": "19212",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6b430ae3-0bdb-4d5c-b60d-a02f54e770e5",
+        "id": "f92ed428-5ea0-40fb-b403-ac0dc71e46bb",
         "snapshot": true,
-        "version": "8.15.2"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.cluster",
-        "duration": 17059144,
-        "ingested": "2024-09-19T05:44:03Z",
+        "duration": 14793678,
+        "ingested": "2024-11-25T05:48:29Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-47605",
-        "id": "57723763cd1b4ff48e54a505de4ebe6c",
+        "hostname": "elastic-agent-77934",
         "ip": [
-            "192.168.244.4",
-            "192.168.245.2"
+            "192.168.241.4",
+            "192.168.242.2"
         ],
         "mac": [
-            "02-42-C0-A8-F4-04",
-            "02-42-C0-A8-F5-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F2-02"
         ],
-        "name": "elastic-agent-47605",
+        "name": "elastic-agent-77934",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "4.18.0-348.7.1.el8_5.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -250,12 +247,13 @@ An example event for `cluster` looks as following:
                     "DC0_C0_H2"
                 ]
             },
+            "id": "domain-c28",
             "name": "DC0_C0",
             "network": {
                 "count": 3,
                 "names": [
                     "DC0_DVPG0",
-                    "DVS0-DVUplinks-9",
+                    "DVS0-DVUplinks-10",
                     "VM Network"
                 ]
             }
@@ -285,23 +283,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| vsphere.cluster.alert.names | List of all the alerts on this Cluster. | keyword |  |
+| vsphere.cluster.alert.names | List of all the alerts on this cluster. | keyword |  |
 | vsphere.cluster.das_config.admission.control.enabled | Indicates whether strict admission control is enabled. | boolean |  |
 | vsphere.cluster.das_config.enabled | Indicates whether vSphere HA feature is enabled. | boolean |  |
-| vsphere.cluster.datastore.count | Number of Datastores associated with the cluster. | long | gauge |
-| vsphere.cluster.datastore.names | List of all the Datastore names associated with the cluster. | keyword |  |
-| vsphere.cluster.host.count | Number of Hosts associated with the cluster. | long | gauge |
+| vsphere.cluster.datastore.count | Number of datastores associated with the cluster. | long | gauge |
+| vsphere.cluster.datastore.names | List of all the datastore names associated with the cluster. | keyword |  |
+| vsphere.cluster.host.count | Number of hosts associated with the cluster. | long | gauge |
 | vsphere.cluster.host.names | List of all the host names associated with the cluster. | keyword |  |
+| vsphere.cluster.id | Unique cluster ID. | keyword |  |
 | vsphere.cluster.name | Cluster name. | keyword |  |
-| vsphere.cluster.network.count | Number of Networks associated with the cluster. | long | gauge |
-| vsphere.cluster.network.names | List of all the Network names associated with the cluster. | keyword |  |
+| vsphere.cluster.network.count | Number of networks associated with the cluster. | long | gauge |
+| vsphere.cluster.network.names | List of all the network names associated with the cluster. | keyword |  |
 | vsphere.cluster.triggered_alarms.description | Description of the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.name | Name of the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.status | Status of the alarm. | keyword |  |
 | vsphere.cluster.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |
-| vsphere.cluster.warning.names | List of all the warnings on this Cluster. | keyword |  |
+| vsphere.cluster.warning.names | List of all the warnings on this cluster. | keyword |  |
 
 
 ### Datastore
@@ -312,89 +311,78 @@ An example event for `datastore` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-02T10:04:25.122Z",
+    "@timestamp": "2024-11-25T05:49:20.546Z",
     "agent": {
-        "ephemeral_id": "4da294a3-ad54-47f4-92c7-544e1356a0d8",
-        "id": "b01ab3cf-51ad-4c4d-87bd-fc2d4aa59d8a",
-        "name": "elastic-agent-76236",
+        "ephemeral_id": "526f6e02-35e4-402d-b28d-29e1166195da",
+        "id": "136823ae-978c-4319-9d75-901e9ff73238",
+        "name": "elastic-agent-99749",
         "type": "metricbeat",
-        "version": "8.16.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.datastore",
-        "namespace": "86691",
+        "namespace": "82538",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b01ab3cf-51ad-4c4d-87bd-fc2d4aa59d8a",
+        "id": "136823ae-978c-4319-9d75-901e9ff73238",
         "snapshot": true,
-        "version": "8.16.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.datastore",
-        "duration": 190147614,
-        "ingested": "2024-09-02T10:04:27Z",
+        "duration": 97747338,
+        "ingested": "2024-11-25T05:49:23Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-76236",
-        "id": "e744630f9d4f43dc818e497d221bd0b2",
+        "hostname": "elastic-agent-99749",
         "ip": [
-            "172.18.0.4",
-            "172.21.0.2"
+            "192.168.241.4",
+            "192.168.244.2"
         ],
         "mac": [
-            "02-42-AC-12-00-04",
-            "02-42-AC-15-00-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F4-02"
         ],
-        "name": "elastic-agent-76236",
+        "name": "elastic-agent-99749",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.15.153.1-microsoft-standard-WSL2",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
         "name": "datastore",
-        "period": 10000
+        "period": 20000
     },
     "service": {
         "address": "https://svc-vsphere-metrics:8989/sdk",
         "type": "vsphere"
     },
+    "tags": [
+        "vsphere-datastore"
+    ],
     "vsphere": {
         "datastore": {
-            "disk": {
-                "capacity": {
-                    "usage": {
-                        "bytes": 520505786368
-                    },
-                    "bytes": 1610344300544
-                },
-                "provisioned": {
-                    "bytes": 520505786368
-                }
-            },
             "capacity": {
                 "free": {
-                    "bytes": 37120094208
+                    "bytes": 10952166604800
                 },
                 "total": {
-                    "bytes": 74686664704
+                    "bytes": 10995116277760
                 },
                 "used": {
-                    "bytes": 37566570496,
-                    "pct": 0.502988996026061
+                    "bytes": 42949672960,
+                    "pct": 0.004
                 }
             },
             "fstype": "OTHER",
@@ -402,10 +390,8 @@ An example event for `datastore` looks as following:
                 "count": 1,
                 "names": "DC0_H0"
             },
+            "id": "datastore-53",
             "name": "LocalDS_0",
-            "read": {
-                "bytes": 1024
-            },
             "status": "green",
             "vm": {
                 "count": 4,
@@ -415,9 +401,6 @@ An example event for `datastore` looks as following:
                     "DC0_H0_VM0",
                     "DC0_H0_VM1"
                 ]
-            },
-            "write": {
-                "bytes": 450560
             }
         }
     }
@@ -450,7 +433,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| vsphere.datastore.alert.names | List of all the alerts on this Datastore. | keyword |  |  |
+| vsphere.datastore.alert.names | List of all the alerts on this datastore. | keyword |  |  |
 | vsphere.datastore.capacity.free.bytes | Free bytes of the datastore. | long | byte | gauge |
 | vsphere.datastore.capacity.total.bytes | Total bytes of the datastore. | long | byte | gauge |
 | vsphere.datastore.capacity.used.bytes | Used bytes of the datastore. | long | byte | gauge |
@@ -461,6 +444,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.datastore.fstype | Filesystem type. | keyword |  |  |
 | vsphere.datastore.host.count | Number of hosts associated with the datastore. | long |  | gauge |
 | vsphere.datastore.host.names | List of all the host names associated with the datastore. | keyword |  |  |
+| vsphere.datastore.id | Unique datastore ID. | keyword |  |  |
 | vsphere.datastore.name | Datastore name. | keyword |  |  |
 | vsphere.datastore.read.bytes | Rate of reading data from the datastore. | long | byte | gauge |
 | vsphere.datastore.status | Status of the datastore. | keyword |  |  |
@@ -484,56 +468,53 @@ An example event for `datastorecluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-22T05:28:46.315Z",
+    "@timestamp": "2024-11-25T05:50:15.938Z",
     "agent": {
-        "ephemeral_id": "8b7e9ea4-0517-4e98-a795-b6fe529f4a2f",
-        "id": "7737279e-51e9-4d90-a0d0-2c12dc4446bf",
-        "name": "elastic-agent-23128",
+        "ephemeral_id": "708961a1-cbad-4975-8eba-e1bdb8d6f6a6",
+        "id": "725a6747-ca90-4a2e-bf23-32ea7b753cf9",
+        "name": "elastic-agent-70611",
         "type": "metricbeat",
-        "version": "8.15.2"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.datastorecluster",
-        "namespace": "65218",
+        "namespace": "34029",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7737279e-51e9-4d90-a0d0-2c12dc4446bf",
+        "id": "725a6747-ca90-4a2e-bf23-32ea7b753cf9",
         "snapshot": true,
-        "version": "8.15.2"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.datastorecluster",
-        "duration": 10772332,
-        "ingested": "2024-09-22T05:28:49Z",
+        "duration": 10884609,
+        "ingested": "2024-11-25T05:50:18Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-23128",
-        "id": "57723763cd1b4ff48e54a505de4ebe6c",
+        "hostname": "elastic-agent-70611",
         "ip": [
-            "192.168.240.2",
-            "192.168.255.5"
+            "192.168.241.4",
+            "192.168.246.2"
         ],
         "mac": [
-            "02-42-C0-A8-F0-02",
-            "02-42-C0-A8-FF-05"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F6-02"
         ],
-        "name": "elastic-agent-23128",
+        "name": "elastic-agent-70611",
         "os": {
-            "codename": "focal",
-            "family": "debian",
             "kernel": "3.10.0-1160.118.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -558,6 +539,7 @@ An example event for `datastorecluster` looks as following:
             "free_space": {
                 "bytes": 0
             },
+            "id": "group-p8",
             "name": "DC0_POD0"
         }
     }
@@ -587,19 +569,20 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | event.module | Event module | constant_keyword |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| vsphere.datastorecluster.alert.names | List of all the alerts on this Datastore Cluster. | keyword |  |  |
+| vsphere.datastorecluster.alert.names | List of all the alerts on this datastore cluster. | keyword |  |  |
 | vsphere.datastorecluster.capacity.bytes | Total capacity of this storage pod, in bytes. | long | byte | gauge |
-| vsphere.datastorecluster.datastore.count | Number of datastores in the Datastore Cluster. | long |  | gauge |
-| vsphere.datastorecluster.datastore.names | List of all the Datastore names associated with the Datastore Cluster. | keyword |  |  |
+| vsphere.datastorecluster.datastore.count | Number of datastores in the datastore cluster. | long |  | gauge |
+| vsphere.datastorecluster.datastore.names | List of all the datastore names associated with the datastore cluster. | keyword |  |  |
 | vsphere.datastorecluster.free_space.bytes | Total free space on this storage pod, in bytes. | long | byte | gauge |
-| vsphere.datastorecluster.name | The Datastore Cluster name. | keyword |  |  |
+| vsphere.datastorecluster.id | Unique datastore cluster ID. | keyword |  |  |
+| vsphere.datastorecluster.name | The datastore cluster name. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.description | Description of the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.entity_name | Name of the entity associated with the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.id | Unique identifier for the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.name | Name of the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.status | Status of the alarm. | keyword |  |  |
 | vsphere.datastorecluster.triggered_alarms.triggered_time | Time when the alarm was triggered. | date |  |  |
-| vsphere.datastorecluster.warning.names | List of all the warnings on this Datastore Cluster. | keyword |  |  |
+| vsphere.datastorecluster.warning.names | List of all the warnings on this datastore cluster. | keyword |  |  |
 
 
 ### Host
@@ -610,54 +593,53 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-10-03T04:09:10.462Z",
+    "@timestamp": "2024-11-25T05:51:10.976Z",
     "agent": {
-        "ephemeral_id": "c13fd262-b655-4a62-a5f7-dda2f497332f",
-        "id": "036bbeff-9b4f-497d-846d-d5562d328109",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "68b872ee-00e2-4c05-8dcc-7c0374dfa3c0",
+        "id": "a0006203-efd1-4e6a-9ffa-f5e3bda9e512",
+        "name": "elastic-agent-81083",
         "type": "metricbeat",
-        "version": "8.15.2"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.host",
-        "namespace": "default",
+        "namespace": "79577",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "036bbeff-9b4f-497d-846d-d5562d328109",
+        "id": "a0006203-efd1-4e6a-9ffa-f5e3bda9e512",
         "snapshot": true,
-        "version": "8.15.2"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.host",
-        "duration": 83416967,
-        "ingested": "2024-10-03T04:09:20Z",
+        "duration": 1959540462,
+        "ingested": "2024-11-25T05:51:13Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "57723763cd1b4ff48e54a505de4ebe6c",
+        "hostname": "elastic-agent-81083",
         "ip": [
-            "172.18.0.7"
+            "192.168.241.4",
+            "192.168.248.2"
         ],
         "mac": [
-            "02-42-AC-12-00-07"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F8-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-81083",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.15.153.1-microsoft-standard",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -665,7 +647,7 @@ An example event for `host` looks as following:
         "period": 20000
     },
     "service": {
-        "address": "https://172.18.0.4:8989/sdk",
+        "address": "https://svc-vsphere-metrics:8989/sdk",
         "type": "vsphere"
     },
     "tags": [
@@ -686,25 +668,21 @@ An example event for `host` looks as following:
                 }
             },
             "datastore": {
-                "count": 4,
-                "names": [
-                    "LocalDS_0",
-                    "LocalDS_1",
-                    "LocalDS_2",
-                    "LocalDS_3"
-                ]
+                "count": 1,
+                "names": "LocalDS_0"
             },
             "disk": {
                 "read": {
-                    "bytes": 142336
+                    "bytes": 3072
                 },
                 "total": {
-                    "bytes": 1492992
+                    "bytes": 1694720
                 },
                 "write": {
-                    "bytes": 1895424
+                    "bytes": 1631232
                 }
             },
+            "id": "host-51",
             "memory": {
                 "free": {
                     "bytes": 2822230016
@@ -717,17 +695,17 @@ An example event for `host` looks as following:
                     "pct": 0.343
                 }
             },
-            "name": "DC0_H0",
+            "name": "DC0_C0_H2",
             "network": {
                 "bandwidth": {
                     "received": {
-                        "bytes": 702464
+                        "bytes": 586752
                     },
                     "total": {
-                        "bytes": 1538048
+                        "bytes": 716800
                     },
                     "transmitted": {
-                        "bytes": 564224
+                        "bytes": 321536
                     }
                 },
                 "count": 3,
@@ -739,14 +717,14 @@ An example event for `host` looks as following:
                 "packets": {
                     "multicast": {
                         "received": {
-                            "count": 97
+                            "count": 133
                         }
                     },
                     "received": {
-                        "count": 11933
+                        "count": 9359
                     },
                     "transmitted": {
-                        "count": 8801
+                        "count": 6718
                     }
                 }
             },
@@ -756,14 +734,7 @@ An example event for `host` looks as following:
                 "VM Network"
             ],
             "status": "gray",
-            "uptime": 77229,
-            "vm": {
-                "count": 2,
-                "names": [
-                    "DC0_H0_VM0",
-                    "DC0_H0_VM1"
-                ]
-            }
+            "uptime": 77229
         }
     }
 }
@@ -792,7 +763,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | event.module | Event module | constant_keyword |  |  |
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| vsphere.host.alert.names | List of all the alerts on this Host. | keyword |  |  |
+| vsphere.host.alert.names | List of all the alerts on this host. | keyword |  |  |
 | vsphere.host.cpu.free.mhz | Free CPU in MHz. | long |  | gauge |
 | vsphere.host.cpu.total.mhz | Total CPU in MHz. | long |  | counter |
 | vsphere.host.cpu.used.mhz | Used CPU in MHz. | long |  | gauge |
@@ -805,6 +776,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.host.disk.read.bytes | Average number of bytes read from the disk each second. | long | byte | gauge |
 | vsphere.host.disk.total.bytes | Sum of disk read and write rates each second in bytes. | long | byte | gauge |
 | vsphere.host.disk.write.bytes | Average number of bytes written to the disk each second. | long | byte | gauge |
+| vsphere.host.id | Unique host ID. | keyword |  |  |
 | vsphere.host.memory.free.bytes | Free Memory in bytes. | long | byte | gauge |
 | vsphere.host.memory.total.bytes | Total Memory in bytes. | long | byte | gauge |
 | vsphere.host.memory.used.bytes | Used Memory in bytes. | long | byte | gauge |
@@ -837,7 +809,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.host.uptime | The total uptime of a host in seconds within the vSphere environment. | long |  | gauge |
 | vsphere.host.vm.count | Number of virtual machines on the host. | long |  | gauge |
 | vsphere.host.vm.names | List of all the VM names. | keyword |  |  |
-| vsphere.host.warning.names | List of all the warnings on this Host. | keyword |  |  |
+| vsphere.host.warning.names | List of all the warnings on this host. | keyword |  |  |
 
 
 ### Network
@@ -848,56 +820,53 @@ An example event for `network` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-22T21:01:42.635Z",
+    "@timestamp": "2024-11-25T05:53:59.603Z",
     "agent": {
-        "ephemeral_id": "b4116483-d4c6-4860-b93d-f0d8091cc838",
-        "id": "ff0ab35a-1abe-47a1-aee7-6d70362e4335",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "a69b7846-f5b9-4f72-95f7-98a99d21806e",
+        "id": "78e2558b-aa96-4683-a08d-e4bed771fe09",
+        "name": "elastic-agent-77565",
         "type": "metricbeat",
-        "version": "8.15.2"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.network",
-        "namespace": "default",
+        "namespace": "81261",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ff0ab35a-1abe-47a1-aee7-6d70362e4335",
+        "id": "78e2558b-aa96-4683-a08d-e4bed771fe09",
         "snapshot": true,
-        "version": "8.15.2"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.network",
-        "duration": 10826519,
-        "ingested": "2024-09-22T21:01:43Z",
+        "duration": 13659192,
+        "ingested": "2024-11-25T05:54:02Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-23128",
-        "id": "57723763cd1b4ff48e54a505de4ebe6c",
+        "hostname": "elastic-agent-77565",
         "ip": [
-            "192.168.240.2",
-            "192.168.255.5"
+            "192.168.241.4",
+            "192.168.255.2"
         ],
         "mac": [
-            "02-42-C0-A8-F0-02",
-            "02-42-C0-A8-FF-05"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-FF-02"
         ],
-        "name": "elastic-agent-23128",
+        "name": "elastic-agent-77565",
         "os": {
-            "codename": "focal",
-            "family": "debian",
             "kernel": "3.10.0-1160.118.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -905,7 +874,7 @@ An example event for `network` looks as following:
         "period": 20000
     },
     "service": {
-        "address": "https://172.18.0.4:8989/sdk",
+        "address": "https://svc-vsphere-metrics:8989/sdk",
         "type": "vsphere"
     },
     "tags": [
@@ -917,6 +886,7 @@ An example event for `network` looks as following:
             "config": {
                 "status": "green"
             },
+            "id": "network-7",
             "name": "VM Network",
             "status": "green",
             "type": "Network"
@@ -954,6 +924,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.network.config.status | Indicates whether the system has detected a configuration issue. | keyword |  |
 | vsphere.network.host.count | Number of hosts connected to this network. | long | gauge |
 | vsphere.network.host.names | List of all the hosts connected to this network. | keyword |  |
+| vsphere.network.id | Unique network ID. | keyword |  |
 | vsphere.network.name | Name of the network. | keyword |  |
 | vsphere.network.status | General health of the network. | keyword |  |
 | vsphere.network.triggered_alarms.description | Description of the alarm. | keyword |  |
@@ -975,50 +946,49 @@ An example event for `resourcepool` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-12T05:55:54.148Z",
+    "@timestamp": "2024-11-25T05:54:48.595Z",
     "agent": {
-        "ephemeral_id": "54ea1b28-d61c-4277-b98b-e33e38c7f1b5",
-        "id": "36c6eb08-679d-4a9f-b436-fe550cb77ad2",
-        "name": "elastic-agent-85448",
+        "ephemeral_id": "236ddb3e-35c8-4d3e-a48c-caa904ff6b04",
+        "id": "689c9051-c4ae-4f11-ba6d-27a03327c9e6",
+        "name": "elastic-agent-41690",
         "type": "metricbeat",
-        "version": "8.16.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.resourcepool",
-        "namespace": "63631",
+        "namespace": "42500",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "36c6eb08-679d-4a9f-b436-fe550cb77ad2",
+        "id": "689c9051-c4ae-4f11-ba6d-27a03327c9e6",
         "snapshot": true,
-        "version": "8.16.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.resourcepool",
-        "duration": 21732347,
-        "ingested": "2024-09-12T05:55:57Z",
+        "duration": 13597205,
+        "ingested": "2024-11-25T05:54:51Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-85448",
+        "hostname": "elastic-agent-41690",
         "ip": [
-            "192.168.249.6",
-            "192.168.251.2"
+            "192.168.241.4",
+            "192.168.242.2"
         ],
         "mac": [
-            "02-42-C0-A8-F9-06",
-            "02-42-C0-A8-FB-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F2-02"
         ],
-        "name": "elastic-agent-85448",
+        "name": "elastic-agent-41690",
         "os": {
-            "family": "",
-            "kernel": "4.18.0-348.7.1.el8_5.x86_64",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
@@ -1027,7 +997,7 @@ An example event for `resourcepool` looks as following:
     },
     "metricset": {
         "name": "resourcepool",
-        "period": 10000
+        "period": 20000
     },
     "service": {
         "address": "https://svc-vsphere-metrics:8989/sdk",
@@ -1038,7 +1008,7 @@ An example event for `resourcepool` looks as following:
     ],
     "vsphere": {
         "resourcepool": {
-            "fingerprint": "IqGup33ooQgbWIgSs7+sAcX4MDo=",
+            "id": "resgroup-27",
             "name": "Resources",
             "status": "green"
         }
@@ -1072,7 +1042,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.resourcepool.cpu.entitlement.mhz | The amount of CPU resource, in MHz, that this VM is entitled to, as calculated by DRS. | long |  | gauge |
 | vsphere.resourcepool.cpu.entitlement.static.mhz | The static CPU resource entitlement for a virtual machine. | long |  | gauge |
 | vsphere.resourcepool.cpu.usage.mhz | Basic CPU performance statistics, in MHz. | long |  | gauge |
-| vsphere.resourcepool.fingerprint | Unique ID to avoid duplications and to identify the unique resourcepool. | keyword |  |  |
+| vsphere.resourcepool.id | Unique resource pool ID. | keyword |  |  |
 | vsphere.resourcepool.memory.ballooned.bytes | The size of the balloon driver in a virtual machine, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.compressed.bytes | The amount of compressed memory currently consumed by VM, in bytes. | long | byte | gauge |
 | vsphere.resourcepool.memory.entitlement.bytes | The amount of memory, in bytes, that this VM is entitled to, as calculated by DRS. | long | byte | gauge |
@@ -1105,141 +1075,117 @@ An example event for `virtualmachine` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-02T09:44:14.128Z",
+    "@timestamp": "2024-11-25T05:55:36.940Z",
     "agent": {
-        "ephemeral_id": "2d60906e-b972-4981-a356-c57ccb79108b",
-        "id": "8ea73fb3-a0a0-4270-aad6-e88edb8b385a",
-        "name": "elastic-agent-55444",
+        "ephemeral_id": "c5d83ada-b469-4178-b167-02c09b1a4aba",
+        "id": "2428be84-8f03-495a-8a9f-da3c9fc1459c",
+        "name": "elastic-agent-79780",
         "type": "metricbeat",
-        "version": "8.16.0"
+        "version": "8.16.2"
     },
     "data_stream": {
         "dataset": "vsphere.virtualmachine",
-        "namespace": "64133",
+        "namespace": "53355",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8ea73fb3-a0a0-4270-aad6-e88edb8b385a",
+        "id": "2428be84-8f03-495a-8a9f-da3c9fc1459c",
         "snapshot": true,
-        "version": "8.16.0"
+        "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.virtualmachine",
-        "duration": 52726937,
-        "ingested": "2024-09-02T09:44:17Z",
+        "duration": 71113664,
+        "ingested": "2024-11-25T05:55:39Z",
         "module": "vsphere"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-55444",
-        "id": "e744630f9d4f43dc818e497d221bd0b2",
+        "hostname": "elastic-agent-79780",
         "ip": [
-            "127.28.12.4",
-            "127.28.12.2"
+            "192.168.241.4",
+            "192.168.244.2"
         ],
         "mac": [
-            "02-42-AC-12-00-04",
-            "02-42-AC-14-00-02"
+            "02-42-C0-A8-F1-04",
+            "02-42-C0-A8-F4-02"
         ],
-        "name": "elastic-agent-55444",
+        "name": "elastic-agent-79780",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "127.15.128.1-microsoft-standard-WSL2",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
         "name": "virtualmachine",
-        "period": 10000
+        "period": 20000
     },
     "service": {
-        "address": "https://localhost:8989/sdk",
+        "address": "https://svc-vsphere-metrics:8989/sdk",
         "type": "vsphere"
     },
+    "tags": [
+        "vsphere-virtualmachine"
+    ],
     "vsphere": {
         "virtualmachine": {
-            "name": "xt0nmfpv9",
-            "uptime": 5348978,
-            "status": "green",
-            "host": {
-                "id": "host-32",
-                "hostname": "localhost.com"
-            },
             "cpu": {
                 "free": {
                     "mhz": 0
                 },
-                "used": {
-                    "mhz": 161
-                },
                 "total": {
+                    "mhz": 0
+                },
+                "used": {
                     "mhz": 0
                 }
             },
-            "network": {
-                "names": [
-                    "PROD_VCF_VMS"
-                ],
-                "count": 1
+            "datastore": {
+                "count": 1,
+                "names": "LocalDS_0"
             },
+            "host": {
+                "hostname": "DC0_C0_H1",
+                "id": "host-43"
+            },
+            "id": "vm-62",
             "memory": {
-                "used": {
+                "free": {
                     "guest": {
-                        "bytes": 686817280
-                    },
-                    "host": {
-                        "bytes": 29027729408
+                        "bytes": 33554432
                     }
                 },
                 "total": {
                     "guest": {
-                        "bytes": 68719476736
+                        "bytes": 33554432
                     }
                 },
-                "free": {
+                "used": {
                     "guest": {
-                        "bytes": 68032659456
+                        "bytes": 0
+                    },
+                    "host": {
+                        "bytes": 0
                     }
                 }
             },
-            "network_names": [
-                "PROD_VCF_VMS"
-            ],
-            "datastore": {
+            "name": "DC0_C0_RP0_VM0",
+            "network": {
                 "count": 1,
-                "names": [
-                    "VxRailtoup-Virtual-Datastore-bc1d-5aa310fb"
-                ]
+                "names": "DC0_DVPG0"
             },
-            "os": "CentOS 4/5/6/7 (64-bit)",
-            "snapshot": {
-                "info": [
-                    {
-                        "id": 1,
-                        "name": "VM Snapshot 7%2f3%2f2024, 4:01:21 PM",
-                        "description": "Created to demo",
-                        "createtime": "2024-07-03T20:01:34.329Z",
-                        "state": "poweredOn"
-                    },
-                    {
-                        "createtime": "2024-07-05T23:35:40.859Z",
-                        "state": "poweredOn",
-                        "id": 2,
-                        "name": "VM Snapshot 7%2f5%2f2024, 7:35:37 PM",
-                        "description": "backup"
-                    }
-                ],
-                "count": 2
-            }
+            "network_names": "DC0_DVPG0",
+            "os": "otherGuest",
+            "status": "green",
+            "uptime": 0
         }
     }
 }
@@ -1280,15 +1226,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vsphere.virtualmachine.datastore.names | Names of the datastore associated to this virtualmachine. | keyword |  |  |
 | vsphere.virtualmachine.host.hostname | Hostname of the host. | keyword |  |  |
 | vsphere.virtualmachine.host.id | Host id. | keyword |  |  |
-| vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes. | long | byte | gauge |
-| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes. | long | byte | gauge |
-| vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes. | long | byte | gauge |
-| vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes. | long | byte | gauge |
-| vsphere.virtualmachine.name | Virtual Machine name. | keyword |  |  |
+| vsphere.virtualmachine.id | Unique virtual machine ID. | keyword |  |  |
+| vsphere.virtualmachine.memory.free.guest.bytes | Free memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.total.guest.bytes | Total memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.guest.bytes | Used memory of Guest in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.host.bytes | Used memory of Host in bytes. | long | byte | gauge |
+| vsphere.virtualmachine.name | Virtual machine name. | keyword |  |  |
 | vsphere.virtualmachine.network.count | Number of networks associated to this virtualmachine. | long |  | gauge |
 | vsphere.virtualmachine.network.names | Names of the networks associated to this virtualmachine. | keyword |  |  |
 | vsphere.virtualmachine.network_names | Network names. | keyword |  |  |
-| vsphere.virtualmachine.os | Virtual Machine Operating System name. | keyword |  |  |
+| vsphere.virtualmachine.os | Virtual machine operating system name. | keyword |  |  |
 | vsphere.virtualmachine.snapshot.count | The number of snapshots of this virtualmachine. | long |  | gauge |
 | vsphere.virtualmachine.snapshot.info.createtime | Snapshot creation time. | date |  |  |
 | vsphere.virtualmachine.snapshot.info.description | Snapshot description. | keyword |  |  |

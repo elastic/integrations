@@ -10,21 +10,51 @@ processors:
         - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
       ignore_missing: true
       ignore_failure: true
-  - kv:
-      field: _temp
-      tag: kv_parse_field
-      target_field: watchguard_firebox.log
-      field_split: '"\s+'
-      value_split: '="'
-      trim_value: '"'
-      trim_key: ' '
-      if: ctx._temp != ''
-      ignore_missing: true
-      on_failure:
-        - set:
-            field: watchguard_firebox.log.message
-            copy_from: _temp
-            ignore_empty_value: true
+  - script:
+      tag: script_kv_parse
+      description: Parse key/value pairs.
+      lang: painless
+      if: ctx._temp instanceof String
+      source: >-
+        def kvStart = 0;
+        def kvSplit = 0;
+        def inQuote = false;
+
+        Pattern quotePattern = /^\"|\"$/;
+
+        for (int i = 0, n = ctx["_temp"].length(); i < n; ++i) {
+          char c = ctx["_temp"].charAt(i);
+          char c2 = i < n - 1 ? ctx["_temp"].charAt(i + 1) : 0;
+
+          if (c == (char)'"') {
+            if (inQuote && (c2 == 0 || c2 == (char)' ' || c2 == (char)':')) {
+              inQuote = false;
+            } else {
+              inQuote = true;
+            }
+          }
+          if (inQuote) {
+            continue;
+          }
+          if (c == (char)'=') {
+            kvSplit = i;
+          }
+          if (c == (char)'"' || c == (char)' ' || c2 == 0) {
+            if (i != kvStart) {
+              def endIndex = i == n - 1 ? i + 1 : i;
+              def key = ctx["_temp"].substring(kvStart, kvSplit);
+              def value = quotePattern.matcher(ctx["_temp"].substring(kvSplit + 1, endIndex)).replaceAll("");
+
+              if (key != '') {
+                ctx.watchguard_firebox.log.put(key, value);
+              }
+            }
+
+            kvStart = i + 1;
+            kvSplit = i + 1;
+          }
+        }
+
   - set:
       field: observer.ingress.interface.alias
       tag: set_observer_ingress_interface_alias_from_log_in_interface_name

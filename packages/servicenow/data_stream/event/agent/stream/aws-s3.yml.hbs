@@ -30,17 +30,29 @@ api_timeout: {{api_timeout}}
 {{#if max_number_of_messages}}
 max_number_of_messages: {{max_number_of_messages}}
 {{/if}}
+{{#if file_selectors}}
 file_selectors:
-{{#if bucket_list_prefix}}
-- regex: {{bucket_list_prefix}}
-  expand_event_list_from_field: result
-  content_type: application/json
+{{file_selectors}}
 {{/if}}
 
 {{/if}}
+
+{{#if decode_parquet_enabled}}
+decoding.codec.parquet.enabled: {{decode_parquet_enabled}}
+{{#if decoding_parquet_batch_size}}
+decoding.codec.parquet.batch_size: {{decoding_parquet_batch_size}}
+{{/if}}
+{{#if decoding_parquet_process_parallel}}
+decoding.codec.parquet.process_parallel: {{decoding_parquet_process_parallel}}
+{{/if}}
+
+{{else}}
 
 expand_event_list_from_field: result
 content_type: application/json
+
+{{/if}}
+
 {{#if access_key_id}}
 access_key_id: {{access_key_id}}
 {{/if}}
@@ -96,7 +108,8 @@ publisher_pipeline.disable_host: true
 fields_under_root: true
 fields:
   _conf:
-    timezone: {{timezone}}
+    tz_offset: {{tz_offset}}
+    timestamp_field: {{timestamp_field}}
     table_name: {{table_name}}
 {{#if processors}}
 processors:

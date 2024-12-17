@@ -243,11 +243,6 @@ processors:
       field: file.x509.issuer.common_name
       value: "{{{santa.certificate.common_name}}}"
       if: ctx.santa?.certificate?.common_name != null
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 
   - script:
       description: Drops null/empty values recursively
@@ -271,6 +266,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

@@ -43,7 +43,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 To send classic ELB access logs to an S3 bucket, see [enable access logs for classic load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html).
 
-For an application load balancer, see [enable access log for application load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html#enable-access-logging).
+For an application load balancer, see [enable access log for application load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html) and [enable connection log for application load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-connection-logging.html).
 
 For a network load balancer, see [enable access log for network load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest//network/load-balancer-access-logs.html).
 
@@ -93,6 +93,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.elb.connection_time.ms | The total time of the connection in milliseconds, since it is opened till it is closed. | long |
 | aws.elb.error.reason | The error reason if the executed action failed. | keyword |
 | aws.elb.incoming_tls_alert | The integer value of TLS alerts received by the load balancer from the client, if present. | keyword |
+| aws.elb.leaf_client_cert_not_after | The time recorded at the start of the validity period of the leaf client certificate. | date |
+| aws.elb.leaf_client_cert_not_before | The time recorded at the end of the validity period of the leaf client certificate. | date |
+| aws.elb.leaf_client_cert_serial_number | The serial number of the leaf client certificate. | keyword |
+| aws.elb.leaf_client_cert_subject | The subject name of the leaf client certificate. | keyword |
 | aws.elb.listener | The ELB listener that received the connection. | keyword |
 | aws.elb.matched_rule_priority | The priority value of the rule that matched the request, if a rule matched. | keyword |
 | aws.elb.name | The name of the load balancer. | keyword |
@@ -106,8 +110,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.elb.target_port | List of IP addresses and ports for the targets that processed this request. | keyword |
 | aws.elb.target_status_code | List of status codes from the responses of the targets. | keyword |
 | aws.elb.tls_connection_creation_time | The time recorded at the beginning of the TLS connection. | date |
+| aws.elb.tls_error_code | The reason recorded when the load balancer fails to establish a connection, stored as a code in the connection log. | keyword |
+| aws.elb.tls_handshake_latency | The total time in seconds, with a millisecond precision, elapsed while establishing a successful handshake. | long |
 | aws.elb.tls_handshake_time.ms | The total time for the TLS handshake to complete in milliseconds once the connection has been established. | long |
 | aws.elb.tls_named_group | The TLS named group. | keyword |
+| aws.elb.tls_verify_status | The status of the connection request. This value is Success if the connection is established successfully. On an unsuccessful connection the value is Failed. | keyword |
 | aws.elb.trace_id | The contents of the `X-Amzn-Trace-Id` header. | keyword |
 | aws.elb.type | The type of the load balancer for v2 Load Balancers. | keyword |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |

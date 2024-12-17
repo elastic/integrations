@@ -256,8 +256,8 @@ processors:
           for (address in ctx.proofpoint_on_demand.mail.sm.to) {
             toAddresses.add(removeUnwantedCharacters(address));
           }
+          ctx.proofpoint_on_demand.mail.sm.to = toAddresses;
         }
-        ctx.proofpoint_on_demand.mail.sm.to = toAddresses;
       on_failure:
         - append:
             field: error.message
@@ -462,3 +462,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

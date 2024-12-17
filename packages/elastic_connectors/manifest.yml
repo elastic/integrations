@@ -1,7 +1,7 @@
 format_version: 3.2.3
 name: elastic_connectors
 title: "Elastic Connectors"
-version: 0.0.3
+version: 0.0.4
 source:
   license: "Elastic-2.0"
 description: "Sync data from source to the Elasticsearch index."
@@ -51,8 +51,15 @@ policy_templates:
             type: text
             title: Connector Name
             required: false
-            show_user: false # TODO: Change to true once this is fixed https://github.com/elastic/kibana/issues/194310
+            show_user: true
             description: Connector name to identify the connector in the UI
+          - &connector_id
+            name: connector_id
+            type: text
+            title: Connector ID
+            required: false
+            show_user: false
+            description: The ID of the connector managed by this integration, generated randomly if not specified.
         template_path: github.yml.hbs
   - name: google_drive
     title: Google Drive Connector
@@ -77,6 +84,7 @@ policy_templates:
         description: Connectors syncs data from an original data source to an Elasticsearch index.
         vars:
           - <<: *connector_name
+          - <<: *connector_id
         template_path: google_drive.yml.hbs
 
 owner:

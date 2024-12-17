@@ -170,6 +170,7 @@ processors:
         "topicPolicy": "topic_policy"
         "customWords": "custom_words"
         "sensitiveInformationPolicy": "sensitive_information_policy"
+        "contextualGroundingPolicy": "contextual_grounding_policy"
         "invocationMetrics": "invocation_metrics"
         "guardrailCoverage": "guardrail_coverage"
         "textCharacters": "text_characters"
@@ -344,117 +345,91 @@ processors:
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json != null
       lang: painless
       source: |
-        // output_body_json can be either an object or a list of the same shape of object,
-        // so to avoid unnecessary code duplication, raise the object to a list
-        def body = ctx.aws_bedrock.invocation.output.output_body_json;
-        if (!(body instanceof List)) {
-          body = [body];
+        def allBodies = ctx.aws_bedrock.invocation.output.output_body_json;
+        if (allBodies instanceof Map) { // it can be an object or an array
+          allBodies = [allBodies];
         }
-        def actions = new HashSet();
-        def policies = new HashSet();
-        def confidences = new HashSet();
-        def violations = new HashSet();
-        def matches = new HashSet();
-        for (def e: body) {
-          if (e.amazon_bedrock_guardrail_action == 'INTERVENED' || e.stop_reason == 'guardrail_intervened') {
-            if (ctx.gen_ai == null) {
-              ctx.gen_ai = new HashMap();
-            }
-            if (ctx.gen_ai.policy == null) {
-              ctx.gen_ai.policy = new HashMap();
-            }
-            if (ctx.gen_ai.compliance == null) {
-              ctx.gen_ai.compliance = new HashMap();
-            }
-            ctx.gen_ai.compliance.violation_detected = true;
-            ctx.event.outcome = 'failure';
-            if (e.trace?.guardrail?.inputAssessment instanceof HashMap) {
-              for (def o: e.trace.guardrail.inputAssessment.entrySet()) {
-                for (def i: o.getValue().entrySet()) {
-                  String policy_name = i.getKey();
-                  if (!policy_name.endsWith('_policy')) {
-                    continue;
-                  }
-                  policies.add(policy_name);
-                  for (def p: i.getValue().entrySet()) {
-                    for (def c: p.getValue()) {
-                      actions.add(c.action);
-                      if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
-                        matches.add(c);
-                      }
-                      if (c.type != null) {
-                        if (policy_name == 'content_policy') {
-                          violations.add(c.type);
-                          confidences.add(c.confidence);
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            } else if (e.amazon_bedrock_trace?.guardrail?.input instanceof HashMap) {
-              for (def o: e.amazon_bedrock_trace.guardrail.input.entrySet()) {
-                for (def i: o.getValue().entrySet()) {
-                  String policy_name = i.getKey();
-                  if (!policy_name.endsWith('_policy')) {
-                    continue;
-                  }
-                  policies.add(policy_name);
-                  for (def p: i.getValue().entrySet()) {
-                    for (def c: p.getValue()) {
-                      actions.add(c.action);
-                      if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
-                        matches.add(c);
-                      }
-                      if (c.type != null) {
-                        if (policy_name == 'content_policy') {
-                          violations.add(c.type);
-                          confidences.add(c.confidence);
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+
+        def nameAndDetailsOfPolicies = allBodies.stream()
+          .filter(body ->
+            body.amazon_bedrock_guardrail_action == 'INTERVENED' ||
+            body.stop_reason == 'guardrail_intervened'
+          )
+          .flatMap(body -> [
+            [body.trace?.guardrail?.inputAssessment],
+            body.trace?.guardrail?.outputAssessments,
+            [body.amazon_bedrock_trace?.guardrail?.input],
+            body.amazon_bedrock_trace?.guardrail?.outputs
+          ].stream())
+          .filter(Objects::nonNull)
+          .flatMap(List::stream)
+          .filter(Objects::nonNull)
+          .flatMap(assessment -> assessment.entrySet().stream())
+          .flatMap(assessmentEntry -> assessmentEntry.getValue().entrySet().stream())
+          .filter(policyEntry -> policyEntry.getKey().endsWith('_policy'))
+          .flatMap(policyEntry ->
+            policyEntry.getValue().entrySet().stream()
+              .flatMap(policyValueEntry -> policyValueEntry.getValue().stream())
+              .map(details -> [ 'name': policyEntry.getKey(), 'details': details ])
+              .collect(Collectors.toList())
+              .stream()
+          )
+          .collect(Collectors.toList());
+
+
+        if (ctx.gen_ai == null) ctx.gen_ai = [:];
+        if (ctx.gen_ai.compliance == null) ctx.gen_ai.compliance = [:];
+        if (ctx.gen_ai.policy == null) ctx.gen_ai.policy = [:];
+
+
+        ctx.gen_ai.guardrail_id = allBodies.stream()
+          .flatMap(body -> [
+            body.trace?.guardrail?.inputAssessment,
+            body.amazon_bedrock_trace?.guardrail?.input
+          ].stream())
+          .filter(input -> input instanceof HashMap)
+          .flatMap(input -> input.keySet().stream())
+          .distinct()
+          .sorted()
+          .collect(Collectors.toList());
+
+        ctx.gen_ai.policy.name = nameAndDetailsOfPolicies.stream()
+          .map(policy -> policy.name)
+          .distinct()
+          .sorted()
+          .collect(Collectors.toList());
+
+        ctx.gen_ai.policy.action = nameAndDetailsOfPolicies.stream()
+          .map(policy -> policy.details.action)
+          .distinct()
+          .sorted()
+          .collect(Collectors.toList());
+
+        ctx.gen_ai.policy.match_detail = nameAndDetailsOfPolicies.stream()
+          .filter(policy -> policy.details.match != null || policy.name == 'contextual_grounding_policy')
+          .map(policy -> policy.details)
+          .distinct()  // no sort because HashMap isn't Comparable
+          .collect(Collectors.toList());
+
+        ctx.gen_ai.policy.confidence = nameAndDetailsOfPolicies.stream()
+          .map(policy -> policy.details.confidence)
+          .filter(Objects::nonNull)
+          .distinct()
+          .sorted()
+          .collect(Collectors.toList());
+
+        ctx.gen_ai.compliance.violation_code = nameAndDetailsOfPolicies.stream()
+          .map(policy -> policy.details.type)
+          .filter(Objects::nonNull)
+          .distinct()
+          .sorted()
+          .collect(Collectors.toList());
+
+        if (ctx.gen_ai.compliance.violation_code.size() > 0) {
+          ctx.gen_ai.compliance.violation_detected = true;
+          ctx.event.outcome = 'failure';
         }
-        if (actions.size() != 0) {
-          ctx.gen_ai.policy.action = new ArrayList();
-          for (def e: actions) {
-            ctx.gen_ai.policy.action.add(e);
-          }
-          Collections.sort(ctx.gen_ai.policy.action);
-        }
-        if (violations.size() != 0) {
-          ctx.gen_ai.compliance.violation_code = new ArrayList();
-          for (def e: violations) {
-            ctx.gen_ai.compliance.violation_code.add(e);
-          }
-          Collections.sort(ctx.gen_ai.compliance.violation_code);
-        }
-        if (matches.size() != 0) {
-          def match_details = new ArrayList();
-          for (def e: matches) {
-            match_details.add(e);
-          }
-          Collections.sort(match_details);
-          ctx.gen_ai.policy.match_detail = match_details;
-        }
-        if (confidences.size() != 0) {
-          ctx.gen_ai.policy.confidence = new ArrayList();
-          for (def e: confidences) {
-            ctx.gen_ai.policy.confidence.add(e);
-          }
-          Collections.sort(ctx.gen_ai.policy.confidence);
-        }
-        if (policies.size() != 0) {
-          ctx.gen_ai.policy.name = new ArrayList();
-          for (def e: policies) {
-            ctx.gen_ai.policy.name.add(e);
-          }
-          Collections.sort(ctx.gen_ai.policy.name);
-        }
+
   - set:
       if: ctx.gen_ai?.response?.error_code != null
       field: event.outcome

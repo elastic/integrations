@@ -91,16 +91,42 @@ processors:
 
 # Date fields
   - date:
+      field: digital_guardian.arc.dg_time
+      tag: date_dg_time
+      target_field: digital_guardian.arc.dg_time
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+      if: ctx.digital_guardian?.arc?.dg_time != null
+  - date:
+      field: digital_guardian.arc.dg_processed_time
+      tag: date_dg_processed_time
+      target_field: digital_guardian.arc.dg_processed_time
+      formats:
+        - epoch_second
+      if: ctx.digital_guardian?.arc?.dg_processed_time != null
+  - date:
       field: digital_guardian.arc.inc_mtime
       tag: date_inc_mtime
       target_field: digital_guardian.arc.inc_mtime
       formats:
         - "yyyy-MM-dd HH:mm:ss"
       if: ctx.digital_guardian?.arc?.inc_mtime != null
-  - set: 
+  - set:
       field: '@timestamp'
-      tag: set_timestamp
+      tag: set_timestamp_dg_time
+      copy_from: digital_guardian.arc.dg_time
+      ignore_empty_value: true
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_dg_processed_time
+      copy_from: digital_guardian.arc.dg_processed_time
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_inc_mtime
       copy_from: digital_guardian.arc.inc_mtime
+      override: false
       ignore_empty_value: true
 
 # ECS Rule Fields
@@ -175,3 +201,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

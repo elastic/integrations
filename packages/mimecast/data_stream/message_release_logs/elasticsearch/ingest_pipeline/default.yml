@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Mimecast siem_logs.
+description: Pipeline for processing Mimecast message_release_logs.
 processors:
   # Generic event/ecs fields we always want to populate.
   - set:
@@ -106,6 +106,12 @@ processors:
         if (ctx.mimecast?.fromEnv?.displayableName != null) {
           users.add(ctx.mimecast.fromEnv.displayableName);
         }
+        if (ctx.mimecast?.operator instanceof Map) {
+          // mimecast.operator is now an object, so to avoid
+          // breaking mappings, move the email address to its
+          // root.
+          ctx.mimecast.operator = ctx.mimecast.operator.emailAddress;
+        }
         if (ctx.mimecast?.operator != null) {
           def parts = splitmail(ctx.mimecast.operator);
           if (parts != null) {
@@ -165,7 +171,12 @@ processors:
             Collections.sort(ctx.related.hosts);
           }
         }
-
+  - rename:
+      description: Move spamProcessingDetail.verdict to legacy location.
+      field: mimecast.spamProcessingDetail.verdict
+      target_field: mimecast.spamProcessingDetail.spamVerdict
+      ignore_missing: true
+      ignore_failure: true
   - set:
       field: event.action
       copy_from: mimecast.status
@@ -209,20 +220,22 @@ processors:
           return false;
         }
         drop(ctx);
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
-      ignore_failure: true
-      ignore_missing: true
   - rename:
       tag: move_fields_into_place
       field: mimecast
       target_field: mimecast.message_release_logs
 
 on_failure:
-  - append:
-      field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
