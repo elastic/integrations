@@ -74,12 +74,6 @@ program: |
                         ).or(
                             state.?initial_interval.optMap(i, [(now() - duration(i)).format(time_layout.RFC3339)])
                         ),
-                        ?"added_after": has(state.?cursor.last_timestamp) ?
-                                optional.of([state.cursor.last_timestamp])
-                            : has(state.initial_interval) ?
-                                optional.of([(now() - duration(state.initial_interval)).format(time_layout.RFC3339)])
-                            :
-                                optional.none(),
                         ?"limit": state.?limit.optMap(l, [string(int(l))]),
                     }.format_query()
                 )
