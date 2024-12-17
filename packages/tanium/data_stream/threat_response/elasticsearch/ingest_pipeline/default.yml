@@ -2,24 +2,29 @@
 description: Pipeline for processing threat response logs.
 processors:
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
-  - append:
+  - set:
+      tag: set_event_kind_default
       field: event.kind
       value: event
-      allow_duplicates: false
   - set:
+      tag: set_event_category
       field: event.category
       value: [host]
   - set:
+      tag: set_event_type
       field: event.type
       value: [info]
   - rename:
+      tag: rename_message
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
+      tag: json_event_original
       field: event.original
       target_field: json
       on_failure:
@@ -27,7 +32,48 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
+  - rename:
+      tag: rename_json_alert_id
+      field: json.Alert Id
+      target_field: tanium.threat_response.alert_id
+      ignore_missing: true
+  - set:
+      tag: set_event_kind_alert
+      field: event.kind
+      value: alert
+      if: ctx.tanium?.threat_response?.alert_id != null && ctx.tanium.threat_response.alert_id != ''
+  - rename:
+      tag: rename_json_intel_id
+      field: json.Intel Id
+      target_field: tanium.threat_response.intel_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_intel_type
+      field: json.Intel Type
+      target_field: tanium.threat_response.intel_type
+      ignore_missing: true
+  - rename:
+      tag: rename_json_intel_name
+      field: json.Intel Name
+      target_field: tanium.threat_response.intel_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_intel_labels
+      field: json.Intel Labels
+      target_field: tanium.threat_response.intel_labels
+      ignore_missing: true
+  - rename:
+      tag: rename_json_impact_score
+      field: json.Impact Score
+      target_field: tanium.threat_response.impact_score
+      ignore_missing: true
+  - rename:
+      tag: rename_json_link
+      field: json.Link
+      target_field: tanium.threat_response.link
+      ignore_missing: true
   - date:
+      tag: date_json_updatedat
       field: json.updatedAt
       target_field: tanium.threat_response.updated_at
       if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
@@ -41,81 +87,64 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
+      tag: convert_json_id
       field: json.id
-      target_field: tanium.threat_response.id
       type: string
       ignore_missing: true
-      if: ctx.json?.id != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
   - set:
+      tag: set_tanium_threat_response_id
+      field: tanium.threat_response.id
+      copy_from: json.id
+      ignore_empty_value: true
+  - set:
+      tag: set_event_id
       field: event.id
-      copy_from: tanium.threat_response.id
+      copy_from: json.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_action
       field: json.action
       target_field: tanium.threat_response.action
       ignore_missing: true
   - set:
+      tag: set_event_action
       field: event.action
       copy_from: tanium.threat_response.action
       ignore_empty_value: true
   - convert:
+      tag: convert_json_userid
       field: json.userId
       target_field: tanium.threat_response.user.id
       type: string
       ignore_missing: true
-      if: ctx.json?.userId != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
-  - set:
-      field: user.id
-      copy_from: tanium.threat_response.user.id
-      ignore_empty_value: true
-  - append:
-      field: related.user
-      value: '{{{user.id}}}'
-      if: ctx.user?.id != null
-      allow_duplicates: false
   - rename:
+      tag: rename_json_username
       field: json.userName
       target_field: tanium.threat_response.user.name
       ignore_missing: true
-  - set:
-      field: user.name
-      copy_from: tanium.threat_response.user.name
-      ignore_empty_value: true
-  - append:
-      field: related.user
-      value: '{{{user.name}}}'
-      if: ctx.user?.name != null
-      allow_duplicates: false
   - rename:
+      tag: rename_json_table
       field: json.table
       target_field: tanium.threat_response.table
       ignore_missing: true
   - convert:
+      tag: convert_json_rowid
       field: json.rowId
       target_field: tanium.threat_response.row_id
       type: string
       ignore_missing: true
-      if: ctx.json?.rowId != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
   - rename:
+      tag: rename_json_revision
       field: json.revision
       target_field: tanium.threat_response.revision
       ignore_missing: true
+  - rename:
+      tag: rename_json_state
+      field: json.state
+      target_field: tanium.threat_response.state
+      if: ctx.json?.state instanceof Map
   - json:
+      tag: json_json_state
       field: json.state
       target_field: tanium.threat_response.state
       if: ctx.json?.state != null && ctx.json.state != ''
@@ -124,24 +153,52 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
-  - rename:
-      field: tanium.threat_response.state.connectionId
-      target_field: tanium.threat_response.state.connection_id
-      ignore_missing: true
-  - rename:
-      field: tanium.threat_response.state.sessionId
-      target_field: tanium.threat_response.state.session_id
-      ignore_missing: true
+  - script:
+      tag: script_convert_state_keys_to_snake_case
+      description: Convert state keys to snake case.
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+
+        if(ctx.tanium?.threat_response?.state != null) {
+          ctx.tanium.threat_response.state = keysToSnakeCase(ctx.tanium.threat_response.state);
+        }
   - set:
+      tag: set_host_hostname
       field: host.hostname
       copy_from: tanium.threat_response.state.target.hostname
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
   - date:
+      tag: date_json_createdat
       field: json.createdAt
       target_field: tanium.threat_response.created_at
       if: ctx.json?.createdAt != null && ctx.json.createdAt != ''
@@ -155,6 +212,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - convert:
+      tag: convert_json_computer_ip
       field: json.Computer IP
       target_field: tanium.threat_response.computer.ip
       type: ip
@@ -166,48 +224,59 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_source_ip
       field: source.ip
       copy_from: tanium.threat_response.computer.ip
       ignore_empty_value: true
   - append:
+      tag: append_related_ip
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
   - rename:
+      tag: rename_json_computer_name
       field: json.Computer Name
       target_field: tanium.threat_response.computer.name
       ignore_missing: true
   - set:
+      tag: set_host_hostname_2
       field: host.hostname
       copy_from: tanium.threat_response.computer.name
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_2
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
   - rename:
+      tag: rename_json_event_id
       field: json.Event Id
       target_field: tanium.threat_response.event.id
       ignore_missing: true
   - set:
+      tag: set_event_id_2
       field: event.id
       copy_from: tanium.threat_response.event.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_event_name
       field: json.Event Name
       target_field: tanium.threat_response.event.name
       ignore_missing: true
   - rename:
+      tag: rename_json_priority
       field: json.Priority
       target_field: tanium.threat_response.priority
       ignore_missing: true
   - rename:
+      tag: rename_json_severity
       field: json.Severity
       target_field: tanium.threat_response.severity
       ignore_missing: true
   - date:
+      tag: date_json_timestamp
       field: json.Timestamp
       target_field: tanium.threat_response.timestamp
       if: ctx.json?.Timestamp != null
@@ -219,63 +288,122 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - set:
+      tag: set_timestamp
       field: '@timestamp'
       copy_from: tanium.threat_response.timestamp
       ignore_empty_value: true
   - rename:
+      tag: rename_json_user_domain
       field: json.User Domain
       target_field: tanium.threat_response.user.domain
       ignore_missing: true
   - set:
+      tag: set_user_domain
       field: user.domain
       copy_from: tanium.threat_response.user.domain
       ignore_empty_value: true
   - convert:
+      tag: convert_json_user_id
       field: json.User Id
       target_field: tanium.threat_response.user.id
       type: string
       ignore_missing: true
-      if: ctx.json['User Id'] != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
   - rename:
+      tag: rename_json_user_name
       field: json.User Name
       target_field: tanium.threat_response.user.name
       ignore_missing: true
-  - rename:
-      field: json.Other Parameters
-      target_field: tanium.threat_response.other_parameters.original
-      ignore_missing: true
+  - set:
+      tag: set_user_id
+      field: user.id
+      copy_from: tanium.threat_response.user.id
+      ignore_empty_value: true
+  - append:
+      tag: append_related_user_id
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - set:
+      tag: set_user_name
+      field: user.name
+      copy_from: tanium.threat_response.user.name
+      ignore_empty_value: true
+  - append:
+      tag: append_related_user_name
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+
+  # Parse 'Other Parameters', decode any payload value and store it as match details data
   - kv:
-      field: tanium.threat_response.other_parameters.original
-      target_field: tanium.threat_response.other_parameters.log_details
-      field_split: "\\|"
-      value_split: "="
+      tag: kv_json_other_parameters
+      field: json.Other Parameters
+      target_field: tanium.threat_response.other_parameters
+      field_split: '\|'
+      value_split: '='
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
+  - script:
+      tag: script_decode_base64_json_field
+      description: Decode base64 json field.
+      lang: painless
+      if: ctx.tanium.threat_response.other_parameters?.payload != null
+      source: ctx.tanium.threat_response.other_parameters.payload_json = ctx.tanium.threat_response.other_parameters.payload.decodeBase64()
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - json:
+      tag: json_tanium_threat_response_other_parameters_payload_json
+      field: tanium.threat_response.other_parameters.payload_json
+      target_field: tanium.threat_response.match_details
+      if: ctx.tanium.threat_response.other_parameters?.payload_json instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - remove:
+      field:
+        - tanium.threat_response.other_parameters.payload
+        - tanium.threat_response.other_parameters.payload_json
+      ignore_missing: true
+
+  # Add the data from the Match Details column to any other match details data
+  - script:
+      tag: script_handle_match_details_content_the_same_as_when_it_appears_in_an_encoded_payload
+      description: Handle 'Match Details' content the same as when it appears in an encoded payload.
+      lang: painless
+      if: ctx.json['Match Details'] instanceof Map
+      source: |
+        ctx.tanium.threat_response.match_details = ctx.tanium.threat_response.match_details ?: [:];
+        ctx.tanium.threat_response.match_details.putAll(ctx.json['Match Details']);
+
+  # Process match details data
   - pipeline:
-      name: '{{ IngestPipeline "pipeline_payload" }}'
-      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload != null
+      tag: pipeline_match_details
+      name: '{{ IngestPipeline "match_details" }}'
+      if: ctx.tanium?.threat_response?.match_details instanceof Map
+
   - append:
+      tag: append_event_kind_pipeline_error_if_error_message
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null && ctx.error.message != ''
       allow_duplicates: false
   - remove:
+      tag: remove_json
       field: json
       ignore_missing: true
   - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains("preserve_original_event"))
-      ignore_missing: true
-  - remove:
+      tag: remove_duplicate_custom_fields
       if: ctx.tags == null || !(ctx.tags.contains("preserve_duplicate_custom_fields"))
       field:
         - tanium.threat_response.id
@@ -290,6 +418,55 @@ processors:
         - tanium.threat_response.user.domain
       ignore_missing: true
   - script:
+      tag: script_truncate_at_a_maximum_depth
+      description: Truncate at a maximum depth.
+      lang: painless
+      source: |
+        Map truncateMap(Map node, int depth, int maxDepth, List path, List truncations) {
+            if (depth > maxDepth) {
+                truncations.add(String.join(".", path));
+                return null; // Return null if max depth is exceeded
+            }
+            for (entry in node.entrySet()) {
+                List newPath = new ArrayList(path);
+                newPath.add(entry.getKey());
+                Object value = entry.getValue();
+                if (value instanceof Map) {
+                    entry.setValue(truncateMap((Map) value, depth + 1, maxDepth, newPath, truncations));
+                } else if (value instanceof List) {
+                    // A list in a map doesn't add depth - multiple values are treated the same as a single value
+                    entry.setValue(truncateList((List) value, depth, maxDepth, newPath, truncations));
+                }
+                // Otherwise it's a plain value, so leave it
+            }
+            return node;
+
+        }
+        List truncateList(List node, int depth, int maxDepth, List path, List truncations) {
+            List input = new ArrayList(node);
+            node.clear();
+            if (depth > maxDepth) {
+                truncations.add(String.join(".", path));
+                return null;
+            }
+            for (item in input) {
+                if (item instanceof Map) {
+                    node.add(truncateMap((Map) item, depth + 1, maxDepth, path, truncations));
+                } else if (item instanceof List) {
+                    // A list in a list adds depth - but isn't common in our data
+                    node.add(truncateList((List) item, depth + 1, maxDepth, path, truncations));
+                } else {
+                    node.add(item); // It's a plain value
+                }
+            }
+            return node;
+        }
+        int maxDepth = 20;
+        List truncations = [];
+        truncateMap(ctx, 1, maxDepth, [], truncations);
+        ctx.tanium.truncations = truncations;
+  - script:
+      tag: script_drops_null_empty_values_recursively
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -308,8 +485,18 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      tag: append_error_message
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"

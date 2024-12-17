@@ -43,6 +43,10 @@ Each of these APIs may generate extra charges on your AWS Account. Refer to [AWS
 | S3 GetObject                 | 1                                                                                                                                                                                                                  | Per object per collection period                                   | logs related only    |
 | SecurityHub GetFindings      | Total number of results / GetFindings max page size ( 100, based on [AWS API GetFindings](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html)                                           | Per region per collection period                                   | AWS Security Hub     |                      |
 | SecurityHub GetInsights      | Total number of results / GetInsights max page size ( 100, based on [AWS API GetInsights](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetInsights.html)                                           | Per region per collection period                                   | AWS Security Hub     |                      | 
+| SQS ReceiveMessage | 1 | Every 20s minimum (more frequent if messages are waiting) | logs related only (S3 notifications) |
+| SQS DeleteMessage | 1 | Once per received message | logs related only (S3 notifications) |
+| SQS ChangeMessageVisibility | 1 | When message processing exceeds 150s | logs related only (S3 notifications) |
+| SQS GetQueueAttributes | 1 | Every minute to capture queue depth metric | logs related only (S3 notifications) |
 
 ### Metrics collection and cost considerations
 
@@ -63,6 +67,9 @@ Internally, the agent uses [ListMetrics](https://docs.aws.amazon.com/AmazonCloud
 You can further utilize `owning_account` parameter to refine the cross account observability. This parameter accepts a valid AWS account ID which should be linked to the monitoring account.
 If configured, metrics will be extracted from this specified linked/owning account.
 This parameter [utilize OwningAccount](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_ListMetrics.html#API_ListMetrics_RequestParameters) parameter of the ListMetrics API request.
+
+For logs, integration supports monitoring log groups from linked accounts when log groups are extracted using `log_group_name_prefix` option.
+You can enable `include_linked_accounts_for_prefix_mode` to include log groups from linked accounts. This is disabled by default.
 
 *_Note_:* Users should ensure that the necessary IAM roles and policies are properly set up in order to link the monitoring
 account and source accounts together. 
@@ -168,15 +175,19 @@ make sure these permissions are given:
 * `ec2:DescribeInstances`
 * `ec2:DescribeRegions`
 * `iam:ListAccountAliases`
+* `inspector2:ListFindings`
 * `logs:DescribeLogGroups`
 * `logs:FilterLogEvents`
 * `organizations:ListAccounts`
 * `rds:DescribeDBInstances`
 * `rds:ListTagsForResource`
+* `s3:GetBucketLocation`
 * `s3:GetObject`
+* `s3:ListBucket`
 * `sns:ListTopics`
 * `sqs:ChangeMessageVisibility`
 * `sqs:DeleteMessage`
+* `sqs:GetQueueAttributes`
 * `sqs:ListQueues`
 * `sqs:ReceiveMessage`
 * `sts:AssumeRole`

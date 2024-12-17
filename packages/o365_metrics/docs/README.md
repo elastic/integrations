@@ -1,6 +1,8 @@
 # Microsoft Office 365 Metrics Integration
 
-This integration is to collect metrics for [Microsoft Office 365](https://learn.microsoft.com/en-us/graph/overview).
+
+This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
+
 
 ## Setup
 
@@ -36,6 +38,7 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
+
 ### MailboxQuotastatus
 
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
@@ -67,6 +70,9 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
 ### OutlookAppUsage
 
+### OutlookActivity
+
+
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
 
@@ -82,6 +88,7 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+
 | input.type | Type of Filebeat input. | keyword |
 | o365metrics.outlook_app_usage.outlook_2007 | The count of unique users using Outlook 2007 during the reporting period. | integer |
 | o365metrics.outlook_app_usage.outlook_2010 | The count of unique users using Outlook 2010 during the reporting period. | integer |
@@ -92,3 +99,13 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | o365metrics.outlook_app_usage.report_period | The duration (e.g., 7 days) over which the report data is aggregated. | integer |
 | o365metrics.outlook_app_usage.report_refresh_date | The date when the report data was last updated. | date |
 | o365metrics.outlook_app_usage.undetermined | The count of unique users whose Outlook version could not be identified. | integer |
+
+| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | integer |
+| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | integer |
+| o365.metrics.outlook.activity.report_date | The specific date for which the report data applies. | date |
+| o365.metrics.outlook.activity.report_period | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer |
+| o365.metrics.outlook.activity.report_refresh_date | The date when the report data was last updated. | date |
+

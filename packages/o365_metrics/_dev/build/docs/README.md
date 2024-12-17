@@ -1,6 +1,7 @@
 # Microsoft Office 365 Metrics Integration
 
-This integration is to collect metrics for [Microsoft Office 365](https://learn.microsoft.com/en-us/graph/overview).
+This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
+
 
 ## Setup
 
@@ -36,17 +37,18 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
-### MailboxQuotastatus
-
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
+
+### MailboxQuotastatus
 
 
 {{fields "mailboxquotastatus"}}
 
-
 ### OutlookAppUsage
 
-Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
-
-
 {{fields "outlook_app_usage"}}
+
+### OutlookActivity
+
+{{fields "outlook_activity"}}
+

@@ -6,21 +6,19 @@ The Microsoft SQL Server integration package allows you to search, observe, and 
 
 The Microsoft SQL Server integration collects two types of data streams: logs and metrics.
 
-**Logs** help you keep a record of events happening in Microsoft SQL Server.
-Log data streams collected by the integration include:
+**Log** data streams provide records of events happening in Microsoft SQL Server:
 
-* `audit` provides events from the configured Windows event log channel. For more information on SQL Server auditing, refer to [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
-* `logs` parses error logs created by the Microsoft SQL server.
+* `audit`: Events from the configured Windows event log channel, providing detailed auditing information. See [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
+* `logs`: Error logs created by the Microsoft SQL server for troubleshooting and system events.
 
 Other log sources, such as files, are not supported.
 
 Find more details in [Logs](#logs).
 
-**Metrics** give you insight into the state of Microsoft SQL Server.
-Metric data streams collected by the integration include:
+**Metrics** data streams provide insights into SQL Server performance and health:
 
-* `performance` metrics gather the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
-* `transaction_log` metrics collect all usage stats and the total space usage.
+* `performance`: Comprehensive performance counters and objects available on the server.
+* `transaction_log`: Usage statistics and space utilization metrics for transaction logs.
 
 Find more details in [Metrics](#metrics).
 
@@ -42,6 +40,19 @@ If you browse Microsoft Developer Network (MSDN) for the following tables, you w
 2. `performance`:
     - [sys.dm_os_performance_counters](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16)
 
+Please make sure the user has the permissions to system as well as user-defined databases. For the particular user used in the integration, the following requirements are met:
+
+User setup options:
+
+- Grant specific permissions as mentioned in the MSDN pages above.
+- Alteratively, use `sysadmin` role (includes all required permissions): This can be configured via SQL Server Management Studio (SSMS) in `Server Roles`. Read more about joining a role in the [SQL Server documentation](https://learn.microsoft.com/en-us/sql/relational-databases/security/authentication-access/join-a-role?view=sql-server-ver16#SSMSProcedure).
+
+User Mappings (using SQL Server Management Studio (SSMS)):
+
+- Open SSMS and connect to your server.
+- Navigate to "Object Explorer" > "Security" > "Logins".
+- Right-click the user and select "Properties".
+- In the "User Mapping" tab, select the appropriate database and grant the required permissions.
 
 ## Setup
 
@@ -106,7 +117,7 @@ MSSQL supports a limited set of regular expressions. For more details, refer to 
 
 > Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lowercase and remove special characters and these fields will not have any static field mappings.
 
-The feature `merge_results` has been introduced in 8.4 beats which creates a single event by combining the metrics in a single event. For more details, refer to [SQL module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event).
+The feature `merge_results` has been introduced in 8.4 beats which creates a single event by combining the metrics in a single event. For more details, refer to [SQL module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_into_a_single_event).
 
 Read more in [instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15).
 

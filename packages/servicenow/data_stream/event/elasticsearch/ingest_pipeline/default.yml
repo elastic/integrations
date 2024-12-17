@@ -31,6 +31,34 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_search_timestamp_field
+      description: Script to search timestamp field
+      if: ctx.servicenow?.event != null
+      source: >-
+        def obj = ctx.servicenow.event;
+        if (obj.containsKey(ctx._conf.timestamp_field)) {
+            ctx.servicenow.event.timestamp_field = obj.get(ctx._conf.timestamp_field);
+        }
+  - script:
+      tag: script_promote_to_object
+      description: Convert servicenow.event.* scalar values to a .value field in an object if necessary.
+      lang: painless
+      if: ctx.servicenow?.event instanceof Map
+      source: |
+        for (def entry: ctx.servicenow.event.entrySet()) {
+          if (entry.getKey() == 'table_name') {
+            continue;
+          }
+          def v = entry.getValue();
+          if (v instanceof Map) {
+            continue;
+          }
+          Map n = [:];
+          n.value = v;
+          entry.setValue(n);
+        }
   - rename:
       field: _conf.table_name
       tag: rename_table_name
@@ -40,7 +68,7 @@ processors:
   - fingerprint:
       fields:
         - servicenow.event.sys_id.value
-        - servicenow.event.sys_updated_on.value
+        - servicenow.event.timestamp_field.value
         - servicenow.event.table_name
       target_field: _id
       ignore_missing: true
@@ -146,9 +174,10 @@ processors:
           ctx.servicenow.event.table_name == 'cmdb_ci_hyper_v_server'
         )
   - rename:
-      field: _conf.timezone
-      tag: rename_timezone
+      field: _conf.tz_offset
+      tag: rename_tz_offset
       target_field: event.timezone
+      if: ctx._conf?.tz_offset != null
       ignore_missing: true
   - set:
       field: event.timezone
@@ -2866,8 +2895,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_event_sys_updated_on_value
-      copy_from: servicenow.event.sys_updated_on.value
+      tag: set_@timestamp_from_event_timestamp_field_value
+      copy_from: servicenow.event.timestamp_field.value
       ignore_empty_value: true
   - convert:
       field: servicenow.event.port.value
@@ -3217,10 +3246,6 @@ processors:
       if: ctx.servicenow?.event?.table_name == 'task_ci'
   - remove:
       field:
-        - _conf.table_name
-      ignore_missing: true
-  - remove:
-      field:
         - servicenow.event.asset.display_value
         - servicenow.event.city.display_value
         - servicenow.event.company.display_value
@@ -3244,7 +3269,6 @@ processors:
         - servicenow.event.sys_created_on.value
         - servicenow.event.sys_id.display_value
         - servicenow.event.sys_tags.display_value
-        - servicenow.event.sys_updated_on.value
         - servicenow.event.time_zone.display_value
         - servicenow.event.dept_head.display_value
         - servicenow.event.severity.value
@@ -3256,8 +3280,10 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
-      field: servicenow.event.table_name
-      tag: remove_event_table_name
+      field:
+        - _conf.timestamp_field
+        - servicenow.event.timestamp_field
+      tag: remove_non_required_fields
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values
@@ -3277,6 +3303,28 @@ processors:
           return false;
         }
         drop(ctx);
+  - script:
+      tag: script_to_truncate_long_fields
+      lang: painless
+      description: Truncate fields that are over length.
+      source: |-
+        def filterMassive(def src) {
+          if (src instanceof Map) {
+            for (def entry: src.entrySet()) {
+              entry.setValue(filterMassive(entry.getValue()));
+            }
+            return src;
+          } else if (src instanceof List) {
+            for (int i = 0; i < src.length; i++) {
+              src[i] = filterMassive(src[i]);
+            }
+            return src;
+          } else if (src instanceof String && src.length() > 32766) {
+            return src.substring(0, 32700)+' (truncated)';
+          }
+          return src;
+        }
+        filterMassive(ctx);
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind
@@ -3293,3 +3341,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

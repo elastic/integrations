@@ -4,6 +4,9 @@
     - name: action
       type: keyword
       description: Action for the threat response.
+    - name: alert_id
+      type: keyword
+      description: Alert ID
     - name: computer
       type: group
       fields:
@@ -28,103 +31,134 @@
     - name: id
       type: keyword
       description: Threat response id.
-    - name: other_parameters
+    - name: impact_score
+      type: integer
+      description: Impact score
+    - name: intel_id
+      type: keyword
+      description: Intelligence ID
+    - name: intel_name
+      type: keyword
+      description: Intelligence name
+    - name: intel_type
+      type: keyword
+      description: Intelligence type
+    - name: link
+      type: keyword
+      description: Link
+    - name: match_details
       type: group
       fields:
-        - name: original
-          type: match_only_text
-        - name: log_details
+        - name: config_id
+          type: keyword
+          description: Config id.
+        - name: config_rev_id
+          type: keyword
+          description: Config rev.iD.
+        - name: finding
           type: group
           fields:
-            - name: name
+            - name: domain
               type: keyword
-              description: Name of threat.
-            - name: source
+              description: Finding domain.
+            - name: first_seen
+              type: date
+              description: First seen.
+            - name: hunt_id
               type: keyword
-              description: Source of threat.
-            - name: type
+              description: Hunt id.
+            - name: id
               type: keyword
-              description: Type of threat.
-            - name: payload
-              type: match_only_text
-              description: Decoded payload data.
-            - name: payload_decoded
+              description: Finding id.
+            - name: intel_id
+              type: keyword
+              description: Finding intel id.
+            - name: last_seen
+              type: date
+              description: Last seen.
+            - name: reporting_id
+              type: keyword
+              description: Finding reporting id.
+            - name: source_name
+              type: keyword
+              description: Source name.
+            - name: system_info
               type: group
               fields:
-                - name: config_id
+                - name: bits
+                  type: long
+                  description: Bits.
+                - name: build_number
                   type: keyword
-                  description: Config id.
-                - name: config_rev_id
-                  type: keyword
-                  description: Config rev.iD.
-                - name: finding
+                  description: Build number.
+                - name: os
                   type: group
                   fields:
-                    - name: domain
+                    - name: value
                       type: keyword
-                      description: Finding domain.
-                    - name: first_seen
-                      type: date
-                      description: First seen.
-                    - name: hunt_id
+                      description: OS value.
+                    - name: platform
                       type: keyword
-                      description: Hunt id.
-                    - name: id
+                      description: OS platform.
+                    - name: version
+                      type: version
+                      description: OS version.
+                - name: patch_level
+                  type: keyword
+                  description: Patch level.
+                - name: platform
+                  type: keyword
+                  description: OS type.
+            - name: threat_id
+              type: keyword
+              description: Threat id.
+            - name: whats
+              type: nested
+            - name: whats.artifact_activity
+              type: group
+              fields:
+                - name: acting_artifact
+                  type: group
+                  fields:
+                    - name: artifact_hash
                       type: keyword
-                      description: Finding id.
-                    - name: intel_id
+                      description: Artifact hash of activity.
+                    - name: is_intel_target
+                      type: boolean
+                      description: Intel target or not.
+                    - name: instance_hash
                       type: keyword
-                      description: Finding intel id.
-                    - name: last_seen
-                      type: date
-                      description: Last seen.
-                    - name: reporting_id
-                      type: keyword
-                      description: Finding reporting id.
-                    - name: source_name
-                      type: keyword
-                      description: Source name.
-                    - name: system_info
+                      description: Instance hash of activity.
+                    - name: process
                       type: group
                       fields:
-                        - name: bits
-                          type: long
-                          description: Bits.
-                        - name: os
-                          type: group
-                          fields:
-                            - name: value
-                              type: keyword
-                              description: OS value.
-                            - name: platform
-                              type: keyword
-                              description: OS platform.
-                            - name: version
-                              type: version
-                              description: OS version.
-                        - name: platform
+                        - name: arguments
                           type: keyword
-                          description: OS type.
-                    - name: threat_id
-                      type: keyword
-                      description: Threat id.
-                    - name: whats
-                      type: nested
-                    - name: whats.artifact_activity
-                      type: group
-                      fields:
-                        - name: acting_artifact
+                          description: Process arguments.
+                        - name: file
                           type: group
                           fields:
                             - name: artifact_hash
                               type: keyword
-                              description: Artifact hash of activity.
-                            - name: is_intel_target
-                              type: boolean
-                              description: Intel target or not.
+                              description: Artifact hash of file.
                             - name: instance_hash
                               type: keyword
-                              description: Instance hash of activity.
+                              description: Instance hash of file.
+                            - name: path
+                              type: keyword
+                              description: Path of file.
+                        - name: handles
+                          type: keyword
+                          description: Process handles.
+                        - name: parent
+                          type: group
+                          fields:
+                            - name: artifact_hash
+                              type: keyword
+                              description: Artifact hash.
+                            - name: instance_hash
+                              type: keyword
+                              description: Instance hash.
                             - name: process
                               type: group
                               fields:
@@ -167,6 +201,12 @@
                                             - name: artifact_hash
                                               type: keyword
                                               description: Artifact hash of file.
+                                            - name: hash
+                                              type: group
+                                              fields:
+                                                - name: md5
+                                                  type: keyword
+                                                  description: MD5 hash.
                                             - name: instance_hash
                                               type: keyword
                                               description: Instance hash of file.
@@ -176,68 +216,11 @@
                                         - name: handles
                                           type: keyword
                                           description: Process handles.
-                                        - name: parent
-                                          type: group
-                                          fields:
-                                            - name: artifact_hash
-                                              type: keyword
-                                              description: Artifact hash.
-                                            - name: instance_hash
-                                              type: keyword
-                                              description: Instance hash.
-                                            - name: process
-                                              type: group
-                                              fields:
-                                                - name: arguments
-                                                  type: keyword
-                                                  description: Process arguments.
-                                                - name: file
-                                                  type: group
-                                                  fields:
-                                                    - name: artifact_hash
-                                                      type: keyword
-                                                      description: Artifact hash of file.
-                                                    - name: hash
-                                                      type: group
-                                                      fields:
-                                                        - name: md5
-                                                          type: keyword
-                                                          description: MD5 hash.
-                                                    - name: instance_hash
-                                                      type: keyword
-                                                      description: Instance hash of file.
-                                                    - name: path
-                                                      type: keyword
-                                                      description: Path of file.
-                                                - name: handles
-                                                  type: keyword
-                                                  description: Process handles.
-                                                - name: md5
-                                                  type: keyword
-                                                  description: MD5 keyword.
-                                                - name: pid
-                                                  type: keyword
-                                                  description: Process id.
-                                                - name: start_time
-                                                  type: date
-                                                  description: Start time.
-                                                - name: tanium_unique_id
-                                                  type: keyword
-                                                  description: Tanium unique id.
-                                                - name: user
-                                                  type: group
-                                                  fields:
-                                                    - name: domain
-                                                      type: keyword
-                                                      description: User domain.
-                                                    - name: id
-                                                      type: keyword
-                                                      description: User id.
-                                                    - name: name
-                                                      type: keyword
-                                                      description: User name.
-                                        - name: pid
+                                        - name: md5
                                           type: keyword
+                                          description: MD5 keyword.
+                                        - name: pid
+                                          type: long
                                           description: Process id.
                                         - name: start_time
                                           type: date
@@ -251,9 +234,6 @@
                                             - name: domain
                                               type: keyword
                                               description: User domain.
-                                            - name: group_id
-                                              type: keyword
-                                              description: User group id.
                                             - name: id
                                               type: keyword
                                               description: User id.
@@ -261,8 +241,8 @@
                                               type: keyword
                                               description: User name.
                                 - name: pid
-                                  type: keyword
-                                  description: Parent id.
+                                  type: long
+                                  description: Process id.
                                 - name: start_time
                                   type: date
                                   description: Start time.
@@ -284,97 +264,36 @@
                                     - name: name
                                       type: keyword
                                       description: User name.
-                        - name: relevant_actions
-                          type: nested
-                        - name: relevant_actions.tanium_recorder_context
-                          type: group
-                          fields:
-                            - name: event
-                              type: group
-                              fields:
-                                - name: file_create
-                                  type: group
-                                  fields:
-                                    - name: path
-                                      type: keyword
-                                      description: Path of file.
-                                - name: timestamp_ms
-                                  type: date
-                                  description: Timestamp in milliseconds.
-                            - name: file
-                              type: group
-                              fields:
-                                - name: unique_event_id
-                                  type: keyword
-                                  description: Unique event id.
-                        - name: relevant_actions.tanium_recorder_event_table_id
-                          type: keyword
-                          description: Tanium recorder event table id.
-                        - name: relevant_actions.target
-                          type: group
-                          fields:
-                            - name: artifact_hash
-                              type: keyword
-                              description: Artifact hash of file.
-                            - name: file
-                              type: group
-                              fields:
-                                - name: hash
-                                  type: group
-                                  fields:
-                                    - name: md5
-                                      type: keyword
-                                      description: MD5 hash.
-                                    - name: sha1
-                                      type: keyword
-                                      description: MD5 sha1.
-                                    - name: sha256
-                                      type: keyword
-                                      description: MD5 sha256.
-                                - name: instance_hash_salt
-                                  type: keyword
-                                  description: Instance hash salt.
-                                - name: magic_number_hex
-                                  type: keyword
-                                  description: Magic number.
-                                - name: modification_time
-                                  type: date
-                                  description: Modification time of file.
-                                - name: path
-                                  type: keyword
-                                  description: Path of file.
-                                - name: size_bytes
-                                  type: long
-                                  description: File size in bytes.
-                                - name: instance_hash
-                                  type: keyword
-                                  description: Instance hash.
-                            - name: instance_hash
-                              type: keyword
-                              description: Instance hash.
-                        - name: relevant_actions.timestamp
-                          type: date
-                          description: Timestamp.
-                        - name: relevant_actions.verb
+                        - name: pid
                           type: long
-                          description: Verb.
-                    - name: whats.intel_intra_ids
-                      type: nested
-                    - name: whats.intel_intra_ids.id
-                      type: keyword
-                      description: Array of intel intra id.
-                    - name: whats.source_name
-                      type: keyword
-                      description: Source name.
-                - name: intel_id
-                  type: keyword
-                  description: Intel id.
-                - name: match
+                          description: Parent id.
+                        - name: start_time
+                          type: date
+                          description: Start time.
+                        - name: tanium_unique_id
+                          type: keyword
+                          description: Tanium unique id.
+                        - name: user
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: User domain.
+                            - name: group_id
+                              type: keyword
+                              description: User group id.
+                            - name: id
+                              type: keyword
+                              description: User id.
+                            - name: name
+                              type: keyword
+                              description: User name.
+                - name: relevant_actions
+                  type: nested
+                - name: relevant_actions.tanium_recorder_context
                   type: group
                   fields:
-                    - name: contexts
-                      type: nested
-                    - name: contexts.event
+                    - name: event
                       type: group
                       fields:
                         - name: file_create
@@ -383,99 +302,469 @@
                             - name: path
                               type: keyword
                               description: Path of file.
-                        - name: timestampMs
+                        - name: timestamp_ms
                           type: date
                           description: Timestamp in milliseconds.
-                    - name: contexts.file
+                    - name: file
                       type: group
                       fields:
                         - name: unique_event_id
                           type: keyword
-                          description: Unique event id of file.
-                    - name: hash
+                          description: Unique event id.
+                - name: relevant_actions.tanium_recorder_event_table_id
+                  type: keyword
+                  description: Tanium recorder event table id.
+                - name: relevant_actions.target
+                  type: group
+                  fields:
+                    - name: artifact_hash
                       type: keyword
-                      description: Hash value.
-                    - name: properties
+                      description: Artifact hash of file.
+                    - name: file
+                      type: group
+                      fields:
+                        - name: hash
+                          type: group
+                          fields:
+                            - name: md5
+                              type: keyword
+                              description: MD5 hash.
+                            - name: sha1
+                              type: keyword
+                              description: SHA1 hash.
+                            - name: sha256
+                              type: keyword
+                              description: SHA256 hash.
+                        - name: instance_hash_salt
+                          type: keyword
+                          description: Instance hash salt.
+                        - name: magic_number_hex
+                          type: keyword
+                          description: Magic number.
+                        - name: modification_time
+                          type: date
+                          description: Modification time of file.
+                        - name: path
+                          type: keyword
+                          description: Path of file.
+                        - name: size_bytes
+                          type: long
+                          description: File size in bytes.
+                        - name: instance_hash
+                          type: keyword
+                          description: Instance hash.
+                    - name: instance_hash
+                      type: keyword
+                      description: Instance hash.
+                    - name: is_intel_target
+                      type: boolean
+                      description: Is an intel target.
+                    - name: port
+                      type: group
+                      fields:
+                        - name: connection_time
+                          type: date
+                          description: Connection time.
+                        - name: local_ip
+                          type: ip
+                          description: Local IP.
+                        - name: local_port
+                          type: long
+                          description: Local port.
+                        - name: process
+                          type: group
+                          fields:
+                            - name: artifact_hash
+                              type: keyword
+                              description: Artifact hash.
+                            - name: instance_hash
+                              type: keyword
+                              description: Instance hash.
+                            - name: process
+                              type: group
+                              fields:
+                                - name: arguments
+                                  type: keyword
+                                  description: Process arguments.
+                                - name: file
+                                  type: group
+                                  fields:
+                                    - name: artifact_hash
+                                      type: keyword
+                                      description: Artifact hash of file.
+                                    - name: file
+                                      type: group
+                                      fields:
+                                        - name: path
+                                          type: keyword
+                                          description: Path of file.
+                                        - name: signature_data
+                                          type: group
+                                          fields:
+                                            - name: issuer
+                                              type: keyword
+                                              description: Signature issuer.
+                                            - name: status
+                                              type: long
+                                              description: Signature status.
+                                            - name: subject
+                                              type: keyword
+                                              description: Signature subject.
+                                    - name: instance_hash
+                                      type: keyword
+                                      description: Instance hash of file.
+                                - name: name
+                                  type: keyword
+                                  description: Name.
+                                - name: parent
+                                  type: group
+                                  fields:
+                                    - name: artifact_hash
+                                      type: keyword
+                                      description: Artifact hash.
+                                    - name: instance_hash
+                                      type: keyword
+                                      description: Instance hash.
+                                    - name: process
+                                      type: group
+                                      fields:
+                                        - name: arguments
+                                          type: keyword
+                                          description: Process arguments.
+                                        - name: file
+                                          type: group
+                                          fields:
+                                            - name: artifact_hash
+                                              type: keyword
+                                              description: Artifact hash of file.
+                                            - name: file
+                                              type: group
+                                              fields:
+                                                - name: path
+                                                  type: keyword
+                                                  description: Path of file.
+                                                - name: signature_data
+                                                  type: group
+                                                  fields:
+                                                    - name: issuer
+                                                      type: keyword
+                                                      description: Signature issuer.
+                                                    - name: status
+                                                      type: long
+                                                      description: Signature status.
+                                                    - name: subject
+                                                      type: keyword
+                                                      description: Signature subject.
+                                            - name: instance_hash
+                                              type: keyword
+                                              description: Instance hash of file.
+                                        - name: name
+                                          type: keyword
+                                          description: Name.
+                                        - name: parent
+                                          type: group
+                                          fields:
+                                            - name: artifact_hash
+                                              type: keyword
+                                              description: Artifact hash.
+                                            - name: instance_hash
+                                              type: keyword
+                                              description: Instance hash.
+                                            - name: process
+                                              type: group
+                                              fields:
+                                                - name: arguments
+                                                  type: keyword
+                                                  description: Process arguments.
+                                                - name: file
+                                                  type: group
+                                                  fields:
+                                                    - name: artifact_hash
+                                                      type: keyword
+                                                      description: Artifact hash of file.
+                                                    - name: file
+                                                      type: group
+                                                      fields:
+                                                        - name: path
+                                                          type: keyword
+                                                          description: Path of file.
+                                                        - name: signature_data
+                                                          type: group
+                                                          fields:
+                                                            - name: issuer
+                                                              type: keyword
+                                                              description: Signature issuer.
+                                                            - name: status
+                                                              type: long
+                                                              description: Signature status.
+                                                            - name: subject
+                                                              type: keyword
+                                                              description: Signature subject.
+                                                    - name: instance_hash
+                                                      type: keyword
+                                                      description: Instance hash of file.
+                                                - name: name
+                                                  type: keyword
+                                                  description: Name.
+                                                - name: parent
+                                                  type: group
+                                                  fields:
+                                                    - name: artifact_hash
+                                                      type: keyword
+                                                      description: Artifact hash.
+                                                    - name: instance_hash
+                                                      type: keyword
+                                                      description: Instance hash.
+                                                    - name: process
+                                                      type: group
+                                                      fields:
+                                                        - name: arguments
+                                                          type: keyword
+                                                          description: Process arguments.
+                                                        - name: file
+                                                          type: group
+                                                          fields:
+                                                            - name: artifact_hash
+                                                              type: keyword
+                                                              description: Artifact hash of file.
+                                                            - name: file
+                                                              type: group
+                                                              fields:
+                                                                - name: path
+                                                                  type: keyword
+                                                                  description: Path of file.
+                                                            - name: instance_hash
+                                                              type: keyword
+                                                              description: Instance hash of file.
+                                                        - name: name
+                                                          type: keyword
+                                                          description: Name.
+                                                        - name: parent
+                                                          type: group
+                                                          fields:
+                                                            - name: artifact_hash
+                                                              type: keyword
+                                                              description: Artifact hash.
+                                                            - name: instance_hash
+                                                              type: keyword
+                                                              description: Instance hash.
+                                                            - name: process
+                                                              type: group
+                                                              fields:
+                                                                - name: tanium_recorder_table_id
+                                                                  type: keyword
+                                                                  description: Tanium recorder table id.
+                                                        - name: pid
+                                                          type: long
+                                                          description: Process id.
+                                                        - name: start_time
+                                                          type: date
+                                                          description: Start time.
+                                                        - name: tanium_recorder_table_id
+                                                          type: keyword
+                                                          description: Tanium recorder table id.
+                                                        - name: user
+                                                          type: group
+                                                          fields:
+                                                            - name: user
+                                                              type: group
+                                                              fields:
+                                                                - name: domain
+                                                                  type: keyword
+                                                                  description: User domain.
+                                                                - name: name
+                                                                  type: keyword
+                                                                  description: User name.
+                                                                - name: user_id
+                                                                  type: keyword
+                                                                  description: User id.
+                                                - name: pid
+                                                  type: long
+                                                  description: Process id.
+                                                - name: start_time
+                                                  type: date
+                                                  description: Start time.
+                                                - name: tanium_recorder_table_id
+                                                  type: keyword
+                                                  description: Tanium recorder table id.
+                                                - name: user
+                                                  type: group
+                                                  fields:
+                                                    - name: user
+                                                      type: group
+                                                      fields:
+                                                        - name: domain
+                                                          type: keyword
+                                                          description: User domain.
+                                                        - name: name
+                                                          type: keyword
+                                                          description: User name.
+                                                        - name: user_id
+                                                          type: keyword
+                                                          description: User id.
+                                        - name: pid
+                                          type: long
+                                          description: Process id.
+                                        - name: start_time
+                                          type: date
+                                          description: Start time.
+                                        - name: tanium_recorder_table_id
+                                          type: keyword
+                                          description: Tanium recorder table id.
+                                        - name: user
+                                          type: group
+                                          fields:
+                                            - name: user
+                                              type: group
+                                              fields:
+                                                - name: domain
+                                                  type: keyword
+                                                  description: User domain.
+                                                - name: name
+                                                  type: keyword
+                                                  description: User name.
+                                                - name: user_id
+                                                  type: keyword
+                                                  description: User id.
+                                - name: pid
+                                  type: long
+                                  description: Process id.
+                                - name: start_time
+                                  type: date
+                                  description: Start time.
+                                - name: tanium_recorder_table_id
+                                  type: keyword
+                                  description: Tanium recorder table id.
+                                - name: user
+                                  type: group
+                                  fields:
+                                    - name: user
+                                      type: group
+                                      fields:
+                                        - name: domain
+                                          type: keyword
+                                          description: User domain.
+                                        - name: name
+                                          type: keyword
+                                          description: User name.
+                                        - name: user_id
+                                          type: keyword
+                                          description: User id.
+                        - name: remote_ip
+                          type: ip
+                          description: Remote IP.
+                        - name: remote_port
+                          type: long
+                          description: Remote port.
+                - name: relevant_actions.timestamp
+                  type: date
+                  description: Timestamp.
+                - name: relevant_actions.verb
+                  type: long
+                  description: Verb.
+            - name: whats.intel_intra_ids
+              type: nested
+            - name: whats.intel_intra_ids.id
+              type: keyword
+              description: Array of intel intra ids.
+            - name: whats.intel_intra_ids.id_v2
+              type: keyword
+              description: Array of v2 intel intra ids.
+            - name: whats.source_name
+              type: keyword
+              description: Source name.
+        - name: intel_id
+          type: keyword
+          description: Intel id.
+        - name: match
+          type: group
+          fields:
+            - name: contexts
+              type: nested
+            - name: contexts.event
+              type: group
+              fields:
+                - name: file_create
+                  type: group
+                  fields:
+                    - name: path
+                      type: keyword
+                      description: Path of file.
+                - name: timestampMs
+                  type: date
+                  description: Timestamp in milliseconds.
+            - name: contexts.file
+              type: group
+              fields:
+                - name: unique_event_id
+                  type: keyword
+                  description: Unique event id of file.
+            - name: hash
+              type: keyword
+              description: Hash value.
+            - name: properties
+              type: group
+              fields:
+                - name: args
+                  type: keyword
+                  description: Property arguments.
+                - name: file
+                  type: group
+                  fields:
+                    - name: full_path
+                      type: keyword
+                      description: Full path of file.
+                - name: fullpath
+                  type: keyword
+                  description: Full path.
+                - name: local_ip
+                  type: ip
+                  description: Local IP.
+                - name: local_port
+                  type: long
+                  description: Local port.
+                - name: md5
+                  type: keyword
+                  description: MD5 hash.
+                - name: name
+                  type: keyword
+                  description: Property name.
+                - name: parent
+                  type: group
+                  fields:
+                    - name: args
+                      type: keyword
+                      description: Parent arguments.
+                    - name: file
+                      type: group
+                      fields:
+                        - name: full_path
+                          type: keyword
+                          description: Full path of file.
+                    - name: name
+                      type: keyword
+                      description: Parent name.
+                    - name: parent
                       type: group
                       fields:
                         - name: args
                           type: keyword
-                          description: Property arguments.
+                          description: Parent arguments.
                         - name: file
                           type: group
                           fields:
                             - name: full_path
                               type: keyword
                               description: Full path of file.
+                            - name: md5
+                              type: keyword
+                              description: MD5.
                         - name: name
                           type: keyword
-                          description: Property name.
-                        - name: parent
-                          type: group
-                          fields:
-                            - name: args
-                              type: keyword
-                              description: Parent arguments.
-                            - name: file
-                              type: group
-                              fields:
-                                - name: full_path
-                                  type: keyword
-                                  description: Full path of file.
-                            - name: name
-                              type: keyword
-                              description: Parent name.
-                            - name: parent
-                              type: group
-                              fields:
-                                - name: args
-                                  type: keyword
-                                  description: Parent arguments.
-                                - name: file
-                                  type: group
-                                  fields:
-                                    - name: full_path
-                                      type: keyword
-                                      description: Full path of file.
-                                    - name: md5
-                                      type: keyword
-                                      description: MD5.
-                                - name: name
-                                  type: keyword
-                                  description: Parent name.
-                                - name: pid
-                                  type: keyword
-                                  description: Parent id.
-                                - name: recorder_unique_id
-                                  type: keyword
-                                  description: Recorder unique id.
-                                - name: start_time
-                                  type: date
-                                  description: Start time.
-                                - name: user
-                                  type: keyword
-                                  description: User.
-                            - name: pid
-                              type: keyword
-                              description: Process id.
-                            - name: ppid
-                              type: keyword
-                              description: Parent process id.
-                            - name: recorder_unique_id
-                              type: keyword
-                              description: Recorder unique id.
-                            - name: start_time
-                              type: date
-                              description: Start time.
-                            - name: user
-                              type: keyword
-                              description: User.
+                          description: Parent name.
                         - name: pid
-                          type: keyword
-                          description: Process id.
-                        - name: ppid
-                          type: keyword
-                          description: Parent process id.
+                          type: long
+                          description: Parent id.
                         - name: recorder_unique_id
                           type: keyword
                           description: Recorder unique id.
@@ -485,15 +774,90 @@
                         - name: user
                           type: keyword
                           description: User.
-                    - name: source
+                    - name: pid
+                      type: long
+                      description: Process id.
+                    - name: ppid
+                      type: long
+                      description: Parent process id.
+                    - name: recorder_unique_id
                       type: keyword
-                      description: Finding source.
-                    - name: type
+                      description: Recorder unique id.
+                    - name: start_time
+                      type: date
+                      description: Start time.
+                    - name: user
                       type: keyword
-                      description: Finding type.
-                    - name: version
-                      type: version
-                      description: Finding version.
+                      description: User.
+                - name: pid
+                  type: long
+                  description: Process id.
+                - name: ppid
+                  type: long
+                  description: Parent process id.
+                - name: process
+                  type: group
+                  fields:
+                    - name: args
+                      type: keyword
+                      description: Process arguments.
+                    - name: file
+                      type: group
+                      fields:
+                        - name: fullpath
+                          type: keyword
+                          description: Full path.
+                    - name: name
+                      type: keyword
+                      description: Name.
+                    - name: pid
+                      type: long
+                      description: Process id.
+                    - name: ppid
+                      type: long
+                      description: Parent process id.
+                    - name: recorder_table_id
+                      type: keyword
+                      description: Tanium recorder table id.
+                    - name: start_time
+                      type: date
+                      description: Start time.
+                    - name: user
+                      type: keyword
+                      description: User.
+                - name: recorder_unique_id
+                  type: keyword
+                  description: Recorder unique id.
+                - name: remote_ip
+                  type: ip
+                  description: Remote IP.
+                - name: remote_port
+                  type: long
+                  description: Remote port.
+                - name: sha1
+                  type: keyword
+                  description: SHA1 hash.
+                - name: sha256
+                  type: keyword
+                  description: SHA256 hash.
+                - name: size
+                  type: keyword
+                  description: Size.
+                - name: start_time
+                  type: date
+                  description: Start time.
+                - name: user
+                  type: keyword
+                  description: User.
+            - name: source
+              type: keyword
+              description: Finding source.
+            - name: type
+              type: keyword
+              description: Finding type.
+            - name: version
+              type: version
+              description: Finding version.
     - name: priority
       type: keyword
       description: Priority of the threat response.
@@ -509,9 +873,42 @@
     - name: state
       type: group
       fields:
+        - name: action_expiration
+          type: date
+          description: Action expiration.
+        - name: action_id_unix
+          type: integer
+          description: UNIX action ID.
+        - name: action_id_windows
+          type: integer
+          description: Windows action ID.
+        - name: computer_group_id
+          type: integer
+          description: Computer group ID.
+        - name: computer_ip_address
+          type: integer
+          description: Computer IP address.
+        - name: computer_name
+          type: keyword
+          description: Computer name.
         - name: connection_id
           type: keyword
           description: Connection id of the threat response state.
+        - name: created_at
+          type: date
+          description: Creation time.
+        - name: id
+          type: integer
+          description: ID.
+        - name: intel_id
+          type: integer
+          description: Intel ID.
+        - name: legacy_type
+          type: keyword
+          description: Legacy type.
+        - name: service_id
+          type: keyword
+          description: Service ID.
         - name: session_id
           type: keyword
           description: Session id of the threat response state.
@@ -524,6 +921,24 @@
             - name: hostname
               type: keyword
               description: Target hostname of the threat response state.
+        - name: updated_at
+          type: date
+          description: Update time.
+        - name: user_id
+          type: integer
+          description: User ID.
+    - name: other_parameters
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Name of threat.
+        - name: source
+          type: keyword
+          description: Source of threat.
+        - name: type
+          type: keyword
+          description: Type of threat.
     - name: table
       type: keyword
       description: Table for the threat response.
@@ -545,6 +960,9 @@
         - name: name
           type: keyword
           description: User name for the threat response.
+- name: tanium.truncations
+  type: keyword
+  description: JSON paths that were removed to avoid excessive depth.
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.

@@ -25,16 +25,12 @@ processors:
       name: '{{ IngestPipeline "pipeline_event" }}'
       if: "['FILE_COLLECTION_EVENT','PLAINTEXT_LOG_COLLECTION'].contains(ctx.json?.header?.event_name)"
   - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-  - remove:
       field: json
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;

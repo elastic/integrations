@@ -307,10 +307,6 @@ processors:
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_bios_uefi" }}'
         if: ctx.event.action == "bios_uefi"
-    - remove:
-        field: event.original
-        if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
-        ignore_failure: true
 
 #############
 ## Cleanup ##
@@ -339,7 +335,7 @@ processors:
     - script:
         description: Drops null/empty values recursively.
         lang: painless
-        source:
+        source: |
           boolean dropEmptyFields(Object object) {
             if (object == null || object == '') {
               return true;

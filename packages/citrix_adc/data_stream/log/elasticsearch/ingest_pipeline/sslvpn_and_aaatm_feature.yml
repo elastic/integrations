@@ -1,44 +1,128 @@
 ---
 description: Pipeline for Citrix Native messages of SSLVPN and AAATM feature.
 processors:
+  # Keep the grok patterns separated by type, for efficiency and maintainability
   - grok:
-      description: Extract fields from message of SSLVPN and AAATM feature.
-      tag: grok_sslvpn_and_aaatm_feature
+      tag: grok_sslvpn_login
+      if: 'ctx.citrix.name == "LOGIN"'
       field: citrix.extended.message
       patterns:
-        - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Browser_type \"%{DATA:citrix_adc.log.browser_type}\" - SSLVPN_client_type %{DATA:citrix_adc.log.sslvpn_client_type} - Group\(s\) \"%{DATA:citrix_adc.log.groups}\"$'
-        - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Start_time \"%{DATA:citrix_adc.log.start_time}\" - End_time \"%{DATA:citrix_adc.log.end_time}\" - Duration %{DATA:citrix_adc.log.duration} - Http_resources_accessed %{INT:citrix_adc.log.http_resources_accessed} - NonHttp_services_accessed %{INT:citrix_adc.log.non_http_services_accessed} - Total_TCP_connections %{INT:citrix_adc.log.total_tcp_connections} - Total_UDP_flows %{INT:citrix_adc.log.total_udp_flows} - Total_policies_allowed %{INT:citrix_adc.log.total_policies_allowed} - Total_policies_denied %{INT:citrix_adc.log.total_policies_denied} - Total_bytes_send %{INT:citrix_adc.log.total_bytes_send} - Total_bytes_recv %{INT:citrix_adc.log.total_bytes_received} - Total_compressedbytes_send %{INT:citrix_adc.log.total_compressed_bytes_send} - Total_compressedbytes_recv %{INT:citrix_adc.log.total_compressed_bytes_recieved} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved}% - LogoutMethod \"%{DATA:citrix_adc.log.logout_method}\" - Group\(s\) \"%{DATA:citrix_adc.log.groups}\"$'
-        - '^Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - SSLRelayAddress %{IP:citrix_adc.log.ssl_relay.address}:%{INT:citrix_adc.log.ssl_relay.port} - customername( %{WORD:citrix_adc.log.customer_name})? - username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - applicationName %{WORD:citrix_adc.log.application_name} - startTime \"%{DATA:citrix_adc.log.start_time}\" - connectionId %{WORD:citrix_adc.log.connection_id}$'
-        - '^Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - SSLRelayAddress %{IP:citrix_adc.log.ssl_relay.address}:%{INT:citrix_adc.log.ssl_relay.port} - customername( %{WORD:citrix_adc.log.customer_name})? - username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - startTime \"%{DATA:citrix_adc.log.start_time}\" - endTime \"%{DATA:citrix_adc.log.end_time}\" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Total_compressedbytes_send %{NUMBER:citrix_adc.log.total_compressed_bytes_send:int} - Total_compressedbytes_recv %{NUMBER:citrix_adc.log.total_compressed_bytes_recieved:int} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send:float}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved:float}% - connectionId %{WORD:citrix_adc.log.connection_id}( - Total_bytes_wire_send %{NUMBER:citrix_adc.log.total_bytes_wire_send} - Total_bytes_wire_recv %{NUMBER:citrix_adc.log.total_bytes_wire_recieved})?$'
-        - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time \"%{DATA:citrix_adc.log.start_time}\" - End_time \"%{GREEDYDATA:citrix_adc.log.end_time}\" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Total_compressedbytes_send %{NUMBER:citrix_adc.log.total_compressed_bytes_send:int} - Total_compressedbytes_recv %{NUMBER:citrix_adc.log.total_compressed_bytes_recieved:int} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send:float}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved:float}% - Access %{WORD:citrix_adc.log.access} - Group\(s\) \"%{DATA:citrix_adc.log.groups}\"$'
-        - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Last_contact \"%{DATA:citrix_adc.log.last_contact}\" - Group\(s\) \"%{DATA:citrix_adc.log.groups}\"$'
-        - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time \"%{DATA:citrix_adc.log.start_time}\" - End_time \"%{GREEDYDATA:citrix_adc.log.end_time}\" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) \"%{DATA:citrix_adc.log.groups}\"$'
-        - '^- Denied_by_policy \"%{DATA:citrix_adc.log.policy_violation}\"$'
-        - '^Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - License_limit %{NUMBER:citrix_adc.log.license_limit:int}$'
-        - '^%{DATA}%{SPACE}:%{SPACE}%{DATA} - Client%{SPACE}IP %{IP:citrix_adc.log.client_ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Client_security_expression \"%{DATA:citrix_adc.log.client_security_expression}\" -$'
+        - '^User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Browser_type "%{DATA:citrix_adc.log.browser_type}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+        - '^User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Browser_type "%{DATA:citrix_adc.log.browser_type}" - SSLVPN_client_type %{DATA:citrix_adc.log.sslvpn_client_type} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+        - '^(Logout handler : )?Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Browser_type "%{DATA:citrix_adc.log.browser_type}" - (SSLVPN_client_type %{WORD:citrix_adc.log.sslvpn_client_type} - )?Group\(s\) "%{DATA:citrix_adc.log.groups}" ?'
+
+  - grok:
+      tag: grok_sslvpn_logout
+      if: 'ctx.citrix.name == "LOGOUT"'
+      field: citrix.extended.message
+      patterns:
+        - '^User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{DATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Http_resources_accessed %{INT:citrix_adc.log.http_resources_accessed} - (NonHttp_services_accessed %{INT:citrix_adc.log.non_http_services_accessed} - )?Total_TCP_connections %{INT:citrix_adc.log.total_tcp_connections} - (Total_UDP_flows %{INT:citrix_adc.log.total_udp_flows} - )?Total_policies_allowed %{INT:citrix_adc.log.total_policies_allowed} - Total_policies_denied %{INT:citrix_adc.log.total_policies_denied} - Total_bytes_send %{INT:citrix_adc.log.total_bytes_send} - Total_bytes_recv %{INT:citrix_adc.log.total_bytes_received} - Total_compressedbytes_send %{INT:citrix_adc.log.total_compressed_bytes_send} - Total_compressedbytes_recv %{INT:citrix_adc.log.total_compressed_bytes_recieved} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved}% - LogoutMethod "%{DATA:citrix_adc.log.logout_method}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+        - '^(Logout handler : )?Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{DATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Http_resources_accessed %{INT:citrix_adc.log.http_resources_accessed} - NonHttp_services_accessed %{INT:citrix_adc.log.non_http_services_accessed} - Total_TCP_connections %{INT:citrix_adc.log.total_tcp_connections} - Total_UDP_flows %{INT:citrix_adc.log.total_udp_flows} - Total_policies_allowed %{INT:citrix_adc.log.total_policies_allowed} - Total_policies_denied %{INT:citrix_adc.log.total_policies_denied} - Total_bytes_send %{INT:citrix_adc.log.total_bytes_send} - Total_bytes_recv %{INT:citrix_adc.log.total_bytes_received} - Total_compressedbytes_send %{INT:citrix_adc.log.total_compressed_bytes_send} - Total_compressedbytes_recv %{INT:citrix_adc.log.total_compressed_bytes_recieved} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved}% - LogoutMethod "%{DATA:citrix_adc.log.logout_method}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+
+  - grok:
+      tag: grok_sslvpn_icastart
+      if: 'ctx.citrix.name == "ICASTART"'
+      field: citrix.extended.message
+      patterns:
+        - '^Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - SSLRelayAddress %{IP:citrix_adc.log.ssl_relay.address}:%{INT:citrix_adc.log.ssl_relay.port} - customername( %{WORD:citrix_adc.log.customer_name})? - username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - applicationName %{DATA:citrix_adc.log.application_name} - startTime "%{DATA:_tmp.start_time}" - connectionId %{WORD:citrix_adc.log.connection_id} ?$'
+        - '^%{DATA} Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - customername (%{WORD:citrix_adc.log.customer_name})? - username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - applicationName %{DATA:citrix_adc.log.application_name} - startTime "%{DATA:_tmp.start_time}" - connectionId %{WORD:citrix_adc.log.connection_id} ?$'
+
+  - grok:
+      tag: grok_sslvpn_icaend_connstat
+      if: 'ctx.citrix.name == "ICAEND_CONNSTAT"'
+      field: citrix.extended.message
+      patterns:
+        - '^%{DATA} ?Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - (SSLRelayAddress %{IP:citrix_adc.log.ssl_relay.address}:%{INT:citrix_adc.log.ssl_relay.port} - )?customername (%{WORD:citrix_adc.log.customer_name})? - username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - startTime "%{DATA:_tmp.start_time}" - endTime "%{DATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} ? - Total_bytes_send %{INT:citrix_adc.log.total_bytes_send} - Total_bytes_recv %{INT:citrix_adc.log.total_bytes_received} - Total_compressedbytes_send %{INT:citrix_adc.log.total_compressed_bytes_send} - Total_compressedbytes_recv %{INT:citrix_adc.log.total_compressed_bytes_recieved} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send:float}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved:float}% - connectionId %{WORD:citrix_adc.log.connection_id} ?$'
+        - '^%{DATA} ?Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - (SSLRelayAddress %{IP:citrix_adc.log.ssl_relay.address}:%{INT:citrix_adc.log.ssl_relay.port} - )?customername (%{WORD:citrix_adc.log.customer_name})? ?- username:domainname %{DATA:citrix_adc.log.username}:%{DATA:citrix_adc.log.domain_name} - startTime "%{DATA:_tmp.start_time}" - endTime "%{DATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} ? - Total_bytes_send %{INT:citrix_adc.log.total_bytes_send} - Total_bytes_recv %{INT:citrix_adc.log.total_bytes_received} - Total_compressedbytes_send %{INT:citrix_adc.log.total_compressed_bytes_send} - Total_compressedbytes_recv %{INT:citrix_adc.log.total_compressed_bytes_recieved} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send:float}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved:float}% - connectionId %{WORD:citrix_adc.log.connection_id} - Total_bytes_wire_send %{INT:citrix_adc.log.total_bytes_wire_send} - Total_bytes_wire_recv %{INT:citrix_adc.log.total_bytes_wire_recieved} ?$'
+
+  - grok:
+      tag: grok_sslvpn_tcpconnstat
+      if: 'ctx.citrix.name == "TCPCONNSTAT"'
+      field: citrix.extended.message
+      patterns:
+        - '^User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Total_compressedbytes_send %{NUMBER:citrix_adc.log.total_compressed_bytes_send:int} - Total_compressedbytes_recv %{NUMBER:citrix_adc.log.total_compressed_bytes_recieved:int} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send:float}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved:float}% - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}"$'
+        - '^Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Total_compressedbytes_send %{NUMBER:citrix_adc.log.total_compressed_bytes_send:int} - Total_compressedbytes_recv %{NUMBER:citrix_adc.log.total_compressed_bytes_recieved:int} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send:float}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved:float}% - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+
+  - grok:
+      tag: grok_sslvpn_tcpconn_timeout
+      if: 'ctx.citrix.name == "TCPCONN_TIMEDOUT"'
+      field: citrix.extended.message
+      patterns:
+        - '^User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Last_contact "%{DATA:citrix_adc.log.last_contact}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+
+  - grok:
+      tag: grok_sslvpn_udpflowstat
+      if: 'ctx.citrix.name == "UDPFLOWSTAT"'
+      field: citrix.extended.message
+      patterns:
+        - '^User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"${DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+
+  - grok:
+      tag: grok_sslvpn_httprequest
+      if: 'ctx.citrix.name == "HTTPREQUEST"'
+      field: citrix.extended.message
+      patterns:
+        - '^Context (%{USERNAME:citrix_adc.log.username}|%{EMAILADDRESS:citrix_adc.log.username})@%{IP:citrix_adc.log.client_ip} ?- SessionId: %{NUMBER:citrix_adc.log.session_id} ?- %{HOSTNAME:citrix_adc.log.hostname} User (%{USERNAME:citrix_adc.log.user}|%{EMAILADDRESS:citrix_adc.log.user}) ?: Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:_tmp.timestamp} : SSO is %{WORD:citrix_adc.log.sso_status} : %{WORD:citrix_adc.log.method} %{URIPATHPARAM:citrix_adc.log.request.path} - - ?$'
+        - '^Context (%{USERNAME:citrix_adc.log.username}|%{EMAILADDRESS:citrix_adc.log.username})@%{IP:citrix_adc.log.client_ip} ?- SessionId: %{NUMBER:citrix_adc.log.session_id} ?- %{HOSTNAME:citrix_adc.log.hostname} User (%{USERNAME:citrix_adc.log.user}|%{EMAILADDRESS:citrix_adc.log.user}) ?: Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:_tmp.timestamp} %{DATA:citrix_adc.log.timezone} %{WORD:citrix_adc.log.method} %{DATA:citrix_adc.log.request.path} - -?$'
+
+  - grok:
+      tag: grok_sslvpn_nonhttp_access_denied
+      if: 'ctx.citrix.name == "NONHTTP_RESOURCEACCESS_DENIED"'
+      field: citrix.extended.message
+      patterns:
+        - '^- Denied_by_policy "%{DATA:citrix_adc.log.policy_violation}" ?$'
+
+  - grok:
+      tag: grok_sslvpn_http_access_denied
+      if: 'ctx.citrix.name == "HTTP_RESOURCEACCESS_DENIED"'
+      field: citrix.extended.message
+      patterns:
+        - '^- Denied_by_policy "%{DATA:citrix_adc.log.policy_violation}" ?$'
+
+  - grok:
+      tag: grok_sslvpn_liclmt_reached
+      if: 'ctx.citrix.name == "LICLMT_REACHED"'
+      field: citrix.extended.message
+      patterns:
+        - '^Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - License_limit %{NUMBER:citrix_adc.log.license_limit:int} ?$'
+
+  - grok:
+      tag: grok_sslvpn_clisec_check
+      if: 'ctx.citrix.name == "CLISEC_CHECK"'
+      field: citrix.extended.message
+      patterns:
+        - '^%{WORD:citrix_adc.log.alert_type} ?: %{WORD:citrix_adc.log.alert_level} - ClientIP %{IP:citrix_adc.log.client_ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Client_security_expression "%{DATA:citrix_adc.log.client_security_expression}" - ?$'
+
+  - grok:
+      tag: grok_sslvpn_sta_validate_resp
+      if: 'ctx.citrix.name == "STA_VALIDATE_RESP"'
+      field: citrix.extended.message
+      patterns:
+        - '^Xdatalen %{NUMBER:citrix_adc.log.data_length:int} - Xdata %{GREEDYDATA:citrix_adc.log.data} ?$'
+
+  - grok:
+      tag: grok_sslvpn_remove_session_debug
+      if: 'ctx.citrix.name == "REMOVE_SESSION_DEBUG"'
+      field: citrix.extended.message
+      patterns:
+        - '^(Sessionid|Session id) %{NUMBER:citrix_adc.log.session_id:int} - User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver_ip %{IP:citrix_adc.log.vserver.ip} - Errmsg "%{DATA:citrix_adc.log.errmsg}" ?$'
+
+  - grok:
+      tag: grok_sslvpn_clisec_exp_eval
+      if: 'ctx.citrix.name == "CLISEC_EXP_EVAL"'
+      field: citrix.extended.message
+      patterns:
         - '^User %{USER:citrix_adc.log.user}%{SPACE}:%{SPACE}- Client%{SPACE}IP %{IP:citrix_adc.log.client_ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Client%{SPACE}security%{SPACE}check%{SPACE}Passed\(%{NUMBER:citrix_adc.log.client_security_check_status:int}\)%{SPACE}on%{SPACE}the%{SPACE}client%{SPACE}machine$'
-        - '^Xdatalen %{NUMBER:citrix_adc.log.data_length:int} - Xdata %{GREEDYDATA:citrix_adc.log.data}$'
-        - '^Session%{SPACE}id %{NUMBER:citrix_adc.log.session_id:int} - User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver_ip %{IP:citrix_adc.log.vserver.ip} - Errmsg \"%{DATA:citrix_adc.log.errmsg}\"$'
-        - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Browser_type \"%{DATA:citrix_adc.log.browser_type}\" - Group\(s\) \"%{DATA:citrix_adc.log.groups}\"$'
-        - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip %{IP:citrix_adc.log.nat.ip} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Start_time \"%{DATA:citrix_adc.log.start_time}\" - End_time \"%{DATA:citrix_adc.log.end_time}\" - Duration %{DATA:citrix_adc.log.duration} - Http_resources_accessed %{INT:citrix_adc.log.http_resources_accessed} - Total_TCP_connections %{INT:citrix_adc.log.total_tcp_connections} - Total_policies_allowed %{INT:citrix_adc.log.total_policies_allowed} - Total_policies_denied %{INT:citrix_adc.log.total_policies_denied} - Total_bytes_send %{DATA:citrix_adc.log.total_bytes_send} - Total_bytes_recv %{DATA:citrix_adc.log.total_bytes_received} - Total_compressedbytes_send %{DATA:citrix_adc.log.total_compressed_bytes_send} - Total_compressedbytes_recv %{DATA:citrix_adc.log.total_compressed_bytes_recieved} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved}% - LogoutMethod \"%{DATA:citrix_adc.log.logout_method}\" - Group\(s\) \"%{DATA:citrix_adc.log.groups}\"$'
-        - '^Context %{USERNAME:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip} - SessionId: %{NUMBER:citrix_adc.log.session_id} - %{HOSTNAME:citrix_adc.log.hostname} User %{USERNAME:citrix_adc.log.user}%{SPACE}?: Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:citrix_adc.log.timestamp} : SSO is %{WORD:citrix_adc.log.sso_status} : %{WORD:citrix_adc.log.method} %{URIPATHPARAM:citrix_adc.log.request.path} - -$'
-        - '^Context %{DATA:citrix_adc.log.username}@%{IP:citrix_adc.log.client_ip}%{SPACE}- SessionId: %{NUMBER:citrix_adc.log.session_id}%{SPACE}?- %{HOSTNAME:citrix_adc.log.hostname} User %{DATA:citrix_adc.log.user} : Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:citrix_adc.log.timestamp} %{DATA:citrix_adc.log.timezone} %{WORD:citrix_adc.log.method} %{DATA:citrix_adc.log.request.path} - -$'
-      ignore_failure: false
-  - date:
-      field: citrix_adc.log.timestamp
-      tag: date_timestamp
-      target_field: citrix_adc.log.timestamp
-      formats:
-        - ISO8601
-        - MM/dd/yyyy:HH:mm:ss
-        - MM/dd/yyyy:HH:mm:ss z
-        - yyyy/MM/dd:HH:mm:ss
-        - yyyy/MM/dd:HH:mm:ss z
-      if: ctx.citrix_adc?.log?.timestamp != null && ctx.citrix_adc.log.timestamp != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - grok:
+      tag: grok_sslvpn_message
+      if: 'ctx.citrix.name == "Message"'
+      field: citrix.extended.message
+      patterns:
+        - '^Logout handler : %{DATA}, for user <%{USERNAME|EMAILADDRESS:citrix_adc.log.username}>$'
+        - '^aaatm_handler successfully parsed assertion client ip is %{IP:citrix_adx.log.client_ip}, username is %{DATA:citrix_adc.log.user}$'
+        - '%{DATA}'
+
   - convert:
       field: citrix_adc.log.client_ip
       tag: convert_client_ip_to_ip
@@ -106,42 +190,6 @@ processors:
       field: error.message
       tag: set_error_message_from_errmsg
       copy_from: citrix_adc.log.errmsg
-      ignore_empty_value: true
-  - date:
-      field: citrix_adc.log.end_time
-      tag: date_end_time
-      target_field: citrix_adc.log.end_time
-      formats:
-        - yyyy/MM/dd:HH:mm:ss
-        - MM/dd/yyyy:HH:mm:ss
-        - ISO8601
-      if: ctx.citrix_adc?.log?.end_time != null && ctx.citrix_adc.log.end_time != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.end
-      tag: set_event_end_from_end_time
-      copy_from: citrix_adc.log.end_time
-      ignore_empty_value: true
-  - date:
-      field: citrix_adc.log.start_time
-      tag: date_start_time
-      target_field: citrix_adc.log.start_time
-      formats:
-        - yyyy/MM/dd:HH:mm:ss
-        - MM/dd/yyyy:HH:mm:ss
-        - ISO8601
-      if: ctx.citrix_adc?.log?.start_time != null && ctx.citrix_adc.log.start_time != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.start
-      tag: set_event_start_from_start_time
-      copy_from: citrix_adc.log.start_time
       ignore_empty_value: true
   - set:
       field: group.name
@@ -396,4 +444,5 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
