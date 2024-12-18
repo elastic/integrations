@@ -71,7 +71,8 @@ down in the list. For example, moving **Imperva SecureSphere** above **Cisco ASA
         target: ''
         fields:
           _conf.dataset: "imperva.securesphere"
-          _conf.use_decode_cef: true
+    - decode_cef:
+        field: message
 ```
 
 **After:**
@@ -86,7 +87,8 @@ down in the list. For example, moving **Imperva SecureSphere** above **Cisco ASA
         target: ''
         fields:
           _conf.dataset: "imperva.securesphere"
-          _conf.use_decode_cef: true
+    - decode_cef:
+        field: message
 - if:
     and:
       - not.has_fields: _conf.dataset
@@ -133,7 +135,8 @@ Example configuration:
         target: ''
         fields:
           _conf.dataset: "imperva.securesphere"
-          _conf.use_decode_cef: true
+    - decode_cef:
+        field: message
 ```
 
 At its core, the Syslog Router integration utilizes the [built-in conditionals and processors](https://www.elastic.co/guide/en/beats/filebeat/current/defining-processors.html)
@@ -165,10 +168,8 @@ In the `then` statement, a list of processors can be given. At minimum, an
 
 - `_conf.dataset`: The dataset (`integration.data_stream`) to forward to. This field is used by the routing rules in the integration to route documents to the correct pipeline.
 
-**Optional fields:**
-- `_conf.use_decode_cef`: If set to `true`, the `decode_cef` processor will be used. If the desired value is `false`, this field can be omitted. This field will be automatically removed if set to `true`.
-- `_conf.use_syslog`: If set to `true`, the `syslog` processor will be used. If the desired value is `false`, this field can be omitted. This field will be automatically removed if set to `true`.
-- If an integration requires additional configuration, it may be provided in the `add_fields` processor.
+Additional processors, such as `decode_cef` or `syslog`, may be provided if
+additional processing is required.
 
 ## Compatability
 
