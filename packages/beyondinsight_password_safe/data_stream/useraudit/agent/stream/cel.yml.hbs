@@ -31,7 +31,7 @@ program: |-
   (
   	(!has(state.cursor) || has(state.cursor) && has(state.cursor.auth_cookie) && state.?cursor.auth_cookie.orValue(null) == null) ?
   		// Authenticating using API to retrieve auth Cookie
-  		request("POST", state.url + "/Auth/SignAppin").with(
+  		request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
   			{
   				"Header": {
   					"Authorization": [
@@ -50,9 +50,9 @@ program: |-
   ).as(auth_cookie,
   	request(
   		"GET",
-  		state.url + "/UserAudits?" + {
+  		state.url.trim_suffix("/") + "/UserAudits?" + {
   			"limit": [string(state.limit)],
-  			"startdate": [string(state.?cursor.startdate.orValue((now - duration(string(int(int(state.initial_interval)) / 24) + "h")).format(time_layout.RFC3339)))],
+  			"startdate": [string(state.?cursor.startdate.orValue((now - duration(string(int(state.initial_interval) / 24) + "h")).format(time_layout.RFC3339)))],
   			"enddate": [string(state.?cursor.enddate.orValue(""))],
   		}.format_query()
   	).with(
@@ -66,7 +66,7 @@ program: |-
   		(resp.StatusCode == 401) ?
   			state.with(
   				{
-  					"events": {"message": {"reason": "User not authenticated", "code": string(resp.StatusCode)}.encode_json()},
+  					"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
   					"want_more": true,
   					"cursor": {
   						"auth_cookie": null,

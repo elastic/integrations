@@ -54,8 +54,6 @@ application API registration).
 
 UserAudit documents can be found using the API model by setting the filter `event.dataset :"beyondinsight_password_safe.useraudit"`.
 
-Here is an example useraudit document:
-
 {{event "useraudit"}}
 
 **ECS Field Reference**
@@ -74,8 +72,6 @@ The following non-ECS fields are used in useraudit documents:
 
 Session documents can be found using the API model by setting the filter `event.dataset :"beyondinsight_password_safe.session"`.
 
-Here is an example session document:
-
 {{event "session"}}
 
 **ECS Field Reference**
@@ -92,11 +88,8 @@ The following non-ECS fields are used in session documents:
 
 ManagedSystem documents can be found using the API model by setting the filter `event.dataset :"beyondinsight_password_safe.managedsystem"`.
 
-Here is an example managedsystem document:
 
 {{event "managedsystem"}}
-
-
 
 **ECS Field Reference**
 
@@ -113,8 +106,6 @@ The following non-ECS fields are used in managedsystem documents:
 ### ManagedAccount
 
 ManagedAccount documents can be found using the API model by setting the filter `event.dataset :"beyondinsight_password_safe.managedaccount"`.
-
-Here is an example managedaccount document:
 
 {{event "managedaccount"}}
 
@@ -133,8 +124,6 @@ The following non-ECS fields are used in managedaccount documents:
 ### Asset
 
 Asset documents can be found using the API model by setting the filter `event.dataset :"beyondinsight_password_safe.asset"`.
-
-Here is an example asset document:
 
 {{event "asset"}}
 

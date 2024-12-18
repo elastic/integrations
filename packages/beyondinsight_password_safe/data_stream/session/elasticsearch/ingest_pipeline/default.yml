@@ -4,10 +4,8 @@ processors:
   - rename:
       field: message
       target_field: beyondinsight_password_safe.session
-
   - drop:
-      if: ctx.beyondinsight_password_safe.session?.code == '401'
-
+      if: ctx.beyondinsight_password_safe.session?.statuscode == '401'
   - fingerprint:
       fields:
         - beyondinsight_password_safe.session.SessionID
@@ -110,16 +108,14 @@ processors:
       if: ctx.beyondinsight_password_safe.session?.start_time != null
       field: beyondinsight_password_safe.session.start_time
       target_field: event.start
-      formats:
-        - ISO8601
+      formats: ["ISO8601"]
       ignore_failure: false
 
   - date:
       if: ctx.beyondinsight_password_safe.session?.end_time != null
       field: beyondinsight_password_safe.session.end_time
       target_field: event.end
-      formats:
-        - ISO8601
+      formats: ["ISO8601"]
       ignore_failure: false
 
 ####################
@@ -152,7 +148,7 @@ processors:
 
   - script:
       description: Convert archive_status to text values
-      lang: painless
+      lang: "painless"
       source: |
         if (ctx.beyondinsight_password_safe.session?.archive_status != null) {
           int archive_status = ctx.beyondinsight_password_safe.session.archive_status;
@@ -177,7 +173,7 @@ processors:
 
   - script:
       description: Convert protocol to text values
-      lang: painless
+      lang: "painless"
       source: |
         if (ctx.beyondinsight_password_safe.session?.protocol != null) {
           int protocol = ctx.beyondinsight_password_safe.session.protocol;
@@ -187,6 +183,19 @@ processors:
             ctx.beyondinsight_password_safe.session.protocol = "ssh";
           } else {
             ctx.beyondinsight_password_safe.session.protocol = "unknown_protocol";
+          }
+        }
+
+  - script:
+      description: "Converts session_id and user_id to string"
+      lang: painless
+      source: >
+        if (ctx.beyondinsight_password_safe?.session != null) {
+          if (ctx.beyondinsight_password_safe.session.session_id != null) {
+            ctx.beyondinsight_password_safe.session.session_id = ctx.beyondinsight_password_safe.session.session_id.toString();
+          }
+          if (ctx.beyondinsight_password_safe.session.user_id != null) {
+            ctx.beyondinsight_password_safe.session.user_id = ctx.beyondinsight_password_safe.session.user_id.toString();
           }
         }
 
