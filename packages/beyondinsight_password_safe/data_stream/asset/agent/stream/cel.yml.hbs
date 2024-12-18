@@ -29,7 +29,7 @@ program: |-
   (
   	(state.?cursor.auth_cookie.orValue(null) == null) ?
   		// Authenticating using API to retrieve auth Cookie
-  		request("POST", state.url + "/Auth/SignAppin").with(
+  		request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
   			{
   				"Header": {
   					"Authorization": [
@@ -48,7 +48,7 @@ program: |-
   ).as(auth_cookie,
   	request(
   		"GET",
-  		state.url + "/Workgroups"
+  		state.url.trim_suffix("/") + "/Workgroups"
   	).with(
   		{
   			"Header": {
@@ -60,7 +60,7 @@ program: |-
   		bytes(resp.Body).decode_json().as(workgroups,
   			request(
   				"GET",
-  				state.url + "/Workgroups/1" + "/Assets?" + {
+  				state.url.trim_suffix("/") + "/Workgroups/1" + "/Assets?" + {
   					"limit": [string(state.limit)],
   					"offset": [string(state.?cursor.offset.orValue(0))],
   				}.format_query()
