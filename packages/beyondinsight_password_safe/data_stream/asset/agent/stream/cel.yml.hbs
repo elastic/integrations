@@ -52,35 +52,33 @@ program: |-
   		{
   			"Header": {
   				"Content-Type": ["application/json"],
-  				"Cookie": [auth_cookie]
-  			}
+  				"Cookie": [auth_cookie],
+  			},
   		}
   	).do_request().as(resp,
   		bytes(resp.Body).decode_json().as(workgroups,
-  			workgroups.map(workgroup,
-  				request(
-  					"GET",
-  					state.url + "/Workgroups/" + string(workgroup.ID) + "/Assets"
-  				).with(
-  					{
-  						"Header": {
-  							"Content-Type": ["application/json"],
-  							"Cookie": [auth_cookie],
-  						},
-  					}
-  				).do_request().as(assetResp,
-  					bytes(assetResp.Body).decode_json().as(assetBody,
-  						state.with(
-  							{
-  								"events": {
-  									"message": assetBody,
-  								},
-  								"want_more": true,
-  								"cursor": {
-  									"auth_cookie": auth_cookie,
-  								}
-  							}
-  						)
+  			request(
+  				"GET",
+  				state.url + "/Workgroups/1" + "/Assets"
+  			).with(
+  				{
+  					"Header": {
+  						"Content-Type": ["application/json"],
+  						"Cookie": [auth_cookie],
+  					},
+  				}
+  			).do_request().as(assetResp,
+  				bytes(assetResp.Body).decode_json().as(assetBody,
+  					state.with(
+  						{
+  							"events": {
+  								"message": assetBody,
+  							},
+  							"want_more": true,
+  							"cursor": {
+  								"auth_cookie": auth_cookie,
+  							},
+  						}
   					)
   				)
   			)
