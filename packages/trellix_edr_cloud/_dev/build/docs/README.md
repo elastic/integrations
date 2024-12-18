@@ -96,7 +96,7 @@ The minimum **kibana.version** required is **8.9.0**.
 5. While adding the integration, if you want to collect logs via AWS S3, then you have to put the following details:
    - access key id
    - secret access key
-   - bucket arn
+   - bucket arn or access point arn
    - collect logs via S3 Bucket toggled on
 
    or if you want to collect logs via AWS SQS, then you have to put the following details:

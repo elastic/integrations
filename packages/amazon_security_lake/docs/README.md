@@ -61,7 +61,7 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
       ![Role ARN and External ID](../img/role_arn_and_external_id.png)
 
 6. If you want to collect logs via AWS S3, then you have to put the following details:
-    - bucket arn
+    - bucket ARN or access point ARN
     - role ARN
     - external id
 
