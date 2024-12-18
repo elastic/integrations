@@ -1167,23 +1167,30 @@ processors:
         if (results.startsWith("Package||")) {
           if (ctx.package == null) {
             ctx.package = new HashMap();
+            ctx.qualys_vmdr.asset_host_detection.package_nested = new HashMap();
           }
           if (ctx.package.name == null) {
             ctx.package.name = new ArrayList();
+            ctx.qualys_vmdr.asset_host_detection.package_nested.name = new ArrayList();
           }
           if (ctx.package.version == null) {
             ctx.package.version = new ArrayList();
+            ctx.qualys_vmdr.asset_host_detection.package_nested.version = new ArrayList();
           }
           if (ctx.package.fixed_version == null) {
             ctx.package.fixed_version = new ArrayList();
+            ctx.qualys_vmdr.asset_host_detection.package_nested.fixed_version = new ArrayList();
           }
           def res = results.splitOnToken(";;");
           for (int i=1; i < res.length; i++) {
             def pkg = res[i].splitOnToken("||");
             ctx.package.name.add(pkg[0]);
+            ctx.qualys_vmdr.asset_host_detection.package_nested.name.add(pkg[0]);
             ctx.package.version.add(pkg[1]);
+            ctx.qualys_vmdr.asset_host_detection.package_nested.version.add(pkg[1]);
             if (pkg.length == 3) {
               ctx.package.fixed_version.add(pkg[2]);
+              ctx.qualys_vmdr.asset_host_detection.package_nested.fixed_version.add(pkg[2]);
             }
           }
         }
@@ -1536,23 +1543,6 @@ processors:
       target_field: event.original
       ignore_missing: true
       ignore_failure: true
-  - fingerprint:
-      tag: fingerprint_event_original
-      description: >
-        When deduplication is enabled, fingerprint the event.original value 
-        in attempt to prevent the same event from being indexed more than once.
-      if: ctx.event?.original != null && ctx._conf?.enable_deduplication == true
-      fields: 
-        - event.original
-      target_field: _id
-  - set:
-      description: >
-        Prefix the _id with the scan date time because identifiers that generally
-        increase over time based on sorting order generally result in better
-        indexing performance than completely random identifiers.
-      if: ctx.qualys_vmdr?.asset_host_detection?.last_scan_datetime != null && ctx._id != null && ctx._conf?.enable_deduplication == true
-      field: _id
-      value: '{{{qualys_vmdr.asset_host_detection.last_scan_datetime}}}-{{{_id}}}'
   - remove:
       tag: remove_json
       field:
@@ -1642,6 +1632,7 @@ processors:
       if: ctx.error?.message != null
   - append:
       field: tags
+      tag: append_tags_preserve_original_event_1
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
