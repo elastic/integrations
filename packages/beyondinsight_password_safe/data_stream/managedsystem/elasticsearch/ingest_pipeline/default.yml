@@ -5,6 +5,9 @@ processors:
       field: message
       target_field: beyondinsight_password_safe.managedsystem
 
+  - drop:
+      if: ctx.beyondinsight_password_safe.managedsystem?.code == '401'
+
   - fingerprint:
       fields:
         - beyondinsight_password_safe.managedsystem.ManagedSystemID
@@ -93,8 +96,6 @@ processors:
       field: event.module
       value: beyondinsight_password_safe
 
-  - drop:
-      if: ctx.beyondinsight_password_safe.managedsystem?.code == '401'
 on_failure:
   - append:
       field: error.message
