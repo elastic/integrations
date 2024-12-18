@@ -42,7 +42,7 @@ To use this integration, you will also need to:
 ### Enable the integration in Elastic
 
 For step-by-step instructions on how to set up an new integration in Elastic, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 When setting up the integration, you will choose to collect logs via either S3 or HTTP Endpoint.
 
 ### Configure Jamf Protect using HTTP Endpoint
