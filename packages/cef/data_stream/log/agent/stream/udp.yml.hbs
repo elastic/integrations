@@ -16,9 +16,10 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
 {{#if preprocessors}}
-- set:
-    field: "_temp_.event_original"
-    copy_from: "message"
+- copy_fields:
+    fields:
+      - from: "message"
+        to: "@manifest.event_original"
 {{preprocessors}}
 {{/if}}
 - rename:
@@ -30,9 +31,12 @@ processors:
     timezone: "{{ decode_cef_timezone }}"
 {{/if}}
 {{#if preprocessors}}
+- drop_fields:
+    fields: ["event.original"]
 - rename:
-    field: "_temp_.event_original"
-    target_field: "event.original"
+    fields:
+      - from: "@manifest.event_original"
+        to: "event.original"
 {{/if}}
 {{#if processors}}
 {{processors}}
