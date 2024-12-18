@@ -611,11 +611,11 @@ An example event for `asset` looks as following:
 
 ```json
 {
-        "_index": ".ds-logs-beyondinsight_password_safe.assets-default-2024.12.17-000003",
+        "_index": ".ds-logs-beyondinsight_password_safe.asset-default-2024.12.17-000003",
         "_id": "rODK63iwttrLrnvuyG8+/D7xxMw=",
         "_score": null,
         "_ignored": [
-          "beyondinsight_password_safe.assets.last_update_date"
+          "beyondinsight_password_safe.asset.last_update_date"
         ],
         "_source": {
           "input": {
@@ -652,7 +652,7 @@ An example event for `asset` looks as following:
           "data_stream": {
             "namespace": "default",
             "type": "logs",
-            "dataset": "beyondinsight_password_safe.assets"
+            "dataset": "beyondinsight_password_safe.asset"
           },
           "elastic_agent": {
             "id": "a447c2bb-3c3f-4aa0-a636-cb93aaeab324",
@@ -695,7 +695,7 @@ An example event for `asset` looks as following:
             "type": [
               "info"
             ],
-            "dataset": "beyondinsight_password_safe.assets"
+            "dataset": "beyondinsight_password_safe.asset"
           }
         },
         "sort": [
