@@ -734,7 +734,7 @@ The following processes and tags are supported:
 | vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created[Common Vulnerabilities and Exposure CVE description]) | keyword |
 | vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
 | vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
-| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
+| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id[Common Vulnerabilities and Exposure CVE ID]) | keyword |
 | vulnerability.reference | A resource that provides additional information, context, and mitigations for the identified vulnerability. | keyword |
 | vulnerability.report_id | The report or scan identification number. | keyword |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | keyword |
