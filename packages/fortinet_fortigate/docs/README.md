@@ -48,7 +48,7 @@ An example event for `log` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.16.0"
     },
     "elastic_agent": {
         "id": "2f63344b-97c9-4998-9535-0fc6454ddd4b",
@@ -811,7 +811,7 @@ An example event for `log` looks as following:
 | tls.server.x509.not_before | Time at which the certificate is first considered valid. | date |
 | tls.server.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
 | tls.server.x509.public_key_size | The size of the public key space in bits. | long |
-| tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
+| tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, this should be encoded in base 16 and formatted without colons and uppercase characters. | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
