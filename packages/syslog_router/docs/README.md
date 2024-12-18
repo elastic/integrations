@@ -171,7 +171,7 @@ In the `then` statement, a list of processors can be given. At minimum, an
 Additional processors, such as `decode_cef` or `syslog`, may be provided if
 additional processing is required.
 
-## Compatability
+## Compatibility
 
 Out of the box, the Syslog Router integration supports matching events from a
 number of integrations. Assets from these integrations must still be installed
@@ -191,13 +191,13 @@ need to be created for these cases.
 - Cisco FTD
 - Cisco ISE
 - Cisco Secure Email Gateway
-- Citrix WAF
+- Citrix WAF (CEF format only)
 - Fortinet FortiEDR
 - Fortinet FortiGate
 - Fortinet FortiMail
 - Fortinet FortiManager
 - Fortinet FortiProxy
-- Imperva SecureSphere
+- Imperva SecureSphere (CEF format only)
 - Iptables
 - Juniper SRX
 - Palo Alto Next-Gen Firewall
