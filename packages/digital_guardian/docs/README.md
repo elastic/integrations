@@ -161,12 +161,16 @@ An example event for `arc` looks as following:
 | digital_guardian.arc.dg_alert.alert_wb | Alert WB | integer |
 | digital_guardian.arc.dg_alert.dg_category_name | Alert Category Name | keyword |
 | digital_guardian.arc.dg_alert.dg_policy.dg_name | Alert Policy Name | keyword |
+| digital_guardian.arc.dg_attachments.dg_file_size | File Size | keyword |
+| digital_guardian.arc.dg_attachments.dg_file_size_bytes | File Size in Bytes | long |
 | digital_guardian.arc.dg_comment | Comment | keyword |
 | digital_guardian.arc.dg_description | Description | keyword |
 | digital_guardian.arc.dg_display | Event Display Name | keyword |
 | digital_guardian.arc.dg_file_path | File Path | keyword |
-| digital_guardian.arc.dg_file_size | File Size | long |
+| digital_guardian.arc.dg_file_size | File Size | keyword |
+| digital_guardian.arc.dg_file_size_bytes | File Size in Bytes | long |
 | digital_guardian.arc.dg_guid | Unique ID | keyword |
+| digital_guardian.arc.dg_local_timestamp | Local Time | date |
 | digital_guardian.arc.dg_mac_address | MAC Address | keyword |
 | digital_guardian.arc.dg_machine_name | Computer Name | keyword |
 | digital_guardian.arc.dg_machine_type | Machine Type | integer |
@@ -183,6 +187,9 @@ An example event for `arc` looks as following:
 | digital_guardian.arc.inc_mtime | Incident Modified Time | date |
 | digital_guardian.arc.inc_sev | Incident Severity | keyword |
 | digital_guardian.arc.inc_state | Incident State | keyword |
+| digital_guardian.arc.pi_fal | Time | date |
+| digital_guardian.arc.pi_fcl | Time | date |
+| digital_guardian.arc.pi_fml | Time | date |
 | digital_guardian.arc.ua_sci | Scan Instance | integer |
 | digital_guardian.arc.ua_scn | Appliance Scan Name | keyword |
 | digital_guardian.arc.ua_sn | Scan Server Name | keyword |
