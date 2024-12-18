@@ -1,0 +1,1112 @@
+- name: envoy
+  type: group
+  fields:
+    - name: cluster
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Cluster name tag
+          # Reason to add as a dimension field: Primary stable identifier essential for service-level monitoring and SLA tracking
+          dimension: true
+        - name: response_code
+          type: keyword
+          description: Request response code
+        - name: ratelimit
+          type: group
+          fields:
+            - name: prefix
+              type: keyword
+              description: Stats prefix for the Ratelimit network filter
+              # Reason to add as a dimension field: Essential for monitoring and optimizing rate limiting strategy effectiveness
+              dimension: true
+        - name: grpc
+          type: group
+          fields:
+            - name: bridge_service
+              type: keyword
+              description: Request service name GRPC Bridge http filter
+              # Reason to add as a dimension field: Essential for gRPC service-level monitoring and optimization
+              dimension: true
+            - name: bridge_method
+              type: keyword
+              description: Request method name for the GRPC Bridge http filter
+              # Reason to add as a dimension field: Essential for analyzing gRPC method usage patterns and performance
+              dimension: true
+        - name: ext_authz
+          type: group
+          fields:
+            - name: prefix
+              type: keyword
+              description: Stats prefix for the ext_authz HTTP filter
+              # Reason to add as a dimension field: Essential for external authorization pattern and latency analysis
+              dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: listener
+      type: group
+      fields:
+        - name: address
+          type: keyword
+          description: Listener port tag
+          # Reason to add as a dimension field: Key endpoint identifier for traffic segmentation and protocol-specific performance analysis
+          dimension: true
+        - name: worker_id
+          type: keyword
+          description: Listener manager worker id
+          # Reason to add as a dimension field: Essential for worker thread load distribution and performance analysis
+          dimension: true
+        - name: ssl
+          type: group
+          fields:
+            - name: cipher
+              type: keyword
+              description: SSL cipher for a connection
+            - name: curve
+              type: keyword
+              description: SSL curve for a connection
+            - name: sigalg
+              type: keyword
+              description: SSL signature algorithm for a connection
+            - name: version
+              type: keyword
+              description: SSL version for a connection
+            - name: cipher_suite
+              type: keyword
+              description: SSL cipher suite
+            - name: clientssl_prefix
+              type: keyword
+              description: Stats prefix for the Client SSL Auth network filter
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: http
+      type: group
+      fields:
+        - name: conn_manager_prefix
+          type: keyword
+          description: Stats prefix for HttpConnectionManager
+          # Reason to add as a dimension field: Essential for isolating and analyzing traffic patterns between different HTTP connection manager instances
+          dimension: true
+        - name: user_agent
+          type: keyword
+          description: User agent for a connection
+        - name: response_code_class
+          type: keyword
+          description: Request response code class
+        - name: route
+          type: keyword
+          description: Request route given by the Router http filter
+          # Reason to add as a dimension field: Essential for analyzing specific route usage and performance patterns
+          dimension: true
+        - name: rbac
+          type: group
+          fields:
+            - name: prefix
+              type: keyword
+              description: Stats prefix for the RBAC network filter
+              # Reason to add as a dimension field: Essential for RBAC enforcement monitoring and security pattern analysis
+              dimension: true
+            - name: http_prefix
+              type: keyword
+              description: Stats prefix for the RBAC http filter
+              # Reason to add as a dimension field: Essential for HTTP-specific authorization pattern analysis
+              dimension: true
+            - name: policy_name
+              type: keyword
+              description: Policy name for the RBAC http filter
+              # Reason to add as a dimension field: Key identifier for monitoring RBAC policy effectiveness and compliance
+              dimension: true
+        - name: rds
+          type: group
+          fields:
+            - name: route_config
+              type: keyword
+              description: Route config name for RDS updates
+              # Reason to add as a dimension field: Key identifier for route configuration effectiveness analysis
+              dimension: true
+            - name: scoped_config
+              type: keyword
+              description: Scoped route config name for RDS updates
+              # Reason to add as a dimension field: Essential for monitoring scoped routing configuration patterns
+              dimension: true
+        - name: dynamodb
+          type: group
+          fields:
+            - name: operation
+              type: keyword
+              description: Operation name for the Dynamo http filter
+            - name: table
+              type: keyword
+              description: Table name for the Dynamo http filter
+            - name: partition_id
+              type: keyword
+              description: Partition ID for the Dynamo http filter
+        - name: fault_downstream_cluster
+          type: keyword
+          # Reason to add as a dimension field: Essential for controlled failure testing and resilience analysis
+          dimension: true
+          description: Downstream cluster for the Fault http filter
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: mongo
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the Mongo Proxy network filter
+          # Reason to add as a dimension field: Key identifier for MongoDB-specific traffic analysis and optimization
+          dimension: true
+        - name: cmd
+          type: keyword
+          description: Request command for the Mongo Proxy network filter
+        - name: collection
+          type: keyword
+          description: Request collection for the Mongo Proxy network filter
+        - name: callsite
+          type: keyword
+          description: Request callsite for the Mongo Proxy network filter
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: local_http_ratelimit
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the Local Ratelimit network filter
+          # Reason to add as a dimension field: Essential for analyzing HTTP-specific rate limiting effectiveness
+          dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: local_network_ratelimit
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the Local Ratelimit network filter
+          # Reason to add as a dimension field: Essential for monitoring network-level rate limiting impact
+          dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: local_listener_ratelimit
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the Local Ratelimit listener filter
+          # Reason to add as a dimension field: Essential for analyzing listener-specific rate limiting effectiveness
+          dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: dns_filter
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the dns filter
+          # Reason to add as a dimension field: Essential for DNS resolution performance and pattern analysis
+          dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: connection_limit
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the Connection limit filter
+          # Reason to add as a dimension field: Essential for connection pool management and capacity monitoring
+          dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: tcp
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the TCP Proxy network filter
+          # Reason to add as a dimension field: Essential for TCP-specific connection pattern and performance analysis
+          dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: udp
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          # Reason to add as a dimension field: Essential for UDP flow pattern and performance monitoring
+          dimension: true
+          description: Stats prefix for the UDP Proxy network filter
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: vhost
+      type: group
+      fields:
+        - name: host
+          type: keyword
+          description: Request virtual host given by the Router http filter
+          # Reason to add as a dimension field: Key identifier for domain-based routing and traffic analysis
+          dimension: true
+        - name: cluster
+          type: keyword
+          # Reason to add as a dimension field: Essential for logical traffic group pattern analysis
+          dimension: true
+          description: Request virtual cluster given by the Router http filter
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: thrift
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the Thrift Proxy network filter
+          # Reason to add as a dimension field: Key identifier for Thrift RPC traffic pattern analysis
+          dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: redis
+      type: group
+      fields:
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the Redis Proxy network filter
+          # Reason to add as a dimension field: Essential for Redis proxy usage pattern and performance monitoring
+          dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: proxy_proto
+      type: group
+      fields:
+        - name: version
+          type: keyword
+          description: Proxy Protocol version for a connection (Proxy Protocol listener filter).
+        - name: prefix
+          type: keyword
+          description: Stats prefix for the proxy protocol listener filter.
+          # Reason to add as a dimension field: Key identifier for proxy protocol behavior and optimization analysis
+          dimension: true
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: server
+      type: group
+      fields:
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: filesystem
+      type: group
+      fields:
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: runtime
+      type: group
+      fields:
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: cluster_manager
+      type: group
+      fields:
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
+    - name: tls_inspector
+      type: group
+      fields:
+        - name: '*.count'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: counter
+          description: Envoyproxy counters
+        - name: '*.max'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy max timers metric
+        - name: '*.mean_rate'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean rate timers metric
+        - name: '*.mean'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy mean timers metric
+        - name: '*.median'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy median timers metric
+        - name: '*.min'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy min timers metric
+        - name: '*.stddev'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          description: Envoyproxy standard deviation timers metric
+        - name: '*.value'
+          type: object
+          object_type: double
+          object_type_mapping_type: "*"
+          metric_type: gauge
+          description: Envoyproxy gauges
