@@ -60,9 +60,9 @@ An example event for `useraudit` looks as following:
 {
     "@timestamp": "2024-12-09T10:24:26.323Z",
     "agent": {
-        "ephemeral_id": "c76c5039-0b47-4beb-b35d-bc8a61d9a1f7",
-        "id": "fe047d4c-ceee-493b-8189-38f07d65c745",
-        "name": "elastic-agent-34883",
+        "ephemeral_id": "a31d6198-a560-4701-87fe-d7ab735c60d1",
+        "id": "bd22062b-0607-4aad-a645-44becbd40c3c",
+        "name": "elastic-agent-83570",
         "type": "filebeat",
         "version": "8.12.2"
     },
@@ -79,14 +79,14 @@ An example event for `useraudit` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.useraudit",
-        "namespace": "69166",
+        "namespace": "11579",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fe047d4c-ceee-493b-8189-38f07d65c745",
+        "id": "bd22062b-0607-4aad-a645-44becbd40c3c",
         "snapshot": false,
         "version": "8.12.2"
     },
@@ -97,7 +97,7 @@ An example event for `useraudit` looks as following:
         ],
         "dataset": "beyondinsight_password_safe.useraudit",
         "id": "1",
-        "ingested": "2024-12-18T12:00:26Z",
+        "ingested": "2024-12-18T19:39:46Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -106,8 +106,6 @@ An example event for `useraudit` looks as following:
     },
     "event.original": "{\"ActionType\":\"Login\",\"AuditID\":1,\"CreateDate\":\"2024-12-09T10:24:26.323Z\",\"IPAddress\":\"216.160.83.56\",\"Section\":\"PMM API SignAppIn\",\"UserID\":6,\"UserName\":\"test.user@example.com\"}",
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
         "geo": {
             "city_name": "Milton",
             "continent_name": "North America",
@@ -120,31 +118,25 @@ An example event for `useraudit` looks as following:
             "region_iso_code": "US-WA",
             "region_name": "Washington"
         },
-        "hostname": "elastic-agent-34883",
-        "id": "009f8d5d825944429c9ae8d252b0019a",
         "ip": [
-            "172.19.0.2",
-            "172.18.0.7",
             "216.160.83.56"
-        ],
-        "mac": [
-            "02-42-AC-12-00-07",
-            "02-42-AC-13-00-02"
-        ],
-        "name": "elastic-agent-34883",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.15.167.4-microsoft-standard-WSL2",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
+        ]
     },
     "input": {
         "type": "cel"
     },
+    "related": {
+        "hosts": [
+            "216.160.83.56"
+        ],
+        "user": [
+            "6",
+            "test.user@example.com"
+        ]
+    },
+    "tags": [
+        "forwarded"
+    ],
     "user": {
         "id": "6",
         "name": "test.user@example.com"
@@ -188,11 +180,11 @@ An example event for `session` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-17T11:02:01.560Z",
+    "@timestamp": "2024-12-18T19:38:50.390Z",
     "agent": {
-        "ephemeral_id": "68a099e7-fbf2-4a83-a6d0-f83510bfe20c",
-        "id": "c08ff92b-b893-459d-82cb-4d568c700ce1",
-        "name": "elastic-agent-55487",
+        "ephemeral_id": "c1eeb50e-182f-4530-8557-8e1df0c789e5",
+        "id": "3da0989d-2c6d-41ed-aaf2-0b1b09e11b93",
+        "name": "elastic-agent-21615",
         "type": "filebeat",
         "version": "8.12.2"
     },
@@ -205,7 +197,7 @@ An example event for `session` looks as following:
             "managed_system_id": 13,
             "node_id": "a5c29153-b351-41f1-a12b-0c4da9408d79",
             "protocol": "rdp",
-            "record_key": "3958d725d16119a95e64af424a7f8dfsf13f1be4a6cd34earwr324454bcecce70ee37cbaed",
+            "record_key": "3958d725d16119a95e64af424a7f8dfsf13f1fgffbe4a6cd34earwr324454bcecce70ee37cbaed",
             "session_id": "1",
             "status": "not_started",
             "user_id": "6"
@@ -213,14 +205,14 @@ An example event for `session` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.session",
-        "namespace": "69269",
+        "namespace": "59868",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c08ff92b-b893-459d-82cb-4d568c700ce1",
+        "id": "3da0989d-2c6d-41ed-aaf2-0b1b09e11b93",
         "snapshot": false,
         "version": "8.12.2"
     },
@@ -232,40 +224,19 @@ An example event for `session` looks as following:
         "dataset": "beyondinsight_password_safe.session",
         "duration": 0,
         "id": "1",
-        "ingested": "2024-12-17T11:02:04Z",
+        "ingested": "2024-12-18T19:38:53Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
             "info"
         ]
     },
-    "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "elastic-agent-55487",
-        "id": "29b44b57f32c4ff282841a8a4406ef95",
-        "ip": [
-            "172.29.0.2",
-            "172.24.0.4"
-        ],
-        "mac": [
-            "02-42-AC-18-00-04",
-            "02-42-AC-1D-00-02"
-        ],
-        "name": "elastic-agent-55487",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "6.6.51-0-virt",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
-    },
     "input": {
         "type": "cel"
-    }
+    },
+    "tags": [
+        "forwarded"
+    ]
 }
 ```
 
@@ -313,11 +284,11 @@ An example event for `managedsystem` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-18T11:57:25.174Z",
+    "@timestamp": "2024-12-18T19:37:50.250Z",
     "agent": {
-        "ephemeral_id": "790dbd09-2c10-4941-ab6a-885b61e86f97",
-        "id": "0259b78e-0295-4890-855b-513b1ef280e1",
-        "name": "elastic-agent-74965",
+        "ephemeral_id": "cbdf770d-1ca0-4831-9816-2601a8d9608a",
+        "id": "f26b25b3-e4e6-46d2-8730-04e561be5ad3",
+        "name": "elastic-agent-14320",
         "type": "filebeat",
         "version": "8.12.2"
     },
@@ -354,14 +325,14 @@ An example event for `managedsystem` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "namespace": "75174",
+        "namespace": "85192",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0259b78e-0295-4890-855b-513b1ef280e1",
+        "id": "f26b25b3-e4e6-46d2-8730-04e561be5ad3",
         "snapshot": false,
         "version": "8.12.2"
     },
@@ -371,40 +342,19 @@ An example event for `managedsystem` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "ingested": "2024-12-18T11:57:29Z",
+        "ingested": "2024-12-18T19:37:53Z",
         "kind": "asset",
         "module": "beyondinsight_password_safe",
         "type": [
             "info"
         ]
     },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "elastic-agent-74965",
-        "id": "009f8d5d825944429c9ae8d252b0019a",
-        "ip": [
-            "172.19.0.2",
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02-42-AC-12-00-07",
-            "02-42-AC-13-00-02"
-        ],
-        "name": "elastic-agent-74965",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.15.167.4-microsoft-standard-WSL2",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
-    },
     "input": {
         "type": "cel"
-    }
+    },
+    "tags": [
+        "forwarded"
+    ]
 }
 ```
 
@@ -484,11 +434,11 @@ An example event for `managedaccount` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-17T11:00:02.287Z",
+    "@timestamp": "2024-12-18T19:36:50.174Z",
     "agent": {
-        "ephemeral_id": "cfd1d10e-cb2a-4ab3-aa61-28db2009ce49",
-        "id": "14265df8-8608-4a59-b034-d0bddebe53a1",
-        "name": "elastic-agent-32613",
+        "ephemeral_id": "e7252dce-9131-450f-ac4d-d9c0cb68019a",
+        "id": "69b1bd2e-5f9e-4f41-8957-f15b3b609ec7",
+        "name": "elastic-agent-90910",
         "type": "filebeat",
         "version": "8.12.2"
     },
@@ -516,14 +466,14 @@ An example event for `managedaccount` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.managedaccount",
-        "namespace": "35062",
+        "namespace": "37163",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "14265df8-8608-4a59-b034-d0bddebe53a1",
+        "id": "69b1bd2e-5f9e-4f41-8957-f15b3b609ec7",
         "snapshot": false,
         "version": "8.12.2"
     },
@@ -533,40 +483,19 @@ An example event for `managedaccount` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.managedaccount",
-        "ingested": "2024-12-17T11:00:05Z",
+        "ingested": "2024-12-18T19:36:53Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
             "info"
         ]
     },
-    "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "elastic-agent-32613",
-        "id": "29b44b57f32c4ff282841a8a4406ef95",
-        "ip": [
-            "172.25.0.2",
-            "172.24.0.4"
-        ],
-        "mac": [
-            "02-42-AC-18-00-04",
-            "02-42-AC-19-00-02"
-        ],
-        "name": "elastic-agent-32613",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "6.6.51-0-virt",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
-    },
     "input": {
         "type": "cel"
-    }
+    },
+    "tags": [
+        "forwarded"
+    ]
 }
 ```
 
