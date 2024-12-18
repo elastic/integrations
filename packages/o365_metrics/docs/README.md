@@ -75,20 +75,20 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.onedrive.usage_account_counts.active | The number of OneDrive accounts that were active during the reporting period. | integer |
-| o365.metrics.onedrive.usage_account_counts.report_date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage_account_counts.report_period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage_account_counts.report_refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage_account_counts.site_type | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
-| o365.metrics.onedrive.usage_account_counts.total | The total number of OneDrive accounts evaluated in the report. | integer |
-| o365.metrics.onedrive.usage_file_counts.active | The number of OneDrive accounts with active file usage during the reporting period. | integer |
-| o365.metrics.onedrive.usage_file_counts.report_date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage_file_counts.report_period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage_file_counts.report_refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage_file_counts.site_type | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
-| o365.metrics.onedrive.usage_file_counts.total | The total number of OneDrive accounts evaluated in the report. | integer |
-| o365.metrics.onedrive.usage_storage.report_date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage_storage.report_period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage_storage.report_refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage_storage.site_type | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
-| o365.metrics.onedrive.usage_storage.storage_used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
+| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | integer |
+| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.account.counts.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.account.counts.site.type | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
+| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | integer |
+| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.file.counts.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.file.counts.site.type | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
+| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.storage.site.type | The type of OneDrive sites included in the report (e.g., All, Team, Personal). | keyword |
+| o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
