@@ -1,7 +1,7 @@
 # NATS integration
 
 This integration is used to collect logs and metrics from [NATS servers](https://nats.io/).
-The integration collects metrics from [NATS monitoring server APIs](https://nats.io/documentation/managing_the_server/monitoring/).
+The integration collects metrics from [NATS monitoring server APIs](https://docs.nats.io/running-a-nats-service/nats_admin/monitoring).
 
 
 ## Compatibility

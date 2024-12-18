@@ -24,32 +24,32 @@ processors:
       field: service.type
       value: "mysql"
   - set:
-      if: "ctx.sql.metrics.numeric.auto_position == 1"
+      if: ctx.sql?.metrics?.numeric?.auto_position == 1
       field: sql.metrics.numeric.auto_position
       value: true
       ignore_empty_value: true
   - set:
-      if: "ctx.sql.metrics.numeric.auto_position == 0"
+      if: ctx.sql?.metrics?.numeric?.auto_position == 0
       field: sql.metrics.numeric.auto_position
       value: false
       ignore_empty_value: true
   - set:
-      if: "ctx.sql.metrics.numeric.get_source_public_key == 1"
+      if: ctx.sql?.metrics?.numeric?.get_source_public_key == 1
       field: sql.metrics.numeric.get_source_public_key
       value: true
       ignore_empty_value: true
   - set:
-      if: "ctx.sql.metrics.numeric.get_source_public_key == 0"
+      if: ctx.sql?.metrics?.numeric?.get_source_public_key == 0
       field: sql.metrics.numeric.get_source_public_key
       value: false
       ignore_empty_value: true
   - set:
-      if: "ctx.sql.metrics.string.source_ssl_verify_server_cert == 'Yes'"
+      if: ctx.sql?.metrics?.string?.source_ssl_verify_server_cert == 'Yes'
       field: sql.metrics.string.source_ssl_verify_server_cert
       value: true
       ignore_empty_value: true
   - set:
-      if: "ctx.sql.metrics.string.source_ssl_verify_server_cert == 'No'"
+      if: ctx.sql?.metrics?.string?.source_ssl_verify_server_cert == 'No'
       field: sql.metrics.string.source_ssl_verify_server_cert
       value: false
       ignore_empty_value: true
@@ -110,7 +110,7 @@ processors:
       field: sql.metrics.string.last_io_error_timestamp
       tag: last_io_error_timestamp
       target_field: mysql.replica_status.last_error.io.timestamp
-      if: "ctx.sql?.metrics?.string?.last_io_error_timestamp != null && ctx.sql.metrics.string.last_io_error_timestamp != ''"
+      if: ctx.sql?.metrics?.string?.last_io_error_timestamp != null && ctx.sql.metrics.string.last_io_error_timestamp != ''
       formats:
         - yyMMdd HH:mm:ss
         - yyMMdd H:m:s
@@ -123,7 +123,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      if: "ctx.sql?.metrics?.string?.last_sql_error_timestamp != null && ctx.sql.metrics.string.last_sql_error_timestamp != ''"
+      if: ctx.sql?.metrics?.string?.last_sql_error_timestamp != null && ctx.sql.metrics.string.last_sql_error_timestamp != ''
       field: sql.metrics.string.last_sql_error_timestamp
       tag: last_sql_error_timestamp
       target_field: mysql.replica_status.last_error.sql.timestamp
@@ -358,22 +358,22 @@ processors:
       value: '{{sql.metrics.string.master_user}}'
       ignore_empty_value: true
   - set:
-      if: "ctx.sql.metrics.numeric.get_master_public_key == 1"
+      if: ctx.sql?.metrics?.numeric?.get_master_public_key == 1
       field: sql.metrics.numeric.get_master_public_key
       value: true
       ignore_empty_value: true
   - set:
-      if: "ctx.sql.metrics.numeric.get_master_public_key == 0"
+      if: ctx.sql?.metrics?.numeric?.get_master_public_key == 0
       field: sql.metrics.numeric.get_master_public_key
       value: false
       ignore_empty_value: true
   - set:
-      if: "ctx.sql.metrics.string.master_ssl_verify_server_cert == 'Yes'"
+      if: ctx.sql?.metrics?.string?.master_ssl_verify_server_cert == 'Yes'
       field: sql.metrics.string.master_ssl_verify_server_cert
       value: true
       ignore_empty_value: true
   - set:
-      if: "ctx.sql.metrics.string.master_ssl_verify_server_cert == 'No'"
+      if: ctx.sql?.metrics?.string?.master_ssl_verify_server_cert == 'No'
       field: sql.metrics.string.master_ssl_verify_server_cert
       value: false
       ignore_empty_value: true
