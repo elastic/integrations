@@ -62,7 +62,7 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
 
 
-### One Drive
+### One Drive Usage
 **Exported fields**
 
 | Field | Description | Type |

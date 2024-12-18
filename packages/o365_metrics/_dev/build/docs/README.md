@@ -42,5 +42,5 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 {{fields "outlook_activity"}}
 
 
-### One Drive
+### One Drive Usage
 {{fields "onedrive_usage"}}
