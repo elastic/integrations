@@ -51,3 +51,6 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
 {{fields "outlook_app_usage"}}
 
+
+### One Drive Usage
+{{fields "onedrive_usage"}}

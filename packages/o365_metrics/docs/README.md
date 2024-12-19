@@ -73,7 +73,8 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 | o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | integer |
 
 
-### OutlookActivity
+
+### Outlook Activity
 
 **Exported fields**
 
@@ -97,6 +98,7 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 | o365.metrics.outlook.activity.report_refresh_date | The date when the report data was last updated. | date |
 
 
+
 ### OutlookAppUsage
 
 **Exported fields**
@@ -111,6 +113,8 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+
+
 | o365.metrics.outlook.app.usage.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | integer |
 | o365.metrics.outlook.app.usage.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | integer |
 | o365.metrics.outlook.app.usage.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | integer |
@@ -121,4 +125,33 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 | o365.metrics.outlook.app.usage.report.refresh_date | The date when the report data was last updated. | date |
 | o365.metrics.outlook.app.usage.undetermined.count | The count of unique users whose Outlook version could not be identified. | integer |
 
+
+### One Drive Usage
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | integer |
+| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.account.counts.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | integer |
+| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.file.counts.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
 
