@@ -34,7 +34,7 @@ An example event for `eve` looks as following:
         "port": 22
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.16.0"
     },
     "elastic_agent": {
         "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
@@ -469,7 +469,7 @@ An example event for `eve` looks as following:
 | tls.server.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | tls.server.x509.not_after | Time at which the certificate is no longer considered valid. | date |
 | tls.server.x509.not_before | Time at which the certificate is first considered valid. | date |
-| tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
+| tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, this should be encoded in base 16 and formatted without colons and uppercase characters. | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.server.x509.subject.country | List of country \(C) code | keyword |
 | tls.server.x509.subject.locality | List of locality names (L) | keyword |
