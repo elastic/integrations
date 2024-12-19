@@ -17,11 +17,13 @@ state:
 program: |-
   
   (
-  	(state.?cursor.auth_token.orValue(null) != null) ?
-  		// Auth token exists - Use it.
-  		state.cursor.auth_token
+  	state.?cursor.auth_data.expires.optMap(t,
+  		t.parse_time(time_layout.RFC1123) - now() > duration("5m")
+  	).orValue(false) ?
+  		// Current auth data exists - Use it.
+  		state.cursor.auth_data
   	:
-  		// No auth token - Use credentials to fetch a new one.
+  		// No current auth data - Use credentials to fetch a new token.
   		request("POST", state.url.trim_right("/") + "/auth/external").with(
   			{
   				"Header": {
@@ -35,10 +37,13 @@ program: |-
   			}
   		).do_request().as(resp,
   			bytes(resp.Body).decode_json().as(body,
-  				body.data.token
+  				{
+  					"token": body.data.token,
+  					"expires": body.data.expires,
+  				}
   			)
   		)
-  ).as(auth_token,
+  ).as(auth_data,
   	(state.?cursor.task_id.orValue(null) == null) ?
   		// No task ID - Submit a query and get its task ID.
   		request("POST", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query").with(
@@ -46,7 +51,7 @@ program: |-
   				"Header": {
   					"Accept": ["application/json"],
   					"Content-Type": ["application/json"],
-  					"Authorization": ["Bearer " + auth_token],
+  					"Authorization": ["Bearer " + auth_data.token],
   				},
   				"Body": {
   					"filter": state.filter,
@@ -71,7 +76,7 @@ program: |-
   						"want_more": false,
   						"cursor": state.cursor.with(
   							{
-  								"auth_token": null,
+  								"auth_data": null,
   								"task_id": null,
   								"page_token": null,
   							}
@@ -86,7 +91,7 @@ program: |-
   							"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
   							"want_more": true,
   							"cursor": {
-  								"auth_token": auth_token,
+  								"auth_data": auth_data,
   								"task_id": body.data.taskId,
   								"page_token": null,
   								"next_startTime": (has(state.cursor) && has(state.cursor.next_startTime)) ? state.cursor.next_startTime : null,
@@ -102,17 +107,17 @@ program: |-
   				"Header": {
   					"Accept": ["application/json"],
   					"Content-Type": ["application/json"],
-  					"Authorization": ["Bearer " + auth_token],
+  					"Authorization": ["Bearer " + auth_data.token],
   				},
   			}
   		).do_request().as(resp,
   			(resp.StatusCode == 401) ?
-  				// 401 Unauthorized - Clear the auth token and retry immediately.
+  				// 401 Unauthorized - Clear the auth data and retry immediately.
   				state.with(
   					{
   						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
   						"want_more": true,
-  						"cursor": state.cursor.with({"auth_token": null}),
+  						"cursor": state.cursor.with({"auth_data": null}),
   					}
   				)
   			:
@@ -125,7 +130,7 @@ program: |-
   								"want_more": true,
   								"cursor": state.cursor.with(
   									{
-  										"auth_token": auth_token,
+  										"auth_data": auth_data,
   										"page_token": body.data.pageTokens[0],
   									}
   								),
@@ -139,7 +144,7 @@ program: |-
   								"want_more": false,
   								"cursor": state.cursor.with(
   									{
-  										"auth_token": auth_token,
+  										"auth_data": auth_data,
   										"task_id": null,
   									}
   								),
@@ -153,7 +158,7 @@ program: |-
   								"want_more": true,
   								"cursor": state.cursor.with(
   									{
-  										"auth_token": auth_token,
+  										"auth_data": auth_data,
   									}
   								),
   							}
@@ -167,7 +172,7 @@ program: |-
   				"Header": {
   					"Accept": ["application/json"],
   					"Content-Type": ["application/json"],
-  					"Authorization": ["Bearer " + auth_token],
+  					"Authorization": ["Bearer " + auth_data.token],
   				},
   				"Body": {
   					"taskId": state.cursor.task_id,
@@ -176,12 +181,12 @@ program: |-
   			}
   		).do_request().as(resp,
   			(resp.StatusCode == 401) ?
-  				// 401 Unauthorized - Clear the auth token and retry immediately.
+  				// 401 Unauthorized - Clear the auth data and retry immediately.
   				state.with(
   					{
   						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
   						"want_more": true,
-  						"cursor": state.cursor.with({"auth_token": null}),
+  						"cursor": state.cursor.with({"auth_data": null}),
   					}
   				)
   			:
@@ -194,7 +199,7 @@ program: |-
   								"want_more": true,
   								"cursor": state.cursor.with(
   									{
-  										"auth_token": auth_token,
+  										"auth_data": auth_data,
   										"page_token": body.data.nextPageToken,
   									}
   								),
@@ -208,7 +213,7 @@ program: |-
   								"want_more": false,
   								"cursor": state.cursor.with(
   									{
-  										"auth_token": auth_token,
+  										"auth_data": auth_data,
   										"task_id": null,
   										"page_token": null,
   									}
