@@ -36,9 +36,11 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
-### OutlookActivity
-
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
-
+### Outlook Activity
 {{fields "outlook_activity"}}
+
+
+### One Drive Usage
+{{fields "onedrive_usage"}}
