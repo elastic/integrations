@@ -17,8 +17,11 @@ state:
 program: |-
   
   (
-  	(state.?cursor.auth_token.orValue(null) == null) ?
-  		// use credentials to get an auth token
+  	(state.?cursor.auth_token.orValue(null) != null) ?
+  		// Auth token exists - Use it.
+  		state.cursor.auth_token
+  	:
+  		// No auth token - Use credentials to fetch a new one.
   		request("POST", state.url.trim_right("/") + "/auth/external").with(
   			{
   				"Header": {
@@ -35,11 +38,9 @@ program: |-
   				body.data.token
   			)
   		)
-  	:
-  		state.cursor.auth_token
   ).as(auth_token,
   	(state.?cursor.task_id.orValue(null) == null) ?
-  		// submit a query and get the task id
+  		// No task ID - Submit a query and get its task ID.
   		request("POST", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query").with(
   			{
   				"Header": {
@@ -62,7 +63,24 @@ program: |-
   				}.encode_json(),
   			}
   		).do_request().as(resp,
-  			(resp.StatusCode == 200) ?
+  			(resp.StatusCode != 200) ?
+  				// Any error - We're at the start, so clear everything and retry after interval.
+  				state.with(
+  					{
+  						"events": {"error": {"message": "Error response: " + string(resp.Body)}},
+  						"want_more": false,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_token": null,
+  								"task_id": null,
+  								"task_ready": false,
+  								"page_token": null,
+  							}
+  						),
+  					}
+  				)
+  			:
+  				// Query submitted - Save the task ID.
   				bytes(resp.Body).decode_json().as(body,
   					state.with(
   						{
@@ -78,25 +96,9 @@ program: |-
   						}
   					)
   				)
-  			:
-  				// any error - we're at the start, so clear everything and retry after interval
-  				state.with(
-  					{
-  						"events": {"error": {"message": "Error response: " + string(resp.Body)}},
-  						"want_more": false,
-  						"cursor": state.cursor.with(
-  							{
-  								"auth_token": null,
-  								"task_id": null,
-  								"task_ready": false,
-  								"page_token": null,
-  							}
-  						),
-  					}
-  				)
   		)
   	: (state.?cursor.task_ready.orValue(false) == false) ?
-  		// check whether the query's task id is ready (if yes, save pageToken), or done (no data, stop), or processing (try again)
+  		// Task exists but isn't ready - Check whether it's ready or done.
   		request("GET", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query/" + state.cursor.task_id).with(
   			{
   				"Header": {
@@ -107,7 +109,7 @@ program: |-
   			}
   		).do_request().as(resp,
   			(resp.StatusCode == 401) ?
-  				// 401 Unauthorized - clear auth_token and retry immediately
+  				// 401 Unauthorized - Clear the auth token and retry immediately.
   				state.with(
   					{
   						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
@@ -117,8 +119,8 @@ program: |-
   				)
   			:
   				bytes(resp.Body).decode_json().as(body,
-  					// 'Ready' - Found results. Ready to retrieve event logs records on the 1st page
   					(body.data.state == "Ready") ?
+  						// 'Ready' (Results found) - Save the first page token.
   						state.with(
   							{
   								"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
@@ -133,7 +135,7 @@ program: |-
   							}
   						)
   					: (body.data.state == "Done") ?
-  						// 'Done' - The entire specified time range of request has been covered / No results have been found for specified request
+  						// 'Done' (Results empty) - Clear the task ID and end the sequence.
   						state.with(
   							{
   								"events": [],
@@ -149,6 +151,7 @@ program: |-
   							}
   						)
   					:
+  						// Not ready or done - Keep polling.
   						state.with(
   							{
   								"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
@@ -165,7 +168,7 @@ program: |-
   				)
   		)
   	:
-  		// use task ID and pageToken to retrieve a page of results
+  		// Task is ready - Use the task ID and page token to retrieve a page of results.
   		request("POST", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query/retrieve").with(
   			{
   				"Header": {
@@ -180,7 +183,7 @@ program: |-
   			}
   		).do_request().as(resp,
   			(resp.StatusCode == 401) ?
-  				// 401 Unauthorized - clear auth_token and retry immediately
+  				// 401 Unauthorized - Clear the auth token and retry immediately.
   				state.with(
   					{
   						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
@@ -190,7 +193,23 @@ program: |-
   				)
   			:
   				bytes(resp.Body).decode_json().as(body,
-  					(body.data.nextPageToken == "NULL") ?
+  					(body.data.nextPageToken != "NULL") ?
+  						// Not the last page - Save the next page token and continue.
+  						state.with(
+  							{
+  								"events": body.data.records.map(e, {"message": e.encode_json()}),
+  								"want_more": true,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_token": auth_token,
+  										"task_ready": true,
+  										"page_token": body.data.nextPageToken,
+  									}
+  								),
+  							}
+  						)
+  					:
+  						// Last page - Clear the task ID and page token, and end the sequence.
   						state.with(
   							{
   								"events": body.data.records.map(e, {"message": e.encode_json()}),
@@ -201,20 +220,6 @@ program: |-
   										"task_id": null,
   										"task_ready": null,
   										"page_token": null,
-  									}
-  								),
-  							}
-  						)
-  					:
-  						state.with(
-  							{
-  								"events": body.data.records.map(e, {"message": e.encode_json()}),
-  								"want_more": true,
-  								"cursor": state.cursor.with(
-  									{
-  										"auth_token": auth_token,
-  										"task_ready": true,
-  										"page_token": body.data.nextPageToken,
   									}
   								),
   							}
