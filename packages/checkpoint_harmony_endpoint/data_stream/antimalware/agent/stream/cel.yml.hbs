@@ -80,13 +80,10 @@ program: |-
   					)
   				)
   			:
+  				// any error - we're at the start, so clear everything and retry after interval
   				state.with(
   					{
-  						"events": {
-  							"error": {
-  								"message": "Error response: " + string(resp.Body),
-  							},
-  						},
+  						"events": {"error": {"message": "Error response: " + string(resp.Body)}},
   						"want_more": false,
   						"cursor": state.cursor.with(
   							{
@@ -111,53 +108,63 @@ program: |-
   				},
   			}
   		).do_request().as(resp,
-  			bytes(resp.Body).decode_json().as(body,
-  				// 'Ready' - Found results. Ready to retrieve event logs records on the 1st page
-  				(body.data.state == "Ready") ?
-  					state.with(
-  						{
-  							"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
-  							"want_more": true,
-  							"cursor": state.cursor.with(
-  								{
-  									"task_ready": true,
-  									"page_token": body.data.pageTokens[0],
-  									"last_page": null,
-  								}
-  							),
-  						}
-  					)
-  				: (body.data.state == "Done") ?
-  					// 'Done' - The entire specified time range of request has been covered / No results have been found for specified request
-  					state.with(
-  						{
-  							"events": [],
-  							"want_more": false,
-  							"cursor": state.cursor.with(
-  								{
-  									"auth_token": null,
-  									"task_ready": null,
-  									"page_token": null,
-  									"last_page": null,
-  								}
-  							),
-  						}
-  					)
-  				:
-  					state.with(
-  						{
-  							"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
-  							"want_more": true,
-  							"cursor": state.cursor.with(
-  								{
-  									"task_ready": false,
-  									"page_token": null,
-  									"last_page": null,
-  								}
-  							),
-  						}
-  					)
-  			)
+  			(resp.StatusCode == 401) ?
+  				// 401 Unauthorized - clear auth_token and retry immediately
+  				state.with(
+  					{
+  						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
+  						"want_more": true,
+  						"cursor": state.cursor.with({"auth_token": null}),
+  					}
+  				)
+  			:
+  				bytes(resp.Body).decode_json().as(body,
+  					// 'Ready' - Found results. Ready to retrieve event logs records on the 1st page
+  					(body.data.state == "Ready") ?
+  						state.with(
+  							{
+  								"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
+  								"want_more": true,
+  								"cursor": state.cursor.with(
+  									{
+  										"task_ready": true,
+  										"page_token": body.data.pageTokens[0],
+  										"last_page": null,
+  									}
+  								),
+  							}
+  						)
+  					: (body.data.state == "Done") ?
+  						// 'Done' - The entire specified time range of request has been covered / No results have been found for specified request
+  						state.with(
+  							{
+  								"events": [],
+  								"want_more": false,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_token": null,
+  										"task_ready": null,
+  										"page_token": null,
+  										"last_page": null,
+  									}
+  								),
+  							}
+  						)
+  					:
+  						state.with(
+  							{
+  								"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
+  								"want_more": true,
+  								"cursor": state.cursor.with(
+  									{
+  										"task_ready": false,
+  										"page_token": null,
+  										"last_page": null,
+  									}
+  								),
+  							}
+  						)
+  				)
   		)
   	:
   		// use task ID and pageToken to retrieve a page of results
@@ -174,38 +181,48 @@ program: |-
   				}.encode_json(),
   			}
   		).do_request().as(resp,
-  			bytes(resp.Body).decode_json().as(body,
-  				(body.data.nextPageToken == "NULL") ?
-  					state.with(
-  						{
-  							"events": body.data.records.map(e, {"message": e.encode_json()}),
-  							"want_more": false,
-  							"cursor": state.cursor.with(
-  								{
-  									"auth_token": null,
-  									"task_id": null,
-  									"task_ready": null,
-  									"page_token": null,
-  									"last_page": null,
-  								}
-  							),
-  						}
-  					)
-  				:
-  					state.with(
-  						{
-  							"events": body.data.records.map(e, {"message": e.encode_json()}),
-  							"want_more": true,
-  							"cursor": state.cursor.with(
-  								{
-  									"task_ready": true,
-  									"page_token": body.data.nextPageToken,
-  									"last_page": false,
-  								}
-  							),
-  						}
-  					)
-  			)
+  			(resp.StatusCode == 401) ?
+  				// 401 Unauthorized - clear auth_token and retry immediately
+  				state.with(
+  					{
+  						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
+  						"want_more": true,
+  						"cursor": state.cursor.with({"auth_token": null}),
+  					}
+  				)
+  			:
+  				bytes(resp.Body).decode_json().as(body,
+  					(body.data.nextPageToken == "NULL") ?
+  						state.with(
+  							{
+  								"events": body.data.records.map(e, {"message": e.encode_json()}),
+  								"want_more": false,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_token": null,
+  										"task_id": null,
+  										"task_ready": null,
+  										"page_token": null,
+  										"last_page": null,
+  									}
+  								),
+  							}
+  						)
+  					:
+  						state.with(
+  							{
+  								"events": body.data.records.map(e, {"message": e.encode_json()}),
+  								"want_more": true,
+  								"cursor": state.cursor.with(
+  									{
+  										"task_ready": true,
+  										"page_token": body.data.nextPageToken,
+  										"last_page": false,
+  									}
+  								),
+  							}
+  						)
+  				)
   		)
   )
 tags:
