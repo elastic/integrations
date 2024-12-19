@@ -89,9 +89,12 @@ processors:
         if (ctx.json?.audit?.action == null || params.get(ctx.json.audit.action.toLowerCase()) == null) {
           return;
         }
-        def hm = new HashMap(params.get(ctx.json.audit.action.toLowerCase()));
-        hm.forEach((k, v) -> {
-          ctx.event[k] = v
+        params.get(ctx.json.audit.action.toLowerCase()).forEach((k, v) -> {
+          if (v instanceof List) {
+            ctx.event[k] = new ArrayList(v);
+          } else {
+            ctx.event[k] = v;
+          }
         });
   - set:
       field: observer.vendor
