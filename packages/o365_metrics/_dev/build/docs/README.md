@@ -43,6 +43,10 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
 {{fields "mailbox_usage"}}
 
+### One Drive Usage
+
+{{fields "onedrive_usage"}}
+
 ### OutlookActivity
 
 {{fields "outlook_activity"}}
@@ -50,7 +54,3 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 ### OutlookAppUsage
 
 {{fields "outlook_app_usage"}}
-
-
-### One Drive Usage
-{{fields "onedrive_usage"}}
