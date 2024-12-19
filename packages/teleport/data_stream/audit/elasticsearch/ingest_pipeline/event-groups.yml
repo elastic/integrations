@@ -180,11 +180,11 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.kubernetes_users
-      target_field: teleport.audit.kubernetes.users
+      target_field: teleport.audit.kubernetes.user
       ignore_missing: true
   - rename:
       field: teleport.audit.kubernetes_groups
-      target_field: teleport.audit.kubernetes.groups
+      target_field: teleport.audit.kubernetes.group
       ignore_missing: true
   - rename:
       field: teleport.audit.kubernetes_labels
@@ -230,6 +230,11 @@ processors:
       description: 'Fix an issue where "session_id" is present in this event.'
       field: teleport.audit.session_id
       target_field: teleport.audit.session.id
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.event.action.startsWith('saml.')
+  - remove:
+      field: teleport.audit.session_id
       ignore_missing: true
       if: ctx.event.action.startsWith('saml.')
   # Okta related events metadata.
@@ -408,6 +413,10 @@ processors:
       field: teleport.audit.location
       target_field: file.path
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.location
+      ignore_missing: true
   - rename:
       field: teleport.audit.download
       target_field: teleport.audit.file_transfer_request.is_download
@@ -560,6 +569,9 @@ processors:
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      field: teleport.audit.resource.updated_by
+      ignore_missing: true
   - rename:
       field: teleport.audit.ttl
       target_field: teleport.audit.resource.ttl
@@ -658,6 +670,10 @@ processors:
       field: teleport.audit.command
       target_field: process.command_line
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.command
+      ignore_missing: true
   - convert:
       field: teleport.audit.exitCode
       type: long
@@ -666,6 +682,10 @@ processors:
   - rename:
       field: teleport.audit.exitCode
       target_field: process.exit_code
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.exitCode
       ignore_missing: true
   - rename:
       field: teleport.audit.exitError
@@ -679,6 +699,11 @@ processors:
       target_field: file.path
       if: ctx.event.action == 'scp'
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.path
+      ignore_missing: true
+      if: ctx.event.action == 'scp'
   - rename:
       field: teleport.audit.action
       target_field: teleport.audit.scp.action
@@ -696,6 +721,11 @@ processors:
       target_field: file.path
       if: ctx.event.action == 'sftp'
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.path
+      ignore_missing: true
+      if: ctx.event.action == 'sftp'
   - rename:
       field: teleport.audit.target_path
       target_field: teleport.audit.sftp.target_path
@@ -822,6 +852,10 @@ processors:
       field: teleport.audit.resource_namespace
       target_field: orchestrator.namespace
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.resource_namespace
+      ignore_missing: true
   - rename:
       field: teleport.audit.resource_kind
       target_field: orchestrator.resource.type
@@ -829,6 +863,10 @@ processors:
   - rename:
       field: teleport.audit.resource_name
       target_field: orchestrator.resource.name
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.resource_name
       ignore_missing: true
   - rename:
       field: teleport.audit.response_code
@@ -849,6 +887,9 @@ processors:
       target_field: teleport.audit.app.public_address
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      field: teleport.audit.public_addr
+      ignore_missing: true
   - rename:
       field: teleport.audit.app_labels
       target_field: teleport.audit.app.labels
@@ -948,6 +989,10 @@ processors:
       field: teleport.audit.db_aws_region
       target_field: cloud.region
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.db_aws_region
+      ignore_missing: true
   - set:
       field: cloud.provider
       value: aws
@@ -967,6 +1012,10 @@ processors:
   - rename:
       field: teleport.audit.db_gcp_instance_id
       target_field: cloud.instance.id
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.db_gcp_instance_id
       ignore_missing: true
   - rename:
       field: teleport.audit.db_roles
@@ -1018,6 +1067,10 @@ processors:
       field: teleport.audit.query
       target_field: teleport.audit.database.query
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.query
+      ignore_missing: true
   - rename:
       field: teleport.audit.portal_name
       target_field: teleport.audit.database.postgres.portal_name
@@ -1025,6 +1078,10 @@ processors:
   - rename:
       field: teleport.audit.parameters
       target_field: teleport.audit.database.query_parameters
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.parameters
       ignore_missing: true
   - rename:
       field: teleport.audit.function_oid
@@ -1075,13 +1132,25 @@ processors:
       field: teleport.audit.mfa_device_uuid
       target_field: teleport.audit.mfa_device.uuid
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.mfa_device_uuid
+      ignore_missing: true
   - rename:
       field: teleport.audit.mfa_device_name
       target_field: teleport.audit.mfa_device.name
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.mfa_device_name
+      ignore_missing: true
   - rename:
       field: teleport.audit.mfa_device_type
       target_field: teleport.audit.mfa_device.type
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.mfa_device_type
       ignore_missing: true
   # WindowsDesktopSessionEnd is emitted when a user ends a Windows desktop session.
   - rename:
@@ -1126,9 +1195,18 @@ processors:
       field: teleport.audit.host_id
       target_field: host.id
       ignore_missing: true
-  - rename:
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.host_id
+      ignore_missing: true
+  - append:
+      field: host.name
+      value:
+        - '{{{teleport.audit.node_name}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.node_name != null
+  - remove:
       field: teleport.audit.node_name
-      target_field: host.name
       ignore_missing: true
   - rename:
       field: teleport.audit.role
@@ -1227,11 +1305,20 @@ processors:
       field: teleport.audit.url
       target_field: url.original
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      tag: remove_duplicate_url_original
+      field: teleport.audit.url
+      ignore_missing: true
   # Identity is the identity associated with the certificate, as interpreted by Teleport.
   # See teleport.audit.certificate group for field definitions.
   - rename:
       field: teleport.audit.certificate.identity.mfa_device_uuid
       target_field: teleport.audit.mfa_device.uuid
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.certificate.identity.mfa_device_uuid
       ignore_missing: true
   - rename:
       field: teleport.audit.certificate.identity.client_ip
@@ -1407,9 +1494,17 @@ processors:
       field: teleport.audit.instance_id
       target_field: cloud.instance.id
       ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.instance_id
+      ignore_missing: true
   - rename:
       field: teleport.audit.exit_code
       target_field: process.exit_code
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.exit_code
       ignore_missing: true
   - set:
       field: event.outcome
@@ -1431,6 +1526,9 @@ processors:
       target_field: cloud.region
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      field: teleport.audit.region
+      ignore_missing: true
   - rename:
       field: teleport.audit.stdout
       target_field: teleport.audit.database.aws.ssm_run.stdout
