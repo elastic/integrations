@@ -89,39 +89,39 @@ An example event for `admin` looks as following:
 {
     "@timestamp": "2024-11-28T16:58:55.832+11:00",
     "agent": {
-        "ephemeral_id": "9bfc9539-3c31-449e-a6f5-7c1f02bbce56",
-        "id": "356d1c44-b2a9-405a-9ef6-aa0723d80444",
+        "ephemeral_id": "cc3c0dc0-25b3-472f-8434-111714ef6bcb",
+        "id": "7cd150d8-eab1-4974-b83f-990dbb737cb8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "ping_federate.admin",
-        "namespace": "79546",
+        "namespace": "75079",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "356d1c44-b2a9-405a-9ef6-aa0723d80444",
+        "id": "7cd150d8-eab1-4974-b83f-990dbb737cb8",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.14.0"
     },
     "event": {
         "action": "rotate",
         "agent_id_status": "verified",
         "category": [
-            "authentication"
+            "configuration"
         ],
         "dataset": "ping_federate.admin",
         "id": "A-rBnNPcJffxBiizBWDOWxq_Ek8cYxg3nef5uKyn6H4",
-        "ingested": "2024-12-17T08:58:58Z",
+        "ingested": "2024-12-19T12:19:22Z",
         "kind": "event",
         "original": "2024-11-28 5:58:55,832 | Administrator | UserAdmin,Admin,CryptoAdmin,ExpressionAdmin | 81.2.69.142 | A-rBnNPcJffxBiizBWDOWxq_Ek8cYxg3nef5uKyn6H4 | LICENSE | ROTATE | - Login was successful",
         "timezone": "+11:00",
         "type": [
-            "info"
+            "change"
         ]
     },
     "input": {
@@ -130,7 +130,7 @@ An example event for `admin` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "6672778",
+            "inode": "8692415",
             "path": "/tmp/service_logs/test-admin.log"
         },
         "offset": 0
@@ -240,26 +240,26 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2012-05-18T22:41:48.452+11:00",
+    "@timestamp": "2012-05-19T00:41:48.452+13:00",
     "agent": {
-        "ephemeral_id": "200ca1ff-811a-45f7-ad6f-ae8e66f2eb93",
-        "id": "356d1c44-b2a9-405a-9ef6-aa0723d80444",
+        "ephemeral_id": "f21cd0a8-ed07-4f2a-a1b7-c3a61d93dc64",
+        "id": "7cd150d8-eab1-4974-b83f-990dbb737cb8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "ping_federate.audit",
-        "namespace": "24124",
+        "namespace": "99086",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "356d1c44-b2a9-405a-9ef6-aa0723d80444",
+        "id": "7cd150d8-eab1-4974-b83f-990dbb737cb8",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.14.0"
     },
     "event": {
         "action": "authn_session_deleted",
@@ -269,26 +269,23 @@ An example event for `audit` looks as following:
         ],
         "code": "AUTHN_SESSION_DELETED",
         "dataset": "ping_federate.audit",
-        "ingested": "2024-12-17T09:02:36Z",
+        "ingested": "2024-12-19T12:23:19Z",
         "kind": "event",
         "original": "CEF:0|Ping Identity|PingFederate|6.4|AUTHN_SESSION_DELETED|AUTHN_SESSION_DELETED|0|rt=May 18 2012 11:41:48.452 duid=joe src=192.168.6.130 msg=failure cs1Label=Target Application URL cs1=http://www.google.ca&landingpage\\=pageA cs2Label=Connection ID cs2=sp:cloud:saml2 cs3Label=Protocol cs3=SAML20 dvchost=hello cs4Label=Role cs4=IdP externalId=tid:ae14b5ce8 cs5Label=SP Local User ID cs5=idlocal cs6Label=Attributes cs6={SAML_SUBJECT\\=joe, ognl\\=tom}",
         "outcome": "failure",
         "severity": 0,
-        "timezone": "+11:00",
+        "timezone": "+13:00",
         "type": [
             "end"
         ]
     },
     "input": {
-        "type": "filestream"
+        "type": "udp"
     },
     "log": {
-        "file": {
-            "device_id": "64768",
-            "inode": "7648270",
-            "path": "/tmp/service_logs/test-audit.log"
-        },
-        "offset": 0
+        "source": {
+            "address": "192.168.246.7:58730"
+        }
     },
     "observer": {
         "hostname": "hello",
@@ -308,7 +305,7 @@ An example event for `audit` looks as following:
             "ip": "192.168.6.130",
             "local_user_id": "idlocal",
             "protocol": "SAML20",
-            "response_time": "2012-05-18T22:41:48.452+11:00",
+            "response_time": "2012-05-19T00:41:48.452+13:00",
             "role": "IdP",
             "severity": 0,
             "status": "failure",
