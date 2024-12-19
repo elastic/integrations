@@ -144,6 +144,7 @@ An example event looks as follows:
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip address. | ip |
 | input.type |  | keyword |
 | journald.audit.login_uid | The login UID of the process the journal entry originates from, as maintained by the kernel audit subsystem. | long |
 | journald.audit.session | The session of the process the journal entry originates from, as maintained by the kernel audit subsystem. | keyword |
@@ -189,6 +190,7 @@ An example event looks as follows:
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.pid | Process id. | long |
 | process.thread.capabilities.effective | This is the set of capabilities used by the kernel to perform permission checks for the thread. | keyword |
+| source.ip | IP address of the source. | ip |
 | systemd.cgroup | The control group path in the systemd hierarchy. | keyword |
 | systemd.invocation_id | The invocation ID for the runtime cycle of the unit the message was generated in, as available to processes of the unit in $INVOCATION_ID. | keyword |
 | systemd.owner_uid | The owner UID of the systemd user unit or systemd session (if any) of the process the journal entry originates from. | long |
