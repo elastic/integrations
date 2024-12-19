@@ -17,7 +17,7 @@ Once the application is registered, configure and/or note the following to setup
     - Navigate to `API permissions` page and click `Add a permission`
     - Select `Office 365 Management APIs` tile from the listed tiles.
     - Click `Application permissions`.
-    - If `User.Read` permission under `Microsoft.Graph` tile is not added by default, add this permission.
+    - If `User.Read` and `Reports.Read.All` permission under `Microsoft.Graph` tile is not added by default, add this permission.
     - After the permissions are added, the admin has to grant consent for these permissions.
 
 Once the secret is created and permissions are granted by admin, setup Elastic Agent's Microsoft O365 integration:
@@ -37,18 +37,17 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
-Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
+Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
-### MailboxQuotastatus
+### MailboxUsage
 
-
-{{fields "mailboxquotastatus"}}
-
-### OutlookAppUsage
-
-{{fields "outlook_app_usage"}}
+{{fields "mailbox_usage"}}
 
 ### OutlookActivity
 
 {{fields "outlook_activity"}}
+
+### OutlookAppUsage
+
+{{fields "outlook_app_usage"}}
 
