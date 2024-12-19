@@ -99,11 +99,27 @@ processors:
       field: user.id
       value: "{{{beyondinsight_password_safe.useraudit.user_id}}}"
       ignore_empty_value: true
+
+  - append:
+      field: related.user
+      value: "{{{beyondinsight_password_safe.useraudit.user_id}}}"
+      allow_duplicates: false
+
   - set:
       field: user.name
       value: "{{{beyondinsight_password_safe.useraudit.user_name}}}"
-      ignore_empty_value: true            
- ###################### Override host.ip ######################
+      ignore_empty_value: true
+
+  - append:
+      field: related.user
+      value: "{{{beyondinsight_password_safe.useraudit.user_name}}}"  
+      allow_duplicates: false
+
+  - append:
+      field: related.hosts
+      value: "{{{beyondinsight_password_safe.useraudit.ipaddress}}}"
+      allow_duplicates: false
+ #################### Override host.ip ######################
   - script:
       lang: painless
       source: |
