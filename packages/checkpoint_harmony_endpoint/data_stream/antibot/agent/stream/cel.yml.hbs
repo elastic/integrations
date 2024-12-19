@@ -46,59 +46,63 @@ program: |-
   ).as(auth_data,
   	(state.?cursor.task_id.orValue(null) == null) ?
   		// No task ID - Submit a query and get its task ID.
-  		request("POST", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query").with(
-  			{
-  				"Header": {
-  					"Accept": ["application/json"],
-  					"Content-Type": ["application/json"],
-  					"Authorization": ["Bearer " + auth_data.token],
-  				},
-  				"Body": {
-  					"filter": state.filter,
-  					"limit": state.limit,
-  					"pageLimit": state.page_limit,
-  					"cloudService": "Harmony Endpoint",
-  					"timeframe": {
-  						"startTime": (state.?cursor.next_startTime.orValue(null) == null) ?
-  							timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)
-  						:
-  							timestamp(state.cursor.next_startTime).format(time_layout.RFC3339),
-  						"endTime": timestamp(now().format(time_layout.RFC3339)),
+  		{
+  			"startTime": state.?cursor.next_startTime.orValue(
+  				timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)
+  			),
+  			"endTime": timestamp(now() - duration("1m")).format(time_layout.RFC3339),
+  		}.as(timeframe,
+  			request("POST", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query").with(
+  				{
+  					"Header": {
+  						"Accept": ["application/json"],
+  						"Content-Type": ["application/json"],
+  						"Authorization": ["Bearer " + auth_data.token],
   					},
-  				}.encode_json(),
-  			}
-  		).do_request().as(resp,
-  			(resp.StatusCode != 200) ?
-  				// Any error - We're at the start, so clear everything and retry after interval.
-  				state.with(
-  					{
-  						"events": {"error": {"message": "Error response: " + string(resp.Body)}},
-  						"want_more": false,
-  						"cursor": state.cursor.with(
-  							{
-  								"auth_data": null,
-  								"task_id": null,
-  								"page_token": null,
-  							}
-  						),
-  					}
-  				)
-  			:
-  				// Query submitted - Save the task ID.
-  				bytes(resp.Body).decode_json().as(body,
+  					"Body": {
+  						"filter": state.filter,
+  						"limit": state.limit,
+  						"pageLimit": state.page_limit,
+  						"cloudService": "Harmony Endpoint",
+  						"timeframe": {
+  							"startTime": timeframe.startTime,
+  							"endTime": timeframe.endTime,
+  						},
+  					}.encode_json(),
+  				}
+  			).do_request().as(resp,
+  				(resp.StatusCode != 200) ?
+  					// Any error - We're at the start, so clear everything and retry after interval.
   					state.with(
   						{
-  							"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
-  							"want_more": true,
-  							"cursor": {
-  								"auth_data": auth_data,
-  								"task_id": body.data.taskId,
-  								"page_token": null,
-  								"next_startTime": (has(state.cursor) && has(state.cursor.next_startTime)) ? state.cursor.next_startTime : null,
-  							},
+  							"events": {"error": {"message": "Error response: " + string(resp.Body)}},
+  							"want_more": false,
+  							"cursor": state.cursor.with(
+  								{
+  									"auth_data": null,
+  									"task_id": null,
+  									"page_token": null,
+  								}
+  							),
   						}
   					)
-  				)
+  				:
+  					// Query submitted - Save the task ID.
+  					bytes(resp.Body).decode_json().as(body,
+  						state.with(
+  							{
+  								"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
+  								"want_more": true,
+  								"cursor": {
+  									"auth_data": auth_data,
+  									"task_id": body.data.taskId,
+  									"page_token": null,
+  									"next_startTime": timeframe.endTime,
+  								},
+  							}
+  						)
+  					)
+  			)
   		)
   	: (state.?cursor.page_token.orValue(null) == null) ?
   		// Task exists with no page token - Check whether it's ready or done.
