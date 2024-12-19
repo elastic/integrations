@@ -67,8 +67,6 @@ program: |-
   							"auth_cookie": auth_cookie,
   							"total_workgroups": int(size(workgroups)),
   							"call_workgroup_api": false,
-  							"current_workgroup_index": 0,
-  							"offset": 0,
   						},
   					}
   				)
@@ -79,9 +77,9 @@ program: |-
   ).as(state,
   	request(
   		"GET",
-  		state.url.trim_suffix("/") + "/Workgroups/" + string(state.cursor.workgroups[state.cursor.current_workgroup_index]) + "/Assets?" + {
+  		state.url.trim_suffix("/") + "/Workgroups/" + string(state.cursor.workgroups[int(state.cursor.?current_workgroup_index.orValue(0))]) + "/Assets?" + {
   			"limit": [string(state.limit)],
-  			"offset": [string(state.?cursor.offset.orValue(0))],
+  			"offset": [string(state.cursor.?offset.orValue(0))],
   		}.format_query()
   	).with(
   		{
@@ -106,13 +104,13 @@ program: |-
   							"workgroups": state.cursor.workgroups,
   							"call_workgroup_api": false,
   							"auth_cookie": state.cursor.auth_cookie,
-  							"offset": int(state.cursor.offset.orValue(0)) + int(size(assetBody.Data)),
+  							"offset": int(state.cursor.?offset.orValue(0)) + int(size(assetBody.Data)),
   							"total_workgroups": state.cursor.total_workgroups,
-  							"current_workgroup_index": state.cursor.current_workgroup_index,
+  							"current_workgroup_index": int(state.cursor.?current_workgroup_index.orValue(0)),
   						},
   					}
   				)
-  			: (state.cursor.current_workgroup_index + 1 < state.cursor.total_workgroups) ?
+  			: (int(state.cursor.?current_workgroup_index.orValue(0)) + 1 < int(state.cursor.total_workgroups)) ?
   				state.with(
   					{
   						"want_more": true,
@@ -121,8 +119,8 @@ program: |-
   							"call_workgroup_api": false,
   							"auth_cookie": state.cursor.auth_cookie,
   							"offset": 0,
-  							"total_workgroups": state.cursor.total_workgroups,
-  							"current_workgroup_index": state.cursor.current_workgroup_index + 1,
+  							"total_workgroups": int(state.cursor.total_workgroups),
+  							"current_workgroup_index": int(state.cursor.?current_workgroup_index.orValue(0)) + 1,
   						},
   					}
   				)
