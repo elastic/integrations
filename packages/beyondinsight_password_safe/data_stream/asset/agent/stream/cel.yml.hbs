@@ -65,7 +65,7 @@ program: |-
   						"cursor": {
   							"workgroups": workgroups.map(w, w.ID).flatten(),
   							"auth_cookie": auth_cookie,
-  							"total_workgroups": size(workgroups),
+  							"total_workgroups": int(size(workgroups)),
   							"call_workgroup_api": false,
   							"current_workgroup_index": 0,
   							"offset": 0,
@@ -92,7 +92,7 @@ program: |-
   		}
   	).do_request().as(assetResp,
   		bytes(assetResp.Body).decode_json().as(assetBody,
-  			(size(assetBody.Data) > 0) ?
+  			(int(size(assetBody.Data)) > 0) ?
   				state.with(
   					{
   						"events": assetBody.Data.map(e,
@@ -106,7 +106,7 @@ program: |-
   							"workgroups": state.cursor.workgroups,
   							"call_workgroup_api": false,
   							"auth_cookie": state.cursor.auth_cookie,
-  							"offset": state.cursor.offset.orValue(0) + size(assetBody.Data),
+  							"offset": int(state.cursor.offset.orValue(0)) + int(size(assetBody.Data)),
   							"total_workgroups": state.cursor.total_workgroups,
   							"current_workgroup_index": state.cursor.current_workgroup_index,
   						},
@@ -115,6 +115,7 @@ program: |-
   			: (state.cursor.current_workgroup_index + 1 < state.cursor.total_workgroups) ?
   				state.with(
   					{
+  						"want_more": true,
   						"cursor": {
   							"workgroups": state.cursor.workgroups,
   							"call_workgroup_api": false,
@@ -128,6 +129,7 @@ program: |-
   			:
   				state.with(
   					{
+  						"want_more": false,
   						"cursor": {
   							"call_workgroup_api": true,
   							"auth_cookie": state.cursor.auth_cookie,
