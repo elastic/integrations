@@ -16,14 +16,9 @@ processors:
   - set:
       field: event.type
       value: ["info"]
-  - rename:
-      field: groupId
-      target_field: mongodb_atlas.group_id
-      ignore_missing: true
-  - set:
-      field: group.id
-      value: "{{mongodb_atlas.group_id}}"
-      ignore_empty_value: true
+  - fail:
+      if: ctx.error?.message != null && ctx.response == null
+      message: error message set and no data to process.
   - rename:
       field: response.ASSERT_MSG
       target_field: mongodb_atlas.process.assert.msg
@@ -558,7 +553,7 @@ processors:
       ignore_missing: true
   - rename:
       field: groupId
-      target_field: mongodb_atlas.group_id
+      target_field: group.id
       ignore_missing: true
   - rename:
       field: processId
