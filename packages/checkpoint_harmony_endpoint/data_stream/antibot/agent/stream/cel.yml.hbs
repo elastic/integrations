@@ -73,7 +73,6 @@ program: |-
   							{
   								"auth_token": null,
   								"task_id": null,
-  								"task_ready": false,
   								"page_token": null,
   							}
   						),
@@ -89,7 +88,6 @@ program: |-
   							"cursor": {
   								"auth_token": auth_token,
   								"task_id": body.data.taskId,
-  								"task_ready": false,
   								"page_token": null,
   								"next_startTime": (has(state.cursor) && has(state.cursor.next_startTime)) ? state.cursor.next_startTime : null,
   							},
@@ -97,8 +95,8 @@ program: |-
   					)
   				)
   		)
-  	: (state.?cursor.task_ready.orValue(false) == false) ?
-  		// Task exists but isn't ready - Check whether it's ready or done.
+  	: (state.?cursor.page_token.orValue(null) == null) ?
+  		// Task exists with no page token - Check whether it's ready or done.
   		request("GET", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query/" + state.cursor.task_id).with(
   			{
   				"Header": {
@@ -128,7 +126,6 @@ program: |-
   								"cursor": state.cursor.with(
   									{
   										"auth_token": auth_token,
-  										"task_ready": true,
   										"page_token": body.data.pageTokens[0],
   									}
   								),
@@ -144,8 +141,6 @@ program: |-
   									{
   										"auth_token": auth_token,
   										"task_id": null,
-  										"task_ready": null,
-  										"page_token": null,
   									}
   								),
   							}
@@ -159,8 +154,6 @@ program: |-
   								"cursor": state.cursor.with(
   									{
   										"auth_token": auth_token,
-  										"task_ready": false,
-  										"page_token": null,
   									}
   								),
   							}
@@ -202,7 +195,6 @@ program: |-
   								"cursor": state.cursor.with(
   									{
   										"auth_token": auth_token,
-  										"task_ready": true,
   										"page_token": body.data.nextPageToken,
   									}
   								),
@@ -218,7 +210,6 @@ program: |-
   									{
   										"auth_token": auth_token,
   										"task_id": null,
-  										"task_ready": null,
   										"page_token": null,
   									}
   								),
