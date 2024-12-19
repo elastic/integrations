@@ -1,5 +1,5 @@
 type: logs
-title: Rubrik RSC Metrics
+title: Rubrik Windows Filesets Metrics
 streams:
   - input: httpjson
     vars:
@@ -19,25 +19,11 @@ streams:
         show_user: true
         description: Interval at which the alerts will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
         default: 10m
-      - name: filters
-        type: text
-        title: Filters
-        multi: false
-        required: false
-        show_user: true
-        default: |
-          {
-          "hostRoot": "LINUX_HOST_ROOT",
-          "first": 50,
-          "filter": [],
-          "sortBy": "NAME",
-          "sortOrder": "ASC"
-          }
       - name: tags
         type: text
         title: Tags
         multi: true
-        required: true
+        required: false
         show_user: true
       - name: preserve_original_event
         required: true
@@ -47,6 +33,14 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: filters
+        type: yaml
+        title: Filters
+        multi: false
+        required: false
+        show_user: true
+        description: >
+          Specify filters for refining the data. Filters must be defined as an array of Filter objects. Refer to the [Rubrik API documentation](https://rubrikinc.github.io/rubrik-api-documentation/schema/reference/filter.doc.html) for valid fields.
       - name: processors
         type: yaml
         title: Processors
@@ -57,5 +51,5 @@ streams:
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed.  See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
     template_path: httpjson.yml.hbs
-    title: Rubrik Filesets
-    description: Collect Rubrik Fileset data via the API
+    title: Rubrik Windows Filesets
+    description: Collect Rubrik Windows Fileset data via the API
