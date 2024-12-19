@@ -9,8 +9,18 @@ processors:
 - dissect:
     field: message
     pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} as %{user_agent.original}"
-    if: 'ctx.message?.contains(''logged in as'') ?: false'
+    if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''Shared secret'') == false)'
     description: logged in as
+- dissect:
+    field: message
+    pattern: "%{} Shared secret from %{client.ip} %{_tmp.event} as %{user_agent.original}"
+    if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''Shared secret''))'
+    description: logged in as Shared Secret
+- set:
+    field: user.name
+    value: "Shared Secret"
+    if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''Shared secret''))'
+    description: "Set Shared secret as username"
 - dissect:
     field: message
     pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} out (login time: %{event.start},
