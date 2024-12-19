@@ -50,56 +50,56 @@ processors:
       ignore_missing: true
   - append:
       field: event.category
-      value: [authentication]
+      value: authentication
       tag: append_event_category_authentication
       if: >-
         ctx.ping_federate?.audit?.event != null && (
-          ctx.ping_federate?.audit?.event == 'SLO' ||
-          ctx.ping_federate?.audit?.event == 'SSO' ||
-          ctx.ping_federate?.audit?.event == 'OAuth' ||
-          ctx.ping_federate?.audit?.event == 'AUTHN_ATTEMPT' ||
-          ctx.ping_federate?.audit?.event == 'AUTHN_REQUEST'
+          ctx.ping_federate.audit.event == 'SLO' ||
+          ctx.ping_federate.audit.event == 'SSO' ||
+          ctx.ping_federate.audit.event == 'OAuth' ||
+          ctx.ping_federate.audit.event == 'AUTHN_ATTEMPT' ||
+          ctx.ping_federate.audit.event == 'AUTHN_REQUEST'
         )
   - append:
       field: event.category
-      value: [session]
+      value: session
       tag: append_event_category_session
       if: >-
         ctx.ping_federate?.audit?.event != null && (
-          ctx.ping_federate?.audit?.event == 'AUTHN_SESSION_CREATED' ||
-          ctx.ping_federate?.audit?.event == 'AUTHN_SESSION_USED' ||
-          ctx.ping_federate?.audit?.event == 'AUTHN_SESSION_DELETED' ||
-          ctx.ping_federate?.audit?.event == 'SRI_REVOKED'
+          ctx.ping_federate.audit.event == 'AUTHN_SESSION_CREATED' ||
+          ctx.ping_federate.audit.event == 'AUTHN_SESSION_USED' ||
+          ctx.ping_federate.audit.event == 'AUTHN_SESSION_DELETED' ||
+          ctx.ping_federate.audit.event == 'SRI_REVOKED'
         )
   - append:
       field: event.type
-      value: [info]
+      value: info
       tag: append_event_type_info
       if: >-
         ctx.ping_federate?.audit?.event != null && (
-          ctx.ping_federate?.audit?.event == 'OAuth' ||
-          ctx.ping_federate?.audit?.event == 'AUTHN_SESSION_USED'
+          ctx.ping_federate.audit.event == 'OAuth' ||
+          ctx.ping_federate.audit.event == 'AUTHN_SESSION_USED'
         )
   - append:
       field: event.type
-      value: [start]
+      value: start
       tag: append_event_type_start
       if: >-
         ctx.ping_federate?.audit?.event != null && (
-          ctx.ping_federate?.audit?.event == 'SSO' ||
-          ctx.ping_federate?.audit?.event == 'AUTHN_ATTEMPT' ||
-          ctx.ping_federate?.audit?.event == 'AUTHN_REQUEST' ||
-          ctx.ping_federate?.audit?.event == 'AUTHN_SESSION_CREATED'
+          ctx.ping_federate.audit.event == 'SSO' ||
+          ctx.ping_federate.audit.event == 'AUTHN_ATTEMPT' ||
+          ctx.ping_federate.audit.event == 'AUTHN_REQUEST' ||
+          ctx.ping_federate.audit.event == 'AUTHN_SESSION_CREATED'
         )
   - append:
       field: event.type
-      value: [end]
+      value: end
       tag: append_event_type_end
       if: >-
         ctx.ping_federate?.audit?.event != null && (
-          ctx.ping_federate?.audit?.event == 'SLO' ||
-          ctx.ping_federate?.audit?.event == 'SRI_REVOKED' ||
-          ctx.ping_federate?.audit?.event == 'AUTHN_SESSION_DELETED'
+          ctx.ping_federate.audit.event == 'SLO' ||
+          ctx.ping_federate.audit.event == 'SRI_REVOKED' ||
+          ctx.ping_federate.audit.event == 'AUTHN_SESSION_DELETED'
         )
   - convert:
       field: cef.severity
@@ -382,3 +382,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

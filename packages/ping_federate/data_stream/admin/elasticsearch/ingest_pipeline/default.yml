@@ -47,46 +47,96 @@ processors:
       tag: set_event_kind
   - append:
       field: event.category
-      value: [authentication]
-      if: ctx.ping_federate?.admin?.event?.type != null
+      value: authentication
       tag: append_event_category_authentication
+      if: >-
+        ctx.ping_federate?.admin?.event?.type != null && (
+          ctx.ping_federate.admin.event.type == 'LOGIN_ATTEMPT' ||
+          ctx.ping_federate.admin.event.type == 'LOGOUT' ||
+          ctx.ping_federate.admin.event.type == 'PASSWORD_CHANGE'
+        )
   - append:
       field: event.category
-      value: [session]
-      if: ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate?.admin?.event?.type.contains('SESSION')
+      value: configuration
+      tag: append_event_category_configuration
+      if: >-
+        ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate?.admin?.component != null && (
+          ctx.ping_federate.admin.event.type == 'IMPORT' ||
+          ctx.ping_federate.admin.event.type == 'ROTATE' ||
+          (ctx.ping_federate.admin.event.type == 'CREATE' && ctx.ping_federate.admin.component != 'USER') ||
+          ctx.ping_federate.admin.event.type == 'DELETE' ||
+          ctx.ping_federate.admin.event.type == 'MODIFY'
+        )
+  - append:
+      field: event.category
+      value: iam
+      tag: append_event_category_iam
+      if: >-
+        ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate?.admin?.component != null && (
+          (ctx.ping_federate.admin.event.type == 'CREATE' && ctx.ping_federate.admin.component == 'USER') ||
+          ctx.ping_federate.admin.event.type == 'ROLE_CHANGE' ||
+          ctx.ping_federate.admin.event.type == 'ACTIVATE'
+        )
+  - append:
+      field: event.category
+      value: session
+      if: ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate.admin.event.type.contains('SESSION')
       tag: append_event_category_session
   - append:
       field: event.type
-      value: [info]
+      value: info
       tag: append_event_type_info
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && (
-          ctx.ping_federate?.admin?.event?.type == 'MODIFY' ||
-          ctx.ping_federate?.admin?.event?.type == 'ROLE_CHANGE' ||
-          ctx.ping_federate?.admin?.event?.type == 'PASSWORD_CHANGE' ||
-          ctx.ping_federate?.admin?.event?.type == 'ROTATE' ||
-          ctx.ping_federate?.admin?.event?.type == 'IMPORT'
+          ctx.ping_federate.admin.event.type == 'PASSWORD_CHANGE' ||
+          ctx.ping_federate.admin.event.type == 'IMPORT'
         )
   - append:
       field: event.type
-      value: [end]
+      value: end
       tag: append_event_type_end
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && (
-          ctx.ping_federate?.admin?.event?.type == 'SESSION_TIMEOUT' ||
-          ctx.ping_federate?.admin?.event?.type == 'DELETE' ||
-          ctx.ping_federate?.admin?.event?.type == 'LOGOUT'
+          ctx.ping_federate.admin.event.type == 'SESSION_TIMEOUT' ||
+          ctx.ping_federate.admin.event.type == 'LOGOUT'
         )
   - append:
       field: event.type
-      value: [start]
-      tag: append_event_type_start
+      value: change
+      tag: append_event_type_change
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && (
-          ctx.ping_federate?.admin?.event?.type == 'CREATE' ||
-          ctx.ping_federate?.admin?.event?.type == 'ACTIVATE' ||
-          ctx.ping_federate?.admin?.event?.type == 'LOGIN_ATTEMPT'
+          ctx.ping_federate.admin.event.type == 'ROLE_CHANGE' ||
+          ctx.ping_federate.admin.event.type == 'MODIFY' ||
+          ctx.ping_federate.admin.event.type == 'ROTATE'
         )
+  - append:
+      field: event.type
+      value: user
+      tag: append_event_type_user
+      if: >-
+        ctx.ping_federate?.admin?.event?.type != null && (
+          ctx.ping_federate.admin.event.type == 'ROLE_CHANGE' ||
+          ctx.ping_federate.admin.event.type == 'ACTIVATE'
+        )
+  - append:
+      field: event.type
+      value: start
+      tag: append_event_type_start
+      if: >-
+        ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate.admin.event.type == 'LOGIN_ATTEMPT'
+  - append:
+      field: event.type
+      value: deletion
+      tag: append_event_type_deletion
+      if: >-
+        ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate.admin.event.type == 'DELETE'
+  - append:
+      field: event.type
+      value: creation
+      tag: append_event_type_creation
+      if: >-
+        ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate.admin.event.type == 'CREATE'
   - date:
       field: ping_federate.admin.timestamp
       tag: date_ping_federate_admin_timestamp
@@ -103,6 +153,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # The timezone doesn't function as expected with custom date formats like yyyy-MM-dd HH:mm:ss,SSS,
 # Hence, first converted the date to ISO8601 format and then applied the event.timezone to the ISO8601 formatted date.
+# An issue has been raised for this scenario here: https://discuss.elastic.co/t/timezone-offset-is-not-working-for-the-custom-date-formats/372010
   - date:
       field: ping_federate.admin.timestamp
       tag: date_ping_federate_admin_timestamp_timezone
@@ -253,3 +304,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
