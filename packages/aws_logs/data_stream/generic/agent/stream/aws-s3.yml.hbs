@@ -9,9 +9,11 @@ pipeline: {{pipeline}}
 {{! start SQS queue }}
 {{#unless bucket_arn}}
 {{#unless non_aws_bucket_name}}
+{{#unless access_point_arn}}
 {{#if queue_url }}
 queue_url: {{ queue_url }}
 {{/if}}
+{{/unless}}
 {{/unless}}
 {{/unless}}
 {{! end SQS queue }}
@@ -39,16 +41,29 @@ bucket_list_interval: {{ bucket_list_interval }}
 
 {{! AWS S3 bucket ARN options }}
 {{#unless non_aws_bucket_name}}
+{{#unless access_point_arn}}
 {{#if bucket_arn }}
 bucket_arn: {{ bucket_arn }}
 {{/if}}
 {{/unless}}
+{{/unless}}
 
 {{! non-AWS S3 bucket ARN options }}
 {{#unless bucket_arn}}
+{{#unless access_point_arn}}
 {{#if non_aws_bucket_name }}
 non_aws_bucket_name: {{ non_aws_bucket_name }}
 {{/if}}
+{{/unless}}
+{{/unless}}
+
+{{! AWS S3 Access Point ARN options }}
+{{#unless bucket_arn}}
+{{#unless non_aws_bucket_name}}
+{{#if access_point_arn }}
+access_point_arn: {{ access_point_arn }}
+{{/if}}
+{{/unless}}
 {{/unless}}
 
 {{/unless}}{{! end S3 bucket polling }}
