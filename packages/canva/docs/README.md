@@ -76,7 +76,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
    - Collect logs via S3 Bucket toggled on
    - Access Key ID
    - Secret Access Key
-   - Bucket ARN
+   - Bucket ARN or Access Point ARN
    - Session Token
 
    or if you want to collect logs via AWS SQS, then you have to put the following details:
