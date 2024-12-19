@@ -34,12 +34,11 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 ## Compatibility
 
 
-
 ## Metrics
 
 Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
-### MailboxUsage
+### Mailbox Usage
 
 **Exported fields**
 
@@ -103,7 +102,7 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 | o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
 
 
-### OutlookActivity
+### Outlook Activity
 
 **Exported fields**
 
@@ -127,7 +126,7 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 | o365.metrics.outlook.activity.report_refresh_date | The date when the report data was last updated. | date |
 
 
-### OutlookAppUsage
+### Outlook App Usage
 
 **Exported fields**
 

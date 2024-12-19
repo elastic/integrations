@@ -57,14 +57,14 @@ program: |
     state.with(
     request(
       "GET",
-      "https://graph.microsoft.com/v1.0/reports/getMailboxUsageQuotaStatusMailboxCounts(period='" + state.base.period + "')"
+      state.url + "/reports/getMailboxUsageQuotaStatusMailboxCounts(period='" + state.base.period + "')"
     ).do_request().as(resp1,
             resp1.StatusCode == 200
             ?
               bytes(resp1.Body).mime("text/csv; header=present").as(events1,
                 request(
                   "GET",
-                  "https://graph.microsoft.com/v1.0/reports/getMailboxUsageDetail(period='" + state.base.period + "')"
+                  state.url + "/reports/getMailboxUsageDetail(period='" + state.base.period + "')"
                 ).do_request().as(resp2,
                   resp2.StatusCode == 200
                   ?

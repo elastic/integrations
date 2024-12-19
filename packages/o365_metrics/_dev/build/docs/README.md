@@ -34,12 +34,11 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 ## Compatibility
 
 
-
 ## Metrics
 
 Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
-### MailboxUsage
+### Mailbox Usage
 
 {{fields "mailbox_usage"}}
 
@@ -47,10 +46,10 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
 {{fields "onedrive_usage"}}
 
-### OutlookActivity
+### Outlook Activity
 
 {{fields "outlook_activity"}}
 
-### OutlookAppUsage
+### Outlook App Usage
 
 {{fields "outlook_app_usage"}}
