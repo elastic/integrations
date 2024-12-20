@@ -19,6 +19,7 @@ rules:
         body: |-
           {"access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN","token_type": "Bearer","not_before": 1549647431,"expires_in": 3600,"resource": "f2a76e08-93f2-4350-833c-965c02483b11"}
   # CEL Input Rules
+  # OAuth2 Token for Management API
   - path: /test-cel-tenant-id/oauth2/v2.0/token
     methods: [POST]
     query_params:
@@ -36,6 +37,24 @@ rules:
             - "application/json"
         body: |-
           {"access_token": "CELtoken","token_type": "Bearer","expires_in": 3600,"ext_expires_in": 3600}
+  # OAuth2 Token for Graph API
+  - path: /test-cel-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      client_id: test-cel-client-id
+      client_secret: test-cel-client-secret
+      grant_type: client_credentials
+      scope: https://graph.microsoft.com/.default
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token": "GraphAPIToken","token_type": "Bearer","expires_in": 3600,"ext_expires_in": 3600}
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
     methods: [POST]
     query_params:
@@ -184,3 +203,41 @@ rules:
         # 2 documents
         body: |-
           [{"ObjectId":"Sales","Id":"2af7bbf1-d5d8-5cb0-8aca-f4ad8a087594","CreationTime":"2020-02-28T09:42:45","UserKey":"100320009d6edf94","YammerNetworkId":5846122497,"Operation":"GroupCreation","ClientIP":"79.159.10.151:12345","ActorYammerUserId":36787265537,"UserType":0,"ResultStatus":"TRUE","RecordType":22,"Workload":"Yammer","Version":1,"GroupName":"Sales","OrganizationId":"0e1dddce-163e-4b0b-9e33-87ba56ac4655","UserId":"alice@testsiem2.onmicrosoft.com","ActorUserId":"alice@testsiem2.onmicrosoft.com"},{"CreationTime":"2020-02-28T09:39:20","ActorUserId":"asr@testsiem2.onmicrosoft.com","ObjectId":"Company group","UserKey":"100320009d292e16","Id":"3f3e7f1c-84c1-55fc-9bb2-c8b8563eae06","ActorYammerUserId":36085768193,"ClientIP":"[fdfd::555]:12346","UserId":"asr@testsiem2.onmicrosoft.com","Operation":"GroupCreation","ResultStatus":"TRUE","UserType":0,"Workload":"Yammer","Version":1,"OrganizationId":"0e1dddce-163e-4b0b-9e33-87ba56ac4655","YammerNetworkId":5846122497,"RecordType":22,"GroupName":"Company group"}]
+  - path: /reports/getTeamsUserActivityUserDetail(period='D30')
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer GraphAPIToken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/csv"
+        body: |-
+          "Report Refresh Date","User Id","User Principal Name","Last Activity Date","Is Deleted","Deleted Date","Assigned Products","Team Chat Message Count","Private Chat Message Count","Call Count","Meeting Count","Meetings Organized Count","Meetings Attended Count","Ad Hoc Meetings Organized Count","Ad Hoc Meetings Attended Count","Scheduled One-time Meetings Organized Count","Scheduled One-time Meetings Attended Count","Scheduled Recurring Meetings Organized Count","Scheduled Recurring Meetings Attended Count","Audio Duration","Video Duration","Screen Share Duration","Audio Duration In Seconds","Video Duration In Seconds","Screen Share Duration In Seconds","Has Other Action","Urgent Messages","Post Messages","Tenant Display Name","Shared Channel Tenant Display Names","Reply Messages","Is Licensed","Report Period"
+          "2024-12-15","82f04e26-e0ec-49ee-8f1f-8a3de75e430f","HenriettaM@abc.onmicrosoft.com","","False","","MICROSOFT 365 E5","50","10","50","50","30","250","350","501","50","500","50","50","PT0S","PT0S","PT0S","0","10","30","No","0","20","MSFT","","10","Yes","7"
+          "2024-12-15","30c58ce9-5fc4-4585-ac6a-c0f21867393a","AlexW@abc.onmicrosoft.com","","False","","MICROSOFT 365 E5","10","20","307","30","303","30","320","310","30","340","330","30","PT0S","PT0S","PT0S","0","10","50","No","0","0","MSFT","","20","Yes","7"
+  - path: /reports/getTeamsUserActivityUserDetail(period='D180')
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer GraphAPIToken"
+    responses:
+      - status_code: 302
+        headers:
+          Content-Type:
+            - "text/plain"
+          Location:
+            - http://svc-o365-cel:8080/locationTeamsUserActivityUserDetail
+        body: ""
+  - path: /locationTeamsUserActivityUserDetail
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer GraphAPIToken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/octet-stream"
+        body: '{{file "/files/TeamsUserActivityUserDetail.txt"}}'
