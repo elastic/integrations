@@ -77,7 +77,7 @@ program: |-
   ).as(state,
   	request(
   		"GET",
-  		state.url.trim_suffix("/") + "/Workgroups/" + string(state.cursor.workgroups[int(state.cursor.?current_workgroup_index.orValue(0))]) + "/Assets?" + {
+  		state.url.trim_suffix("/") + "/Workgroups/" + string(state.cursor.workgroups[state.cursor.?current_workgroup_index.orValue(0)]) + "/Assets?" + {
   			"limit": [string(state.limit)],
   			"offset": [string(state.cursor.?offset.orValue(0))],
   		}.format_query()
@@ -113,12 +113,12 @@ program: |-
   			: (int(state.cursor.?current_workgroup_index.orValue(0)) + 1 < int(state.cursor.total_workgroups)) ?
   				state.with(
   					{
+  						"events": [],
   						"want_more": true,
   						"cursor": {
   							"workgroups": state.cursor.workgroups,
   							"call_workgroup_api": false,
   							"auth_cookie": state.cursor.auth_cookie,
-  							"offset": 0,
   							"total_workgroups": int(state.cursor.total_workgroups),
   							"current_workgroup_index": int(state.cursor.?current_workgroup_index.orValue(0)) + 1,
   						},
@@ -127,6 +127,7 @@ program: |-
   			:
   				state.with(
   					{
+  						"events": [],
   						"want_more": false,
   						"cursor": {
   							"call_workgroup_api": true,
