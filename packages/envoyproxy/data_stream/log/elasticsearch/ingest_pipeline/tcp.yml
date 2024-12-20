@@ -1,0 +1,41 @@
+---
+description: Pipeline for normalizing envoy TCP ACCESS logs
+processors:
+- remove:
+    field:
+    - upstream_service_time
+    - method
+    - user_agent
+    - path
+    - response_code
+- rename:
+    field: bytes_received
+    target_field: destination.bytes
+- convert:
+    field: destination.bytes
+    type: long
+- rename:
+    field: bytes_sent
+    target_field: source.bytes
+    override: true
+- convert:
+    field: source.bytes
+    type: long
+- set:
+    field: envoyproxy.log.proxy_type
+    value: tcp
+- append:
+    field: event.type
+    allow_duplicates: false
+    value:
+      - connection
+- set:
+    field: network.transport
+    value: tcp
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

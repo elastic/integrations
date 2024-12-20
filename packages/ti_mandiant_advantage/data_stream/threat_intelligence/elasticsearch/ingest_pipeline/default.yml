@@ -404,6 +404,11 @@ processors:
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
+- append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
         field: error.message
@@ -415,3 +420,7 @@ on_failure:
         field: event.kind
         value: pipeline_error
         allow_duplicates: false
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
