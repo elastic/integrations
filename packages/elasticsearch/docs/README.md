@@ -360,8 +360,11 @@ will not collect metrics. A DEBUG log message about this will be emitted in the 
 | elasticsearch.ccr.leader.index | Name of leader index | keyword |  |
 | elasticsearch.ccr.leader.max_seq_no | Maximum sequence number of operation on the leader shard | long | gauge |
 | elasticsearch.ccr.read_exceptions |  | nested |  |
-| elasticsearch.ccr.read_exceptions.exception |  | object |  |
+| elasticsearch.ccr.read_exceptions.exception.exception.reason |  | text |  |
+| elasticsearch.ccr.read_exceptions.exception.exception.type |  | keyword |  |
+| elasticsearch.ccr.read_exceptions.exception.from_seq_no |  | long |  |
 | elasticsearch.ccr.read_exceptions.exception.reason |  | text |  |
+| elasticsearch.ccr.read_exceptions.exception.retries |  | integer |  |
 | elasticsearch.ccr.read_exceptions.exception.type |  | keyword |  |
 | elasticsearch.ccr.read_exceptions.from_seq_no |  | long | gauge |
 | elasticsearch.ccr.read_exceptions.retries |  | integer | gauge |
