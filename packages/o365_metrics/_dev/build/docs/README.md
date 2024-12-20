@@ -2,6 +2,7 @@
 
 This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
 
+
 ## Setup
 
 To use this package you need to enable datastreams you want to collect metrics for and register an application in [Microsoft Entra ID (formerly known as Azure Active Directory)](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id).
@@ -16,7 +17,7 @@ Once the application is registered, configure and/or note the following to setup
     - Navigate to `API permissions` page and click `Add a permission`
     - Select `Office 365 Management APIs` tile from the listed tiles.
     - Click `Application permissions`.
-    - If `User.Read` permission under `Microsoft.Graph` tile is not added by default, add this permission.
+    - If `User.Read` and `Reports.Read.All` permission under `Microsoft.Graph` tile is not added by default, add this permission.
     - After the permissions are added, the admin has to grant consent for these permissions.
 
 Once the secret is created and permissions are granted by admin, setup Elastic Agent's Microsoft O365 integration:
@@ -33,14 +34,22 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 ## Compatibility
 
 
-
 ## Metrics
 
-Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
+Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
-### Outlook Activity
-{{fields "outlook_activity"}}
+### Mailbox Usage
 
+{{fields "mailbox_usage"}}
 
 ### One Drive Usage
+
 {{fields "onedrive_usage"}}
+
+### Outlook Activity
+
+{{fields "outlook_activity"}}
+
+### Outlook App Usage
+
+{{fields "outlook_app_usage"}}
